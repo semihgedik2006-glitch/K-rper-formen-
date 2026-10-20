@@ -48,6 +48,30 @@ console.log('── Rückfrage, mehrere Aufträge, Ton (20.10.2026) ──');
   pruefe('ohne befehle → kein Mehrfach', M({ typ: 'abhaken' }, RF) === null);
   /* Verlauf (20.10.2026, „er kann nicht auf vorherige nachrichten
      eingehen"): höchstens vier Wechsel, gekürzt, nur Hintergrund. */
+  /* Formi per Mail (20.10.2026, aus dem Betrieb: „per Mail Aufgaben etc.
+     anlegen … mit einem Geheim-Code welche die Leitung nur kennt"). */
+  const CL = __intern.formiCodeLesen;
+  const c1 = CL('Hallo Formi\nCode: Sommer2026!\nAufgabe für Hürth: Wasser auffüllen');
+  pruefe('Mail-Code: wird gefunden und aus dem Text genommen; mit und ohne Satzzeichen geprüft',
+    c1.code === 'Sommer2026!' && c1.codes.indexOf('Sommer2026') >= 0 && !/Sommer2026/.test(c1.text) && /Wasser auffüllen/.test(c1.text), c1);
+  pruefe('Mail-Code: ohne „Code:" kein Code', CL('Wie wasche ich die Westen?').code === '' && CL('Der Code der Tür ist kaputt').code === '');
+  pruefe('Mail-Code: auch „Geheimcode = …"', CL('geheimcode = abcd1234').code === 'abcd1234');
+  const MT = __intern.formiMailText;
+  pruefe('Mail-Text: Zitat und „Am … schrieb" fallen weg', MT('Neue Frage?\n\nAm 20.10.2026 um 10:00 schrieb Formi <f@g.de>:\n> alte Antwort') === 'Neue Frage?');
+  pruefe('Mail-Text: Signatur ab „--" fällt weg, höchstens 2000 Zeichen', MT('Frage\n-- \nLea Meier\nTel 0123') === 'Frage' && MT('x'.repeat(5000)).length === 2000);
+  const H = __intern.formiCodeHash, G = __intern.formiGleich;
+  pruefe('Code-Hash: mit Salz, gleicher Code + Salz = gleicher Hash, anderes Salz = anderer', H('abc12345', 's1') === H('abc12345', 's1') && H('abc12345', 's1') !== H('abc12345', 's2') && H('abc12345', 's1').length === 64);
+  pruefe('Vergleich: nur bei Gleichheit, leer ist nie gleich', G('a', 'a') && !G('a', 'b') && !G('', '') && !G(undefined, undefined));
+  const RE = __intern.FORMI_MAIL_RE;
+  pruefe('Mailadressen: gültig / ungültig', RE.test('lea@kformen.com') && RE.test('a.b-c@sub.domain.de') && !RE.test('keine') && !RE.test('a@b') && !RE.test('x y@z.de') && !RE.test('<a@b.de>'));
+  const mailV = B({ typ: 'mail', an: 'Lea@KFormen.com', betreff: '  Schicht   morgen ', text: 'Hi Lea' }, NAM, ['studio-1'], 'mitarbeiter', '2026-10-20');
+  pruefe('Aktion „mail": Adresse klein, Betreff gekürzt, nur Entwurf (keine Rolle nötig)', mailV && mailV.typ === 'mail' && mailV.an === 'lea@kformen.com' && mailV.betreff === 'Schicht morgen' && mailV.text === 'Hi Lea', mailV);
+  pruefe('Aktion „mail": ohne gültige Adresse oder Text → nichts', B({ typ: 'mail', an: 'lea', text: 'x' }, NAM, ['studio-1'], 'mitarbeiter', '2026-10-20') === null && B({ typ: 'mail', an: 'a@b.de', text: ' ' }, NAM, ['studio-1'], 'mitarbeiter', '2026-10-20') === null);
+  const AS = __intern.gehirnAktionSystem;
+  const sysM = AS({ rolle: 'mitarbeiter', namen: { a: 'Hürth' }, erlaubt: ['a'], name: 'Lea Meier', heute: '2026-10-20' });
+  const sysC = AS({ rolle: 'chef', namen: { a: 'Hürth' }, erlaubt: ['a'], name: 'Chef', heute: '2026-10-20', verlauf: [{ f: 'x', a: 'y' }] });
+  pruefe('Systemtext: kennt „mail", Aufgaben nur für die Leitung, Verlauf nur wenn mitgegeben', /"typ":"mail"/.test(sysM) && !/"typ":"aufgabe"/.test(sysM) && /"typ":"aufgabe"/.test(sysC) && /Bisheriges Gespräch/.test(sysC) && !/Bisheriges Gespräch/.test(sysM) && /Lea Meier/.test(sysM));
+
   const VT = __intern.gehirnVerlaufText;
   pruefe('Verlauf: ohne Liste kein Text', VT() === '' && VT('x') === '' && VT([{ a: 'nur Antwort' }]) === '');
   const vt = VT([1, 2, 3, 4, 5, 6].map(n => ({ f: 'Satz ' + n + ' ' + 'x'.repeat(400), a: 'Ergebnis ' + n })));
@@ -243,6 +267,22 @@ pruefe('ohne Status: unlesbare Antwort', /lesbare/.test(geminiFehlerText(0)), ge
   const e3 = await kiJson('s', 'n', '');
   pruefe('ohne Gemini-Schlüssel direkt das Studio-Gehirn', e3 && e3.typ === 'keins' && gerufen.length === 1, gerufen);
   delete process.env.STUDIO_GEHIRN_KEY;
+
+  /* formiMail: ohne eingerichteten oder mit falschem Schlüssel kommt
+     niemand durch; eine ungültige Absenderadresse bekommt keine Antwort. */
+  const FM = require('../functions/index.js').formiMail;
+  const anruf = (kopf, body) => new Promise((fertig) => {
+    const res = { code: 200, status(c) { this.code = c; return this; }, json(d) { fertig({ code: this.code, d }); }, send(d) { fertig({ code: this.code, d }); } };
+    FM({ method: 'POST', get: (k) => kopf[k.toLowerCase()], body }, res);
+  });
+  delete process.env.FORMI_MAIL_TOKEN;
+  pruefe('formiMail ohne FORMI_MAIL_TOKEN: 503, nichts passiert', (await anruf({ 'x-formi-token': 'egal' }, { von: 'a@b.de', text: 'x' })).code === 503);
+  process.env.FORMI_MAIL_TOKEN = 'richtig-123';
+  pruefe('formiMail mit falschem Schlüssel: 401', (await anruf({ 'x-formi-token': 'falsch' }, { von: 'a@b.de', text: 'x' })).code === 401);
+  pruefe('formiMail ohne Schlüssel: 401', (await anruf({}, { von: 'a@b.de', text: 'x' })).code === 401);
+  const still = await anruf({ 'x-formi-token': 'richtig-123' }, { von: 'kein-absender', text: 'x' });
+  pruefe('formiMail mit ungültigem Absender: keine Antwort („still")', still.code === 200 && still.d && still.d.still === true, still);
+  delete process.env.FORMI_MAIL_TOKEN;
 
   global.fetch = echt; console.error = fehlerAus;
   ende();

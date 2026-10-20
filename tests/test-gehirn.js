@@ -472,9 +472,13 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
 
   console.log('\n── 8f Schnellweg ohne KI, Tippfehler ──');
   /* Aus dem Betrieb (19.10.2026): „die ki braucht echt lang … das die ki
-     auch rechtschreib Fehler verzeiht … staubsaugen=saugen". */
+     auch rechtschreib Fehler verzeiht … staubsaugen=saugen".
+     Seit 20.10.2026 („Rückfrage statt raten" — auf der Liste gewählt mit
+     „1,2,3…") fragt Formi ohne „Mein Studio" bei mehreren Studios nach.
+     Hier geht es um den Schnellweg, also ist Mein Studio gesetzt; die
+     Nachfrage selbst prüft 12h. */
   {
-    const p = await oeffne(b, 1440, 900);
+    const p = await oeffne(b, 1440, 900, { vorher: () => { localStorage.setItem('kf_jv_persona', JSON.stringify({ studio: 'studio-6' })); } });
     const kiWeg = () => p.evaluate(() => { window.__kiGefragt = 0; window.__antwort = window.__antwort || {};
       window.__antwort.gehirnAktion = () => { window.__kiGefragt++; return Promise.resolve({ data: { art: 'frage', antwort: 'KI', abgedeckt: true } }); }; });
     const sag = async (satz) => { await aufSeite(p); await kiWeg(); await p.fill('#gehirnFeld', satz); await p.click('#gehirnFragen'); await fertig(p); await p.waitForTimeout(800); };
@@ -860,7 +864,8 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
 
   console.log('\n── 12f Erinnerung, Tagesabschluss, Schicht abgeben, Suche, Foto, offline (20.10.2026) ──');
   {
-    const p = await oeffne(b, 1440, 900, { vorher: () => { localStorage.setItem('kf_jv_brief', new Date().toLocaleDateString('sv-SE')); } });
+    /* Mein Studio gesetzt — ohne fragt Formi seit 20.10.2026 nach (12h). */
+    const p = await oeffne(b, 1440, 900, { vorher: () => { localStorage.setItem('kf_jv_brief', new Date().toLocaleDateString('sv-SE')); localStorage.setItem('kf_jv_persona', JSON.stringify({ studio: 'studio-6' })); } });
     await p.keyboard.press('j'); await p.waitForTimeout(500);
     await p.evaluate(() => { window.__ki = 0; window.__antwort = window.__antwort || {}; window.__antwort.gehirnAktion = () => { window.__ki++; return Promise.resolve({ data: { art: 'frage', antwort: 'KI', abgedeckt: true } }); };
       window.__erin = []; window.__antwort.gehirnErinnerung = (d) => { window.__erin.push(d); return Promise.resolve({ data: d.art === 'neu' ? { id: 'e1', wann: d.wann } : { ok: true } }); }; });
@@ -1100,6 +1105,100 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await zu(p);
   }
 
+  console.log('\n── 12h Mein Studio, Rückfrage, Lernen, Formi-Zeichen, Mail, Effekte, Buchstaben (20.10.2026) ──');
+  /* Aus dem Betrieb, 20.10.2026, auf die Verbesserungsliste: „1,2,3,4,5
+     (am besten so ganz viele random Buchstaben die sich ins Loch drehen
+     und dann als Sätze rauskommen oder so) 6, 7 …, 8, 9 (nur Mail
+     erstmal …)". */
+  {
+    const vorher = () => {
+      localStorage.setItem('kf_jv_brief', new Date().toLocaleDateString('sv-SE'));
+      const t = Date.now();
+      window.__todos = { 'studio-6': [{ id: 'x1', title: 'Briefkasten leeren', desc: '', done: false, ts: t - 5000 }],
+        'studio-7': [{ id: 'x2', title: 'Briefkasten leeren', desc: '', done: false, ts: t - 5000 }] };
+    };
+    const p = await oeffne(b, 1440, 900, { vorher });
+    await p.keyboard.press('j'); await p.waitForTimeout(500);
+    await p.evaluate(() => { window.__ki = []; window.__antwort = window.__antwort || {}; window.__antwort.gehirnAktion = (d) => { window.__ki.push(d); return Promise.resolve({ data: { art: 'frage', antwort: 'Ok.', abgedeckt: true } }); }; });
+    const sag = async (satz, ms) => { await p.fill('#jarvisFeld', satz); await p.click('#jarvisSenden'); await p.waitForTimeout(ms || 900); };
+    const letzte = () => p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf .gehirn-antwort')].pop().innerText);
+    // 2: ohne Mein Studio fragt Formi nach, statt zu raten
+    await sag('Übergabe: Handtücher sind in der Maschine');
+    const rf = await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf [data-grf]')].map(x => x.textContent));
+    pruefe('ohne „Mein Studio": „Übergabe: …" fragt nach dem Studio (ganze Sätze zum Antippen), ohne KI',
+      rf.length >= 2 && rf.every(t => /^Übergabe: Handtücher sind in der Maschine in \S/.test(t)) && (await p.evaluate(() => window.__ki.length)) === 0, JSON.stringify(rf));
+    // Formis Zeichen auf der Karte
+    const kopf = await p.evaluate(() => { const k = [...document.querySelectorAll('#jarvisVerlauf .ga-kopf')].pop(); return k && { t: k.innerText.trim(), loch: !!k.querySelector('.ga-loch') }; });
+    pruefe('Antwortkarte trägt Formis Namen und das kleine Loch (statt „Studio-Gehirn")', kopf && kopf.t.toLowerCase() === 'formi' && kopf.loch, JSON.stringify(kopf));
+    // Punkt in zwei Studios: ohne Mein Studio zur Wahl
+    await sag('Briefkasten leeren erledigt');
+    const w1 = await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf [data-gwahl]')].length);
+    pruefe('derselbe Punkt in zwei Studios, kein Mein Studio: beide zur Wahl', w1 === 2, w1);
+    const zweitName = await p.evaluate(() => { const x = [...document.querySelectorAll('#jarvisVerlauf [data-gwahl] small')].map(s => s.textContent.trim()); return x.find(n => n !== 'Hürth') || ''; });
+    // 3: Richtigstellung → gelernt
+    await sag('ich meinte in ' + zweitName);
+    const k3 = await letzte();
+    pruefe('„ich meinte in ' + zweitName + '": dort abgehakt', /Abgehakt/.test(k3) && k3.indexOf(zweitName) >= 0, k3.slice(0, 200));
+    await sag('Briefkasten leeren erledigt');
+    const k4 = await letzte();
+    pruefe('… beim nächsten Mal weiss Formi es: „Gemerkt" und sofort in ' + zweitName, /Gemerkt/.test(k4) && /Abgehakt/.test(k4) && k4.indexOf(zweitName) >= 0, k4.slice(0, 300));
+    // 1: Mein Studio
+    await p.click('#jarvisPersonaBtn'); await p.waitForTimeout(200);
+    const studios = await p.evaluate(() => [...document.querySelectorAll('#jarvisPersona [data-jvp="studio"]')].map(x => x.getAttribute('data-jvw')));
+    pruefe('„Persönlichkeit": Mein Studio zur Wahl (alle eigenen Studios)', studios.length >= 2 && studios.indexOf('studio-6') >= 0, JSON.stringify(studios));
+    await p.click('#jarvisPersona [data-jvp="studio"][data-jvw="studio-6"]'); await p.waitForTimeout(150);
+    const ort = await p.textContent('#jarvisOrt');
+    pruefe('… gewählt: Hürth steht oben als Studio', ort === 'Hürth' && (await p.getAttribute('#jarvisPersona [data-jvp="studio"][data-jvw="studio-6"]', 'aria-pressed')) === 'true', ort);
+    // 6: Effekte
+    await p.click('#jarvisPersona [data-jvp="effekte"][data-jvw="sparsam"]'); await p.waitForTimeout(150);
+    pruefe('„Effekte: Sparsam" setzt die niedrige Stufe', (await p.getAttribute('#jarvis', 'data-effekte')) === 'niedrig');
+    await p.click('#jarvisPersona [data-jvp="effekte"][data-jvw="auto"]'); await p.waitForTimeout(150);
+    // Leitungs-Code (nur Chef)
+    await p.evaluate(() => { window.__code = []; window.__antwort.formiCodeSetzen = (d) => { window.__code.push(d); return Promise.resolve({ data: { ok: true } }); }; });
+    await p.fill('#jvPCode', 'kurz'); await p.click('#jvPCodeSetzen'); await p.waitForTimeout(150);
+    pruefe('Mail-Code: zu kurz → nichts gesendet', (await p.evaluate(() => window.__code.length)) === 0);
+    await p.fill('#jvPCode', 'Sommer2026!'); await p.click('#jvPCodeSetzen'); await p.waitForTimeout(250);
+    pruefe('Mail-Code: geht an formiCodeSetzen, Feld danach leer', (await p.evaluate(() => JSON.stringify(window.__code))) === JSON.stringify([{ code: 'Sommer2026!' }]) && (await p.inputValue('#jvPCode')) === '');
+    await p.click('#jvPZu'); await p.waitForTimeout(150);
+    await p.evaluate(() => localStorage.removeItem(Object.keys(localStorage).find(k => /^kf_gehirn_lern_/.test(k))));
+    await sag('Briefkasten leeren erledigt');
+    const k5 = await letzte();
+    pruefe('mit Mein Studio (Hürth) und ohne Gelerntes: der Punkt in Hürth, ohne Nachfrage', /Abgehakt/.test(k5) && /Hürth/.test(k5) && !(await p.$('#jarvisVerlauf .gehirn-antwort:last-child [data-gwahl]')), k5.slice(0, 200));
+    await sag('Übergabe: Handtücher sind in der Maschine');
+    pruefe('mit Mein Studio: „Übergabe: …" ohne Nachfrage, Studio Hürth', !(await p.evaluate(() => { const k = [...document.querySelectorAll('#jarvisVerlauf .gehirn-antwort')].pop(); return k.querySelector('[data-grf]'); })) && /Hürth/.test(await letzte()), (await letzte()).slice(0, 200));
+    // 9: Mail aus der App — Entwurf, ändern, senden
+    await p.evaluate(() => { window.__mails = []; window.__antwort.gehirnAktion = () => Promise.resolve({ data: { vorschlag: { typ: 'mail', an: 'lea@kformen.com', betreff: 'Schicht morgen', text: 'Hi Lea, kannst du morgen?' } } });
+      window.__antwort.formiMailSenden = (d) => { window.__mails.push(d); return Promise.resolve({ data: { ok: true } }); }; });
+    await sag('schreib lea@kformen.com eine mail ob sie morgen kann');
+    const km = await letzte();
+    pruefe('„schreib … eine Mail": Entwurf mit Adresse, Betreff und Text — noch nichts gesendet', /lea@kformen\.com/.test(km) && (await p.inputValue('#jarvisVerlauf [data-gmailfeld$="|betreff"]')) === 'Schicht morgen' && (await p.evaluate(() => window.__mails.length)) === 0, km.slice(0, 200));
+    await p.fill('#jarvisVerlauf [data-gmailfeld$="|text"]', 'Hi Lea, kannst du morgen früh?');
+    await p.click('#jarvisVerlauf [data-gmail]'); await p.waitForTimeout(300);
+    const gm = await p.evaluate(() => window.__mails);
+    pruefe('… „Senden" schickt genau den geänderten Text über formiMailSenden', gm.length === 1 && gm[0].an === 'lea@kformen.com' && gm[0].text === 'Hi Lea, kannst du morgen früh?' && gm[0].betreff === 'Schicht morgen' && /ist raus/.test(await letzte()), JSON.stringify(gm));
+    // 5: Buchstaben
+    await p.evaluate(() => { window.__antwort.gehirnAktion = () => new Promise(r => setTimeout(() => r({ data: { art: 'frage', antwort: 'Die Westen kommen bei 30 Grad in die Maschine.', abgedeckt: true } }), 2500)); });
+    await p.fill('#jarvisFeld', 'Wie wasche ich die Westen?'); await p.click('#jarvisSenden');
+    await p.waitForTimeout(700);
+    const z1 = await p.evaluate(() => +document.getElementById('jarvisZeichen').getAttribute('data-zeichen'));
+    pruefe('Buchstaben wirbeln ins Loch, solange Formi denkt', z1 >= 10, z1);
+    await p.waitForTimeout(2600);
+    const z2 = await p.evaluate(() => +document.getElementById('jarvisZeichen').getAttribute('data-zeichen'));
+    pruefe('… nach der Antwort kommen sie wieder heraus', z2 >= 5, z2);
+    const weg = await p.waitForFunction(() => +document.getElementById('jarvisZeichen').getAttribute('data-zeichen') === 0, null, { timeout: 9000 }).then(() => true, () => false);
+    pruefe('… und sind danach wieder weg (nichts bleibt liegen)', weg);
+    pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await zu(p);
+  }
+  {
+    const p = await oeffne(b, 390, 844, { wenigBewegung: true, vorher: () => { localStorage.setItem('kf_jv_brief', new Date().toLocaleDateString('sv-SE')); } });
+    await p.click(await jvKnopf(p)); await p.waitForTimeout(400);
+    await p.evaluate(() => { window.__antwort = window.__antwort || {}; window.__antwort.gehirnAktion = () => new Promise(r => setTimeout(() => r({ data: { art: 'frage', antwort: 'Ok.', abgedeckt: true } }), 800)); });
+    await p.fill('#jarvisFeld', 'Wie wasche ich die Westen?'); await p.click('#jarvisSenden'); await p.waitForTimeout(500);
+    pruefe('„weniger Bewegung": keine fliegenden Buchstaben', (await p.evaluate(() => +document.getElementById('jarvisZeichen').getAttribute('data-zeichen'))) === 0);
+    await zu(p);
+  }
+
   console.log('\n── 13 Trefferflächen ──');
   for (const [w, h] of [[320, 640], [390, 844], [430, 932], [820, 1180], [1280, 800], [1440, 900], [1920, 1080]]) {
     for (const dichte of ['normal', 'kompakt']) {
@@ -1155,6 +1254,13 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
         await p.click('#jarvisGespraecheBtn'); await p.waitForTimeout(200);
         zuKlein = zuKlein.concat(await ids('#jarvisGespraeche button'));
         await p.click('#jarvisGespraecheBtn'); await p.waitForTimeout(150);
+        // Mail-Entwurf und Studio-Rückfrage (20.10.2026)
+        await antwort(p, { gehirnAktion: { data: { vorschlag: { typ: 'mail', an: 'a@b.de', betreff: 'B', text: 'T' } } } });
+        await p.fill('#jarvisFeld', 'schreib a@b.de eine mail'); await p.click('#jarvisSenden'); await p.waitForTimeout(700);
+        if (!(await p.$('#jarvisVerlauf [data-gmail]'))) zuKlein.push('Mail-Entwurf fehlt');
+        zuKlein = zuKlein.concat(await ids('#jarvisVerlauf [data-gmail], #jarvisVerlauf [data-gmailfeld]'));
+        await p.fill('#jarvisFeld', 'Übergabe: Test'); await p.click('#jarvisSenden'); await p.waitForTimeout(500);
+        zuKlein = zuKlein.concat(await ids('#jarvisVerlauf [data-grf]'));
         const jvBreit = await p.evaluate(() => document.getElementById('jarvis').scrollWidth > innerWidth + 1);
         if (jvBreit) zuKlein.push('Fenster ragt seitlich hinaus');
       } else if (h > 640 || w >= 821) zuKlein.push('„Gehirn" nicht erreichbar');

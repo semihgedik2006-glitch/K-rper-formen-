@@ -1834,6 +1834,11 @@ service cloud.firestore {
     match /gehirnErinnerungen/{id} {
       allow read, write: if false;
     }
+    // Formi per Mail (20.10.2026): der Leitungs-Code als Hash. Nur die
+    // Functions formiCodeSetzen und formiMail lesen und schreiben.
+    match /gehirnGeheim/{id} {
+      allow read, write: if false;
+    }
 
     match /pushTokens/{token} {
       allow read: if false;
@@ -2592,6 +2597,11 @@ service cloud.firestore {
            Zeichen. */
         // ── Erinnerungen des Studio-Gehirns (20.10.2026) — wie flach: nur der Server ──
         match /gehirnErinnerungen/{id} {
+          allow read, write: if false;
+        }
+        // Formi per Mail (20.10.2026): der Leitungs-Code als Hash. Nur die
+        // Functions formiCodeSetzen und formiMail lesen und schreiben.
+        match /gehirnGeheim/{id} {
           allow read, write: if false;
         }
 
