@@ -658,7 +658,16 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
      viel mehr motion … lockereren ton … mini interaktionen und chat
      verläufe speicherung" — und auf die Ideenliste: „mach alles davon". */
   for (const [w, h] of [[390, 844], [1440, 900]]) {
-    const p = await oeffne(b, w, h);
+    /* Die Wochen-Sicherung des Chefs startet 4 s nach dem Anmelden und
+       schreibt nach archives/. Auf einem langsamen Rechner fiel sie mitten
+       in die Zählung der Schreibvorgänge unten (gefunden 20.10.2026). Sie
+       gehört nicht zu diesem Test — also gilt sie hier als heute erledigt. */
+    const p = await oeffne(b, w, h, { vorher: () => {
+      const d = new Date(); const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      const tag = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - tag);
+      const kw = Math.ceil(((t - new Date(Date.UTC(t.getUTCFullYear(), 0, 1))) / 86400000 + 1) / 7);
+      localStorage.setItem('kf_arch_' + t.getUTCFullYear() + '-KW' + String(kw).padStart(2, '0'), String(Date.now()));
+    } });
     await p.keyboard.press('j'); await p.waitForTimeout(500);
     pruefe(w + ' px: Taste J öffnet Jarvis', await sichtbar(p, '#jarvis'));
     await p.fill('#jarvisFeld', 'öffne den putzplan'); await p.click('#jarvisSenden'); await p.waitForTimeout(900);
