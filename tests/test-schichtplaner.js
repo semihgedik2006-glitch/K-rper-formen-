@@ -130,12 +130,47 @@ async function messen(p, wer, liste) {
       studio: document.getElementById('spStudio').selectedOptions[0] && document.getElementById('spStudio').selectedOptions[0].textContent,
       los: document.getElementById('spLos').textContent };
   });
-  pruefe('Zahlen: verteilt, Lücken, Rückfragen', erg.z.length === 3 && erg.z[0] > 100, erg.z);
+  pruefe('Zahlen: verteilt, Lücken, Rückfragen, Studios ohne offene Punkte', erg.z.length === 4 && erg.z[0] > 100, erg.z);
   pruefe('gespeichert, mit gemessener Dauer', /Fertig in \d+,\d s · gespeichert/.test(erg.stand), erg.stand);
   pruefe('„Zu klären" listet Punkte, wenn es Lücken oder Rückfragen gibt', (erg.z[1] + erg.z[2] === 0) || erg.punkte > 0, erg.punkte);
   pruefe('der Plan zeigt einen ganzen Monat', erg.zeilen >= 28 && erg.zeilen <= 31, erg.zeilen);
-  pruefe('vorn steht das Studio mit den meisten offenen Punkten', !erg.z[1] || /zu klären/.test(erg.studio || ''), erg.studio);
+  pruefe('vorn steht das Studio mit den meisten offenen Punkten', !erg.z[1] || /Lücke/.test(erg.studio || ''), erg.studio);
   pruefe('danach heisst der Knopf „Neu erstellen"', erg.los === 'Neu erstellen', erg.los);
+  /* Runde 168: „visuell schöner und organisierter". Der Plan steht in
+     Wochen, die Studios als Kacheln mit Zustand, „Zu klären" gilt nur
+     für das gewählte Studio. */
+  const aufbau = await p.evaluate(() => {
+    const kacheln = [...document.querySelectorAll('#spKacheln .spl-kachel')];
+    const an = kacheln.filter((k) => k.classList.contains('an'));
+    const sk = document.getElementById('spStudio').value;
+    const punkte = [...document.querySelectorAll('#spKlaeren [data-sppunkt]')].map((b) => b.getAttribute('data-sppunkt').split('|')[1]);
+    const wochen = [...document.querySelectorAll('#spTabelle .spl-woche h4')].map((h) => h.textContent);
+    const zustand = kacheln.map((k) => k.querySelector('small').textContent);
+    return { kacheln: kacheln.length, an: an.length, anIst: an[0] && an[0].getAttribute('data-spkachel') === sk,
+      punkteNurHier: punkte.every((x) => x === sk), wochen, zustand,
+      titel: document.getElementById('spPlanTitel').textContent };
+  });
+  pruefe('am Rechner: eine Kachel je Studio mit Schichten (' + aufbau.kacheln + ')', aufbau.kacheln >= 10, aufbau.kacheln);
+  pruefe('genau eine Kachel gewählt, und es ist das Studio des Plans', aufbau.an === 1 && aufbau.anIst);
+  pruefe('jede Kachel sagt ihren Zustand (fertig / Lücken / Rückfragen)',
+    aufbau.zustand.every((t) => /fertig|Lücke|Rückfr/.test(t)), aufbau.zustand.join(' | '));
+  pruefe('„Zu klären" zeigt nur das gewählte Studio', aufbau.punkteNurHier);
+  pruefe('der Plan steht in Kalenderwochen (' + aufbau.wochen.length + ')', aufbau.wochen.length >= 4 && aufbau.wochen.length <= 6 && aufbau.wochen.every((w) => /^KW \d+ · /.test(w)), aufbau.wochen.join(' | '));
+  pruefe('der Titel nennt das Studio', /^Plan · \S/.test(aufbau.titel), aufbau.titel);
+  const wechsel = await p.evaluate(async () => {
+    const k = [...document.querySelectorAll('#spKacheln .spl-kachel')].find((x) => !x.classList.contains('an'));
+    const ziel = k.getAttribute('data-spkachel');
+    k.click(); await new Promise((r) => setTimeout(r, 200));
+    return { ziel, sel: document.getElementById('spStudio').value,
+      an: document.querySelector('#spKacheln .spl-kachel.an').getAttribute('data-spkachel'),
+      punkte: [...document.querySelectorAll('#spKlaeren [data-sppunkt]')].every((b) => b.getAttribute('data-sppunkt').split('|')[1] === ziel) };
+  });
+  pruefe('eine andere Kachel antippen wechselt Plan, Auswahl und „Zu klären"', wechsel.sel === wechsel.ziel && wechsel.an === wechsel.ziel && wechsel.punkte, JSON.stringify(wechsel));
+  // zurück zum Studio mit den meisten offenen Punkten, damit die Prüfung darunter eine Lücke findet
+  await p.evaluate((sk) => { const k = document.querySelector('#spKacheln [data-spkachel="' + sk + '"]'); if (k) k.click(); }, await p.evaluate(() => {
+    const o = [...document.querySelectorAll('#spKacheln .spl-kachel')].map((k) => ({ id: k.getAttribute('data-spkachel'), n: +((k.querySelector('small').textContent.match(/(\d+) Lücke/) || [0, 0])[1]) }));
+    o.sort((a, b) => b.n - a.n); return o[0].id; }));
+  await p.waitForTimeout(200);
 
   // 3. Umbesetzen über „Zu klären"
   const vorher = erg.z[1];
@@ -213,7 +248,7 @@ async function messen(p, wer, liste) {
   pruefe('nach dem Einlesen: in Nippes lässt sich umbesetzen (' + gewaehlt + ' Personen zur Wahl)', gewaehlt >= 3, gewaehlt);
   await p.waitForTimeout(300);
   await messen(p, 'Chef', ['#spMonatZurueck', '#spMonatVor', '#spLos', '[data-spdatei]', '#spSchritte a[download]',
-    '#spStudio', '#spVeroeffentlichen', '#spLogx', '#spTabelle .spl-zelle', '#spWahl .spl-person', '.spl-team summary']);
+    '#spKacheln .spl-kachel, #spStudio', '#spVeroeffentlichen', '#spLogx', '#spTabelle .spl-zelle', '#spWahl .spl-person', '.spl-team summary']);
   await p.context().close();
 
   console.log('\n── Studioleitung ──');

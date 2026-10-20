@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-jnQfj2tvJy3keb9bEasP8izHXDHb6Tq4alDRL1/dgWg='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-PhwutqVd9BUgr+bpAsvKA0ZiRQYKSiSzcCF0i9i4joc='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3406,103 +3406,152 @@ button.ich-zeile:active{opacity:.7}
 .kz-zeile label{display:block;font-size:var(--t-2xs);color:var(--text-3);margin-bottom:var(--s2)}
 .kz-zeile input{width:100%;min-height:44px;text-align:right;font-variant-numeric:tabular-nums}
 .kz-speichern{width:100%;min-height:48px;margin-top:var(--s8)}
-/* ══ Schichtplaner (Runde 156) ══════════════════════════════════════
-   Wenige, grosse Dinge: oben Monat, drei Schritte, ein Knopf. Rot und
-   Bernstein nur für das, was sie melden — Lücke und Rückfrage. */
-.spl-start{display:flex;flex-direction:column;gap:var(--s12)}
-.spl-monat{display:flex;align-items:center;justify-content:space-between;gap:var(--s8)}
-.spl-monat b{font-family:var(--font-head);font-size:var(--t-lg);font-weight:800;text-align:center;flex:1}
-.spl-schritte{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--s8)}
-.spl-schritt{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:var(--s10);align-items:center;
-  padding:var(--s8) 0;border-top:1px solid var(--line)}
-.spl-schritt:first-child{border-top:none}
-.spl-nr{width:28px;height:28px;border-radius:var(--r-rund);display:grid;place-items:center;
-  font-weight:800;font-size:var(--t-xs);background:var(--auf-2);color:var(--text-2)}
-.spl-schritt.fertig .spl-nr{background:var(--f-ok-leise);color:var(--ok-tx)}
-.spl-schritt b{display:block;font-weight:700}
-.spl-schritt small{display:block;color:var(--text-3);font-size:var(--t-xs);overflow-wrap:anywhere}
-.spl-schritt .btn{min-height:44px;white-space:nowrap}
-.spl-knoepfe{display:flex;gap:var(--s6);flex-wrap:wrap;justify-content:flex-end}
+/* ══ Schichtplaner (Runde 156, Aufbau neu in Runde 168) ═════════════
+   Wenige, grosse Dinge. Farbe geht von der linken Kante des Kopfes aus
+   und läuft aus (wie überall in der App). Rot und Bernstein NUR für
+   Lücke und Rückfrage — sonst trägt der Plan Personenfarben aus dem
+   Profil, gedämpft wie die Avatare. */
+.spl{display:flex;flex-direction:column;gap:var(--s16)}
+.spl-start{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:var(--s16);
+  background:radial-gradient(120% 160% at 0% 0%, rgba(var(--akz-rgb),.16), transparent 55%),var(--bg-2)}
+.spl-kopf{display:flex;flex-direction:column;gap:var(--s12)}
+.spl-monat{display:flex;align-items:center;gap:var(--s8)}
+.spl-monat-text{flex:1;text-align:center;min-width:0}
+.spl-monat-text small{display:block;font-size:var(--t-2xs);font-weight:700;letter-spacing:var(--ls-m);
+  text-transform:uppercase;color:var(--text-3)}
+.spl-monat-text b{display:block;font-family:var(--font-head);font-size:var(--t-xl);font-weight:800;line-height:var(--lh-eng)}
 .spl-los{width:100%;min-height:52px;font-size:var(--t-md)}
+.spl-schritte{list-style:none;margin:0;padding:0;display:grid;gap:var(--s8)}
+.spl-schritt{display:grid;grid-template-columns:32px minmax(0,1fr);gap:var(--s4) var(--s10);align-items:start;
+  background:var(--auf-1);border-radius:var(--r-md);padding:var(--s10) var(--s12)}
+.spl-nr{grid-row:span 2;width:32px;height:32px;border-radius:var(--r-rund);display:grid;place-items:center;
+  font-weight:800;font-size:var(--t-sm);background:var(--auf-2);color:var(--text-2)}
+.spl-schritt.fertig .spl-nr{background:var(--f-ok);color:var(--ok-tx)}
+.spl-schritt b{display:block;font-weight:700}
+.spl-schritt small{display:block;color:var(--text-2);font-size:var(--t-xs);line-height:var(--lh);overflow-wrap:anywhere}
+.spl-knoepfe{grid-column:2;display:flex;gap:var(--s6);flex-wrap:wrap;margin-top:var(--s4)}
+.spl-knoepfe .btn{min-height:44px;white-space:nowrap}
 .spl-stand{margin:0;font-size:var(--t-xs);color:var(--text-3);min-height:1em}
+.spl-stand:empty{display:none}
 .spl-stand.fehler{color:var(--danger-tx)}
-.spl-ergebnis{display:flex;flex-direction:column;gap:var(--s16);margin-top:var(--s16)}
-.spl-zahlen{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s8)}
-.spl-zahl{background:var(--bg-2);border-radius:var(--r-md);padding:var(--s10) var(--s8);text-align:center;box-shadow:var(--e1)}
-.spl-zahl b{display:block;font-family:var(--font-head);font-size:var(--t-xl);font-weight:800;font-variant-numeric:tabular-nums}
-.spl-zahl span{font-size:var(--t-2xs);color:var(--text-3);font-weight:600}
+@media (min-width:820px){
+  .spl-kopf{flex-direction:row;align-items:center;justify-content:space-between}
+  .spl-monat{flex:0 1 360px}
+  .spl-los{width:auto;min-width:260px}
+  .spl-schritte{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+/* Die Zahlen: vier Kacheln, die Zahl gross. Gefärbt nur, wenn sie etwas meldet. */
+.spl-ergebnis{display:flex;flex-direction:column;gap:var(--s16)}
+.spl-zahlen{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s8)}
+@media (min-width:820px){ .spl-zahlen{grid-template-columns:repeat(4,minmax(0,1fr))} }
+.spl-zahl{background:var(--bg-2);border-radius:var(--r-md);padding:var(--s12);box-shadow:var(--e1);
+  display:flex;flex-direction:column;gap:var(--s2)}
+.spl-zahl b{font-family:var(--font-head);font-size:var(--t-2xl);font-weight:800;line-height:var(--lh-1);font-variant-numeric:tabular-nums}
+.spl-zahl span{font-size:var(--t-xs);color:var(--text-2);font-weight:600}
+.spl-zahl.bad{box-shadow:var(--e1),inset 3px 0 0 var(--danger)}
 .spl-zahl.bad b{color:var(--danger-tx)}
+.spl-zahl.warn{box-shadow:var(--e1),inset 3px 0 0 var(--warm)}
 .spl-zahl.warn b{color:var(--warm-tx)}
+.spl-zahl.ok b{color:var(--ok-tx)}
+.spl-sec-kopf{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s8);flex-wrap:wrap;margin-bottom:var(--s10)}
+.spl-sec-kopf h3{margin:0}
+.spl-sec-hinweis{font-size:var(--t-xs);color:var(--text-3)}
+/* Studios: am Handy eine Auswahl, ab 820 px Kacheln mit Zustand. */
+.spl-kacheln{display:none}
+@media (min-width:820px){
+  .spl-studio-wahl{display:none}
+  .spl-kacheln{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--s8)}
+}
+.spl-kachel{display:flex;flex-direction:column;align-items:flex-start;gap:var(--s2);min-height:56px;
+  padding:var(--s8) var(--s12);border-radius:var(--r-md);background:var(--tipp-1);border:1px solid var(--tipp-kante);
+  color:var(--text);font:inherit;text-align:left;cursor:pointer;box-shadow:var(--e1);
+  transition:transform .2s var(--spring),background .2s}
+.spl-kachel:hover{background:var(--tipp-2)}
+.spl-kachel:active{transform:scale(.97)}
+.spl-kachel b{font-weight:700;font-size:var(--t-sm);overflow-wrap:anywhere}
+.spl-kachel small{font-size:var(--t-2xs);font-weight:700;color:var(--text-3)}
+.spl-kachel small.bad{color:var(--danger-tx)}
+.spl-kachel small.warn{color:var(--warm-tx)}
+.spl-kachel small.ok{color:var(--ok-tx)}
+.spl-kachel.an{border-color:var(--accent);background:rgba(var(--akz-rgb),.16);box-shadow:var(--e2)}
+/* Ein Studio: links was zu klären ist, rechts sein Plan. */
 .spl-layout{display:grid;gap:var(--s16);align-items:start}
 .spl-seite{display:flex;flex-direction:column;gap:var(--s16);min-width:0}
-/* Am Rechner steht der Kopf in EINER Zeile: Monat · drei Schritte ·
-   Knopf. Untereinander zöge er sich sonst über die halbe Höhe, und der
-   Plan finge erst unter dem Bildrand an. */
 @media (min-width:1100px){
-  .spl-start{display:grid;grid-template-columns:240px minmax(0,1fr) 260px;align-items:center;column-gap:var(--s24)}
-  .spl-schritte{flex-direction:row;gap:var(--s16)}
-  .spl-schritt{flex:1 1 0;border-top:none;border-left:1px solid var(--line);padding:0 0 0 var(--s16);
-    grid-template-columns:28px minmax(0,1fr);grid-template-rows:auto auto}
-  .spl-schritt .spl-knoepfe{grid-column:2;justify-content:flex-start;margin-top:var(--s6)}
-  .spl-stand{grid-column:1 / -1}
-  .spl-zelle{white-space:nowrap}
-  .spl-layout{grid-template-columns:380px minmax(0,1fr)}
+  .spl.chef-pane{max-width:1560px}
+  .spl-layout{grid-template-columns:360px minmax(0,1fr)}
   /* Nicht die ganze Spalte haftet, nur die Auswahl: eine haftende
-     Spalte, die höher ist als das Fenster, lässt ihr unteres Ende nie
-     sehen — „Veröffentlichen" war bei 1280 × 800 nicht zu erreichen
-     (gemessen, test-schichtplaner). Die Spalte reicht so tief wie der
-     Plan, und die Auswahl bleibt beim Herunterrollen oben stehen. */
+     Spalte, höher als das Fenster, lässt ihr Ende nie sehen —
+     „Veröffentlichen" war bei 1280 × 800 nicht zu erreichen. */
   .spl-seite{align-self:stretch}
-  .spl-wahl{position:sticky;top:var(--s8);z-index:1}
-  .spl.chef-pane{max-width:1500px}
+  .spl-wahl{position:sticky;top:var(--s8);z-index:1;box-shadow:var(--e2)}
 }
 .spl-klaeren h3,.spl-aktionen h3,.spl-wahl h3{margin-top:0}
-.spl-punkt{display:block;width:100%;text-align:left;background:none;border:none;border-left:3px solid var(--f-bad);
-  padding:var(--s8) var(--s10);margin:0 0 var(--s8);border-radius:0 var(--r-sm) var(--r-sm) 0;
-  color:var(--text);font:inherit;cursor:pointer;min-height:44px}
-.spl-punkt.warn{border-left-color:var(--f-warn)}
-.spl-punkt:hover{background:var(--auf-1)}
-.spl-punkt b{display:block;font-weight:700}
+.spl-punkt{display:block;width:100%;text-align:left;background:var(--f-bad-leise);border:none;
+  box-shadow:inset 3px 0 0 var(--danger);padding:var(--s8) var(--s12);margin:0 0 var(--s6);
+  border-radius:var(--r-sm);color:var(--text);font:inherit;cursor:pointer;min-height:44px}
+.spl-punkt.warn{background:var(--f-warn-leise);box-shadow:inset 3px 0 0 var(--warm)}
+.spl-punkt:hover{filter:brightness(1.06)}
+.spl-punkt b{display:block;font-weight:700;font-size:var(--t-sm)}
 .spl-punkt small{display:block;color:var(--text-2);font-size:var(--t-xs);line-height:var(--lh)}
-.spl-punkt.an{background:var(--auf-2)}
-.spl-alle-ok{display:flex;gap:var(--s8);align-items:center;color:var(--ok-tx);font-weight:600}
+.spl-punkt.an{outline:2px solid var(--accent);outline-offset:1px}
+.spl-alle-ok{display:flex;gap:var(--s8);align-items:center;color:var(--ok-tx);font-weight:600;margin:0}
+.spl-alle-ok svg{width:20px;height:20px;flex:0 0 auto}
 .spl-mehr{width:100%}
 .spl-aktionen{display:flex;flex-direction:column;gap:var(--s8)}
 .spl-aktionen .btn{width:100%;min-height:48px}
 .spl-aktionen .hint{margin:0}
 .spl-wahl-liste{display:flex;flex-direction:column;gap:var(--s6)}
-.spl-person{display:flex;align-items:center;justify-content:space-between;gap:var(--s8);width:100%;min-height:44px;
-  padding:var(--s6) var(--s10);border:1.5px solid var(--line-2);border-radius:var(--r-sm);background:var(--bg-2);
+.spl-person{display:flex;align-items:center;gap:var(--s8);width:100%;min-height:44px;
+  padding:var(--s6) var(--s10);border:1px solid var(--tipp-kante);border-radius:var(--r-sm);background:var(--tipp-1);
   color:var(--text);font:inherit;text-align:left;cursor:pointer}
-.spl-person:hover:not(:disabled){border-color:var(--accent)}
-.spl-person:disabled{opacity:.55;cursor:not-allowed}
+.spl-person:hover:not(:disabled){background:var(--tipp-2)}
+.spl-person:disabled{background:var(--auf-1);border-color:transparent;color:var(--text-3);cursor:not-allowed}
+.spl-person span{flex:1;min-width:0}
 .spl-person small{color:var(--text-3);font-size:var(--t-xs);text-align:right}
-.spl-person.jetzt{border-color:var(--accent);background:rgba(var(--akz-rgb),.10)}
-.spl-plan-kopf{display:flex;gap:var(--s8);align-items:center;margin-bottom:var(--s10)}
-.spl-plan-kopf select{max-width:360px}
-.spl-tabelle-huelle{overflow-x:auto}
+.spl-person.jetzt{border-color:var(--accent);background:rgba(var(--akz-rgb),.12)}
+/* Personenzeichen: Farbe aus dem Profil (avatarFarbe), sonst neutral. */
+.spl-ini{flex:0 0 auto;width:22px;height:22px;border-radius:var(--r-rund);display:inline-grid;place-items:center;
+  font-style:normal;font-size:var(--t-2xs);font-weight:800;background:var(--auf-3);color:var(--text)}
+/* Der Plan in Wochen — sieben Zeilen sind ein Blick. */
+.spl-legende{display:flex;align-items:center;gap:var(--s6);font-size:var(--t-2xs);color:var(--text-3);font-weight:600}
+.spl-legende i{display:inline-block;width:12px;height:12px;border-radius:var(--r-xs)}
+.spl-leg-rueck{background:var(--f-warn);box-shadow:inset 3px 0 0 var(--warm)}
+.spl-leg-luecke{border:1.5px dashed var(--danger);margin-left:var(--s6)}
+.spl-wochen{display:flex;flex-direction:column;gap:var(--s16)}
+.spl-woche h4{margin:0 0 var(--s6);font-size:var(--t-xs);font-weight:800;letter-spacing:var(--ls-m);
+  text-transform:uppercase;color:var(--text-3)}
+.spl-woche-huelle{overflow-x:auto;border-radius:var(--r-md);background:var(--auf-1)}
 .spl-tab{width:100%;border-collapse:collapse;font-size:var(--t-sm)}
-.spl-tab th{font-size:var(--t-2xs);font-weight:700;color:var(--text-3);text-align:left;padding:var(--s6) var(--s8);
-  text-transform:uppercase;letter-spacing:var(--ls-m);border-bottom:1px solid var(--line-2)}
-.spl-tab td{padding:var(--s4) var(--s6);border-bottom:1px solid var(--line);vertical-align:top}
-.spl-tab td.spl-tag{white-space:nowrap;font-weight:600;padding-left:var(--s8);font-variant-numeric:tabular-nums}
-.spl-tab td.spl-tag small{display:block;font-weight:400;color:var(--text-3);font-size:var(--t-2xs)}
+.spl-tab th{font-size:var(--t-2xs);font-weight:700;color:var(--text-3);text-align:left;padding:var(--s8);
+  border-bottom:1px solid var(--line)}
+.spl-tab th span{font-weight:500;display:block}
+.spl-tab td{padding:var(--s4);border-bottom:1px solid var(--line);vertical-align:middle}
+.spl-tab tr:last-child td{border-bottom:none}
+.spl-tab td.spl-tag{white-space:nowrap;font-weight:700;padding-left:var(--s10);width:1%;font-variant-numeric:tabular-nums}
+.spl-tab td.spl-tag small{display:block;font-weight:500;color:var(--text-3);font-size:var(--t-2xs)}
 .spl-tab tr.we td.spl-tag{color:var(--accent-d)}
-.spl-tab tr.heute td{background:rgba(var(--akz-rgb),.06)}
-.spl-zelle{display:block;width:100%;min-height:44px;text-align:left;background:none;border:1px solid transparent;
-  border-radius:var(--r-sm);padding:var(--s4) var(--s8);color:var(--text);font:inherit;cursor:pointer}
-.spl-zelle:hover{border-color:var(--line-2);background:var(--auf-1)}
-.spl-zelle.luecke{border:1.5px dashed var(--f-bad);color:var(--danger-tx);font-weight:700}
-.spl-zelle.rueck{box-shadow:inset 3px 0 0 var(--f-warn)}
-.spl-zelle.an{border-color:var(--accent);background:rgba(var(--akz-rgb),.10)}
-.spl-zelle small{display:block;color:var(--text-3);font-size:var(--t-2xs)}
-.spl-team{margin-top:var(--s12)}
+.spl-tab tr.heute td{background:rgba(var(--akz-rgb),.08)}
+.spl-zelle{display:flex;align-items:center;gap:var(--s6);width:100%;min-height:44px;text-align:left;
+  background:var(--bg-2);border:1px solid transparent;border-radius:var(--r-sm);padding:var(--s4) var(--s8);
+  color:var(--text);font:inherit;font-size:var(--t-sm);cursor:pointer;box-shadow:var(--e1)}
+.spl-zelle + .spl-zelle{margin-top:var(--s4)}
+.spl-zelle span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.spl-zelle:hover{background:var(--tipp-1);border-color:var(--tipp-kante)}
+.spl-zelle.rueck{background:var(--f-warn-leise);box-shadow:var(--e1),inset 3px 0 0 var(--warm)}
+.spl-zelle.luecke{background:var(--f-bad-leise);border:1.5px dashed var(--danger);color:var(--danger-tx);
+  font-weight:700;box-shadow:none;justify-content:center}
+.spl-zelle.an{border-color:var(--accent);box-shadow:0 0 0 2px rgba(var(--akz-rgb),.35)}
+.spl-team{margin-top:var(--s16)}
 .spl-team summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:700}
-.spl-team table{width:100%;border-collapse:collapse;font-size:var(--t-sm);font-variant-numeric:tabular-nums}
-.spl-team td,.spl-team th{padding:var(--s6) var(--s8);border-bottom:1px solid var(--line);text-align:right}
-.spl-team td:first-child,.spl-team th:first-child{text-align:left}
-.spl-team th{font-size:var(--t-2xs);color:var(--text-3);font-weight:700}
-.spl-team .unter{color:var(--warm-tx);font-weight:700}
+.spl-balken{display:grid;grid-template-columns:minmax(0,10em) minmax(0,1fr) auto;gap:var(--s6) var(--s10);
+  align-items:center;font-size:var(--t-sm)}
+.spl-balken .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.spl-balken .n small{display:block;color:var(--text-3);font-size:var(--t-2xs)}
+.spl-balken .s{height:8px;border-radius:var(--r-pille);background:var(--auf-2);overflow:hidden}
+.spl-balken .s i{display:block;height:100%;border-radius:var(--r-pille);background:var(--accent)}
+.spl-balken .z{font-variant-numeric:tabular-nums;color:var(--text-2);font-size:var(--t-xs);text-align:right}
+.spl-balken .z.unter{color:var(--warm-tx);font-weight:700}
 /* Wünsche der Mitarbeiter */
 .spl-w-label{margin:var(--s12) 0 var(--s6);font-weight:700;font-size:var(--t-sm)}
 /* Kein Kalenderraster mit sieben festen Spalten: bei 320 px wären das
@@ -10117,52 +10166,66 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                Am Rechner: Tabelle links, Eintragen rechts. Am Handy
                untereinander, die Tabelle zeigt dann nur den letzten
                Monat und den Verlauf. -->
-          <!-- ══ SCHICHTPLANER (Runde 156) ══════════════════════════════
+          <!-- ══ SCHICHTPLANER (Runde 156, Aufbau neu in Runde 168) ════════
                Aus dem Betrieb: „das kostet sie mehrere Stunden an
-               Aufwand immer wieder". Aufbau nach einer Regel: oben
-               steht, was fehlt, darunter EIN Knopf. Danach nur das, was
-               ein Mensch entscheiden muss (Zu klären), der Plan selbst
-               zum Nachsehen. Am Rechner stehen beide nebeneinander. -->
+               Aufwand immer wieder" und „kannst du das etwas visuell
+               schöner und organisierter erstellen". Die Reihenfolge ist
+               die der Arbeit: 1. vorbereiten und erstellen, 2. Überblick
+               über alle Studios, 3. EIN Studio: was zu klären ist, daneben
+               sein Plan in Wochen. Am Rechner stehen 3a und 3b
+               nebeneinander. -->
           <div class="chef-pane spl" data-cpane="schichtplaner" style="display:none">
-            <div class="card spl-start">
-              <div class="spl-monat" role="group" aria-label="Monat">
-                <button type="button" class="btn btn-ghost btn-sm wochen-pfeil" id="spMonatZurueck" aria-label="Voriger Monat">‹</button>
-                <b id="spMonatName">–</b>
-                <button type="button" class="btn btn-ghost btn-sm wochen-pfeil" id="spMonatVor" aria-label="Nächster Monat">›</button>
+            <section class="card spl-start">
+              <div class="spl-kopf">
+                <div class="spl-monat" role="group" aria-label="Monat">
+                  <button type="button" class="btn btn-ghost btn-sm wochen-pfeil" id="spMonatZurueck" aria-label="Voriger Monat">‹</button>
+                  <div class="spl-monat-text"><small>Schichtplan für</small><b id="spMonatName">–</b></div>
+                  <button type="button" class="btn btn-ghost btn-sm wochen-pfeil" id="spMonatVor" aria-label="Nächster Monat">›</button>
+                </div>
+                <button type="button" class="btn btn-primary spl-los" id="spLos">Plan erstellen</button>
               </div>
               <ol class="spl-schritte" id="spSchritte"></ol>
-              <button type="button" class="btn btn-primary spl-los" id="spLos">Plan erstellen</button>
               <p class="spl-stand" id="spStand" role="status"></p>
               <input type="file" id="spDatei" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden />
-            </div>
+            </section>
             <div class="spl-ergebnis" id="spErgebnis" hidden>
               <div class="spl-zahlen" id="spZahlen"></div>
+              <section class="card spl-studios">
+                <div class="spl-sec-kopf">
+                  <h3 data-ikon="gebaeude">Studios</h3>
+                  <span class="spl-sec-hinweis">Antippen öffnet den Plan des Studios</span>
+                </div>
+                <label class="nur-vorlesen" for="spStudio">Studio</label>
+                <select class="inp spl-studio-wahl" id="spStudio"></select>
+                <div class="spl-kacheln" id="spKacheln"></div>
+              </section>
               <div class="spl-layout">
                 <div class="spl-seite">
-                  <div class="card spl-klaeren" id="spKlaeren"></div>
-                  <div class="card spl-aktionen">
+                  <section class="card spl-klaeren" id="spKlaeren"></section>
+                  <section class="card spl-aktionen">
                     <h3 data-ikon="hakenKreis">Fertig?</h3>
                     <button type="button" class="btn btn-primary" id="spVeroeffentlichen">Im Team-Schichtplan veröffentlichen</button>
                     <button type="button" class="btn btn-ghost" id="spLogx">Für LogX kopieren</button>
                     <p class="hint" id="spAktionHinweis">Kopiert eine Tabelle (Datum, Studio, Schicht, Zeit, Name) – in Excel oder LogX einfügen.</p>
-                  </div>
+                  </section>
                   <!-- Die Auswahl steht ZULETZT: sie haftet am Rechner beim
                        Herunterrollen oben, und ein haftendes Element legt
-                       sich über alles, was nach ihm kommt. „Veröffentlichen"
-                       lag so bei 1280–1920 px darunter (gemessen). -->
-                  <div class="card spl-wahl" id="spWahl" hidden></div>
+                       sich über alles, was nach ihm kommt (gemessen). -->
+                  <section class="card spl-wahl" id="spWahl" hidden></section>
                 </div>
-                <div class="card spl-plan">
-                  <div class="spl-plan-kopf">
-                    <label class="nur-vorlesen" for="spStudio">Studio</label>
-                    <select class="inp" id="spStudio"></select>
+                <section class="card spl-plan">
+                  <div class="spl-sec-kopf">
+                    <h3 data-ikon="kalender" id="spPlanTitel">Plan</h3>
+                    <span class="spl-legende" aria-hidden="true">
+                      <i class="spl-leg-rueck"></i>Rückfrage <i class="spl-leg-luecke"></i>Lücke
+                    </span>
                   </div>
-                  <div class="spl-tabelle-huelle" id="spTabelle"></div>
+                  <div class="spl-wochen" id="spTabelle"></div>
                   <details class="spl-team">
-                    <summary>Stunden je Person</summary>
+                    <summary>Stunden im Studio</summary>
                     <div id="spTeam"></div>
                   </details>
-                </div>
+                </section>
               </div>
             </div>
           </div>
@@ -19719,6 +19782,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-20-schichtplaner-aufbau', datum:'20.10.2026', titel:'Schichtplaner aufgeräumt; Sprachnachrichten laufen wieder richtig', wo:'chef:schichtplaner', punkte:[
+    'Der Schichtplaner (Verwaltung → Schichtplaner) ist neu geordnet: oben Monat, die drei Schritte und „Plan erstellen"; darunter vier Zahlen und alle Studios als Kacheln – jede sagt, ob sie fertig ist oder wie viele Lücken und Rückfragen offen sind.',
+    'Eine Kachel antippen zeigt links nur das, was in DIESEM Studio zu klären ist, und rechts seinen Plan Woche für Woche. Jede Person trägt ihr Zeichen in ihrer Farbe; offene Schichten stehen als „＋ besetzen" da.',
+    'Unter dem Plan: „Stunden im Studio" als Balken – wer unter seinem Soll bleibt, fällt sofort auf.',
+    'Behoben: Seit gestern zeigten Sprachnachrichten im Chat beim Abspielen weder Fortschritt noch den Wechsel zwischen Abspielen und Anhalten. Das geht wieder.' ] },
   { id:'2026-10-20-formi-mail', datum:'20.10.2026', titel:'Formi: dein Studio, schlauer bei Rückfragen, Mails, Buchstaben im Loch', wo:'home', punkte:[
     'Unter „Persönlichkeit" legst du jetzt „Mein Studio" fest. Nennst du kein Studio, nimmt Formi deins – und fragt nach, wenn du keins gewählt hast, statt zu raten.',
     'Formi lernt aus deinen Richtigstellungen: einmal „ich meinte Hürth" – beim nächsten Mal weiss Formi, wo der Briefkasten ist.',
@@ -37128,7 +37196,7 @@ function spOeffnen(){
   spBinden();
   /* Erst die Rechnung, dann die Daten: ohne sie lässt sich ein
      gespeicherter Plan zwar zeigen, aber nicht umbesetzen. */
-  spLib().then(spLaden, function(e){ spStand(e.message, true); });
+  spLib().then(spLaden, function(e){ spMeldung(e.message, true); });
 }
 function spBinden(){
   if(_sp.gebunden) return; _sp.gebunden=true;
@@ -37139,7 +37207,7 @@ function spBinden(){
     var f=this.files && this.files[0]; this.value='';
     if(f) spEinlesen(f);
   });
-  $('spStudio').addEventListener('change', function(){ _sp.studio=this.value; _sp.wahl=null; spPlanZeichnen(); spWahlZeichnen(); });
+  $('spStudio').addEventListener('change', function(){ spStudioWaehlen(this.value); });
   $('spVeroeffentlichen').addEventListener('click', function(){ spVeroeffentlichen(this); });
   $('spLogx').addEventListener('click', function(){ spKopieren(); });
 }
@@ -37148,7 +37216,7 @@ function spLaden(){
   var m=_sp.monat;
   $('spMonatName').textContent=spMonatName(m);
   $('spLos').textContent='Plan für '+SP_MONATE[+m.split('-')[1]-1]+' erstellen';
-  spStand('Lade …');
+  spMeldung('Lade …');
   return Promise.all([
     S('config').doc('schichtplaner').get(),
     S('planerTeam').get(),
@@ -37162,12 +37230,17 @@ function spLaden(){
     _sp.wuensche = r[2].docs.map(function(d){ return d.data()||{}; });
     var p = r[3].exists ? r[3].data() : null;
     _sp.plan = p && p.einsaetze ? p : null;
-    spStand('');
+    spMeldung('');
     spSchritteZeichnen();
     spErgebnisZeichnen();
-  }).catch(function(e){ spStand(errMsg(e), true); });
+  }).catch(function(e){ spMeldung(errMsg(e), true); });
 }
-function spStand(t, fehler){
+/* Hiess bis zum 20.10.2026 spStand — derselbe Name wie der Stand des
+   Sprachnachrichten-Spielers weiter oben. Bei zwei gleichnamigen
+   Funktionen gewinnt die spätere: die Sprachnachrichten zeigten seit
+   Runde 156 weder Fortschritt noch Abspielen/Anhalten.
+   tests/test-doppelte-namen.js hält das jetzt fest. */
+function spMeldung(t, fehler){
   var el=$('spStand'); if(!el) return;
   el.textContent=t||''; el.classList.toggle('fehler', !!fehler);
 }
@@ -37214,7 +37287,7 @@ function spSchritteZeichnen(){
 
 /* ── Excel einlesen ── */
 function spEinlesen(datei){
-  spStand('Lese „'+datei.name+'" …');
+  spMeldung('Lese „'+datei.name+'" …');
   var lib;
   spLib().then(function(l){ lib=l; return datei.arrayBuffer(); })
   .then(function(buf){ return lib.excelLesen(buf); })
@@ -37235,7 +37308,7 @@ function spEinlesen(datei){
       (ohneKonto.length ? '\n\nOhne Konto in der App (werden trotzdem geplant): '+ohneKonto.join(', ')+'.' : '')+
       (r.fehler.length ? '\n\nBitte prüfen:\n· '+r.fehler.slice(0,6).join('\n· ') : '')+
       '\n\nÜbernehmen?';
-    if(!confirm(frage)){ spStand('Nicht übernommen.'); return; }
+    if(!confirm(frage)){ spMeldung('Nicht übernommen.'); return; }
     var b=db.batch(), jetzt=Date.now();
     r.personen.forEach(function(p){
       var d={}; Object.keys(p).forEach(function(k){ if(k!=='id') d[k]=p[k]; });
@@ -37253,7 +37326,7 @@ function spEinlesen(datei){
       toast(r.personen.length+' Personen eingelesen ✓');
       return spLaden();
     });
-  }).catch(function(e){ spStand(e && e.message ? e.message : errMsg(e), true); });
+  }).catch(function(e){ spMeldung(e && e.message ? e.message : errMsg(e), true); });
 }
 
 /* ── Was die Rechnung bekommt ── */
@@ -37322,7 +37395,7 @@ function spErstellen(btn){
   function fertig(){ btn.dataset.busy=''; spSchritteZeichnen(); }
   (function(){
     var lib;
-    spStand('Rechne …');
+    spMeldung('Rechne …');
     return spLib().then(function(l){ lib=l; return spAbwesenheitenLaden(_sp.monat); })
     .then(function(abw){
       var e=spEingabe(abw);
@@ -37333,16 +37406,16 @@ function spErstellen(btn){
         personen:r.personen, feiertage:r.feiertage, erstellt:Date.now(), erstelltVon:session.name,
         veroeffentlicht:null };
       _sp.plan=plan; _sp.wahl=null;
-      spStand('Fertig in '+((Date.now()-t0)/1000).toFixed(1).replace('.',',')+' s · gespeichert');
+      spMeldung('Fertig in '+((Date.now()-t0)/1000).toFixed(1).replace('.',',')+' s · gespeichert');
       spErgebnisZeichnen();
       return spPlanSpeichern();
-    }).catch(function(e){ spStand(e && e.message ? e.message : errMsg(e), true); })
+    }).catch(function(e){ spMeldung(e && e.message ? e.message : errMsg(e), true); })
       .then(fertig, fertig);
   })();
 }
 function spPlanSpeichern(){
   return S('planerPlaene').doc(_sp.monat).set(_sp.plan)
-    .catch(function(e){ spStand('Nicht gespeichert: '+errMsg(e), true); });
+    .catch(function(e){ spMeldung('Nicht gespeichert: '+errMsg(e), true); });
 }
 
 /* ── Das Ergebnis ── */
@@ -37353,50 +37426,97 @@ function spErgebnisZeichnen(){
   spSchritteZeichnen();
   if(!p) return;
   var rueck=p.einsaetze.filter(function(x){ return x.rueckfrage; });
+  var mit=spStudios().filter(function(s){ return spSchichtenFuer(s.id).length; });
+  var offen={};
+  p.luecken.forEach(function(x){ (offen[x.studio]=offen[x.studio]||{l:0,r:0}).l++; });
+  rueck.forEach(function(x){ (offen[x.studio]=offen[x.studio]||{l:0,r:0}).r++; });
+  var fertig=mit.filter(function(s){ return !offen[s.id]; }).length;
+  /* Vier Zahlen. Gefärbt wird nur, was etwas meldet: Lücken rot,
+     Rückfragen bernstein, „Studios fertig" grün erst, wenn ALLE es sind. */
   $('spZahlen').innerHTML=
     '<div class="spl-zahl"><b>'+p.einsaetze.length+'</b><span>Schichten verteilt</span></div>'+
     '<div class="spl-zahl'+(p.luecken.length?' bad':'')+'"><b>'+p.luecken.length+'</b><span>Lücken</span></div>'+
-    '<div class="spl-zahl'+(rueck.length?' warn':'')+'"><b>'+rueck.length+'</b><span>Rückfragen</span></div>';
-  var sel=$('spStudio');
-  var mit=spStudios().filter(function(s){ return spSchichtenFuer(s.id).length; });
+    '<div class="spl-zahl'+(rueck.length?' warn':'')+'"><b>'+rueck.length+'</b><span>Rückfragen</span></div>'+
+    '<div class="spl-zahl'+(mit.length && fertig===mit.length?' ok':'')+'"><b>'+fertig+' / '+mit.length+'</b><span>Studios ohne offene Punkte</span></div>';
   if(!_sp.studio || !mit.some(function(s){ return s.id===_sp.studio; })){
     // Das Studio mit den meisten offenen Punkten zuerst
-    var n={}; p.luecken.concat(rueck).forEach(function(x){ n[x.studio]=(n[x.studio]||0)+1; });
-    var sortiert=mit.slice().sort(function(a,b){ return (n[b.id]||0)-(n[a.id]||0); });
+    var sortiert=mit.slice().sort(function(a,b){
+      var oa=offen[a.id]||{l:0,r:0}, ob=offen[b.id]||{l:0,r:0};
+      return (ob.l+ob.r)-(oa.l+oa.r);
+    });
     _sp.studio=sortiert[0] ? sortiert[0].id : '';
   }
-  sel.innerHTML=mit.map(function(s){
-    var k=p.luecken.filter(function(x){ return x.studio===s.id; }).length+rueck.filter(function(x){ return x.studio===s.id; }).length;
-    return '<option value="'+esc(s.id)+'"'+(s.id===_sp.studio?' selected':'')+'>'+esc(s.name)+(k?' · '+k+' zu klären':'')+'</option>';
+  function zustand(s){
+    var o=offen[s.id];
+    if(!o) return { k:'ok', t:'✓ fertig' };
+    if(o.l) return { k:'bad', t:o.l+(o.l===1?' Lücke':' Lücken')+(o.r?' · '+o.r+' Rückfr.':'') };
+    return { k:'warn', t:o.r+(o.r===1?' Rückfrage':' Rückfragen') };
+  }
+  $('spStudio').innerHTML=mit.map(function(s){
+    var z=zustand(s);
+    return '<option value="'+esc(s.id)+'"'+(s.id===_sp.studio?' selected':'')+'>'+esc(s.name)+' · '+esc(z.t)+'</option>';
   }).join('');
+  var kb=$('spKacheln');
+  kb.innerHTML=mit.map(function(s){
+    var z=zustand(s);
+    return '<button type="button" class="spl-kachel'+(s.id===_sp.studio?' an':'')+'" data-spkachel="'+esc(s.id)+'" aria-pressed="'+(s.id===_sp.studio)+'">'+
+      '<b>'+esc(s.name)+'</b><small class="'+z.k+'">'+esc(z.t)+'</small></button>';
+  }).join('');
+  kb.querySelectorAll('[data-spkachel]').forEach(function(b){
+    b.addEventListener('click', function(){ spStudioWaehlen(b.getAttribute('data-spkachel')); });
+  });
   var hin=$('spAktionHinweis');
   if(hin && p.veroeffentlicht) hin.textContent='Veröffentlicht am '+new Date(p.veroeffentlicht).toLocaleDateString('de-DE')+'. Erneut veröffentlichen ersetzt die Schichten dieses Monats.';
+  spStudioTeileZeichnen();
+  ikonenEinsetzen($('spErgebnis'));
+}
+/* Alles, was zu EINEM Studio gehört — beim Wechsel neu, der Rest bleibt. */
+function spStudioTeileZeichnen(){
+  var st=spStudios().filter(function(s){ return s.id===_sp.studio; })[0];
+  var t=$('spPlanTitel'); if(t) t.lastChild.textContent='Plan · '+(st?st.name:'');
   spKlaerenZeichnen();
   spPlanZeichnen();
   spWahlZeichnen();
   spTeamZeichnen();
-  ikonenEinsetzen($('spErgebnis'));
 }
-function spPunktText(x){
-  return SP_TAGE_KURZ[new Date(x.datum+'T12:00').getDay()]+' '+spDatumKurz(x.datum)+' · '+x.studioName+' · '+x.schichtName+' '+x.von+'–'+x.bis;
+function spStudioWaehlen(id){
+  if(id===_sp.studio) return;
+  _sp.studio=id; _sp.wahl=null;
+  var sel=$('spStudio'); if(sel) sel.value=id;
+  document.querySelectorAll('#spKacheln [data-spkachel]').forEach(function(b){
+    var an=b.getAttribute('data-spkachel')===id;
+    b.classList.toggle('an', an); b.setAttribute('aria-pressed', String(an));
+  });
+  var k=$('spKlaeren'); if(k) k.removeAttribute('data-alle');
+  spStudioTeileZeichnen();
+  tick(8);
 }
 var SP_TAGE_KURZ=['So','Mo','Di','Mi','Do','Fr','Sa'];
+function spPunktText(x){
+  return SP_TAGE_KURZ[new Date(x.datum+'T12:00').getDay()]+' '+spDatumKurz(x.datum)+' · '+x.schichtName+' '+x.von+'–'+x.bis;
+}
+/* „Zu klären" für das gewählte Studio. Die anderen Studios melden ihre
+   offenen Punkte oben auf ihren Kacheln — so steht nie eine Liste mit
+   achtzig Einträgen da. */
 function spKlaerenZeichnen(){
   var box=$('spKlaeren'), p=_sp.plan; if(!box||!p) return;
-  var punkte=p.luecken.map(function(l){
-    var fr=(l.fragen||[]).map(function(f){ return f.name+' ('+f.warum+')'; });
+  var sk=_sp.studio;
+  var punkte=p.luecken.filter(function(l){ return l.studio===sk; }).map(function(l){
+    var fr=(l.fragen||[]).slice(0,2).map(function(f){ return f.name.split(' ')[0]+' ('+f.warum+')'; });
     return { art:'luecke', x:l, titel:spPunktText(l),
-      text:'Niemand frei – '+l.grund+(fr.length?'. Fragen: '+fr.join(', '):'') };
-  }).concat(p.einsaetze.filter(function(x){ return x.rueckfrage; }).map(function(x){
-    return { art:'rueck', x:x, titel:spPunktText(x), text:x.name+' eingeteilt, obwohl: '+x.rueckfrage+' – bitte kurz absprechen' };
-  })).sort(function(a,b){ return a.x.datum.localeCompare(b.x.datum) || a.x.studioName.localeCompare(b.x.studioName,'de'); });
-  var GRENZE=8, alle=box.getAttribute('data-alle')==='1';
-  var html='<h3 data-ikon="warnung">Zu klären</h3>';
+      text:'Niemand frei · '+l.grund+(fr.length?' · fragen: '+fr.join(', '):'') };
+  }).concat(p.einsaetze.filter(function(x){ return x.rueckfrage && x.studio===sk; }).map(function(x){
+    return { art:'rueck', x:x, titel:spPunktText(x), text:x.name+' – '+x.rueckfrage+'. Bitte kurz absprechen.' };
+  })).sort(function(a,b){ return a.x.datum.localeCompare(b.x.datum) || a.x.von.localeCompare(b.x.von); });
+  var GRENZE=6, alle=box.getAttribute('data-alle')==='1';
+  var html='<div class="spl-sec-kopf"><h3 data-ikon="warnung">Zu klären</h3>'+
+    (punkte.length?'<span class="spl-sec-hinweis">'+punkte.length+' in diesem Studio</span>':'')+'</div>';
   if(!punkte.length){
     html+='<p class="spl-alle-ok">'+ikon('hakenKreis')+'Nichts – jede Schicht ist besetzt, kein Wunsch gebrochen.</p>';
   } else {
     html+=(alle?punkte:punkte.slice(0,GRENZE)).map(function(pt){
-      return '<button type="button" class="spl-punkt'+(pt.art==='rueck'?' warn':'')+'" data-sppunkt="'+
+      var an=_sp.wahl && _sp.wahl.datum===pt.x.datum && _sp.wahl.schicht===pt.x.schicht && _sp.wahl.ohne===(pt.art==='rueck'?pt.x.id:'');
+      return '<button type="button" class="spl-punkt'+(pt.art==='rueck'?' warn':'')+(an?' an':'')+'" data-sppunkt="'+
         esc(pt.x.datum+'|'+pt.x.studio+'|'+pt.x.schicht+'|'+(pt.art==='rueck'?pt.x.id:''))+'">'+
         '<b>'+esc(pt.titel)+'</b><small>'+esc(pt.text)+'</small></button>';
     }).join('');
@@ -37404,15 +37524,18 @@ function spKlaerenZeichnen(){
       (alle?'Weniger zeigen':'Alle '+punkte.length+' zeigen')+'</button>';
   }
   if(p.hinweise && p.hinweise.length){
-    html+='<details class="spl-team"><summary>'+p.hinweise.length+' Hinweise</summary><ul class="hint" style="padding-left:18px;margin:0">'+
+    html+='<details class="spl-team"><summary>'+p.hinweise.length+(p.hinweise.length===1?' Hinweis':' Hinweise')+' zum ganzen Plan</summary>'+
+      '<ul class="hint" style="padding-left:18px;margin:0">'+
       p.hinweise.map(function(h){ return '<li>'+esc(h)+'</li>'; }).join('')+'</ul></details>';
   }
   box.innerHTML=html;
+  ikonenEinsetzen(box);
   box.querySelectorAll('[data-sppunkt]').forEach(function(b){
     b.addEventListener('click', function(){
       var t=b.getAttribute('data-sppunkt').split('|');
-      _sp.studio=t[1]; $('spStudio').value=t[1];
       _sp.wahl={ datum:t[0], studio:t[1], schicht:t[2], ohne:t[3]||'' };
+      box.querySelectorAll('.spl-punkt.an').forEach(function(z){ z.classList.remove('an'); });
+      b.classList.add('an');
       spPlanZeichnen(); spWahlZeichnen();
       var z=document.querySelector('.spl-zelle.an'); if(z) sanftInsBild(z,{block:'center'});
     });
@@ -37421,41 +37544,64 @@ function spKlaerenZeichnen(){
   if(mehr) mehr.addEventListener('click', function(){ box.setAttribute('data-alle', alle?'':'1'); spKlaerenZeichnen(); });
 }
 
-/* Tage untereinander, Schichten nebeneinander. Bei 14 Studios × 30
-   Tagen wäre alles auf einmal eine Wand; ein Studio nach dem anderen
-   bleibt lesbar — das mit den meisten offenen Punkten steht vorn. */
+/* Das Zeichen einer Person: Anfangsbuchstaben in ihrer Profilfarbe —
+   dieselbe gedämpfte Farbe wie beim Avatar. Ohne Konto neutral. */
+function spIni(id, name){
+  var u=_userById(id), f=u ? avatarFarbe(u.color) : '';
+  var st=f ? ' style="background:'+f+(avatarSchrift(f)?';color:'+avatarSchrift(f):'')+'"' : '';
+  return '<i class="spl-ini"'+st+' aria-hidden="true">'+esc(initials(name))+'</i>';
+}
+
+/* Der Plan in Wochen: sieben Zeilen sind ein Blick, ein ganzer Monat
+   untereinander war eine Wand. Nur Tage des Monats — eine erste Woche
+   aus sechs Oktobertagen und einem Novembertag war eine leere Tabelle
+   mit einer Zeile. Die erste und letzte Woche sind deshalb kürzer. */
 function spPlanZeichnen(){
   var box=$('spTabelle'), p=_sp.plan; if(!box||!p) return;
   var sk=_sp.studio, sch=spSchichtenFuer(sk);
-  var monatTage=[], j=+_sp.monat.split('-')[0], mo=+_sp.monat.split('-')[1];
+  var j=+_sp.monat.split('-')[0], mo=+_sp.monat.split('-')[1];
   var n=new Date(j, mo, 0).getDate();
-  for(var i=1;i<=n;i++) monatTage.push(_sp.monat+'-'+('0'+i).slice(-2));
   var heute=ymd(new Date()), ft={};
   (p.feiertage||[]).forEach(function(f){ ft[f.datum]=f.name; });
-  var html='<table class="spl-tab"><thead><tr><th>Tag</th>'+sch.map(function(s){
-    return '<th>'+esc(s.name)+' <span style="font-weight:400">'+esc(s.von)+'–'+esc(s.bis)+'</span></th>'; }).join('')+'</tr></thead><tbody>';
-  monatTage.forEach(function(d){
-    var dt=new Date(d+'T12:00'), wt=dt.getDay(), wtIso=wt===0?7:wt;
-    html+='<tr class="'+(wt===0||wt===6?'we':'')+(d===heute?' heute':'')+'"><td class="spl-tag">'+SP_TAGE_KURZ[wt]+' '+spDatumKurz(d)+
-      (ft[d]?'<small>'+esc(ft[d])+'</small>':'')+'</td>';
+  var start=new Date(j, mo-1, 1), ende=new Date(j, mo-1, n);
+  var kopf='<thead><tr><th>Tag</th>'+sch.map(function(s){
+    return '<th>'+esc(s.name)+'<span>'+esc(s.von)+'–'+esc(s.bis)+'</span></th>'; }).join('')+'</tr></thead>';
+  var html='', woche='', erster=null, d=new Date(start);
+  function kw(dt){ var t=new Date(Date.UTC(dt.getFullYear(), dt.getMonth(), dt.getDate())); var w=(t.getUTCDay()+6)%7;
+    t.setUTCDate(t.getUTCDate()-w+3); var j1=new Date(Date.UTC(t.getUTCFullYear(),0,4));
+    return 1+Math.round(((t-j1)/864e5-3+((j1.getUTCDay()+6)%7))/7); }
+  while(d<=ende){
+    var key=ymd(d), wt=d.getDay(), wtIso=wt===0?7:wt;
+    if(!erster) erster=new Date(d);
+    woche+='<tr class="'+(wt===0||wt===6?'we':'')+(key===heute?' heute':'')+'">'+
+      '<td class="spl-tag">'+SP_TAGE_KURZ[wt]+' '+d.getDate()+'.'+(ft[key]?'<small>'+esc(ft[key])+'</small>':'')+'</td>';
     sch.forEach(function(s){
-      if(s.tage && s.tage.length && s.tage.indexOf(wtIso)<0){ html+='<td></td>'; return; }
-      var drin=p.einsaetze.filter(function(x){ return x.datum===d && x.studio===sk && x.schicht===s.id; });
-      var luecke=p.luecken.filter(function(x){ return x.datum===d && x.studio===sk && x.schicht===s.id; })[0];
-      html+='<td>';
+      if(s.tage && s.tage.length && s.tage.indexOf(wtIso)<0){ woche+='<td></td>'; return; }
+      var drin=p.einsaetze.filter(function(x){ return x.datum===key && x.studio===sk && x.schicht===s.id; });
+      var luecke=p.luecken.filter(function(x){ return x.datum===key && x.studio===sk && x.schicht===s.id; })[0];
+      woche+='<td>';
       drin.forEach(function(x){
-        var an=_sp.wahl && _sp.wahl.datum===d && _sp.wahl.schicht===s.id && _sp.wahl.ohne===x.id;
-        html+='<button type="button" class="spl-zelle'+(x.rueckfrage?' rueck':'')+(an?' an':'')+'" data-spzelle="'+esc(d+'|'+s.id+'|'+x.id)+'" title="'+esc(x.grund+(x.rueckfrage?' · Rückfrage: '+x.rueckfrage:''))+'">'+esc(x.name)+'</button>';
+        var an=_sp.wahl && _sp.wahl.datum===key && _sp.wahl.schicht===s.id && _sp.wahl.ohne===x.id;
+        woche+='<button type="button" class="spl-zelle'+(x.rueckfrage?' rueck':'')+(an?' an':'')+'" data-spzelle="'+esc(key+'|'+s.id+'|'+x.id)+'"'+
+          ' title="'+esc(x.grund+(x.rueckfrage?' · Rückfrage: '+x.rueckfrage:''))+'">'+spIni(x.id, x.name)+'<span>'+esc(x.name)+'</span></button>';
       });
       if(luecke){
-        var an2=_sp.wahl && _sp.wahl.datum===d && _sp.wahl.schicht===s.id && !_sp.wahl.ohne;
-        html+='<button type="button" class="spl-zelle luecke'+(an2?' an':'')+'" data-spzelle="'+esc(d+'|'+s.id+'|')+'">fehlt'+(luecke.fehlt>1?' ×'+luecke.fehlt:'')+'</button>';
+        var an2=_sp.wahl && _sp.wahl.datum===key && _sp.wahl.schicht===s.id && !_sp.wahl.ohne;
+        woche+='<button type="button" class="spl-zelle luecke'+(an2?' an':'')+'" data-spzelle="'+esc(key+'|'+s.id+'|')+'">＋ besetzen'+(luecke.fehlt>1?' (×'+luecke.fehlt+')':'')+'</button>';
       }
-      html+='</td>';
+      woche+='</td>';
     });
-    html+='</tr>';
-  });
-  box.innerHTML=html+'</tbody></table>';
+    woche+='</tr>';
+    if((d.getDay()+6)%7===6 || key===_sp.monat+'-'+('0'+n).slice(-2)){
+      var bis=new Date(d);
+      var vonT=erster.getDate()+'.'+(erster.getMonth()+1)+'.', bisT=bis.getDate()+'.'+(bis.getMonth()+1)+'.';
+      html+='<div class="spl-woche"><h4>KW '+kw(erster)+' · '+vonT+(bisT!==vonT?' – '+bisT:'')+'</h4>'+
+        '<div class="spl-woche-huelle"><table class="spl-tab">'+kopf+'<tbody>'+woche+'</tbody></table></div></div>';
+      woche=''; erster=null;
+    }
+    d.setDate(d.getDate()+1);
+  }
+  box.innerHTML=html;
   box.querySelectorAll('[data-spzelle]').forEach(function(b){
     b.addEventListener('click', function(){
       var t=b.getAttribute('data-spzelle').split('|');
@@ -37467,6 +37613,7 @@ function spPlanZeichnen(){
     });
   });
 }
+
 
 /* Umbesetzen: wer käme infrage, und warum die anderen nicht. */
 function spWahlZeichnen(){
@@ -37523,15 +37670,23 @@ function spSetzen(neuId){
   spPlanSpeichern();
   tick(8);
 }
+/* Stunden der Leute, die in diesem Studio arbeiten (Haupt- oder
+   Springer-Studio), als Balken: wer unter Soll bleibt, fällt auf, ohne
+   dass man sechs Zahlenspalten liest. */
 function spTeamZeichnen(){
   var box=$('spTeam'), p=_sp.plan; if(!box||!p) return;
-  box.innerHTML='<table><thead><tr><th>Name</th><th>Std.</th><th>Soll</th><th>Tage</th><th>WE</th><th>Früh/Spät</th></tr></thead><tbody>'+
-    p.personen.map(function(x){
-      var unter=x.soll && x.std<x.soll*0.85;
-      return '<tr><td>'+esc(x.name)+'<br><small class="hint">'+esc(x.rolle||'')+'</small></td>'+
-        '<td class="'+(unter?'unter':'')+'">'+String(x.std).replace('.',',')+'</td><td>'+(x.soll||'–')+'</td>'+
-        '<td>'+x.tage+'</td><td>'+x.wochenenden+'</td><td>'+x.frueh+'/'+x.spaet+'</td></tr>';
-    }).join('')+'</tbody></table>';
+  var sk=_sp.studio;
+  var hier=_sp.team.filter(function(t){ return t.haupt===sk || (t.studios||[]).indexOf(sk)>=0; })
+    .map(function(t){ return t.id; });
+  var leute=p.personen.filter(function(x){ return hier.indexOf(x.id)>=0; });
+  if(!leute.length){ box.innerHTML='<p class="lese-leer">Diesem Studio ist niemand zugeordnet.</p>'; return; }
+  box.innerHTML='<div class="spl-balken">'+leute.map(function(x){
+    var soll=x.soll||0, anteil=soll ? Math.min(100, Math.round(x.std/soll*100)) : 100;
+    var unter=soll && x.std<soll*0.85;
+    return '<span class="n">'+esc(x.name)+'<small>'+esc(x.rolle||'')+' · '+x.tage+' Tage · '+x.wochenenden+' WE</small></span>'+
+      '<span class="s" role="img" aria-label="'+anteil+' % vom Soll"><i style="width:'+anteil+'%"></i></span>'+
+      '<span class="z'+(unter?' unter':'')+'">'+String(x.std).replace('.',',')+(soll?' / '+soll:'')+' Std.</span>';
+  }).join('')+'</div>';
 }
 
 /* ── Raus aus dem Planer ── */

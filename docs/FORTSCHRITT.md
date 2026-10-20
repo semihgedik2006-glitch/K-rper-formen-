@@ -16706,3 +16706,57 @@ formiMail 503/401/still); test-formi-mail-skript (17, mit nachgebautem
 Gmail); Worker-Prüfung 2.9 (45); Regeltest gehirn-geheim.
 **Nicht geprüft:** echtes Gmail, echter Trigger, echte Zustellung; das
 echte Modell mit Mails; die Qualitätsstufe auf echten Geräten.
+
+---
+
+## Runde 168 — Schichtplaner aufgeräumt; Sprachnachrichten-Fehler aus Runde 156 behoben (20.10.2026)
+
+**Aus dem Betrieb:** „kannst du das etwas visuel schöner und organisierter
+erstellen schonmal ?"
+
+**Was man sieht**
+- Der Kopf hat eine Farbe, die von der linken Kante ausläuft. Darin stehen
+  der Monat gross („Schichtplan für November 2026“), der Knopf und die drei
+  Schritte als eigene Felder, am Rechner nebeneinander.
+- Vier Zahlen statt drei: verteilt · Lücken · Rückfragen · **Studios ohne
+  offene Punkte** („3 / 14“). Gefärbt wird nur, was etwas meldet: links ein
+  roter bzw. bernsteinfarbener Rand und die Zahl in der Textmarke. Grün
+  gibt es erst, wenn alle Studios fertig sind.
+- **Studios als Kacheln** ab 820 px, jede mit Zustand („✓ fertig“,
+  „7 Lücken · 4 Rückfr.“). Am Handy bleibt die Auswahlliste, denn 14
+  Kacheln wären sieben Zeilen über dem Plan.
+- **„Zu klären“ gilt nur für das gewählte Studio.** Vorher stand eine Liste
+  über alle Studios da, in der Demo mit über hundert Punkten. Die anderen Studios
+  melden ihre Zahl auf der Kachel. „Fragen:“ nennt höchstens zwei Vornamen.
+- **Der Plan in Kalenderwochen** mit nur den Tagen des Monats. Jede Person
+  ist ein Feld mit ihrem Zeichen in der Profilfarbe (`avatarFarbe`, dieselbe
+  Dämpfung wie bei den Avataren). Offene Schichten stehen als
+  „＋ besetzen“ mit gestrichelt roter Kante da, Rückfragen mit
+  bernsteinfarbener Kante. Darüber steht eine Legende.
+- **„Stunden im Studio“** als Balken statt einer Tabelle mit sechs Spalten.
+  Wer unter 85 % des Solls bleibt, steht in der Warnfarbe.
+
+**Gefunden: ein Fehler aus Runde 156.** Der Schichtplaner brachte eine
+Funktion `spStand(text, fehler)` mit. Den Namen trug schon der Stand des
+Sprachnachrichten-Spielers. Bei zwei gleichnamigen Funktionen gewinnt still
+die spätere, also zeigten Sprachnachrichten seit gestern weder Fortschritt
+noch Abspielen/Anhalten. Die Planer-Funktion heisst jetzt `spMeldung`.
+`tests/test-doppelte-namen.js` liest die Inline-Skripte und meldet jeden
+doppelten Funktionsnamen. Gegenprobe gegen den Stand vor der Korrektur:
+rot (spStand). Dabei kam ein zweiter, älterer Fall zutage:
+**`wartetAufFreigabe` steht zweimal** (die zweite Fassung über `ohneBetrieb`
+ist die wirksame). Er ist als „bekannt“ eingetragen und bleibt **offen**.
+Wer die erste liest, liest die falsche.
+
+**Geprüft**
+- test-schichtplaner: 69 Prüfungen, 7 davon neu. Kacheln mit Zustand, genau
+  eine gewählt, „Zu klären“ nur fürs Studio, Plan in Kalenderwochen,
+  Wechsel per Kachel. Trefferflächen bei 320–1920 px, normal und kompakt.
+- test-schichtplaner-rechnung (55), test-doppelte-namen (4),
+  test-gestaltung, test-abgeschnitten, test-demo, test-ausliefern: grün.
+
+**Nicht geprüft**
+- test-sprachabspieler scheitert in dieser Umgebung vor und nach der
+  Korrektur gleich (Attrappe startet nicht). Die Behebung der
+  Sprachnachrichten ist also **nur am Quelltext belegt**, nicht durch
+  Abspielen.
