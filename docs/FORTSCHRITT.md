@@ -16517,3 +16517,48 @@ Maschine, 5–6 ms). Die Umgebung lief nach einem Neustart mit 2 Kernen.
 Etappe 4 ändert am HUD nichts, was je Bild arbeitet. Der Test bleibt,
 wie er ist; die Grenze 8,3 ms gilt weiter und gehört beim nächsten Lauf
 auf einer normalen Maschine wieder geprüft.
+
+## Runde 165 — Aus Jarvis wird Formi: schwarzes Loch, bunte Materie, Themenfarben (20.10.2026)
+
+Aus dem Betrieb: „es soll nicht jarvis heissen und es soll dynamischer
+und farbiger sein". Auf die Rückfragen: Name **Formi**; Farben „am
+besten mit so streifen oder schwarzes loch aus dem bunte materie raus
+kommt und die sich je nach thema anpasst".
+
+**Name.** Standard in `JV_PERSONA_STD` ist jetzt „Formi". Wer den alten
+Standardnamen „Jarvis" gespeichert hat, wird beim Lesen umgestellt
+(`jvPersonaSetzen` speicherte bisher das ganze Objekt, also auch den
+Standardnamen — ohne diese Umstellung hätte jedes bestehende Gerät
+weiter „Jarvis" gezeigt). Ein eigener Name bleibt. Das Weckwort hört
+auch auf „Vormi" und „for me", weil die Spracherkennung „Formi" so
+schreibt. Interne IDs (`#jarvis…`, `jv…`) bleiben — umbenennen hätte
+nur Tests und Risiko gebracht, sehen tut sie niemand. Ältere
+NEUIGKEITEN-Einträge bleiben, wie sie waren: sie sind Geschichte.
+
+**Schwarzes Loch.** Die Kugel im Kern ist jetzt schwarz mit hellem
+Photonenring; dahinter dreht eine Akkretionsscheibe (konischer Verlauf
+in drei Themenfarben, per Maske zum Ring geschnitten, bewegt nur über
+`transform`). Beim Denken dreht sie schneller.
+
+**Bunte Materie.** Das Partikelnetz ist ersetzt: Teilchen strömen als
+Streifen in Spiralen aus dem Kern und laufen zum Rand aus; beim Denken
+kehrt sich der Strom um und alles stürzt hinein, beim Sprechen strömt es
+schneller. **Warum das billiger ist als vorher:** das alte Netz suchte
+je Bild alle Paare (46 Punkte = 1 035 Abstände); jetzt gibt es einen
+Strich je Teilchen, gesammelt in sechs Pfade (drei Farben × zwei
+Helligkeiten), auch bei 120 Teilchen. Dazu eine Ebene farbiger
+Schrägstreifen, einmal gemalt und nur verschoben.
+
+**Themenfarben.** `data-thema` am Fenster setzt drei Farben
+(`--jv-t1..3`); das Canvas gleitet in etwa einer Sekunde hin. Gesetzt
+beim Mini-Fenster (nach dessen Bereich) und beim Tippen (Schlüsselwörter
+in `JV_THEMEN`), „Neues Gespräch" geht zurück auf bunt. Die Farben
+folgen den Mini-Fenstern: Putzplan türkis, Aufgaben orange, Dienst
+pink, Material violett, Geräte blau, Wissensfragen warm. **Rot,
+Bernstein und Grün sind nicht dabei** — sie bleiben dem Status
+vorbehalten (die Stimmung des Kerns nutzt sie weiter). Die Themenfarben
+färben nur Schmuck, nie Schrift: die Schrift steht weiter auf
+Nachtblau, wie gemessen.
+
+Bei „weniger Bewegung" steht alles: kein Canvas, keine drehende
+Scheibe, keine wandernden Streifen.
