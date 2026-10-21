@@ -161,6 +161,16 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await fertig(p); await p.waitForTimeout(600);
     const t2 = await verlaufText(p);
     pruefe('ungeprüft: „Noch nicht geprüft" mit Nummer', /Noch nicht geprüft/.test(t2) && /Nr\. 7/.test(t2), t2.slice(-160));
+
+    /* Worker 2.10 (22.10.2026): Smalltalk wird keine offene Frage. Live
+       stand unter „was geht" trotzdem „ging an Semih" — die App schloss
+       aus „nicht abgedeckt" auf „weitergegeben". */
+    await antwort(p, { gehirnFrage: { data: { antwort: 'Hey! Was steht an?', abgedeckt: false, offen: null } } });
+    await p.fill('#gehirnFeld', 'was geht');
+    await p.click('#gehirnFragen');
+    await fertig(p); await p.waitForTimeout(600);
+    const tKlein = await p.$$eval('#gehirnVerlauf .gehirn-antwort', l => l[l.length - 1].innerText);
+    pruefe('Smalltalk ohne offene Frage: kein „ging an Semih"', /Was steht an/.test(tKlein) && !/ging an Semih/.test(tKlein), tKlein.slice(-160));
     pruefe('keine „Zu …"-Knöpfe, wenn die Frage nichts mit der App zu tun hat',
       (await p.$$eval('#gehirnVerlauf .gehirn-antwort', l => l[l.length - 1].querySelectorAll('[data-gziel]').length)) === 0);
 

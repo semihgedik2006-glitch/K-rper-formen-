@@ -87,6 +87,12 @@ function ki(antworten) {
   pruefe(!/mit dem Vornamen/.test(sys), 'Systemtext: kein „Einstieg mit dem Vornamen" mehr');
   pruefe(/Aufgaben und Ankündigungen anlegen/.test(sys), 'Systemtext: kennt das Anlegen (stand vorher „kann ich nicht")');
   pruefe(/NICHTS erfinden/.test(sys), 'Systemtext: nichts Internes erfinden');
+  /* 2.11, live am 22.10.2026: „was kannst du alles" kam aus einem alten
+     Wissenseintrag („Abläufe, Geräte, Hygiene …"), und „wie lege ich eine
+     Aufgabe an" lautete „Das Studio-Wissen sagt leider nichts …". */
+  pruefe(/IMMER aus dieser Liste/.test(sys), 'Systemtext: „was kannst du" kommt aus der Liste, nicht aus altem Wissen');
+  pruefe(/Leg eine Aufgabe an:/.test(sys), 'Systemtext: zeigt, wie man Formi etwas anlegen lässt');
+  pruefe(/Sprich nie vom "Studio-Wissen"/.test(sys), 'Systemtext: kein „Das Studio-Wissen sagt"');
   const sysMail = w.formiSystem({ ton: 'locker', vorname: 'Mail', kanal: 'mail' });
   pruefe(!/heißt Mail/.test(sysMail) && /kennst du nicht/.test(sysMail), 'Mail: kein Vorname „Mail"');
   pruefe(/\d{1,2}:\d{2} Uhr$/.test(w.jetztText(Date.UTC(2026, 9, 22, 12, 5))), 'Uhrzeit in Köln: ' + w.jetztText(Date.UTC(2026, 9, 22, 12, 5)));

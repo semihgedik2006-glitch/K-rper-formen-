@@ -17043,3 +17043,41 @@ und: „bitte leg genau so viel Fokus auf die PC-Nutzung“.
 
 **Nicht geprüft:** echte Datenbank mit vielen Nachrichten, Bildwiederholrate
 bei vielen eintreffenden Nachrichten.
+
+## Runde 173 — Formi: „ging an Semih“ nur, wenn es stimmt; Worker 2.11 (22.10.2026)
+
+**Live geprüft nach dem Einspielen von Worker 2.10** (Semihs Konto,
+eingebauter Browser, fünf Testfragen):
+- „was geht“, „wie spät ist es“ und „dfsgshjsh“ wurden keine offenen Fragen.
+  Es gab keine Vorstellung und keinen Zustellfehler, die Uhrzeit stimmte.
+- „wie lege ich eine aufgabe an“ wurde ehrlich zur offenen Frage (Nr. 42).
+- **Fund in der App:** Unter „was geht“ stand trotzdem „Noch nicht geprüft
+  · ging an Semih“. Die App schloss aus `abgedeckt: false` auf
+  „weitergegeben“.
+- **Funde im Worker:**
+  - „was kannst du alles“ kam aus einem alten Wissenseintrag.
+  - Die Aufgabenfrage begann mit „Das Studio-Wissen sagt leider nichts …“,
+    statt zu zeigen, wie man Formi die Aufgabe anlegen lässt.
+
+**Gebaut:**
+- Die Marke „ging an Semih“ und der Schritt „Erste Einschätzung …“
+  erscheinen nur noch mit der Nummer einer offenen Frage. Sonst steht als
+  Schritt „Antwort“ da und keine Marke.
+- Worker 2.11:
+  - „Was kannst du“ kommt immer aus `FORMI_FAEHIGKEITEN`.
+  - Fragen nach etwas, das Formi selbst erledigt, bekommen einen
+    Beispielsatz für das Formi-Fenster.
+  - Formi spricht nicht mehr vom „Studio-Wissen“ als Quelle.
+- Die Umbenennung „Studio-Gehirn“ → „Formi“ in der Oberfläche hatte Runde
+  171 schon erledigt. Mein paralleler Entwurf dazu wurde verworfen.
+
+**Geprüft:**
+- `test-formi-worker` mit 46 Prüfungen.
+- `test-gehirn` hat den neuen Smalltalk-Fall bekommen.
+- Syntax der Inline-Skripte geprüft, `csp.js --setzen` ausgeführt.
+
+**Nicht geprüft:** Die Oberflächen-Durchläufe (`test-gehirn`,
+`test-knoepfe`) starten in dieser Umgebung schon auf dem vorigen `main`
+nicht. Die App landet in der Anmeldemaske, sobald die Schriften abgefangen
+werden. Der neue Fall in `test-gehirn` ist deshalb hier nicht gelaufen.
+Geprüft wird live nach der Auslieferung.
