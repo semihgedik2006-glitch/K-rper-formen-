@@ -957,7 +957,8 @@
         maxMonatStd: rolle === 'Minijob' ? 40 : 0, maxTageWoche: rolle === 'Minijob' ? 2 : 5,
         allein: rolle !== 'Azubi', u18: false, kann: u.role === 'leiter' ? ['Probetraining', 'Abschluss'] : [],
         verf: n % 4 === 1 ? { 3: 'nie' } : (n % 4 === 2 ? { 6: 'nie', 7: 'nie' } : {}),
-        sperre: rolle === 'Duales Studium' ? 'Di Uni' : '', lieber: ['Früh', 'Spät', 'egal'][n % 3], notiz: '', ts: Date.now()
+        sperre: rolle === 'Duales Studium' ? 'Di Uni' : '', lieber: ['Früh', 'Spät', 'egal'][n % 3], notiz: '', ts: Date.now(),
+        einspringen: n % 4 === 0
       });
     });
     legen(P('planerTeam'), team);
@@ -970,6 +971,14 @@
       ] } });
     var naechster = new Date(); naechster = new Date(naechster.getFullYear(), naechster.getMonth() + 1, 1);
     var m = naechster.getFullYear() + '-' + String(naechster.getMonth() + 1).padStart(2, '0');
+    /* Runde 169: was die Chefin selbst festlegt — damit „Regeln &
+       Sonderfälle" in der Demo nicht leer dasteht. */
+    var conf = holen(P('config')).filter(function (c) { return c.id === 'schichtplaner'; })[0];
+    if (conf && team.length) {
+      conf.fest = [{ person: team[0].id, studio: team[0].haupt, schicht: 'alle-frueh', tage: [1] }];
+      conf.sonder = [{ datum: m + '-07', studio: 'alle', art: 'mehr', schicht: 'alle-samstag', schichtName: 'Samstag', plus: 1, notiz: 'Tag der offenen Tür' }];
+      conf.maxAmStueck = 6; conf.maxWunschTage = 4;
+    }
     legen(P('planerWuensche'), team.filter(function (_, n) { return n % 3 === 0; }).map(function (p, n) {
       return { id: p.uid + '_' + m, uid: p.uid, name: p.name, monat: m,
         frei: [m + '-0' + (3 + n % 6), m + '-1' + (n % 9)], lieber: p.lieber, notiz: '', ts: vorTag(2) };

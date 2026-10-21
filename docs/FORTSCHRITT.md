@@ -16760,3 +16760,96 @@ Wer die erste liest, liest die falsche.
   Korrektur gleich (Attrappe startet nicht). Die Behebung der
   Sprachnachrichten ist also **nur am Quelltext belegt**, nicht durch
   Abspielen.
+
+---
+
+## Runde 169 — Schichtplaner: eigene Seite, Ersatz bei Krankheit, Tausch, eigene Regeln, Unterlagen (21.10.2026)
+
+**Aus dem Betrieb:** „es sollen auch krankheitsfälle von jeder person
+berücksichtigt werden und dafür dann ein passender ersatz vorgeschlagen
+werden … die seite vom planer soll eine eigene seite sein … das man das
+leichter tauschen kann … reibungslos aber fair … man soll auch als chefs
+eintragen können sachen und details und pläne“. Dazu zwei PDFs: alles, was
+die Chefin einträgt, und ein Handbuch mit Grenzen.
+
+**Was gebaut ist**
+- **Eigene Seite** `view-planer`. Sie steht als Reiter in der Gruppe
+  Verwaltung (Chef · Schichtplaner · Archiv) und unter „Alles“ → Verwalten.
+  `ansichtAn('planer')` ist nur für den Chef wahr. Der alte Chef-Reiter ist
+  weg, Neuigkeiten zeigen auf `planer`.
+- **Ein Rechenkern für alles.** Bis Runde 168 kannte nur `planen()` die
+  Regeln. Das Umbesetzen von Hand prüfte eine verkürzte Abschrift ohne
+  Ruhezeit, Minijob-Grenze und „nicht allein“. Jetzt bauen `planen()`,
+  `ersatz()`, `tausch()` und `ausfaelle()` denselben `kontext()`, und ein
+  fertiger Plan wird darin „nachgespielt“. Die Ruhezeit gilt jetzt auch
+  zum **Folgetag**, denn ein Ersatz kann vor eine bestehende Frühschicht
+  rutschen.
+- **Ausfälle:** Beim Öffnen werden die Abwesenheiten neu geladen. Wer im
+  Plan steht und inzwischen abwesend ist, erscheint mit bis zu drei
+  Ersatzleuten; „springt bei Ausfall ein: ja“ gibt +20.
+  `spVeroeffentlichtAnpassen` zieht Ersatz und Tausch im Team-Schichtplan
+  nach (gleiche Schicht, neue Person; ohne Konto: löschen).
+- **Tausch** am selben Tag, nur wenn beide Richtungen nach den Regeln gehen.
+  Ein ausgegrauter Tausch-Knopf sah bedienbar aus, deshalb wird nur der
+  angezeigt, der geht. Der Grund, warum es nicht geht, steht in der Zeile.
+- **Regeln & Sonderfälle** (zugeklappt):
+  - Einstellungen: Frist, Tage am Stück, höchstens Wunsch-frei-Tage,
+    Feiertage zu.
+  - Feste Einteilungen: Wochentage oder Datum.
+  - Sondertage: zu oder mehr Personen.
+  - Monatsnotiz, die oben im Kopf steht.
+  - Alles in `config/schichtplaner`, derselbe Ort, den die Excel-Datei füllt.
+- **Fairness:**
+  - Wochenenden −15 statt −6 je bisherigem Wochenendtag. Gemessen: Bei −6
+    bekam von vier Gleichen einer zwei Samstage und einer keinen.
+  - Feiertage −20, „egal“ gleicht früh und spät aus, lange Ketten kosten
+    Punkte.
+  - `fairness()` gibt die Spannweiten aus, und unter dem Plan steht eine
+    Zeile dazu.
+- **Vormonat:** Die letzten 14 Tage des Vormonats-Plans gehen in die
+  Rechnung ein (Ruhezeit am 1., Tage am Stück).
+  Gegenprobe: Ohne Vormonat stünde Aaron am 1.11.
+- **Excel v2:**
+  - Neue Spalten: „Springt bei Ausfall ein?“, „Erster/Letzter Arbeitstag“.
+  - Neue Blätter: „Feste Schichten“, „Sondertage“, „Einstellungen“.
+  - Excel-Datumszahlen werden gelesen.
+  - Ein Datum ohne Jahr oder ein leeres Feld bei festen Schichten wird
+    **gemeldet** statt als „alle Tage“ gelesen. Sonst stünde die Person
+    jeden Tag fest im Plan, gefunden beim Schreiben der Stolperstein-Liste.
+- **Größe:** Gemessen ergibt ein Monat mit ~1.800 Einsätzen 590 KB. Grenze
+  ist 1 MiB je Dokument. Ab 900 KB fallen die Begründungen weg, darüber
+  kommt eine Meldung statt eines stillen Fehlers.
+- **Wunsch-Grenze:** Die Mitarbeiter-Karte lässt nicht mehr Tage antippen,
+  als die Chefin erlaubt.
+
+**Unterlagen** (`docs/schichtplaner/`, Erzeuger unter `werkzeug/`)
+- `Schichtplaner-Eintragen.pdf`: jedes Feld mit Pflicht, Form, Wirkung,
+  Monats-Checkliste, Stolpersteine und offene Fragen.
+- `Schichtplaner-Handbuch.pdf`: was er kann, wie er entscheidet (Regeln und
+  Punkte), Krankheit und Tausch, Rechte, **Grenzen mit Zahlen**, was zu
+  beobachten ist, zehn Verbesserungsvorschläge, Prüfstand.
+- `vorlagen/Schichtplaner-Vorlage.xlsx` v2.
+
+**Geprüft**
+- test-schichtplaner-rechnung: 82 Prüfungen, davon 27 neu.
+- test-schichtplaner: 97 Prüfungen.
+  - Eigene Seite als Reiter.
+  - Regeln eintragen, und der Sondertag „zu“ wirkt beim Neu-Erstellen.
+  - Krankmeldung nach dem Erstellen → Ausfall → Ersatz.
+  - Echter Tausch.
+  - Trefferflächen 320–1920 px, normal und kompakt, auch im Regelbereich.
+    Der Feiertags-Schalter wird als Zeile gemessen, weil die Zeile das
+    Fingerziel ist. Dass ein Tipp auf ihren Rand umschaltet, ist eigens
+    geprüft.
+- rules/schichtplaner (65): unverändert grün, keine neue Sammlung.
+- test-doppelte-namen, test-gestaltung, test-abgeschnitten, test-demo,
+  test-ausliefern: grün.
+
+**Gemessen:**
+- Planen: 60 Personen 0,8 s, 150 Personen 1,4 s.
+- Ersatz: 9–12 ms.
+- Ausfälle (eine Person einen Monat krank): 0,2 s.
+- Alles auf dem Server-Rechner, nicht am Handy.
+
+**Nicht geprüft:** echte Datenbank, Dateien aus Microsoft Excel, Laufzeit
+am Handy.

@@ -113,7 +113,7 @@
   /* Rollen, die einen eigenen Rahmen haben. Alles andere ist frei. */
   function istMinijob(p) { return /minijob|aushilfe/i.test(p.rolle || ''); }
 
-  /* ── Die Hauptrechnung ──────────────────────────────────────────────
+  /* ── Der Rechenkern ─────────────────────────────────────────────────
      eingabe = {
        monat: 'JJJJ-MM',
        studios: [{ key, name, schichten: [{ id, name, von, bis, tage:[1..7], min, braucht }] }],
@@ -122,15 +122,25 @@
        abwesend: [{ id (Person), von, bis, art }],
        wuensche: { <Person>: { frei:[Datum], lieber, notiz } },
        feiertageZu: false,
+       maxAmStueck: 6,             // Runde 169: mehr Tage am Stück nur als Rückfrage
+       fest: [{ person, studio, schicht, tage:[1..7] | datum }],      // von der Chefin gesetzt
+       sonder: [{ datum, studio:'alle'|key, art:'zu'|'mehr', schicht:''|id, plus, notiz }],
        vormonat: [{ id, datum, bis }]   // letzte Schichten, für die Ruhezeit am 1.
-     } */
-  function planen(e) {
+     }
+
+     WARUM EIN KONTEXT. Bis Runde 168 kannte nur planen() die Regeln; das
+     Umbesetzen von Hand prüfte eine verkürzte Abschrift (Urlaub, „nie",
+     unter 18) — Ruhezeit, Minijob-Grenze und „nicht allein" fehlten dort.
+     Jetzt bauen planen(), ersatz() und tausch() denselben Kontext, und
+     ein fertiger Plan wird in ihn „nachgespielt". Eine Regel steht damit
+     genau einmal da. */
+  function kontext(e) {
     var tage = tageImMonat(e.monat);
     var feiertage = feiertageNRW(+e.monat.slice(0, 4));
-    var studios = e.studios || [];
+    var maxAmStueck = +e.maxAmStueck || 6;
     var personen = (e.personen || []).slice().sort(function (a, b) { return a.name.localeCompare(b.name, 'de'); });
     var wuensche = e.wuensche || {};
-    var stand = {};
+    var stand = {}, einsaetze = [];
     personen.forEach(function (p) {
       var v = {};
       for (var t = 1; t <= 7; t++) v[t] = verfuegbarkeit((p.verf || {})[t]);
@@ -138,10 +148,10 @@
          Wochenstunden richtet sich nach seiner Monatsgrenze. */
       var soll = p.wocheStd ? p.wocheStd * tage.length / 7 : (p.maxMonatStd || 0);
       stand[p.id] = { p: p, verf: v, std: 0, soll: soll, tage: {}, woche: {}, wochenenden: 0,
-                      frueh: 0, spaet: 0, ende: {}, rueckfragen: 0 };
+                      feiertage: 0, frueh: 0, spaet: 0, ende: {}, rueckfragen: 0 };
     });
     (e.vormonat || []).forEach(function (s) {
-      if (stand[s.id]) stand[s.id].ende[s.datum] = s.bis;
+      if (stand[s.id]) { stand[s.id].ende[s.datum] = s.bis; stand[s.id].tage[s.datum] = true; }
     });
     var abwesend = {};
     (e.abwesend || []).forEach(function (a) {
@@ -149,71 +159,53 @@
         (abwesend[a.id] = abwesend[a.id] || {})[d] = a.art || 'abwesend';
       }
     });
-
-    var einsaetze = [], luecken = [], hinweise = [];
-
-    /* Pro Tag alle Plätze sammeln, dann die knappsten zuerst besetzen:
-       ein Platz, für den nur eine Person infrage kommt, darf nicht leer
-       bleiben, weil diese Person schon woanders steht. */
-    tage.forEach(function (datum) {
-      var wt = wochentag(datum), ft = feiertage[datum];
-      if (ft && e.feiertageZu) return;
-      var plaetze = [];
-      studios.forEach(function (st) {
-        (st.schichten || []).forEach(function (sch) {
-          if (sch.tage && sch.tage.length && sch.tage.indexOf(wt) < 0) return;
-          plaetze.push({ datum: datum, studio: st, schicht: sch, min: Math.max(1, +sch.min || 1), besetzt: [] });
-        });
-      });
-      plaetze.forEach(function (pl) { pl.knapp = kandidaten(pl, false).length; });
-      plaetze.sort(function (a, b) { return a.knapp - b.knapp || a.studio.name.localeCompare(b.studio.name, 'de'); });
-      plaetze.forEach(function (pl) {
-        while (pl.besetzt.length < pl.min) {
-          var liste = kandidaten(pl, false), rueck = false;
-          if (!liste.length) { liste = kandidaten(pl, true); rueck = true; }
-          if (!liste.length) break;
-          eintragen(pl, liste[0], rueck);
-        }
-        if (pl.besetzt.length < pl.min) {
-          luecken.push(luecke(pl));
-        }
-        if (ft) pl.feiertag = ft;
-      });
-    });
-
     function wochenende(d) { return wochentag(d) >= 6; }
-
-    /* Wer kommt für diesen Platz infrage — und mit welcher Bewertung?
-       weich=true lässt die weichen Regeln fallen (Rückfrage). */
-    function kandidaten(pl, weich) {
-      var r = [];
-      personen.forEach(function (p) {
-        var g = ausschluss(p, pl, weich);
-        if (g) return;
-        r.push({ p: p, wert: bewerten(p, pl), weich: weich ? weicheGruende(p, pl) : [] });
-      });
-      r.sort(function (a, b) { return b.wert - a.wert || a.p.name.localeCompare(b.p.name, 'de'); });
-      return r;
+    function amStueck(s, d) {
+      var n = 0;
+      for (var x = plusTage(d, -1); s.tage[x]; x = plusTage(x, -1)) n++;
+      return n;
     }
-
-    /* Der Grund, warum jemand NICHT infrage kommt — oder null. */
+    function sperreTrifft(text, wt) {
+      var t = String(text).toLowerCase();
+      return t.indexOf(TAGE[wt - 1].toLowerCase()) >= 0 && /schule|uni|sperre|nie|kurs/.test(t);
+    }
+    function kann(p, was) {
+      return (p.kann || []).some(function (k) { return k.toLowerCase().indexOf(String(was).toLowerCase()) >= 0; });
+    }
+    /* „Darf nicht allein sein": wer schon im selben Studio zur selben
+       Zeit steht und allein sein darf, begleitet. */
+    function begleitet(p, pl) {
+      var a = minuten(pl.schicht.von), b = minuten(pl.schicht.bis);
+      return einsaetze.some(function (x) {
+        if (x.datum !== pl.datum || x.studio !== pl.studio.key || x.id === p.id) return false;
+        if (!stand[x.id] || !stand[x.id].p.allein) return false;
+        return minuten(x.von) <= a && minuten(x.bis) >= b;
+      });
+    }
+    /* Der Grund, warum jemand NICHT infrage kommt — oder null.
+       weich=true lässt die weichen Regeln fallen (Rückfrage). */
     function ausschluss(p, pl, weich) {
       var s = stand[p.id], d = pl.datum, sch = pl.schicht, wt = wochentag(d);
       var studiosP = [p.haupt].concat(p.studios || []);
       if (studiosP.indexOf(pl.studio.key) < 0) return 'anderes Studio';
       if (pl.besetzt.indexOf(p.id) >= 0) return 'schon in dieser Schicht';
       if (abwesend[p.id] && abwesend[p.id][d]) return abwesend[p.id][d] === 'krank' ? 'krank' : 'Urlaub';
+      if (p.ab && d < p.ab) return 'fängt erst am ' + p.ab.split('-').reverse().join('.') + ' an';
+      if (p.bis && d > p.bis) return 'hört am ' + p.bis.split('-').reverse().join('.') + ' auf';
       if (s.tage[d]) return 'schon eingeteilt';
-      if (!passtZeit(s.verf[wt], sch)) return s.verf[wt].art === 'nie' ? 'kann ' + TAGE[wt - 1] + ' nicht' : 'Uhrzeit passt nicht';
+      if (!passtZeit(s.verf[wt], sch)) return s.verf[wt].art === 'nie' ? 'kann ' + TAGE[wt - 1] + ' nicht'
+        : (s.verf[wt].art === 'absprache' ? 'nur nach Absprache' : 'Uhrzeit passt nicht');
       if (p.sperre && sperreTrifft(p.sperre, wt)) return 'feste Sperrzeit';
       var std = dauerStd(sch.von, sch.bis);
-      /* Jugendarbeitsschutz: 6–20 Uhr, höchstens 8 Stunden am Tag.
-         Ausnahmen für bestimmte Branchen gibt es — dafür ist eine Frage
-         an die Chefin offen; bis dahin gilt die strenge Grenze. */
+      /* Jugendarbeitsschutz: 6–20 Uhr, höchstens 8 Stunden am Tag. */
       if (p.u18 && (minuten(sch.bis) > 20 * 60 || minuten(sch.von) < 6 * 60 || std > 8)) return 'unter 18';
-      /* 11 Stunden Ruhe nach dem Ende des Vortags (ArbZG § 5) */
+      /* 11 Stunden Ruhe nach dem Ende des Vortags UND vor dem Beginn des
+         Folgetags (ArbZG § 5). Der Folgetag zählt erst, seit Ersatz und
+         Tausch in einen fertigen Plan hineinsetzen. */
       var vortag = s.ende[plusTage(d, -1)];
       if (vortag != null && (minuten(sch.von) + 1440 - minuten(vortag)) < 11 * 60) return 'Ruhezeit';
+      var folge = einsaetze.filter(function (x) { return x.id === p.id && x.datum === plusTage(d, 1); })[0];
+      if (folge && (minuten(folge.von) + 1440 - minuten(sch.bis)) < 11 * 60) return 'Ruhezeit';
       if (std > 10) return 'über 10 Stunden';
       if (istMinijob(p) && p.maxMonatStd && s.std + std > p.maxMonatStd + 0.01) return 'Monatsgrenze erreicht';
       if (!p.allein && !begleitet(p, pl)) return 'darf nicht allein sein';
@@ -227,48 +219,55 @@
       if (w && (w.frei || []).indexOf(pl.datum) >= 0) g.push('wollte frei');
       if (p.maxTageWoche && (s.woche[isoWoche(pl.datum)] || 0) >= p.maxTageWoche) g.push('schon ' + p.maxTageWoche + ' Tage diese Woche');
       if (!istMinijob(p) && p.wocheStd && s.std + dauerStd(pl.schicht.von, pl.schicht.bis) > s.soll * 1.15 + 0.01) g.push('über dem Soll');
+      var n = amStueck(s, pl.datum);
+      if (n >= maxAmStueck) g.push((n + 1) + '. Tag am Stück');
       return g;
     }
-    function sperreTrifft(text, wt) {
-      var t = String(text).toLowerCase();
-      return t.indexOf(TAGE[wt - 1].toLowerCase()) >= 0 && /schule|uni|sperre|nie|kurs/.test(t);
-    }
-    function kann(p, was) {
-      return (p.kann || []).some(function (k) { return k.toLowerCase().indexOf(String(was).toLowerCase()) >= 0; });
-    }
-    /* „Darf nicht allein sein": wer schon im selben Studio zur selben
-       Zeit steht und allein sein darf, begleitet. Bei einer Schicht mit
-       Mindestbesetzung 1 kommt so nur infrage, wer allein darf — es sei
-       denn, eine andere Schicht überlappt. */
-    function begleitet(p, pl) {
-      var a = minuten(pl.schicht.von), b = minuten(pl.schicht.bis);
-      return einsaetze.some(function (x) {
-        if (x.datum !== pl.datum || x.studio !== pl.studio.key) return false;
-        if (!stand[x.id].p.allein) return false;
-        return minuten(x.von) <= a && minuten(x.bis) >= b;
-      });
-    }
-
-    /* Bewertung: höher = besser. Die Gewichte stehen hier offen, damit
-       man sie nach den Antworten der Chefin nachziehen kann. */
+    /* Bewertung: höher = besser. Die Gewichte stehen offen, damit man sie
+       nach den Antworten der Chefin nachziehen kann.
+       FAIRNESS (Runde 169): Wochenenden, Feiertage und — wer „egal" sagt
+       — früh/spät werden reihum verteilt; wer unter Soll ist, kommt zuerst. */
     function bewerten(p, pl) {
       var s = stand[p.id], w = 0, std = dauerStd(pl.schicht.von, pl.schicht.bis);
-      if (p.haupt === pl.studio.key) w += 30;                 // Hauptstudio vor Springer
-      var fehlt = s.soll - s.std;                              // wer unter Soll ist, zuerst
+      if (p.haupt === pl.studio.key) w += 30;
+      var fehlt = s.soll - s.std;
       w += Math.max(-20, Math.min(40, fehlt / Math.max(std, 1) * 4));
       var lieber = (wuensche[p.id] && wuensche[p.id].lieber) || p.lieber || '';
       var frueh = istFrueh(pl.schicht);
       if (/fr/i.test(lieber)) w += frueh ? 12 : -12;
-      if (/sp/i.test(lieber)) w += frueh ? -12 : 12;
-      if (wochenende(pl.datum)) w -= s.wochenenden * 6;        // Wochenenden reihum
+      else if (/sp/i.test(lieber)) w += frueh ? -12 : 12;
+      else w -= (frueh ? s.frueh - s.spaet : s.spaet - s.frueh) * 2;
+      /* 15 statt 6 (bis Runde 168): bei 6 entschied der Stundenabstand,
+         und von vier Gleichen bekam einer zwei Samstage, einer keinen. */
+      if (wochenende(pl.datum)) w -= s.wochenenden * 15;
+      if (feiertage[pl.datum]) w -= s.feiertage * 20;
+      w -= Math.max(0, amStueck(s, pl.datum) - 3) * 4;          // lange Ketten vermeiden
       if (pl.schicht.braucht && kann(p, pl.schicht.braucht)) w += 25;
       return w;
     }
-
-    function eintragen(pl, k, rueck) {
+    function kandidaten(pl, weich) {
+      var r = [];
+      personen.forEach(function (p) {
+        if (ausschluss(p, pl, weich)) return;
+        r.push({ p: p, wert: bewerten(p, pl), weich: weich ? weicheGruende(p, pl) : [] });
+      });
+      r.sort(function (a, b) { return b.wert - a.wert || a.p.name.localeCompare(b.p.name, 'de'); });
+      return r;
+    }
+    function buchen(p, pl, std) {
+      var s = stand[p.id];
+      s.std += std; s.tage[pl.datum] = true; s.ende[pl.datum] = pl.schicht.bis;
+      var wo = isoWoche(pl.datum); s.woche[wo] = (s.woche[wo] || 0) + 1;
+      if (wochenende(pl.datum)) s.wochenenden++;
+      if (feiertage[pl.datum]) s.feiertage++;
+      if (istFrueh(pl.schicht)) s.frueh++; else s.spaet++;
+      pl.besetzt.push(p.id);
+    }
+    function eintragen(pl, k, rueck, fest) {
       var p = k.p, s = stand[p.id], sch = pl.schicht, std = dauerStd(sch.von, sch.bis);
       var gruende = [];
-      if (p.haupt === pl.studio.key) gruende.push('Hauptstudio'); else gruende.push('Springer');
+      if (fest) gruende.push('fest eingeplant');
+      gruende.push(p.haupt === pl.studio.key ? 'Hauptstudio' : 'Springer');
       var lieber = (wuensche[p.id] && wuensche[p.id].lieber) || p.lieber || '';
       if (lieber && /fr/i.test(lieber) === istFrueh(sch) && !/egal/i.test(lieber)) gruende.push('wollte ' + (istFrueh(sch) ? 'früh' : 'spät'));
       if (pl.schicht.braucht && kann(p, pl.schicht.braucht)) gruende.push('kann ' + pl.schicht.braucht);
@@ -277,21 +276,14 @@
         schicht: sch.id, schichtName: sch.name, von: sch.von, bis: sch.bis,
         grund: gruende.join(' · ') + ' · ' + Math.round(s.std) + ' → ' + Math.round(s.std + std) + ' von ' + Math.round(s.soll) + ' Std.'
       };
-      if (rueck) {
-        e2.rueckfrage = k.weich.join(', ');
-        s.rueckfragen++;
-      }
+      if (fest) e2.fest = true;
+      if (rueck) { e2.rueckfrage = k.weich.join(', '); s.rueckfragen++; }
       einsaetze.push(e2);
-      pl.besetzt.push(p.id);
-      s.std += std; s.tage[pl.datum] = true; s.ende[pl.datum] = sch.bis;
-      var wo = isoWoche(pl.datum); s.woche[wo] = (s.woche[wo] || 0) + 1;
-      if (wochenende(pl.datum)) s.wochenenden++;
-      if (istFrueh(sch)) s.frueh++; else s.spaet++;
+      buchen(p, pl, std);
+      return e2;
     }
-
     /* Eine Lücke erklärt sich selbst: woran es lag, gezählt — und wen
-       man fragen könnte (die, die nur an „weichen" Dingen scheitern
-       oder „nach Absprache" eingetragen haben). */
+       man fragen könnte. */
     function luecke(pl) {
       var zaehl = {}, fragen = [];
       personen.forEach(function (p) {
@@ -301,11 +293,7 @@
         var g = ausschluss(p, pl, true);
         if (!g) return;
         zaehl[g] = (zaehl[g] || 0) + 1;
-        /* Fragen lohnt sich nur, wo eine Absprache etwas ändert: „nach
-           Absprache", ein Tausch mit der eigenen Schicht, eine
-           Begleitung. Urlaub, krank und „nie" stehen nicht zur Wahl. */
-        var v = stand[p.id].verf[wochentag(pl.datum)];
-        if (v.art === 'absprache') fragen.push({ name: p.name, warum: 'nach Absprache' });
+        if (g === 'nur nach Absprache') fragen.push({ name: p.name, warum: 'nach Absprache' });
         else if (g === 'schon eingeteilt') fragen.push({ name: p.name, warum: 'tauschen' });
         else if (g === 'darf nicht allein sein') fragen.push({ name: p.name, warum: 'mit Begleitung' });
       });
@@ -319,53 +307,196 @@
         fragen: fragen.sort(function (a, b) { return (a.warum === 'tauschen') - (b.warum === 'tauschen'); }).slice(0, 4)
       };
     }
+    /* Sondertage der Chefin: „zu" nimmt Plätze weg, „mehr" hebt die
+       Mindestbesetzung an (Event, Probetrainings-Tag, Inventur …). */
+    function sonderFuer(datum, st, sch) {
+      var r = { zu: false, plus: 0, notiz: [] };
+      (e.sonder || []).forEach(function (x) {
+        if (x.datum !== datum) return;
+        if (x.studio && x.studio !== 'alle' && x.studio !== st.key) return;
+        if (x.schicht && x.schicht !== sch.id) return;
+        if (x.art === 'zu') r.zu = true;
+        if (x.art === 'mehr') r.plus += Math.max(1, +x.plus || 1);
+        if (x.notiz) r.notiz.push(x.notiz);
+      });
+      return r;
+    }
+    function plaetzeAm(datum) {
+      var wt = wochentag(datum), r = [];
+      if (feiertage[datum] && e.feiertageZu) return r;
+      (e.studios || []).forEach(function (st) {
+        (st.schichten || []).forEach(function (sch) {
+          if (sch.tage && sch.tage.length && sch.tage.indexOf(wt) < 0) return;
+          var so = sonderFuer(datum, st, sch);
+          if (so.zu) return;
+          r.push({ datum: datum, studio: st, schicht: sch, min: Math.max(1, +sch.min || 1) + so.plus, besetzt: [],
+                   notiz: so.notiz.join(' · ') });
+        });
+      });
+      return r;
+    }
+    /* Einen fertigen Plan in den Kontext „nachspielen" — ohne Prüfung,
+       denn er ist ja schon so. ohne: Einsätze, die dabei wegfallen. */
+    function nachspielen(liste, ohne) {
+      var plaetze = {};
+      tage.forEach(function (d) { plaetzeAm(d).forEach(function (pl) { plaetze[d + '|' + pl.studio.key + '|' + pl.schicht.id] = pl; }); });
+      (liste || []).forEach(function (x) {
+        if (ohne && ohne(x)) return;
+        var pl = plaetze[x.datum + '|' + x.studio + '|' + x.schicht], s = stand[x.id];
+        if (!pl || !s) return;
+        einsaetze.push(x);
+        buchen(s.p, pl, dauerStd(x.von, x.bis));
+      });
+      return plaetze;
+    }
+    return { tage: tage, feiertage: feiertage, personen: personen, stand: stand, einsaetze: einsaetze,
+             wuensche: wuensche, abwesend: abwesend, ausschluss: ausschluss, weicheGruende: weicheGruende,
+             bewerten: bewerten, kandidaten: kandidaten, eintragen: eintragen, luecke: luecke,
+             plaetzeAm: plaetzeAm, nachspielen: nachspielen };
+  }
 
-    var uebersicht = personen.map(function (p) {
-      var s = stand[p.id];
+  function planen(e) {
+    var k = kontext(e), luecken = [], hinweise = [];
+    var proPerson = {};
+    k.personen.forEach(function (p) { proPerson[p.id] = p; });
+
+    /* Pro Tag zuerst die festen Einteilungen der Chefin, dann die
+       knappsten Plätze: ein Platz, für den nur eine Person infrage kommt,
+       darf nicht leer bleiben, weil diese Person schon woanders steht. */
+    k.tage.forEach(function (datum) {
+      var wt = wochentag(datum), ft = k.feiertage[datum];
+      var plaetze = k.plaetzeAm(datum);
+      (e.fest || []).forEach(function (f) {
+        var passt = f.datum ? f.datum === datum : (f.tage || []).indexOf(wt) >= 0;
+        if (!passt) return;
+        var p = proPerson[f.person];
+        var pl = plaetze.filter(function (x) { return x.studio.key === f.studio && x.schicht.id === f.schicht; })[0];
+        if (!p) return;
+        if (!pl) { hinweise.push('Feste Einteilung ' + p.name + ' am ' + datum + ': diese Schicht gibt es an dem Tag nicht (zu oder kein Schichttag)'); return; }
+        var abw = k.abwesend[p.id] && k.abwesend[p.id][datum];
+        if (abw) { hinweise.push(p.name + ' ist am ' + datum + ' fest eingeplant, aber ' + (abw === 'krank' ? 'krank' : 'im Urlaub') + ' — der Planer sucht Ersatz'); return; }
+        if (k.stand[p.id].tage[datum]) return;
+        /* Fest heisst: die Chefin hat entschieden. Wünsche und Höchsttage
+           zählen hier nicht; Ruhezeit und Jugendschutz schon. */
+        var g = k.ausschluss(p, pl, true);
+        if (g && g !== 'darf nicht allein sein') { hinweise.push(p.name + ' ist am ' + datum + ' fest eingeplant, geht aber nicht: ' + g); return; }
+        k.eintragen(pl, { p: p, weich: [] }, false, true);
+      });
+      plaetze.forEach(function (pl) { pl.knapp = k.kandidaten(pl, false).length; });
+      plaetze.sort(function (a, b) { return a.knapp - b.knapp || a.studio.name.localeCompare(b.studio.name, 'de'); });
+      plaetze.forEach(function (pl) {
+        while (pl.besetzt.length < pl.min) {
+          var liste = k.kandidaten(pl, false), rueck = false;
+          if (!liste.length) { liste = k.kandidaten(pl, true); rueck = true; }
+          if (!liste.length) break;
+          k.eintragen(pl, liste[0], rueck, false);
+        }
+        if (pl.besetzt.length < pl.min) luecken.push(k.luecke(pl));
+        if (ft) pl.feiertag = ft;
+      });
+    });
+
+    var uebersicht = k.personen.map(function (p) {
+      var s = k.stand[p.id];
       return { id: p.id, name: p.name, rolle: p.rolle || '', std: Math.round(s.std * 10) / 10,
-               soll: Math.round(s.soll), tage: Object.keys(s.tage).length, wochenenden: s.wochenenden,
+               soll: Math.round(s.soll), tage: Object.keys(s.tage).filter(function (d) { return d.slice(0, 7) === e.monat; }).length,
+               wochenenden: s.wochenenden, feiertage: s.feiertage,
                frueh: s.frueh, spaet: s.spaet, rueckfragen: s.rueckfragen };
     });
-    personen.forEach(function (p) {
-      var s = stand[p.id];
+    k.personen.forEach(function (p) {
+      var s = k.stand[p.id];
       if (s.soll && s.std < s.soll * 0.85) hinweise.push(p.name + ': ' + Math.round(s.std) + ' von ' + Math.round(s.soll) + ' Std. — es gibt nicht genug passende Schichten');
       for (var t = 1; t <= 7; t++) if (s.verf[t].unklar) { hinweise.push(p.name + ': Verfügbarkeit am ' + TAGE[t - 1] + ' nicht verstanden („' + p.verf[t] + '“) — als ganztags gerechnet'); }
     });
 
     return {
-      monat: e.monat, einsaetze: einsaetze, luecken: luecken, hinweise: hinweise, personen: uebersicht,
-      feiertage: Object.keys(feiertage).filter(function (d) { return d.slice(0, 7) === e.monat; })
-        .map(function (d) { return { datum: d, name: feiertage[d] }; })
+      monat: e.monat, einsaetze: k.einsaetze, luecken: luecken, hinweise: hinweise, personen: uebersicht,
+      fairness: fairness(uebersicht),
+      feiertage: Object.keys(k.feiertage).filter(function (d) { return d.slice(0, 7) === e.monat; })
+        .map(function (d) { return { datum: d, name: k.feiertage[d] }; })
     };
   }
 
-  /* ── Wer käme für diesen Platz noch infrage? ──
-     Für das Umbesetzen von Hand: dieselben Regeln wie oben, aber auf
-     einen fertigen Plan angewandt. Jede Person mit Grund, damit die
-     Chefin sieht, warum jemand ausgegraut ist. */
-  function alternativen(e, plan, platz) {
-    var andere = plan.einsaetze.filter(function (x) {
-      return !(x.datum === platz.datum && x.studio === platz.studio && x.schicht === platz.schicht && x.id === platz.ohne);
+  /* Wie gleich verteilt ist der Plan? Spannweite (meiste − wenigste)
+     unter denen, die überhaupt arbeiten. Klein = fair. */
+  function fairness(personen) {
+    var aktiv = personen.filter(function (x) { return x.tage > 0; });
+    function spanne(f) {
+      if (!aktiv.length) return 0;
+      var w = aktiv.map(f); return Math.max.apply(null, w) - Math.min.apply(null, w);
+    }
+    var mitSoll = aktiv.filter(function (x) { return x.soll; });
+    return {
+      wochenenden: spanne(function (x) { return x.wochenenden; }),
+      feiertage: spanne(function (x) { return x.feiertage; }),
+      unterSoll: mitSoll.filter(function (x) { return x.std < x.soll * 0.85; }).length,
+      ueberSoll: mitSoll.filter(function (x) { return x.std > x.soll * 1.15; }).length,
+      personen: aktiv.length
+    };
+  }
+
+  /* ── Ersatz für EINEN Platz in einem fertigen Plan ──
+     platz = { datum, studio, schicht, ohne }   (ohne = wer dort raus soll)
+     Antwort: jede Person des Studios, geordnet — erst wer ohne Rückfrage
+     geht (beste Bewertung zuerst), dann wer nur mit Rückfrage ginge,
+     zuletzt wer nicht geht, jeweils mit Grund. Gilt für Krankheit,
+     Urlaub nach dem Erstellen und das Umbesetzen von Hand. */
+  function ersatz(e, plan, platz) {
+    var k = kontext(e);
+    var plaetze = k.nachspielen(plan.einsaetze, function (x) {
+      return platz.ohne && x.datum === platz.datum && x.studio === platz.studio && x.schicht === platz.schicht && x.id === platz.ohne;
     });
-    var st = (e.studios || []).filter(function (s) { return s.key === platz.studio; })[0];
-    var sch = st && st.schichten.filter(function (s) { return s.id === platz.schicht; })[0];
-    if (!st || !sch) return [];
-    var wt = wochentag(platz.datum), abw = {};
-    (e.abwesend || []).forEach(function (a) { if (a.von <= platz.datum && a.bis >= platz.datum) abw[a.id] = a.art || 'Urlaub'; });
-    return (e.personen || []).filter(function (p) {
+    var pl = plaetze[platz.datum + '|' + platz.studio + '|' + platz.schicht];
+    if (!pl) return [];
+    return k.personen.filter(function (p) {
       return [p.haupt].concat(p.studios || []).indexOf(platz.studio) >= 0;
     }).map(function (p) {
-      var g = null, v = verfuegbarkeit((p.verf || {})[wt]);
-      if (abw[p.id]) g = abw[p.id] === 'krank' ? 'krank' : 'Urlaub';
-      else if (andere.some(function (x) { return x.id === p.id && x.datum === platz.datum; })) g = 'an diesem Tag schon eingeteilt';
-      else if (!passtZeit(v, sch)) g = v.art === 'nie' ? 'kann ' + TAGE[wt - 1] + ' nicht' : (v.art === 'absprache' ? 'nur nach Absprache' : 'Uhrzeit passt nicht');
-      else if (p.u18 && (minuten(sch.bis) > 20 * 60 || dauerStd(sch.von, sch.bis) > 8)) g = 'unter 18';
-      var w = (e.wuensche || {})[p.id];
-      var weich = w && (w.frei || []).indexOf(platz.datum) >= 0 ? 'wollte frei' : '';
-      return { id: p.id, name: p.name, grund: g, weich: weich };
+      var hart = k.ausschluss(p, pl, true), weich = hart ? [] : k.weicheGruende(p, pl);
+      if (hart === 'schon eingeteilt' || hart === 'schon in dieser Schicht') hart = 'an diesem Tag schon eingeteilt';
+      /* Wer in der Tabelle „springt bei Ausfall ein: ja" hat, steht beim
+         Ersatz weiter oben — gefragt wird, wer gefragt werden will. */
+      return { id: p.id, name: p.name, grund: hart, weich: weich.join(', '),
+               wert: hart ? -999 : k.bewerten(p, pl) + (p.einspringen ? 20 : 0), einspringen: !!p.einspringen,
+               std: Math.round(k.stand[p.id].std), soll: Math.round(k.stand[p.id].soll) };
     }).sort(function (a, b) {
-      return (!!a.grund - !!b.grund) || (!!a.weich - !!b.weich) || a.name.localeCompare(b.name, 'de');
+      return (!!a.grund - !!b.grund) || (!!a.weich - !!b.weich) || (b.wert - a.wert) || a.name.localeCompare(b.name, 'de');
     });
+  }
+  /* Abwärtskompatibel: die Oberfläche bis Runde 168 rief alternativen(). */
+  function alternativen(e, plan, platz) { return ersatz(e, plan, platz); }
+
+  /* ── Tausch: zwei Einsätze am selben Tag ──
+     a, b = Einsätze aus dem Plan. Geht es, wenn A die Schicht von B
+     übernimmt und B die von A? Beide Richtungen nach denselben Regeln. */
+  function tausch(e, plan, a, b) {
+    function gleich(x, y) { return x.datum === y.datum && x.studio === y.studio && x.schicht === y.schicht && x.id === y.id; }
+    var k = kontext(e);
+    var plaetze = k.nachspielen(plan.einsaetze, function (x) { return gleich(x, a) || gleich(x, b); });
+    var pa = plaetze[a.datum + '|' + a.studio + '|' + a.schicht], pb = plaetze[b.datum + '|' + b.studio + '|' + b.schicht];
+    var pA = k.stand[a.id] && k.stand[a.id].p, pB = k.stand[b.id] && k.stand[b.id].p;
+    if (!pa || !pb || !pA || !pB) return { geht: false, grund: 'nicht im Plan' };
+    var g1 = k.ausschluss(pB, pa, true);
+    if (g1) return { geht: false, grund: pB.name + ': ' + g1 };
+    k.eintragen(pa, { p: pB, weich: [] }, false, false);
+    var g2 = k.ausschluss(pA, pb, true);
+    if (g2) return { geht: false, grund: pA.name + ': ' + g2 };
+    var w = k.weicheGruende(pA, pb).map(function (x) { return pA.name + ': ' + x; });
+    return { geht: true, rueckfrage: w.join(', ') };
+  }
+
+  /* ── Ausfälle: wer im Plan steht, aber jetzt abwesend ist ──
+     Nach dem Erstellen gemeldete Krankheit oder genehmigter Urlaub. Zu
+     jedem Ausfall die drei besten Ersatzleute. */
+  function ausfaelle(e, plan) {
+    var abw = {};
+    (e.abwesend || []).forEach(function (a) {
+      for (var d = a.von; d <= a.bis; d = plusTage(d, 1)) (abw[a.id] = abw[a.id] || {})[d] = a.art || 'abwesend';
+    });
+    return plan.einsaetze.filter(function (x) { return abw[x.id] && abw[x.id][x.datum]; }).map(function (x) {
+      var vorschlag = ersatz(e, plan, { datum: x.datum, studio: x.studio, schicht: x.schicht, ohne: x.id })
+        .filter(function (c) { return !c.grund && c.id !== x.id; }).slice(0, 3);
+      return { einsatz: x, art: abw[x.id][x.datum] === 'krank' ? 'krank' : 'Urlaub', vorschlag: vorschlag };
+    }).sort(function (a, b) { return a.einsatz.datum.localeCompare(b.einsatz.datum); });
   }
 
   /* ── Für LogX: eine Tabelle zum Einfügen ──
@@ -516,7 +647,8 @@
       var s = spalten(ma[0], {
         name: /^name/, rolle: /^rolle/, haupt: /^hauptstudio/, weitere: /^weitere/, woche: /pro ?woche \(soll\)|stunden pro woche/,
         monat: /std\. pro monat|pro monat/, tageW: /tage pro woche/, allein: /allein/, u18: /unter 18/, kann: /^kann/,
-        sperre: /sperr/, lieber: /^lieber/, notiz: /^bemerkung/
+        sperre: /sperr/, lieber: /^lieber/, notiz: /^bemerkung/,
+        einspringen: /springt|einspring/, ab: /erster arbeitstag|arbeitet ab/, bis: /letzter arbeitstag|arbeitet bis/
       });
       var tagSp = {};
       TAGE.forEach(function (t, i) { for (var c = 0; c < ma[0].length; c++) if (norm(ma[0][c]) === t.toLowerCase()) tagSp[i + 1] = c; });
@@ -532,7 +664,8 @@
           studios: liste(z[s.weitere]).map(studioKey).filter(Boolean),
           wocheStd: zahl(z[s.woche]), maxMonatStd: zahl(z[s.monat]), maxTageWoche: zahl(z[s.tageW]),
           allein: jaNein(z[s.allein], true), u18: jaNein(z[s.u18], false), kann: liste(z[s.kann]),
-          verf: verf, sperre: String(z[s.sperre] || ''), lieber: String(z[s.lieber] || ''), notiz: String(z[s.notiz] || '')
+          verf: verf, sperre: String(z[s.sperre] || ''), lieber: String(z[s.lieber] || ''), notiz: String(z[s.notiz] || ''),
+          einspringen: jaNein(z[s.einspringen], false), ab: datumAus(z[s.ab]), bis: datumAus(z[s.bis])
         });
       });
     }
@@ -565,7 +698,68 @@
         studios[key] = { min: zahl(z[q.min]) || 1, oeffnung: oeff, stoss: String(z[q.stoss] || ''), notiz: String(z[q.notiz] || '') };
       });
     }
-    return { personen: personen, schichten: schichten, studios: studios, fehler: fehler };
+    /* Runde 169: was die Chefin selbst festlegt — auch in der App
+       möglich, die Datei ist nur der schnellere Weg für viele Zeilen. */
+    var fest = [], sonder = [], einstellungen = {};
+    var fs = blaetter['Feste Schichten'];
+    if (fs && fs.length) {
+      var f = spalten(fs[0], { person: /^person|^name/, studio: /^studio/, schicht: /^schicht/, wann: /wochentag|datum|wann/, notiz: /bemerkung/ });
+      fs.slice(1).forEach(function (z, i) {
+        var person = String(z[f.person] || '').trim(), sn = String(z[f.schicht] || '').trim();
+        if (!person || /^beispiel/i.test(person) || /beispiel/i.test(String(z[f.notiz] || ''))) return;
+        var key = studioKey(z[f.studio]);
+        if (!key) { fehler.push('Feste Schichten, Zeile ' + (i + 2) + ': Studio „' + (z[f.studio] || '') + '“ unbekannt.'); return; }
+        var wann = String(z[f.wann] || '').trim(), als = datumAus(wann);
+        var eintrag = { personName: person, studio: key, schichtName: sn };
+        /* Ein Datum ohne Jahr („14.11.") oder ein leeres Feld wäre sonst
+           „alle Tage" — die Person stünde dann jeden Tag fest im Plan.
+           Deshalb: nur echte Wochentage oder ein volles Datum. */
+        if (als) eintrag.datum = als;
+        else if (/\b(mo|di|mi|do|fr|sa|so)/i.test(wann) && !/\d/.test(wann)) eintrag.tage = tageAusText(wann);
+        else { fehler.push('Feste Schichten, Zeile ' + (i + 2) + ' (' + person + '): „' + wann + '“ ist weder Wochentage (Mo, Mi) noch ein Datum mit Jahr (14.11.2026).'); return; }
+        fest.push(eintrag);
+      });
+    }
+    var so2 = blaetter['Sondertage'];
+    if (so2 && so2.length) {
+      var g = spalten(so2[0], { datum: /^datum/, studio: /^studio/, art: /^art/, schicht: /^schicht/, plus: /mehr|wie viele/, notiz: /notiz|bemerkung|anlass/ });
+      so2.slice(1).forEach(function (z, i) {
+        var d = String(z[g.datum] || '').trim();
+        if (!d || /beispiel/i.test(String(z[g.notiz] || ''))) return;
+        d = datumAus(d) || d;
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) { fehler.push('Sondertage, Zeile ' + (i + 2) + ': Datum „' + z[g.datum] + '“ nicht verstanden (TT.MM.JJJJ).'); return; }
+        var st = norm(z[g.studio]) === 'alle' || !norm(z[g.studio]) ? 'alle' : studioKey(z[g.studio]);
+        if (!st) { fehler.push('Sondertage, Zeile ' + (i + 2) + ': Studio „' + z[g.studio] + '“ unbekannt.'); return; }
+        sonder.push({ datum: d, studio: st, art: /zu|geschlossen/i.test(String(z[g.art] || '')) ? 'zu' : 'mehr',
+                      schichtName: String(z[g.schicht] || '').trim(), plus: zahl(z[g.plus]) || 1, notiz: String(z[g.notiz] || '').trim() });
+      });
+    }
+    var ei = blaetter['Einstellungen'];
+    if (ei && ei.length) {
+      ei.slice(1).forEach(function (z) {
+        var k = norm(z[0]), v = z[1];
+        if (/frist/.test(k)) einstellungen.wunschFristTag = Math.min(28, Math.max(1, zahl(v) || 15));
+        else if (/feiertag/.test(k)) einstellungen.feiertageZu = jaNein(v, false);
+        else if (/am stück|am stueck/.test(k)) einstellungen.maxAmStueck = Math.min(12, Math.max(1, zahl(v) || 6));
+        else if (/wunsch/.test(k) && /höchstens|hoechstens|max/.test(k)) einstellungen.maxWunschTage = Math.min(31, Math.max(0, zahl(v)));
+      });
+    }
+    return { personen: personen, schichten: schichten, studios: studios, fest: fest, sonder: sonder,
+             einstellungen: einstellungen, fehler: fehler };
+  }
+  /* Datum aus einer Zelle: Excel speichert Tage seit 1899-12-30 als
+     Zahl; getippt steht dort „1.11.2026" oder „2026-11-01". */
+  function datumAus(v) {
+    var t = String(v == null ? '' : v).trim();
+    if (!t) return '';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return t;
+    var m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(t);
+    if (m) return m[3] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[1]).slice(-2);
+    if (/^\d{5}(\.\d+)?$/.test(t)) {
+      var d = new Date(Date.UTC(1899, 11, 30) + Math.floor(+t) * 864e5);
+      return d.toISOString().slice(0, 10);
+    }
+    return '';
   }
   function zeit(v) {
     var m = /(\d{1,2})[:.]?(\d{2})?/.exec(String(v));
@@ -573,7 +767,8 @@
   }
 
   var SP = {
-    planen: planen, alternativen: alternativen, alsTabelle: alsTabelle,
+    planen: planen, alternativen: alternativen, ersatz: ersatz, tausch: tausch, ausfaelle: ausfaelle,
+    fairness: fairness, alsTabelle: alsTabelle,
     excelLesen: excelLesen, ausVorlage: ausVorlage,
     tageImMonat: tageImMonat, wochentag: wochentag, feiertageNRW: feiertageNRW,
     verfuegbarkeit: verfuegbarkeit, isoWoche: isoWoche, dauerStd: dauerStd, TAGE: TAGE
