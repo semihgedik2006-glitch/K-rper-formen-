@@ -16853,3 +16853,66 @@ die Chefin einträgt, und ein Handbuch mit Grenzen.
 
 **Nicht geprüft:** echte Datenbank, Dateien aus Microsoft Excel, Laufzeit
 am Handy.
+
+## Runde 170 — Formi: Worker 2.10, Formi weiß, wer es ist (22.10.2026)
+
+**Anlass.** Erster Blick in den Leitstand-Verlauf vom 17.–21.10.2026 (85
+Fragen in 7 Tagen, 41 aus dem Wissen). Was aus dem Wissen kam, war gut. Der
+Rest hatte vier wiederkehrende Fehler:
+
+1. **Formi stellte sich als die fragende Person vor.** „Hallo, ich bin
+   Semih" in fast jeder Antwort, bei Mails „ich bin Mail", sonst „das
+   Studio-Gehirn". Grund: Der Systemtext nannte die KI „Studio-Gehirn" und
+   verlangte einen „persönlichen Einstieg mit dem Vornamen". Das Modell hat
+   den Vornamen als eigenen genommen. Bei Mails schickt `formiMail` als
+   Name „Mail <adresse>", also hiess der Vorname „Mail".
+2. **Erfundenes, wenn das Wissen fehlte.** Die Regel lautete „gib eine
+   hilfreiche erste Antwort aus Allgemeinwissen". Heraus kamen eine
+   fremde „Studio-Management-Software", erfundene Konditionen in einer
+   Kundenanfrage per Mail und „ich kann keine Aufgaben anlegen", obwohl
+   Formi das seit Runde 160 kann.
+3. **Smalltalk als offene Frage.** „was geht", „damn", „nein", „dfsgshjsh"
+   gingen als offene Fragen an Semih, fast die Hälfte der Liste.
+4. **WhatsApp bei jeder Frage.** Meta sperrt die Nummer noch. Trotzdem
+   ging zu jeder offenen Frage eine Nachricht an die Admins raus, kam mit
+   401 zurück, und der Verlauf bestand zur Hälfte aus Zustellfehlern.
+
+**Gebaut** (`tools/studio-gehirn/worker.js`, Version 2.10):
+- Der Worker liegt jetzt im Repo. Bisher gab es ihn nur in Cloudflare und
+  bei Semih. Der erste Commit ist 2.9 unverändert, damit der Unterschied
+  nachvollziehbar bleibt.
+- Neuer Systemtext (`formiSystem`). Er sagt: Du heisst Formi, die Person
+  heisst X, du bist nicht X, und es gibt keine Vorstellung. Er enthält die
+  Liste dessen, was Formi wirklich kann (`FORMI_FAEHIGKEITEN`). Allgemeine
+  Fachfragen dürfen allgemein beantwortet werden. Zu allem, was unser
+  Studio betrifft, wird nichts erfunden.
+- Die KI ordnet jede Nachricht ein: `frage`, `smalltalk`, `unklar` oder
+  `kunde`. Nur `frage` ohne Wissen wird eine offene Frage. Smalltalk und
+  Kundenmails zählen weder in der Statistik noch als Trainingsbeispiel
+  (`typ` `smalltalk` bzw. `kunde`).
+- Kundenanfragen im Formi-Postfach bekommen eine höfliche Antwort, dass
+  hier der interne Assistent schreibt. Preise und Konditionen werden nicht
+  genannt.
+- Tastatursalat ohne Vokale bekommt eine feste Antwort, ohne KI.
+- `vorstellungEntfernen` ist ein Netz, falls das Modell sich doch wieder
+  vorstellt.
+- Die KI bekommt Datum und Uhrzeit in Köln.
+- Der Verlauf heisst „Formi:" statt „Gehirn:". Es sind drei Wechsel statt
+  zwei, und der Smalltalk zählt mit.
+- WhatsApp sendet nur noch, wenn die Variable `WA_AKTIV` auf `1` steht.
+
+**Warum im Worker und nicht in der Function:** Die Fehler entstehen im
+Systemtext des Workers. „Mail" als Vorname wäre auch in `formiMail` zu
+beheben gewesen. Der Worker fängt es aber für jeden Aufrufer ab, und die
+Function muss dafür nicht neu ausgerollt werden.
+
+**Geprüft:** `tests/test-formi-worker.js`, 43 Prüfungen. D1 läuft dabei
+über node:sqlite mit dem echten Schema, Workers AI über eine Attrappe. Die
+Fälle sind die echten Antworten aus dem Leitstand-Verlauf.
+
+**Nicht geprüft:**
+- Wie Llama 3.3 und Gemma wirklich auf den neuen Systemtext reagieren.
+  Das zeigt erst der Verlauf nach dem Einspielen.
+- Ob die Einordnung `smalltalk`/`frage` im Betrieb trifft.
+- Keine `NEUIGKEITEN`-Zeile: Der Merge rollt den Worker nicht aus, das
+  macht Semih im Cloudflare-Editor. Die Zeile kommt, sobald 2.10 live ist.
