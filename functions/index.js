@@ -7029,7 +7029,7 @@ exports.gehirnFrage = region
     const firma = await firmaVonProfil(profil);
     if (!gehirnErlaubt(firma)) {
       throw new functions.https.HttpsError('permission-denied',
-        'Das Studio-Gehirn ist für diesen Betrieb nicht eingerichtet.');
+        'Formi ist für diesen Betrieb nicht eingerichtet.');
     }
     const auftrag = gehirnAuftrag(data, profil);
     if (!auftrag.text) {
@@ -7044,7 +7044,7 @@ async function gehirnFrageAusfuehren(auftrag, firma) {
     const schluessel = process.env.STUDIO_GEHIRN_KEY || '';
     if (!schluessel) {
       throw new functions.https.HttpsError('failed-precondition',
-        'Das Studio-Gehirn ist noch nicht verbunden (STUDIO_GEHIRN_KEY fehlt in den GitHub-Secrets).');
+        'Formi ist noch nicht verbunden (STUDIO_GEHIRN_KEY fehlt in den GitHub-Secrets).');
     }
     await tagesGrenze('gehirnFrage', GEHIRN_TAGESGRENZE, firma);
     const url = (process.env.GEHIRN_URL || GEHIRN_URL_STANDARD).replace(/\/+$/, '') + '/api/' + auftrag.art;
@@ -7058,14 +7058,14 @@ async function gehirnFrageAusfuehren(auftrag, firma) {
       json = await antwort.json().catch(() => ({}));
     } catch (e) {
       console.error('gehirnFrage: nicht erreichbar', e && e.message);
-      throw new functions.https.HttpsError('unavailable', 'Das Studio-Gehirn ist gerade nicht erreichbar. Bitte gleich noch einmal.');
+      throw new functions.https.HttpsError('unavailable', 'Formi ist gerade nicht erreichbar. Bitte gleich noch einmal.');
     }
     if (!antwort.ok) {
       console.error('gehirnFrage HTTP ' + antwort.status + ':', JSON.stringify(json).slice(0, 300));
       if (antwort.status === 429) {
         throw new functions.https.HttpsError('resource-exhausted', json.fehler || 'Für heute ist die Grenze erreicht. Morgen geht es weiter.');
       }
-      throw new functions.https.HttpsError('internal', 'Das Studio-Gehirn hat nicht geantwortet (' + antwort.status + ').');
+      throw new functions.https.HttpsError('internal', 'Formi hat nicht geantwortet (' + antwort.status + ').');
     }
     if (auftrag.art === 'idee') return { ok: true };
     return {
@@ -7117,7 +7117,7 @@ exports.gehirnErinnerung = region
   .https.onCall(async (data, context) => {
     const { profil, uid } = await anruferProfil(context);
     const firma = await firmaVonProfil(profil);
-    if (!gehirnErlaubt(firma)) throw new functions.https.HttpsError('permission-denied', 'Das Studio-Gehirn ist für diesen Betrieb nicht eingerichtet.');
+    if (!gehirnErlaubt(firma)) throw new functions.https.HttpsError('permission-denied', 'Formi ist für diesen Betrieb nicht eingerichtet.');
     const sammlung = W(firma).collection('gehirnErinnerungen');
     const ich = uid || (context.auth && context.auth.uid);
     if ((data || {}).art === 'weg') {
@@ -7179,7 +7179,7 @@ exports.gehirnUmformen = region
   .https.onCall(async (data, context) => {
     const { profil } = await anruferProfil(context);
     const firma = await firmaVonProfil(profil);
-    if (!gehirnErlaubt(firma)) throw new functions.https.HttpsError('permission-denied', 'Das Studio-Gehirn ist für diesen Betrieb nicht eingerichtet.');
+    if (!gehirnErlaubt(firma)) throw new functions.https.HttpsError('permission-denied', 'Formi ist für diesen Betrieb nicht eingerichtet.');
     const text = String((data || {}).text || '').trim().slice(0, 1500);
     if (!text) throw new functions.https.HttpsError('invalid-argument', 'Kein Text.');
     await tagesGrenze('gehirnUmformen', 200, firma);
@@ -7203,12 +7203,12 @@ exports.gehirnFoto = region
   .https.onCall(async (data, context) => {
     const { profil } = await anruferProfil(context);
     const firma = await firmaVonProfil(profil);
-    if (!gehirnErlaubt(firma)) throw new functions.https.HttpsError('permission-denied', 'Das Studio-Gehirn ist für diesen Betrieb nicht eingerichtet.');
+    if (!gehirnErlaubt(firma)) throw new functions.https.HttpsError('permission-denied', 'Formi ist für diesen Betrieb nicht eingerichtet.');
     const bild = String((data || {}).bild || '');
     if (!/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(bild) || bild.length > 900000) throw new functions.https.HttpsError('invalid-argument', 'Das Foto ist zu gross oder kein Bild.');
     const geraete = (Array.isArray((data || {}).geraete) ? data.geraete : []).map(x => String(x || '').slice(0, 60)).filter(Boolean).slice(0, 40);
     const schluessel = process.env.STUDIO_GEHIRN_KEY || '';
-    if (!schluessel) throw new functions.https.HttpsError('failed-precondition', 'Das Studio-Gehirn ist noch nicht verbunden.');
+    if (!schluessel) throw new functions.https.HttpsError('failed-precondition', 'Formi ist noch nicht verbunden.');
     await tagesGrenze('gehirnFoto', 100, firma);
     let antwort, json;
     try {
@@ -7216,7 +7216,7 @@ exports.gehirnFoto = region
         method: 'POST', headers: { 'Content-Type': 'application/json', 'x-studio-key': schluessel }, body: JSON.stringify({ bild, geraete })
       });
       json = await antwort.json().catch(() => ({}));
-    } catch (e) { throw new functions.https.HttpsError('unavailable', 'Das Studio-Gehirn ist gerade nicht erreichbar.'); }
+    } catch (e) { throw new functions.https.HttpsError('unavailable', 'Formi ist gerade nicht erreichbar.'); }
     if (!antwort.ok) throw new functions.https.HttpsError('unavailable', String(json.fehler || 'Das Foto konnte ich nicht lesen.').slice(0, 160));
     return { geraet: String(json.geraet || '').slice(0, 80), text: String(json.text || '').slice(0, 400) };
   });
@@ -7239,7 +7239,7 @@ exports.gehirnStimme = region
   .https.onCall(async (data, context) => {
     const { profil } = await anruferProfil(context);
     const firma = await firmaVonProfil(profil);
-    if (!gehirnErlaubt(firma)) throw new functions.https.HttpsError('permission-denied', 'Das Studio-Gehirn ist für diesen Betrieb nicht eingerichtet.');
+    if (!gehirnErlaubt(firma)) throw new functions.https.HttpsError('permission-denied', 'Formi ist für diesen Betrieb nicht eingerichtet.');
     const a = gehirnStimmePruefen(data);
     if (!a) throw new functions.https.HttpsError('invalid-argument', 'Kein Text zum Vorlesen.');
     const schluessel = process.env.STUDIO_GEHIRN_KEY || '';
@@ -7264,12 +7264,12 @@ exports.gehirnBewerten = region
     const firma = await firmaVonProfil(profil);
     if (!gehirnErlaubt(firma)) {
       throw new functions.https.HttpsError('permission-denied',
-        'Das Studio-Gehirn ist für diesen Betrieb nicht eingerichtet.');
+        'Formi ist für diesen Betrieb nicht eingerichtet.');
     }
     const b = gehirnBewertungPruefen(data);
     if (!b) throw new functions.https.HttpsError('invalid-argument', 'Diese Bewertung verstehe ich nicht.');
     const schluessel = process.env.STUDIO_GEHIRN_KEY || '';
-    if (!schluessel) throw new functions.https.HttpsError('failed-precondition', 'Das Studio-Gehirn ist noch nicht verbunden.');
+    if (!schluessel) throw new functions.https.HttpsError('failed-precondition', 'Formi ist noch nicht verbunden.');
     await tagesGrenze('gehirnBewerten', GEHIRN_TAGESGRENZE, firma);
     const name = String((profil || {}).name || 'Unbekannt').slice(0, 60);
     let antwort, json;
@@ -7281,7 +7281,7 @@ exports.gehirnBewerten = region
       });
       json = await antwort.json().catch(() => ({}));
     } catch (e) {
-      throw new functions.https.HttpsError('unavailable', 'Das Studio-Gehirn ist gerade nicht erreichbar.');
+      throw new functions.https.HttpsError('unavailable', 'Formi ist gerade nicht erreichbar.');
     }
     if (!antwort.ok || !json.ok) {
       console.error('gehirnBewerten HTTP ' + antwort.status + ':', JSON.stringify(json).slice(0, 200));
@@ -7700,7 +7700,7 @@ exports.gehirnAktion = region
     const { profil } = await anruferProfil(context);
     const firma = await firmaVonProfil(profil);
     if (!gehirnErlaubt(firma)) {
-      throw new functions.https.HttpsError('permission-denied', 'Das Studio-Gehirn ist für diesen Betrieb nicht eingerichtet.');
+      throw new functions.https.HttpsError('permission-denied', 'Formi ist für diesen Betrieb nicht eingerichtet.');
     }
     const rolle = profil.role;
     const verwaltet = rolle === 'chef' || rolle === 'leiter';
@@ -7971,12 +7971,12 @@ function lageberichtOhneKi(art, g, studios) {
   const teile = [];
   const zeitraum = art === 'woche' ? 'In den letzten 7 Tagen' : 'Heute';
   if (g) {
-    teile.push(zeitraum + ' gingen ' + g.fragen + (g.fragen === 1 ? ' Frage' : ' Fragen') + ' an das Studio-Gehirn' +
+    teile.push(zeitraum + ' gingen ' + g.fragen + (g.fragen === 1 ? ' Frage' : ' Fragen') + ' an Formi' +
       (g.fragen ? ', davon ' + g.abgedeckt + ' direkt aus dem Studio-Wissen beantwortet.' : '.'));
     if (g.offenGesamt) teile.push(g.offenGesamt + (g.offenGesamt === 1 ? ' Frage wartet' : ' Fragen warten') + ' im Leitstand auf eine Antwort.');
     if ((g.ideen || []).length) teile.push((g.ideen || []).length + ' neue ' + ((g.ideen || []).length === 1 ? 'Idee' : 'Ideen') + ' aus dem Team.');
   } else {
-    teile.push('Die Zahlen des Studio-Gehirns waren gerade nicht abrufbar.');
+    teile.push('Die Zahlen von Formi waren gerade nicht abrufbar.');
   }
   const offen = studios.filter(s => s.aufgaben || s.putz).sort((a, b) => (b.aufgaben + b.putz) - (a.aufgaben + a.putz));
   if (offen.length) {
@@ -8008,7 +8008,7 @@ async function lageberichtBauen(firma, art) {
       const system =
         'Du schreibst für die Geschäftsführung eines EMS-Studio-Betriebs den ' +
         (art === 'woche' ? 'Wochenrückblick (5 bis 8 Sätze)' : 'Tagesbericht (3 bis 5 Sätze)') +
-        ' aus den Daten des Studio-Gehirns (Fragen der Mitarbeiter an eine KI) und dem Stand der Aufgaben und Putzpläne. ' +
+        ' aus den Daten von Formi (Fragen der Mitarbeiter an eine KI) und dem Stand der Aufgaben und Putzpläne. ' +
         'Deutsch, sachlich, freundlich, ohne Aufzählungszeichen und ohne Markdown. Nenne: wie viel gefragt wurde und worum es ' +
         'hauptsächlich ging (Themen zusammenfassen, keine Einzelfragen wörtlich), was offen ist und im Leitstand beantwortet ' +
         'werden sollte, welche Ideen kamen, und welche Studios noch etwas offen haben. Keine Personennamen, keine Kundendaten, ' +
@@ -8040,12 +8040,12 @@ async function lageberichtFirma(firma, art) {
     await W(firma).collection('config').doc('lagebericht').set({ [art]: b }, { merge: true });
     const chefs = await kontenImStudio(firma, null, 'chef');
     const datum = new Date().toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin', weekday: 'long', day: '2-digit', month: '2-digit' });
-    const betreff = art === 'woche' ? 'Wochenrückblick vom Studio-Gehirn' : 'Lagebericht vom Studio-Gehirn – ' + datum;
+    const betreff = art === 'woche' ? 'Wochenrückblick von Formi' : 'Lagebericht von Formi – ' + datum;
     const z = b.zahlen;
     await teamMail(firma, chefs, betreff,
       b.text + '\n\n' +
       'Fragen: ' + z.fragen + ' · davon aus dem Wissen: ' + z.abgedeckt + ' · offen im Leitstand: ' + z.offen + ' · neue Ideen: ' + z.ideen + '\n\n' +
-      'In der App: Ich → Gehirn. Abschalten lässt sich diese Mail unter Einstellungen → Meldungen → „Lagebericht vom Studio-Gehirn".',
+      'In der App: Ich → Formi. Abschalten lässt sich diese Mail unter Einstellungen → Meldungen → „Lagebericht von Formi".',
       'lagebericht');
   }
 }
@@ -8076,7 +8076,7 @@ exports.lageberichtJetzt = region
     const profil = await requireChef(context);
     const firma = await firmaVonProfil(profil);
     if (!gehirnErlaubt(firma)) {
-      throw new functions.https.HttpsError('permission-denied', 'Das Studio-Gehirn ist für diesen Betrieb nicht eingerichtet.');
+      throw new functions.https.HttpsError('permission-denied', 'Formi ist für diesen Betrieb nicht eingerichtet.');
     }
     await tagesGrenze('lageberichtJetzt', 20, firma);
     const art = (data || {}).art === 'woche' ? 'woche' : 'tag';
