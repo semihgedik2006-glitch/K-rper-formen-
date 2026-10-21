@@ -16989,3 +16989,57 @@ Handy.
 **Als Nächstes** (eigene PRs): Kanalwahl in den Nachrichten statt 15 Chips,
 die Verwaltung mit einer Startseite statt elf Reitern und ruhigere
 Aufgabenkarten.
+
+## Runde 172 — Übersichtlicher, Teil 2: Kanäle als Spalte am Rechner (21.10.2026)
+
+**Aus dem Betrieb:** dasselbe „komplette Durcheinander“ wie in Runde 171,
+und: „bitte leg genau so viel Fokus auf die PC-Nutzung“.
+
+**Was war:** Am Rechner standen über dem Chat vier Zeilen: Reiter, Hinweis
+„Meldungen an?“, Studios/Gruppen und eine Leiste mit fünfzehn Kanälen. Bei
+1440 px war die Leiste rechts abgeschnitten („Ebertpla…“), obwohl daneben
+900 px Fläche leer standen.
+
+**Was gebaut ist**
+- **Ab 1100 px eine Kanalspalte links** (`#kanalSpalte`, 260 px). Darin
+  stehen alle Kanäle untereinander, bei Bedarf mit den Überschriften Studios
+  und Gruppen. Jede Zeile zeigt die letzte Nachricht („Ben: Sagt bitte kurz
+  Bescheid.“) und eine Zahl für Ungelesenes. Der offene Kanal ist markiert
+  (`aria-current`). Leiste, „Alle Kanäle“ und Umschalter fallen an dieser
+  Stelle weg.
+- **Gewählt wird über `kanalWaehlen()`**, denselben Weg wie in „Alle
+  Kanäle“. Es gibt also keine zweite Wahl, die etwas vergessen könnte (Lesestand,
+  Seitengrösse, Entwurf).
+- **Ungelesen** kommt aus einer Funktion, `kanalUngelesen()`. Die Abzeichen
+  der Leiste und die Zahlen der Spalte zählen dadurch gleich.
+- **„Noch nicht geladen“ ist nicht „leer“.** Solange `_chanLast[ch]` fehlt,
+  bleibt die Vorschauzeile leer. „Noch nichts geschrieben“ wäre sonst eine
+  Behauptung.
+- **Warum absolut gesetzt statt Raster:** Im Chat stehen elf Geschwister.
+  Ein Raster müsste jedes davon einzeln in Spalte 2 schieben, und ein
+  zwölftes Element, das später dazukommt, landete stumm links.
+- **Warum erst ab drei Kanälen:** Wer zwei hat, ist mit der Leiste schneller.
+  Unter 1100 px (Handy, Tablet hochkant) ändert sich nichts.
+- **Kein Messen beim Zeichnen.** Die Spalte wird bei jedem eintreffenden
+  Schnappschuss neu geschrieben. Ein gelesenes und zurückgeschriebenes
+  `scrollTop` hätte dabei jedes Mal ein Layout erzwungen. Der Browser behält
+  die Lage ohnehin.
+
+**Geprüft** (`tests/test-kanalspalte.js`, 84 Zusicherungen)
+- Neues und bisheriges Design bei 1280 / 1440 / 1920 px: Die Spalte steht, die
+  Leiste und der Umschalter sind weg, und der Verlauf steht rechts daneben.
+- Bei 820 / 430 / 390 / 320 px: keine Spalte, die Leiste bleibt. Auf keiner
+  Breite gibt es einen Querlauf.
+- Ein Mitarbeiter mit wenigen Kanälen bekommt keine Spalte.
+- Wechsel per Klick: Genau eine Zeile ist markiert, und die verborgene
+  Leiste zieht mit. Ungelesenes erscheint als Zahl und verschwindet nach dem
+  Öffnen. Die Vorschau nennt die letzte Nachricht.
+- Trefferfläche aller 17 Zeilen ≥ 44 × 44 per Hit-Test, normal und kompakt,
+  bei 1280 / 1440 / 1920 px. Auch die letzte Zeile ist nach dem Scrollen voll
+  treffbar.
+- **Gegenprobe:** Mit abgeschalteter Spalte (`an=false`) fallen 6
+  Zusicherungen, danach bricht der Durchlauf ab. Mit dem `index.html` von
+  vorher bricht er sofort ab.
+
+**Nicht geprüft:** echte Datenbank mit vielen Nachrichten, Bildwiederholrate
+bei vielen eintreffenden Nachrichten.

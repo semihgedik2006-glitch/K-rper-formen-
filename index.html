@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-ssMdDBZGufdfr4hhFMr2W08fXmNdJV6QWHYu3HwzFdY='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-uYP5jgItfO31STYpxpUPIlF25nMI5qi1qvldF6/Qx7E='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -4225,6 +4225,47 @@ body[data-appbg="raster"] .app::before{
 .chan-badge{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 var(--s4);
   border-radius:var(--r-pille);background:var(--warm);color:#20120A;font-size:var(--t-2xs);font-weight:800;
   display:grid;place-items:center;box-shadow:var(--e1)}
+
+/* ── Kanäle als Spalte am Rechner (Runde 172) ──
+   Aus dem Betrieb, 21.10.2026: „grade sieht alles aus wie ein komplettes
+   durcheinander". Über dem Chat standen am Rechner der Umschalter
+   Studios/Gruppen, „Alle Kanäle" und eine Leiste mit fünfzehn Kanälen,
+   die rechts abgeschnitten war. Ab 1100 px ist Platz für eine Liste links
+   und den Verlauf rechts, wie man es von jedem Messenger am Rechner
+   kennt. Jede Zeile nennt die letzte Nachricht. So sieht man, wo etwas
+   los ist, ohne hineinzugehen.
+
+   Absolut gesetzt statt Raster: Im Chat stehen elf Geschwister (Hinweis,
+   Leiste, Verlauf, Eingabe …). Ein Raster müsste jedes einzeln in Spalte
+   zwei schieben, und ein zwölftes, das später dazukommt, landete links.
+   Unter 1100 px und bei weniger als drei Kanälen bleibt alles wie es war:
+   Dort ist die Leiste schneller. */
+.kanal-spalte{display:none}
+@media(min-width:1100px){
+  #view-chat.mit-spalte{padding-left:var(--kanal-spalte)}
+  #view-chat.mit-spalte .kanal-spalte{display:block;position:absolute;left:0;top:0;bottom:0;
+    width:var(--kanal-spalte);box-sizing:border-box;overflow-y:auto;overscroll-behavior:contain;
+    padding:var(--s12) var(--s8);border-right:1px solid var(--line)}
+  #view-chat.mit-spalte #chatArten,#view-chat.mit-spalte .chan-zeile{display:none !important}
+}
+:root{--kanal-spalte:260px}
+.ks-gruppe{margin:var(--s12) var(--s8) var(--s4);font-size:var(--t-2xs);color:var(--text-3);
+  font-weight:700;letter-spacing:var(--ls-l);text-transform:uppercase}
+.ks-gruppe:first-child{margin-top:var(--s4)}
+.ks-zeile{display:flex;align-items:center;gap:var(--s8);width:100%;min-height:52px;
+  box-sizing:border-box;padding:var(--s6) var(--s10);margin-bottom:var(--s2);
+  border:none;border-radius:var(--r-sm);background:none;color:var(--text);
+  font-family:var(--font-body);text-align:left;cursor:pointer}
+.ks-zeile:hover{background:var(--auf-1)}
+.ks-zeile.an{background:var(--accent-glow);color:var(--accent-d)}
+.ks-zeile:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.ks-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:var(--s1)}
+.ks-txt b{font-size:var(--t-sm);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ks-zeile.an .ks-txt b,.ks-zeile.neu .ks-txt b{font-weight:800}
+.ks-txt i{font-style:normal;font-size:var(--t-xs);color:var(--text-3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ks-zahl{flex:0 0 auto;min-width:20px;height:20px;padding:0 var(--s6);display:grid;place-items:center;
+  border-radius:var(--r-pille);background:var(--warm);color:#20120A;font-size:var(--t-2xs);font-weight:800}
 
 /* Reiter im Einstellungs-Fenster */
 /* Vier Reiter passten auf einem 390er-Handy nicht nebeneinander –
@@ -8852,6 +8893,8 @@ body.neu .kn-zeile{min-height:var(--zeile)}
 
       <!-- CHAT -->
       <section class="view" id="view-chat">
+        <!-- Kanäle als Spalte, nur am Rechner (Runde 172). -->
+        <nav class="kanal-spalte" id="kanalSpalte" aria-label="Kanäle"></nav>
         <!-- Die Glocke stand hier als eigenes SVG, obwohl es sie im Satz
              gibt: zwei Fassungen desselben Bildes. data-ikon holt sie
              von dort. -->
@@ -19912,6 +19955,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-21-kanalspalte', datum:'21.10.2026', titel:'Nachrichten am Rechner: alle Kanäle links in einer Liste', wo:'chat', punkte:[
+    'Am Rechner stehen in den Nachrichten alle Kanäle jetzt links untereinander – Studios und Gruppen, jeweils mit der letzten Nachricht darunter. Rechts läuft der Chat.',
+    'Wo etwas Neues wartet, steht eine Zahl an der Zeile. Ein Klick wechselt den Kanal; die lange Leiste mit allen Studios und der Umschalter „Studios/Gruppen" fallen dort weg.',
+    'Am Handy und auf schmalen Fenstern bleibt alles wie gewohnt.' ] },
   { id:'2026-10-21-uebersicht-1', datum:'21.10.2026', titel:'Aufgeräumter: Formi heisst überall Formi, Kopfzeile ruhiger, Formi aus der Suche', wo:'home', punkte:[
     'Der Assistent heisst jetzt überall gleich: Formi. Oben am Rechner, auf der Startseite, unter „Alles", in der Hilfe und in der Mail mit dem Lagebericht – vorher stand an manchen Stellen noch „Studio-Gehirn" oder „Gehirn".',
     'In der Kopfzeile oben ist der Hell/Dunkel-Knopf weg, jetzt auch am Rechner. Umschalten geht weiter über dein Profil (Bild oben rechts) → Aussehen – dort gibt es zusätzlich „wie das Gerät".',
@@ -21794,7 +21841,7 @@ function buildChannels(){
      Chefrunde, solange er auf „Studios" steht. */
   _chanList=studioKanaele().concat(gruppen).map(function(c){ return c.id; });
   watchChannelUnread();
-  markChannelRead(currentChannel);
+  markChannelRead(currentChannel);   // zeichnet über renderChannelBadges auch die Spalte
 }
 
 /* Umschalten zwischen Studios und Gruppen. */
@@ -21910,6 +21957,60 @@ function watchChannelUnread(){
     _chanUnsubs.push(un);
   });
 }
+/* Ungelesen in einem Kanal: fremde Nachrichten seit dem letzten Lesen.
+   Der offene Kanal gilt als gelesen. */
+function kanalUngelesen(ch){
+  if(ch===currentChannel) return 0;
+  var since=chanLastRead(ch);
+  return (_chanLast[ch]||[]).filter(function(m){
+    return m.uid!==session.uid && (m.ts||0)>since;
+  }).length;
+}
+/* Die Kanalspalte am Rechner (Runde 172). Dieselben Kanäle wie „Alle
+   Kanäle", dieselbe Wahl (kanalWaehlen) — nur dauerhaft sichtbar. Ob sie
+   steht, entscheidet die Breite im Stylesheet; hier nur, ob es genug
+   Kanäle gibt, dass eine Liste sich lohnt. */
+function kanalSpalteZeichnen(){
+  var box=$('kanalSpalte'), view=$('view-chat'); if(!box || !view) return;
+  var alle=alleKanaele();
+  var an=alle.length>=3;
+  view.classList.toggle('mit-spalte', an);
+  if(!an){ box.innerHTML=''; return; }
+  var studios=alle.filter(function(c){ return c.art==='studios'; });
+  var gruppen=alle.filter(function(c){ return c.art==='gruppen'; });
+  function zeile(c){
+    var n=kanalUngelesen(c.id);
+    var msgs=_chanLast[c.id]||[];
+    var letzte=msgs.length ? msgs[msgs.length-1] : null;
+    /* Noch nicht geladen (undefined) ist etwas anderes als leer ([]):
+       vorher „Noch nichts geschrieben" zu sagen, wäre eine Behauptung. */
+    var vorschau=letzte ? ((letzte.uid===session.uid ? 'Du' : (letzte.name||'')).split(' ')[0]+': '+
+      (letzte.text || (letzte.audio ? 'Sprachnachricht' : 'Foto'))) :
+      (_chanLast[c.id] ? 'Noch nichts geschrieben' : '');
+    return '<button type="button" class="ks-zeile'+(c.id===currentChannel?' an':'')+(n?' neu':'')+'"'+
+      (c.id===currentChannel?' aria-current="true"':'')+
+      ' data-kanalwahl="'+esc(c.id)+'" data-kanalart="'+esc(c.art)+'">'+
+      '<span class="ks-txt"><b>'+esc(c.label)+'</b><i>'+esc(vorschau)+'</i></span>'+
+      (n ? '<span class="ks-zahl" aria-label="'+n+' ungelesen">'+(n>9?'9+':n)+'</span>' : '')+
+      '</button>';
+  }
+  var html='';
+  if(studios.length && gruppen.length) html+='<p class="ks-gruppe">Studios</p>';
+  html+=studios.map(zeile).join('');
+  if(studios.length && gruppen.length) html+='<p class="ks-gruppe">Gruppen</p>';
+  html+=gruppen.map(zeile).join('');
+  /* Kein scrollTop lesen und zurückschreiben: das erzwänge mitten im
+     Zeichnen ein Layout, und der Browser behält die Lage ohnehin. */
+  box.innerHTML=html;
+  if(!box._gebunden){
+    box._gebunden=true;
+    box.addEventListener('click', function(e){
+      var z=e.target.closest('[data-kanalwahl]'); if(!z) return;
+      if(z.dataset.kanalwahl===currentChannel) return;
+      kanalWaehlen(z.dataset.kanalwahl, z.dataset.kanalart);
+    });
+  }
+}
 function renderChannelBadges(){
   /* Der Marker haengt an offsetLeft/offsetWidth. Beim Aufbau ist die
      Chat-Ansicht oft noch verborgen – dann sind beide 0 und der Marker
@@ -21919,16 +22020,13 @@ function renderChannelBadges(){
   document.querySelectorAll('.chan').forEach(function(b){
     var ch=b.dataset.chan;
     var old=b.querySelector('.chan-badge'); if(old) old.remove();
-    if(ch===currentChannel) return;                      // offener Kanal gilt als gelesen
-    var since=chanLastRead(ch);
-    var n=(_chanLast[ch]||[]).filter(function(m){
-      return m.uid!==session.uid && (m.ts||0)>since;
-    }).length;
+    var n=kanalUngelesen(ch);
     if(!n) return;
     var s=document.createElement('span');
     s.className='chan-badge'; s.textContent = n>9 ? '9+' : n;
     b.appendChild(s);
   });
+  kanalSpalteZeichnen();
 }
 
 /* ══ WO DARF ICH SCHREIBEN? (Runde 145) ═══════════════════════════════
