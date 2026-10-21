@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════════
-   ÜBERSICHTLICHER, TEIL 1 (Runde 170)
+   ÜBERSICHTLICHER, TEIL 1 (Runde 171)
 
    Aus dem Betrieb, 21.10.2026: „grade sieht alles aus wie ein komplettes
    durcheinander" — auf beiden Geräten. Und: „assistent bleibt formi und
