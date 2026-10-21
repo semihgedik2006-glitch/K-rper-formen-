@@ -16853,3 +16853,76 @@ die Chefin einträgt, und ein Handbuch mit Grenzen.
 
 **Nicht geprüft:** echte Datenbank, Dateien aus Microsoft Excel, Laufzeit
 am Handy.
+
+## Runde 170 — Übersichtlicher, Teil 1: ein Name für Formi, ruhigere Kopfzeile, Formi aus der Suche (21.10.2026)
+
+**Aus dem Betrieb:** „wie können wir die app noch verbessern und vor allem
+übersichtlicher machen weil grade sieht alles aus wie ein komplettes
+durcheinander“. Auf die Rückfragen: es stört auf beiden Geräten und für alle
+Rollen, das Aussehen darf je Gerät verschieden sein, und „assistent bleibt
+formi und den können wir mehr nutzen und einbauen“.
+
+**Woher das Durcheinander kommt** (Demo als Geschäftsführung, 390 und
+1440 px angesehen, ohne Nutzertest):
+1. Bis zu fünf Navigationsebenen übereinander. In der Verwaltung sind es
+   Seitenleiste, Gruppenreiter, elf Reiter und „‹ Übersicht“, in den
+   Nachrichten Reiter, Hinweis, Studios/Gruppen und 15 Kanäle.
+2. Ein Ding hat mehrere Namen. Formi hiess auch „Studio-Gehirn“ und
+   „Gehirn“, im Code und in alten Neuigkeiten auch „Jarvis“.
+3. Die Kopfzeile trug am Rechner neun Griffe.
+4. Jede Aufgabenkarte trägt fünf Bedienelemente.
+5. Am Rechner sind breite Ansichten kaum gestaltet.
+
+Die Reihenfolge der Abhilfe richtet sich nach dem Aufwand und danach, wie
+viel man davon auf jeder Seite sieht. Diese Runde nimmt die Punkte 2 und 3
+und eine erste Stelle, an der Formi mehr eingebunden ist.
+
+**Was gebaut ist**
+- **Ein Name.** Jede sichtbare Stelle heisst jetzt „Formi“: die Knöpfe auf
+  der Startseite und oben am Rechner, die Seite, der Reiter unter „Ich“, die
+  Zeile unter „Alles“, die Hilfe, das Kürzel J, die Hinweise nach dem
+  Ausfüllen und die Einstellung zum Lagebericht. Dazu kommen die
+  Fehlermeldungen der Functions und der Betreff der Lagebericht-Mail.
+  Interne Namen (`gehirn*`, `jarvis*`, `view-gehirn`) bleiben, weil sie
+  niemand sieht und ein Umbenennen Dutzende Tests und gespeicherte
+  Schlüssel berühren würde. Ältere Neuigkeiten bleiben ebenfalls wie
+  geschrieben, denn sie sind ein Verlauf.
+- **Hell/Dunkel nicht mehr in der Kopfzeile, auch am Rechner nicht.** Am
+  Handy galt das schon seit 22.9. Der Knopf ist der einzige der Zeile, den es
+  vollständig an anderer Stelle gibt (Profil → Aussehen, dort sogar mit „wie
+  das Gerät“). Die Zahl der Griffe am Rechner sinkt damit von 9 auf 8, am
+  Handy (Leitung) bleibt sie bei 6–7.
+  **Abmelden bleibt bewusst oben:** Am geteilten Gerät ist es beim
+  Schichtwechsel der häufigste Griff. Das stand schon im Kommentar von 22.9.
+  und gilt weiter.
+- **„Formi fragen“ unter jeder Suche.** Die Suche findet nur Wörter, die
+  irgendwo stehen. Wer „Wer hat heute Dienst?“ tippt, sucht aber eine
+  Antwort. Ein Tipp öffnet das Formi-Fenster mit dem Satz im Feld, und
+  **abgeschickt wird erst auf Tipp**. Die Suche soll nichts auslösen, was
+  man nicht sieht. Firmen ohne Formi bekommen die Zeile nicht.
+  Die Treffer binden ihren Klick nur noch an `.sr[data-view]`, damit die
+  Formi-Zeile nicht zusätzlich als Treffer „nach undefined“ springt.
+
+**Geprüft** (`tests/test-uebersicht.js`, 55 Zusicherungen)
+- Startseite, „Alles“ und das Fenster ohne „Studio-Gehirn“/„Jarvis“, im neuen
+  und im bisherigen Design, bei 390 und 1440 px.
+- Kein Hell/Dunkel oben bei 320 / 390 / 430 / 820 / 1280 / 1440 / 1920 px,
+  dafür weiter unter Profil → Aussehen.
+- Suche ohne Treffer und mit Treffern. Formi steht als letzte Zeile, der Satz
+  steht im Feld, nichts ist abgeschickt und das Feld hat den Fokus. Ein
+  normaler Treffer führt weiter zu seiner Ansicht.
+- Bei einer fremden Firma erscheint keine Formi-Zeile. Als Gegenprobe
+  antwortet dort die Suche selbst.
+- Trefferfläche der Zeile per Hit-Test ≥ 44 × 44, normal und kompakt, bei
+  allen sieben Breiten.
+- **Gegenprobe:** Mit dem `index.html` von vorher schlagen 12 Zusicherungen
+  an.
+- test-knoepfe, test-gestaltung, test-abgeschnitten, test-quer,
+  test-kopfzeile, test-kopf-bericht, test-funktionen-pfade: grün.
+
+**Nicht geprüft:** echte Datenbank, echte Mail (Betreff), Anmeldeweg, echtes
+Handy.
+
+**Als Nächstes** (eigene PRs): Kanalwahl in den Nachrichten statt 15 Chips,
+die Verwaltung mit einer Startseite statt elf Reitern und ruhigere
+Aufgabenkarten.

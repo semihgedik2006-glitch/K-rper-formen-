@@ -121,7 +121,8 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
       const z = document.querySelector('#allesLadeInhalt [data-alles="gehirn"]');
       return z ? z.textContent.replace(/\s+/g, ' ').trim() : null;
     });
-    pruefe('„Alles" hat die Zeile Studio-Gehirn', !!zeile && /Studio-Gehirn/.test(zeile), String(zeile));
+    /* Seit Runde 170 heisst die Zeile „Formi" (ein Name überall). */
+    pruefe('„Alles" hat die Zeile Formi', !!zeile && /^Formi/.test(zeile) && !/Gehirn/.test(zeile), String(zeile));
     await aufSeite(p);
     pruefe('die Zeile öffnet die eigene Seite', await sichtbar(p, '#view-gehirn.show'));
     const reiter = await p.evaluate(() => [...document.querySelectorAll('#subnav [data-subview]')].map(x => x.getAttribute('data-subview')));
@@ -587,7 +588,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await p.waitForFunction(() => !document.querySelector('#jarvisVerlauf .gehirn-denkt'), null, { timeout: 5000 });
     await p.waitForTimeout(1500);
     const jt = await p.evaluate(() => document.getElementById('jarvisVerlauf').innerText);
-    pruefe(w + ' px: Antwort im Fenster, mit sichtbaren Schritten', /Schonprogramm/.test(jt) && /Frage das Studio-Gehirn/.test(jt) && /Im Studio-Wissen gefunden/.test(jt), jt.slice(0, 300));
+    pruefe(w + ' px: Antwort im Fenster, mit sichtbaren Schritten', /Schonprogramm/.test(jt) && /Frage Formi/.test(jt) && /Im Studio-Wissen gefunden/.test(jt), jt.slice(0, 300));
     pruefe(w + ' px: dieselbe Antwort steht auch unter Ich → Gehirn', /Schonprogramm/.test(await p.evaluate(() => document.getElementById('gehirnVerlauf').innerText)));
     pruefe(w + ' px: Status sagt, dass es fertig ist', /Erledigt/.test(await p.textContent('#jarvisStatus')));
     // Auftrag: Schritte, dann geht das Fenster zu und die Seite öffnet sich
