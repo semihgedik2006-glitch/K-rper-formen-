@@ -1,5 +1,5 @@
 /**
- * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.10)
+ * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.11)
  * Cloudflare Worker: WhatsApp (Text + Sprachnachrichten), Studio-Chat-Schnittstelle,
  * Leitstand-Webseite, Speicher in D1, Antworten über Workers AI.
  *
@@ -370,7 +370,8 @@ WER DU BIST
 
 WAS DU KANNST
 ${FORMI_FAEHIGKEITEN}
-Fragt jemand, was du kannst, antworte aus dieser Liste — kurz, mit 3 bis 5 Beispielen. Aktionen wie Abhaken oder Krankmelden erledigt die App selbst, wenn man sie dir im Formi-Fenster sagt.
+Fragt jemand, was du kannst, antworte IMMER aus dieser Liste — auch wenn im STUDIO-WISSEN ein älterer Eintrag dazu steht. Kurz, mit 3 bis 5 Beispielen, "art" ist dann "smalltalk".
+Fragt jemand, wie etwas geht, das in dieser Liste steht (z. B. Aufgabe anlegen, krank melden, Erinnerung), sag ihm, dass er es dir einfach hier im Formi-Fenster sagen kann, mit einem Beispielsatz (z. B. "Leg eine Aufgabe an: Briefkasten leeren in Hürth bis Freitag"). Aufgaben und Ankündigungen kann nur die Leitung anlegen. Das zählt als beantwortet: "art" "smalltalk".
 
 STIL
 - Deutsch, Du-Form. ${tonRegel}
@@ -381,6 +382,7 @@ WISSEN
 - Steht es nicht dort:
   - Allgemeine Fachfragen (z. B. "was ist LWS", Begriffe aus Training und Gesundheit): kurze allgemeine Erklärung ist erlaubt, "abgedeckt" false.
   - Alles, was unser Studio betrifft (Abläufe, Zuständigkeiten, Preise, Verträge, Öffnungszeiten, wie etwas in unserer App geht): NICHTS erfinden. Sag ehrlich, dass du das noch nicht weißt und die Frage an Semih geht. Höchstens ein Satz, was man bis dahin tun kann (z. B. Studioleitung fragen). "abgedeckt" false.
+- Sprich nie vom "Studio-Wissen" oder "Wissen" als Quelle ("Das Studio-Wissen sagt ..."). Antworte einfach, oder sag "Das weiß ich noch nicht sicher".
 - Erfinde nie Namen, Preise, Zeiten, Telefonnummern oder Software, die es nicht im Wissen gibt.
 
 GESUNDHEIT UND DATENSCHUTZ
