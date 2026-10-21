@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-PhwutqVd9BUgr+bpAsvKA0ZiRQYKSiSzcCF0i9i4joc='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-y7elkQcONYy1UsOuOCB2icU5vi+ba99aI7U7Qk51iAw='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3411,7 +3411,7 @@ button.ich-zeile:active{opacity:.7}
    und läuft aus (wie überall in der App). Rot und Bernstein NUR für
    Lücke und Rückfrage — sonst trägt der Plan Personenfarben aus dem
    Profil, gedämpft wie die Avatare. */
-.spl{display:flex;flex-direction:column;gap:var(--s16)}
+.spl{display:flex;flex-direction:column;gap:var(--s16);max-width:1560px}
 .spl-start{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:var(--s16);
   background:radial-gradient(120% 160% at 0% 0%, rgba(var(--akz-rgb),.16), transparent 55%),var(--bg-2)}
 .spl-kopf{display:flex;flex-direction:column;gap:var(--s12)}
@@ -3478,7 +3478,6 @@ button.ich-zeile:active{opacity:.7}
 .spl-layout{display:grid;gap:var(--s16);align-items:start}
 .spl-seite{display:flex;flex-direction:column;gap:var(--s16);min-width:0}
 @media (min-width:1100px){
-  .spl.chef-pane{max-width:1560px}
   .spl-layout{grid-template-columns:360px minmax(0,1fr)}
   /* Nicht die ganze Spalte haftet, nur die Auswahl: eine haftende
      Spalte, höher als das Fenster, lässt ihr Ende nie sehen —
@@ -3508,7 +3507,8 @@ button.ich-zeile:active{opacity:.7}
 .spl-person:hover:not(:disabled){background:var(--tipp-2)}
 .spl-person:disabled{background:var(--auf-1);border-color:transparent;color:var(--text-3);cursor:not-allowed}
 .spl-person span{flex:1;min-width:0}
-.spl-person small{color:var(--text-3);font-size:var(--t-xs);text-align:right}
+.spl-person span b{display:block;font-weight:600}
+.spl-person small{display:block;color:var(--text-3);font-size:var(--t-xs);line-height:var(--lh);overflow-wrap:anywhere}
 .spl-person.jetzt{border-color:var(--accent);background:rgba(var(--akz-rgb),.12)}
 /* Personenzeichen: Farbe aus dem Profil (avatarFarbe), sonst neutral. */
 .spl-ini{flex:0 0 auto;width:22px;height:22px;border-radius:var(--r-rund);display:inline-grid;place-items:center;
@@ -3552,6 +3552,44 @@ button.ich-zeile:active{opacity:.7}
 .spl-balken .s i{display:block;height:100%;border-radius:var(--r-pille);background:var(--accent)}
 .spl-balken .z{font-variant-numeric:tabular-nums;color:var(--text-2);font-size:var(--t-xs);text-align:right}
 .spl-balken .z.unter{color:var(--warm-tx);font-weight:700}
+.spl-notiz{margin:0;padding:var(--s8) var(--s12);border-radius:var(--r-sm);background:var(--auf-1);font-size:var(--t-sm);
+  color:var(--text);overflow-wrap:anywhere}
+/* Ausfälle — Rot, weil es meldet: jemand fehlt in einer geplanten Schicht. */
+.spl-ausfaelle{box-shadow:var(--e1),inset 3px 0 0 var(--danger)}
+.spl-ausfall-liste{display:flex;flex-direction:column;gap:var(--s8)}
+.spl-ausfall{display:flex;flex-direction:column;gap:var(--s6);padding:var(--s8) var(--s10);border-radius:var(--r-sm);background:var(--f-bad-leise)}
+.spl-ausfall-text b{display:block;font-size:var(--t-sm)}
+.spl-ausfall-text small{display:block;color:var(--danger-tx);font-size:var(--t-xs);font-weight:600}
+.spl-ausfall-wahl{display:flex;gap:var(--s6);flex-wrap:wrap;align-items:center}
+.spl-ausfall-wahl .btn{min-height:44px;gap:var(--s6)}
+.spl-ausfall-wahl .btn small{font-weight:500;color:var(--text-3)}
+@media (min-width:820px){ .spl-ausfall{flex-direction:row;align-items:center;justify-content:space-between} }
+/* Regeln & Sonderfälle */
+.spl-regeln > summary{cursor:pointer;min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:var(--s8);
+  font-family:var(--font-head);font-weight:800;font-size:var(--t-md);list-style:none}
+.spl-regeln > summary::-webkit-details-marker{display:none}
+.spl-regeln > summary span{display:inline-flex;align-items:center;gap:var(--s8)}
+.spl-regeln > summary span svg{width:20px;height:20px}
+.spl-regeln > summary small{font-family:var(--font-body);font-weight:600;font-size:var(--t-xs);color:var(--text-3)}
+.spl-regeln-inhalt{display:grid;gap:var(--s16);margin-top:var(--s12)}
+@media (min-width:1100px){ .spl-regeln-inhalt{grid-template-columns:repeat(2,minmax(0,1fr))} }
+.spl-regel-block{background:var(--auf-1);border-radius:var(--r-md);padding:var(--s12);display:flex;flex-direction:column;gap:var(--s8);min-width:0}
+.spl-regel-block h4{margin:0;font-size:var(--t-sm);font-weight:800}
+.spl-regel-block .hint{margin:0}
+.spl-regel-block .btn{align-self:flex-start;min-height:44px}
+.spl-felder{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0 var(--s10)}
+.spl-felder .field{margin-bottom:var(--s8)}
+.spl-schalter{display:flex;align-items:center;gap:var(--s8);min-height:44px;font-size:var(--t-sm);cursor:pointer}
+.spl-schalter input{width:22px;height:22px}
+.spl-regel-liste{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--s4)}
+.spl-regel-liste li{display:flex;align-items:center;justify-content:space-between;gap:var(--s8);font-size:var(--t-sm);
+  padding:var(--s4) 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+.spl-regel-liste li .btn{flex:0 0 auto;min-height:44px}
+.spl-wt{flex-wrap:wrap}
+/* Auswahl: Person + Tauschen nebeneinander */
+.spl-wahl-zeile{display:flex;flex-direction:column;gap:var(--s4)}
+.spl-tausch{align-self:flex-end;min-height:44px}
+.spl-fair{margin:0 0 var(--s10);font-size:var(--t-xs);color:var(--text-2);line-height:var(--lh)}
 /* Wünsche der Mitarbeiter */
 .spl-w-label{margin:var(--s12) 0 var(--s6);font-weight:700;font-size:var(--t-sm)}
 /* Kein Kalenderraster mit sieben festen Spalten: bei 320 px wären das
@@ -9512,6 +9550,142 @@ body.neu .kn-zeile{min-height:var(--zeile)}
            Fenster wie bei der Hilfe: eine Schulung ist nichts, was man
            nebenbei aufschlägt — man setzt sich hin und braucht den
            ganzen Bildschirm. -->
+      <!-- ══ SCHICHTPLANER — eigene Seite (Runde 156, Seite seit Runde 169) ══
+           Aus dem Betrieb, 21.10.2026: „die seite vom planer soll eine
+           eigene seite sein mit allen sinnvollen informationen". Bis
+           Runde 168 ein Reiter unter Verwaltung → Chef; jetzt neben „Chef"
+           und „Archiv" eine eigene Seite, über „Alles" in zwei Tipps. -->
+      <section class="view" id="view-planer">
+        <div class="view-head shrink">
+          <div class="vh-line">
+            <div class="vh-text">
+              <h2>Schichtplaner</h2>
+              <p>Monatsplan für alle Studios — erstellen, Ausfälle ersetzen, tauschen, veröffentlichen.</p>
+            </div>
+          </div>
+        </div>
+        <div class="scroll-area" data-shrinks="1">
+          <div class="spl">
+            <section class="card spl-start">
+                <div class="spl-kopf">
+                  <div class="spl-monat" role="group" aria-label="Monat">
+                    <button type="button" class="btn btn-ghost btn-sm wochen-pfeil" id="spMonatZurueck" aria-label="Voriger Monat">‹</button>
+                    <div class="spl-monat-text"><small>Schichtplan für</small><b id="spMonatName">–</b></div>
+                    <button type="button" class="btn btn-ghost btn-sm wochen-pfeil" id="spMonatVor" aria-label="Nächster Monat">›</button>
+                  </div>
+                  <button type="button" class="btn btn-primary spl-los" id="spLos">Plan erstellen</button>
+                </div>
+                <ol class="spl-schritte" id="spSchritte"></ol>
+                <p class="spl-notiz" id="spNotizAnzeige" hidden></p>
+              <p class="spl-stand" id="spStand" role="status"></p>
+                <input type="file" id="spDatei" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden />
+              </section>
+
+            <!-- Ausfälle: wer im Plan steht, aber inzwischen krank oder im
+                 Urlaub ist — mit Ersatzvorschlag zum Antippen (Runde 169). -->
+            <section class="card spl-ausfaelle" id="spAusfaelle" hidden></section>
+            <!-- Was die Chefin selbst festlegt. Zugeklappt: es ist einmal
+                 eingerichtet und wird selten angefasst. -->
+            <details class="card spl-regeln" id="spRegeln">
+              <summary><span data-ikon="regler">Regeln &amp; Sonderfälle</span><small id="spRegelnKurz"></small></summary>
+              <div class="spl-regeln-inhalt">
+                <section class="spl-regel-block">
+                  <h4>Einstellungen</h4>
+                  <div class="spl-felder">
+                    <div class="field"><label for="spFrist">Wunschfrist (Tag im Vormonat)</label>
+                      <input class="inp" id="spFrist" type="number" min="1" max="28" inputmode="numeric" /></div>
+                    <div class="field"><label for="spAmStueck">Höchstens Tage am Stück</label>
+                      <input class="inp" id="spAmStueck" type="number" min="1" max="12" inputmode="numeric" /></div>
+                    <div class="field"><label for="spMaxWunsch">Höchstens Wunsch-frei-Tage (0 = keine Grenze)</label>
+                      <input class="inp" id="spMaxWunsch" type="number" min="0" max="31" inputmode="numeric" /></div>
+                    <label class="spl-schalter" for="spFeiertageZu"><input type="checkbox" id="spFeiertageZu" />
+                      <span>An Feiertagen (NRW) geschlossen</span></label>
+                  </div>
+                  <button type="button" class="btn btn-ghost btn-sm" id="spEinstSpeichern">Einstellungen speichern</button>
+                </section>
+                <section class="spl-regel-block">
+                  <h4>Feste Einteilungen</h4>
+                  <p class="hint">Wer immer oder an einem bestimmten Tag fest steht. Der Planer setzt diese zuerst — Wünsche zählen dort nicht, Urlaub, Krankheit und Ruhezeit schon.</p>
+                  <ul class="spl-regel-liste" id="spFestListe"></ul>
+                  <div class="spl-felder">
+                    <div class="field"><label for="spFestPerson">Person</label><select class="inp" id="spFestPerson"></select></div>
+                    <div class="field"><label for="spFestStudio">Studio</label><select class="inp" id="spFestStudio"></select></div>
+                    <div class="field"><label for="spFestSchicht">Schicht</label><select class="inp" id="spFestSchicht"></select></div>
+                    <div class="field"><label for="spFestDatum">Nur an einem Datum (sonst Wochentage)</label>
+                      <input class="inp" id="spFestDatum" type="date" /></div>
+                  </div>
+                  <div class="chip-row spl-wt" id="spFestTage" role="group" aria-label="Wochentage"></div>
+                  <button type="button" class="btn btn-ghost btn-sm" id="spFestDazu">Feste Einteilung hinzufügen</button>
+                </section>
+                <section class="spl-regel-block">
+                  <h4>Sondertage</h4>
+                  <p class="hint">Eine Schicht fällt weg (z. B. Heiligabend nachmittags) oder braucht mehr Leute (Event, Tag der offenen Tür, Inventur).</p>
+                  <ul class="spl-regel-liste" id="spSonderListe"></ul>
+                  <div class="spl-felder">
+                    <div class="field"><label for="spSonderDatum">Datum</label><input class="inp" id="spSonderDatum" type="date" /></div>
+                    <div class="field"><label for="spSonderStudio">Studio</label><select class="inp" id="spSonderStudio"></select></div>
+                    <div class="field"><label for="spSonderArt">Art</label>
+                      <select class="inp" id="spSonderArt"><option value="mehr">mehr Personen</option><option value="zu">geschlossen</option></select></div>
+                    <div class="field"><label for="spSonderSchicht">Schicht</label><select class="inp" id="spSonderSchicht"></select></div>
+                    <div class="field"><label for="spSonderPlus">Wie viele mehr?</label>
+                      <input class="inp" id="spSonderPlus" type="number" min="1" max="5" value="1" inputmode="numeric" /></div>
+                    <div class="field"><label for="spSonderNotiz">Anlass</label>
+                      <input class="inp" id="spSonderNotiz" type="text" maxlength="80" placeholder="z. B. Tag der offenen Tür" /></div>
+                  </div>
+                  <button type="button" class="btn btn-ghost btn-sm" id="spSonderDazu">Sondertag hinzufügen</button>
+                </section>
+                <section class="spl-regel-block">
+                  <h4>Notiz zum Monat</h4>
+                  <label class="nur-vorlesen" for="spNotiz">Notiz zum Monat</label>
+                  <textarea class="inp" id="spNotiz" rows="2" maxlength="600" placeholder="z. B. Mitte des Monats Inventur in allen Studios; Lena ab 20. in Elternzeit"></textarea>
+                  <button type="button" class="btn btn-ghost btn-sm" id="spNotizSpeichern">Notiz speichern</button>
+                </section>
+              </div>
+            </details>
+              <div class="spl-ergebnis" id="spErgebnis" hidden>
+                <div class="spl-zahlen" id="spZahlen"></div>
+                <section class="card spl-studios">
+                  <div class="spl-sec-kopf">
+                    <h3 data-ikon="gebaeude">Studios</h3>
+                    <span class="spl-sec-hinweis">Antippen öffnet den Plan des Studios</span>
+                  </div>
+                  <label class="nur-vorlesen" for="spStudio">Studio</label>
+                  <select class="inp spl-studio-wahl" id="spStudio"></select>
+                  <div class="spl-kacheln" id="spKacheln"></div>
+                </section>
+                <div class="spl-layout">
+                  <div class="spl-seite">
+                    <section class="card spl-klaeren" id="spKlaeren"></section>
+                    <section class="card spl-aktionen">
+                      <h3 data-ikon="hakenKreis">Fertig?</h3>
+                      <button type="button" class="btn btn-primary" id="spVeroeffentlichen">Im Team-Schichtplan veröffentlichen</button>
+                      <button type="button" class="btn btn-ghost" id="spLogx">Für LogX kopieren</button>
+                      <p class="hint" id="spAktionHinweis">Kopiert eine Tabelle (Datum, Studio, Schicht, Zeit, Name) – in Excel oder LogX einfügen.</p>
+                    </section>
+                    <!-- Die Auswahl steht ZULETZT: sie haftet am Rechner beim
+                         Herunterrollen oben, und ein haftendes Element legt
+                         sich über alles, was nach ihm kommt (gemessen). -->
+                    <section class="card spl-wahl" id="spWahl" hidden></section>
+                  </div>
+                  <section class="card spl-plan">
+                    <div class="spl-sec-kopf">
+                      <h3 data-ikon="kalender" id="spPlanTitel">Plan</h3>
+                      <span class="spl-legende" aria-hidden="true">
+                        <i class="spl-leg-rueck"></i>Rückfrage <i class="spl-leg-luecke"></i>Lücke
+                      </span>
+                    </div>
+                    <div class="spl-wochen" id="spTabelle"></div>
+                    <details class="spl-team">
+                      <summary>Stunden im Studio</summary>
+                      <div id="spTeam"></div>
+                    </details>
+                  </section>
+                </div>
+              </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ══ STUDIO-GEHIRN (Runde 150) ══════════════════════════════
            Eine eigene Seite statt einer Tafel im Hilfe-Fenster: Fragen
            und Antworten brauchen Platz, und die Leitung bekommt hier
@@ -10166,69 +10340,6 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                Am Rechner: Tabelle links, Eintragen rechts. Am Handy
                untereinander, die Tabelle zeigt dann nur den letzten
                Monat und den Verlauf. -->
-          <!-- ══ SCHICHTPLANER (Runde 156, Aufbau neu in Runde 168) ════════
-               Aus dem Betrieb: „das kostet sie mehrere Stunden an
-               Aufwand immer wieder" und „kannst du das etwas visuell
-               schöner und organisierter erstellen". Die Reihenfolge ist
-               die der Arbeit: 1. vorbereiten und erstellen, 2. Überblick
-               über alle Studios, 3. EIN Studio: was zu klären ist, daneben
-               sein Plan in Wochen. Am Rechner stehen 3a und 3b
-               nebeneinander. -->
-          <div class="chef-pane spl" data-cpane="schichtplaner" style="display:none">
-            <section class="card spl-start">
-              <div class="spl-kopf">
-                <div class="spl-monat" role="group" aria-label="Monat">
-                  <button type="button" class="btn btn-ghost btn-sm wochen-pfeil" id="spMonatZurueck" aria-label="Voriger Monat">‹</button>
-                  <div class="spl-monat-text"><small>Schichtplan für</small><b id="spMonatName">–</b></div>
-                  <button type="button" class="btn btn-ghost btn-sm wochen-pfeil" id="spMonatVor" aria-label="Nächster Monat">›</button>
-                </div>
-                <button type="button" class="btn btn-primary spl-los" id="spLos">Plan erstellen</button>
-              </div>
-              <ol class="spl-schritte" id="spSchritte"></ol>
-              <p class="spl-stand" id="spStand" role="status"></p>
-              <input type="file" id="spDatei" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden />
-            </section>
-            <div class="spl-ergebnis" id="spErgebnis" hidden>
-              <div class="spl-zahlen" id="spZahlen"></div>
-              <section class="card spl-studios">
-                <div class="spl-sec-kopf">
-                  <h3 data-ikon="gebaeude">Studios</h3>
-                  <span class="spl-sec-hinweis">Antippen öffnet den Plan des Studios</span>
-                </div>
-                <label class="nur-vorlesen" for="spStudio">Studio</label>
-                <select class="inp spl-studio-wahl" id="spStudio"></select>
-                <div class="spl-kacheln" id="spKacheln"></div>
-              </section>
-              <div class="spl-layout">
-                <div class="spl-seite">
-                  <section class="card spl-klaeren" id="spKlaeren"></section>
-                  <section class="card spl-aktionen">
-                    <h3 data-ikon="hakenKreis">Fertig?</h3>
-                    <button type="button" class="btn btn-primary" id="spVeroeffentlichen">Im Team-Schichtplan veröffentlichen</button>
-                    <button type="button" class="btn btn-ghost" id="spLogx">Für LogX kopieren</button>
-                    <p class="hint" id="spAktionHinweis">Kopiert eine Tabelle (Datum, Studio, Schicht, Zeit, Name) – in Excel oder LogX einfügen.</p>
-                  </section>
-                  <!-- Die Auswahl steht ZULETZT: sie haftet am Rechner beim
-                       Herunterrollen oben, und ein haftendes Element legt
-                       sich über alles, was nach ihm kommt (gemessen). -->
-                  <section class="card spl-wahl" id="spWahl" hidden></section>
-                </div>
-                <section class="card spl-plan">
-                  <div class="spl-sec-kopf">
-                    <h3 data-ikon="kalender" id="spPlanTitel">Plan</h3>
-                    <span class="spl-legende" aria-hidden="true">
-                      <i class="spl-leg-rueck"></i>Rückfrage <i class="spl-leg-luecke"></i>Lücke
-                    </span>
-                  </div>
-                  <div class="spl-wochen" id="spTabelle"></div>
-                  <details class="spl-team">
-                    <summary>Stunden im Studio</summary>
-                    <div id="spTeam"></div>
-                  </details>
-                </section>
-              </div>
-            </div>
-          </div>
           <div class="chef-pane" data-cpane="kennzahlen" style="display:none">
             <div class="kz-wrap">
               <div class="card kz-haupt">
@@ -15136,6 +15247,8 @@ function ansichtAn(v){
   /* Das Studio-Gehirn gibt es nur für Körperformen — kein Schalter
      unter „System", sondern eine Frage der Firma. */
   if(v==='gehirn') return gehirnVerfuegbar();
+  /* Schichtplaner: nur der Chef (Frage 17 an die Geschäftsführung offen). */
+  if(v==='planer') return isChef();
   /* „Lösungen" ist seit dem 22.9.2026 keine Seite mehr, sondern das
      Hilfe-Fenster in der Kopfzeile. Der Schalter bleibt (er schaltet
      jetzt den Rettungsring ab), aber als ANSICHT gibt es sie nicht
@@ -19373,7 +19486,7 @@ var NAVGROUPS = [
    icon:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'},
   {id:'g-team', label:'Team', views:['team'],
    icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'},
-  {id:'g-chef', label:'Verwaltung', views:['chef','archive'], manageOnly:true,
+  {id:'g-chef', label:'Verwaltung', views:['chef','planer','archive'], manageOnly:true,
    icon:'<path d="m3 6 4 4 5-7 5 7 4-4-2 13H5L3 6Z"/>'},
   /* ── „Alles" — die eine Liste ─────────────────────────────────────
      Nur im neuen Design (nurNeu). Sie ist kein weiterer Bereich neben
@@ -19452,6 +19565,8 @@ var NAV = [
   {id:'schulung', label:'Schulung', icon:'<rect x="2" y="4" width="20" height="14" rx="2"/><path d="m10 9 5 2.5-5 2.5z"/><path d="M8 21h8"/>'},
   /* Glühbirne: „eine Idee haben" und „Bescheid wissen". Seit dem
      22.9. trägt sie nichts anderes mehr (siehe Schulung oben). */
+  /* Runde 169: der Schichtplaner als eigene Seite neben Chef und Archiv. */
+  {id:'planer', label:'Schichtplaner', icon:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h3M8 18h3M14 14h2"/>'},
   {id:'gehirn', label:'Gehirn', icon:'<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.2h5c0-.9.4-1.7 1.1-2.2A6 6 0 0 0 12 3z"/>'},
   {id:'dm', label:'Direkt', icon:'<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>'},
   {id:'archive', label:'Archiv', icon:'<path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/>', manageOnly:true},
@@ -19693,6 +19808,8 @@ function allesGruppen(){
     var v=chefTabsFuerMich().map(function(t){
       return { label:t.label, view:'chef', cgo:t.id, roh:t.ico, was:t.was };
     });
+    v.push({ label:'Schichtplaner', view:'planer', ikon:'kalender',
+             was:'Monatsplan für alle Studios, Ausfälle ersetzen, tauschen' });
     v.push({ label:'Archiv', view:'archive', ikon:'archive',
              was:'Sicherungen und Erledigtes' });
     gruppe('Verwalten', 'verwalten', v);
@@ -19782,7 +19899,13 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
-  { id:'2026-10-20-schichtplaner-aufbau', datum:'20.10.2026', titel:'Schichtplaner aufgeräumt; Sprachnachrichten laufen wieder richtig', wo:'chef:schichtplaner', punkte:[
+  { id:'2026-10-21-schichtplaner-seite', datum:'21.10.2026', titel:'Schichtplaner: eigene Seite, Ersatz bei Krankheit, Tauschen, eigene Regeln', wo:'planer', punkte:[
+    'Der Schichtplaner hat jetzt eine eigene Seite: Verwaltung → Reiter „Schichtplaner" (neben Chef und Archiv) oder „Alles" → Schichtplaner.',
+    'Meldet sich jemand nach dem Erstellen krank oder bekommt Urlaub, steht oben „Ausfälle" – mit bis zu drei passenden Ersatzleuten. Antippen, fertig. Ist der Plan schon veröffentlicht, ändert sich die Schicht im Team-Schichtplan gleich mit.',
+    'Beim Antippen einer Schicht steht oben, wer am besten passt; wer am selben Tag woanders eingeteilt ist, lässt sich mit „Tauschen" direkt tauschen – nur wenn es nach den Regeln für beide geht.',
+    'Unter „Regeln & Sonderfälle" trägst du selbst ein: feste Einteilungen (z. B. Lena immer montags früh), Sondertage (Schicht zu oder mehr Leute, z. B. Tag der offenen Tür), Wunschfrist, Tage am Stück, höchstens Wunsch-frei-Tage und eine Notiz zum Monat.',
+    'Gerechter: Wochenenden und Feiertage werden stärker reihum verteilt; wer „egal" sagt, bekommt früh und spät im Wechsel. Unter dem Plan steht, wie fair der Monat ist. Auch der letzte Tag des Vormonats zählt jetzt für die Ruhezeit am 1.' ] },
+  { id:'2026-10-20-schichtplaner-aufbau', datum:'20.10.2026', titel:'Schichtplaner aufgeräumt; Sprachnachrichten laufen wieder richtig', wo:'planer', punkte:[
     'Der Schichtplaner (Verwaltung → Schichtplaner) ist neu geordnet: oben Monat, die drei Schritte und „Plan erstellen"; darunter vier Zahlen und alle Studios als Kacheln – jede sagt, ob sie fertig ist oder wie viele Lücken und Rückfragen offen sind.',
     'Eine Kachel antippen zeigt links nur das, was in DIESEM Studio zu klären ist, und rechts seinen Plan Woche für Woche. Jede Person trägt ihr Zeichen in ihrer Farbe; offene Schichten stehen als „＋ besetzen" da.',
     'Unter dem Plan: „Stunden im Studio" als Balken – wer unter seinem Soll bleibt, fällt sofort auf.',
@@ -19839,7 +19962,7 @@ var NEUIGKEITEN = [
     'Häufige Sätze erkennt die App jetzt selbst – sofort, ohne auf die KI zu warten: „öffne den Putzplan", „wer hat heute Dienst", „was ist offen", „ich bin heute krank", „Übergabe: …" oder „Klo ist sauber".',
     'Tippfehler und andere Wörter für dasselbe sind kein Problem mehr: „öfne", „Wasserspendr", „Klo" statt „Toiletten" – das Gehirn weiß, was gemeint ist.',
     'Bei allem anderen kennt die KI jetzt die offenen Putzpunkte und Aufgaben deines Studios und die Vornamen im Team – und trifft dadurch genauer.' ] },
-  { id:'2026-10-19-schichtplaner', datum:'19.10.2026', titel:'Neu: der Schichtplaner schlägt den Monatsplan vor', wo:'chef:schichtplaner', punkte:[
+  { id:'2026-10-19-schichtplaner', datum:'19.10.2026', titel:'Neu: der Schichtplaner schlägt den Monatsplan vor', wo:'planer', punkte:[
     'Für die Geschäftsführung: unter „Verwaltung → Schichtplaner" einmal die Excel-Vorlage einlesen (wer in welchem Studio arbeitet, Stunden, wer wann kann, wer nicht allein sein darf). Danach erstellt ein Knopf den Plan für den nächsten Monat – für alle Studios auf einmal, Urlaub und Krankmeldungen schon berücksichtigt.',
     'Was noch ein Mensch entscheiden muss, steht oben unter „Zu klären": rote Lücken (niemand frei, mit Grund und wen man fragen könnte) und Rückfragen (z. B. jemand müsste an einem Wunsch-frei-Tag kommen). Antippen und eine andere Person wählen – ausgegraut steht, warum jemand nicht geht.',
     'Fertig? „Im Team-Schichtplan veröffentlichen" trägt die Schichten bei allen ein, „Für LogX kopieren" legt eine Tabelle zum Einfügen in die Zwischenablage.',
@@ -21464,6 +21587,7 @@ function showView(id, fromKey, ausVerlauf){
   if(id==='ich') ichOeffnen();
   if(id==='persoenlich') persoenlichOeffnen();
   if(id==='gehirn') gehirnOeffnen();
+  if(id==='planer') spOeffnen();
   jarvisKachel(id);
   if(id!=='gehirn') jarvisZu();
   if(id==='team'){ ensureTeamLoaded(); buildTeamTabs(); spWunschZeigen(); }
@@ -36909,10 +37033,6 @@ function renderDashboard(){
 var CHEFTABS=[
   {id:'ueberblick', label:'Überblick',  ico:ikon('umfrage'),
    was:'Zahlen aller Studios, was gerade hakt, Geburtstage'},
-  /* Runde 156: der Monatsplan für alle Studios. Nur der Chef, bis die
-     Frage beantwortet ist, ob Studioleiter selbst planen. */
-  {id:'schichtplaner', label:'Schichtplaner', ico:ikon('kalender'), chefOnly:true,
-   was:'Monatsplan für alle Studios vorschlagen lassen, prüfen, veröffentlichen'},
   {id:'erstellen',  label:'Erstellen',  ico:ikon('plus'),
    was:'Aufgabe anlegen, Ankündigung senden, Vorlagen'},
   {id:'team',       label:'Team',       ico:ikon('leute'), chefOnly:true,
@@ -37088,7 +37208,6 @@ function showChefTab(id, keep){
   if(id==='anliegen') anliegenLaden();
   if(id==='zeiten') zkOeffnen();
   if(id==='kennzahlen') kzOeffnen();
-  if(id==='schichtplaner') spOeffnen();
   if(id==='report') renderReport();
   if(id==='system'){ renderFeatureListe(); fehlerLaden(); renderRechtForm(); renderMarkeWahl(); }
   if(id==='system'){ renderSysInfo(); renderTrash(); renderSicherungStand(); renderRechtWarnung(); designSchalterZeigen(); renderAboKarte(); stempelFristLaden(); }
@@ -37221,9 +37340,14 @@ function spLaden(){
     S('config').doc('schichtplaner').get(),
     S('planerTeam').get(),
     S('planerWuensche').where('monat','==',m).get(),
-    S('planerPlaene').doc(m).get()
+    S('planerPlaene').doc(m).get(),
+    /* Abwesenheiten bei JEDEM Öffnen, nicht nur beim Erstellen: wer
+       sich nach dem Erstellen krank meldet, steht sonst weiter im Plan,
+       und niemand merkt es (Runde 169). */
+    spAbwesenheitenLaden(m)
   ]).then(function(r){
     if(m!==_sp.monat) return;   // inzwischen weitergeblättert
+    _sp.abwesend = r[4] || [];
     _sp.conf = r[0].exists ? (r[0].data()||{}) : {};
     _sp.team = r[1].docs.map(function(d){ var x=d.data()||{}; x.id=d.id; return x; })
       .sort(function(a,b){ return (a.name||'').localeCompare(b.name||'','de'); });
@@ -37232,6 +37356,7 @@ function spLaden(){
     _sp.plan = p && p.einsaetze ? p : null;
     spMeldung('');
     spSchritteZeichnen();
+    spRegelnZeichnen();
     spErgebnisZeichnen();
   }).catch(function(e){ spMeldung(errMsg(e), true); });
 }
@@ -37302,8 +37427,35 @@ function spEinlesen(datei){
       if(!u) ohneKonto.push(p.name);
     });
     var nSch=0; Object.keys(r.schichten).forEach(function(k){ nSch+=r.schichten[k].length; });
+    /* Feste Schichten und Sondertage aus der Datei: Namen → Kennungen.
+       Was sich nicht zuordnen lässt, wird gemeldet, nicht still verworfen. */
+    function schichtId(studio, name){
+      var n=String(name||'').toLowerCase();
+      var liste=(r.schichten[studio]&&r.schichten[studio].length ? r.schichten[studio] : (r.schichten.alle||[]));
+      if(!liste.length) liste=spSchichtenFuer(studio);
+      var t=liste.filter(function(x){ return x.name.toLowerCase()===n; })[0];
+      return t ? t.id : '';
+    }
+    var fest=[];
+    (r.fest||[]).forEach(function(f){
+      var p=r.personen.filter(function(x){ return spNameNorm(x.name)===spNameNorm(f.personName); })[0];
+      var sid=schichtId(f.studio, f.schichtName);
+      if(!p || !sid){ r.fehler.push('Feste Schicht „'+f.personName+' · '+f.schichtName+'": '+(!p?'Person':'Schicht')+' nicht gefunden.'); return; }
+      var e={ person:p.id, studio:f.studio, schicht:sid }; if(f.datum) e.datum=f.datum; else e.tage=f.tage;
+      fest.push(e);
+    });
+    var sonder=(r.sonder||[]).map(function(x){
+      var y=Object.assign({}, x);
+      if(x.schichtName){
+        var st=x.studio==='alle' ? 'alle' : x.studio;
+        y.schicht=schichtId(st==='alle'?'alle':st, x.schichtName) || (r.schichten.alle||[]).filter(function(z){ return z.name.toLowerCase()===x.schichtName.toLowerCase(); }).map(function(z){ return z.id; })[0] || '';
+        if(!y.schicht) r.fehler.push('Sondertag '+x.datum+': Schicht „'+x.schichtName+'" nicht gefunden — gilt für alle Schichten.');
+      } else y.schicht='';
+      return y;
+    });
     var weg=_sp.team.filter(function(t){ return !r.personen.some(function(p){ return p.id===t.id; }); });
-    var frage=r.personen.length+' Personen und '+nSch+' Schichtzeiten gefunden.'+
+    var frage=r.personen.length+' Personen und '+nSch+' Schichtzeiten gefunden'+
+      (fest.length?', '+fest.length+' feste Einteilungen':'')+(sonder.length?', '+sonder.length+' Sondertage':'')+'.'+
       (weg.length ? '\n\n'+weg.length+' bisher Eingetragene stehen nicht mehr in der Datei und werden entfernt: '+weg.map(function(p){ return p.name; }).join(', ')+'.' : '')+
       (ohneKonto.length ? '\n\nOhne Konto in der App (werden trotzdem geplant): '+ohneKonto.join(', ')+'.' : '')+
       (r.fehler.length ? '\n\nBitte prüfen:\n· '+r.fehler.slice(0,6).join('\n· ') : '')+
@@ -37321,6 +37473,9 @@ function spEinlesen(datei){
     var conf={ eingelesenAm:jetzt, eingelesenVon:session.name };
     if(nSch) conf.schichten=r.schichten;
     if(Object.keys(r.studios).length) conf.studios=r.studios;
+    if(fest.length) conf.fest=fest;
+    if(sonder.length) conf.sonder=sonder;
+    Object.keys(r.einstellungen||{}).forEach(function(k){ conf[k]=r.einstellungen[k]; });
     b.set(S('config').doc('schichtplaner'), conf, {merge:true});
     return b.commit().then(function(){
       toast(r.personen.length+' Personen eingelesen ✓');
@@ -37372,14 +37527,18 @@ function spEingabe(abwesend){
       personen:_sp.team.map(function(p){
         return { id:p.id, uid:p.uid, name:p.name, rolle:p.rolle, haupt:p.haupt, studios:p.studios||[],
           wocheStd:p.wocheStd, maxMonatStd:p.maxMonatStd, maxTageWoche:p.maxTageWoche, allein:p.allein!==false,
-          u18:!!p.u18, kann:p.kann||[], verf:p.verf||{}, sperre:p.sperre||'', lieber:p.lieber||'' };
+          u18:!!p.u18, kann:p.kann||[], verf:p.verf||{}, sperre:p.sperre||'', lieber:p.lieber||'',
+          einspringen:!!p.einspringen, ab:p.ab||'', bis:p.bis||'' };
       }),
       abwesend:abwesend.map(function(a){
         var p=_sp.team.filter(function(t){ return t.uid===a.id; })[0];
         return p ? { id:p.id, von:a.von, bis:a.bis, art:a.art } : null;
       }).filter(Boolean),
       wuensche:wuensche,
-      feiertageZu:!!(_sp.conf && _sp.conf.feiertageZu)
+      feiertageZu:!!(_sp.conf && _sp.conf.feiertageZu),
+      maxAmStueck:+((_sp.conf && _sp.conf.maxAmStueck) || 6),
+      fest:((_sp.conf && _sp.conf.fest) || []),
+      sonder:((_sp.conf && _sp.conf.sonder) || [])
     },
     spaet:spaet
   };
@@ -37396,14 +37555,29 @@ function spErstellen(btn){
   (function(){
     var lib;
     spMeldung('Rechne …');
-    return spLib().then(function(l){ lib=l; return spAbwesenheitenLaden(_sp.monat); })
+    var vormonat=[];
+    return spLib().then(function(l){
+      lib=l;
+      /* Die letzten Tage des Vormonats: für die 11 Stunden Ruhe am 1. und
+         für „Tage am Stück" über die Monatsgrenze (Runde 169). */
+      return S('planerPlaene').doc(spMonatPlus(_sp.monat,-1)).get().then(function(d){
+        var alt=d && d.exists ? (d.data()||{}).einsaetze||[] : [];
+        var grenze=spMonatPlus(_sp.monat,0)+'-01';
+        var ab=new Date(+grenze.slice(0,4), +grenze.slice(5,7)-1, 1); ab.setDate(ab.getDate()-14);
+        var abT=ymd(ab);
+        vormonat=alt.filter(function(x){ return x.datum>=abT && x.datum<grenze; })
+          .map(function(x){ return { id:x.id, datum:x.datum, bis:x.bis }; });
+      }).catch(function(){ vormonat=[]; });
+    }).then(function(){ return spAbwesenheitenLaden(_sp.monat); })
     .then(function(abw){
+      _sp.abwesend=abw;
       var e=spEingabe(abw);
+      e.eingabe.vormonat=vormonat;
       var t0=Date.now();
       var r=lib.planen(e.eingabe);
       if(e.spaet.length) r.hinweise.unshift('Nach der Frist eingetragen, nicht berücksichtigt: '+e.spaet.join(', '));
       var plan={ monat:_sp.monat, einsaetze:r.einsaetze, luecken:r.luecken, hinweise:r.hinweise,
-        personen:r.personen, feiertage:r.feiertage, erstellt:Date.now(), erstelltVon:session.name,
+        personen:r.personen, fairness:r.fairness, feiertage:r.feiertage, erstellt:Date.now(), erstelltVon:session.name,
         veroeffentlicht:null };
       _sp.plan=plan; _sp.wahl=null;
       spMeldung('Fertig in '+((Date.now()-t0)/1000).toFixed(1).replace('.',',')+' s · gespeichert');
@@ -37413,8 +37587,25 @@ function spErstellen(btn){
       .then(fertig, fertig);
   })();
 }
+/* Ein Dokument darf höchstens 1 MiB gross sein. Gemessen (Runde 169):
+   14 Studios × 3 Schichten × 31 Tage mit Doppelbesetzung = rund 1.800
+   Einsätze = 590 KB — mit Begründungstexten. Wird es eng, fallen zuerst
+   die Begründungen weg (sie lassen sich neu erstellen), erst dann kommt
+   eine klare Meldung statt eines stillen Fehlers. */
+var SP_GRENZE_BYTES=900000;
+function spPlanGroesse(p){ try{ return new Blob([JSON.stringify(p)]).size; }catch(e){ return JSON.stringify(p).length*2; } }
 function spPlanSpeichern(){
-  return S('planerPlaene').doc(_sp.monat).set(_sp.plan)
+  var p=_sp.plan;
+  if(spPlanGroesse(p)>SP_GRENZE_BYTES){
+    p.einsaetze.forEach(function(x){ delete x.grund; });
+    (p.luecken||[]).forEach(function(x){ x.fragen=(x.fragen||[]).slice(0,2); });
+    p.gekuerzt=true;
+    if(spPlanGroesse(p)>SP_GRENZE_BYTES){
+      spMeldung('Der Plan ist zu gross zum Speichern ('+Math.round(spPlanGroesse(p)/1024)+' KB). Bitte weniger Schichten je Tag oder den Monat in zwei Pläne teilen.', true);
+      return Promise.resolve();
+    }
+  }
+  return S('planerPlaene').doc(_sp.monat).set(p)
     .catch(function(e){ spMeldung('Nicht gespeichert: '+errMsg(e), true); });
 }
 
@@ -37424,7 +37615,7 @@ function spErgebnisZeichnen(){
   var p=_sp.plan;
   box.hidden=!p;
   spSchritteZeichnen();
-  if(!p) return;
+  if(!p){ var af=$('spAusfaelle'); if(af) af.hidden=true; return; }
   var rueck=p.einsaetze.filter(function(x){ return x.rueckfrage; });
   var mit=spStudios().filter(function(s){ return spSchichtenFuer(s.id).length; });
   var offen={};
@@ -37468,6 +37659,7 @@ function spErgebnisZeichnen(){
   var hin=$('spAktionHinweis');
   if(hin && p.veroeffentlicht) hin.textContent='Veröffentlicht am '+new Date(p.veroeffentlicht).toLocaleDateString('de-DE')+'. Erneut veröffentlichen ersetzt die Schichten dieses Monats.';
   spStudioTeileZeichnen();
+  spAusfaelleZeichnen();
   ikonenEinsetzen($('spErgebnis'));
 }
 /* Alles, was zu EINEM Studio gehört — beim Wechsel neu, der Rest bleibt. */
@@ -37583,7 +37775,7 @@ function spPlanZeichnen(){
       drin.forEach(function(x){
         var an=_sp.wahl && _sp.wahl.datum===key && _sp.wahl.schicht===s.id && _sp.wahl.ohne===x.id;
         woche+='<button type="button" class="spl-zelle'+(x.rueckfrage?' rueck':'')+(an?' an':'')+'" data-spzelle="'+esc(key+'|'+s.id+'|'+x.id)+'"'+
-          ' title="'+esc(x.grund+(x.rueckfrage?' · Rückfrage: '+x.rueckfrage:''))+'">'+spIni(x.id, x.name)+'<span>'+esc(x.name)+'</span></button>';
+          ' title="'+esc((x.grund||'')+(x.rueckfrage?' · Rückfrage: '+x.rueckfrage:''))+'">'+spIni(x.id, x.name)+'<span>'+esc(x.name)+'</span></button>';
       });
       if(luecke){
         var an2=_sp.wahl && _sp.wahl.datum===key && _sp.wahl.schicht===s.id && !_sp.wahl.ohne;
@@ -37615,47 +37807,75 @@ function spPlanZeichnen(){
 }
 
 
-/* Umbesetzen: wer käme infrage, und warum die anderen nicht. */
+/* Umbesetzen, ersetzen, tauschen (Runde 169). Die Liste kommt aus
+   SCHICHTPLANER.ersatz(): dieselben Regeln wie beim Erstellen,
+   nachgespielt auf dem fertigen Plan — mit den Abwesenheiten von JETZT.
+   Wer am Tag schon eingeteilt ist, lässt sich tauschen, wenn beide
+   Richtungen nach den Regeln gehen. */
 function spWahlZeichnen(){
   var box=$('spWahl'), w=_sp.wahl, p=_sp.plan; if(!box) return;
   if(!w || !p || !window.SCHICHTPLANER){ box.hidden=true; return; }
-  var e=spEingabe([]).eingabe;
-  /* Abwesenheiten stehen im gespeicherten Plan nicht — für die Auswahl
-     reicht, was beim Erstellen schon galt: wer da im Urlaub war, steht
-     dort auch nicht drin. Deshalb hier nur die Regeln des Tages. */
-  var liste=window.SCHICHTPLANER.alternativen(e, p, w);
+  var L=window.SCHICHTPLANER, e=spEingabe(_sp.abwesend||[]).eingabe;
+  var liste=L.ersatz(e, p, w);
   var sch=spSchichtenFuer(w.studio).filter(function(s){ return s.id===w.schicht; })[0]||{};
   var titel=SP_TAGE_KURZ[new Date(w.datum+'T12:00').getDay()]+' '+spDatumKurz(w.datum)+' · '+(sch.name||'')+' '+(sch.von||'')+'–'+(sch.bis||'');
-  box.hidden=false;
-  box.innerHTML='<h3 data-ikon="leute">'+esc(titel)+'</h3>'+
-    '<p class="hint" style="margin-top:0">'+(w.ohne?'Wer soll statt dessen?':'Wer übernimmt?')+'</p>'+
+  var eigener=w.ohne ? p.einsaetze.filter(function(x){ return x.datum===w.datum && x.studio===w.studio && x.schicht===w.schicht && x.id===w.ohne; })[0] : null;
+  _sp.tauschMoeglich={};
+  var html='<h3 data-ikon="leute">'+esc(titel)+'</h3>'+
+    '<p class="hint" style="margin-top:0">'+(w.ohne?'Wer soll statt '+esc((eigener||{}).name||'')+'?':'Wer übernimmt?')+
+    ' Oben steht, wer am besten passt.</p>'+
     (liste.length ? '' : '<p class="lese-leer">Diesem Studio ist niemand zugeordnet. In der Excel-Datei unter „Hauptstudio" oder „Weitere Studios" eintragen und neu einlesen.</p>')+
     '<div class="spl-wahl-liste">'+liste.map(function(x){
-      var jetzt=x.id===w.ohne;
-      return '<button type="button" class="spl-person'+(jetzt?' jetzt':'')+'" data-spwahl="'+esc(x.id)+'"'+(x.grund||jetzt?' disabled':'')+'>'+
-        '<span>'+esc(x.name)+'</span><small>'+esc(jetzt?'eingeteilt':(x.grund||x.weich||''))+'</small></button>';
+      var jetzt=x.id===w.ohne, zeile='';
+      var info=jetzt ? 'eingeteilt' : (x.grund || ((x.weich?'Rückfrage: '+x.weich+' · ':'')+(x.einspringen?'springt ein · ':'')+x.std+(x.soll?' / '+x.soll:'')+' Std.'));
+      /* Tauschen: nur wer am selben Tag woanders steht, und nur wenn wir
+         schon jemanden haben, der seine Schicht abgibt. */
+      if(!jetzt && eigener && x.grund==='an diesem Tag schon eingeteilt'){
+        var seiner=p.einsaetze.filter(function(y){ return y.id===x.id && y.datum===w.datum; })[0];
+        if(seiner){
+          var t=L.tausch(e, p, eigener, seiner);
+          _sp.tauschMoeglich[x.id]={ einsatz:seiner, geht:t.geht, grund:t.grund||'', rueck:t.rueckfrage||'' };
+          /* Nur zeigen, was geht. Ein ausgegrauter Tausch-Knopf sah aus
+             wie ein bedienbarer — der Grund steht stattdessen in der Zeile. */
+          zeile=t.geht ? '<button type="button" class="btn btn-ghost btn-sm spl-tausch" data-sptausch="'+esc(x.id)+'">⇄ Tauschen mit '+
+            esc(seiner.schichtName)+(seiner.studio!==w.studio?' ('+esc(seiner.studioName)+')':'')+'</button>' : '';
+          info=t.geht ? 'steht '+seiner.schichtName+(seiner.studio!==w.studio?' in '+seiner.studioName:'')+(t.rueckfrage?' · Rückfrage: '+t.rueckfrage:'')
+                      : 'Tausch geht nicht: '+t.grund;
+        }
+      }
+      return '<div class="spl-wahl-zeile"><button type="button" class="spl-person'+(jetzt?' jetzt':'')+'" data-spwahl="'+esc(x.id)+'"'+(x.grund||jetzt?' disabled':'')+'>'+
+        spIni(x.id, x.name)+'<span><b>'+esc(x.name)+'</b><small>'+esc(info)+'</small></span></button>'+zeile+'</div>';
     }).join('')+'</div>'+
     (w.ohne?'<button type="button" class="btn btn-ghost btn-sm" data-spweg="1" style="margin-top:var(--s8);width:100%">Austragen (Lücke lassen)</button>':'')+
     '<button type="button" class="btn btn-ghost btn-sm" data-spzu="1" style="margin-top:var(--s8);width:100%">Schliessen</button>';
+  box.hidden=false;
+  box.innerHTML=html;
   ikonenEinsetzen(box);
   box.querySelectorAll('[data-spwahl]').forEach(function(b){
     b.addEventListener('click', function(){ spSetzen(b.getAttribute('data-spwahl')); });
   });
+  box.querySelectorAll('[data-sptausch]').forEach(function(b){
+    b.addEventListener('click', function(){ spTauschen(eigener, _sp.tauschMoeglich[b.getAttribute('data-sptausch')]); });
+  });
   var weg=box.querySelector('[data-spweg]'); if(weg) weg.addEventListener('click', function(){ spSetzen(null); });
   box.querySelector('[data-spzu]').addEventListener('click', function(){ _sp.wahl=null; spPlanZeichnen(); spWahlZeichnen(); });
 }
-function spSetzen(neuId){
+function spSetzen(neuId, grund){
   var w=_sp.wahl, p=_sp.plan; if(!w||!p) return;
   var sch=spSchichtenFuer(w.studio).filter(function(s){ return s.id===w.schicht; })[0]; if(!sch) return;
   var st=spStudios().filter(function(s){ return s.id===w.studio; })[0]||{name:w.studio};
+  var alt=null;
   if(w.ohne){
-    p.einsaetze=p.einsaetze.filter(function(x){ return !(x.datum===w.datum && x.studio===w.studio && x.schicht===w.schicht && x.id===w.ohne); });
+    alt=p.einsaetze.filter(function(x){ return x.datum===w.datum && x.studio===w.studio && x.schicht===w.schicht && x.id===w.ohne; })[0]||null;
+    p.einsaetze=p.einsaetze.filter(function(x){ return x!==alt; });
   }
   var luecke=p.luecken.filter(function(x){ return x.datum===w.datum && x.studio===w.studio && x.schicht===w.schicht; })[0];
+  var neu=null;
   if(neuId){
     var person=_sp.team.filter(function(t){ return t.id===neuId; })[0]; if(!person) return;
-    p.einsaetze.push({ id:person.id, name:person.name, datum:w.datum, studio:w.studio, studioName:st.name,
-      schicht:sch.id, schichtName:sch.name, von:sch.von, bis:sch.bis, grund:'von Hand · '+session.name });
+    neu={ id:person.id, name:person.name, datum:w.datum, studio:w.studio, studioName:st.name,
+      schicht:sch.id, schichtName:sch.name, von:sch.von, bis:sch.bis, grund:(grund||'von Hand')+' · '+session.name };
+    p.einsaetze.push(neu);
     if(luecke && !w.ohne){
       luecke.fehlt--;
       if(luecke.fehlt<=0) p.luecken=p.luecken.filter(function(x){ return x!==luecke; });
@@ -37666,9 +37886,219 @@ function spSetzen(neuId){
       von:sch.von, bis:sch.bis, fehlt:1, grund:'von Hand ausgetragen', fragen:[] });
   }
   _sp.wahl=null;
+  spNachAenderung([{ alt:alt, neu:neu }]);
+}
+/* Zwei Einsätze am selben Tag tauschen die Personen. */
+function spTauschen(a, info){
+  var p=_sp.plan; if(!p || !a || !info || !info.geht) return;
+  var b=info.einsatz;
+  var pa=_sp.team.filter(function(t){ return t.id===a.id; })[0], pb=_sp.team.filter(function(t){ return t.id===b.id; })[0];
+  if(!pa || !pb) return;
+  var altA=JSON.parse(JSON.stringify(a)), altB=JSON.parse(JSON.stringify(b));
+  a.id=pb.id; a.name=pb.name; a.grund='getauscht · '+session.name; delete a.rueckfrage;
+  b.id=pa.id; b.name=pa.name; b.grund='getauscht · '+session.name; delete b.rueckfrage;
+  if(info.rueck) b.rueckfrage=info.rueck;
+  _sp.wahl=null;
+  toast(pa.name+' und '+pb.name+' getauscht ✓');
+  spNachAenderung([{ alt:altA, neu:a }, { alt:altB, neu:b }]);
+}
+/* Nach jeder Änderung von Hand: zeichnen, speichern — und ist der Plan
+   schon veröffentlicht, die Schicht im Team-Schichtplan mitziehen. Sonst
+   stünde im Planer der Ersatz und bei allen anderen noch die kranke
+   Person. */
+function spNachAenderung(wechsel){
   spErgebnisZeichnen();
   spPlanSpeichern();
   tick(8);
+  var p=_sp.plan;
+  if(!p || !p.veroeffentlicht) return;
+  wechsel.forEach(function(w){ spVeroeffentlichtAnpassen(w.alt, w.neu); });
+}
+function spVeroeffentlichtAnpassen(alt, neu){
+  var ziel=alt||neu; if(!ziel) return;
+  var neuT=neu ? _sp.team.filter(function(t){ return t.id===neu.id; })[0] : null;
+  var altT=alt ? _sp.team.filter(function(t){ return t.id===alt.id; })[0] : null;
+  var ref=S('studios').doc(ziel.studio).collection('shifts');
+  ref.where('planer','==',_sp.monat).get().then(function(sn){
+    var doc=sn.docs.filter(function(d){
+      var x=d.data()||{};
+      return alt && x.date===alt.datum && x.from===alt.von && x.uid===(altT&&altT.uid);
+    })[0];
+    if(doc && neuT && neuT.uid) return doc.ref.update({ uid:neuT.uid, name:neuT.name, ts:Date.now() });
+    if(doc && !(neuT && neuT.uid)) return doc.ref.delete();
+    if(!doc && neuT && neuT.uid) return ref.add({ date:neu.datum, from:neu.von, to:neu.bis, uid:neuT.uid, name:neuT.name,
+      note:neu.schichtName, planer:_sp.monat, createdBy:session.name, createdByUid:session.uid, ts:Date.now() });
+  }).then(function(){ toast('Auch im Team-Schichtplan geändert ✓'); })
+    .catch(function(e){ toast('Im Team-Schichtplan nicht geändert: '+errMsg(e), true); });
+}
+
+/* ══ Ausfälle (Runde 169) ═════════════════════════════════════════════
+   Aus dem Betrieb: „es sollen auch krankheitsfälle von jeder person
+   berücksichtigt werden und dafür dann ein passender ersatz vorgeschlagen
+   werden". Wer im Plan steht und inzwischen krank gemeldet oder im
+   genehmigten Urlaub ist, steht hier — mit den drei besten Ersatzleuten
+   zum Antippen. Ein Tipp trägt ein (und zieht die veröffentlichte
+   Schicht mit). */
+function spAusfaelleZeichnen(){
+  var box=$('spAusfaelle'), p=_sp.plan; if(!box) return;
+  if(!p || !window.SCHICHTPLANER){ box.hidden=true; return; }
+  var L=window.SCHICHTPLANER, e=spEingabe(_sp.abwesend||[]).eingabe;
+  var heute=ymd(new Date());
+  var liste=L.ausfaelle(e, p).filter(function(a){ return a.einsatz.datum>=heute; });
+  _sp.ausfaelle=liste;
+  if(!liste.length){ box.hidden=true; return; }
+  box.hidden=false;
+  box.innerHTML='<div class="spl-sec-kopf"><h3 data-ikon="warnung">Ausfälle · '+liste.length+'</h3>'+
+    '<span class="spl-sec-hinweis">Krank oder Urlaub nach dem Erstellen — Ersatz antippen</span></div>'+
+    '<div class="spl-ausfall-liste">'+liste.map(function(a, i){
+      var x=a.einsatz;
+      return '<div class="spl-ausfall"><div class="spl-ausfall-text"><b>'+esc(SP_TAGE_KURZ[new Date(x.datum+'T12:00').getDay()]+' '+spDatumKurz(x.datum)+' · '+x.studioName+' · '+x.schichtName+' '+x.von+'–'+x.bis)+'</b>'+
+        '<small>'+esc(x.name)+' ist '+(a.art==='krank'?'krank gemeldet':'im Urlaub')+'</small></div>'+
+        '<div class="spl-ausfall-wahl">'+(a.vorschlag.length ? a.vorschlag.map(function(v){
+          return '<button type="button" class="btn btn-ghost btn-sm" data-spersatz="'+i+'|'+esc(v.id)+'">'+spIni(v.id, v.name)+esc(v.name.split(' ')[0])+
+            (v.weich?' <small>(Rückfrage)</small>':'')+'</button>';
+        }).join('') : '<span class="lese-leer">Niemand frei – im Plan antippen, um zu tauschen</span>')+
+        '<button type="button" class="btn btn-ghost btn-sm" data-spausfallzeigen="'+i+'">Im Plan ›</button></div></div>';
+    }).join('')+'</div>';
+  ikonenEinsetzen(box);
+  box.querySelectorAll('[data-spersatz]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var t=b.getAttribute('data-spersatz').split('|'), a=_sp.ausfaelle[+t[0]]; if(!a) return;
+      var x=a.einsatz;
+      _sp.wahl={ datum:x.datum, studio:x.studio, schicht:x.schicht, ohne:x.id };
+      spSetzen(t[1], 'Ersatz für '+x.name+' ('+a.art+')');
+      toast('Ersatz eingetragen ✓');
+    });
+  });
+  box.querySelectorAll('[data-spausfallzeigen]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var a=_sp.ausfaelle[+b.getAttribute('data-spausfallzeigen')]; if(!a) return;
+      var x=a.einsatz;
+      spStudioWaehlen(x.studio);
+      _sp.wahl={ datum:x.datum, studio:x.studio, schicht:x.schicht, ohne:x.id };
+      spPlanZeichnen(); spWahlZeichnen();
+      var z=document.querySelector('.spl-zelle.an'); if(z) sanftInsBild(z,{block:'center'});
+    });
+  });
+}
+
+/* ══ Regeln & Sonderfälle — was die Chefin selbst festlegt (Runde 169) ═
+   Aus dem Betrieb: „man soll auch als chefs eintragen können sachen und
+   details und pläne". Alles landet in config/schichtplaner — derselbe
+   Ort, den die Excel-Datei füllt. */
+var _spRegelnGebunden=false, _spFestTage=[];
+function spConfSpeichern(teil, meldung){
+  _sp.conf=Object.assign(_sp.conf||{}, teil);
+  return S('config').doc('schichtplaner').set(teil, {merge:true})
+    .then(function(){ if(meldung) toast(meldung); spRegelnZeichnen(); })
+    .catch(function(e){ toast(errMsg(e), true); });
+}
+function spSchichtOptionen(studio){
+  var liste=studio==='alle' ? (((_sp.conf||{}).schichten||{}).alle||[]) : spSchichtenFuer(studio);
+  return liste.map(function(s){ return '<option value="'+esc(s.id)+'">'+esc(s.name+' '+s.von+'–'+s.bis)+'</option>'; }).join('');
+}
+function spRegelnZeichnen(){
+  var c=_sp.conf||{};
+  if(!$('spRegeln')) return;
+  $('spFrist').value=c.wunschFristTag||15;
+  $('spAmStueck').value=c.maxAmStueck||6;
+  $('spMaxWunsch').value=c.maxWunschTage!=null ? c.maxWunschTage : 0;
+  $('spFeiertageZu').checked=!!c.feiertageZu;
+  var fest=c.fest||[], sonder=(c.sonder||[]).filter(function(x){ return x.datum.slice(0,7)===_sp.monat; });
+  var kurz=[]; if(fest.length) kurz.push(fest.length+' fest'); if(sonder.length) kurz.push(sonder.length+' Sondertage');
+  if(c.notizen && c.notizen[_sp.monat]) kurz.push('Notiz');
+  $('spRegelnKurz').textContent=kurz.join(' · ');
+  var personen=_sp.team.map(function(t){ return '<option value="'+esc(t.id)+'">'+esc(t.name)+'</option>'; }).join('');
+  var studios=spStudios().filter(function(s){ return spSchichtenFuer(s.id).length; });
+  var stOpt=studios.map(function(s){ return '<option value="'+esc(s.id)+'">'+esc(s.name)+'</option>'; }).join('');
+  var fp=$('spFestPerson'), fs=$('spFestStudio');
+  var merkP=fp.value, merkS=fs.value;
+  fp.innerHTML=personen; fs.innerHTML=stOpt;
+  if(merkP) fp.value=merkP; if(merkS) fs.value=merkS;
+  $('spFestSchicht').innerHTML=spSchichtOptionen(fs.value);
+  var ss=$('spSonderStudio'), merkSS=ss.value;
+  ss.innerHTML='<option value="alle">alle Studios</option>'+stOpt; if(merkSS) ss.value=merkSS;
+  $('spSonderSchicht').innerHTML='<option value="">alle Schichten</option>'+spSchichtOptionen(ss.value==='alle'?(studios[0]||{}).id:ss.value);
+  $('spFestTage').innerHTML=['Mo','Di','Mi','Do','Fr','Sa','So'].map(function(t,i){
+    return '<button type="button" class="chip'+(_spFestTage.indexOf(i+1)>=0?' on':'')+'" data-spfesttag="'+(i+1)+'" aria-pressed="'+(_spFestTage.indexOf(i+1)>=0)+'">'+t+'</button>';
+  }).join('');
+  function name(id){ var t=_sp.team.filter(function(x){ return x.id===id; })[0]; return t?t.name:id; }
+  function schichtName(studio, id){ var s=spSchichtenFuer(studio).filter(function(x){ return x.id===id; })[0]; return s?s.name:id; }
+  $('spFestListe').innerHTML=fest.length ? fest.map(function(f, i){
+    var wann=f.datum ? f.datum.split('-').reverse().join('.') : (f.tage||[]).map(function(t){ return ['Mo','Di','Mi','Do','Fr','Sa','So'][t-1]; }).join(', ');
+    return '<li><span><b>'+esc(name(f.person))+'</b> · '+esc(studioName(f.studio))+' · '+esc(schichtName(f.studio, f.schicht))+' · '+esc(wann)+'</span>'+
+      '<button type="button" class="btn btn-ghost btn-sm" data-spfestweg="'+i+'" aria-label="Feste Einteilung entfernen">Entfernen</button></li>';
+  }).join('') : '<li class="lese-leer">Noch keine.</li>';
+  var alle=c.sonder||[];
+  $('spSonderListe').innerHTML=sonder.length ? sonder.map(function(x){
+    var i=alle.indexOf(x);
+    return '<li><span><b>'+esc(x.datum.split('-').reverse().join('.'))+'</b> · '+esc(x.studio==='alle'?'alle Studios':studioName(x.studio))+' · '+
+      esc(x.art==='zu' ? 'geschlossen' : '+'+(x.plus||1)+' Person'+((x.plus||1)>1?'en':''))+(x.schicht?' · '+esc(x.schichtName||x.schicht):'')+(x.notiz?' · '+esc(x.notiz):'')+'</span>'+
+      '<button type="button" class="btn btn-ghost btn-sm" data-spsonderweg="'+i+'" aria-label="Sondertag entfernen">Entfernen</button></li>';
+  }).join('') : '<li class="lese-leer">In diesem Monat keine.</li>';
+  $('spNotiz').value=(c.notizen||{})[_sp.monat]||'';
+  var na=$('spNotizAnzeige'), nt=(c.notizen||{})[_sp.monat]||'';
+  if(na){ na.hidden=!nt; na.textContent=nt ? 'Notiz: '+nt : ''; }
+  ikonenEinsetzen($('spRegeln'));
+  spRegelnBinden();
+}
+function spRegelnBinden(){
+  document.querySelectorAll('[data-spfesttag]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var t=+b.getAttribute('data-spfesttag'), i=_spFestTage.indexOf(t);
+      if(i>=0) _spFestTage.splice(i,1); else _spFestTage.push(t);
+      b.classList.toggle('on', i<0); b.setAttribute('aria-pressed', String(i<0));
+    });
+  });
+  document.querySelectorAll('[data-spfestweg]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var fest=((_sp.conf||{}).fest||[]).slice(); fest.splice(+b.getAttribute('data-spfestweg'),1);
+      spConfSpeichern({ fest:fest }, 'Entfernt ✓');
+    });
+  });
+  document.querySelectorAll('[data-spsonderweg]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var so=((_sp.conf||{}).sonder||[]).slice(); so.splice(+b.getAttribute('data-spsonderweg'),1);
+      spConfSpeichern({ sonder:so }, 'Entfernt ✓');
+    });
+  });
+  if(_spRegelnGebunden) return; _spRegelnGebunden=true;
+  $('spFestStudio').addEventListener('change', function(){ $('spFestSchicht').innerHTML=spSchichtOptionen(this.value); });
+  $('spSonderStudio').addEventListener('change', function(){
+    var st=this.value==='alle' ? (spStudios().filter(function(s){ return spSchichtenFuer(s.id).length; })[0]||{}).id : this.value;
+    $('spSonderSchicht').innerHTML='<option value="">alle Schichten</option>'+spSchichtOptionen(st);
+  });
+  $('spEinstSpeichern').addEventListener('click', function(){
+    var f=Math.min(28, Math.max(1, +$('spFrist').value||15)), a=Math.min(12, Math.max(1, +$('spAmStueck').value||6));
+    var mw=Math.min(31, Math.max(0, +$('spMaxWunsch').value||0));
+    spConfSpeichern({ wunschFristTag:f, maxAmStueck:a, maxWunschTage:mw, feiertageZu:$('spFeiertageZu').checked },
+      'Einstellungen gespeichert ✓ – gelten beim nächsten „Plan erstellen"');
+  });
+  $('spFestDazu').addEventListener('click', function(){
+    var person=$('spFestPerson').value, studio=$('spFestStudio').value, schicht=$('spFestSchicht').value, datum=$('spFestDatum').value;
+    if(!person || !studio || !schicht){ toast('Bitte Person, Studio und Schicht wählen.', true); return; }
+    if(!datum && !_spFestTage.length){ toast('Bitte Wochentage antippen oder ein Datum wählen.', true); return; }
+    var neu={ person:person, studio:studio, schicht:schicht };
+    if(datum) neu.datum=datum; else neu.tage=_spFestTage.slice().sort();
+    var fest=((_sp.conf||{}).fest||[]).concat([neu]);
+    _spFestTage=[]; $('spFestDatum').value='';
+    spConfSpeichern({ fest:fest }, 'Feste Einteilung gespeichert ✓');
+  });
+  $('spSonderDazu').addEventListener('click', function(){
+    var datum=$('spSonderDatum').value;
+    if(!datum){ toast('Bitte ein Datum wählen.', true); return; }
+    var sel=$('spSonderSchicht');
+    var neu={ datum:datum, studio:$('spSonderStudio').value, art:$('spSonderArt').value, schicht:sel.value,
+      schichtName:sel.value ? sel.options[sel.selectedIndex].text.replace(/ \d.*$/,'') : '',
+      plus:Math.min(5, Math.max(1, +$('spSonderPlus').value||1)), notiz:$('spSonderNotiz').value.trim().slice(0,80) };
+    var so=((_sp.conf||{}).sonder||[]).concat([neu]).sort(function(a,b){ return a.datum.localeCompare(b.datum); });
+    $('spSonderNotiz').value='';
+    spConfSpeichern({ sonder:so }, 'Sondertag gespeichert ✓');
+  });
+  $('spNotizSpeichern').addEventListener('click', function(){
+    var n=Object.assign({}, (_sp.conf||{}).notizen||{}); n[_sp.monat]=$('spNotiz').value.trim().slice(0,600);
+    spConfSpeichern({ notizen:n }, 'Notiz gespeichert ✓');
+  });
 }
 /* Stunden der Leute, die in diesem Studio arbeiten (Haupt- oder
    Springer-Studio), als Balken: wer unter Soll bleibt, fällt auf, ohne
@@ -37680,10 +38110,16 @@ function spTeamZeichnen(){
     .map(function(t){ return t.id; });
   var leute=p.personen.filter(function(x){ return hier.indexOf(x.id)>=0; });
   if(!leute.length){ box.innerHTML='<p class="lese-leer">Diesem Studio ist niemand zugeordnet.</p>'; return; }
-  box.innerHTML='<div class="spl-balken">'+leute.map(function(x){
+  /* Fairness über den ganzen Plan (Runde 169): wie weit Wochenenden und
+     Feiertage auseinanderliegen und wer unter bzw. über Soll bleibt. */
+  var f=p.fairness || (window.SCHICHTPLANER ? window.SCHICHTPLANER.fairness(p.personen) : null);
+  var fair=f ? '<p class="spl-fair"><b>Fairness im ganzen Plan:</b> Wochenenden '+(f.wochenenden<=1?'gleich verteilt':'bis '+f.wochenenden+' Unterschied')+
+    ' · Feiertage '+(f.feiertage<=1?'gleich verteilt':'bis '+f.feiertage+' Unterschied')+
+    ' · '+f.unterSoll+' unter, '+f.ueberSoll+' über Soll</p>' : '';
+  box.innerHTML=fair+'<div class="spl-balken">'+leute.map(function(x){
     var soll=x.soll||0, anteil=soll ? Math.min(100, Math.round(x.std/soll*100)) : 100;
     var unter=soll && x.std<soll*0.85;
-    return '<span class="n">'+esc(x.name)+'<small>'+esc(x.rolle||'')+' · '+x.tage+' Tage · '+x.wochenenden+' WE</small></span>'+
+    return '<span class="n">'+esc(x.name)+'<small>'+esc(x.rolle||'')+' · '+x.tage+' Tage · '+x.wochenenden+' WE · '+(x.frueh||0)+' früh / '+(x.spaet||0)+' spät'+(x.feiertage?' · '+x.feiertage+' Feiertag':'')+'</small></span>'+
       '<span class="s" role="img" aria-label="'+anteil+' % vom Soll"><i style="width:'+anteil+'%"></i></span>'+
       '<span class="z'+(unter?' unter':'')+'">'+String(x.std).replace('.',',')+(soll?' / '+soll:'')+' Std.</span>';
   }).join('')+'</div>';
@@ -37763,6 +38199,7 @@ function spWunschZeigen(){
     var conf = r[0] && r[0].exists ? r[0].data()||{} : {};
     _sp.conf = _sp.conf || conf;
     var tag=+(conf.wunschFristTag||15);
+    _spW.max=+(conf.maxWunschTage||0);
     var jetzt=new Date();
     if(jetzt.getDate()>tag) m=spMonatPlus(spMonatJetzt(),2);
     /* Nur wer im Planer steht, bekommt die Karte. Sonst fragt die App
@@ -37788,7 +38225,7 @@ function spWunschZeichnen(){
   var f=new Date(_spW.frist);
   $('spWunschFrist').textContent = zu
     ? 'Die Frist war am '+f.getDate()+'.'+(f.getMonth()+1)+'. – der Plan wird gerade erstellt. Änderungen bitte direkt mit der Leitung absprechen.'
-    : 'Bis '+f.getDate()+'.'+(f.getMonth()+1)+'. eintragen. Was danach kommt, kann nicht mehr berücksichtigt werden.';
+    : 'Bis '+f.getDate()+'.'+(f.getMonth()+1)+'. eintragen'+(_spW.max?', höchstens '+_spW.max+' Tage':'')+'. Was danach kommt, kann nicht mehr berücksichtigt werden.';
   var p=m.split('-'), n=new Date(+p[0], +p[1], 0).getDate(), html='';
   for(var d=1; d<=n; d++){
     var k=m+'-'+('0'+d).slice(-2), an=_spW.frei.indexOf(k)>=0, wt=new Date(+p[0], +p[1]-1, d).getDay();
@@ -37799,6 +38236,9 @@ function spWunschZeichnen(){
   box.querySelectorAll('[data-spwtag]').forEach(function(b){
     b.addEventListener('click', function(){
       var k=b.getAttribute('data-spwtag'), i=_spW.frei.indexOf(k);
+      /* Höchstens so viele Wunsch-frei-Tage, wie die Chefin erlaubt
+         (Regeln & Sonderfälle; 0 = keine Grenze). */
+      if(i<0 && _spW.max && _spW.frei.length>=_spW.max){ toast('Höchstens '+_spW.max+' Wunsch-frei-Tage im Monat.', true); return; }
       if(i>=0) _spW.frei.splice(i,1); else _spW.frei.push(k);
       b.classList.toggle('an', i<0); b.setAttribute('aria-pressed', String(i<0));
     });

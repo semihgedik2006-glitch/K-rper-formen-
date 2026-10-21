@@ -62,17 +62,19 @@ async function oeffne(b, rolle, w, h) {
   await p.waitForTimeout(3200);
   return p;
 }
-async function zuAlles(p, cgo) {
-  return p.evaluate(async (cgo) => {
+/* Seit Runde 169 eine eigene Seite (view-planer) statt eines
+   Verwaltungs-Reiters — der Weg bleibt „Alles" → Schichtplaner. */
+async function zuAlles(p) {
+  return p.evaluate(async () => {
     const w = (ms) => new Promise((r) => setTimeout(r, ms));
     const alles = [...document.querySelectorAll('.mobnav button, #side button, #side a')].find((e) => e.offsetParent && /^\s*Alles\s*$/.test(e.textContent));
     if (alles) { alles.click(); await w(700); }
-    const z = [...document.querySelectorAll('[data-alles][data-al-cgo="' + cgo + '"]')].find((e) => e.offsetParent);
+    const z = [...document.querySelectorAll('[data-alles="planer"]')].find((e) => e.offsetParent);
     if (!z) return false;
     z.click(); await w(1500);
-    const pane = document.querySelector('[data-cpane="' + cgo + '"]');
-    return !!pane && pane.style.display !== 'none';
-  }, cgo);
+    const v = document.getElementById('view-planer');
+    return !!v && getComputedStyle(v).display !== 'none' && !!v.offsetParent;
+  });
 }
 async function messen(p, wer, liste) {
   for (const [w, h] of GROESSEN) {
@@ -105,7 +107,9 @@ async function messen(p, wer, liste) {
 
   console.log('── Chef ──');
   const p = await oeffne(b, 'chef', 1440, 900);
-  pruefe('„Alles" → Schichtplaner öffnet den Reiter', await zuAlles(p, 'schichtplaner'));
+  pruefe('„Alles" → Schichtplaner öffnet die eigene Seite', await zuAlles(p));
+  const reiter = await p.evaluate(() => [...document.querySelectorAll('#subnav [data-subview]')].map((b) => b.getAttribute('data-subview')));
+  pruefe('die Seite steht als Reiter neben Chef und Archiv', reiter.join() === 'chef,planer,archive', reiter.join());
   await p.waitForTimeout(800);
   const start = await p.evaluate(() => ({
     schritte: [...document.querySelectorAll('#spSchritte .spl-schritt')].map((li) => li.innerText.replace(/\s+/g, ' ')),
@@ -221,8 +225,115 @@ async function messen(p, wer, liste) {
   pruefe('veröffentlichte Schichten stehen im Team-Schichtplan (mit Schichtname)', imTeam > 0, imTeam);
   pruefe('ohne Skriptfehler (Chef)', !p._fehler.length, p._fehler.join(' | '));
 
+  // 7. Regeln & Sonderfälle: die Chefin trägt selbst ein (Runde 169)
+  await zuAlles(p);
+  const regeln = await p.evaluate(async () => {
+    const w = (ms) => new Promise((r) => setTimeout(r, ms));
+    const d = document.getElementById('spRegeln'); d.open = true; await w(100);
+    const vorFest = document.querySelectorAll('#spFestListe [data-spfestweg]').length;
+    document.querySelector('[data-spfesttag="3"]').click();
+    document.getElementById('spFestDazu').click(); await w(400);
+    const nachFest = document.querySelectorAll('#spFestListe [data-spfestweg]').length;
+    const vorSo = document.querySelectorAll('#spSonderListe [data-spsonderweg]').length;
+    const m = document.getElementById('spMonatName').textContent;
+    const naechster = new Date(); const t = new Date(naechster.getFullYear(), naechster.getMonth() + 1, 20);
+    document.getElementById('spSonderDatum').value = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-20';
+    document.getElementById('spSonderArt').value = 'zu';
+    document.getElementById('spSonderNotiz').value = 'Inventur';
+    document.getElementById('spSonderDazu').click(); await w(400);
+    const nachSo = document.querySelectorAll('#spSonderListe [data-spsonderweg]').length;
+    document.getElementById('spAmStueck').value = '5';
+    document.getElementById('spEinstSpeichern').click(); await w(400);
+    document.getElementById('spNotiz').value = 'Mitte des Monats Inventur';
+    document.getElementById('spNotizSpeichern').click(); await w(400);
+    return { vorFest, nachFest, vorSo, nachSo, kurz: document.getElementById('spRegelnKurz').textContent,
+      amStueck: document.getElementById('spAmStueck').value, notiz: document.getElementById('spNotizAnzeige').textContent, m };
+  });
+  pruefe('feste Einteilung hinzufügen: steht danach in der Liste', regeln.nachFest === regeln.vorFest + 1, JSON.stringify(regeln));
+  pruefe('Sondertag hinzufügen: steht danach in der Liste', regeln.nachSo === regeln.vorSo + 1, JSON.stringify(regeln));
+  pruefe('Einstellung „Tage am Stück" bleibt gespeichert', regeln.amStueck === '5', regeln.amStueck);
+  pruefe('die Monatsnotiz steht oben im Kopf', /Inventur/.test(regeln.notiz), regeln.notiz);
+  pruefe('die Zusammenfassung zählt feste Einteilungen und Sondertage', /fest/.test(regeln.kurz) && /Sondertag/.test(regeln.kurz), regeln.kurz);
+  // Der Sondertag „zu" wirkt beim nächsten Erstellen
+  await p.evaluate(() => { document.getElementById('spRegeln').open = false; document.getElementById('spLos').click(); });
+  await p.waitForFunction(() => /^Fertig/.test(document.getElementById('spStand').textContent), null, { timeout: 8000 }).catch(() => {});
+  const zuTag = await p.evaluate(() => {
+    const t = new Date(); const d = new Date(t.getFullYear(), t.getMonth() + 1, 20);
+    const k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-20';
+    return [...document.querySelectorAll('#spTabelle [data-spzelle]')].filter((b) => b.getAttribute('data-spzelle').startsWith(k)).length;
+  });
+  pruefe('Sondertag „geschlossen" am 20.: dort steht im Plan niemand', zuTag === 0, zuTag);
+
+  // 8. Krankmeldung NACH dem Erstellen → Ausfall mit Ersatz (Runde 169)
+  /* Die Demo ist mit 2–4 Leuten je Studio knapp — dort ist „niemand
+     frei" oft die richtige Antwort. Für diese Prüfung kommen drei
+     Leute nach Longerich dazu, dann wird neu erstellt. */
+  const krank = await p.evaluate(async () => {
+    const w = (ms) => new Promise((r) => setTimeout(r, ms));
+    const F = firebase.firestore().collection('firmen').doc('koerperformen');
+    for (const n of [1, 2, 3]) {
+      await F.collection('planerTeam').doc('x-test-' + n).set({ uid: 'x-test-' + n, name: 'Test Person ' + n, rolle: 'Vollzeit',
+        haupt: 'studio-0', studios: [], wocheStd: 20, allein: true, verf: {}, kann: [], einspringen: n === 2 });
+    }
+    return true;
+  });
+  await zuAlles(p);
+  await p.evaluate(() => document.getElementById('spLos').click());
+  await p.waitForFunction(() => /^Fertig/.test(document.getElementById('spStand').textContent), null, { timeout: 8000 }).catch(() => {});
+  const ziel = await p.evaluate(async () => {
+    const w = (ms) => new Promise((r) => setTimeout(r, ms));
+    const k = document.querySelector('#spKacheln [data-spkachel="studio-0"]'); if (k) { k.click(); await w(150); }
+    const z = [...document.querySelectorAll('#spTabelle .spl-zelle:not(.luecke)')].find((c) => /x-test-\d$/.test(c.getAttribute('data-spzelle')));
+    if (!z) return null;
+    const [datum, , id] = z.getAttribute('data-spzelle').split('|');
+    await firebase.firestore().collection('firmen').doc('koerperformen').collection('studios').doc('studio-0').collection('absences')
+      .add({ uid: id, name: 'Test', from: datum, to: datum, type: 'krank', ts: Date.now() });
+    return { datum, id };
+  });
+  pruefe('(Aufbau) eine Testperson steht im Plan', !!ziel, JSON.stringify(ziel));
+  await zuAlles(p);
+  await p.waitForTimeout(800);
+  const aus = await p.evaluate(() => {
+    const box = document.getElementById('spAusfaelle');
+    const knoepfe = [...box.querySelectorAll('[data-spersatz]')];
+    return { sichtbar: !box.hidden, text: box.innerText.replace(/\s+/g, ' ').slice(0, 200), vorschlaege: knoepfe.length,
+      vorschlagIds: knoepfe.map((b) => b.getAttribute('data-spersatz').split('|')[1]) };
+  });
+  pruefe('Krankmeldung nach dem Erstellen: „Ausfälle" erscheint', aus.sichtbar && /krank gemeldet/.test(aus.text), aus.text);
+  pruefe('… mit 1–3 Ersatzvorschlägen, ohne die kranke Person', aus.vorschlaege >= 1 && aus.vorschlaege <= 3 && aus.vorschlagIds.indexOf((ziel || {}).id) < 0, JSON.stringify(aus));
+  const ersetzt = await p.evaluate(async () => {
+    const w = (ms) => new Promise((r) => setTimeout(r, ms));
+    const vor = document.querySelectorAll('#spAusfaelle .spl-ausfall').length;
+    document.querySelector('#spAusfaelle [data-spersatz]').click(); await w(500);
+    const box = document.getElementById('spAusfaelle');
+    return { vor, nach: box.hidden ? 0 : box.querySelectorAll('.spl-ausfall').length };
+  });
+  pruefe('Ersatz antippen: der Ausfall ist erledigt (' + ersetzt.vor + ' → ' + ersetzt.nach + ')', ersetzt.nach === ersetzt.vor - 1, JSON.stringify(ersetzt));
+  // Tausch: wer am selben Tag woanders steht, bietet „Tauschen" an, wenn es geht
+  const tausch = await p.evaluate(async () => {
+    const w = (ms) => new Promise((r) => setTimeout(r, ms));
+    for (const k of [...document.querySelectorAll('#spKacheln .spl-kachel')]) {
+      k.click(); await w(100);
+      for (const z of [...document.querySelectorAll('#spTabelle .spl-zelle:not(.luecke)')].slice(0, 12)) {
+        z.click(); await w(30);
+        const b = document.querySelector('#spWahl [data-sptausch]');
+        if (b) {
+          const [d, sch, id] = z.getAttribute('data-spzelle').split('|');
+          const ander = b.getAttribute('data-sptausch');
+          b.click(); await w(300);
+          const jetzt = [...document.querySelectorAll('#spTabelle [data-spzelle]')].map((x) => x.getAttribute('data-spzelle'));
+          return { gefunden: true, getauscht: jetzt.indexOf(d + '|' + sch + '|' + ander) >= 0 };
+        }
+      }
+    }
+    return { gefunden: false };
+  });
+  pruefe('Tauschen am selben Tag: der Knopf tauscht die beiden Personen', !tausch.gefunden || tausch.getauscht, JSON.stringify(tausch));
+  if (!tausch.gefunden) console.log('    (in der Demo fand sich kein möglicher Tausch — geprüft nur, dass nichts Falsches angeboten wird)');
+  pruefe('ohne Skriptfehler (Regeln, Ausfälle, Tausch)', !p._fehler.length, p._fehler.join(' | '));
+
   // 6. Excel einlesen
-  await zuAlles(p, 'schichtplaner');
+  await zuAlles(p);
   await p.waitForTimeout(600);
   await p.setInputFiles('#spDatei', path.join(__dirname, 'daten', 'schichtplaner-beispiel.xlsx'));
   await p.waitForFunction(() => /4 Personen/.test((document.querySelector('#spSchritte .spl-schritt') || {}).innerText || ''), null, { timeout: 8000 }).catch(() => {});
@@ -248,7 +359,17 @@ async function messen(p, wer, liste) {
   pruefe('nach dem Einlesen: in Nippes lässt sich umbesetzen (' + gewaehlt + ' Personen zur Wahl)', gewaehlt >= 3, gewaehlt);
   await p.waitForTimeout(300);
   await messen(p, 'Chef', ['#spMonatZurueck', '#spMonatVor', '#spLos', '[data-spdatei]', '#spSchritte a[download]',
-    '#spKacheln .spl-kachel, #spStudio', '#spVeroeffentlichen', '#spLogx', '#spTabelle .spl-zelle', '#spWahl .spl-person', '.spl-team summary']);
+    '#spKacheln .spl-kachel, #spStudio', '#spVeroeffentlichen', '#spLogx', '#spTabelle .spl-zelle', '#spWahl .spl-person', '.spl-team summary', '#spRegeln > summary']);
+  await p.evaluate(() => { document.getElementById('spRegeln').open = true; });
+  /* Der Feiertags-Schalter: das Kästchen ist 22 px, getroffen wird aber
+     die ganze Zeile (label um das Kästchen). Gemessen wird, was der
+     Finger trifft — die Zeile. */
+  const schalter = await p.evaluate(() => { const l = document.querySelector('.spl-schalter'); const vor = document.getElementById('spFeiertageZu').checked;
+    const r = l.getBoundingClientRect(); document.elementFromPoint(r.right - 10, r.top + r.height / 2).click();
+    const nach = document.getElementById('spFeiertageZu').checked; document.getElementById('spFeiertageZu').checked = vor; return vor !== nach; });
+  pruefe('ein Tipp auf den Rand der Schalter-Zeile schaltet um', schalter);
+  await messen(p, 'Chef (Regeln)', ['#spFrist', '.spl-schalter', '#spEinstSpeichern', '#spFestPerson', '[data-spfesttag="1"]', '#spFestDazu',
+    '#spSonderDatum', '#spSonderDazu', '#spNotizSpeichern', '#spFestListe [data-spfestweg]']);
   await p.context().close();
 
   console.log('\n── Studioleitung ──');
@@ -257,7 +378,7 @@ async function messen(p, wer, liste) {
     const w = (ms) => new Promise((r) => setTimeout(r, ms));
     const alles = [...document.querySelectorAll('.mobnav button')].find((e) => e.offsetParent && /Alles/.test(e.textContent));
     if (alles) { alles.click(); await w(700); }
-    return !!document.querySelector('[data-al-cgo="schichtplaner"]');
+    return !!document.querySelector('[data-alles="planer"]');
   });
   pruefe('die Studioleitung hat den Reiter (noch) nicht', !lHat);
   await l.context().close();
@@ -268,7 +389,7 @@ async function messen(p, wer, liste) {
     const w = (ms) => new Promise((r) => setTimeout(r, ms));
     const alles = [...document.querySelectorAll('.mobnav button')].find((e) => e.offsetParent && /Alles/.test(e.textContent));
     if (alles) { alles.click(); await w(700); }
-    return !!document.querySelector('[data-al-cgo="schichtplaner"]');
+    return !!document.querySelector('[data-alles="planer"]');
   });
   pruefe('ein Mitarbeiter hat den Reiter nicht', !mHat);
   const karte = await m.evaluate(async () => {

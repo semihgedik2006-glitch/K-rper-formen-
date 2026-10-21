@@ -21,6 +21,9 @@
    7. Die LogX-Tabelle hat Kopf, Tabulatoren, sortierte Zeilen.
    8. 14 Studios × Monat × 60 Personen rechnet unter einer Sekunde
       (gemessen, nicht geschätzt).
+   9.–11. Runde 169: feste Einteilungen, Sondertage, Tage am Stück,
+      Fairness, erster/letzter Arbeitstag, Krankheit → Ersatz, Tausch,
+      die neuen Excel-Blätter.
    ══════════════════════════════════════════════════════════════════ */
 const fs = require('fs');
 const path = require('path');
@@ -178,6 +181,104 @@ function lies(datei) {
   pruefe('eine Zeile je Schicht', t.length === E.length + 1, t.length);
   pruefe('Datum deutsch, nach Datum sortiert', /^02\.11\.2026\tMo\t/.test(t[1]) && t.slice(1).every((z, i, a) => !i || z.slice(6, 10) + z.slice(3, 5) + z.slice(0, 2) >= a[i - 1].slice(6, 10) + a[i - 1].slice(3, 5) + a[i - 1].slice(0, 2)), t.slice(0, 3));
   pruefe('nur ein Studio, wenn gewünscht', SP.alsTabelle(r, 'studio-1').split('\n').slice(1).every((z) => z.split('\t')[2] === 'Nippes'));
+
+  console.log('\n── 9. Was die Chefin festlegt (Runde 169) ──');
+  // Feste Einteilung: Ben jeden Montag Früh in Longerich — obwohl er „Spät" lieber hat
+  const mitFest = SP.planen(Object.assign({}, EINGABE, { fest: [{ person: 'Ben', studio: 'studio-0', schicht: 'f', tage: [1] }] }));
+  const benMo = mitFest.einsaetze.filter((x) => x.id === 'Ben' && SP.wochentag(x.datum) === 1);
+  pruefe('fest eingeplant: Ben steht jeden Montag Früh in Longerich', benMo.length >= 4 && benMo.every((x) => x.schicht === 'f' && x.studio === 'studio-0' && x.fest), benMo.length);
+  const festKrank = SP.planen(Object.assign({}, EINGABE, { fest: [{ person: 'Anna', studio: 'studio-0', schicht: 'f', datum: '2026-11-10' }] }));
+  pruefe('fest eingeplant, aber im Urlaub: nicht eingeteilt, und der Hinweis sagt es', !festKrank.einsaetze.some((x) => x.id === 'Anna' && x.datum === '2026-11-10') &&
+    festKrank.hinweise.some((h) => /Anna ist am 2026-11-10 fest eingeplant, aber im Urlaub/.test(h)), festKrank.hinweise.slice(0, 3));
+  // Sondertage
+  const zu = SP.planen(Object.assign({}, EINGABE, { sonder: [{ datum: '2026-11-11', studio: 'alle', art: 'zu', schicht: 's' }] }));
+  pruefe('Sondertag „zu" (alle Studios, Spät): am 11.11. keine Spätschicht', !zu.einsaetze.some((x) => x.datum === '2026-11-11' && x.schicht === 's') &&
+    zu.einsaetze.some((x) => x.datum === '2026-11-11' && x.schicht === 'f'));
+  const mehr2 = SP.planen(Object.assign({}, EINGABE, { personen: TEAM.concat([person('Gerd', { haupt: 'studio-1' }), person('Hanna', { haupt: 'studio-1' })]),
+    sonder: [{ datum: '2026-11-12', studio: 'studio-1', art: 'mehr', schicht: 'f', plus: 1 }] }));
+  pruefe('Sondertag „mehr": am 12.11. stehen in Nippes früh zwei Leute',
+    mehr2.einsaetze.filter((x) => x.datum === '2026-11-12' && x.studio === 'studio-1' && x.schicht === 'f').length +
+    (mehr2.luecken.filter((x) => x.datum === '2026-11-12' && x.studio === 'studio-1' && x.schicht === 'f')[0] || { fehlt: 0 }).fehlt === 2);
+  // Tage am Stück
+  const kette = SP.planen({ monat: '2026-11', studios: [{ key: 'studio-0', name: 'L', schichten: [{ id: 't', name: 'Tag', von: '09:00', bis: '15:00', tage: [1, 2, 3, 4, 5, 6, 7], min: 1 }] }],
+    personen: [person('Solo', { wocheStd: 60 })], abwesend: [], wuensche: {}, maxAmStueck: 3 });
+  const viertTag = kette.einsaetze.filter((x) => x.rueckfrage && /4\. Tag am Stück/.test(x.rueckfrage));
+  pruefe('mehr Tage am Stück als erlaubt: nur als Rückfrage („4. Tag am Stück")', viertTag.length > 0, kette.einsaetze.slice(0, 5).map((x) => x.rueckfrage));
+  // Fairness
+  pruefe('Fairness wird ausgewiesen (Spannweite Wochenenden, unter/über Soll)', r.fairness && typeof r.fairness.wochenenden === 'number' && typeof r.fairness.unterSoll === 'number', r.fairness);
+  const vier = SP.planen({ monat: '2026-11', studios: [{ key: 'studio-0', name: 'L', schichten: SCH }],
+    personen: ['A', 'B', 'C', 'D'].map((n) => person(n, { wocheStd: 20 })), abwesend: [], wuensche: {} });
+  pruefe('vier Gleiche teilen sich die Samstage (Spannweite ≤ 1: ' + vier.fairness.wochenenden + ')', vier.fairness.wochenenden <= 1, vier.personen.map((p) => p.wochenenden));
+  // Erster/letzter Arbeitstag
+  const neu = SP.planen(Object.assign({}, EINGABE, { personen: TEAM.concat([person('Neu', { haupt: 'studio-1', ab: '2026-11-16' })]) }));
+  pruefe('wer erst am 16. anfängt, steht vorher nicht im Plan', !neu.einsaetze.some((x) => x.id === 'Neu' && x.datum < '2026-11-16') && neu.einsaetze.some((x) => x.id === 'Neu'));
+
+  // Vormonat: Spät am 31.10. → am 1.11. (So, hier Schicht täglich) kein Früh
+  const vm = SP.planen({ monat: '2026-11', studios: [{ key: 'studio-0', name: 'L', schichten: [{ id: 'f', name: 'Früh', von: '07:00', bis: '14:00', tage: [1, 2, 3, 4, 5, 6, 7], min: 1 }] }],
+    personen: [person('Aaron'), person('Zora')], abwesend: [], wuensche: {}, vormonat: [{ id: 'Aaron', datum: '2026-10-31', bis: '21:00' }] });
+  // Gegenprobe: ohne Vormonat stünde Aaron (alphabetisch vorn) am 1. — sonst prüfte die Zeile darunter nichts
+  const ohneVm = SP.planen({ monat: '2026-11', studios: [{ key: 'studio-0', name: 'L', schichten: [{ id: 'f', name: 'Früh', von: '07:00', bis: '14:00', tage: [1, 2, 3, 4, 5, 6, 7], min: 1 }] }], personen: [person('Aaron'), person('Zora')], abwesend: [], wuensche: {} });
+  pruefe('GEGENPROBE: ohne Vormonat stünde Aaron am 1.11.', (ohneVm.einsaetze.find((x) => x.datum === '2026-11-01') || {}).id === 'Aaron');
+  const erster = vm.einsaetze.find((x) => x.datum === '2026-11-01');
+  pruefe('Vormonat zählt: wer am 31.10. bis 21 Uhr arbeitet, steht am 1.11. nicht um 7 Uhr', erster && erster.id === 'Zora', erster);
+
+  console.log('\n── 10. Krankheit: Ersatz, Ausfälle, Tausch (Runde 169) ──');
+  const groß = Object.assign({}, EINGABE, { personen: TEAM.concat([person('Gerd', { haupt: 'studio-1', studios: ['studio-0'], einspringen: true }),
+    person('Hanna', { haupt: 'studio-1', studios: ['studio-0'] })]) });
+  const plan = SP.planen(groß);
+  const ziel = plan.einsaetze.find((x) => x.studio === 'studio-1' && x.schicht === 'f' && x.datum === '2026-11-18');
+  const krankEingabe = Object.assign({}, groß, { abwesend: groß.abwesend.concat([{ id: ziel.id, von: '2026-11-18', bis: '2026-11-19', art: 'krank' }]) });
+  const aus = SP.ausfaelle(krankEingabe, plan);
+  const meiner = aus.find((a) => a.einsatz === ziel);
+  pruefe('Krankmeldung nach dem Erstellen: der Einsatz erscheint als Ausfall „krank"', meiner && meiner.art === 'krank', aus.length);
+  pruefe('… mit höchstens drei Ersatzvorschlägen, alle ohne harten Grund', meiner && meiner.vorschlag.length >= 1 && meiner.vorschlag.length <= 3 && meiner.vorschlag.every((v) => !v.grund), meiner && meiner.vorschlag);
+  pruefe('… und die kranke Person selbst ist nicht dabei', meiner && !meiner.vorschlag.some((v) => v.id === ziel.id));
+  const liste = SP.ersatz(krankEingabe, plan, { datum: ziel.datum, studio: ziel.studio, schicht: ziel.schicht, ohne: ziel.id });
+  const ruheVerletzt = liste.filter((c) => !c.grund).some((c) => {
+    const vorher = plan.einsaetze.find((x) => x.id === c.id && x.datum === '2026-11-17');
+    return vorher && vorher.bis > '20:00' && ziel.von < '07:30';
+  });
+  pruefe('Ersatz prüft die Ruhezeit (Spät am Vortag → kein Früh-Ersatz)', !ruheVerletzt);
+  const gerd = liste.find((c) => c.id === 'Gerd'), hanna = liste.find((c) => c.id === 'Hanna');
+  pruefe('wer „springt ein: ja" hat, steht beim Ersatz vor einer gleich passenden Person', !gerd || !hanna || gerd.grund || hanna.grund || liste.indexOf(gerd) < liste.indexOf(hanna) || gerd.weich, [gerd, hanna].map((x) => x && x.name + ':' + x.wert));
+  pruefe('jede ausgegraute Person trägt ihren Grund', liste.filter((c) => c.grund).every((c) => c.grund.length > 3));
+  // Tausch am selben Tag
+  const tag = plan.einsaetze.filter((x) => x.datum === '2026-11-18' && x.studio === 'studio-1');
+  if (tag.length >= 2) {
+    const t = SP.tausch(groß, plan, tag[0], tag[1]);
+    pruefe('Tausch am selben Tag wird nach denselben Regeln geprüft (' + (t.geht ? 'geht' : t.grund) + ')', typeof t.geht === 'boolean' && (t.geht || t.grund.length > 3));
+  } else pruefe('(kein Tag mit zwei Einsätzen für den Tauschtest)', false);
+  const azubiTausch = SP.planen({ monat: '2026-11', studios: [{ key: 'studio-0', name: 'L', schichten: [
+      { id: 'f', name: 'Früh', von: '07:00', bis: '14:00', tage: [1], min: 2 }, { id: 's', name: 'Spät', von: '14:00', bis: '21:00', tage: [1], min: 1 }] }],
+    personen: [person('Azubi', { allein: false }), person('M1'), person('M2')], abwesend: [], wuensche: {} });
+  const sp = azubiTausch.einsaetze.find((x) => x.schicht === 's' && x.datum === '2026-11-02');
+  const az = azubiTausch.einsaetze.find((x) => x.id === 'Azubi' && x.datum === '2026-11-02');
+  if (sp && az) {
+    const t2 = SP.tausch({ monat: '2026-11', studios: [{ key: 'studio-0', name: 'L', schichten: [
+      { id: 'f', name: 'Früh', von: '07:00', bis: '14:00', tage: [1], min: 2 }, { id: 's', name: 'Spät', von: '14:00', bis: '21:00', tage: [1], min: 1 }] }],
+      personen: [person('Azubi', { allein: false }), person('M1'), person('M2')], abwesend: [], wuensche: {} }, azubiTausch, az, sp);
+    pruefe('Tausch, der den Azubi allein in die Spätschicht setzen würde, wird abgelehnt', !t2.geht && /allein/.test(t2.grund), t2);
+  } else pruefe('(Azubi-Tausch nicht aufbaubar)', false, JSON.stringify(azubiTausch.einsaetze.slice(0, 4)));
+
+  console.log('\n── 11. Excel: neue Blätter (Runde 169) ──');
+  const v2 = SP.ausVorlage(await lies(path.join(__dirname, 'daten', 'schichtplaner-beispiel.xlsx')), key);
+  const lena2 = v2.personen.find((p) => p.name === 'Lena Brandt') || {};
+  const mira2 = v2.personen.find((p) => p.name === 'Mira Sommer') || {};
+  const tob2 = v2.personen.find((p) => p.name === 'Tobias Lang') || {};
+  pruefe('„springt bei Ausfall ein" gelesen', lena2.einspringen === true && mira2.einspringen === false, [lena2.einspringen, mira2.einspringen]);
+  pruefe('Erster Arbeitstag als Excel-Datum gelesen', mira2.ab === '2026-11-09', mira2.ab);
+  pruefe('Letzter Arbeitstag als TT.MM.JJJJ gelesen', tob2.bis === '2026-11-30', tob2.bis);
+  pruefe('Feste Schichten: zwei Zeilen, Beispiele übersprungen', v2.fest.length === 2, JSON.stringify(v2.fest));
+  pruefe('… Wochentage und Datum unterschieden', (v2.fest[0] || {}).tage && v2.fest[0].tage.join() === '1,2' && (v2.fest[1] || {}).datum === '2026-11-14', JSON.stringify(v2.fest));
+  pruefe('Sondertage: Excel-Datum und TT.MM.JJJJ, Art erkannt', v2.sonder.length === 2 && v2.sonder[0].datum === '2026-11-07' && v2.sonder[0].art === 'mehr' &&
+    v2.sonder[1].art === 'zu' && v2.sonder[1].studio === 'alle', JSON.stringify(v2.sonder));
+  pruefe('Einstellungen gelesen (Frist 15, Feiertage offen, 6 am Stück, 4 Wunschtage)', v2.einstellungen.wunschFristTag === 15 && v2.einstellungen.feiertageZu === false &&
+    v2.einstellungen.maxAmStueck === 6 && v2.einstellungen.maxWunschTage === 4, JSON.stringify(v2.einstellungen));
+  const kaputtFest = SP.ausVorlage({ Mitarbeiter: [['Name', 'Hauptstudio'], ['Eva', 'Nippes']], 'Feste Schichten': [['Person', 'Studio', 'Schicht', 'Wochentage ODER Datum'],
+    ['Eva', 'Nippes', 'Früh', '14.11.'], ['Eva', 'Nippes', 'Früh', '']] }, key);
+  pruefe('Datum ohne Jahr oder leer wird gemeldet — nicht als „jeden Tag" gelesen', kaputtFest.fest.length === 0 && kaputtFest.fehler.filter((f) => /weder Wochentage/.test(f)).length === 2, JSON.stringify(kaputtFest));
+  const leer2 = SP.ausVorlage(await lies(path.join(__dirname, '..', 'vorlagen', 'Schichtplaner-Vorlage.xlsx')), key);
+  pruefe('leere Vorlage v2: keine festen Schichten, keine Sondertage (nur Beispiele)', !leer2.fest.length && !leer2.sonder.length, JSON.stringify([leer2.fest, leer2.sonder]));
 
   console.log('\n── 8. Tempo ──');
   const viele = [], st14 = [];

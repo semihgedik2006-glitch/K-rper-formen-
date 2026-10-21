@@ -645,10 +645,10 @@ Unterhaltungs-Dokument. Test: `tests/rules/gelesen.test.js`.
 
 | Pfad | Inhalt | lesen | schreiben |
 |---|---|---|---|
-| `planerTeam/{uid oder x-name}` | `name, uid, rolle, haupt, studios[], wocheStd, maxMonatStd, maxTageWoche, allein, u18, kann[], verf{1..7}, sperre, lieber, notiz, ts` — aus der Excel-Vorlage | Chef; die Person ihre eigene Zeile | Chef |
+| `planerTeam/{uid oder x-name}` | `name, uid, rolle, haupt, studios[], wocheStd, maxMonatStd, maxTageWoche, allein, u18, kann[], verf{1..7}, sperre, lieber, notiz, einspringen, ab, bis, ts` — aus der Excel-Vorlage | Chef; die Person ihre eigene Zeile | Chef |
 | `planerWuensche/{uid}_{JJJJ-MM}` | `uid, name, monat, frei[], lieber ('', Früh, Spät, egal), notiz ≤ 140, ts` | Chef; die Person ihre eigenen | die Person selbst, nur diese Felder |
-| `planerPlaene/{JJJJ-MM}` | `einsaetze[], luecken[], hinweise[], personen[], feiertage[], erstellt, veroeffentlicht` | Chef | Chef |
-| `config/schichtplaner` | `schichten{alle|studio-N: [{id,name,von,bis,tage[],min,braucht}]}, studios{}, wunschFristTag, feiertageZu, eingelesenAm` | alle Aktiven | Chef |
+| `planerPlaene/{JJJJ-MM}` | `einsaetze[], luecken[], hinweise[], personen[], fairness{}, feiertage[], erstellt, veroeffentlicht, gekuerzt` — höchstens ~900 KB, sonst fallen die Begründungen weg | Chef | Chef |
+| `config/schichtplaner` | `schichten{alle|studio-N: [{id,name,von,bis,tage[],min,braucht}]}, studios{}, wunschFristTag, feiertageZu, maxAmStueck, maxWunschTage, fest[{person,studio,schicht,tage[]|datum}], sonder[{datum,studio,art:'zu'|'mehr',schicht,plus,notiz}], notizen{JJJJ-MM:text}, eingelesenAm` (Runde 169: fest, sonder, notizen, maxAmStueck, maxWunschTage) | alle Aktiven | Chef |
 
 Veröffentlichte Schichten landen in `studios/{k}/shifts` mit `planer: 'JJJJ-MM'` und
 `note: <Schichtname>` — ein zweites Veröffentlichen ersetzt genau diese und lässt
