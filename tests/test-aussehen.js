@@ -148,6 +148,14 @@ async function stand(p) {
 
   // ══ 2. Der App-Hintergrund liegt auf der App ══
   console.log('\n── Der Hintergrund der ganzen App ──');
+  /* Seit Runde 178 ist „Raum" die Voreinstellung (aus dem Betrieb,
+     22.10.2026: „Neuer Stil ist Standard, Wahl bleibt"). „Schlicht"
+     wird deshalb hier ausdrücklich gewählt — die Aussage „Schlicht heisst
+     kein Muster" bleibt dieselbe. */
+  const vorher = await stand(p);
+  pruefe('Voreinstellung ist „Raum", mit Muster', vorher.appbg === 'raum' && /gradient/.test(vorher.appMuster), vorher.appbg + ' ' + vorher.appMuster.slice(0, 40));
+  await p.evaluate(() => document.querySelector('[data-appbg="keiner"]').click());
+  await p.waitForTimeout(400);
   const ohne = await stand(p);
   pruefe('GEGENPROBE auf „Schlicht" liegt kein Muster auf der App',
     ohne.appMuster === 'none', ohne.appMuster);
@@ -228,10 +236,11 @@ async function stand(p) {
     zurueck.gewaehlt === 'bunt', String(zurueck.gewaehlt));
   pruefe('Chat-Hintergrund ist wieder „verlauf"',
     zurueck.chatbg === 'verlauf', zurueck.chatbg);
-  pruefe('App-Hintergrund ist wieder „keiner"',
-    zurueck.appbg === 'keiner', zurueck.appbg);
-  pruefe('und damit liegt auch kein Muster mehr auf der App',
-    zurueck.appMuster === 'none', zurueck.appMuster);
+  /* Voreinstellung seit Runde 178: „Raum" (siehe oben). */
+  pruefe('App-Hintergrund ist wieder die Voreinstellung „raum"',
+    zurueck.appbg === 'raum', zurueck.appbg);
+  pruefe('und damit liegt wieder der Raum auf der App, nicht „Ecken"',
+    /gradient/.test(zurueck.appMuster) && zurueck.appMuster !== verstellt.appMuster, zurueck.appMuster.slice(0, 60));
 
   /* Und die Frage, die man nach einem „Zurücksetzen" wirklich hat:
      hält es auch das Neuladen? Eine Einstellung, die nur im Speicher
@@ -240,7 +249,7 @@ async function stand(p) {
   await p.waitForTimeout(3000);
   const nachNeu = await stand(p);
   pruefe('nach dem Neuladen bleibt es zurückgesetzt',
-    nachNeu.chatbg === 'verlauf' && nachNeu.appbg === 'keiner' && nachNeu.fs === '100%',
+    nachNeu.chatbg === 'verlauf' && nachNeu.appbg === 'raum' && nachNeu.fs === '100%',
     JSON.stringify({ chatbg: nachNeu.chatbg, appbg: nachNeu.appbg, fs: nachNeu.fs }));
 
   pruefe('keine Skriptfehler', fehler.length === 0, fehler[0]);
