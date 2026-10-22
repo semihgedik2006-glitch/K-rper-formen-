@@ -360,6 +360,66 @@ const ZUSTAND = () => {
     await c.close();
   }
 
+  console.log('\n── 10. Schichtplaner: Anfang ohne Team, Regeln in Reitern ──');
+  /* Gemessen am echten Konto (Bildschirmfoto, 22.10.2026): Team leer,
+     „Plan erstellen" grau ohne ein Wort warum, „Wünsche" mit Haken bei
+     „0 von 0", Regeln als vier Formulare. Aus dem Betrieb: „mach weiter
+     mit dem design und aufbau". */
+  for (const [w, h] of [[390, 844], [1440, 900]]) {
+    const c = await b.newContext({ serviceWorkers: 'block', viewport: { width: w, height: h } });
+    const p = await c.newPage();
+    p._fehler = []; p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
+    await p.route('**://www.gstatic.com/**', r => r.abort());
+    await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
+    await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
+    await p.waitForTimeout(3200);
+    const voll = await p.evaluate(async () => {
+      const wt = ms => new Promise(r => setTimeout(r, ms));
+      const g = document.getElementById('bereichKopf'); if (g && g.offsetParent) { g.click(); await wt(700); }
+      [...document.querySelectorAll('[data-alles="planer"]')].find(e => e.offsetParent).click(); await wt(2500);
+      const d = document.getElementById('spRegeln'); d.open = true; await wt(150);
+      const vorher = [...document.querySelectorAll('[data-spregel]')].filter(x => !x.hidden).map(x => x.dataset.spregel);
+      document.querySelector('[data-spregeltab="sonder"]').click(); await wt(150);
+      const nachher = [...document.querySelectorAll('[data-spregel]')].filter(x => !x.hidden).map(x => x.dataset.spregel);
+      d.open = false;
+      return { vorher, nachher, anfang: !document.getElementById('spAnfang').hidden, regeln: !d.hidden };
+    });
+    pruefe(w + ' px mit Team: Regeln sichtbar, ohne Anfangskarte', voll.regeln && !voll.anfang, JSON.stringify(voll));
+    pruefe(w + ' px: Regeln zeigen EINEN Reiter, der Wechsel zeigt einen anderen',
+      voll.vorher.join() === 'einst' && voll.nachher.join() === 'sonder', JSON.stringify(voll));
+    const leer = await p.evaluate(async () => {
+      const wt = ms => new Promise(r => setTimeout(r, ms));
+      const db = firebase.firestore().collection('firmen').doc('koerperformen');
+      const sn = await db.collection('planerTeam').get();
+      for (const d of sn.docs) await db.collection('planerTeam').doc(d.id).delete();
+      await db.collection('config').doc('schichtplaner').set({ wunschFristTag: 15 });
+      document.getElementById('spMonatVor').click(); await wt(400);
+      document.getElementById('spMonatZurueck').click(); await wt(1200);
+      const los = document.getElementById('spLos');
+      return { anfang: !document.getElementById('spAnfang').hidden, regeln: !document.getElementById('spRegeln').hidden,
+        schritte: !document.getElementById('spSchritte').hidden, grau: los.disabled,
+        grund: document.getElementById('spLosGrund').hidden ? '' : document.getElementById('spLosGrund').textContent,
+        zustand: document.getElementById('spZustand').textContent,
+        knoepfe: [...document.querySelectorAll('#spAnfang .btn')].filter(e => e.offsetParent).map(e => e.textContent.trim()) };
+    });
+    console.log('  ' + JSON.stringify(leer));
+    pruefe(w + ' px ohne Team: „So fängst du an" statt Regeln und Schritten', leer.anfang && !leer.regeln && !leer.schritte, JSON.stringify(leer));
+    pruefe(w + ' px: Vorlage und Einlesen stehen in der Anfangskarte', /Vorlage/.test(leer.knoepfe.join()) && /einlesen/.test(leer.knoepfe.join()), JSON.stringify(leer.knoepfe));
+    pruefe(w + ' px: der graue Knopf sagt, warum', leer.grau && /eingelesen/.test(leer.grund), leer.grund);
+    pruefe(w + ' px: neben dem Monat steht „noch kein Plan"', /noch kein Plan/.test(leer.zustand), leer.zustand);
+    const ziel = await p.evaluate(async (SRC) => {
+      const T = eval('(' + SRC + ')'); const zu = [];
+      for (const el of [...document.querySelectorAll('#view-planer .spl-start button, #spAnfang .btn')].filter(e => e.offsetParent && !e.disabled)) {
+        el.scrollIntoView({ block: 'center' }); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        const m = T(el); if (m.w < 44 || m.h < 44) zu.push(el.textContent.trim() + ' ' + m.w + '×' + m.h);
+      }
+      return { zu, quer: document.documentElement.scrollWidth - innerWidth };
+    }, TREFFER.toString());
+    pruefe(w + ' px: Knöpfe im Anfang ≥ 44 × 44, nichts ragt hinaus', !ziel.zu.length && ziel.quer <= 0, JSON.stringify(ziel));
+    pruefe(w + ' px ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await c.close();
+  }
+
   await b.close();
   console.log(schlecht
     ? '\n✗ Schichtplan-Raster: ' + schlecht + ' von ' + (gut + schlecht) + ' Zusicherungen falsch'

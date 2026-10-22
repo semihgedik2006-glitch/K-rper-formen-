@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-SKKdw1isI5OlG9ZWbI6xxfU4IcaxFIqntfL2Q+w1SGM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-l7O5nTqRyqjkaYXonHEoHBIxGtoHKy1YHV2clL/SPpw='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3600,6 +3600,29 @@ button.ich-zeile:active{opacity:.7}
 .spl-knoepfe{grid-column:2;display:flex;gap:var(--s6);flex-wrap:wrap;margin-top:var(--s4)}
 .spl-knoepfe .btn{min-height:44px;white-space:nowrap}
 .spl-stand{margin:0;font-size:var(--t-xs);color:var(--text-3);min-height:1em}
+.spl-los-feld{display:flex;flex-direction:column;gap:var(--s4);align-items:stretch}
+.spl-los-grund{font-size:var(--t-xs);color:var(--text-2);text-align:center}
+.spl-los-grund[hidden]{display:none}
+/* Zustand des Monats: ein Wort, neutral — grün erst, wenn veröffentlicht. */
+.spl-zustand{display:inline-block;margin-top:var(--s4);font-size:var(--t-2xs);font-weight:700;padding:var(--s2) var(--s10);border-radius:var(--r-pille);
+  border:1px solid var(--line-2);color:var(--text-2);white-space:nowrap}
+.spl-zustand:empty{display:none}
+.spl-zustand.ok{border-color:var(--k-ok, var(--line-2));color:var(--ok-tx)}
+.spl-schritt.wartet .spl-nr{background:var(--auf-1);color:var(--text-3)}
+/* Der Anfang */
+.spl-anfang h3{margin-top:0}
+.spl-anfang-liste{list-style:none;counter-reset:anf;margin:0;padding:0;display:grid;gap:var(--s10)}
+.spl-anfang-liste li{counter-increment:anf;display:grid;grid-template-columns:32px minmax(0,1fr);gap:var(--s2) var(--s10);align-items:start;
+  padding:var(--s10) var(--s12);border-radius:var(--r-md);background:var(--auf-1)}
+.spl-anfang-liste li::before{content:counter(anf);grid-row:span 3;width:32px;height:32px;border-radius:var(--r-rund);display:grid;place-items:center;
+  background:rgba(var(--akz-rgb),.18);color:var(--accent-d);font-weight:800}
+.spl-anfang-liste b{font-weight:700}
+.spl-anfang-liste span{color:var(--text-2);font-size:var(--t-sm);line-height:var(--lh)}
+.spl-anfang-liste .btn{justify-self:start;min-height:44px;margin-top:var(--s4)}
+.spl-anfang .hint{margin:var(--s12) 0 0}
+@media (min-width:1100px){
+  .spl-anfang-liste{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
 .spl-stand:empty{display:none}
 .spl-stand.fehler{color:var(--danger-tx)}
 @media (min-width:820px){
@@ -3608,6 +3631,7 @@ button.ich-zeile:active{opacity:.7}
   /* Die Pfeile stehen am Monat, nicht 270 px auseinander. */
   .spl-monat-text{flex:0 1 auto;min-width:190px}
   .spl-los{width:auto;min-width:260px}
+  .spl-los-grund{max-width:300px;align-self:center}
   .spl-schritte{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 /* Die Zahlen: vier Kacheln, die Zahl gross. Gefärbt nur, wenn sie etwas meldet. */
@@ -3757,8 +3781,17 @@ button.ich-zeile:active{opacity:.7}
 .spl-regeln > summary span{display:inline-flex;align-items:center;gap:var(--s8)}
 .spl-regeln > summary span svg{width:20px;height:20px}
 .spl-regeln > summary small{font-family:var(--font-body);font-weight:600;font-size:var(--t-xs);color:var(--text-3)}
-.spl-regeln-inhalt{display:grid;gap:var(--s16);margin-top:var(--s12)}
-@media (min-width:1100px){ .spl-regeln-inhalt{grid-template-columns:repeat(2,minmax(0,1fr))} }
+.spl-regeln-inhalt{display:grid;gap:var(--s16)}
+/* Runde 197: vier Reiter statt vier Blöcke nebeneinander — am Rechner
+   standen 2 × 2 Formulare über 1.600 px Breite, das war die „Wand". */
+.spl-regel-reiter{margin:var(--s12) 0}
+/* Am Handy 2 × 2: in einer Zeile rollte „Notiz" aus dem Bild und war
+   bei 320–430 px nur 36–43 px breit zu treffen (test-schichtplaner). */
+@media (max-width:819px){ #spRegelReiter{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible} }
+.spl-regel-block[hidden]{display:none}
+/* Die Überschrift sagt der Reiter schon; für Vorleser bleibt sie. */
+.spl-regel-block > h4{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (min-width:1100px){ .spl-regel-block{max-width:880px} }
 .spl-regel-block{background:var(--auf-1);border-radius:var(--r-md);padding:var(--s12);display:flex;flex-direction:column;gap:var(--s8);min-width:0}
 .spl-regel-block h4{margin:0;font-size:var(--t-sm);font-weight:800}
 .spl-regel-block .hint{margin:0}
@@ -6043,15 +6076,39 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
    behält sein transform für Hover und das Ausweichen vor „Rückgängig".
    Die Gefühle laufen als Web Animations (endlich, ohne Klassen-Neustart),
    siehe formiFuehlt(). Bei „weniger Bewegung" steht alles still. */
-.fk-koerper{position:absolute;inset:0;border-radius:var(--r-rund);pointer-events:none;background:var(--formi-ring);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.22), inset 0 0 10px 3px rgba(2,4,10,.55),
-    var(--e2), 0 0 22px rgba(var(--jv-rgb),.35);
+.fk-koerper{position:absolute;inset:0;border-radius:var(--r-rund);pointer-events:none;
+  box-shadow:var(--e2), 0 0 22px rgba(var(--jv-rgb),.35);
   transition:opacity .6s ease}
+/* Runde 195: der Ring liegt auf einer eigenen Ebene, damit er sich drehen
+   kann (das „Atmen" des Lochs), ohne dass Gesicht und Schatten mitdrehen. */
+.fk-wirbel{position:absolute;inset:0;border-radius:var(--r-rund);background:var(--formi-ring);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.22), inset 0 0 10px 3px rgba(2,4,10,.55)}
 /* Das Loch: 30 px wie vorher der schwarze Kern (37 % des Verlaufs). */
 .fk-loch{position:absolute;left:50%;top:50%;width:30px;height:30px;margin:-15px 0 0 -15px}
-.fk-pupille{position:absolute;inset:0;border-radius:var(--r-rund);background:#02040A;
+.fk-pupille{position:absolute;inset:0;border-radius:var(--r-rund);background:#02040A;overflow:hidden;
   box-shadow:0 0 0 1px rgba(2,4,10,.65), 0 0 7px 2px rgba(2,4,10,.55);transition:transform .3s ease}
-.fk-pupille i{position:absolute;left:7px;top:6px;width:5px;height:5px;border-radius:var(--r-rund);background:rgba(255,255,255,.85)}
+/* ── Das Gesicht im Loch (Runde 195) ─────────────────────────────────
+   Aus dem Betrieb: „vlt ein kleines gesicht was der maus folgt und
+   reagiert und so im schwarzen loch drinen". Zwei Augen, ein Mund — in
+   Weiss auf dem schwarzen Loch. mix-blend-mode:difference: wird das Loch
+   weiss (Freude, siehe .fk-weiss), wird das Gesicht von selbst schwarz.
+   Die Ausdrücke sind Web Animations auf transform (formiGefuehl). */
+.fk-weiss{position:absolute;inset:-2px;border-radius:var(--r-rund);opacity:0;
+  background:radial-gradient(circle, #FFFFFF 0 46%, #F3EEFF 62%, rgba(255,255,255,0) 74%)}
+.fk-gesicht{position:absolute;inset:0;mix-blend-mode:difference}
+.fk-auge{position:absolute;top:9px;width:5px;height:7px;border-radius:var(--r-rund);background:#FFFFFF;transition:transform .3s ease}
+.fk-auge.l{left:8px}
+.fk-auge.r{right:8px}
+.fk-mund{position:absolute;left:10px;top:18px;width:10px;height:5px;border:2px solid #FFFFFF;border-top:0;
+  border-radius:0 0 var(--r-rund) var(--r-rund);transition:transform .3s ease}
+/* Die Teilchen: was das weisse Loch ausspuckt und das schwarze wieder
+   einsaugt (formiAusbruch), und was beim „Atmen" hineinfällt. Sie liegen
+   in der Kugel, bewegen sich nur per transform/opacity und lassen jeden
+   Tipp durch. */
+.fk-teilchen{position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none}
+.fk-teilchen i{position:absolute;left:-3px;top:-3px;width:6px;height:6px;border-radius:var(--r-rund);
+  background:var(--c, #FFFFFF);box-shadow:0 0 6px var(--c, #FFFFFF);opacity:0}
+.fk-teilchen.klein i{left:-1.5px;top:-1.5px;width:3px;height:3px}
 /* Die Geister für den Glitch: zwei Ringe in Cyan und Magenta, die für
    einen Wimpernschlag neben dem Körper stehen. Ruhend unsichtbar. */
 .fk-geist{position:absolute;inset:0;border-radius:var(--r-rund);border:3px solid rgba(95,225,255,.9);opacity:0}
@@ -6063,10 +6120,11 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
   transition:opacity .2s ease, transform .3s cubic-bezier(.3,1.6,.5,1)}
 .formi-kugel.fk-hat .fk-punkt{opacity:1;transform:none}
 /* Schläft: das Auge geht zu, der Ring wird leiser. Aufwachen = Glitch. */
-.formi-kugel.fk-schlaeft .fk-pupille{transform:scaleY(.12)}
+.formi-kugel.fk-schlaeft .fk-auge{transform:scaleY(.15)}
+.formi-kugel.fk-schlaeft .fk-mund{transform:scale(.5)}
 .formi-kugel.fk-schlaeft .fk-koerper{opacity:.7}
 /* Neugierig, wenn die Maus darüber steht: die Pupille wird gross. */
-@media (hover:hover){ .formi-kugel:not(.fk-schlaeft):hover .fk-pupille{transform:scale(1.18)} }
+@media (hover:hover){ .formi-kugel:not(.fk-schlaeft):hover .fk-auge{transform:scale(1.25)} }
 /* Der Glitch über einem Ziel in der App (formiGlitch): zwei Balken, die
    springen, dann ist es vorbei. Kein Flackern der ganzen Fläche: eine
    einzige Abblendung, die Balken bewegen sich nur seitlich (WCAG 2.3.1,
@@ -6077,7 +6135,7 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
   background:linear-gradient(90deg, rgba(95,225,255,0), rgba(95,225,255,.5) 18%, rgba(95,225,255,.5) 72%, rgba(95,225,255,0))}
 .formi-glitch i + i{top:62%;height:min(11%, 8px);
   background:linear-gradient(90deg, rgba(255,90,205,0), rgba(255,90,205,.5) 30%, rgba(255,90,205,.5) 86%, rgba(255,90,205,0))}
-@media (prefers-reduced-motion:reduce){ .fk-loch,.fk-pupille,.fk-koerper,.fk-punkt{transition:none} .formi-glitch{display:none} }
+@media (prefers-reduced-motion:reduce){ .fk-loch,.fk-pupille,.fk-koerper,.fk-punkt,.fk-auge,.fk-mund{transition:none} .formi-glitch,.fk-teilchen{display:none} }
 .formi-kugel::after{content:"";position:absolute;inset:-4px;border-radius:var(--r-rund);border:1px solid rgba(var(--jv-rgb),.35);pointer-events:none}
 .formi-kugel:hover{transform:scale(1.05)}
 .formi-kugel:active{transform:scale(.94)}
@@ -6086,6 +6144,19 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
    in BEIDEN Dichten — --s72 schrumpft in „kompakt" auf 50 und hätte die
    Kugel auf die Leiste gesetzt (test-formi-kugel). */
 @media(max-width:820px){ .formi-kugel{bottom:calc(80px + var(--sab))} }
+/* Formis Sprechblase (Runde 196, „wirklich richtig persönlichkeit"):
+   steht links über der Kugel, Lage im Bild gemessen (formiSagt). Keine
+   Trefferfläche, damit sie nie einen Knopf verdeckt. Bewegt wird nur
+   transform/opacity, einmal. */
+.formi-blase{position:fixed;z-index:151;max-width:min(240px, calc(100vw - 96px));pointer-events:none;
+  padding:var(--s8) var(--s12);border-radius:var(--radius) var(--radius) var(--r-xs) var(--radius);
+  background:rgba(8,26,44,.94);color:#E8F8FF;border:1px solid rgba(95,225,255,.4);
+  box-shadow:var(--e2);
+  font-size:var(--t-sm);line-height:var(--lh);overflow-wrap:anywhere}
+.formi-blase[hidden]{display:none}
+.formi-blase.rein{animation:formiBlaseRein .28s cubic-bezier(.2,.8,.2,1) backwards}
+@keyframes formiBlaseRein{from{opacity:0;transform:translateY(6px) scale(.96)}}
+@media (prefers-reduced-motion:reduce){ .formi-blase.rein{animation:none} }
 /* Runde 184: Am Handy steht unten rechts auch „+ Aufgabe" (Daumen-Dock,
    Runde 103). Die Kugel lag genau darauf und deckte das Wort ab. Wo es
    den Knopf gibt, rückt sie eine Knopfhöhe nach oben. :has statt
@@ -9289,7 +9360,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                 </div>
                 <div id="stWoche"></div>
               </div>
-              <!-- Korrekturantrag (Runde 196): die Person trägt ein, was fehlt;
+              <!-- Korrekturantrag (Runde 199): die Person trägt ein, was fehlt;
                    ein Stempel wird erst daraus, wenn die Geschäftsführung
                    annimmt („nur geschäftsführung", 22.10.2026). -->
               <div class="ich-blatt" id="stAntragKarte">
@@ -10366,16 +10437,38 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                 <div class="spl-kopf">
                   <div class="spl-monat" role="group" aria-label="Monat">
                     <button type="button" class="btn btn-ghost btn-sm wochen-pfeil" id="spMonatZurueck" aria-label="Voriger Monat">‹</button>
-                    <div class="spl-monat-text"><small>Schichtplan für</small><b id="spMonatName">–</b></div>
+                    <div class="spl-monat-text"><small>Schichtplan für</small><b id="spMonatName">–</b><span class="spl-zustand" id="spZustand"></span></div>
                     <button type="button" class="btn btn-ghost btn-sm wochen-pfeil" id="spMonatVor" aria-label="Nächster Monat">›</button>
                   </div>
-                  <button type="button" class="btn btn-primary spl-los" id="spLos">Plan erstellen</button>
+                  <div class="spl-los-feld">
+                    <button type="button" class="btn btn-primary spl-los" id="spLos">Plan erstellen</button>
+                    <!-- Ein grauer Knopf ohne Grund sieht kaputt aus (Runde 197,
+                         gemessen am echten Konto: Team leer, Knopf grau, kein Wort). -->
+                    <small class="spl-los-grund" id="spLosGrund" hidden></small>
+                  </div>
                 </div>
                 <ol class="spl-schritte" id="spSchritte"></ol>
                 <p class="spl-notiz" id="spNotizAnzeige" hidden></p>
               <p class="spl-stand" id="spStand" role="status"></p>
                 <input type="file" id="spDatei" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden />
               </section>
+
+            <!-- Der Anfang (Runde 197): solange kein Team eingelesen ist, steht
+                 hier, was zu tun ist — statt einer Wand aus Formularen, die
+                 ohne Team ohnehin leer bleiben. Aus dem Betrieb, 22.10.2026:
+                 „er wirkt für mich noch unfertig … aber das grundgrüst soll
+                 stehen erstmal". -->
+            <section class="card spl-anfang" id="spAnfang" hidden>
+              <h3 data-ikon="rakete">So fängst du an</h3>
+              <ol class="spl-anfang-liste">
+                <li><b>Vorlage holen</b><span>Eine Excel-Datei mit allen Spalten und Beispielzeilen.</span>
+                  <a class="btn btn-ghost btn-sm" href="vorlagen/Schichtplaner-Vorlage.xlsx" download>Vorlage herunterladen</a></li>
+                <li><b>Ausfüllen</b><span>Blatt „Team": wer in welchem Studio arbeitet, Stunden pro Woche, wer wann kann. Blatt „Schichten": die Schichtzeiten je Studio.</span></li>
+                <li><b>Hier einlesen</b><span>Die App liest die Datei und zeigt vor dem Übernehmen, was sie gefunden hat.</span>
+                  <button type="button" class="btn btn-primary btn-sm" data-spdatei="1">Excel einlesen</button></li>
+              </ol>
+              <p class="hint" id="spAnfangDanach"></p>
+            </section>
 
             <!-- Ausfälle: wer im Plan steht, aber inzwischen krank oder im
                  Urlaub ist — mit Ersatzvorschlag zum Antippen (Runde 169). -->
@@ -10384,8 +10477,14 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                  eingerichtet und wird selten angefasst. -->
             <details class="card spl-regeln" id="spRegeln">
               <summary><span data-ikon="regler">Regeln &amp; Sonderfälle</span><small id="spRegelnKurz"></small></summary>
+              <div class="pm-tabs spl-regel-reiter" id="spRegelReiter" role="tablist" aria-label="Regeln">
+                <button type="button" class="pm-tab on" data-spregeltab="einst" role="tab" aria-selected="true">Einstellungen</button>
+                <button type="button" class="pm-tab" data-spregeltab="fest" role="tab" aria-selected="false">Feste Einteilungen</button>
+                <button type="button" class="pm-tab" data-spregeltab="sonder" role="tab" aria-selected="false">Sondertage</button>
+                <button type="button" class="pm-tab" data-spregeltab="notiz" role="tab" aria-selected="false">Notiz</button>
+              </div>
               <div class="spl-regeln-inhalt">
-                <section class="spl-regel-block">
+                <section class="spl-regel-block" data-spregel="einst">
                   <h4>Einstellungen</h4>
                   <div class="spl-felder">
                     <div class="field"><label for="spFrist">Wunschfrist (Tag im Vormonat)</label>
@@ -10399,7 +10498,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                   </div>
                   <button type="button" class="btn btn-ghost btn-sm" id="spEinstSpeichern">Einstellungen speichern</button>
                 </section>
-                <section class="spl-regel-block">
+                <section class="spl-regel-block" data-spregel="fest" hidden>
                   <h4>Feste Einteilungen</h4>
                   <p class="hint">Wer immer oder an einem bestimmten Tag fest steht. Der Planer setzt diese zuerst — Wünsche zählen dort nicht, Urlaub, Krankheit und Ruhezeit schon.</p>
                   <ul class="spl-regel-liste" id="spFestListe"></ul>
@@ -10413,7 +10512,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                   <div class="chip-row spl-wt" id="spFestTage" role="group" aria-label="Wochentage"></div>
                   <button type="button" class="btn btn-ghost btn-sm" id="spFestDazu">Feste Einteilung hinzufügen</button>
                 </section>
-                <section class="spl-regel-block">
+                <section class="spl-regel-block" data-spregel="sonder" hidden>
                   <h4>Sondertage</h4>
                   <p class="hint">Eine Schicht fällt weg (z. B. Heiligabend nachmittags) oder braucht mehr Leute (Event, Tag der offenen Tür, Inventur).</p>
                   <ul class="spl-regel-liste" id="spSonderListe"></ul>
@@ -10430,7 +10529,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                   </div>
                   <button type="button" class="btn btn-ghost btn-sm" id="spSonderDazu">Sondertag hinzufügen</button>
                 </section>
-                <section class="spl-regel-block">
+                <section class="spl-regel-block" data-spregel="notiz" hidden>
                   <h4>Notiz zum Monat</h4>
                   <label class="nur-vorlesen" for="spNotiz">Notiz zum Monat</label>
                   <textarea class="inp" id="spNotiz" rows="2" maxlength="600" placeholder="z. B. Mitte des Monats Inventur in allen Studios; Lena ab 20. in Elternzeit"></textarea>
@@ -11127,7 +11226,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                    bei der Leitung, und nicht mehr am Terminal am Tresen. -->
               <section class="zk-jetzt" id="zkJetzt" aria-label="Jetzt im Studio"></section>
               <button type="button" class="zk-vormonat" id="zkVormonat" hidden></button>
-              <!-- Korrekturanträge (Runde 196): nur bei der Geschäftsführung.
+              <!-- Korrekturanträge (Runde 199): nur bei der Geschäftsführung.
                    UNTER dem Vormonats-Hinweis: darüber verschob der Block ihn
                    so weit, dass er bei 320 px nach dem Dichtewechsel nur noch
                    38 px hoch traf (test-zeitkorrektur). -->
@@ -12800,8 +12899,11 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
      als Auge (Pupille mit Lichtpunkt) und ein Punkt „hat etwas für dich".
      Alles Schmuck: aria-hidden, keine Trefferfläche (pointer-events:none). -->
 <button type="button" class="formi-kugel" id="formiKugel" hidden aria-haspopup="dialog" aria-controls="jarvis"
-  aria-label="Formi öffnen" title="Formi — frag mich oder sag, was ich tun soll"><span class="fk-koerper" aria-hidden="true"><span class="fk-geist a"></span><span class="fk-geist b"></span><span class="fk-loch"><span class="fk-pupille"><i></i></span></span></span><span class="fk-punkt" aria-hidden="true"></span></button>
+  aria-label="Formi öffnen" title="Formi — frag mich oder sag, was ich tun soll"><span class="fk-koerper" aria-hidden="true"><span class="fk-wirbel"></span><span class="fk-geist a"></span><span class="fk-geist b"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-auge l"></i><i class="fk-auge r"></i><i class="fk-mund"></i></span></span></span></span><span class="fk-punkt" aria-hidden="true"></span></button>
 <span id="formiKugelHat" hidden>Formi hat etwas für dich</span>
+<!-- Formis Sprechblase (Runde 196): ein kurzer Satz, 4,5 s, dann weg.
+     Keine Trefferfläche — sie verdeckt nie einen Knopf. -->
+<div class="formi-blase" id="formiBlase" role="status" aria-live="polite" hidden></div>
 <script>
 (function(){
 'use strict';
@@ -14247,7 +14349,7 @@ function renderRecht(){
         'angekommen ist; bis dahin liegt er samt PIN nur im geöffneten '+
         'Fenster des Terminals. Sehen können '+
         'die Zeiten du, die Leitung deines Studios und die Geschäftsführung.</p>'+
-      /* Runde 196: Korrekturanträge sind eine neue Sorte Daten. */
+      /* Runde 199: Korrekturanträge sind eine neue Sorte Daten. */
       '<p><b>Korrekturanträge:</b> Beantragst du einen fehlenden Stempel, '+
         'stehen Tag, Uhrzeit, Art, dein Grund und der Stand des Antrags da; '+
         'nach der Entscheidung auch, wer entschieden hat, wann und – bei einer '+
@@ -20890,6 +20992,20 @@ var NEUIGKEITEN = [
     'An einem Tag stehen jetzt Hinweise, wenn er über 10 Stunden ging, wenn mehr als 6 Stunden am Stück ohne Pause gearbeitet wurde oder wenn seit dem letzten Feierabend weniger als 11 Stunden Ruhe lagen.',
     'Unter Heute → Ich → Zeiten erinnert dich die App ab 5½ Stunden am Stück an die Pause. Die Leitung sieht unter „Jetzt im Studio", wer schon über 6 Stunden ohne Pause ist.'
   ]},
+  { id:'2026-10-22-schichtplaner-anfang', datum:'22.10.2026', titel:'Schichtplaner: klarer Anfang, Regeln in Reitern', wo:'planer', punkte:[
+    'Ist im Schichtplaner (Verwaltung) noch kein Team eingelesen, steht dort jetzt „So fängst du an": Vorlage herunterladen, ausfüllen, einlesen – in drei Schritten, mit den Knöpfen direkt daneben.',
+    'Unter „Plan erstellen" steht, warum der Knopf noch grau ist. Neben dem Monat steht, ob es schon einen Plan gibt, ob er ein Entwurf ist oder wann er veröffentlicht wurde.',
+    'Regeln & Sonderfälle haben vier Reiter – Einstellungen, Feste Einteilungen, Sondertage, Notiz – statt vier Formularen auf einmal. Ohne Team bleiben sie weg, bis es eingelesen ist.' ] },
+  { id:'2026-10-22-formi-kumpel', datum:'22.10.2026', titel:'Formi hat jetzt Charakter: der Kumpel aus dem Studio', wo:'gehirn', punkte:[
+    'Formi antwortet jetzt wie ein Kollege, mit dem man gern Schicht hat: locker, direkt, mit einem Spruch, wenn er passt – und sofort ernst, wenn es um einen Notfall, Gesundheit oder Ärger geht.',
+    'Neben der Kugel erscheint ab und zu eine kleine Sprechblase: morgens ein Gruß, beim ersten Haken des Tages ein Lob, bei einer Haken-Serie ein Spruch. Höchstens eine alle 45 Sekunden.',
+    'Zu viel? Formi öffnen → Regler oben → „Gefühle der Kugel" auf „Aus" oder Ton „sachlich" – dann bleibt Formi still.'
+  ]},
+  { id:'2026-10-22-formi-gesicht', datum:'22.10.2026', titel:'Formi hat jetzt ein Gesicht – und wird bei Freude zum weissen Loch', wo:'home', punkte:[
+    'Im schwarzen Loch der Kugel unten rechts wohnt jetzt ein kleines Gesicht. Es schaut der Maus nach, blinzelt, lacht, staunt, erschrickt und schläft ein, wenn du die App eine Weile liegen lässt.',
+    'Hakst du etwas ab, freut sich Formi: das Loch wird kurz weiss und spuckt bunte Teilchen aus, dann wird es wieder schwarz und saugt sie ein. Ist der Putzplan für heute fertig, wird daraus ein grosses Feuerwerk.',
+    'Ab und zu dreht sich der Ring einmal langsam und ein paar Krümel fallen ins Loch, so lebt es ein bisschen.',
+    'Zu viel? Formi öffnen → Regler oben → „Gefühle der Kugel" auf „Aus".' ] },
   { id:'2026-10-22-formi-angedockt', datum:'22.10.2026', titel:'Am Rechner: Formi sitzt jetzt rechts neben der Seite', wo:'home', punkte:[
     'Auf einem breiten Bildschirm (ab 1440 Pixel) öffnet sich Formi als Spalte am rechten Rand. Die Seite rückt zur Seite und bleibt ganz sichtbar, statt unter dem Fenster zu verschwinden.',
     'Formi bleibt dort offen, während du in der App weiterklickst. Auf kleineren Bildschirmen und am Handy bleibt alles wie bisher.' ] },
@@ -26023,7 +26139,7 @@ function jvLeerHTML(){
     return '<li style="--gm:'+c.farbe+';--gm-rgb:'+c.rgb+'">'+ikon(c.ikon)+'<span>'+esc(x[1])+'</span></li>';
   }).join('') : '<li style="--gm:#5FE1FF;--gm-rgb:95,225,255">'+ikon('hakenKreis')+'<span>Alles ruhig — nichts offen.</span></li>')+'</ul>';
   return '<div class="jv-leer"><p class="jv-gruss">'+esc(jvGruss()+(vorname ? ', '+vorname : ''))+'.</p>'+brief+
-    '<p class="jv-unter">Ich bin '+esc(jvPersona().name)+'. Frag mich etwas oder gib mir einen Auftrag — ich erledige es in der App und zeige dir jeden Schritt.</p>'+
+    '<p class="jv-unter">'+(jvPersona().ton==='sachlich' ? 'Ich bin '+esc(jvPersona().name)+'. ' : esc(formiLageSatz())+' ')+'Frag mich etwas oder gib mir einen Auftrag — ich erledige es in der App und zeige dir jeden Schritt.</p>'+
     '<div class="jv-chips">'+JV_VORSCHLAEGE.map(function(t){ return '<button type="button" class="jv-chip" data-jvbefehl="'+esc(t)+'">'+esc(t)+'</button>'; }).join('')+'</div></div>';
 }
 function gehirnZeichnenIn(box, tippen){
@@ -26783,23 +26899,32 @@ function formiGefuehleAnwenden(an){
 function formiTeile(){
   var k=$('formiKugel'); if(!k) return null;
   return { k:k, koerper:k.querySelector('.fk-koerper'), loch:k.querySelector('.fk-loch'),
-           pupille:k.querySelector('.fk-pupille'), geister:k.querySelectorAll('.fk-geist') };
+           pupille:k.querySelector('.fk-pupille'), geister:k.querySelectorAll('.fk-geist'),
+           wirbel:k.querySelector('.fk-wirbel'), weiss:k.querySelector('.fk-weiss'), gesicht:k.querySelector('.fk-gesicht'),
+           augen:k.querySelectorAll('.fk-auge'), mund:k.querySelector('.fk-mund') };
 }
 /* Die Gefühle als Bewegung. Jede Zeile: [Teil, Bildfolge, Dauer]. */
+/* Die Gefühle als Bewegung. Jede Zeile: [Teil, Bildfolge, Dauer].
+   Runde 195: Augen und Mund tragen den Ausdruck („augen" bewegt beide). */
 function formiGefuehl(art){
   var hops=[{transform:'none'},{transform:'translateY(-8px) scale(1.07)',offset:.35},{transform:'translateY(1px) scale(.97)',offset:.7},{transform:'none'}];
-  var grins=[{transform:'none'},{transform:'scale(1.12,.42)',offset:.22},{transform:'scale(1.12,.42)',offset:.8},{transform:'none'}];
+  /* Freude: Augen zu Halbmonden, der Mund wird breit. */
+  var froh=[{transform:'none'},{transform:'scale(1.15,.4)',offset:.2},{transform:'scale(1.15,.4)',offset:.8},{transform:'none'}];
+  var lachen=[{transform:'none'},{transform:'scale(1.35,1.6)',offset:.2},{transform:'scale(1.35,1.6)',offset:.8},{transform:'none'}];
   return {
-    freut:     [['koerper', hops, 460], ['pupille', grins, 700]],
+    freut:     [['koerper', hops, 460], ['augen', froh, 900], ['mund', lachen, 900]],
     staunt:    [['koerper', [{transform:'none'},{transform:'scale(1.12)',offset:.3},{transform:'none'}], 520],
-                ['pupille', [{transform:'none'},{transform:'scale(1.35)',offset:.25},{transform:'scale(1.35)',offset:.75},{transform:'none'}], 900]],
+                ['augen', [{transform:'none'},{transform:'scale(1.3)',offset:.25},{transform:'scale(1.3)',offset:.75},{transform:'none'}], 900],
+                ['mund', [{transform:'none'},{transform:'scale(.6,1.9)',offset:.25},{transform:'scale(.6,1.9)',offset:.75},{transform:'none'}], 900]],
     feiert:    [['koerper', [{transform:'none'},{transform:'rotate(200deg) scale(1.16)',offset:.45},{transform:'rotate(360deg) scale(1)'}], 820],
-                ['pupille', grins, 1100]],
+                ['augen', froh, 1400], ['mund', lachen, 1400]],
+    /* Schreck: Augen klein, der Mund kippt nach unten. */
     erschrickt:[['koerper', [{transform:'none'},{transform:'translateX(-5px)',offset:.15},{transform:'translateX(5px)',offset:.35},
                   {transform:'translateX(-4px)',offset:.55},{transform:'translateX(3px)',offset:.75},{transform:'none'}], 380],
-                ['pupille', [{transform:'none'},{transform:'scale(.6)',offset:.12},{transform:'scale(.6)',offset:.8},{transform:'none'}], 600]],
-    nickt:     [['koerper', [{transform:'none'},{transform:'scale(.94)',offset:.4},{transform:'none'}], 200]],
-    blinzelt:  [['pupille', [{transform:'none'},{transform:'scaleY(.1)',offset:.5},{transform:'none'}], 170]]
+                ['augen', [{transform:'none'},{transform:'scale(.6)',offset:.12},{transform:'scale(.6)',offset:.8},{transform:'none'}], 700],
+                ['mund', [{transform:'none'},{transform:'translateY(2px) scaleY(-1)',offset:.12},{transform:'translateY(2px) scaleY(-1)',offset:.8},{transform:'none'}], 700]],
+    nickt:     [['gesicht', [{transform:'none'},{transform:'translateY(2px)',offset:.4},{transform:'none'}], 220]],
+    blinzelt:  [['augen', [{transform:'none'},{transform:'scaleY(.1)',offset:.5},{transform:'none'}], 170]]
   }[art] || [];
 }
 function formiFuehlt(art){
@@ -26807,10 +26932,93 @@ function formiFuehlt(art){
   var t=formiTeile(); if(!t) return;
   if(art!=='blinzelt') formiWach(true);
   formiGefuehl(art).forEach(function(z){
-    var el=t[z[0]]; if(!el) return;
-    try{ el.animate(z[1], { duration:z[2], easing:'cubic-bezier(.3,.7,.2,1)' }); }catch(e){}
+    var els = z[0]==='augen' ? [].slice.call(t.augen) : [t[z[0]]];
+    els.forEach(function(el){
+      if(!el) return;
+      try{ el.animate(z[1], { duration:z[2], easing:'cubic-bezier(.3,.7,.2,1)' }); }catch(e){}
+    });
   });
   if(art==='feiert' || art==='erschrickt' || art==='staunt') formiKugelGlitch();
+  if(art==='freut') formiAusbruch(false);
+  if(art==='feiert') formiAusbruch(true);
+}
+/* ── Weisses Loch (Runde 195) ─────────────────────────────────────────
+   Aus dem Betrieb: „wenn er sich freut weil eine aufgabe erledigt wurde
+   … spuckt er partikel aus und wird zu einem weissen loch und danach zu
+   einem schwarzen was die partikel wieder einsaugt".
+
+   1,5 s: das Loch wird weiss und bläht sich auf, die Teilchen fliegen in
+   den Farben des Rings heraus, halten kurz, dann wird es wieder schwarz
+   und saugt sie ein (schneller werdend), zuletzt schluckt der Körper.
+   Alles Web Animations auf transform/opacity; die Teilchen sind ein paar
+   <i> in der Kugel und verschwinden danach wieder. */
+var FK_FARBEN=['#5FE1FF','#B69CFF','#FF8FC8','#FFA85C','#FFFFFF'];
+function formiTeilchen(t, n, klein){
+  var box=document.createElement('span');
+  box.className='fk-teilchen'+(klein ? ' klein' : '');
+  var html='';
+  for(var i=0;i<n;i++) html+='<i style="--c:'+FK_FARBEN[i%FK_FARBEN.length]+'"></i>';
+  box.innerHTML=html;
+  return box;
+}
+function formiAusbruch(stark){
+  if(!formiLebtAn()) return;
+  var t=formiTeile(); if(!t || !t.weiss) return;
+  var dauer=stark ? 1900 : 1500;
+  try{
+    t.weiss.animate([{opacity:0},{opacity:1,offset:.12},{opacity:1,offset:.5},{opacity:0,offset:.75},{opacity:0}], { duration:dauer, easing:'ease-in-out' });
+    t.pupille.animate([{transform:'none'},{transform:'scale(1.18)',offset:.15},{transform:'scale(1.08)',offset:.5},{transform:'scale(.86)',offset:.88},{transform:'none'}], { duration:dauer });
+  }catch(e){}
+  var n=stark ? 22 : 12, box=formiTeilchen(t, n, false);
+  t.k.appendChild(box);
+  [].forEach.call(box.children, function(el, i){
+    var w=(i/n)*Math.PI*2 + Math.random()*0.5, d=(stark ? 70 : 42) + Math.random()*(stark ? 50 : 30);
+    var x=Math.cos(w)*d, y=Math.sin(w)*d, g=.7+Math.random()*.7;
+    try{
+      el.animate([
+        { transform:'translate(0,0) scale(.3)', opacity:0, easing:'cubic-bezier(.15,.8,.3,1)' },
+        { transform:'translate('+x.toFixed(1)+'px,'+y.toFixed(1)+'px) scale('+g.toFixed(2)+')', opacity:1, offset:.38 },
+        { transform:'translate('+(x*1.12).toFixed(1)+'px,'+(y*1.12).toFixed(1)+'px) scale('+(g*.85).toFixed(2)+')', opacity:.9, offset:.55, easing:'cubic-bezier(.7,0,.9,.5)' },
+        { transform:'translate(0,0) scale(.1)', opacity:0 }
+      ], { duration:dauer+Math.round(Math.random()*200), delay:Math.round(Math.random()*60) });
+    }catch(e){}
+  });
+  setTimeout(function(){ if(box.parentNode) box.parentNode.removeChild(box); }, dauer+400);
+}
+/* ── Atmen (Runde 195) ───────────────────────────────────────────────
+   „vlt auch mehr das gefühl das es ein lebendes schwarzes/weisses loch
+   ist". Alle 7–12 s dreht sich der Ring einmal ganz um sich selbst
+   (3,6 s, langsam an, langsam aus), das Loch weitet sich kaum merklich,
+   und drei Krümel fallen spiralig hinein. Kein `infinite`: ein Zeitgeber
+   wie beim Blinzeln, und eine volle Drehung endet genau, wo sie anfing —
+   es bleibt nichts stehen. */
+function formiAtmen(){
+  if(!formiLebtAn() || _fl.schlaeft) return;
+  var t=formiTeile(); if(!t || !t.wirbel) return;
+  try{
+    t.wirbel.animate([{ transform:'rotate(0deg)' }, { transform:'rotate(360deg)' }], { duration:3600, easing:'ease-in-out' });
+    t.pupille.animate([{ transform:'none' }, { transform:'scale(1.07)', offset:.5 }, { transform:'none' }], { duration:3600, easing:'ease-in-out' });
+  }catch(e){ return; }
+  var box=formiTeilchen(t, 3, true);
+  t.koerper.insertBefore(box, t.loch);
+  [].forEach.call(box.children, function(el, i){
+    var w=Math.random()*Math.PI*2, r=26;
+    var x=Math.cos(w)*r, y=Math.sin(w)*r, x2=Math.cos(w+1.4)*r*.55, y2=Math.sin(w+1.4)*r*.55;
+    try{
+      el.animate([
+        { transform:'translate('+x.toFixed(1)+'px,'+y.toFixed(1)+'px)', opacity:0 },
+        { transform:'translate('+x.toFixed(1)+'px,'+y.toFixed(1)+'px)', opacity:.9, offset:.2 },
+        { transform:'translate('+x2.toFixed(1)+'px,'+y2.toFixed(1)+'px) scale(.8)', opacity:.8, offset:.65 },
+        { transform:'translate(0,0) scale(.2)', opacity:0 }
+      ], { duration:1600, delay:400+i*500, easing:'ease-in' });
+    }catch(e){}
+  });
+  setTimeout(function(){ if(box.parentNode) box.parentNode.removeChild(box); }, 3400);
+}
+function formiAtmenPlanen(){
+  clearTimeout(_fl.atemUhr);
+  if(_fl.uhrenAus) return;
+  _fl.atemUhr=setTimeout(function(){ formiAtmen(); formiAtmenPlanen(); }, 7000+Math.random()*5000);
 }
 /* Der Glitch an der Kugel: zwei Geister springen neben den Körper. */
 function formiKugelGlitch(){
@@ -26892,16 +27100,87 @@ function formiWach(stumm){
 }
 function formiBlinzelnPlanen(){
   clearTimeout(_fl.blinzelUhr);
+  if(_fl.uhrenAus) return;
   _fl.blinzelUhr=setTimeout(function(){
     if(formiLebtAn() && !_fl.schlaeft) formiFuehlt('blinzelt');
     formiBlinzelnPlanen();
   }, 4000+Math.random()*7000);
+}
+/* ── Formis Persönlichkeit (Runde 196, 22.10.2026) ──────────────────
+   Aus dem Betrieb: „lass uns formi wirklich richtig persönlichkeit
+   geben" — gewählt: „Kumpel aus dem Studio". Die Gefühle der Kugel
+   (Runde 186) zeigen, WIE es Formi geht; hier kommt dazu, was Formi
+   SAGT: ein kurzer Satz in einer Blase neben der Kugel.
+   Regeln: höchstens eine Blase je 45 s (der Tagesgruss ausgenommen),
+   nie während Formi offen ist, nicht bei „Gefühle der Kugel: Aus" und
+   nicht im sachlichen Ton. Keine KI, kein Netz — die Sätze stehen hier. */
+var FORMI_SAGT={
+  ersterHaken:['Erster Haken heute. Stark!','Und los geht’s — der erste ist geschafft.','Haken Nummer eins. Ich hab’s gesehen.'],
+  serie:['Läuft bei dir! Drei Haken in 20 Sekunden.','Turbo-Modus an. Respekt.','Langsam, sonst hab ich nichts mehr zu tun.'],
+  zurueck:['Wieder da! Ich hab die Stellung gehalten.','Na, Pause vorbei? Weiter geht’s.','Schön, dass du zurück bist.'],
+  morgenMo:['Montagmorgen. Ich bräuchte erst mal einen Kaffee — kann ich aber nicht trinken.'],
+  morgenFrueh:['Früh dran! Die Westen sind hoffentlich schon trocken.','Der frühe Vogel fängt das erste Probetraining.'],
+  freitag:['Freitag! Feierabend ist in Sicht.','Freitag — lass uns das Offene noch wegräumen.'],
+  abend:['Endspurt für heute.','Gleich geschafft für heute.'],
+  tag:['Schön, dass du da bist.','Auf geht’s.','Lass uns was wegschaffen.']
+};
+var _fs={ zuletzt:0, uhr:0 };
+function formiSprichtAn(){
+  var p=jvPersona();
+  return p.gefuehle!=='aus' && p.ton!=='sachlich';
+}
+/* Ein Satz zur Lage: Wochentag und Uhrzeit. Fester Tageszufall, damit er
+   beim Neuzeichnen nicht springt. */
+function formiLageSatz(d){
+  d=d||new Date();
+  var h=d.getHours(), w=d.getDay(), art=(w===1 && h<11) ? 'morgenMo' : (h<9 ? 'morgenFrueh' : (w===5 && h>=13) ? 'freitag' : h>=19 ? 'abend' : 'tag');
+  var l=FORMI_SAGT[art], i=(d.getDate()+d.getMonth()*31)%l.length;
+  return l[i];
+}
+function formiZufall(art){ var l=FORMI_SAGT[art]||[]; return l[Math.floor(Math.random()*l.length)]||''; }
+function formiSagt(text, immer){
+  var b=$('formiBlase'), k=$('formiKugel');
+  if(!b || !k || !text || !formiSprichtAn()) return false;
+  if(k.hidden || jarvisOffen()) return false;
+  var jetzt=Date.now();
+  if(!immer && jetzt-_fs.zuletzt<45000) return false;
+  _fs.zuletzt=jetzt;
+  b.textContent=text;
+  /* Lage im nächsten Bild lesen, dann schreiben (Hausregel). Die Blase
+     hängt mit ihrer rechten unteren Ecke über der Kugel — ihre eigene
+     Grösse muss dafür niemand messen; max-width hält sie im Bild. */
+  requestAnimationFrame(function(){
+    if(k.hidden) return;
+    var r=k.getBoundingClientRect(), w=innerWidth, h=innerHeight;
+    b.style.right=Math.max(8, Math.round(w-r.right))+'px';
+    b.style.bottom=Math.max(8, Math.round(h-r.top+8))+'px';
+    b.classList.remove('rein'); b.hidden=false;
+    requestAnimationFrame(function(){ b.classList.add('rein'); });
+  });
+  clearTimeout(_fs.uhr);
+  _fs.uhr=setTimeout(function(){ b.hidden=true; b.classList.remove('rein'); }, 4500);
+  return true;
+}
+/* Einmal am Tag je Gerät, kurz nach dem Start: Gruss mit Namen und Lage. */
+function formiTagesgruss(){
+  var tag=ymd(new Date());
+  try{ if(localStorage.getItem('kf_formi_gruss')===tag) return; }catch(e){ return; }
+  var n=gehirnVorname();
+  if(formiSagt(jvGruss()+(n ? ', '+n : '')+'! '+formiLageSatz(), true)){
+    try{ localStorage.setItem('kf_formi_gruss', tag); }catch(e){}
+  }
 }
 /* Zählt Haken; ab dem dritten binnen 20 s staunt Formi statt sich zu freuen. */
 function formiHaken(){
   var jetzt=Date.now();
   _fl.haken=_fl.haken.filter(function(t){ return jetzt-t<20000; }); _fl.haken.push(jetzt);
   formiFuehlt(_fl.haken.length>=3 ? 'staunt' : 'freut');
+  /* Runde 196: Formi sagt auch etwas — beim ersten Haken des Tages und
+     bei einer Serie. */
+  var tag=ymd(new Date()), erster=false;
+  try{ erster=localStorage.getItem('kf_formi_haken')!==tag; if(erster) localStorage.setItem('kf_formi_haken', tag); }catch(e){}
+  if(_fl.haken.length===3) formiSagt(formiZufall('serie'));
+  else if(erster) formiSagt(formiZufall('ersterHaken'));
 }
 function formiFeiert(text){
   formiFuehlt('feiert');
@@ -26949,11 +27228,22 @@ function formiLebtStart(){
   document.addEventListener('visibilitychange', function(){
     if(document.visibilityState==='hidden'){ _fl.weg=Date.now(); return; }
     if(_fl.weg && Date.now()-_fl.weg>60000) setTimeout(function(){ formiFuehlt('freut'); }, 400);
+    /* Runde 196: nach über 30 Minuten weg sagt Formi auch etwas. */
+    if(_fl.weg && Date.now()-_fl.weg>30*60000) setTimeout(function(){ formiSagt(formiZufall('zurueck')); }, 700);
     _fl.weg=0;
   });
   addEventListener('resize', function(){ _fl.mitte=null; }, { passive:true });
   setInterval(formiSchlafPruefen, 10000);
   formiBlinzelnPlanen();
+  /* Runde 196: Tagesgruss, wenn die App steht. */
+  setTimeout(formiTagesgruss, 2500);
+  formiAtmenPlanen();
+  /* Kleinigkeit (Runde 195): wer mit dem Mausrad scrollt, dem schaut
+     Formi kurz in die Richtung nach. */
+  if(maus) document.addEventListener('wheel', function(e){
+    if(!_fl.mitte) return;
+    formiSchauNach(_fl.mitte.x, _fl.mitte.y + (e.deltaY > 0 ? 300 : -300));
+  }, { passive:true });
 }
 function formiSchlafPruefen(){
   if(_fl.schlaeft || !formiLebtAn()) return;
@@ -26966,7 +27256,14 @@ window.__formiLebt = {
   fuehlt: function(a){ formiFuehlt(a); },
   haken: function(){ formiHaken(); },
   glitch: function(sel){ formiGlitch(document.querySelector(sel)); },
-  einschlafen: function(){ _fl.zuletzt=Date.now()-91000; formiSchlafPruefen(); return _fl.schlaeft; }
+  einschlafen: function(){ _fl.zuletzt=Date.now()-91000; formiSchlafPruefen(); return _fl.schlaeft; },
+  sagt: function(t, immer){ return formiSagt(t, immer); },
+  lage: function(ms){ return formiLageSatz(new Date(ms)); },
+  pauseVorbei: function(){ _fs.zuletzt=0; },
+  atmen: function(){ formiAtmen(); },
+  /* Blinzeln und Atmen kommen zu zufälligen Zeiten — ein Durchlauf, der
+     „danach läuft nichts mehr" prüft, schaltet sie dafür ab. */
+  uhrenAus: function(){ _fl.uhrenAus=true; clearTimeout(_fl.blinzelUhr); clearTimeout(_fl.atemUhr); }
 };
 /* Wohin der Zeiger fährt: der Knopf des Bereichs in der Seitenleiste
    (Rechner) oder unten in der Leiste (Handy), sonst der Bereichskopf. */
@@ -28039,6 +28336,7 @@ function jarvisAuf(){
                     Object.assign({ transform:'translateX(-2px)', opacity:.7, offset:.6 }, FK_SCHRITT), { transform:'none', opacity:1 }], { duration:280 }); }catch(e){}
   }
   formiGesehen();
+  var fb=$('formiBlase'); if(fb) fb.hidden=true;
   tick(8);
 }
 function jarvisZu(){
@@ -36886,7 +37184,7 @@ function stundenText(ms){
   return Math.floor(min/60)+':'+('0'+(min%60)).slice(-2)+' h';
 }
 
-/* ── Pausenregel wie Crewmeister: auffüllen (Runde 195) ──
+/* ── Pausenregel wie Crewmeister: auffüllen (Runde 198) ──
    Aus dem Betrieb, 22.10.2026, auf die Frage „nur warnen oder wie
    Crewmeister auffüllen?": „genau wie bei crewmeister".
 
@@ -36911,7 +37209,7 @@ function pauseAbzugMin(rohMin, pauseMin){
    Strecken zwischen zwei Stempeln: nach „kommen" und „zurueck" läuft
    Arbeit, nach „pause" läuft Pause, nach „gehen" läuft nichts.
 
-   Runde 195: dazu die Hinweise nach dem Arbeitszeitgesetz — über 10
+   Runde 198: dazu die Hinweise nach dem Arbeitszeitgesetz — über 10
    Stunden (§ 3), mehr als 6 Stunden am Stück (§ 4), weniger als 11
    Stunden Ruhe seit dem letzten Feierabend (§ 5). Die App weist hin;
    ob der Betrieb damit gesetzeskonform ist, sagt sie nicht. */
@@ -37075,7 +37373,7 @@ function renderIchZeiten(rows){
       '</button>'+
       '<div class="mz-stempel" id="mzs-'+esc(t.tag)+'"'+(auf?'':' hidden')+'>'+
         t.stempel.map(zkStempelZeile).join('')+
-        /* Runde 196: der direkte Weg vom Fehler zum Antrag. */
+        /* Runde 199: der direkte Weg vom Fehler zum Antrag. */
         '<button type="button" class="btn btn-ghost btn-sm st-antrag-hier" data-antragtag="'+esc(t.tag)+'" data-antragart="'+(luecke?'gehen':'kommen')+'">'+
           (luecke ? 'Feierabend beantragen' : 'Korrektur beantragen')+'</button>'+
       '</div>';
@@ -37146,7 +37444,7 @@ function zkOeffnen(){
    „Erwartet": eine Schicht hat begonnen, und es gibt heute keinen
    Stempel. Nicht rot — die Person kann im Stau stehen oder in einem
    anderen Studio gestempelt haben; das steht hier nicht fest. */
-/* ── Korrekturanträge bei der Geschäftsführung (Runde 196) ──
+/* ── Korrekturanträge bei der Geschäftsführung (Runde 199) ──
    Alle offenen des Betriebs (status ==, ein Gleichheitsfilter). Lesen
    darf das nur die Geschäftsführung (firestore.rules), und nur sie sieht
    diesen Block. Den eigenen Antrag entscheidet jemand anderes — der
@@ -37605,7 +37903,7 @@ function stLaden(neu){
   stAntraegeLaden();
 }
 
-/* ── Korrekturantrag (Runde 196) ──
+/* ── Korrekturantrag (Runde 199) ──
    Wie bei Crewmeister trägt die Person ein, was fehlt — bis 31 Tage
    zurück. Daraus wird ein Stempel erst, wenn die Geschäftsführung
    annimmt; der Server legt ihn dann an (zeitAntragEntscheiden). Gelesen
@@ -40139,6 +40437,19 @@ function spBinden(){
     if(f) spEinlesen(f);
   });
   $('spStudio').addEventListener('change', function(){ spStudioWaehlen(this.value); });
+  var anf=$('spAnfang');
+  if(anf) anf.querySelectorAll('[data-spdatei]').forEach(function(b){
+    b.addEventListener('click', function(){ $('spDatei').click(); });
+  });
+  document.querySelectorAll('[data-spregeltab]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var t=b.getAttribute('data-spregeltab');
+      document.querySelectorAll('[data-spregeltab]').forEach(function(x){
+        var an=x===b; x.classList.toggle('on', an); x.setAttribute('aria-selected', String(an)); });
+      document.querySelectorAll('[data-spregel]').forEach(function(sec){ sec.hidden = sec.getAttribute('data-spregel')!==t; });
+      tick(6);
+    });
+  });
   $('spVeroeffentlichen').addEventListener('click', function(){ spVeroeffentlichen(this); });
   $('spLogx').addEventListener('click', function(){ spKopieren(); });
 }
@@ -40198,19 +40509,24 @@ function spSchritteZeichnen(){
   var schritte=[
     { fertig:_sp.team.length>0, titel:'Team',
       text:_sp.team.length ? _sp.team.length+' Personen'+(stand?' · '+stand:'') : 'Noch leer – einmal die Excel-Vorlage einlesen',
-      knopf:'<span class="spl-knoepfe"><button type="button" class="btn btn-ghost btn-sm" data-spdatei="1">'+(_sp.team.length?'Neu einlesen':'Excel einlesen')+'</button>'+
+      /* Ohne Team stehen „Vorlage" und „Einlesen" in der Karte „So fängst
+         du an" darunter — nicht zweimal (Runde 197). */
+      knopf:!_sp.team.length ? '' : '<span class="spl-knoepfe"><button type="button" class="btn btn-ghost btn-sm" data-spdatei="1">Neu einlesen</button>'+
         /* Die leere Vorlage liegt mit in der App — die Chefin soll sie
            nicht bei jemandem erfragen müssen. */
         '<a class="btn btn-ghost btn-sm" href="vorlagen/Schichtplaner-Vorlage.xlsx" download>Vorlage</a></span>' },
     { fertig:nSch>0, titel:'Schichten',
       text:nSch ? nSch+' Schichtzeiten · aus der Excel-Datei' : 'Kommen aus derselben Excel-Datei (Blatt „Schichten")',
       knopf:'' },
-    { fertig:jetzt>frist, titel:'Wünsche',
-      text:mitWunsch+' von '+ids.length+' eingetragen · '+(jetzt>frist ? 'Frist war am '+fristText : 'bis '+fristText),
+    /* Ohne Team ist „0 von 0 eingetragen" kein erledigter Schritt —
+       am echten Konto stand dort ein Haken (Runde 197). */
+    { fertig:_sp.team.length>0 && jetzt>frist, wartet:!_sp.team.length, titel:'Wünsche',
+      text:!_sp.team.length ? 'Sobald das Team eingelesen ist · Frist '+(jetzt>frist ? 'war am ' : 'bis ')+fristText
+        : mitWunsch+' von '+ids.length+' eingetragen · '+(jetzt>frist ? 'Frist war am '+fristText : 'bis '+fristText),
       knopf:'' }
   ];
   box.innerHTML=schritte.map(function(s,i){
-    return '<li class="spl-schritt'+(s.fertig?' fertig':'')+'">'+
+    return '<li class="spl-schritt'+(s.fertig?' fertig':'')+(s.wartet?' wartet':'')+'">'+
       '<span class="spl-nr" aria-hidden="true">'+(s.fertig?'✓':(i+1))+'</span>'+
       '<span><b>'+esc(s.titel)+'</b><small>'+esc(s.text)+'</small></span>'+s.knopf+'</li>';
   }).join('');
@@ -40220,6 +40536,30 @@ function spSchritteZeichnen(){
   var los=$('spLos');
   los.disabled = !_sp.team.length || !nSch;
   if(_sp.plan) los.textContent='Neu erstellen';
+  var grund=$('spLosGrund');
+  if(grund){
+    var g = !_sp.team.length ? 'Geht, sobald Team und Schichten eingelesen sind – siehe „So fängst du an“.'
+          : (!nSch ? 'Es fehlen die Schichtzeiten — Blatt „Schichten" in der Excel-Datei.' : '');
+    grund.textContent=g; grund.hidden=!g;
+  }
+  var z=$('spZustand'), p=_sp.plan;
+  if(z){
+    z.textContent = !p ? 'noch kein Plan' : (p.veroeffentlicht ? 'veröffentlicht '+new Date(p.veroeffentlicht).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}) : 'Entwurf');
+    z.classList.toggle('ok', !!(p && p.veroeffentlicht));
+  }
+  /* Ohne Team: der Anfang statt Regeln — die Regeln brauchen Personen. */
+  var anf=$('spAnfang'), reg=$('spRegeln');
+  if(anf){
+    anf.hidden=!!_sp.team.length;
+    var d=$('spAnfangDanach');
+    if(d) d.textContent='Danach: Das Team trägt bis zum '+fristText+' seine Wünsche ein (Plan → Schichten → „Meine Wünsche"), dann „Plan erstellen". '+
+      'Der Planer verteilt die Schichten und zeigt nur, was ein Mensch klären muss.';
+    ikonenEinsetzen(anf);
+  }
+  if(reg) reg.hidden=!_sp.team.length;
+  /* Ohne Team führt die Karte „So fängst du an" — zwei nummerierte
+     Listen übereinander (Schritte + Anfang) waren doppelt. */
+  box.hidden=!_sp.team.length;
 }
 
 /* ── Excel einlesen ── */
@@ -48436,7 +48776,7 @@ function bindActions(){
     if(e.key==='Enter'){ e.preventDefault(); ichHandyStempeln($('ichHandyBtn')); }
   });
 
-  // ── Korrekturanträge (Runde 196) ──
+  // ── Korrekturanträge (Runde 199) ──
   var saBtn=$('stAntragBtn');
   if(saBtn) saBtn.addEventListener('click', function(){ stAntragStellen(saBtn); });
   var saListe=$('stAntraege');

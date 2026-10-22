@@ -1298,7 +1298,7 @@
   })();
   legen(P('zeiten'), STEMPEL);
 
-  /* Runde 196: Korrekturanträge. Einer aus dem Team wartet auf die
+  /* Runde 199: Korrekturanträge. Einer aus dem Team wartet auf die
      Geschäftsführung; einer der eigenen ist schon entschieden — damit die
      Vorführung beide Seiten zeigt. */
   (function () {
@@ -1761,7 +1761,7 @@
       melden(P('zeiten'));
       return { ok: true, id: id, ts: ts };
     },
-    /* Runde 196: wie der Server — die Person beantragt, nur die
+    /* Runde 199: wie der Server — die Person beantragt, nur die
        Geschäftsführung entscheidet, nie den eigenen Antrag. */
     zeitAntragStellen: function (d) {
       if (String(d.grund || '').trim().length < 5) throw new Error('Bitte kurz den Grund angeben.');

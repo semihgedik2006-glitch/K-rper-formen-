@@ -1540,7 +1540,7 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    /* ── Zeiterfassung: Korrekturanträge (Runde 196) ─────────────────
+    /* ── Zeiterfassung: Korrekturanträge (Runde 199) ─────────────────
        Die Person beantragt, NUR die Geschäftsführung entscheidet („nur
        geschäftsführung", 22.10.2026). Geschrieben wird ausschliesslich
        über zeitAntragStellen / -Zurueckziehen / -Entscheiden.
@@ -2441,7 +2441,7 @@ service cloud.firestore {
                                || manages(resource.data.studioKey)));
           allow write: if false;
         }
-        // Korrekturanträge (Runde 196) — dieselbe Regel wie flach, siehe dort.
+        // Korrekturanträge (Runde 199) — dieselbe Regel wie flach, siehe dort.
         match /zeitAntraege/{aid} {
           allow read: if inFirma(f)
             && (istAktiv() && (resource.data.uid == request.auth.uid || isChef()));
