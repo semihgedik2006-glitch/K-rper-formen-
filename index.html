@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-dn+1OHAMdi/m6k17Qbq/C+iBShb4EtUgAsFN7xhEUZE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-s9P7aFDd1Sv2+LKXXrh09kiIPokDuvLL0C0lEEt4LfY='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -20618,6 +20618,12 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-22-pausenregel', datum:'22.10.2026', titel:'Pausen wie bei Crewmeister, Hinweise zum Arbeitszeitgesetz', wo:'ich:zeiten', punkte:[
+    'Wer länger als 6 Stunden arbeitet, braucht 30 Minuten Pause, über 9 Stunden 45 Minuten. Hast du weniger gestempelt, wird nur der fehlende Teil abgezogen – an dem Tag steht dann „Pause +0:30". Deine Stempel selbst bleiben unverändert.',
+    'Es wird nie mehr abgezogen, als nötig ist: Aus 6:10 Stunden ohne Pause werden 6:00 Stunden, nicht 5:40.',
+    'An einem Tag stehen jetzt Hinweise, wenn er über 10 Stunden ging, wenn mehr als 6 Stunden am Stück ohne Pause gearbeitet wurde oder wenn seit dem letzten Feierabend weniger als 11 Stunden Ruhe lagen.',
+    'Unter Heute → Ich → Zeiten erinnert dich die App ab 5½ Stunden am Stück an die Pause. Die Leitung sieht unter „Jetzt im Studio", wer schon über 6 Stunden ohne Pause ist.'
+  ]},
   { id:'2026-10-22-stempelseite', datum:'22.10.2026', titel:'Stempeln wie bei Crewmeister: Pause oder Feierabend', wo:'ich:zeiten', punkte:[
     'Feierabend lässt sich jetzt direkt stempeln – am Terminal und am Handy. Nach dem Kommen stehen zwei Knöpfe da: „Pause" und „Feierabend". Bisher ging am Terminal immer nur Pause und Zurück, der Feierabend musste von der Leitung nachgetragen werden.',
     'Am Terminal steht an den Namen nicht mehr, wer im Dienst ist. Name antippen, PIN, „Weiter" – dann siehst du deinen eigenen Stand („Im Dienst seit 08:26") und tippst, was du stempeln willst.',
