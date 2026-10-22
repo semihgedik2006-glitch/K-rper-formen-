@@ -76,7 +76,7 @@ const KUGEL_ANIM = () => {
   /* Nur was LÄUFT: ein abgeschlossener, gehaltener Blick (fill:forwards,
      playState „finished") ist Stillstand, keine Bewegung — seit Runde 205
      halten Pupillen und Loch so ihre Blickrichtung. */
-  /* Runde 210: die Akkretionsscheibe dreht sich immer (CSS formiScheibe) —
+  /* Runde 213: die Akkretionsscheibe dreht sich immer (CSS formiScheibe) —
      aus dem Betrieb: „er soll auch so die physik von einem schwarzen loch
      haben". Sie ist der einzige gewollte Dauerlauf und wird eigens
      geprüft (Abschnitt „Akkretionsscheibe"); hier zählt alles andere. */
@@ -189,7 +189,7 @@ const KUGEL_ANIM = () => {
       const atem = await p.evaluate(() => {
         window.__formiLebt.atmen();
         const k = document.getElementById('formiKugel');
-        /* Seit Runde 210 dreht sich die Scheibe ständig (eigener Abschnitt
+        /* Seit Runde 213 dreht sich die Scheibe ständig (eigener Abschnitt
            „Akkretionsscheibe"); beim Atmen weitet sich nur das Loch, und
            Krümel fallen hinein. */
         const w = k.querySelector('.fk-pupille').getAnimations();
@@ -386,7 +386,7 @@ const KUGEL_ANIM = () => {
       await p._ctx.close();
     }
 
-    /* ── Runde 210: Akkretionsscheibe, Umgebung, Frage ins Loch ────── */
+    /* ── Runde 213: Akkretionsscheibe, Umgebung, Frage ins Loch ────── */
     console.log('\n── Akkretionsscheibe, Umgebung, Frage ins Loch ──');
     {
       const p = await oeffne(b, 1440, 900);
@@ -456,7 +456,7 @@ const KUGEL_ANIM = () => {
       await p._ctx.close();
     }
 
-    /* ── Runde 210: Suche und Formi in einem Feld ────────────────────── */
+    /* ── Runde 213: Suche und Formi in einem Feld ────────────────────── */
     console.log('\n── Suche und Formi in einem Feld ──');
     for (const [w, h] of [[1440, 900], [390, 844]]) {
       const p = await oeffne(b, w, h);

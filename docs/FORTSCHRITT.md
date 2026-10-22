@@ -19408,3 +19408,271 @@ Format muss das Lohnbüro einmal mit einer Probedatei bestätigen.
   test-formi-platz, test-formi-angedockt, test-uebersicht, test-quer.
 - test-gehirn (Vollbild): Rot sind nur die drei bekannten
   Leistungsprüfungen unter CPU ÷4.
+
+## Runde 210 — Die Stempelseite, Schritt 5: DATEV (LODAS) fürs Lohnbüro (22.10.2026)
+
+Antwort aus dem Betrieb auf „Excel/CSV oder DATEV?": „mach beides". Excel
+und CSV kamen in Runde 208; hier die DATEV-Datei.
+
+**Was belegt ist und was nicht.** Recherchiert wurde für diese Runde. Die
+DATEV-Quellen selbst (Hilfe-Center, developer.datev.de, Community) waren
+aus dieser Umgebung nicht lesbar (401, 403). Gelesen werden konnte eine
+**Kopie des DATEV-Handbuchs „SSH Schnittstellenhandbuch LODAS", 45.
+Auflage, Januar 2016**, auf einer fremden Seite. Daraus, wörtlich: ANSI,
+Satzende nur CR/LF, ein Mandant und ein Monat je Datei, Kopf `[Allgemein]`
+mit `Ziel=LODAS`, `BeraterNr` (4–7 Stellen), `MandantenNr` (1–5), Tabelle
+`u_lod_bwd_buchung_standard`, Bearbeitungsschlüssel 01 = Stunden, 71 =
+genommene Urlaubstage. **Gegen ein echtes LODAS eingespielt wurde die
+Datei nie.** Deshalb sagt es die App an zwei Stellen: in den Einstellungen
+und in der Neuigkeit — das Lohnbüro bestätigt einmal mit einer Probe.
+
+**Nicht gebaut:** Lohn und Gehalt (LuG) — dort braucht der Import eine
+eigene Formatbeschreibung (INI), die das Lohnbüro vorgibt. Krankheitstage
+(Schlüssel 72) — nur aus einer Suchzusammenfassung belegt, nicht aus dem
+Handbuch; ohne Beleg kein Feld.
+
+**Wie es gebaut ist.**
+- Verwaltung → Zeiten → Monat & Konto → „DATEV". Ohne Nummern öffnen sich
+  die Einstellungen statt einer leeren Datei.
+- Einstellungen in `lohnEinstellungen/datev`, **nicht** in `config` — das
+  liest jeder Aktive, und Personalnummern gehen das Team nichts an. Lesen
+  und schreiben nur die Geschäftsführung, nur dieses Dokument, nur diese
+  Felder, Längen begrenzt (beide Teile von `firestore.rules`).
+- Personalnummern von Leuten, die im angezeigten Monat nicht vorkommen,
+  bleiben beim Speichern erhalten — sonst löschte ein Blick auf einen
+  ruhigen Monat die Nummern der anderen.
+- Die Datei enthält nur Ziffern, Semikolons und Kopfzeilen, also reines
+  ASCII: „ANSI" ist damit keine Frage der Kodierung (der Browser kann
+  Windows-1252 gar nicht schreiben). Keine Namen.
+- Stunden = Ist nach der Pausenregel, zwei Nachkommastellen, Komma.
+- Wer keine Personalnummer hat, steht nicht in der Datei; die Meldung nennt
+  die Namen.
+- Nicht abgeschlossener Monat: Rückfrage vor dem Erzeugen.
+
+**Geprüft**
+- `tests/rules/lohn-einstellungen.test.js` (neu, 22, beide Welten).
+  Gegenprobe: Feldprüfung herausgenommen → „ein fremdes Feld" rot, in
+  beiden Welten.
+- `tests/test-stempelseite.js` jetzt 191: Einstellungen öffnen sich ohne
+  Nummern; Datei nur ASCII, nur CR/LF, Kopf, Satzbeschreibung, jede
+  Bewegungszeile im Format, ein Zeitraum, keine Namen. Gegenprobe: LF
+  statt CR/LF → fünf rote Zeilen.
+- Ein Messfehler im eigenen Test: er zählte den Speichern-Knopf in der
+  zugeklappten Box mit (0 × 0). Chromium meldet für Inhalt in einem
+  geschlossenen `<details>` trotzdem Rechtecke; der Test lässt diesen Inhalt
+  jetzt aus und misst dafür die Klappzeile (161 × 44).
+
+## Runde 211 — Schulung: Nachweis der Unterweisung zum Drucken (22.10.2026)
+
+**Aus dem Betrieb:** „jo mach weitert“ — auf den Vorschlag „ein
+druckbarer Nachweis der Hygiene- und Notfallunterweisung für Kontrollen“.
+
+**Was gebaut ist**
+- Unter Schulung → Verwalten → „Pflicht“ die Karte **„Nachweis drucken“**:
+  Modul wählen, drucken. Das Blatt läuft über die Druckvorlage der App
+  (`#printArea`, schwarz auf weiss, wie Putzplan und Aufgaben) und enthält:
+  - Titel, Firma, Stand; „Pflichtmodul“ und „zu wiederholen alle N Monate“,
+    wenn das so eingestellt ist;
+  - **Inhalt**: die Schritte des Moduls; bei einer Bestätigung der Satz,
+    der bestätigt wurde; die Zahl der Fragen;
+  - je Person den **jüngsten bestandenen** Durchlauf: Datum mit Jahr,
+    Ergebnis, aktive Dauer, Durchgang, leere Spalte „Unterschrift“;
+  - bei Pflicht: wer es noch nicht hat (ohne Stillgelegte);
+  - unten: „Ob dieses Blatt eine bestimmte Vorschrift erfüllt, prüft die
+    App nicht.“
+
+**Entschieden, und warum**
+- **Keine Aussage über Vorschriften.** Welche Angaben ein
+  Unterweisungsnachweis braucht, hängt vom Thema und von der Stelle ab,
+  die fragt. Das Blatt enthält das, was die App sicher weiss, und sagt,
+  was es nicht ist.
+- **Testläufe und nicht bestandene Durchläufe stehen nicht darauf.** Ein
+  Nachweis, auf dem ein Test der Leitung steht, wäre keiner.
+- **Mit Jahr**: Ein Nachweis wird oft erst Monate später gelesen.
+- **Unterschrift auf Papier**: Die App hat keine elektronische
+  Unterschrift, und eine nachgebaute wäre keine.
+
+**Im Durchlauf gefunden**
+- Beim ersten Druckbild stand „Bestanden am 19.10.“ ohne Jahr und als
+  Inhalt „4. Kurz bestätigen“ — ohne den Satz, um den es ging. Beides
+  behoben, beides geprüft.
+
+**Tests**
+- `tests/test-schulung-nachweis.js` neu (29): Titel, Inhalt mit dem
+  bestätigten Satz, Spalten, Jamie mit Datum samt Jahr, „Noch offen“;
+  Gegenproben: ein Testlauf mit dem Testcode steht nicht darauf (ohne die
+  Bedingung im Code: fällt), ein nur angefangener auch nicht, ein
+  freiwilliges Modul hat keine „Noch offen“-Liste, eine stillgelegte Person
+  fehlt dort; im Druckbild (media print) nur der Nachweis, keine Knöpfe;
+  Fingerziele bei sieben Breiten, normal und kompakt.
+## Runde 212 — Formi-Welt, Stufe 2: die App im Formi-Look (22.10.2026)
+
+**Aus dem Betrieb:** „können wir noch mehr am design anpassen und auch
+mehr auf den formi look eingehen also das die app so ein ähnliches
+verhalten und design hat“. Gefragt wurde mit Probebildern (jetzt / A
+dezent / B stark). Die Antworten: „1. b 2. ja 3. alle vier“.
+
+**Was Formi ausmacht** (aus Runde 186/195): Ring in vier Farben (türkis
+#5FE1FF, violett #B69CFF, rosa #FF8FC8, orange #FFA85C), schwarzer Kern mit
+Gesicht, Atmen, Glitch, Teilchen.
+
+**Gebaut** (alles unter `body.formi:not(.light)`; Hell bleibt, wie es war):
+1. **Flächen:** Karten, Verwaltungskarten und Startseiten-Zeilen haben
+   einen fast schwarzen Kern (`--formi-kern`) und eine schillernde Kante:
+   den Verlauf `--formi-lin` als unterste Hintergrundschicht
+   (border-box). Es gibt kein zusätzliches Element und keine Maske.
+   - Ein erster Versuch mit `::after` und Maske scheiterte an
+     test-gestaltung: `inherit` als Rundung und 1 px als Abstand stehen
+     nicht auf der Leiter.
+   - Die Farbe der Art (rot überfällig, orange heute …) liegt als eigene
+     Schicht links darüber. Statusfarben nur für Status.
+   - Aufgaben- und Putzplan-Zeilen behalten ihren Hintergrund, weil dort
+     Zustände wie „eben abgehakt“ eine eigene Fläche tragen. Sie bekommen
+     Formis Violett als Kante.
+2. **Wo man ist:** aktiver Raum links (Leiste im Verlauf, Schein in
+   Violett), Strich unter dem offenen Reiter, Seitentitel als
+   Verlaufsschrift. Der Strich lag vorher in der Bereichsfarbe. Die Wahl
+   B heisst: Formis Farben sind die Farbe des Orts.
+3. **Der Ring bleibt Formi** („2. ja“). Das Zeichen im Seitenkopf ist ein
+   Quadrat mit Verlaufsrand, kein Kreis.
+4. **Hauptknöpfe** in Formis Verlauf mit dunkler Schrift. An echten
+   Bildpunkten gemessen: Die schwächste Stelle liegt über 4,5 : 1
+   (test-formi-welt).
+5. **Momente** („alle vier“):
+   - Teilchen beim Abhaken (`hakenTeilchen`): zehn Punkte in den vier
+     Farben, 600 ms. Der erste Name `formiTeilchen` war schon vergeben
+     (Runde 195), die spätere Fassung hätte die neue still
+     überschrieben, und der Test fand 0 Teilchen.
+   - Leere Listen und Laden: parallel in Runde 209 gebaut (Formi mit
+     „Frag Formi“ in jedem leeren Zustand, Formis drehender Ring mit
+     Gesicht beim Laden). Beim Zusammenführen gilt deren Fassung. Meine
+     eigene (ein Formi-Gesicht nur im Stil Formi, ein atmender Kern) ist
+     entfallen, sie nutzte sogar denselben Klassennamen `leer-formi`.
+   - Tagesabschluss (`formiTagesabschluss`): Glitch über dem Kopf,
+     Konfetti in Formis Farben, Formi freut sich, ein Satz. Ausgelöst,
+     wenn alle Aufgaben oder der Putzplan eines Studios fertig sind.
+   - Bei „Bewegung reduzieren“ bleibt jeweils nur das Bild bzw. der Satz.
+
+**Geprüft:** test-formi-welt prüft Flächen, Farben, Ring nur Formi,
+Kontrast, Teilchen und Tagesabschluss, mit Gegenproben für „Bewegung
+reduzieren“ und den Stil Hell. Leere Listen und Laden prüft
+test-formi-lebt (Runde 209).
+
+## Runde 213 — Formi als schwarzes Loch: Akkretionsscheibe, Umgebung, Frage ins Loch; Suche und Formi in einem Feld (22.10.2026)
+
+**Aus dem Betrieb:**
+- Paket 3 der Ideenliste („mach alles davon“): Suche und Formi in einem
+  Feld.
+- Dazu: „kannst du formi noch eine akkretions scheibe geben also dieser
+  bunte kreis soll die akkretionsscheibe sein und er soll auch so die
+  physik von einem schwarzen loch haben oder weissem loch halt und sich
+  dann die umgebung in der app dementsprechen ändert und wenn man fragen
+  stellt fliegt die frage ins schwarze loch mit der passenden phsik halt
+  und spuckt sie im weissen loch auch wieder aus“.
+
+**Gebaut**
+- **Akkretionsscheibe.**
+  - Der bunte Ring dreht sich ständig, aussen 9 s je Runde, die
+    Innenscheibe (`.fk-innen`) 3,6 s. Je näher am Loch, desto schneller.
+  - Darüber liegt `.fk-licht`, das sich nicht mitdreht: Die Seite, die auf
+    uns zukommt, leuchtet heller (Doppler), und am Rand des Lochs liegt
+    ein heller Photonenring. Beides hängt vom Blickwinkel ab, nicht vom
+    Gas.
+  - Denkt Formi, dreht die Scheibe im Fensterkopf schneller (1,1 s /
+    0,6 s).
+- **Physik der Teilchen.** Was das weisse Loch ausspuckt, fällt spiralig
+  und schneller werdend zurück: Der Drehimpuls bleibt, also dreht ein
+  Teilchen umso schneller, je näher es kommt (7 Stationen statt 4).
+- **Umgebung.**
+  - Wird Formi zum weissen Loch, stösst es eine Lichtwelle in die App
+    hinaus (`.formi-welle.schub`).
+  - Wird es wieder schwarz, zieht sich das Licht um das Loch zusammen
+    (`.sog`).
+  - Ein Element von 900 px, das nur per `transform`/`opacity` wächst oder
+    schrumpft; eine einzige weiche Welle.
+- **Frage ins Loch.**
+  - Im kleinen Formi-Fenster lösen sich die Buchstaben der Frage (bis 36)
+    aus dem Feld und fallen in einer enger werdenden Spirale ins Gesicht
+    im Kopf, immer schneller und in Flugrichtung gestreckt
+    („Spaghettifizierung“).
+  - Zuletzt zuckt das Loch, und die Umgebung zieht sich zusammen.
+- **Antwort aus dem weissen Loch.** Kommt die Antwort, wird das Loch im
+  Kopf weiss, stösst eine Welle aus und spuckt Lichtpunkte auf die
+  Antwortkarte, die von oben hereinkommt.
+- **Suche und Formi in einem Feld.**
+  - Das Feld heisst jetzt „Suchen oder Formi fragen …“.
+  - Sieht der Satz wie eine Frage (Fragewort oder „?“) oder ein Auftrag
+    („hak … ab“, „leg … an“) aus, steht Formi oben, mit Gesicht und einer
+    leisen Formi-Kante; die Eingabetaste bringt ihn ins Formi-Feld.
+  - Abgeschickt wird dort mit „Senden“. Die erste Fassung schickte Fragen
+    gleich ab. test-uebersicht hält aber die Entscheidung vom 21.10.2026
+    fest: Die Suche setzt nichts in Gang, was man nicht sieht. Daran hält
+    sich die App jetzt, der Test bleibt, wie er ist.
+  - Ein Wort allein bleibt eine Suche; Formi steht dann unten, wie bisher.
+  - Ohne Formi-Zeile öffnet die Eingabetaste den ersten Treffer.
+
+**Warum so**
+- *Eine Dauer-Bewegung, mit Grund.* Die Drehung der Scheibe ist die
+  einzige ständige Bewegung ausserhalb von „arbeitet gerade“. Der Grund
+  ist der Wunsch oben; eine stehende Scheibe ist keine.
+  - Sie läuft nur auf `transform`.
+  - Sie steht bei „weniger Bewegung“ und bei „Gefühle der Kugel: Aus“
+    (`html.fk-still`).
+  - In Antworten, leeren Listen, Suche, Zeiger und Formi-Zeile dreht sich
+    nichts.
+- *Ohne Maske.* Die Innenscheibe war zuerst ein Ring aus `mask`. Ein
+  einfacher Verlauf sieht gleich aus und lässt die Drehung dem Compositor.
+- *Das Ziel der Frage erst im nächsten Bild.*
+  - Mit dem Abschicken verschwindet der Startschirm samt grossem Gesicht.
+  - Die erste Fassung zielte dorthin und brach ab, ohne dass etwas flog
+    (gefunden beim Ansehen).
+  - Jetzt fliegt die Frage ins Gesicht im Kopf.
+
+**Gemessen** (Arbeit je Bild, CPU ÷4)
+
+| | neu | vorher |
+|---|---|---|
+| Leerlauf, Rechner 1440 | 1,8 ms | 1,5 ms |
+| Leerlauf, Handy 390 | 2,0 ms | 1,0 ms |
+| Maus über dem Inhalt | 6,8–7,3 ms | 7,6–7,8 ms |
+| Freude (Runde 195) | 3,2 ms | — |
+
+- Die Grenze ist 8,3 ms.
+- Der Leerlauf kostet etwas, weil sich die Scheibe dreht. Die App ruht
+  damit nie ganz, solange die Kugel zu sehen ist.
+
+**Geprüft** (`tests/test-formi-lebt.js`, jetzt 169 Zusicherungen)
+- Scheibe, Innenscheibe, Licht: Die Drehung ist endlos, innen schneller,
+  nur `transform`.
+- Freude: Welle hinaus, Licht zusammen, Teilchen spiralig (7 Stationen),
+  danach nichts übrig.
+- Frage:
+  - Jeder Buchstabe fliegt in ≥ 8 Stationen und landet genau im Gesicht
+    im Kopf.
+  - Die Animationen sind endlich und bewegen nur `transform`/`opacity`.
+  - Die Antwort lässt das Loch weiss werden und spuckt ≥ 10 Lichtpunkte
+    aus, mit Welle; danach liegt nichts mehr herum.
+- „Weniger Bewegung“: Die Scheibe steht, keine fliegende Frage.
+- Suche bei 1440 und 390 px:
+  - Bei einer Frage steht Formi oben (≥ 44 px hoch, im Bild); die
+    Eingabetaste bringt sie ins Formi-Feld, abgeschickt ist noch nichts.
+  - Ein Wort lässt Formi unten.
+  - Ein Auftrag steht nur im Feld, nichts wird gespeichert.
+- Gefunden von test-block8 und test-mitarbeiter: Jede Suchzeile trägt
+  ihre Art („Aufgabe“, „Chat“ …); die Formi-Zeile hatte sie zuerst
+  verloren. Jetzt steht „Formi“ neben dem Gesicht.
+- Angepasst, nicht gelockert:
+  - „läuft nichts mehr“ nimmt die Scheibe aus (sie wird eigens geprüft).
+  - Der Atmen-Test aus Runde 195 prüft jetzt das Weiten des Lochs statt
+    einer einzelnen Ringdrehung, weil der Ring sich ohnehin dreht.
+- Zusammengeführt mit Runde 212 (Formi-Welt Stufe 2) der anderen
+  Sitzung. Grün sind dabei test-formi-welt, test-formi-lebt, test-csp,
+  test-gestaltung, test-knoepfe, test-uebersicht, test-leerzustand,
+  test-formi-kugel, test-abgeschnitten, test-quer und test-block8, dazu
+  test-mitarbeiter, test-formi-kumpel, test-formi-platz, test-stil-formi,
+  test-formi-angedockt und test-all.
+- test-gehirn: Rot sind nur die drei bekannten Leistungsprüfungen.
+
+**Nicht geprüft:** echte Geräte und echte 120 Hz. Wie sich die ständig
+drehende Scheibe auf den Akku eines Studio-Tablets auswirkt, lässt sich
+hier nicht messen; „Gefühle der Kugel: Aus“ stellt sie ab.
