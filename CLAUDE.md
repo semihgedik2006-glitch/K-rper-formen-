@@ -145,6 +145,8 @@ Wer das Aussehen ändert, prüft gegen diese Liste.
 | „richtig flüssig … im Idealfall 120 fps … schärfer … kontrastreich" | siehe unten |
 | „das mit dem Firmencode muss nicht so penetrant sein" | Firmencode sichtbar, aber leise |
 
+**Vorbilder aus anderen Apps:** `docs/design-vorbilder/` — vor jeder Gestaltungsänderung die passende Datei lesen (Übersicht in der README). Übernommen werden Muster, nie fremde Logos, Bilder oder Schriften.
+
 **Flüssig heisst konkret** (gemessen am 23.9.2026, CPU ÷4):
 - keine Übergänge auf `width`, `height`, `padding`, `font-size` — Bewegung
   per `transform` (FLIP);
