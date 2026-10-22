@@ -19261,7 +19261,48 @@ Minuten fertig statt in einer Stunde.
 **Geprüft:** test-schichtplaner-rechnung (82, liest die Vorlage): grün.
 Das PDF ist angesehen (4 Seiten), die Vorlage mit openpyxl geöffnet.
 
-## Runde 207 — Die Stempelseite, Schritt 4: Stundenkonto, Monatsabschluss, Export als Excel und CSV (22.10.2026)
+## Runde 207 — Schulung für die Leitung: Pflicht auf einen Blick, Erinnern, Frage nachbessern (22.10.2026)
+
+**Aus dem Betrieb:** „aight mach die nächste runde“ — nach den Runden 201
+und 202. Empfohlen und gebaut: die Seite der Leitung, denn das
+Auffrischen und die Fristen erzeugen jetzt Zahlen, die jemand lesen muss.
+
+**Was gebaut ist**
+- **Reiter „Pflicht“** unter Schulung → Verwalten: Personen ×
+  Pflichtmodule. Je Zelle ✓ mit Datum, „bis …“, „angefangen 2/17“ oder
+  „überfällig“ bzw. „wieder fällig“ (bei `gueltigMonate`). Oben die Summe
+  („3 von 12 erledigt“), Filter Alle / Offen / Überfällig, am Reiter die
+  Zahl der überfälligen. Stillgelegte Personen stehen nicht darin.
+  - Am Rechner eine Tabelle; am Handy je Person eine Karte, Modulname
+    links (gekürzt), Stand rechts. Beim ersten Anlauf schob ein langer
+    Modulname den Stand aus der Zeile (flex); jetzt ein Raster.
+- **„Erinnern“**: eine fertige Nachricht mit Vorname, den offenen
+  Pflichtmodulen samt Frist und dem Code — über das Teilen-Fenster des
+  Geräts, sonst in die Zwischenablage. Dasselbe Muster wie „Weitergeben“.
+- **„Bearbeiten“** bei „Fragen, die im Team nicht sitzen“: öffnet den
+  Modul-Editor bei genau dieser Frage, markiert und ins Bild geholt (bei
+  einem Modul aus der Datei als eigene Fassung, wie sonst auch).
+
+**Entschieden, und warum**
+- **Die App verschickt die Erinnerung nicht selbst.** Leute ohne Zugang
+  erreicht sie gar nicht, und eine Nachricht von der Leitung wirkt anders
+  als eine Meldung „vom System“. Der Preis: Die Leitung muss tippen.
+- **Statusfarbe nur für erledigt und überfällig.** „bis …“ und
+  „angefangen“ sind keine Meldung, also neutral.
+- Der Code steht in der Nachricht: Die Person braucht ihn zum Anfangen,
+  und lesen darf ihn die Leitung ohnehin (Runde 98).
+
+**Tests**
+- `tests/test-schulung-pflicht.js` neu (30): Stand aus den Demo-Daten,
+  Summe und Reiterzahl, Filter (Gegenprobe: heute niemand überfällig),
+  20 Tage später überfällig in der Statusfarbe — und Jamie, erst vor vier
+  Tagen angelegt, noch in der Frist (Gegenprobe); stillgelegt nicht in
+  der Tabelle (Gegenprobe ohne den Filter: fällt); „Erinnern“ mit offenen
+  Modulen und Code, ohne erledigte (Gegenprobe); „Bearbeiten“ springt zur
+  Frage; Tabelle am Rechner, Stand bleibt am Handy im Bild; Fingerziele bei
+  sieben Breiten, normal und kompakt.
+
+## Runde 208 — Die Stempelseite, Schritt 4: Stundenkonto, Monatsabschluss, Export als Excel und CSV (22.10.2026)
 
 Antworten aus dem Betrieb: Soll fürs Konto aus den Vertragsstunden
 („JA"), Lohnbüro „mach beides", Abschluss mit dabei.
