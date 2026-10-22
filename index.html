@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-KL5AjjzHV4jbgFG7qfOIGnW4HbrHePAC838OiAQScoE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-q4/QUvYKtex49of2Mvh8wBNsXWNJcXf8MGr+2V4bc6g='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -689,6 +689,10 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .spinner{width:44px;height:44px;border:3px solid var(--line-2);border-top-color:var(--accent);
   border-radius:var(--r-rund);animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+.formi-lade .formi-figur{--fg:64px;display:block}
+.formi-lade .fk-wirbel{animation:spin 1.4s linear infinite}
+.formi-lade .fk-gesicht{transform:translate(9%,-11%)}
+@media (prefers-reduced-motion:reduce){ .formi-lade .fk-wirbel{animation:none} }
 #loadingWrap p{color:var(--text-2);font-size:var(--t-sm)}
 /* Der Schritt gehoert zur Zeile darueber, nicht als eigener Absatz
    daneben — die Luecke der Spalte (--s16) waere dafuer zu gross. */
@@ -1542,6 +1546,13 @@ html.demo #terminalSchirm{top:44px}
 .empty{text-align:center;color:var(--text-3);padding:var(--s48) var(--s20)}
 .empty svg{width:42px;height:42px;margin:0 auto var(--s12);display:block;opacity:.45}
 .empty h3{font-size:var(--t-lg);margin-bottom:var(--s6);color:var(--text-2)}
+.leer-formi{display:inline-flex;align-items:center;gap:var(--s8);min-height:44px;margin-top:var(--s12);padding:0 var(--s16) 0 var(--s8);
+  border:1px solid var(--line);border-radius:var(--r-rund);background:var(--bg-soft);box-shadow:var(--e1);
+  color:var(--text);font:inherit;font-size:var(--t-sm);font-weight:600;cursor:pointer;transition:transform .14s var(--ease-ios), border-color .2s}
+.leer-formi .formi-figur{--fg:28px}
+@media (hover:hover){ .leer-formi:hover{border-color:var(--line-2)} }
+.leer-formi:active{transform:translateY(1px)}
+.leer-formi:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .empty p{font-size:var(--t-sm);line-height:var(--lh);max-width:34ch;margin:0 auto}
 .empty .btn{margin-top:var(--s20)}
 
@@ -3540,6 +3551,9 @@ button.ich-zeile:active{opacity:.7}
   letter-spacing:var(--ls-l);text-align:left;padding:var(--s6) var(--s8);border-bottom:1px solid var(--line);white-space:nowrap}
 .zk-konto-tab td{padding:var(--s8);border-bottom:1px solid var(--line);vertical-align:top}
 .zk-konto-tab .zahl{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.zk-datev{margin-top:var(--s16)}
+.zk-datev .btn{min-height:44px;margin-top:var(--s8)}
+.zk-datev-leute{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0 var(--s12);margin-top:var(--s8)}
 .zk-konto-neben{display:block;font-size:var(--t-2xs);color:var(--text-3);margin-top:var(--s2)}
 .zk-antraege{margin:var(--s12) 0 var(--s4);padding:var(--s12) var(--s16);border-radius:var(--r-md);
   background:var(--auf-1);border:1px solid var(--line)}
@@ -6010,6 +6024,7 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
 /* Formis Zeichen: ein kleines schwarzes Loch mit Lichtring (20.10.2026) */
 .gx-feld{display:flex;flex-direction:column;gap:var(--s4);margin-top:var(--s8);font-size:var(--t-sm);color:var(--text-2)}
 .gx-feld .inp{width:100%}
+.ga-loch.formi-figur{--fg:20px;width:var(--fg);height:var(--fg);background:none;box-shadow:none}
 .ga-loch{flex:none;width:14px;height:14px;border-radius:var(--r-rund);
   background:radial-gradient(circle, #000 0 42%, #fff 50%, var(--accent-d) 62%, transparent 74%);
   box-shadow:0 0 6px 1px rgba(var(--akz-rgb),.45)}
@@ -6300,6 +6315,14 @@ body[data-bereich="g-arbeit"] .fk-wirbel::before,body[data-bereich="g-team"] .fk
    (jvPegelStart). */
 .jarvis.jv-z-spricht:not(.jv-pegel) .formi-gesicht .fk-mund{animation:fgSprechen .22s ease-in-out infinite alternate}
 @keyframes fgSprechen{from{transform:scaleY(.45)}to{transform:scale(1.15,1.8)}}
+#jarvisMehr{display:none}
+.jarvis.jv-kompakt #jarvisMehr{display:grid}
+.jarvis.jv-kompakt:not(.jv-mehr-auf) #jarvisPersonaBtn,.jarvis.jv-kompakt:not(.jv-mehr-auf) #jarvisGespraecheBtn,
+.jarvis.jv-kompakt:not(.jv-mehr-auf) #jarvisTon{display:none}
+/* Aufgeklappt: Platz für sechs Knöpfe, auch bei 320 px — Name und Gesicht
+   treten so lange zurück. */
+.jarvis.jv-kompakt.jv-mehr-auf #jarvisTitel,.jarvis.jv-kompakt.jv-mehr-auf .jv-punkt,
+.jarvis.jv-kompakt.jv-mehr-auf .jv-titel .formi-gesicht{display:none}
 .jarvis.jv-kompakt{inset:auto;right:max(var(--s16), var(--sar, 0px));bottom:calc(var(--s16) + var(--sab));
   width:min(420px, calc(100vw - 2 * var(--s16)));height:min(640px, calc(100dvh - 2 * var(--s16)));
   z-index:190;border-radius:var(--radius);border:1px solid rgba(var(--jv-rgb),.35);
@@ -6327,7 +6350,7 @@ body[data-bereich="g-arbeit"] .fk-wirbel::before,body[data-bereich="g-team"] .fk
     border-radius:0;border:0;border-left:1px solid rgba(var(--jv-rgb),.35);box-shadow:var(--e3)}
 }
 @media(min-width:1680px){ :root{--formi-spalte:420px} }
-/* „Mehr Platz" (Runde 209): grösser, aber nie ein Dialog über allem. */
+/* „Mehr Platz" (Runde 211): grösser, aber nie ein Dialog über allem. */
 /* Mit „Mehr Platz" bleibt aus dem alten HUD nur „Heute im Studio": die
    fünf Kacheln als ruhige Zeile über dem Gespräch. Alles andere links
    (Kern, Ringe, Equalizer, Uhr) bleibt weg. */
@@ -6649,6 +6672,12 @@ body.jv-offen{overflow:hidden}
 @media (prefers-reduced-motion:reduce){ .jarvis.jv-boot .jv-brief li,.jarvis.jv-boot .jv-kl{animation:none} .jv-kl{transition:none} }
 /* Leerer Verlauf: Begrüssung und Vorschläge zum Antippen */
 .jv-leer{margin:auto 0;padding:var(--s16) 0;text-align:center}
+/* Runde 209 — das Formi-Fenster aufgeräumt: ein grosses Gesicht statt
+   „Hallo" allein, die Lage nicht doppelt, im Kopf drei Knöpfe statt fünf. */
+.jv-start-figur{--fg:76px;display:none;margin:0 auto var(--s12)}
+.jarvis.jv-kompakt .jv-start-figur{display:block}
+.jarvis.jv-kompakt .jv-brief{display:none}
+.jarvis.jv-kompakt:has(.jv-start-figur) .jv-titel .formi-gesicht{visibility:hidden}
 .jv-gruss{margin:0 0 var(--s6);font-family:var(--font-head);font-weight:700;font-size:var(--t-2xl);line-height:var(--lh-eng);
   color:var(--text);text-shadow:0 0 24px rgba(var(--jv-rgb),.45)}
 .jv-unter{margin:0 auto var(--s16);max-width:44ch;color:var(--text-2);font-size:var(--t-sm)}
@@ -8934,7 +8963,9 @@ body.neu .kn-zeile{min-height:var(--zeile)}
 
 <!-- ── Loading ── -->
 <div id="loadingWrap">
-  <div class="spinner"></div>
+  <!-- Runde 209: beim Laden dreht sich Formis Ring, die Augen schauen
+       nach oben — Formi denkt. -->
+  <div class="formi-lade" aria-hidden="true"><span class="formi-figur"><span class="fk-koerper"><span class="fk-wirbel"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i></span></span></span></span></span></div>
   <p id="loadingStatus">Verbindung wird hergestellt …</p>
   <p id="loadingStep">Schritt 1/3: Lade Code …</p>
   <button id="loadingForce" class="btn btn-ghost btn-sm" hidden>Login trotzdem anzeigen</button>
@@ -13097,6 +13128,7 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
     <div class="jv-kopf">
       <span class="jv-titel"><span class="formi-gesicht formi-figur mini" aria-hidden="true"><span class="fk-koerper"><span class="fk-wirbel"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i></span></span></span></span></span><span class="jv-punkt" aria-hidden="true"></span><span id="jarvisTitel">Formi</span><span class="jv-weck" id="jarvisWeck" hidden>hört auf dich</span><span class="jv-offline" id="jarvisOffline" hidden>offline · Schnellbefehle gehen</span></span>
       <span class="jv-kopf-knoepfe">
+        <button type="button" class="icon-btn" id="jarvisMehr" data-ikon="mehr" aria-expanded="false" aria-label="Mehr: Einstellungen, Gespräche, Ton" title="Mehr"></button>
         <button type="button" class="icon-btn" id="jarvisPersonaBtn" data-ikon="regler" aria-expanded="false" aria-controls="jarvisPersona" aria-label="Persönlichkeit und Stimme" title="Persönlichkeit und Stimme"></button>
         <button type="button" class="icon-btn" id="jarvisGespraecheBtn" data-ikon="uhr" aria-expanded="false" aria-controls="jarvisGespraeche" aria-label="Gespeicherte Gespräche" title="Gespeicherte Gespräche"></button>
         <button type="button" class="icon-btn" id="jarvisTon" data-ikon="ton" aria-pressed="true" aria-label="Ton und Stimme" title="Ton und Stimme an/aus"></button>
@@ -14118,6 +14150,8 @@ function $(id){ return document.getElementById(id); }
    ausgeschrieben; beide Fassungen muessen dieselben Pfade zeichnen. */
 var IKONEN = {
   schliessen:  '<path d="M18 6 6 18M6 6l12 12"/>',
+  /* „…" für Formis Kopfzeile (Runde 209). */
+  mehr:        '<path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3"/>',
   /* Eine Karte, kein Geldschein und kein Euro-Zeichen: bezahlt wird
      per Karte oder Lastschrift, und ein Schein stuende fuer etwas,
      das in dieser App nie vorkommt. */
@@ -19037,6 +19071,8 @@ function suchFelderBinden(){
    keinen hat, ist schlimmer als einer ohne Weg; test-leerzustand.js
    prueft deshalb jedes Ziel einzeln nach. */
 document.addEventListener('click', function(e){
+  var f = e.target.closest && e.target.closest('[data-leerformi]');
+  if(f){ jarvisAuf(); return; }
   var k = e.target.closest && e.target.closest('[data-leerzu]');
   if(!k) return;
   var ziel = document.querySelector(k.getAttribute('data-leerzu'));
@@ -21262,6 +21298,15 @@ var NEUIGKEITEN = [
     'Sprechen geht jetzt am Knopf „Sprechen": kurz tippen oder gedrückt halten und beim Loslassen abschicken.',
     'Nebenbei: Formi läuft spürbar flüssiger, weil im Hintergrund nichts mehr gezeichnet wird.'
   ]},
+  { id:'2026-10-22-datev', datum:'22.10.2026', titel:'Stunden als DATEV-Datei fürs Lohnbüro', wo:'chef:zeiten', punkte:[
+    'Für die Geschäftsführung: Verwaltung → Zeiten → Monat & Konto → „DATEV". Die Datei (LODAS) enthält je Person die Stunden des Monats und auf Wunsch die Urlaubstage – nur Nummern, keine Namen.',
+    'Beim ersten Mal öffnen sich die DATEV-Einstellungen: Beraternummer, Mandantennummer, Lohnart für Stunden und die Personalnummern. Diese Nummern gibt euch das Lohnbüro. Sehen kann sie nur die Geschäftsführung.',
+    'Bitte die erste Datei vom Lohnbüro prüfen lassen: Sie ist nach dem DATEV-Handbuch gebaut, aber noch nie in ein echtes DATEV eingespielt worden. Wer keine Personalnummer hat, steht nicht in der Datei – die App sagt, wer fehlt.'
+  ]},
+  { id:'2026-10-22-formi-fenster-ruhiger', datum:'22.10.2026', titel:'Formi-Fenster aufgeräumt, Formi in leeren Listen', wo:'home', punkte:[
+    'Öffnest du Formi, begrüsst dich oben ein grosses Formi-Gesicht, das dir mit den Augen folgt. Die drei Zeilen „Aufgaben offen / Putzplan / Material" stehen dort nicht mehr – das zeigt schon die Formi-Zeile auf der Startseite.',
+    'Oben im kleinen Formi-Fenster sind nur noch drei Knöpfe: „…", Gross und Schliessen. Hinter „…" findest du Einstellungen, gespeicherte Gespräche und den Ton.',
+    'Ist eine Liste leer, sitzt dort Formi mit „Frag Formi". Beim Laden der App dreht sich Formis Ring, und vor jeder Antwort steht Formis Gesicht.' ] },
   { id:'2026-10-22-stundenkonto', datum:'22.10.2026', titel:'Stundenkonto, Monatsabschluss und Export fürs Lohnbüro', wo:'chef:zeiten', punkte:[
     'Für die Geschäftsführung: Verwaltung → Zeiten → oben „Monat & Konto". Je Person stehen dort die gestempelten Stunden (nach der Pausenregel), das Soll aus den Wochenstunden im Schichtplaner, Urlaub und Krankheit, der Saldo, der Übertrag aus dem Vormonat und das Konto.',
     '„Excel" und „CSV" laden den Monat für das Lohnbüro herunter – Stunden als Dezimalzahlen mit Komma, in Excel zusätzlich jeder Tag einzeln.',
@@ -26461,7 +26506,11 @@ function jvLeerHTML(){
     var c=GEHIRN_MINI[x[0]];
     return '<li style="--gm:'+c.farbe+';--gm-rgb:'+c.rgb+'">'+ikon(c.ikon)+'<span>'+esc(x[1])+'</span></li>';
   }).join('') : '<li style="--gm:#5FE1FF;--gm-rgb:95,225,255">'+ikon('hakenKreis')+'<span>Alles ruhig — nichts offen.</span></li>')+'</ul>';
-  return '<div class="jv-leer"><p class="jv-gruss">'+esc(jvGruss()+(vorname ? ', '+vorname : ''))+'.</p>'+brief+
+  /* Runde 209: oben das grosse Gesicht (im kleinen Fenster; im
+     Vollbild steht dort das Loch). Die drei Lage-Zeilen fallen im kleinen
+     Fenster weg — dasselbe steht schon in der Formi-Zeile und im Satz
+     darunter (CSS: .jarvis.jv-kompakt .jv-brief). */
+  return '<div class="jv-leer"><span class="formi-figur jv-start-figur" aria-hidden="true">'+formiFigurInnen(true)+'</span><p class="jv-gruss">'+esc(jvGruss()+(vorname ? ', '+vorname : ''))+'.</p>'+brief+
     '<p class="jv-unter">'+(jvPersona().ton==='sachlich' ? 'Ich bin '+esc(jvPersona().name)+'. ' : esc(formiLageSatz())+' ')+'Frag mich etwas oder gib mir einen Auftrag — ich erledige es in der App und zeige dir jeden Schritt.</p>'+
     '<div class="jv-chips">'+JV_VORSCHLAEGE.map(function(t){ return '<button type="button" class="jv-chip" data-jvbefehl="'+esc(t)+'">'+esc(t)+'</button>'; }).join('')+'</div></div>';
 }
@@ -26487,7 +26536,8 @@ function gehirnZeichnenInRoh(box, tippen){
     var rf=gehirnRein(v, '_abF');
     var frage='<div class="gehirn-frage'+rf.k+'"'+rf.s+'>'+
       (v.art==='idee' ? '<b>Idee:</b> ' : '')+gehirnText(v.text)+'</div>';
-    var kopf='<div class="ga-kopf"><span class="ga-loch" aria-hidden="true"></span><span>'+esc(jvPersona().name)+'</span></div>';
+    /* Runde 209: vor jeder Antwort dasselbe Gesicht wie die Kugel. */
+    var kopf='<div class="ga-kopf"><span class="ga-loch formi-figur mini" aria-hidden="true">'+formiFigurInnen()+'</span><span>'+esc(jvPersona().name)+'</span></div>';
     var antwort;
     if(v.alt){
       antwort='<div class="gehirn-antwort ga-alt">'+kopf+'<p class="ga-text">'+gehirnText(v.antwort)+'</p></div>';
@@ -27129,7 +27179,7 @@ function formiBleibtOffen(){ return _jvKompakt && jarvisOffen() && !formiHandy()
    KOMPAKT ist ab jetzt Standard: ein Fenster unten rechts (Handy: von
    unten), die App bleibt sichtbar und bedienbar. „Gross" bringt das
    Vollbild von bisher zurück; die Wahl merkt sich das Gerät. */
-/* ── Das große HUD ist weg (Runde 209, 22.10.2026) ───────────────────
+/* ── Das große HUD ist weg (Runde 211, 22.10.2026) ───────────────────
    Aus dem Betrieb: „eventuell auch das grosse hud entfernen oder
    überarbeiten das es besser aussieht" — auf die Rückfrage gewählt:
    „Ruhig neu bauen". Formi ist jetzt IMMER das ruhige Fenster: am
@@ -27388,9 +27438,51 @@ function formiAtmenPlanen(){
 /* Die kleine Figur (Runde 205): dieselbe wie die Kugel, ohne Geister und
    Punkt — für Fensterkopf, Formi-Zeile und den fliegenden Zeiger. */
 function formiFigurKlasse(){ return 'formi-figur mini'; }
-function formiFigurInnen(){
+function formiFigurInnen(brauen){
   return '<span class="fk-koerper"><span class="fk-wirbel"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span>'+
-    '<span class="fk-gesicht"><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i></span></span></span></span>';
+    '<span class="fk-gesicht">'+(brauen ? '<i class="fk-braue l"></i><i class="fk-braue r"></i>' : '')+
+    '<i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i></span></span></span></span>';
+}
+/* ── Figuren im Formi-Fenster (Runde 209) ─────────────────────────────
+   Die Kugel ist weg, solange das Fenster offen ist — dann leben die
+   Gesichter im Fenster: das grosse auf dem Startschirm und das kleine im
+   Kopf schauen der Maus nach und blinzeln mit. Dieselben Regeln wie bei
+   der Kugel: Lage im Bild gelesen und eine Sekunde gemerkt, Blick als
+   Web Animation (kein style-Attribut), aus bei „weniger Bewegung" und
+   „Gefühle der Kugel: Aus". */
+var FK_FENSTER_FIGUREN='#jarvis .jv-titel .formi-figur, #jarvis .jv-start-figur';
+function formiFigurenAn(){ return jarvisOffen() && !_fl.gefuehleAus && !gehirnWenigBewegung(); }
+function formiFigurenSchauen(x, y){
+  _fl.figX=x; _fl.figY=y;
+  if(_fl.figRaf) return;
+  _fl.figRaf=requestAnimationFrame(function(){
+    _fl.figRaf=0;
+    if(!formiFigurenAn()) return;
+    var jetzt=Date.now();
+    [].forEach.call(document.querySelectorAll(FK_FENSTER_FIGUREN), function(f){
+      if(!f.getClientRects().length) return;
+      if(!f._mitte || jetzt>f._mitteBis){ var q=f.getBoundingClientRect(); f._mitte={ x:q.left+q.width/2, y:q.top+q.height/2, g:q.width/58 }; f._mitteBis=jetzt+1000; }
+      var dx=_fl.figX-f._mitte.x, dy=_fl.figY-f._mitte.y, d=Math.sqrt(dx*dx+dy*dy)||1, g=f._mitte.g;
+      var pz='translate('+(dx/d*Math.min(1.8*g, d/70)).toFixed(1)+'px,'+(dy/d*Math.min(1.8*g, d/70)).toFixed(1)+'px)';
+      var lz='translate('+(dx/d*Math.min(2.5*g, d/80)).toFixed(1)+'px,'+(dy/d*Math.min(2.5*g, d/80)).toFixed(1)+'px)';
+      if(pz===f._pz) return;
+      var alt=f._anim||[], neu=[];
+      try{
+        neu.push(f.querySelector('.fk-loch').animate([{ transform:f._lz||'none' }, { transform:lz }], { duration:140, easing:'ease-out', fill:'forwards' }));
+        [].forEach.call(f.querySelectorAll('.fk-auge b'), function(b){
+          neu.push(b.animate([{ transform:f._pz||'none' }, { transform:pz }], { duration:110, easing:'ease-out', fill:'forwards' }));
+        });
+      }catch(e){}
+      f._anim=neu; f._pz=pz; f._lz=lz;
+      alt.forEach(function(a){ try{ a.cancel(); }catch(e){} });
+    });
+  });
+}
+function formiFigurenBlinzeln(){
+  if(!formiFigurenAn()) return;
+  [].forEach.call(document.querySelectorAll('#jarvis .jv-titel .formi-figur .fk-auge, #jarvis .jv-start-figur .fk-auge'), function(a){
+    try{ a.animate([{transform:'none'},{transform:'scaleY(.1)',offset:.5},{transform:'none'}], { duration:170 }); }catch(e){}
+  });
 }
 /* Der Glitch an der Kugel: zwei Geister springen neben den Körper. */
 function formiKugelGlitch(){
@@ -27530,6 +27622,7 @@ function formiBlinzelnPlanen(){
   if(_fl.uhrenAus) return;
   _fl.blinzelUhr=setTimeout(function(){
     if(formiLebtAn() && !_fl.schlaeft) formiFuehlt('blinzelt');
+    formiFigurenBlinzeln();
     formiBlinzelnPlanen();
   }, 4000+Math.random()*7000);
 }
@@ -27654,7 +27747,11 @@ function formiLebtStart(){
   _fl.gefuehleAus = jvPersona().gefuehle==='aus';
   var maus=!!(window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches);
   function tun(){ formiWach(); }
-  document.addEventListener('pointermove', function(e){ _fl.zuletzt=_fl.mausZuletzt=Date.now(); if(_fl.schlaeft || _fl.muede) formiWach(); if(maus) formiSchauNach(e.clientX, e.clientY); }, { passive:true });
+  document.addEventListener('pointermove', function(e){
+    _fl.zuletzt=_fl.mausZuletzt=Date.now(); if(_fl.schlaeft || _fl.muede) formiWach();
+    if(!maus) return;
+    if(jarvisOffen()) formiFigurenSchauen(e.clientX, e.clientY); else formiSchauNach(e.clientX, e.clientY);
+  }, { passive:true });
   ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(function(n){ document.addEventListener(n, tun, { passive:true, capture:true }); });
   /* Tippen in ein Feld: hinschauen und nicken. Die Lage des Feldes wird
      im Bild gelesen, nicht im Ereignis. */
@@ -28797,7 +28894,7 @@ function jarvisAuf(){
      scrollbar; die grossen Leinwände laufen nur im Vollbild. */
   jvKompaktAnwenden();
   gehirnZeichnen();
-  /* Runde 209: die Uhr und die Leinwände gehörten zum großen HUD — die
+  /* Runde 211: die Uhr und die Leinwände gehörten zum großen HUD — die
      gibt es nicht mehr, also läuft auch keine Sekunden-Uhr mehr. */
   jvWerte();
   jvKachelnZeichnen(); gehirnLageLaden();
@@ -28820,7 +28917,8 @@ function jarvisZu(){
   jvTon('zu'); jvStill();
   jvWeckStop(); gehirnHoerenStop();
   jvUhrStop(); jvFeldStop();
-  j.classList.remove('da', 'jv-boot'); j.hidden=true;
+  j.classList.remove('da', 'jv-boot', 'jv-mehr-auf'); j.hidden=true;
+  var mz=$('jarvisMehr'); if(mz) mz.setAttribute('aria-expanded', 'false');
   document.body.classList.remove('jv-offen', 'formi-angedockt', 'formi-weit');
   formiKugelZeigen();
   if(_jvVorher && _jvVorher.focus && document.contains(_jvVorher)) try{ _jvVorher.focus(); }catch(e){}
@@ -28843,6 +28941,12 @@ function jarvisBinden(){
   var gr=$('jarvisGroesse'); if(gr) gr.addEventListener('click', jvGroesseWechseln);
   var gb=$('jarvisGespraecheBtn'); if(gb) gb.addEventListener('click', function(){ jvGesprAuf(); });
   var pb=$('jarvisPersonaBtn'); if(pb) pb.addEventListener('click', function(){ jvPersonaAuf(); });
+  /* Runde 209: im kleinen Fenster liegen Einstellungen, Gespräche und Ton
+     hinter „…" — ein Tipp klappt sie in der Kopfzeile auf. */
+  var mb=$('jarvisMehr'); if(mb) mb.addEventListener('click', function(){
+    var j=$('jarvis'), auf=!j.classList.contains('jv-mehr-auf');
+    j.classList.toggle('jv-mehr-auf', auf); mb.setAttribute('aria-expanded', auf ? 'true' : 'false'); tick(6);
+  });
   var fb=$('jarvisFoto'), fd=$('jarvisFotoDatei');
   if(fb && fd){
     fb.addEventListener('click', function(){
@@ -28864,7 +28968,7 @@ function jarvisBinden(){
   });
   var j=$('jarvis');
   if(j) j.addEventListener('keydown', function(ev){ if(ev.key==='Escape'){ ev.preventDefault(); jarvisZu(); } });
-  /* Runde 209: „Sprechen" im Fenster kann jetzt auch gedrückt gehalten
+  /* Runde 211: „Sprechen" im Fenster kann jetzt auch gedrückt gehalten
      werden — das konnte vorher nur der Kern des grossen HUD. */
   (function(){ var m=$('jarvisMic'), SR=window.SpeechRecognition || window.webkitSpeechRecognition; if(m) m.style.display=SR ? '' : 'none'; })();
 }
@@ -29225,7 +29329,7 @@ function jvHaltenBinden(){
   var h=$('jarvisHalten'); if(!h || h._gebunden) return; h._gebunden=true;
   var SR=window.SpeechRecognition || window.webkitSpeechRecognition;
   h.hidden=!SR; if(!SR) return;
-  /* Runde 209: dieselbe Bedienung am Knopf „Sprechen" ($('jarvisMic')) —
+  /* Runde 211: dieselbe Bedienung am Knopf „Sprechen" ($('jarvisMic')) —
      der Kern (#jarvisHalten) ist mit dem grossen HUD unsichtbar. */
   [h, $('jarvisMic')].forEach(function(k){
     if(!k) return;
@@ -38942,7 +39046,7 @@ function zkKontoLaden(){
       [].concat.apply([], r[2]),
       r[3] && r[3].exists ? r[3].data() : null,
       r[4] && r[4].exists ? r[4].data() : null);
-    zkKontoZeichnen();
+    return datevLaden().then(function(){ if(nr===_zkKontoNr) zkKontoZeichnen(); });
   }).catch(function(e){
     if(nr!==_zkKontoNr) return;
     box.innerHTML='<p class="hint">Das Konto lässt sich gerade nicht rechnen: '+esc(errMsg(e))+'</p>';
@@ -38980,19 +39084,21 @@ function kontoRechnen(m, erst, letzt, zeiten, team, abwesend, abschluss, vorAbsc
     var soll = woche ? Math.round(woche*60*tageBis/7)
              : (monatMax ? Math.round(monatMax*60*tageBis/tageImMonat) : null);
     var tagesSoll = woche ? woche*60/((+v.maxTageWoche||0) || 5) : 0;
-    var gut=0;
+    var gut=0, urlaubTage=0;
     abwesend.forEach(function(a){
       if(a.uid!==uid || (a.type!=='urlaub' && a.type!=='krank')) return;
       if(a.type!=='krank' && (a.status||'genehmigt')!=='genehmigt') return;
       var von=a.from>erst ? a.from : erst, ende=(a.to||a.from)<bis ? (a.to||a.from) : bis;
       if(von>ende) return;
-      gut+=Math.round(kontoWerktage(von, ende)*tagesSoll);
+      var wt=kontoWerktage(von, ende);
+      gut+=Math.round(wt*tagesSoll);
+      if(a.type==='urlaub') urlaubTage+=wt;
     });
     var saldo = soll===null ? null : ist+gut-soll;
     var uebertrag = vorKonto.hasOwnProperty(uid) ? vorKonto[uid] : null;
     return { uid:uid, name:p.name || v.name || '—', ist:ist, soll:soll, gutschrift:gut, saldo:saldo,
              uebertrag:uebertrag, konto: saldo===null ? null : (uebertrag||0)+saldo,
-             tage:tage.filter(function(t){ return !(t.offen && !t.laeuft); }).length, offen:offen,
+             tage:tage.filter(function(t){ return !(t.offen && !t.laeuft); }).length, offen:offen, urlaubTage:urlaubTage,
              abzug:abzug, hinweise:hinweise, tageListe:tage };
   }).sort(function(a,b){ return String(a.name).localeCompare(String(b.name),'de'); });
   return { monat:m, laufend:laufend, bis:bis, zeilen:zeilen, abschluss:abschluss,
@@ -39012,6 +39118,7 @@ function zkKontoZeichnen(){
     '<div class="zk-konto-knoepfe">'+
       '<button type="button" class="btn btn-ghost" data-zkexport="xls">Excel</button>'+
       '<button type="button" class="btn btn-ghost" data-zkexport="csv">CSV</button>'+
+      '<button type="button" class="btn btn-ghost" data-zkexport="datev">DATEV</button>'+
       (zu ? '<button type="button" class="btn btn-ghost" data-zkoeffnen>Wieder öffnen …</button>'
           : (!k.laufend ? '<button type="button" class="btn btn-primary" data-zkabschluss>Monat abschliessen</button>' : ''))+
     '</div></div>';
@@ -39034,7 +39141,116 @@ function zkKontoZeichnen(){
         '<td class="zahl">'+kontoText(z.uebertrag)+'</td>'+
         '<td class="zahl"><b>'+kontoText(z.konto)+'</b></td></tr>';
     }).join('')+'</tbody></table></div>'+
-    (zu ? '' : '<p class="hint zk-regel">Soll aus den Wochenstunden im Schichtplaner (Verwaltung → Schichtplaner → Team). Ohne Wochenstunden kein Soll und kein Konto.</p>');
+    (zu ? '' : '<p class="hint zk-regel">Soll aus den Wochenstunden im Schichtplaner (Verwaltung → Schichtplaner → Team). Ohne Wochenstunden kein Soll und kein Konto.</p>')+
+    datevFormHTML();
+}
+
+/* ══ DATEV (LODAS) (Runde 210) ═══════════════════════════════════════
+   Aus dem Betrieb: Lohnbüro „mach beides" — Excel/CSV und DATEV.
+
+   Gebaut nach dem DATEV-Schnittstellenhandbuch LODAS (ASCII-Import,
+   Bewegungsdaten, Tabelle u_lod_bwd_buchung_standard): Bearbeitungs-
+   schlüssel 01 = Stunden je Lohnart, 71 = genommene Urlaubstage. ANSI,
+   Zeilenende CR/LF, ein Mandant und ein Monat je Datei.
+
+   WAS NICHT GEPRÜFT IST, UND DAS STEHT AUCH IN DER APP: Das Handbuch lag
+   nur als Kopie einer Auflage von 2016 vor; gegen ein echtes LODAS
+   eingespielt wurde die Datei nie. Deshalb liefert die App sie mit dem
+   Satz aus, dass das Lohnbüro sie einmal mit einer Probe bestätigen
+   muss. Lohn und Gehalt (LuG) braucht eine eigene Formatbeschreibung
+   (INI) und ist nicht gebaut.
+
+   Die Nummern (Berater, Mandant, Lohnart, Personalnummern) kommen vom
+   Lohnbüro. Sie liegen in lohnEinstellungen/datev — lesen und schreiben
+   nur die Geschäftsführung (firestore.rules). In der Datei stehen nur
+   Nummern, keine Namen. */
+var _datev=null, _datevOffen=false;
+function datevLaden(){
+  if(!isChef()) return Promise.resolve(null);
+  if(_datev) return Promise.resolve(_datev);
+  return S('lohnEinstellungen').doc('datev').get().then(function(d){
+    _datev = d && d.exists ? (d.data()||{}) : {};
+    return _datev;
+  }).catch(function(){ _datev={}; return _datev; });
+}
+function datevFormHTML(){
+  if(!_zkKonto) return '';
+  var d=_datev||{}, pn=d.personalNr||{};
+  var leute=_zkKonto.zeilen;
+  return '<details class="nachfrage zk-datev"'+(_datevOffen?' open':'')+' id="zkDatev">'+
+    '<summary class="nachfrage-text">DATEV-Einstellungen</summary>'+
+    '<p class="hint">Alle Nummern bekommst du vom Lohnbüro. Die Datei ist nach dem DATEV-Handbuch (LODAS) gebaut, '+
+      'aber nicht gegen LODAS getestet – bitte einmal vom Lohnbüro mit einer Probedatei bestätigen lassen.</p>'+
+    '<div class="st-antrag-reihe">'+
+      '<div class="field"><label for="dvBerater">Beraternummer</label><input class="inp" id="dvBerater" inputmode="numeric" maxlength="7" value="'+esc(d.beraterNr||'')+'" /></div>'+
+      '<div class="field"><label for="dvMandant">Mandantennummer</label><input class="inp" id="dvMandant" inputmode="numeric" maxlength="5" value="'+esc(d.mandantenNr||'')+'" /></div>'+
+      '<div class="field"><label for="dvLohnart">Lohnart Stunden</label><input class="inp" id="dvLohnart" inputmode="numeric" maxlength="4" value="'+esc(d.lohnartStunden||'')+'" /></div>'+
+    '</div>'+
+    '<label class="ich-schalter"><input type="checkbox" id="dvUrlaub"'+(d.urlaubstage?' checked':'')+' /><span>Urlaubstage mitschicken (Schlüssel 71)</span></label>'+
+    '<div class="zk-datev-leute">'+leute.map(function(z){
+      return '<div class="field"><label for="dvp-'+esc(z.uid)+'">'+esc(z.name)+'</label>'+
+        '<input class="inp" id="dvp-'+esc(z.uid)+'" data-dvpnr="'+esc(z.uid)+'" inputmode="numeric" maxlength="10" placeholder="Personalnr." value="'+esc(pn[z.uid]||'')+'" /></div>';
+    }).join('')+'</div>'+
+    '<button type="button" class="btn btn-primary" data-zkdatevsichern>Einstellungen speichern</button>'+
+  '</details>';
+}
+function datevSichern(btn){
+  var nur=function(id, n){ return String(($(id)||{}).value||'').replace(/\D/g,'').slice(0,n); };
+  var pn={};
+  document.querySelectorAll('[data-dvpnr]').forEach(function(f){
+    var v=String(f.value||'').replace(/\D/g,'').slice(0,10);
+    if(v) pn[f.getAttribute('data-dvpnr')]=v;
+  });
+  /* Personalnummern von Leuten, die in diesem Monat nicht in der Liste
+     stehen, bleiben erhalten — sonst löschte ein Blick auf einen Monat
+     mit wenig Leuten die Nummern der anderen. */
+  var alt=(_datev && _datev.personalNr)||{};
+  Object.keys(alt).forEach(function(uid){ if(!document.querySelector('[data-dvpnr="'+uid+'"]')) pn[uid]=alt[uid]; });
+  var neu={ beraterNr:nur('dvBerater',7), mandantenNr:nur('dvMandant',5), lohnartStunden:nur('dvLohnart',4),
+            urlaubstage:!!($('dvUrlaub')||{}).checked, personalNr:pn, geaendert:Date.now(), geaendertVon:session.uid };
+  withBusy(btn, function(){
+    return S('lohnEinstellungen').doc('datev').set(neu)
+      .then(function(){ _datev=neu; _datevOffen=false; toast('DATEV-Einstellungen gespeichert ✓'); zkKontoZeichnen(); })
+      .catch(function(e){ toast(errMsg(e), true); });
+  });
+}
+/* Die Datei selbst. Nur Ziffern, Semikolons und Kopfzeilen — reines
+   ASCII, damit „ANSI" keine Frage der Kodierung ist. */
+function datevText(k, d){
+  var monatsErster='01.'+k.monat.slice(5,7)+'.'+k.monat.slice(0,4);
+  var dez=function(min){ return (Math.round(min/60*100)/100).toFixed(2).replace('.',','); };
+  var zeilen=['[Allgemein]','Ziel=LODAS','BeraterNr='+d.beraterNr,'MandantenNr='+d.mandantenNr,
+    'Feldtrennzeichen=;','Zahlenkomma=,','Datumsformat=TT.MM.JJJJ','',
+    '[Satzbeschreibung]',
+    '1;u_lod_bwd_buchung_standard;abrechnung_zeitraum#bwd;bs_wert_butab#bwd;bs_nr#bwd;la_eigene#bwd;pnr#bwd;','',
+    '[Bewegungsdaten]'];
+  var ohne=[];
+  k.zeilen.forEach(function(z){
+    var pnr=(d.personalNr||{})[z.uid];
+    if(!pnr){ if(z.ist || z.urlaubTage) ohne.push(z.name); return; }
+    if(z.ist) zeilen.push('1;'+monatsErster+';'+dez(z.ist)+';01;'+d.lohnartStunden+';'+pnr+';');
+    if(d.urlaubstage && z.urlaubTage) zeilen.push('1;'+monatsErster+';'+z.urlaubTage.toFixed(2).replace('.',',')+';71;;'+pnr+';');
+  });
+  return { text: zeilen.join('\r\n')+'\r\n', ohne: ohne };
+}
+function zkDatevExport(){
+  var k=_zkKonto, d=_datev||{};
+  if(!d.beraterNr || !d.mandantenNr || !d.lohnartStunden){
+    _datevOffen=true; zkKontoZeichnen();
+    var f=$('zkDatev'); if(f) f.scrollIntoView({ block:'start' });
+    toast('Erst Berater-, Mandantennummer und Lohnart eintragen – die gibt das Lohnbüro.', true); return;
+  }
+  if(!(k.abschluss && k.abschluss.abgeschlossen) &&
+     !confirm('Der Monat ist noch nicht abgeschlossen. Die Zahlen können sich noch ändern.\n\nTrotzdem eine DATEV-Datei erzeugen?')) return;
+  var r=datevText(k, d);
+  /* ANSI: der Text ist reines ASCII (geprüft im Test), also sind die Bytes
+     dieselben wie in Windows-1252. */
+  var blob=new Blob([r.text],{type:'text/plain'});
+  var url=URL.createObjectURL(blob), a=document.createElement('a');
+  a.href=url; a.download='DATEV-LODAS-'+k.monat+'.txt'; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); },1500);
+  toast(r.ohne.length ? 'DATEV-Datei erstellt. Ohne Personalnummer und deshalb NICHT drin: '+r.ohne.join(', ')
+                      : 'DATEV-Datei erstellt ✓ Bitte beim ersten Mal vom Lohnbüro prüfen lassen.', !!r.ohne.length);
 }
 function kontoDateiName(endung){ return 'Stunden-'+_zkKonto.monat+'.'+endung; }
 function zkKontoExport(art){
@@ -44363,8 +44579,12 @@ function emptyHTML(h,s,iko,tat){
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">'+
     '<path d="M9 11l3 3L22 4"/>'+
     '<path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>';
+  /* Runde 209: wo eine Liste leer ist, sitzt Formi mit einem Angebot. Der
+     Platz ist ohnehin leer — es wird nichts voller. */
+  var formi = (typeof gehirnVerfuegbar==='function' && gehirnVerfuegbar())
+    ? '<button type="button" class="leer-formi" data-leerformi><span class="formi-figur mini" aria-hidden="true">'+formiFigurInnen()+'</span><span>Frag Formi</span></button>' : '';
   return '<div class="empty">'+bild+'<h3>'+esc(h)+'</h3><p>'+esc(s)+'</p>'+
-    (tat||'')+'</div>';
+    (tat||'')+formi+'</div>';
 }
 /* Fuer Stellen, an denen ein ganzer leerer Bereich zu gross waere —
    eine Zeile in einer Karte, eine Spalte in einer Tabelle. Vorher stand
@@ -50862,7 +51082,10 @@ function bindActions(){
   var zkK=$('zkKonto');
   if(zkK) zkK.addEventListener('click', function(e){
     var x=e.target.closest('[data-zkexport]'), a=e.target.closest('[data-zkabschluss]'), o=e.target.closest('[data-zkoeffnen]');
-    if(x) zkKontoExport(x.getAttribute('data-zkexport'));
+    var ds=e.target.closest('[data-zkdatevsichern]');
+    if(ds){ datevSichern(ds); return; }
+    if(x && x.getAttribute('data-zkexport')==='datev') zkDatevExport();
+    else if(x) zkKontoExport(x.getAttribute('data-zkexport'));
     else if(a) zkKontoAbschliessen(a);
     else if(o) zkKontoOeffnen(o);
   });

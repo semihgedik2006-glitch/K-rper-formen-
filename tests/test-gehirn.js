@@ -600,7 +600,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     const knopf = await jvKnopf(p);
     pruefe(w + ' px: die Formi-Kugel steht auf der Startseite (' + knopf + ')', await sichtbar(p, '#view-home.show') && knopf === '#formiKugel');
     await p.click(knopf); await p.waitForTimeout(400);
-    /* Runde 209 (22.10.2026, „das grosse hud entfernen oder überarbeiten",
+    /* Runde 211 (22.10.2026, „das grosse hud entfernen oder überarbeiten",
        gewählt: „Ruhig neu bauen"): kein Vollbild mehr. „Mehr Platz" ist am
        Handy die ganze Höhe, am Rechner ein grosses Fenster bzw. die breite
        Spalte — die App bleibt daneben bedienbar, kein Dialog. */
@@ -840,7 +840,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
       window.__antwort.gehirnStimme = (d) => { window.__stimme.push(d); return Promise.resolve({ data: { audio: 'SUQz', mime: 'audio/mpeg' } }); };
       localStorage.setItem('kf_jv_brief', new Date().toLocaleDateString('sv-SE')); });
     await p.keyboard.press('j'); await p.waitForTimeout(600);
-    /* Runde 209: der Kern des grossen HUD ist weg; Gedrückthalten geht
+    /* Runde 211: der Kern des grossen HUD ist weg; Gedrückthalten geht
        jetzt am Knopf „Sprechen" („das grosse hud entfernen oder
        überarbeiten", gewählt „Ruhig neu bauen"). */
     pruefe('„Sprechen" ist ein Knopf zum Gedrückthalten (mit Spracherkennung)', await sichtbar(p, '#jarvisMic'));
@@ -971,7 +971,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     pruefe('beim Öffnen fährt das HUD hoch (jv-boot)', boot);
     await p.waitForTimeout(2400);
     pruefe('… und das Hochfahren endet wieder', !(await p.evaluate(() => document.getElementById('jarvis').classList.contains('jv-boot'))));
-    /* Runde 209 („das grosse hud entfernen oder überarbeiten", gewählt
+    /* Runde 211 („das grosse hud entfernen oder überarbeiten", gewählt
        „Ruhig neu bauen"): Partikelfeld und Sekunden-Uhr gehörten zum
        grossen HUD. Geprüft wird jetzt, dass sie NICHT mehr laufen. */
     const feld = await p.evaluate(() => { const c = document.getElementById('jarvisFeldchen'); if (!c) return { n: 0, sichtbar: false }; const d = c.getContext('2d').getImageData(0, 0, Math.max(1, c.width), Math.max(1, c.height)).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i]) n++; return { n, sichtbar: !!c.getClientRects().length }; });
@@ -1211,7 +1211,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await p.evaluate(() => { window.__antwort.gehirnAktion = () => new Promise(r => setTimeout(() => r({ data: { art: 'frage', antwort: 'Die Westen kommen bei 30 Grad in die Maschine.', abgedeckt: true } }), 2500)); });
     await p.fill('#jarvisFeld', 'Wie wasche ich die Westen?'); await p.click('#jarvisSenden');
     await p.waitForTimeout(700);
-    /* Runde 209 („das grosse hud entfernen oder überarbeiten", gewählt
+    /* Runde 211 („das grosse hud entfernen oder überarbeiten", gewählt
        „Ruhig neu bauen"): die wirbelnden Buchstaben sassen im Kern des
        grossen HUD. Mit ihm sind sie weg — geprüft wird, dass auf der
        unsichtbaren Leinwand auch nichts mehr rechnet. */
