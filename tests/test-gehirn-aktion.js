@@ -117,6 +117,9 @@ console.log('── Formi lernt: Leitung gibt frei (Runde 183, 22.10.2026) ─�
   const v = WP({ art: 'vorschlagen', thema: 'Handtücher', inhalt: 'Handtücher liegen im Schrank links.', kategorie: 'Erfunden' });
   pruefe('Vorschlagen: genau ein Eintrag, unbekannte Kategorie → Sonstiges, Quelle fest', v.body.eintraege.length === 1 && v.body.eintraege[0].kategorie === 'Sonstiges' && v.body.quelle === 'Studioleitung (App)');
   pruefe('Vorschlagen ohne Thema oder Text → nichts', WP({ art: 'vorschlagen', thema: 'ab', inhalt: 'lang genug hier' }) === null && WP({ art: 'vorschlagen', thema: 'Thema', inhalt: 'kurz' }) === null);
+  const sm = WP({ art: 'entscheiden', quelle: '  Schulung „Hygiene“ ', gut: true, inhalt: 'wird ignoriert' });
+  pruefe('Sammelfreigabe: Quelle getrimmt, kein Text, „gut" nur bei true', sm.body.quelle === 'Schulung „Hygiene“' && sm.body.gut === true && !('inhalt' in sm.body) && !('id' in sm.body) && WP({ art: 'entscheiden', quelle: 'Schulung X', gut: 1 }).body.gut === false);
+  pruefe('Sammelfreigabe ohne echte Quelle → nichts', WP({ art: 'entscheiden', quelle: ' a ' }) === null && WP({ art: 'entscheiden', quelle: 5 }) === null);
   pruefe('Kennung für vier Augen: stabil, nicht die uid', VI('abc') === VI('abc') && VI('abc') !== VI('abd') && !VI('abc').includes('abc') && VI('abc').length === 24);
 }
 console.log('── Vorschlag prüfen ──');

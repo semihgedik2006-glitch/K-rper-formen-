@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-QsDZunPnJrd5NjIloFJm1Jldhps/Q0VUgkUKS56NRpE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-52Y8dHhes/OvmlWwqXpi7hNJVi8nR39G/ou38P+Rlaw='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3672,7 +3672,7 @@ button.ich-zeile:active{opacity:.7}
 .spl-woche h4{margin:0 0 var(--s6);font-size:var(--t-xs);font-weight:800;letter-spacing:var(--ls-m);
   text-transform:uppercase;color:var(--text-3)}
 .spl-woche-huelle{overflow-x:auto;border-radius:var(--r-md);background:var(--auf-1)}
-/* Feste Spalten (Runde 190): jede Woche hat Früh/Spät an derselben Stelle. */
+/* Feste Spalten (Runde 191): jede Woche hat Früh/Spät an derselben Stelle. */
 .spl-tab{width:100%;border-collapse:collapse;font-size:var(--t-sm)}
 @media (min-width:820px){ .spl-tab{table-layout:fixed} .spl-tab th:first-child{width:86px} }
 /* Wochen als Reiter, jeder mit seinen offenen Punkten. */
@@ -5478,7 +5478,7 @@ html{font-size:var(--fs,100%)}
 .tausch-btn:hover{border-color:var(--accent);color:var(--accent-d)}
 .tausch-btn.ok{border-color:var(--accent);color:var(--accent-d)}
 .tausch-btn.ok:hover{background:var(--accent-glow)}
-/* Eine Schicht ist ein Knopf (Runde 190): ein Tipp öffnet das Schicht-Blatt
+/* Eine Schicht ist ein Knopf (Runde 191): ein Tipp öffnet das Schicht-Blatt
    mit Abgeben, Übernehmen, Entfernen. Das ✕ und der Kasten „Ich kann
    nicht" an jeder Zeile sind dorthin gewandert. */
 .shift-entry{display:flex;align-items:center;gap:var(--s8);width:100%;min-height:44px;padding:var(--s6) var(--s10);
@@ -5536,14 +5536,14 @@ html{font-size:var(--fs,100%)}
 .shift-sum span{font-size:var(--t-xs);font-weight:700;padding:var(--s4) var(--s10);border-radius:var(--r-pille);
   background:var(--bg-soft);border:1px solid var(--line);color:var(--text-2)}
 .shift-sum span.tausch{background:var(--f-warn);border-color:var(--k-warn);color:var(--warm-tx)}
-/* Abwesend im Plan: neutrale Schraffur statt Bernstein/Rot (Runde 190).
+/* Abwesend im Plan: neutrale Schraffur statt Bernstein/Rot (Runde 191).
    Abwesenheit meldet keinen Fehler; Statusfarben nur für Status. */
 .wp-abw-zeile{display:flex;flex-wrap:wrap;gap:var(--s4);margin-top:var(--s6)}
 .wp-abw{display:inline-flex;align-items:center;padding:var(--s4) var(--s10);border-radius:var(--r-pille);
   font-size:var(--t-xs);font-weight:600;color:var(--text-2);border:1px solid var(--line-2);
   background:repeating-linear-gradient(135deg,var(--auf-2) 0 5px,transparent 5px 11px)}
 
-/* ── Schichtplan: Kopf in einer Zeile (Runde 190) ──
+/* ── Schichtplan: Kopf in einer Zeile (Runde 191) ──
    Links „wann" (‹ KW ›, Heute), rechts „wie ansehen / was tun" — die
    Ordnung aus Planday. Am Handy bricht der rechte Teil in eine zweite
    Zeile. */
@@ -6660,7 +6660,7 @@ body.jv-offen{overflow:hidden}
 .gehirn-lernt details>summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-size:var(--t-xs);color:var(--text-2)}
 .gehirn-lernt .gl-knoepfe{display:grid;grid-template-columns:1fr 1fr;gap:var(--s8);margin-top:var(--s8)}
 .gehirn-lernt .gl-knoepfe .btn,.gehirn-lernt .gl-breit{min-height:44px;width:100%}
-.gehirn-lernt .gl-breit{margin-top:var(--s8)}
+.gehirn-lernt .gl-breit{margin-top:var(--s8);white-space:normal;height:auto;overflow-wrap:anywhere}
 .gehirn-lernt .gl-form{display:flex;flex-direction:column;gap:var(--s8);margin-top:var(--s8)}
 .gehirn-lernt .gl-form .inp{min-height:44px}
 .gehirn-chip-tun svg{width:16px;height:16px;flex:0 0 auto}
@@ -10036,7 +10036,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
 
           <!-- Schichtplan -->
           <div id="teamPaneSchicht">
-            <!-- Kopf in einer Zeile (Runde 190, nach Planday): links „wann",
+            <!-- Kopf in einer Zeile (Runde 191, nach Planday): links „wann",
                  rechts „wie ansehen / was tun". Am Handy bricht er in
                  zwei Zeilen um. -->
             <div class="card wp">
@@ -12384,7 +12384,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
 </div>
 
 <!-- Aktionen an einer Aufgabe – gleiches Muster wie im Chat -->
-<!-- ── Schicht-Blatt (Runde 190) ──
+<!-- ── Schicht-Blatt (Runde 191) ──
      Ein Tipp auf eine Schicht öffnet sie: zuerst, was man mit ihr tun
      kann (abgeben, übernehmen, bestätigen, entfernen), wie bei Teams
      Shifts. Aus dem Betrieb, 22.10.2026, auf die Frage, ob Löschen und
@@ -17421,7 +17421,7 @@ function renderKeysHelp(){
         '<button class="key-set" data-keyset="'+esc(a.id)+'">'+
           (aufnahme?'Taste drücken':'ändern')+'</button></div>';
     }).join('');
-  /* Nur im Schichtplan (Plan → Schichten), Runde 190. Fest, weil sie
+  /* Nur im Schichtplan (Plan → Schichten), Runde 191. Fest, weil sie
      nur dort gelten und mit keiner frei belegbaren Taste kollidieren —
      belegt jemand H oder V selbst, gilt seine Belegung. */
   var plan=[{k:'← / →', t:'Woche zurück / vor'},{k:'H', t:'Diese Woche'},{k:'V', t:'Tage ↔ Personen (am Rechner)'}]
@@ -20804,6 +20804,10 @@ var NEUIGKEITEN = [
     'Für die Leitung: In der Ansicht „Personen" in ein leeres Feld klicken – Tag und Person sind schon gesetzt, die Schichtzeiten aus dem Schichtplaner stehen zum Antippen bereit. Am Handy gibt es dafür das ＋ am Tag oder „＋ Schicht" oben.',
     'Oben steht die Kalenderwoche, die Zahl der Schichten gilt jetzt für diese Woche (vorher zählte sie alle). Urlaub und Krankheit stehen grau schraffiert statt rot und orange. Am Rechner: Pfeiltasten blättern, H springt zu heute, V wechselt die Ansicht.',
     'Im Schichtplaner (Verwaltung) steht der Monat jetzt Woche für Woche: oben die Kalenderwochen mit ihren offenen Lücken, „Ganzer Monat" zeigt alles wie bisher.' ] },
+  { id:'2026-10-22-formi-alle-uebernehmen', datum:'22.10.2026', titel:'Formi lernt: alle aus einer Schulung auf einmal', wo:'gehirn', punkte:[
+    'In der Karte „Formi lernt" steht unter einem Vorschlag aus einer Schulung jetzt „Alle … übernehmen". Zweimal tippen, und alle Vorschläge aus dieser Schulung werden Wissen – statt jeden einzeln freizugeben.',
+    'Was nicht passt, vorher einzeln verwerfen. Eigene Vorschläge bleiben stehen, bis jemand anderes aus der Leitung sie freigibt.'
+  ]},
   { id:'2026-10-22-stempelseite', datum:'22.10.2026', titel:'Stempeln wie bei Crewmeister: Pause oder Feierabend', wo:'ich:zeiten', punkte:[
     'Feierabend lässt sich jetzt direkt stempeln – am Terminal und am Handy. Nach dem Kommen stehen zwei Knöpfe da: „Pause" und „Feierabend". Bisher ging am Terminal immer nur Pause und Zurück, der Feierabend musste von der Leitung nachgetragen werden.',
     'Am Terminal steht an den Namen nicht mehr, wer im Dienst ist. Name antippen, PIN, „Weiter" – dann siehst du deinen eigenen Stand („Im Dienst seit 08:26") und tippst, was du stempeln willst.',
@@ -28958,6 +28962,9 @@ function gehirnFristWoche(key, btn){
    eigenen Vorschlag gibt jemand anderes frei (prüft der Server).
    Einer zur Zeit, damit die Spalte am Rechner kurz bleibt. */
 var _gLernt=null, _gLerntPos=0, _gLerntForm=false, _gLerntLaeuft=false, _gLerntFehler='';
+/* Sammelfreigabe (22.10.2026, „ja sind zu viele klicks"): erster Tipp
+   fragt nach, zweiter Tipp (binnen 6 s) übernimmt alle einer Quelle. */
+var _gLerntSammelFrage='', _gLerntSammelUhr=0, _gLerntSammelStand='';
 var GL_ART={ frage:'Selbsttest', luecke:'Antwort-Entwurf', veraltet:'Noch aktuell?', korrektur:'Korrektur aus dem Team', 'import':'Neues Wissen' };
 function gehirnLernt(art, daten){
   return firebase.app().functions(KONFIG.region).httpsCallable('gehirnWissen')(Object.assign({ art:art }, daten||{}))
@@ -28971,6 +28978,7 @@ function gehirnLerntLaden(){
   gehirnLernt('liste').then(function(d){
     _gLernt=Array.isArray(d.liste) ? d.liste : [];
     _gLernt.anzahl=Number(d.anzahl)||_gLernt.length;
+    _gLernt.gruppen=Array.isArray(d.gruppen) ? d.gruppen : [];
     _gLerntFehler='';
     if(_gLerntPos>=_gLernt.length) _gLerntPos=0;
     gehirnLerntZeichnen();
@@ -28978,6 +28986,42 @@ function gehirnLerntLaden(){
     _gLernt=[]; _gLerntFehler=errMsg(err);
     gehirnLerntZeichnen();
   });
+}
+function gehirnLerntGruppe(quelle){
+  return ((_gLernt && _gLernt.gruppen) || []).filter(function(g){ return g.quelle===quelle; })[0] || null;
+}
+function gehirnLerntSammelKnopf(v){
+  if(!v || v.art!=='import' || !v.quelle) return '';
+  var g=gehirnLerntGruppe(v.quelle); if(!g || g.anzahl<2) return '';
+  var fragt=_gLerntSammelFrage===v.quelle && Date.now()-_gLerntSammelUhr<6000;
+  var text=_gLerntSammelStand || (fragt
+    ? 'Wirklich alle '+g.anzahl+' übernehmen? Nochmal tippen'
+    : 'Alle '+g.anzahl+' aus '+(/„/.test(v.quelle) ? v.quelle : '„'+v.quelle+'“')+' übernehmen');
+  return '<button type="button" class="btn '+(fragt ? 'btn-primary' : 'btn-ghost')+' btn-sm gl-breit" data-glsammel="1"'+(_gLerntLaeuft ? ' disabled' : '')+'>'+esc(text)+'</button>'+
+    (fragt ? '<p class="hint" style="margin:var(--s4) 0 0">Die Texte werden ungelesen Wissen. Was nicht passt, vorher einzeln verwerfen.</p>' : '');
+}
+function gehirnLerntSammeln(quelle){
+  if(!quelle || _gLerntLaeuft) return;
+  var g=gehirnLerntGruppe(quelle); if(!g) return;
+  if(!(_gLerntSammelFrage===quelle && Date.now()-_gLerntSammelUhr<6000)){
+    _gLerntSammelFrage=quelle; _gLerntSammelUhr=Date.now(); gehirnLerntZeichnen();
+    setTimeout(function(){ if(_gLerntSammelFrage===quelle && !_gLerntLaeuft){ _gLerntSammelFrage=''; gehirnLerntZeichnen(); } }, 6100);
+    return;
+  }
+  _gLerntSammelFrage=''; _gLerntLaeuft=true;
+  var gesamt=0, fehler=0;
+  (function runde(){
+    _gLerntSammelStand='Übernimmt … '+gesamt+' von '+g.anzahl; gehirnLerntZeichnen();
+    gehirnLernt('entscheiden', { quelle:quelle, gut:true }).then(function(r){
+      gesamt+=Number(r.erledigt)||0; fehler+=Number(r.fehler)||0;
+      if(r.ok && r.uebrig>0 && r.erledigt>0) return runde();
+      _gLerntLaeuft=false; _gLerntSammelStand='';
+      toast(gesamt+(gesamt===1 ? ' Vorschlag' : ' Vorschläge')+' übernommen'+(fehler ? ', '+fehler+' mit Fehler' : '')+(r.uebersprungen ? ' · '+r.uebersprungen+' eigene bleiben für jemand anderes' : '')+'.');
+      tick(8); _gLerntPos=0; gehirnLerntLaden();
+    }).catch(function(err){
+      _gLerntLaeuft=false; _gLerntSammelStand=''; gehirnLerntZeichnen(); toast(errMsg(err), true);
+    });
+  })();
 }
 function gehirnLerntZeichnen(laedt){
   var karte=$('gehirnLernt'); if(!karte) return;
@@ -29006,7 +29050,8 @@ function gehirnLerntZeichnen(laedt){
         '<button type="button" class="btn btn-primary btn-sm" data-glurteil="1"'+(v.eigen||_gLerntLaeuft ? ' disabled' : '')+'>'+(v.art==='veraltet' ? 'Stimmt noch' : 'Übernehmen')+'</button>'+
         '<button type="button" class="btn btn-ghost btn-sm" data-glurteil="0"'+(_gLerntLaeuft ? ' disabled' : '')+'>Verwerfen</button>'+
       '</div>'+
-      (liste.length>1 ? '<button type="button" class="btn btn-ghost btn-sm gl-breit" data-glweiter="1">Später — nächster Vorschlag ›</button>' : '');
+      (liste.length>1 ? '<button type="button" class="btn btn-ghost btn-sm gl-breit" data-glweiter="1">Später — nächster Vorschlag ›</button>' : '')+
+      gehirnLerntSammelKnopf(v);
   }
   var form = _gLerntForm
     ? '<div class="gl-form"><label class="hint" for="glNeuThema" style="margin:0">Das soll Formi wissen</label>'+
@@ -29041,6 +29086,8 @@ function gehirnLerntZeichnen(laedt){
       }).catch(function(err){ _gLerntLaeuft=false; gehirnLerntZeichnen(); toast(errMsg(err), true); });
     });
   });
+  var sammel=karte.querySelector('[data-glsammel]');
+  if(sammel) sammel.addEventListener('click', function(){ gehirnLerntSammeln(v && v.quelle); });
   var weiter=karte.querySelector('[data-glweiter]');
   if(weiter) weiter.addEventListener('click', function(){
     _gLerntPos=(_gLerntPos+1)%Math.max(1,(_gLernt||[]).length); gehirnLerntZeichnen();
@@ -32787,7 +32834,7 @@ function loadTeam(sk){
   buildShiftPersonSelect();
 }
 
-/* ══ Schichtplan: zwei Ansichten (Runde 190) ═════════════════════════
+/* ══ Schichtplan: zwei Ansichten (Runde 191) ═════════════════════════
    Aus dem Betrieb, 22.10.2026: „plan klingt gut" — auf den Vorschlag,
    am Rechner ein Raster nach Person zu bauen (Deputy, Planday). Wer
    schaut hinein? „Beide schauen oft rein": deshalb gibt es beide
@@ -33223,7 +33270,7 @@ function tauschHTML(x, tagKey){
   var meine = x.uid===session.uid;
   var vergangen = tagKey < ymd(new Date());
   /* Kein Tausch läuft: nichts in der Zeile. „Ich kann nicht" steht seit
-     Runde 190 im Schicht-Blatt (ein Tipp auf die Schicht) — vorher hatte
+     Runde 191 im Schicht-Blatt (ein Tipp auf die Schicht) — vorher hatte
      jede eigene Schicht einen eigenen Kasten mit diesem Knopf. */
   if(!x.tausch) return '';
   if(x.tausch==='offen'){
@@ -40204,7 +40251,7 @@ function spPlanZeichnen(){
     return '<th>'+esc(s.name)+'<span>'+esc(s.von)+'–'+esc(s.bis)+'</span></th>'; }).join('')+'</tr></thead>';
   var html='', woche='', erster=null, d=new Date(start);
   var kw=kalenderwoche;
-  /* Runde 190 — aus dem Betrieb: „er wirkt für mich noch unfertig …
+  /* Runde 191 — aus dem Betrieb: „er wirkt für mich noch unfertig …
      aber das grundgrüst soll stehen erstmal". Gemessen: fünf Wochen-
      Tabellen untereinander, 3.042 px bei 1440 × 900, und jede Tabelle
      hatte ihre Spalten woanders (Früh begann mal bei 699, mal bei 731 px).
@@ -48117,7 +48164,7 @@ function bindActions(){
         .catch(function(e){ toast(errMsg(e),true); });
     });
   });
-  /* Schichtplan, Runde 190: Ansicht, „Nur meine", Eintragen, Blatt. */
+  /* Schichtplan, Runde 191: Ansicht, „Nur meine", Eintragen, Blatt. */
   document.querySelectorAll('[data-wpansicht]').forEach(function(b){
     b.addEventListener('click', function(){ wpAnsichtSetzen(b.getAttribute('data-wpansicht')); });
   });

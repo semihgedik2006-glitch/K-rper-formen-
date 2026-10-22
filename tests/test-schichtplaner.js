@@ -142,7 +142,7 @@ async function messen(p, wer, liste) {
   pruefe('Zahlen: verteilt, Lücken, Rückfragen, Studios ohne offene Punkte', erg.z.length === 4 && erg.z[0] > 100, erg.z);
   pruefe('gespeichert, mit gemessener Dauer', /Fertig in \d+,\d s · gespeichert/.test(erg.stand), erg.stand);
   pruefe('„Zu klären" listet Punkte, wenn es Lücken oder Rückfragen gibt', (erg.z[1] + erg.z[2] === 0) || erg.punkte > 0, erg.punkte);
-  /* Runde 190: der Plan steht Woche für Woche, „Ganzer Monat" zeigt
+  /* Runde 191: der Plan steht Woche für Woche, „Ganzer Monat" zeigt
      alles. Aus dem Betrieb, 22.10.2026, über den Planer: „er wirkt für
      mich noch unfertig … aber das grundgrüst soll stehen erstmal".
      Vorher hiess es hier „zeigt einen ganzen Monat" (28–31 Zeilen) —
@@ -165,7 +165,7 @@ async function messen(p, wer, liste) {
     const an = kacheln.filter((k) => k.classList.contains('an'));
     const sk = document.getElementById('spStudio').value;
     const punkte = [...document.querySelectorAll('#spKlaeren [data-sppunkt]')].map((b) => b.getAttribute('data-sppunkt').split('|')[1]);
-    /* Runde 190: die Wochen stehen als Reiter über dem Plan. */
+    /* Runde 191: die Wochen stehen als Reiter über dem Plan. */
     const wochen = [...document.querySelectorAll('#spTabelle .spl-kw:not(.alle) b')].map((h) => h.textContent);
     const zustand = kacheln.map((k) => k.querySelector('small').textContent);
     return { kacheln: kacheln.length, an: an.length, anIst: an[0] && an[0].getAttribute('data-spkachel') === sk,
@@ -238,7 +238,7 @@ async function messen(p, wer, liste) {
     if (!team) return -1;
     team.click(); await w(900);
     const vor = document.getElementById('shiftNext');
-    /* Runde 190: am Rechner sieht die Leitung das Raster nach Person —
+    /* Runde 191: am Rechner sieht die Leitung das Raster nach Person —
        dort steht der Schichtname klein in der Pille. Gezählt wird beides. */
     const notizen = () => [...document.querySelectorAll('#shiftGrid .shift-note, #shiftGrid .wp-schicht small')].filter((n) => /Früh|Spät|Samstag/.test(n.textContent));
     for (let i = 0; i < 6 && !notizen().length; i++) { vor.click(); await w(250); }
