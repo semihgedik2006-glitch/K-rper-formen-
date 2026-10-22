@@ -18738,6 +18738,21 @@ ist nachgezogen, wie in den anderen Oberflächen-Durchläufen seit Runde 183.
 **Gemessen:** test-formi-platz hat 35 Zusicherungen. Die Gegenprobe gegen
 main ergibt 13 falsch.
 
+## Runde 199 — Formis Sprechblase am Rechner neben Formi (22.10.2026)
+
+**Gefunden beim Ansehen:** Runde 196 (Sprechblase) und Runde 198 (Kugel in
+der Seitenleiste) kamen am selben Tag. Zusammen ergab das am Rechner eine
+Blase von 133 px Breite in der linken Leiste, die auf „Tastenkürzel“ lag.
+test-formi-kumpel prüfte nur „über der Kugel“ und blieb deshalb grün.
+
+**Gebaut:** Steht die Kugel links, setzt `formiSagt` die Blase rechts
+neben die Leiste, auf Höhe der Kugel, mit der spitzen Ecke zur Kugel hin.
+Am Handy bleibt sie über der Kugel.
+
+**Test:** test-formi-kumpel prüft jetzt „über ODER neben der Kugel und
+auf keinem Knopf der Seitenleiste“. Die Gegenprobe gegen main ergibt 4 von
+21 falsch, jetzt sind alle 21 grün.
+
 ## Runde 201 — Schulung: auffrischen in Runden, Fristen, weitermachen, am Rechner zwei Spalten (22.10.2026)
 
 **Aus dem Betrieb:** „bei der anderen auf die schulungen“ eingehen. Erst
