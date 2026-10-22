@@ -76,7 +76,7 @@ function tagZurueck(n) {
   const r = await fns.zeitNachtragen.run({ uid: 'anna', tag: gestern, uhr: '18:00', art: 'gehen',
     studioKey: 'studio-1', grund: 'Ausstempeln vergessen, laut Plan bis 18 Uhr' }, als('max'));
   const neu = r && r.id ? (await db.doc(F + 'zeiten/' + r.id).get()).data() : null;
-  /* Runde 214: nur noch die Geschäftsführung („nur führung", 22.10.2026).
+  /* Runde 215: nur noch die Geschäftsführung („nur führung", 22.10.2026).
      Bis Runde 210 trug hier die Studioleitung nach. */
   pruefe('die Geschäftsführung trägt den vergessenen Feierabend nach', !!neu && neu.art === 'gehen');
   pruefe('er steht in der Firma, nicht flach', !!neu && !(await db.doc('zeiten/' + r.id).get()).exists);
@@ -100,9 +100,9 @@ function tagZurueck(n) {
   // ══ 3. Wer nicht darf ══
   const gut = { uid: 'anna', tag: gestern, uhr: '17:00', art: 'gehen', studioKey: 'studio-1', grund: 'Ausstempeln vergessen' };
   await scheitert('ein Mitarbeiter trägt nach', fns.zeitNachtragen.run(gut, als('ben')), /Geschäftsführung/);
-  await scheitert('DIE STUDIOLEITUNG IM EIGENEN STUDIO trägt nach (seit Runde 214)', fns.zeitNachtragen.run(gut, als('lisa')), /Geschäftsführung/);
+  await scheitert('DIE STUDIOLEITUNG IM EIGENEN STUDIO trägt nach (seit Runde 215)', fns.zeitNachtragen.run(gut, als('lisa')), /Geschäftsführung/);
   await scheitert('die Leitung eines ANDEREN Studios trägt nach', fns.zeitNachtragen.run(gut, als('otto')), /Geschäftsführung/);
-  await scheitert('DIE STUDIOLEITUNG storniert (seit Runde 214)', fns.zeitStornieren.run({ id: r.id, grund: 'will ich so nicht' }, als('lisa')), /Geschäftsführung/);
+  await scheitert('DIE STUDIOLEITUNG storniert (seit Runde 215)', fns.zeitStornieren.run({ id: r.id, grund: 'will ich so nicht' }, als('lisa')), /Geschäftsführung/);
   await scheitert('die Studioleitung korrigiert sich selbst',
     fns.zeitNachtragen.run(Object.assign({}, gut, { uid: 'lisa' }), als('lisa')), /Geschäftsführung/);
   const selbst = await fns.zeitNachtragen.run(Object.assign({}, gut, { uid: 'lisa' }), als('max'));

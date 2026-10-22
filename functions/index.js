@@ -5555,7 +5555,7 @@ function berlinZeitpunkt(tag, uhr) {
   return ts;
 }
 
-/* Runde 214: NUR die Geschäftsführung. Aus dem Betrieb, 22.10.2026, auf
+/* Runde 215: NUR die Geschäftsführung. Aus dem Betrieb, 22.10.2026, auf
    die Frage, ob die Studioleitung fremde Stempel weiter direkt nachtragen
    darf: „nur führung". Bis Runde 210 durfte es die Leitung in ihren
    Studios (P-09). Der Name bleibt, damit die Aufrufer unverändert lesen;

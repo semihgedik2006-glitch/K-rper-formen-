@@ -1589,7 +1589,7 @@ service cloud.firestore {
         && request.resource.data.get('personalNr', {}) is map
         && request.resource.data.get('personalNr', {}).size() <= 500;
     }
-    /* Runde 214: Soll je Person und Wochentag („ja", 22.10.2026) im
+    /* Runde 215: Soll je Person und Wochentag („ja", 22.10.2026) im
        Dokument 'zeitregeln' — dieselbe Sammlung, dieselben Leser. */
     function zeitregelnOk() {
       return request.resource.data.keys().hasOnly(['regeln', 'geaendert', 'geaendertVon'])

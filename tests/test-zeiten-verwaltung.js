@@ -1,4 +1,4 @@
-/* ── Zeiterfassung in der Verwaltung (Runden 204–214) ──────────────────
+/* ── Zeiterfassung in der Verwaltung (Runden 204–215) ──────────────────
    Aus test-stempelseite.js herausgelöst, als der Durchlauf über die
    240 Sekunden von tests/alle.sh wuchs. Dieselben Helfer, dieselben
    Breiten; hier die Teile, die Leitung und Geschäftsführung betreffen:
@@ -258,7 +258,7 @@ async function zuVerwaltungZeiten(p) {
     await p.close();
   }
 
-  console.log('\n── 11. Soll je Wochentag, Feiertage; nur die Geschäftsführung korrigiert (Runde 214) ──');
+  console.log('\n── 11. Soll je Wochentag, Feiertage; nur die Geschäftsführung korrigiert (Runde 215) ──');
   {
     /* Das erwartete Soll unabhängig von der App: Mo–Fr 8 h, Sa 4 h, So 0,
        vom Monatsersten bis heute, Feiertage aus schichtplaner.js. */

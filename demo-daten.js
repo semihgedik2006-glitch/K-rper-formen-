@@ -1880,7 +1880,7 @@
     },
     zeitNachtragen: function (d) {
       var studioKey = String(d.studioKey || '');
-      /* Runde 214: nur die Geschäftsführung, wie der Server. */
+      /* Runde 215: nur die Geschäftsführung, wie der Server. */
       if (ICH.role !== 'chef') throw new Error('Korrigieren darf nur die Geschäftsführung.');
       if (String(d.grund || '').trim().length < 5) throw new Error('Bitte kurz den Grund angeben.');
       if (d.uid === ICH.id && ICH.role !== 'chef') throw new Error('Die eigenen Zeiten korrigiert die Geschäftsführung.');

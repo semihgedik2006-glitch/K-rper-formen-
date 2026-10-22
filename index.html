@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-YgHKoLe1X9XFxLmJVLQOmf/YcmH/lOQnhpQEKB7R5+8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-xQjyLH71lZUVOooNQ8zRV9vPEPx006Y923E6P7GSrvo='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -6451,6 +6451,22 @@ body[data-bereich="g-arbeit"] .fk-wirbel::before,body[data-bereich="g-team"] .fk
     border-radius:0;border:0;border-left:1px solid rgba(var(--jv-rgb),.35);box-shadow:var(--e3)}
 }
 @media(min-width:1680px){ :root{--formi-spalte:420px} }
+/* „Mehr Platz" (Runde 214): grösser, aber nie ein Dialog über allem. */
+/* Mit „Mehr Platz" bleibt aus dem alten HUD nur „Heute im Studio": die
+   fünf Kacheln als ruhige Zeile über dem Gespräch. Alles andere links
+   (Kern, Ringe, Equalizer, Uhr) bleibt weg. */
+.jarvis.jv-kompakt.jv-weit .jv-links{display:block;flex:0 0 auto}
+.jarvis.jv-kompakt.jv-weit .jv-links>:not(.jv-kacheln){display:none}
+.jarvis.jv-kompakt.jv-weit .jv-kacheln{max-width:none;justify-content:flex-start}
+.jarvis.jv-kompakt.jv-weit{width:min(640px, calc(100vw - 2 * var(--s16)));height:calc(100dvh - 2 * var(--s16))}
+@media(max-width:820px){
+  .jarvis.jv-kompakt.jv-weit{top:0;width:auto;height:auto;border-radius:0;border:0}
+}
+@media(min-width:1440px){
+  :root{--formi-spalte-weit:560px}
+  body.formi-angedockt.formi-weit .app{padding-right:var(--formi-spalte-weit)}
+  body.formi-angedockt .jarvis.jv-kompakt.jv-weit{width:var(--formi-spalte-weit);height:auto}
+}
 .jarvis.jv-kompakt .jv-feld,.jarvis.jv-kompakt .jv-raster,.jarvis.jv-kompakt .jv-scan,.jarvis.jv-kompakt .jv-ecke,
 .jarvis.jv-kompakt .jv-log,.jarvis.jv-kompakt .jv-links,.jarvis.jv-kompakt .jv-strom-rahmen{display:none}
 .jarvis.jv-kompakt .jv-rahmen{max-width:none;height:100%;display:flex;flex-direction:column;gap:var(--s8);
@@ -21408,6 +21424,12 @@ var NEUIGKEITEN = [
     'Wer dort nichts eingetragen hat, für den rechnet das Konto weiter mit den Wochenstunden aus dem Schichtplaner.',
     'Stempel nachtragen oder für ungültig erklären kann jetzt nur noch die Geschäftsführung. Die Studioleitung sieht die Zeiten ihres Studios weiter. Fehlt jemandem ein Stempel, beantragt er ihn selbst unter Heute → Ich → Zeiten.'
   ]},
+  { id:'2026-10-22-formi-ruhig', datum:'22.10.2026', titel:'Formi ohne großes HUD: ruhig, klar, schneller', wo:'gehirn', punkte:[
+    'Das große Vollbild mit Leinwänden, Ringen und Uhr ist weg. Formi ist jetzt immer das ruhige Fenster – am Rechner die Spalte rechts, am Handy ein Blatt von unten.',
+    'Der Knopf oben (früher „Groß") heißt jetzt „Mehr Platz": am Handy die ganze Höhe, am Rechner ein größeres Fenster bzw. eine breitere Spalte. Dann stehen oben auch die fünf Kacheln „Heute im Studio".',
+    'Sprechen geht jetzt am Knopf „Sprechen": kurz tippen oder gedrückt halten und beim Loslassen abschicken.',
+    'Nebenbei: Formi läuft spürbar flüssiger, weil im Hintergrund nichts mehr gezeichnet wird.'
+  ]},
   { id:'2026-10-22-formi-schwarzes-loch', datum:'22.10.2026', titel:'Formi ist jetzt ein echtes schwarzes Loch – und die Suche fragt Formi', wo:'home', punkte:[
     'Der bunte Ring um Formi ist eine Akkretionsscheibe: Er dreht sich ständig, innen schneller als aussen, die eine Seite leuchtet heller und am Rand des Lochs liegt ein heller Lichtring – wie bei einem echten schwarzen Loch.',
     'Freut sich Formi, wird es zum weissen Loch und stösst eine Lichtwelle in die App hinaus. Danach wird es wieder schwarz, zieht das Licht zusammen und saugt die Teilchen spiralig wieder ein.',
@@ -26631,8 +26653,8 @@ function jvLeerHTML(){
     var c=GEHIRN_MINI[x[0]];
     return '<li style="--gm:'+c.farbe+';--gm-rgb:'+c.rgb+'">'+ikon(c.ikon)+'<span>'+esc(x[1])+'</span></li>';
   }).join('') : '<li style="--gm:#5FE1FF;--gm-rgb:95,225,255">'+ikon('hakenKreis')+'<span>Alles ruhig — nichts offen.</span></li>')+'</ul>';
-  /* Runde 209: oben das grosse Gesicht (im kleinen Fenster; im
-     Vollbild steht dort das Loch). Die drei Lage-Zeilen fallen im kleinen
+  /* Runde 209: oben das grosse Gesicht (ein Vollbild gibt es seit
+     Runde 214 nicht mehr). Die drei Lage-Zeilen fallen im kleinen
      Fenster weg — dasselbe steht schon in der Formi-Zeile und im Satz
      darunter (CSS: .jarvis.jv-kompakt .jv-brief). */
   return '<div class="jv-leer"><span class="formi-figur jv-start-figur" aria-hidden="true">'+formiFigurInnen(true)+'</span><p class="jv-gruss">'+esc(jvGruss()+(vorname ? ', '+vorname : ''))+'.</p>'+brief+
@@ -27305,30 +27327,49 @@ function formiBleibtOffen(){ return _jvKompakt && jarvisOffen() && !formiHandy()
    KOMPAKT ist ab jetzt Standard: ein Fenster unten rechts (Handy: von
    unten), die App bleibt sichtbar und bedienbar. „Gross" bringt das
    Vollbild von bisher zurück; die Wahl merkt sich das Gerät. */
-var _jvKompakt=true;
-try{ _jvKompakt=localStorage.getItem('kf_jv_kompakt')!=='0'; }catch(e){}
+/* ── Das große HUD ist weg (Runde 214, 22.10.2026) ───────────────────
+   Aus dem Betrieb: „eventuell auch das grosse hud entfernen oder
+   überarbeiten das es besser aussieht" — auf die Rückfrage gewählt:
+   „Ruhig neu bauen". Formi ist jetzt IMMER das ruhige Fenster: am
+   Rechner ab 1440 px die Spalte rechts (Runde 193), darunter schwebend;
+   am Handy ein Blatt von unten. Kein Vollbild-Dialog, keine Leinwände,
+   kein Raster, keine Ringe — das Auge der Kugel ist das einzige
+   Lebendige (Runde 186/195).
+   „Mehr Platz" (der frühere Groß-Knopf) macht das Fenster grösser:
+   Handy ganze Höhe, Rechner breiter und höher, angedockt breitere Spalte.
+   Wer früher „Groß" gewählt hatte (kf_jv_kompakt=0), bekommt „Mehr Platz".
+   Bedienung wie bisher: klein öffnet Formi die echte Seite mit dem
+   Zeiger (Runde 177); mit „Mehr Platz" holt Formi sie als Mini-Fenster
+   ins Gespräch — wie früher im Vollbild („als mini fenster in der ki
+   seite", 20.10.2026). _jvKompakt heisst deshalb weiter „klein". */
+var _jvWeit=false;
+try{ _jvWeit=localStorage.getItem('kf_jv_weit')==='1' || localStorage.getItem('kf_jv_kompakt')==='0'; }catch(e){}
+var _jvKompakt=!_jvWeit;
 function jvKompaktAnwenden(){
   var j=$('jarvis'); if(!j) return;
-  j.classList.toggle('jv-kompakt', _jvKompakt);
-  j.setAttribute('aria-modal', _jvKompakt ? 'false' : 'true');
-  document.body.classList.toggle('jv-offen', !j.hidden && !_jvKompakt);
-  /* Runde 193: kompakt und offen = angedockt. Ob die Breite reicht,
-     entscheidet allein das CSS (ab 1440 px) — kein Messen, kein
-     Horchen auf die Fenstergrösse. */
-  document.body.classList.toggle('formi-angedockt', !j.hidden && _jvKompakt);
+  j.classList.add('jv-kompakt');
+  j.classList.toggle('jv-weit', _jvWeit);
+  j.setAttribute('aria-modal', 'false');
+  document.body.classList.remove('jv-offen');
+  /* Runde 193: offen = angedockt. Ob die Breite reicht, entscheidet
+     allein das CSS (ab 1440 px) — kein Messen, kein Horchen auf die
+     Fenstergrösse. */
+  document.body.classList.toggle('formi-angedockt', !j.hidden);
+  document.body.classList.toggle('formi-weit', !j.hidden && _jvWeit);
   var b=$('jarvisGroesse');
   if(b){
-    var t=_jvKompakt ? 'Groß machen (Vollbild)' : 'Klein machen — die App bleibt sichtbar';
-    b.innerHTML=_jvKompakt ? ikon('vollbild') : ikon('kompakt');
+    var t=_jvWeit ? 'Kleiner machen' : 'Mehr Platz';
+    b.innerHTML=_jvWeit ? ikon('kompakt') : ikon('vollbild');
     b.setAttribute('aria-label', t); b.title=t;
+    b.setAttribute('aria-pressed', _jvWeit ? 'true' : 'false');
   }
   formiKugelZeigen();
 }
 function jvGroesseWechseln(){
-  _jvKompakt=!_jvKompakt;
-  try{ localStorage.setItem('kf_jv_kompakt', _jvKompakt ? '1' : '0'); }catch(e){}
+  _jvWeit=!_jvWeit; _jvKompakt=!_jvWeit;
+  try{ localStorage.setItem('kf_jv_weit', _jvWeit ? '1' : '0'); localStorage.removeItem('kf_jv_kompakt'); }catch(e){}
   jvKompaktAnwenden();
-  if(jarvisOffen()){ if(_jvKompakt) jvFeldStop(); else jvFeldStart(); gehirnNachUnten(); }
+  if(jarvisOffen()) gehirnNachUnten();
   tick(6);
 }
 /* Die Kugel: überall, wo Formi verfügbar ist — ausser im Chat (dort
@@ -29136,7 +29177,9 @@ function jarvisAuf(){
      scrollbar; die grossen Leinwände laufen nur im Vollbild. */
   jvKompaktAnwenden();
   gehirnZeichnen();
-  jvWerte(); jvUhrStart(); if(!_jvKompakt) jvFeldStart();
+  /* Runde 214: die Uhr und die Leinwände gehörten zum großen HUD — die
+     gibt es nicht mehr, also läuft auch keine Sekunden-Uhr mehr. */
+  jvWerte();
   jvKachelnZeichnen(); gehirnLageLaden();
   jvPersonaAnwenden(); jvPersonaAuf(false); jvOfflineZeigen();
   jvTon('auf');
@@ -29144,7 +29187,7 @@ function jarvisAuf(){
   requestAnimationFrame(function(){ j.classList.add('da'); var f=$('jarvisFeld'); if(f && !('ontouchstart' in window)) f.focus(); gehirnNachUnten(); });
   /* Runde 186: das kleine Fenster springt glitchend auf — Formi kommt aus
      dem System, nicht aus einer Schublade. Nur transform/opacity. */
-  if(_jvKompakt && !gehirnWenigBewegung() && j.animate){
+  if(!gehirnWenigBewegung() && j.animate){
     try{ j.animate([Object.assign({ transform:'translateX(-6px)', opacity:.4 }, FK_SCHRITT), Object.assign({ transform:'translateX(5px)', opacity:.9, offset:.3 }, FK_SCHRITT),
                     Object.assign({ transform:'translateX(-2px)', opacity:.7, offset:.6 }, FK_SCHRITT), { transform:'none', opacity:1 }], { duration:280 }); }catch(e){}
   }
@@ -29159,7 +29202,7 @@ function jarvisZu(){
   jvUhrStop(); jvFeldStop();
   j.classList.remove('da', 'jv-boot', 'jv-mehr-auf'); j.hidden=true;
   var mz=$('jarvisMehr'); if(mz) mz.setAttribute('aria-expanded', 'false');
-  document.body.classList.remove('jv-offen', 'formi-angedockt');
+  document.body.classList.remove('jv-offen', 'formi-angedockt', 'formi-weit');
   formiKugelZeigen();
   if(_jvVorher && _jvVorher.focus && document.contains(_jvVorher)) try{ _jvVorher.focus(); }catch(e){}
 }
@@ -29208,7 +29251,9 @@ function jarvisBinden(){
   });
   var j=$('jarvis');
   if(j) j.addEventListener('keydown', function(ev){ if(ev.key==='Escape'){ ev.preventDefault(); jarvisZu(); } });
-  gehirnMicBinden('jarvisMic', 'jarvisFeld');
+  /* Runde 214: „Sprechen" im Fenster kann jetzt auch gedrückt gehalten
+     werden — das konnte vorher nur der Kern des grossen HUD. */
+  (function(){ var m=$('jarvisMic'), SR=window.SpeechRecognition || window.webkitSpeechRecognition; if(m) m.style.display=SR ? '' : 'none'; })();
 }
 /* ── HUD: Zustand, Ton, Stimme, Partikel, Uhr (20.10.2026) ──────────
    Aus dem Betrieb: „richtig abgespacet … mit geilen animationen und
@@ -29567,16 +29612,21 @@ function jvHaltenBinden(){
   var h=$('jarvisHalten'); if(!h || h._gebunden) return; h._gebunden=true;
   var SR=window.SpeechRecognition || window.webkitSpeechRecognition;
   h.hidden=!SR; if(!SR) return;
-  h.addEventListener('pointerdown', function(e){
-    e.preventDefault();
-    if(_gHoert){ gehirnHoerenStop(); _jvHaltenAb=0; return; }
-    if(gehirnHoerenStart('jarvisFeld', $('jarvisMic'))) _jvHaltenAb=Date.now();
+  /* Runde 214: dieselbe Bedienung am Knopf „Sprechen" ($('jarvisMic')) —
+     der Kern (#jarvisHalten) ist mit dem grossen HUD unsichtbar. */
+  [h, $('jarvisMic')].forEach(function(k){
+    if(!k) return;
+    k.addEventListener('pointerdown', function(e){
+      e.preventDefault();
+      if(_gHoert){ gehirnHoerenStop(); _jvHaltenAb=0; return; }
+      if(gehirnHoerenStart('jarvisFeld', $('jarvisMic'))) _jvHaltenAb=Date.now();
+    });
+    /* Kurz getippt: hört weiter, bis man aufhört zu sprechen. Gehalten:
+       loslassen beendet. */
+    function los(){ if(_jvHaltenAb && Date.now()-_jvHaltenAb>450) gehirnHoerenStop(); _jvHaltenAb=0; }
+    k.addEventListener('pointerup', los); k.addEventListener('pointercancel', los); k.addEventListener('pointerleave', los);
+    k.addEventListener('keydown', function(e){ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); if(_gHoert) gehirnHoerenStop(); else gehirnHoerenStart('jarvisFeld', $('jarvisMic')); } });
   });
-  /* Kurz getippt: hört weiter, bis man aufhört zu sprechen. Gehalten:
-     loslassen beendet. */
-  function los(){ if(_jvHaltenAb && Date.now()-_jvHaltenAb>450) gehirnHoerenStop(); _jvHaltenAb=0; }
-  h.addEventListener('pointerup', los); h.addEventListener('pointercancel', los); h.addEventListener('pointerleave', los);
-  h.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); if(_gHoert) gehirnHoerenStop(); else gehirnHoerenStart('jarvisFeld', $('jarvisMic')); } });
   /* Leertaste im leeren Feld: halten und sprechen. */
   var f=$('jarvisFeld');
   if(f){
@@ -39286,7 +39336,7 @@ function zkAntragEntscheiden(btn, id, annehmen){
    Im laufenden Monat gilt das Soll bis heute, nicht bis zum Monatsende.
    Alles in Minuten. */
 var _zkAnsicht='tage', _zkKonto=null, _zkKontoNr=0, _zkRegeln={}, _zkRegelnOffen=false;
-/* ── Soll je Wochentag (Runde 214) ──
+/* ── Soll je Wochentag (Runde 215) ──
    Aus dem Betrieb, 22.10.2026, auf „Gutschrift nur Mo–Fr — soll das je
    Wochentag einstellbar werden?": „ja". Je Person sieben Werte in
    Minuten, Schlüssel '1' (Mo) bis '7' (So). Wer eine Regel hat, für den
@@ -39829,7 +39879,7 @@ function zkTage(rows){
   return tage;
 }
 /* Darf ich diesen Tag korrigieren? Dieselbe Regel wie im Server. */
-/* Runde 214: nur noch die Geschäftsführung („nur führung", 22.10.2026).
+/* Runde 215: nur noch die Geschäftsführung („nur führung", 22.10.2026).
    Die Studioleitung sieht die Zeiten ihres Studios weiter, korrigiert sie
    aber nicht mehr. */
 function zkDarf(t){ return isChef(); }
