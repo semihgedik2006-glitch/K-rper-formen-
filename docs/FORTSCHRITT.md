@@ -19232,3 +19232,75 @@ Ladeanzeige, Paket 3 Suche und Formi in einem Feld.
 
 **Nicht geprüft:** Wie lebendig die Augen auf einem echten Bildschirm
 wirken. Die Pupillen sind bei der Kugel etwa 3,5 px gross.
+
+## Runde 206 — Schichtplaner: alle Fragen auf einmal, und was von LogX gebraucht wird (22.10.2026)
+
+**Aus dem Betrieb:** „kanst du … uns alle fragen stellen welche wir
+beantworten müssen damit der schichtplan danach direkt klappt“, „gib mir
+die liste als pdf und auch die excel vorlage nochmal“ und „sag mir was
+du von logx brauchst“.
+
+**Was entstanden ist**
+- `docs/schichtplaner/Schichtplaner-Fragen.pdf` neu, jetzt aus
+  `werkzeug/fragen.py` erzeugt (vorher gab es keinen Erzeuger dafür):
+  24 Fragen in fünf Gruppen (Pflicht · Besetzung · Arbeitszeit · Wünsche
+  und Fairness · Ablauf), je Frage **was die App heute annimmt** — passt
+  das, reicht „passt“. Die letzte Seite: was ich von LogX brauche (Export
+  eines alten Plans, Importvorlage, Bildschirmfotos, Mitarbeiterliste mit
+  Personalnummer, Programm und Version, heutiger Ablauf) und der Hinweis,
+  **keine Zugangsdaten** zu schicken.
+- Dieselbe Liste steht in `werkzeug/inhalt.py` und füllt das Blatt
+  „Fragen“ der Excel-Vorlage, jetzt mit eigener Spalte „Heute in der App“.
+  Das Blatt liest der Planer nicht ein (geprüft: `ausVorlage` kennt es
+  nicht); die anderen Blätter sind unverändert.
+
+**Warum je Frage die heutige Annahme dabeisteht:** Die meisten Antworten
+sind „so wie es ist“. Wer nur Abweichungen schreiben muss, ist in zehn
+Minuten fertig statt in einer Stunde.
+
+**Geprüft:** test-schichtplaner-rechnung (82, liest die Vorlage): grün.
+Das PDF ist angesehen (4 Seiten), die Vorlage mit openpyxl geöffnet.
+
+## Runde 207 — Formi-Fenster aufgeräumt, Formi in leeren Listen und beim Laden (22.10.2026)
+
+**Aus dem Betrieb:** „mach alles davon“ (Ideenliste, Paket 2 von 3).
+
+**Gebaut**
+- **Startschirm im kleinen Formi-Fenster:**
+  - Oben steht ein grosses Gesicht (76 px, mit Brauen) über der
+    Begrüssung.
+  - Die drei Lage-Zeilen („4 Aufgaben offen …“) fallen dort weg. Sie
+    standen doppelt: in der Formi-Zeile und im Satz zur Lage (Runde 196).
+  - Solange das grosse Gesicht zu sehen ist, ist das kleine im Kopf
+    ausgeblendet.
+- **Kopf des kleinen Fensters:** Statt fünf Knöpfen sind es drei: „…“,
+  Groß, Schließen. Hinter „…“ klappen Einstellungen, gespeicherte
+  Gespräche und Ton in der Kopfzeile auf. Name und Gesicht treten so
+  lange zurück, damit es auch bei 320 px passt. Im Vollbild bleibt alles
+  wie bisher.
+- **Gesichter im Fenster leben:** Ist das Fenster offen (und die Kugel
+  deshalb weg), schauen das grosse und das kleine Gesicht der Maus nach
+  und blinzeln mit. Wieder als Web Animation, Lage im Bild gelesen.
+- **Vor jeder Antwort** steht Formis Gesicht statt des kleinen Lochs.
+- **Leere Listen:** Unter jedem leeren Zustand (`emptyHTML`) steht
+  „Frag Formi“ mit Gesicht; ein Tipp öffnet Formi.
+- **Ladeanzeige:** Statt des Kreisels dreht sich Formis Ring, die Augen
+  schauen nach oben. Der Text bleibt „Verbindung wird hergestellt …“.
+- Neue Ikone `mehr` („…“).
+
+**Geprüft** (`tests/test-formi-lebt.js`, jetzt 146 Zusicherungen)
+- Je bei 1440, 390 und 320 px, normal und kompakt:
+  - Ladeanzeige mit Gesicht.
+  - Startschirm mit grossem Gesicht, ohne Lage-Zeilen, kein zweites
+    Gesicht im Kopf.
+  - Im Kopf genau drei Knöpfe; „…“ klappt auf, alle sechs ≥ 44 × 44 und
+    im Bild.
+  - Leere Liste (Archiv): „Frag Formi“ ≥ 44 × 44, ein Tipp öffnet Formi.
+- Bei offenem Fenster schaut das grosse Gesicht der Maus nach.
+- `test-formi-angedockt` prüft im Spaltenkopf jetzt „…“ statt des
+  Reglers.
+- Grün: test-leerzustand, test-knoepfe, test-gestaltung, test-csp,
+  test-abgeschnitten, test-formi-kugel, test-formi-kumpel,
+  test-formi-platz, test-formi-angedockt, test-uebersicht, test-quer.
+- test-gehirn (Vollbild): Rot sind nur die drei bekannten
+  Leistungsprüfungen unter CPU ÷4.

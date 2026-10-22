@@ -117,7 +117,7 @@ const LAGE = () => {
           const r = el.getBoundingClientRect(); const t = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
           return (t && (t === el || el.contains(t)) && r.width >= 44 && r.height >= 44 && r.right <= innerWidth && r.bottom <= innerHeight) ? 'ok' : id + ':' + Math.round(r.width) + '×' + Math.round(r.height);
         }));
-        pruefe(`${w} px: „…“ (seit Runde 206), Groß, Schließen, Senden ≥ 44 × 44, frei, im Bild`, knoepfe.every(k => k === 'ok'), knoepfe.join(' '));
+        pruefe(`${w} px: „…“ (seit Runde 207), Groß, Schließen, Senden ≥ 44 × 44, frei, im Bild`, knoepfe.every(k => k === 'ok'), knoepfe.join(' '));
       } else {
         /* Nicht angedockt: der Inhalt behält die volle Breite, und das
            Fenster ist keine Spalte von oben (am Handy ein Blatt von
