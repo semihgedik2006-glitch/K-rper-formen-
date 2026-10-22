@@ -45,7 +45,7 @@ const TREFFER = (el) => {
 
 async function oeffne(b, w, h, opt) {
   opt = opt || {};
-  const ctx = await b.newContext({ viewport: { width: w, height: h } });
+  const ctx = await b.newContext({ serviceWorkers: 'block', viewport: { width: w, height: h } });
   const p = await ctx.newPage();
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
@@ -86,9 +86,11 @@ const suche = async (p, text) => {
     const p = await oeffne(b, w, h, { neu });
     const nm = w + ' px ' + (neu ? 'neu' : 'bisher');
     pruefe(nm + ': Startseite ohne „Studio-Gehirn"/„Jarvis"', !(await alteNamen(p)), await alteNamen(p));
-    const kachel = await p.evaluate(() => [...document.querySelectorAll('.jv-kachel')]
-      .filter(e => e.getClientRects().length).map(e => e.textContent.trim()).join('|'));
-    pruefe(nm + ': der sichtbare Knopf heisst „Formi"', /^(Formi\|?)+$/.test(kachel), kachel);
+    /* Seit Runde 182 gibt es nur noch die Kugel; ihr Name steht im
+       Vorlesetext (aria-label), sichtbar ist sie ein Symbol. */
+    const kachel = await p.evaluate(() => { const k = document.getElementById('formiKugel');
+      return k && k.getClientRects().length ? k.getAttribute('aria-label') : ''; });
+    pruefe(nm + ': der sichtbare Knopf heisst „Formi"', /^Formi öffnen$/.test(kachel), kachel);
     await p.evaluate(async () => {
       const g = document.getElementById('bereichKopf');
       if (g && g.getClientRects().length) g.click();
@@ -100,7 +102,7 @@ const suche = async (p, text) => {
     pruefe(nm + ': auch „Alles" ohne alte Namen', !(await alteNamen(p)), await alteNamen(p));
     await p.keyboard.press('Escape');
     await p.waitForTimeout(200);
-    const knopf = await p.evaluate(() => ['#jarvisStart', '#jarvisStartAlt', '#jarvisStartPc'].find(s => {
+    const knopf = await p.evaluate(() => ['#formiKugel'].find(s => {
       const el = document.querySelector(s); return el && el.getClientRects().length && getComputedStyle(el).display !== 'none'; }) || null);
     if (knopf) await p.click(knopf);
     await p.waitForTimeout(300);
