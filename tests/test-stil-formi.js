@@ -47,9 +47,9 @@ async function oeffne(b, w, h, opt) {
   await p.route('**script.google.com/**', r => r.fulfill({ status: 200, body: 'ok' }));
   await p.addInitScript(() => { try { localStorage.setItem('kf_tour', '1:testuid'); } catch (e) {} });
   if (opt.prefs !== undefined) await p.addInitScript((v) => { try { if (!sessionStorage.getItem('__p')) { localStorage.setItem('kf_prefs', v); sessionStorage.setItem('__p', '1'); } } catch (e) {} }, opt.prefs);
-  await p.addInitScript({ path: SP + '/stub-chef.js' });
+  await p.addInitScript({ path: SP + '/' + (opt.stub || 'stub-chef.js') });
   await p.goto(APP + '?neu=1', { waitUntil: 'domcontentloaded' });
-  await p.waitForFunction(() => !!document.querySelector('#app.show'), null, { timeout: 15000 });
+  await p.waitForFunction((sel) => !!document.querySelector(sel), opt.warte || '#app.show', { timeout: 15000 });
   await p.waitForTimeout(700);
   p._ctx = ctx;
   return p;
@@ -195,6 +195,44 @@ async function kontrast(p, sel) {
       if (k === null) { console.log('    (' + w + ' px: ' + was + ' nicht sichtbar)'); continue; }
       pruefe(w + ' px: ' + was + ' ' + k + ' : 1 (≥ 4,5)', k >= 4.5);
     }
+    await zu(p);
+  }
+
+  console.log('\n── 7 Fenster, Suche und Anmeldung (Runde 179) ──');
+  const fenster = (p, sel) => p.evaluate((sel) => {
+    const el = [...document.querySelectorAll(sel)].find(e => e.getClientRects().length);
+    if (!el) return null;
+    const c = getComputedStyle(el);
+    return { schein: /rgba\(\d+, \d+, \d+, 0\.45\)/.test(c.boxShadow), kante: /linear-gradient/.test(c.backgroundImage) };
+  }, sel);
+  for (const [w, h] of [[1440, 900], [390, 844]]) {
+    const p = await oeffne(b, w, h);
+    await p.evaluate(() => document.getElementById('uAvatar').click()); await p.waitForTimeout(600);
+    let f = await fenster(p, '#profileModal .pm-box');
+    pruefe(w + ' px: Einstellungen mit Lichtkante und Schein', !!f && f.schein && f.kante, JSON.stringify(f));
+    let k = await kontrast(p, '#profileModal label');
+    if (k !== null) pruefe(w + ' px: Beschriftung im Fenster ' + k + ' : 1 (≥ 4,5)', k >= 4.5);
+    await p.evaluate(() => document.getElementById('pmClose').click()); await p.waitForTimeout(300);
+    await p.evaluate(() => document.getElementById('searchBtn').click()); await p.waitForTimeout(300);
+    f = await fenster(p, '.search-box');
+    pruefe(w + ' px: Suche mit Lichtkante und Schein', !!f && f.schein && f.kante, JSON.stringify(f));
+    pruefe(w + ' px: keine Fehler', !p._fehler.length, p._fehler.join(' | '));
+    await zu(p);
+  }
+  for (const [w, h] of [[1440, 900], [390, 844]]) {
+    const p = await oeffne(b, w, h, { stub: 'stub-ohne-login.js', warte: '#authWrap' });
+    await p.waitForTimeout(1500);
+    const s = await p.evaluate(() => ({ formi: document.body.classList.contains('formi'), raum: getComputedStyle(document.getElementById('authWrap'), '::before').backgroundImage }));
+    pruefe(w + ' px: Anmeldung im Stil Formi, mit dem Raum dahinter', s.formi && /radial-gradient/.test(s.raum), JSON.stringify(s).slice(0, 120));
+    const f = await fenster(p, '.auth-card');
+    pruefe(w + ' px: Anmeldekarte mit Lichtkante und Schein', !!f && f.schein && f.kante, JSON.stringify(f));
+    for (const [was, sel] of [['Unterzeile', '.auth-sub'], ['Beschriftung', '#loginForm label']]) {
+      const k = await kontrast(p, sel);
+      if (k === null) { console.log('    (' + w + ' px: ' + was + ' nicht sichtbar)'); continue; }
+      pruefe(w + ' px: Anmeldung, ' + was + ' ' + k + ' : 1 (≥ 4,5)', k >= 4.5);
+    }
+    const quer = await p.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+    pruefe(w + ' px: Anmeldung ohne Querlauf', quer <= 0, String(quer));
     await zu(p);
   }
 
