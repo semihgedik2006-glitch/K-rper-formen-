@@ -12,11 +12,14 @@
     2. Ein Tipp öffnet Formi KOMPAKT: kein Dialog (aria-modal=false), die
        Seite dahinter bleibt scrollbar (kein body.jv-offen), die grossen
        Leinwände laufen nicht. Die Kugel ist dann weg.
-    3. „Groß" schaltet ins Vollbild und zurück; das Gerät merkt es sich.
+    3. Seit Runde 197 („das grosse hud entfernen oder überarbeiten",
+       gewählt: „Ruhig neu bauen") gibt es kein Vollbild mehr: „Mehr
+       Platz" macht das Fenster grösser, bleibt aber kein Dialog; das
+       Gerät merkt es sich.
     4. „öffne die Aufgaben" im kompakten Fenster: ein Zeiger erscheint,
        danach ist die ECHTE Seite offen (kein Mini-Fenster). Am Rechner
        bleibt Formi offen, am Handy wird es zur Kugel.
-    5. Im Vollbild bleibt das Mini-Fenster wie bisher (Gegenprobe).
+    5. (entfallen mit dem Vollbild, Runde 197)
     6. Kugel und Gross-Knopf: Trefferfläche ≥ 44 × 44 per Hit-Test bei
        320 / 390 / 430 / 820 / 1280 / 1440 / 1920, normal und kompakt,
        ganz im Bild und nicht über der Leiste unten.
@@ -97,20 +100,15 @@ const sichtbar = (p, sel) => p.evaluate((s) => { const el = document.querySelect
 
       await p.click('#jarvisGroesse');
       await p.waitForTimeout(300);
-      const v = await p.evaluate(() => ({ kompakt: document.getElementById('jarvis').classList.contains('jv-kompakt'),
-        modal: document.getElementById('jarvis').getAttribute('aria-modal'), gemerkt: localStorage.getItem('kf_jv_kompakt') }));
-      pruefe('„Groß" macht Vollbild, als Dialog, und das Gerät merkt es sich', !v.kompakt && v.modal === 'true' && v.gemerkt === '0', JSON.stringify(v));
-
-      /* Gegenprobe: im Vollbild bleibt „öffne die Aufgaben" ein Mini-Fenster. */
-      await p.fill('#jarvisFeld', 'öffne die aufgaben');
-      await p.click('#jarvisSenden');
-      await p.waitForTimeout(1500);
-      const voll = await p.evaluate(() => ({ view: (document.querySelector('.view.show') || {}).id, offen: !document.getElementById('jarvis').hidden }));
-      pruefe('Vollbild: Seite bleibt, Formi bleibt offen (Mini-Fenster wie bisher)', voll.offen && voll.view !== 'view-todos', JSON.stringify(voll));
-
+      const v = await p.evaluate(() => { const j = document.getElementById('jarvis'), r = j.getBoundingClientRect();
+        return { kompakt: j.classList.contains('jv-kompakt'), weit: j.classList.contains('jv-weit'), modal: j.getAttribute('aria-modal'),
+          gemerkt: localStorage.getItem('kf_jv_weit'), h: Math.round(r.height), w: Math.round(r.width), gesperrt: document.body.classList.contains('jv-offen'),
+          name: document.getElementById('jarvisGroesse').getAttribute('aria-label') }; });
+      pruefe('„Mehr Platz" macht das Fenster grösser, bleibt kein Dialog, das Gerät merkt es sich', v.kompakt && v.weit && v.modal === 'false' && !v.gesperrt && v.gemerkt === '1' && v.name === 'Kleiner machen', JSON.stringify(v));
+      pruefe('… und wirklich grösser: am Handy die ganze Höhe, am Rechner fast die ganze Höhe', w <= 820 ? v.h >= h - 1 : v.h >= h - 40, JSON.stringify(v));
       await p.click('#jarvisGroesse');
       await p.waitForTimeout(300);
-      pruefe('„Klein" macht wieder kompakt', await p.evaluate(() => document.getElementById('jarvis').classList.contains('jv-kompakt') && localStorage.getItem('kf_jv_kompakt') === '1'));
+      pruefe('„Kleiner machen" macht wieder klein', await p.evaluate(() => !document.getElementById('jarvis').classList.contains('jv-weit') && localStorage.getItem('kf_jv_weit') === '0'));
 
       await p.fill('#jarvisFeld', 'öffne die aufgaben');
       await p.click('#jarvisSenden');
@@ -156,6 +154,13 @@ const sichtbar = (p, sel) => p.evaluate((s) => { const el = document.querySelect
         const zu = await p.evaluate(TREFFER, '#jarvisZu');
         pruefe(`${w} px ${dichte}: Groß ${g.w}×${g.h}, Schließen ${zu.w}×${zu.h}, Senden ${s.w}×${s.h}`,
           [g, s, zu].every(x => x.w >= 44 && x.h >= 44 && x.imBild), JSON.stringify({ g, s, zu }));
+        /* Runde 197: dasselbe mit „Mehr Platz". */
+        await p.click('#jarvisGroesse'); await p.waitForTimeout(300);
+        const g2 = await p.evaluate(TREFFER, '#jarvisGroesse'), s2 = await p.evaluate(TREFFER, '#jarvisSenden'), zu2 = await p.evaluate(TREFFER, '#jarvisZu');
+        const breit2 = await p.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
+        pruefe(`${w} px ${dichte} (Mehr Platz): Kleiner ${g2.w}×${g2.h}, Schließen ${zu2.w}×${zu2.h}, Senden ${s2.w}×${s2.h}, nichts ragt seitlich hinaus`,
+          [g2, s2, zu2].every(x => x.w >= 44 && x.h >= 44 && x.imBild) && !breit2, JSON.stringify({ g2, s2, zu2, breit2 }));
+        await p.click('#jarvisGroesse'); await p.waitForTimeout(200);
         await p._ctx.close();
       }
     }
