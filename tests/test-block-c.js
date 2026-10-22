@@ -43,7 +43,7 @@ async function seite(b, rolle, ruhig) {
   return p;
 }
 /* Wie ein Mensch: erst unten in der Leiste, sonst über „Alles". Seit
-   Runde 103, P5 lagen die Nachrichten unter „Alles"; seit Runde 180
+   Runde 103, P5 lagen die Nachrichten unter „Alles"; seit Runde 183
    („fünf Räume", aus dem Betrieb 22.10.2026: „das problem mit dem zu
    viel bleibt immer noch bestehen") stehen sie wieder unten, die
    Aufgaben sind der erste Reiter von „Studio", und „Alles" ist kein

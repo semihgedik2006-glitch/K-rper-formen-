@@ -128,7 +128,7 @@ const TREFFER = (el) => {
   pruefe('ein zweiter Tipp nimmt es zurück', !/dir/.test(aus), aus);
 
   /* ── Gelesen ist gelesen ──
-     Der Knopf heisst seit Runde 180 „Heute" statt „Start" (aus dem
+     Der Knopf heisst seit Runde 183 „Heute" statt „Start" (aus dem
      Betrieb, 22.10.2026: „das problem mit dem zu viel bleibt immer noch
      bestehen"; die Raumnamen „passen"). */
   await p.evaluate(() => [...document.querySelectorAll('.mobnav button')].find(x => /Heute/.test(x.textContent)).click());
@@ -181,7 +181,7 @@ const TREFFER = (el) => {
     pruefe(w + ' px: auch nach dem Neuladen (bis zur nächsten Auslieferung)', nachLaden);
 
     /* Dauerhaft erreichbar über „Alles", und „Zeigen ›" führt hin. Seit
-       Runde 180 ist „Alles" kein Knopf in Leiste oder Seitenleiste mehr,
+       Runde 183 ist „Alles" kein Knopf in Leiste oder Seitenleiste mehr,
        sondern der ☰-Griff #bereichKopf — auf Handy und Rechner. */
     await q.evaluate(() => { const n = document.getElementById('bereichKopf'); if (n && n.getClientRects().length) n.click(); });
     await q.waitForTimeout(500);

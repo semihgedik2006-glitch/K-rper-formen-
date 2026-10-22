@@ -57,7 +57,7 @@ async function oeffne(b, w, h, rolle) {
   return p;
 }
 /* Ich → Daten: über „Alles", wie ein Mensch — zwei Tipps.
-   Runde 180 („das problem mit dem zu viel bleibt immer noch bestehen"):
+   Runde 183 („das problem mit dem zu viel bleibt immer noch bestehen"):
    „Alles" ist kein Leistenknopf mehr, sondern der ☰-Griff am Seitenkopf
    (#bereichKopf). Derselbe Weg, andere Stelle. */
 async function zuDaten(p) {

@@ -17,6 +17,25 @@ Workers AI, **nicht** über GitHub Actions.
 3. Deploy
 4. Im Leitstand unter „Verlauf" die nächsten Antworten ansehen
 
+## Formi lernt selbst (ab 2.13)
+
+- **Suche nach Bedeutung:** Jeder Eintrag bekommt einen Fingerabdruck
+  (`@cf/baai/bge-m3`), gespeichert in der Tabelle `wissen_vektor`. Die
+  Tabelle legt der Worker selbst an. Nach dem ersten Einspielen einmal im
+  Leitstand unter Übersicht auf **„Bedeutung berechnen“** klicken, bis da
+  „N von N“ steht.
+- **Lernschleife:** Nachts (Cron) und per **„Jetzt lernen“** erledigt Formi
+  vier Dinge:
+  - Formi testet sich selbst.
+  - Formi entwirft Antworten auf offene Fragen, nur aus vorhandenem Wissen.
+  - Formi sucht Doppeltes und Veraltetes.
+  - Formi nimmt Korrekturen aus dem Team auf („stimmt nicht, richtig ist …“).
+
+  Alles landet im Leitstand unter **Vorschläge**. Wissen wird es erst nach
+  „Übernehmen“.
+- Je Lauf wird wenig gerechnet. Kommt im Cloudflare-Log ein Fehler 1102
+  (Rechenzeit), die Zahlen in `lernlauf` senken.
+
 ## Variablen
 
 | Name | Wofür |

@@ -45,7 +45,7 @@ const TREFFER = (el) => {
 
 async function oeffne(b, w, h, opt) {
   opt = opt || {};
-  const ctx = await b.newContext({ viewport: { width: w, height: h } });
+  const ctx = await b.newContext({ serviceWorkers: 'block', viewport: { width: w, height: h } });
   const p = await ctx.newPage();
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
@@ -86,22 +86,11 @@ const suche = async (p, text) => {
     const p = await oeffne(b, w, h, { neu });
     const nm = w + ' px ' + (neu ? 'neu' : 'bisher');
     pruefe(nm + ': Startseite ohne „Studio-Gehirn"/„Jarvis"', !(await alteNamen(p)), await alteNamen(p));
-    /* Runde 180 („fünf Räume“): Formi hat EINEN sichtbaren Eingang, die
-       Kugel (#formiKugel). Die Kacheln #jarvisStart/-Alt/-Pc sind immer
-       verborgen. Aus dem Betrieb, 22.10.2026: „das problem mit dem zu viel
-       bleibt immer noch bestehen“ – dieselbe Tür an drei weiteren Stellen
-       war genau dieses „zu viel“. Geprüft wird der Name jetzt an der
-       Kugel; die Kacheln dürfen nirgends mehr sichtbar sein. */
-    const kachel = await p.evaluate(() => {
-      const k = document.getElementById('formiKugel');
-      return {
-        kacheln: [...document.querySelectorAll('.jv-kachel')].filter(e => e.getClientRects().length).map(e => e.textContent.trim()),
-        kugel: !!k && !k.hidden && !!k.getClientRects().length && getComputedStyle(k).display !== 'none',
-        name: k ? (k.getAttribute('aria-label') || '') + ' | ' + (k.getAttribute('title') || '') : ''
-      };
-    });
-    pruefe(nm + ': der sichtbare Knopf ist die Kugel und heisst „Formi"',
-      !kachel.kacheln.length && kachel.kugel && /Formi/.test(kachel.name) && !/Gehirn|Jarvis/.test(kachel.name), JSON.stringify(kachel));
+    /* Seit Runde 182 gibt es nur noch die Kugel; ihr Name steht im
+       Vorlesetext (aria-label), sichtbar ist sie ein Symbol. */
+    const kachel = await p.evaluate(() => { const k = document.getElementById('formiKugel');
+      return k && k.getClientRects().length ? k.getAttribute('aria-label') : ''; });
+    pruefe(nm + ': der sichtbare Knopf heisst „Formi"', /^Formi öffnen$/.test(kachel), kachel);
     await p.evaluate(async () => {
       const g = document.getElementById('bereichKopf');
       if (g && g.getClientRects().length) g.click();
@@ -113,7 +102,6 @@ const suche = async (p, text) => {
     pruefe(nm + ': auch „Alles" ohne alte Namen', !(await alteNamen(p)), await alteNamen(p));
     await p.keyboard.press('Escape');
     await p.waitForTimeout(200);
-    /* Runde 180: geöffnet wird über die Kugel, den einen Eingang. */
     const knopf = await p.evaluate(() => ['#formiKugel'].find(s => {
       const el = document.querySelector(s); return el && el.getClientRects().length && getComputedStyle(el).display !== 'none'; }) || null);
     if (knopf) await p.click(knopf);

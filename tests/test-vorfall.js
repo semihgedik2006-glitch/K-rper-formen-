@@ -47,7 +47,7 @@ async function oeffne(b, w, h, rolle) {
   await p.waitForTimeout(3200);
   return p;
 }
-/* Runde 180 („fünf Räume“): „Alles“ steht nicht mehr in einer Leiste,
+/* Runde 183 („fünf Räume“): „Alles“ steht nicht mehr in einer Leiste,
    sondern hinter dem ☰-Griff am Seitenkopf (#bereichKopf). Aus dem
    Betrieb, 22.10.2026: „das problem mit dem zu viel bleibt immer noch
    bestehen“. Der Weg bleibt „Alles → Was muss ich wissen?“. */

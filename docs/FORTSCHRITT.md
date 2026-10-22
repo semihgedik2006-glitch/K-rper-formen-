@@ -17460,8 +17460,162 @@ Runde 178: Fenster, Menüs und die Anmeldeseite.
 
 **Nicht geprüft:** jedes einzelne der rund 20 Fenster. Gemessen sind
 Einstellungen, Suche und Anmeldung; die übrigen teilen dieselbe Klasse.
+## Runde 180 — Ordner mit Design-Vorbildern für Claude Code (22.10.2026)
 
-## Runde 180 — Fünf Räume: eine Navigation auf allen Geräten (22.10.2026)
+**Aus dem Betrieb:** „gib in github für claude code einen ordner an mit
+design und layout vorschlägen aus anderen apps welche wir nutzen und
+kopieren können“.
+
+**Angelegt:** `docs/design-vorbilder/`, eine README und sechs Themen mit
+zusammen 43 Vorbildern: KI-Assistent (Formi), Navigation und Startseite,
+Listen und Abhaken, Dienstplan, Farbe/Tiefe/Bewegung sowie Formulare. Zu
+jedem Vorbild steht da:
+- was die App macht
+- was wir übernehmen
+- wo in StudioChat es hingehört
+- „passt zu / reibt sich mit“ den Wünschen aus `CLAUDE.md`
+- die Quelle
+
+**Warum Muster und keine Kopien:** Übernommen werden Abläufe, Abstände und
+Verhalten, nie fremde Logos, Bilder, Schriften oder Texte. Das Repository
+ist öffentlich, und ein fremdes Aussehen gehört dem Hersteller. Eine Zeile
+in `CLAUDE.md` verweist auf den Ordner, damit jede neue Sitzung ihn vor
+Gestaltungsänderungen liest.
+
+**Geprüft:**
+- Alle Links bis auf drei wurden beim Schreiben abgerufen. Die drei sind in
+  den Dateien als „nicht nachgeprüft“ markiert.
+- Maße für StudioChat sind Vorschläge und noch nicht gemessen.
+## Runde 181 — Formi lernt selbst: Suche nach Bedeutung und Lernschleife (Worker 2.13, 22.10.2026)
+
+**Aus dem Betrieb:** „wie können wir ihm mehr wissen geben das sich die ki
+halt weiter entwickelt, am besten … wenn sich die ki sozusagen selber
+trainieren könnte“. Antwort und Plan: Formi soll selbst sammeln, entwerfen
+und prüfen, und Semih gibt mit einem Tipp frei. Auf „fang ruhig an“ wurde
+das hier gebaut.
+
+**Warum nicht ganz allein:** In der Nacht auf den 22.10. standen 23
+ungeprüfte KI-Entwürfe als Wissen in der Datenbank (Runde 174). Einer davon
+hatte erfundene Konditionen. Eine KI, die sich daraus selbst trainiert,
+lernt das Erfinden.
+
+**Gebaut:**
+- **Suche nach Bedeutung.**
+  - Jeder Eintrag bekommt einen Fingerabdruck (`@cf/baai/bge-m3`,
+    mehrsprachig). Gespeichert wird er als 8-Bit-Zahlen in D1
+    (`wissen_vektor`) und 10 Minuten im Speicher gehalten.
+  - Die Frage wird genauso umgerechnet. Wörter- und Bedeutungs-Rangliste
+    werden gemischt (Reciprocal Rank Fusion), was nur die Bedeutung fand,
+    wird nachgeladen.
+  - Fällt die Bedeutung aus (z. B. Kontingent), sucht Formi mit Wörtern
+    weiter wie bisher.
+  - Beim Speichern entsteht der Fingerabdruck sofort. Was fehlt, holen
+    „Bedeutung berechnen“ und der nächtliche Lauf nach.
+  - Warum kein Vectorize: Bei ein paar hundert Einträgen reicht D1, und es
+    gibt nichts einzurichten.
+- **Lernschleife** (`lernlauf`, nachts und per „Jetzt lernen“). Daraus
+  werden Vorschläge, kein Wissen:
+  - *Selbsttest:* Formi schreibt zu einem Eintrag eine Alltagsfrage ohne
+    die Wörter des Themas und sucht. Ist der Eintrag nicht unter den
+    ersten drei, entsteht der Vorschlag „Auch gefragt als …“.
+  - *Lücke:* Entwurf zu einer offenen Frage, NUR aus gefundenem Wissen und
+    mit Nummern. Reicht das Wissen nicht, gibt es keinen Vorschlag, die
+    Frage bleibt bei Semih.
+  - *Veraltet:* Einträge, die über ein Jahr nicht geändert wurden.
+  - *Doppelt:* Bedeutung ≥ 0,95. Geprüft wird reihum, wegen der Rechenzeit
+    des kostenlosen Workers.
+  - *Korrektur:* „stimmt nicht, richtig ist …“ aus dem Team.
+- **Leitstand:**
+  - Reiter „Vorschläge“ mit Übernehmen, Verwerfen und änderbarem Text.
+  - Karte „Formi lernt selbst“ mit „Jetzt lernen“ und „Bedeutung
+    berechnen“.
+  - Zahl der Vorschläge in der Übersicht.
+- **Training:**
+  - Freigegebene Selbsttest-Fragen und Korrekturen zählen als geprüfte
+    Beispiele und stehen im Export (`selbsttest`, `korrektur`).
+  - So füllt sich der Weg zur eigenen KI, ohne dass das Team 500 Fragen
+    stellen muss.
+
+**Geprüft:** `test-formi-worker`, 79 Prüfungen, davon 29 neu. D1 läuft
+über node:sqlite, die Fingerabdrücke kommen aus einer Attrappe, die
+Begriffe gruppiert (Rücken = LWS = Kreuz).
+- Packen und Auspacken, Mischen, Erkennen von Korrekturen.
+- „Kreuzschmerzen“ findet LWS ohne gemeinsames Wort. Ausfall der Bedeutung
+  → Wortsuche läuft weiter.
+- Selbsttest, Lücke mit und ohne Wissen, veraltet, doppelt, kein doppelter
+  Vorschlag.
+- Freigeben (Frage steht im Eintrag und wird danach gefunden), Lücke
+  erledigt die offene Frage, Zusammenführen löscht den zweiten Eintrag,
+  Korrektur über die echte Schnittstelle.
+- Zahlen, Export, Leitstand, nur mit ADMIN_KEY.
+
+**Nicht geprüft:**
+- Das echte bge-m3. Die Doku nennt zwei Schreibweisen, deshalb probiert der
+  Worker beide und liest jede bekannte Antwortform.
+- Die Schwelle 0,42.
+- Die Rechenzeit auf dem kostenlosen Plan.
+
+Das alles zeigt sich nach dem Einspielen über „Bedeutung berechnen“ und den
+Verlauf.
+
+**Noch nicht gebaut** (aus dem Plan): Inhalte aus der App (Ankündigungen,
+Dokumente, „Hilfe im Studio“) als Vorschläge, und Freigabe durch
+Studioleitungen in der App.
+
+## Runde 182 — Alter Formi-Knopf weg, die Kugel verdeckt nichts (22.10.2026)
+
+**Aus dem Betrieb:** „der alte formi knopf oben kann weg, achte aber bitte
+darauf das der neue formi knopf nichts verdeckt in der app also teste jeden
+knopf etc.“
+
+**Gebaut:**
+- `#jarvisStart` (Bereichszeile), `#jarvisStartAlt` (neben der Begrüssung)
+  und `#jarvisStartPc` (oben am Rechner) sind mit ihrem CSS entfernt. Formi
+  öffnet jetzt über die Kugel, die Taste J und „Alles“ → Formi.
+- Am Handy hat die Rückgängig-Leiste unten mittig (und genauso der
+  Hinweis) bis unter die Kugel gereicht. Solange eine davon steht, weicht
+  die Kugel 72 px nach oben aus (`body:has(.undobar.show)`).
+- Am Handy bekommt jede Ansicht ausser der Startseite unten so viel Luft
+  im eigenen Scrollbereich, dass der letzte Eintrag über der Kugel liegt.
+  Ohne das lagen Dokumente, Schulung und die Verwaltung (Mitarbeiter)
+  darunter. Die Startseite ist ausgenommen: Sie soll auf einen Bildschirm
+  passen, und dort lag nichts darunter.
+
+**Wie geprüft — `tests/test-formi-verdeckt.js` (neu):**
+- Geprüft wird je Rolle (Chef, Leitung, Mitarbeiter), je Breite (320 / 390
+  / 430 / 820 / 1280 / 1440 / 1920) und je Dichte (normal, kompakt).
+- Geprüft wird jede Ansicht, jeder Reiter darin und jedes sichtbare
+  Bedienelement, auch in zugeklappten Bereichen (`<details>` wird dafür
+  aufgemacht). Seitenleiste, Leiste unten und Kopfzeile sind dabei.
+- Regel 1: Was `fixed` ist, darf die Kugel nie berühren.
+- Regel 2: Alles andere muss sich so hinscrollen lassen, senkrecht wie
+  seitlich, dass die Kugel es nicht berührt (4 px Rand).
+- Dazu kommen Rückgängig-Leiste und Hinweis mit der ausgewichenen Kugel.
+- Ergebnis: 826 Ansichten und Reiter (140 davon ohne Kugel: Chat, Formi)
+  und 20 990 gemessene Bedienelemente.
+- Gegenprobe: Mit dem `index.html` von vorher meldet der Durchlauf die
+  Leiste und den Hinweis am Handy. Ohne die Luft unten meldet er
+  Dokumente, Schulung und Verwaltung.
+- Gemessen wird ohne gerade eingeblendeten Hinweis. Der hebt die Kugel nur
+  für ein paar Sekunden an, und dieser Fall ist eigens geprüft.
+
+**Fund für alle Oberflächen-Durchläufe:** Ohne
+`serviceWorkers: 'block'` laden sie in dieser Umgebung das echte Firebase
+und landen in der Anmeldemaske (Runde 177). `test-gehirn` und
+`test-uebersicht` haben es jetzt. `test-gehirn` läuft dadurch zum ersten
+Mal hier ganz durch: 327 von 332 grün.
+- Rot sind die drei bekannten Leistungsprüfungen (CPU ÷4, hier auch auf
+  `main` rot).
+- Rot ist ausserdem bei 1440 px: Die Studio-Rückfrage „Übergabe: Test in …“
+  im Vollbild-Fenster trifft nur 42 statt 44 px hoch. Das ist nicht von
+  dieser Runde. Ob es auf `main` genauso ist, liess sich nicht prüfen, weil
+  der `main`-Durchlauf dort schon vorher abbricht. Offen.
+
+**Nicht geprüft:** echtes Handy, Darstellung im Stil „Formi“ (Runde 178/179)
+im Zusammenspiel mit der Kugel ausser über die Durchläufe.
+
+
+## Runde 183 — Fünf Räume: eine Navigation auf allen Geräten (22.10.2026)
 
 **Aus dem Betrieb:** „das problem mit dem zu viel bleibt immer noch
 bestehen“. Vorher kam die Bitte um Recherche: vergleichbare Apps, Studien
@@ -17513,11 +17667,9 @@ zusammenlegt.
   - „Alles“ in den Leisten. Es bleibt hinter ☰ am Seitenkopf, auf jeder
     Seite. Damit gilt der Wunsch „jedes Ziel in zwei Tipps“ weiter: Raum,
     dann Reiter.
-  - Schnellzugriffe in der Seitenleiste. Sie stehen jetzt auch am Rechner
-    auf „Heute“; gewählt wird wie bisher.
-  - Bericht und Formi-Knöpfe in der Kopfzeile. Der Bericht steht unter
-    Verwaltung → Berichte. Formi erreicht man über die Kugel, die Taste J,
-    die Suche und Wissen → Formi.
+  - Bericht in der Kopfzeile. Er steht unter Verwaltung → System, Karte
+    „Bericht“. Die alten Formi-Knöpfe hatte Runde 182 parallel schon
+    entfernt; beim Zusammenführen gilt deren Fassung.
 - **Bewusst NICHT verschoben:**
   - Hilfe im Studio bleibt oben, ausdrücklich gewünscht am 22.9.
   - Abmelden bleibt oben, wegen des geteilten Geräts beim Schichtwechsel.
@@ -17530,3 +17682,48 @@ zusammenlegt.
 - **Gemessen** (Demo als Geschäftsführung, Startseite):
   - Rechner: Kopfzeile 7 → 5 Griffe, Seitenleiste 13 → 7.
   - Handy: untere Leiste 4 → 5, alle Bereiche erreichbar.
+
+**Was die Tests gefunden haben – und wie es entschieden ist**
+
+Rund 70 Durchläufe hingen am alten Weg (Knopf „Putzplan“, „Alles“ in
+der Leiste, Gruppe „Ich“). Drei Helfer haben sie auf die neuen Wege
+umgestellt, ohne eine Grenze zu lockern. Jede geänderte Erwartung trägt
+das Zitat aus dem Betrieb. Dabei kamen zwei echte Rückschritte heraus:
+
+1. **Schnellzugriffe auf „Heute“ waren ein Fehler.** Dort ist Platz für
+   drei statt sechs, die Tasten fehlten, und die Startseite verlor 81 px.
+   „Heute im Studio“ rutschte unter „Ausserdem“ (gefunden von
+   test-schnell-editor und test-tagesband). Sie stehen deshalb wieder
+   links, abgesetzt unter den Räumen.
+2. **Die Reiterzeile Heute/Ich/Persönlich kostete jede Startseite
+   40 px** (test-p4-seitenleiste, test-navigation, test-neu-design).
+   - Am Rechner stehen die Reiter jetzt *in* der Kopfzeile rechts neben
+     dem Titel (`subnavPlatzieren`, das Element wird umgehängt, nicht
+     kopiert). Dort waren 700 px leer, und das spart die Zeile auf jeder
+     Seite, nicht nur auf „Heute“.
+   - Am Handy fehlt die Zeile auf „Heute“; „Ich“ ist über ☰ zwei Tipps
+     entfernt, wie vor dieser Runde auch.
+   - Gemessen: Die Liste beginnt wieder bei 154 px (vorher 194), bei
+     390 px sind es 463 px Höhe wie vor der Runde.
+   - Trefferflächen der Reiter in der Kopfzeile: 92–146 × 46 px bei
+     1280/1440/1920, normal und kompakt (Hit-Test).
+
+**Rot, aber schon vor dieser Runde rot** (gegen den alten Stand
+nachgemessen, nicht gelockert):
+- test-p4-seitenleiste: Liste ≥ 690 px, gemessen 612, alter Stand
+  ebenfalls 612.
+- test-navigation: Handy-Startseite höchstens 1,9 Bildschirme; alter
+  Stand 2,1.
+- test-neu-design: Startseite bei 320 × 568.
+- test-p1-aufgaben: unterste Zeile bei 1280 × 800 vom Scrollbereich
+  abgeschnitten.
+- test-startseite-putz, test-block-d, test-team-woche, test-bestellung,
+  test-gehirn (Last).
+
+**Bewusst nicht in dieser Runde** (Vorschläge aus dem Vergleich mit
+`docs/design-vorbilder/`):
+- Material, Geräte und Archiv zu „Bestand“ zusammenlegen.
+- Infos und Brett zu einer Pinnwand zusammenlegen.
+- Chat und Direkt in eine Liste.
+- „Erledigt“ eingeklappt.
+- Punkte statt Zahlen an den Räumen.

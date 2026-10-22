@@ -37,7 +37,10 @@ function pruefe(was, bedingung, hinweis) {
 
 async function oeffne(b, w, h, opt) {
   opt = opt || {};
-  const ctx = await b.newContext(Object.assign({ viewport: { width: w, height: h } },
+  /* serviceWorkers:'block' (Runde 182): sonst lädt der Service-Worker das
+     echte Firebase an page.route vorbei und die App steht in der
+     Anmeldemaske — in dieser Umgebung schon auf main nachgestellt. */
+  const ctx = await b.newContext(Object.assign({ serviceWorkers: 'block', viewport: { width: w, height: h } },
     opt.ruhe ? { reducedMotion: 'reduce' } : {}));
   const p = await ctx.newPage();
   p._fehler = [];
@@ -59,7 +62,7 @@ const stil = (p) => p.evaluate(() => ({ formi: document.body.classList.contains(
   meta: (document.querySelector('meta[name="theme-color"]') || {}).content }));
 const ansicht = (p, v) => p.evaluate(async (v) => {
   const w = ms => new Promise(r => setTimeout(r, ms));
-  /* Runde 180 („fünf Räume“): die Aufgaben liegen im Raum „Studio“, die
+  /* Runde 183 („fünf Räume“): die Aufgaben liegen im Raum „Studio“, die
      Startseite heisst „Heute“. Aus dem Betrieb, 22.10.2026: „das problem
      mit dem zu viel bleibt immer noch bestehen“ – die Raumnamen „passen“. */
   const name = { todos: /^\s*Studio/, home: /^\s*Heute/, chef: /Verwaltung/ }[v];

@@ -2,7 +2,7 @@
    Bis Runde 179 stand hier: „der Knopf soll direkt neben dem Logo stehen
    sodass man ihn immer und direkt klicken kann."
 
-   Runde 180 hat ihn bewusst aus der Kopfzeile genommen. Aus dem Betrieb,
+   Runde 183 hat ihn bewusst aus der Kopfzeile genommen. Aus dem Betrieb,
    22.10.2026: „das problem mit dem zu viel bleibt immer noch bestehen" —
    zu viele Menüpunkte, zu viel auf einem Bildschirm. Und: „jede Funktion
    hat ihren Sinn" — also nicht streichen, sondern an EINER Stelle
@@ -112,7 +112,7 @@ async function seite(b, stub, prefs) {
     console.log('Kopfzeile, alle Gruppen:', JSON.stringify(ueberall));
     pruefe(ueberall.gruppen.length >= 5,
       'GRUPPEN: nur ' + ueberall.gruppen.length + ' gefunden — der Durchlauf misst zu wenig');
-    // Runde 180: „das problem mit dem zu viel bleibt immer noch bestehen" — oben nur, was jeder braucht.
+    // Runde 183: „das problem mit dem zu viel bleibt immer noch bestehen" — oben nur, was jeder braucht.
     pruefe(ueberall.da.length === 0,
       'NOCH OBEN: der Berichts-Knopf steht in der Kopfzeile in ' + JSON.stringify(ueberall.da));
 

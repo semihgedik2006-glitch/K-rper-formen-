@@ -61,7 +61,7 @@ const ZUSTAENDE = [
    „Alles" → Verwaltung → Reiter System. NICHT ueber einen Aufruf von
    innen: renderAboKarte() liegt in einer Kapsel, und ein Durchlauf, der
    sie von aussen riefe, pruefte die Funktion statt den Weg.
-   Seit Runde 180 („fünf Räume", aus dem Betrieb 22.10.2026: „das
+   Seit Runde 183 („fünf Räume", aus dem Betrieb 22.10.2026: „das
    problem mit dem zu viel bleibt immer noch bestehen") steht „Alles"
    nicht mehr in der unteren Leiste; die Lade öffnet der ☰-Griff
    #bereichKopf. */

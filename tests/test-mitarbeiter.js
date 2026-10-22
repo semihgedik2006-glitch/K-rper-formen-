@@ -24,7 +24,7 @@ const SP = process.env.SP || __dirname;
 
   const GROUP = { home:'g-start', chat:'g-komm', dm:'g-komm', ann:'g-komm',
                   todos:'g-arbeit', putzplan:'g-arbeit', material:'g-arbeit',
-                  /* Runde 180 („das problem mit dem zu viel bleibt immer
+                  /* Runde 183 („das problem mit dem zu viel bleibt immer
                      noch bestehen"): Dokumente liegen unter „Wissen"
                      (g-wissen) neben Schulung und Formi, nicht mehr bei
                      den Aufgaben des Tages. */

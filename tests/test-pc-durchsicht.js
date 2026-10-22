@@ -71,7 +71,7 @@ async function oeffne(b, w, h) {
   return p;
 }
 /* Der Weg eines Menschen: „Alles" → Eintrag. Am Handy und am Rechner
-   derselbe. Runde 180 („das problem mit dem zu viel bleibt immer noch
+   derselbe. Runde 183 („das problem mit dem zu viel bleibt immer noch
    bestehen"): „Alles" ist kein Leistenknopf mehr, sondern der ☰-Griff
    am Seitenkopf (#bereichKopf) — auf jeder Seite an derselben Stelle. */
 async function ueberAlles(p, sel) {
@@ -123,7 +123,7 @@ const ERST = '[data-cpane="erstellen"] ';
     await p.close();
   }
 
-  // Runde 180: die Schulung steht unter „Wissen", nicht mehr unter „Ich".
+  // Runde 183: die Schulung steht unter „Wissen", nicht mehr unter „Ich".
   console.log('\n── 2. Wissen → Schulung ──');
   const KARTEN = ['#schFaelligKarte', '#schAuffrischKarte', '#schMeineKarte'];
   for (const [w, h] of PC) {
@@ -216,7 +216,7 @@ const ERST = '[data-cpane="erstellen"] ';
         await p.evaluate(async (z) => {
           const w = (ms) => new Promise(r => setTimeout(r, ms));
           const s = (q) => [...document.querySelectorAll(q)].find(e => e.offsetParent);
-          // Runde 180: „Alles" hinter dem ☰-Griff (siehe ueberAlles)
+          // Runde 183: „Alles" hinter dem ☰-Griff (siehe ueberAlles)
           const a = s('#bereichKopf, [data-group="g-alles"]'); if (a) { a.click(); await w(600); }
           const e = s('[data-alles]' + z.replace(/^\[data-alles\]/, '')) || s(z); if (e) { e.click(); await w(1200); }
         }, z);

@@ -48,7 +48,7 @@ async function oeffne(b, rolle, w, h) {
   await p.waitForTimeout(3000);
   /* Die Abfragen ans Brett mitschreiben (Haken in demo-daten.js). */
   await p.evaluate(() => { window.DEMO_ABFRAGEN = []; });
-  /* Der Weg wie im Studio: „Alles" → „Schwarzes Brett". Seit Runde 180
+  /* Der Weg wie im Studio: „Alles" → „Schwarzes Brett". Seit Runde 183
      steht „Alles" nicht mehr als Knopf in der Leiste (aus dem Betrieb,
      22.10.2026: „das problem mit dem zu viel bleibt immer noch
      bestehen"); dieselbe Liste öffnet der ☰-Griff #bereichKopf. */

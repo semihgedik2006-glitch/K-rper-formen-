@@ -129,7 +129,7 @@ async function leiste(p) {
       JSON.stringify(da));
 
     /* Zurück zur Startseite, Anpassen öffnen. Der Knopf heisst seit
-       Runde 180 „Heute" statt „Start" (aus dem Betrieb, 22.10.2026: „das
+       Runde 183 „Heute" statt „Start" (aus dem Betrieb, 22.10.2026: „das
        problem mit dem zu viel bleibt immer noch bestehen"; die Raumnamen
        „passen"). */
     await p.evaluate(() => [...document.querySelectorAll('.mobnav button')].find(x => /Heute/.test(x.textContent)).click());
@@ -246,7 +246,7 @@ async function leiste(p) {
   console.log('\n── A2: die Hauptaktion in Daumennähe ──');
   {
     const p = await seite(b, 'chef');
-    /* Runde 180: der Raum mit den Aufgaben heisst „Studio" (vorher
+    /* Runde 183: der Raum mit den Aufgaben heisst „Studio" (vorher
        „Aufgaben"), sein erster Reiter sind weiter die Aufgaben. */
     await p.evaluate(() => [...document.querySelectorAll('.mobnav button')].find(x => /Studio/.test(x.textContent)).click());
     await p.waitForTimeout(800);
@@ -308,7 +308,7 @@ async function leiste(p) {
 
     /* „Verwalten" in der Schulung wandert nicht mit. */
     await p.evaluate(() => { document.querySelectorAll('.show[id$="Modal"]').forEach(m => m.classList.remove('show')); });
-    /* Seit Runde 180 steht „Alles" nicht mehr unten in der Leiste: der
+    /* Seit Runde 183 steht „Alles" nicht mehr unten in der Leiste: der
        Weg ist der ☰-Griff #bereichKopf, er öffnet die Schublade. */
     await p.evaluate(() => document.getElementById('bereichKopf').click());
     await p.waitForTimeout(400);
@@ -330,7 +330,7 @@ async function leiste(p) {
      weiter dasselbe: nicht unten in der Daumenzone, sichtbar, oben. */
   {
     const p = await seite(b, 'chef', { w: 1100, h: 900 });
-    // Runde 180: in der Seitenleiste heisst der Raum „Studio" (vorher „Aufgaben").
+    // Runde 183: in der Seitenleiste heisst der Raum „Studio" (vorher „Aufgaben").
     await p.evaluate(() => [...document.querySelectorAll('.side button, .side a')].find(x => /Studio/.test(x.textContent)).click());
     await p.waitForTimeout(800);
     const r = await p.evaluate(() => {
@@ -348,7 +348,7 @@ async function leiste(p) {
   console.log('\n── A3: Bento in der Verwaltung ──');
   {
     const p = await seite(b, 'chef');
-    // Runde 180: „Alles" über den ☰-Griff, nicht mehr über die Leiste.
+    // Runde 183: „Alles" über den ☰-Griff, nicht mehr über die Leiste.
     await p.evaluate(() => document.getElementById('bereichKopf').click());
     await p.waitForTimeout(400);
     await p.evaluate(() => document.querySelector('#allesLadeInhalt [data-alles="chef"][data-al-cgo="ueberblick"]').click());

@@ -16,7 +16,7 @@ const SP = process.env.SP || __dirname;
   await page.mouse.click(215, 400).catch(() => {});
   await page.waitForTimeout(1800);
 
-  /* Runde 180 („fünf Räume", aus dem Betrieb 22.10.2026: „das problem
+  /* Runde 183 („fünf Räume", aus dem Betrieb 22.10.2026: „das problem
      mit dem zu viel bleibt immer noch bestehen"): die Dokumente stehen
      unter „Wissen" (g-wissen), nicht mehr unter „Betrieb". */
   const GROUP = { home:'g-start', chat:'g-komm', dm:'g-komm', ann:'g-komm',

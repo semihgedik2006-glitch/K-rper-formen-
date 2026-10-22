@@ -96,7 +96,7 @@ async function starte(b, rolle) {
    Ansage: dort liegt, was HEUTE im Studio zu tun ist. Eine Schulung
    gehört zu dem, was man selbst kann und wissen muss.
 
-   Runde 180 („fünf Räume“): Die Schulung liegt jetzt unter „Wissen“
+   Runde 183 („fünf Räume“): Die Schulung liegt jetzt unter „Wissen“
    (g-wissen), neben Dokumenten und Formi. Aus dem Betrieb, 22.10.2026:
    „das problem mit dem zu viel bleibt immer noch bestehen“, „jede
    Funktion hat ihren Sinn“ – nichts gestrichen, nur neu geordnet. */
@@ -243,7 +243,7 @@ async function codeHolen(p, name) {
      oder so steht". Ein siebter Bereich in der Navigation waere die
      falsche Antwort auf den Wunsch gewesen, es moege einfacher werden:
      die untere Leiste hat vier feste Plaetze. */
-  /* Runde 180: „Alles" steht nicht mehr unten in der Leiste, sondern
+  /* Runde 183: „Alles" steht nicht mehr unten in der Leiste, sondern
      hinter dem ☰-Griff am Seitenkopf (#bereichKopf), der die Schublade
      öffnet – „das problem mit dem zu viel bleibt immer noch bestehen"
      (22.10.2026). */

@@ -231,7 +231,7 @@ async function konfigMit2FA(p, an) {
     await p.keyboard.press('Escape');
     await p.waitForTimeout(200);
 
-    /* Runde 180 („fünf Räume“): „Alles“ liegt hinter dem ☰-Griff am
+    /* Runde 183 („fünf Räume“): „Alles“ liegt hinter dem ☰-Griff am
        Seitenkopf (#bereichKopf), nicht mehr in einer Leiste. Aus dem Betrieb,
        22.10.2026: „das problem mit dem zu viel bleibt immer noch bestehen“. */
     await p.evaluate(() => { const a = document.getElementById('bereichKopf'); if (a && a.getClientRects().length && a.getAttribute('aria-expanded') !== 'true') a.click(); });

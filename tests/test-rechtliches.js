@@ -167,7 +167,7 @@ const TREFFER = (el) => {
     await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
     await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
     await p.waitForTimeout(3000);
-    /* Runde 180 („das problem mit dem zu viel bleibt immer noch
+    /* Runde 183 („das problem mit dem zu viel bleibt immer noch
        bestehen"): „Alles" ist kein Leistenknopf mehr, sondern der
        ☰-Griff am Seitenkopf (#bereichKopf). */
     await p.evaluate(() => { const a = [...document.querySelectorAll('#bereichKopf, .mobnav [data-group="g-alles"]')].find(e => e.offsetParent); if (a) a.click(); });

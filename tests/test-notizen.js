@@ -67,7 +67,7 @@ async function seite(b, notizen) {
   await p.goto(APP, { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(2600);
   await p.evaluate(async () => {
-    /* Runde 180 („das problem mit dem zu viel bleibt immer noch
+    /* Runde 183 („das problem mit dem zu viel bleibt immer noch
        bestehen"): „Persönlich" ist ein Reiter unter „Heute" (g-start),
        nicht mehr unter der Gruppe „Ich". Der Reiter folgt gleich darunter. */
     document.querySelector('.mobnav [data-group="g-start"]').click();

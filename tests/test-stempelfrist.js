@@ -30,7 +30,7 @@ function pruefe(was, bedingung, hinweis) {
     await p.addInitScript(() => localStorage.setItem('kf_tour', '99:demo-ich'));
     await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
     await p.waitForTimeout(3000);
-    /* Runde 180 („fünf Räume“): „Alles“ steht nicht mehr in der Leiste,
+    /* Runde 183 („fünf Räume“): „Alles“ steht nicht mehr in der Leiste,
        sondern hinter dem ☰-Griff am Seitenkopf (#bereichKopf). Aus dem
        Betrieb, 22.10.2026: „das problem mit dem zu viel bleibt immer noch
        bestehen“. Derselbe Weg, zwei Tipps. */

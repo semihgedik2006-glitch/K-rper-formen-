@@ -46,7 +46,7 @@ async function starte(b, rolle, breite, hoehe) {
   await p.waitForTimeout(3300);
   return p;
 }
-/* Runde 180 („fünf Räume“): Die Schulung liegt jetzt unter „Wissen“
+/* Runde 183 („fünf Räume“): Die Schulung liegt jetzt unter „Wissen“
    (g-wissen), neben Dokumenten und Formi. Aus dem Betrieb, 22.10.2026:
    „das problem mit dem zu viel bleibt immer noch bestehen“, „jede
    Funktion hat ihren Sinn“ – nichts gestrichen, nur neu geordnet. */

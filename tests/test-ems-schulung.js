@@ -69,7 +69,7 @@ async function starte(b, w, h) {
   await p.waitForTimeout(3300);
   return p;
 }
-/* Die Schulung lag bis Runde 179 unter „Ich". Seit Runde 180 („fünf
+/* Die Schulung lag bis Runde 179 unter „Ich". Seit Runde 183 („fünf
    Räume", aus dem Betrieb 22.10.2026: „das problem mit dem zu viel bleibt
    immer noch bestehen") steht sie unter „Wissen" — unten in der Leiste
    am Handy, in der Seitenleiste am Rechner, Reiter „Schulung". */

@@ -133,7 +133,7 @@ async function reiterOeffnen(p, tab) {
   await p.waitForTimeout(2600);
 
   // ══ 1. Gibt es den Bereich ueberhaupt, und kommt man hin? ══
-  /* Runde 180 („das problem mit dem zu viel bleibt immer noch
+  /* Runde 183 („das problem mit dem zu viel bleibt immer noch
      bestehen"; „jede Funktion hat ihren Sinn" — nichts streichen, nur
      neu ordnen): „Ich" hat keinen eigenen Leistenknopf mehr. Der Bereich
      ist ein Reiter unter „Heute" (g-start), denn er beantwortet dieselbe
@@ -160,7 +160,7 @@ async function reiterOeffnen(p, tab) {
       unter: [...document.querySelectorAll('#subnav [data-subview]')]
         .map(x => x.getAttribute('data-subview')),
       // Der Raum „Heute" steht an erster Stelle — vor Studio, Plan,
-      // Nachrichten und Wissen (Runde 180, NAVGROUPS).
+      // Nachrichten und Wissen (Runde 183, NAVGROUPS).
       stelle: [...document.querySelectorAll('.mobnav [data-group]')]
         .map(x => x.getAttribute('data-group')).indexOf('g-start')
     };
@@ -861,7 +861,7 @@ async function reiterOeffnen(p, tab) {
      werden. */
   {
     await p.evaluate(() => {
-      // Runde 180: „Heute" → Reiter „Ich" (siehe Abschnitt 1).
+      // Runde 183: „Heute" → Reiter „Ich" (siehe Abschnitt 1).
       document.querySelector('.mobnav [data-group="g-start"]').click();
     });
     await p.waitForTimeout(400);

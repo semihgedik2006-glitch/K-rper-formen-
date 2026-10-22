@@ -171,7 +171,7 @@ const zustand = (p) => p.evaluate(() => ({
   console.log('\n── 3. Der Chef gibt frei ──');
   for (const [w, h] of [[390, 844], [1440, 900]]) {
     const p = await oeffne(b, w, h, 'chef');
-    /* Runde 180 („das problem mit dem zu viel bleibt immer noch
+    /* Runde 183 („das problem mit dem zu viel bleibt immer noch
        bestehen"): „Alles" ist kein Leistenknopf mehr, sondern der
        ☰-Griff am Seitenkopf (#bereichKopf). Derselbe Weg, andere Stelle. */
     await p.evaluate(() => { const a = [...document.querySelectorAll('#bereichKopf, #side [data-group="g-alles"], .mobnav [data-group="g-alles"]')].find(e => e.offsetParent); if (a) a.click(); });

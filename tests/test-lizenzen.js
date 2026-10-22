@@ -78,7 +78,7 @@ async function seite(b, certs) {
 }
 
 const ichDaten = p => p.evaluate(async () => {
-  /* Runde 180 („das problem mit dem zu viel bleibt immer noch
+  /* Runde 183 („das problem mit dem zu viel bleibt immer noch
      bestehen"): „Ich" ist keine eigene Gruppe mehr, sondern ein Reiter
      unter „Heute" (g-start). Der Reiter wird gleich darunter gewählt. */
   document.querySelector('.mobnav [data-group="g-start"]').click();

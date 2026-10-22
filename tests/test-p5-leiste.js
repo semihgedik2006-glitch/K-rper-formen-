@@ -9,7 +9,7 @@
    Der Putzplan war zwei Tipps entfernt (Aufgaben → Reiter Putzplan),
    die Nachrichten einer.
 
-   Runde 180, aus dem Betrieb, 22.10.2026: „das problem mit dem zu viel
+   Runde 183, aus dem Betrieb, 22.10.2026: „das problem mit dem zu viel
    bleibt immer noch bestehen" — zu viele Menüpunkte, man findet nichts.
    Auf Rückfrage: hinter den vier Knöpfen fehlten Ich, Team, Nachrichten
    und Verwaltung; „jede Funktion hat ihren Sinn" (nichts streichen, nur
@@ -66,7 +66,7 @@ const LAGE = () => ({
   reihe: [...document.querySelectorAll('.mn-reihe > button')].map(x => x.querySelector('span:not(.badge):not(.ndot)').textContent.trim()),
   aktiv: [...document.querySelectorAll('.mn-reihe > button.active')].map(x => x.querySelector('span:not(.badge):not(.ndot)').textContent.trim()),
   ansicht: (document.querySelector('.view.show') || {}).id,
-  // Runde 180: Ungelesenes trägt der Knopf „Nachrichten" (g-komm), nicht mehr „Alles".
+  // Runde 183: Ungelesenes trägt der Knopf „Nachrichten" (g-komm), nicht mehr „Alles".
   punktKomm: !!document.querySelector('.mn-reihe [data-ndot="g-komm"].show')
 });
 async function tippe(p, wort) {
@@ -82,7 +82,7 @@ async function tippe(p, wort) {
     const p = await start(b, 'mitarbeiter', 390, 844);
     const a = await p.evaluate(LAGE);
     console.log('  ' + JSON.stringify(a));
-    // Runde 180: „das problem mit dem zu viel bleibt immer noch bestehen" — fünf Räume.
+    // Runde 183: „das problem mit dem zu viel bleibt immer noch bestehen" — fünf Räume.
     pruefe('unten stehen Heute · Studio · Plan · Nachrichten · Wissen',
       a.reihe.join('|') === 'Heute|Studio|Plan|Nachrichten|Wissen', a.reihe.join('|'));
 
@@ -90,7 +90,7 @@ async function tippe(p, wort) {
     const au = await p.evaluate(LAGE);
     pruefe('„Studio" öffnet die Aufgaben und trägt die Marke', au.ansicht === 'view-todos' && au.aktiv.join('|') === 'Studio',
       JSON.stringify(au));
-    /* Runde 180: kein eigener Putzplan-Knopf mehr — er ist der Reiter
+    /* Runde 183: kein eigener Putzplan-Knopf mehr — er ist der Reiter
        neben den Aufgaben. */
     await p.evaluate(() => document.querySelector('[data-subview="putzplan"]').click());
     await p.waitForTimeout(700);
@@ -99,7 +99,7 @@ async function tippe(p, wort) {
     pruefe('… und die Marke bleibt auf „Studio"', pz.aktiv.join('|') === 'Studio', pz.aktiv.join('|'));
     pruefe('kein eigener Putzplan-Knopf mehr', await p.evaluate(() => !document.querySelector('[data-group="g-putz"]')));
 
-    /* Nachrichten: seit Runde 180 wieder ein Tipp. */
+    /* Nachrichten: seit Runde 183 wieder ein Tipp. */
     await tippe(p, 'Nachrichten');
     const ch = await p.evaluate(LAGE);
     pruefe('die Nachrichten sind mit einem Tipp da', ch.ansicht === 'view-chat', ch.ansicht);
@@ -119,7 +119,7 @@ async function tippe(p, wort) {
     pruefe('eine neue Chatnachricht setzt den Punkt an „Nachrichten"', !vorher && nachher, JSON.stringify({ vorher, nachher }));
 
     /* Schnellzugriffe: der Vorschlag für Mitarbeiter ist unverändert —
-       Runde 180 hat die Wahl nicht angefasst, nur die Stelle. */
+       Runde 183 hat die Wahl nicht angefasst, nur die Stelle. */
     const sz = await p.evaluate(() => [...document.querySelectorAll('#schnellLeiste .sz-wort')].map(x => x.textContent));
     pruefe('der Schnellzugriff-Vorschlag: Meine Woche, Meine Zeiten, Geräte',
       sz.slice(0, 3).join('|') === 'Meine Woche|Meine Zeiten|Geräte', sz.join('|'));
@@ -140,7 +140,7 @@ async function tippe(p, wort) {
           return { t: x.textContent.trim().slice(0, 12), m: TREFFER(x), imBild: r.left >= 0 && r.right <= innerWidth + .5 };
         });
       }, '(' + TREFFER.toString() + ')');
-      // Runde 180: fünf Räume statt vier Knöpfe (siehe oben).
+      // Runde 183: fünf Räume statt vier Knöpfe (siehe oben).
       pruefe(w + ' px, ' + dichte + ': fünf Knöpfe, jeder ≥ 44 × 44 und im Bild',
         k.length === 5 && k.every(x => x.m.w >= 44 && x.m.h >= 44 && x.imBild), JSON.stringify(k));
     }
@@ -157,7 +157,7 @@ async function tippe(p, wort) {
     await p.waitForTimeout(3200);
     const a = await p.evaluate(() => ({ neu: document.body.classList.contains('neu'),
       gruppen: [...document.querySelectorAll('.mobnav button')].map(x => x.dataset.group) }));
-    // Runde 180: auch im bisherigen Design dieselben fünf Räume.
+    // Runde 183: auch im bisherigen Design dieselben fünf Räume.
     pruefe('GEGENPROBE bisheriges Design: dieselben fünf Räume, kein Putzplan-Knopf',
       a.neu === false && a.gruppen.join('|') === 'g-start|g-arbeit|g-team|g-komm|g-wissen' &&
       a.gruppen.indexOf('g-putz') < 0, JSON.stringify(a));

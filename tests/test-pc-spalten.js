@@ -44,7 +44,7 @@ const TREFFER = (el) => {
   while (re < innerWidth && trifft(re + 1, cy)) re++;
   return { w: Math.round(re - l + 1), h: Math.round(u - o + 1) };
 };
-/* Runde 180 („das problem mit dem zu viel bleibt immer noch bestehen";
+/* Runde 183 („das problem mit dem zu viel bleibt immer noch bestehen";
    „jede Funktion hat ihren Sinn" — nur neu ordnen): die Schulung steht
    unter „Wissen" (g-wissen), die Gruppe „Ich" gibt es nicht mehr. */
 const GRUPPE = { material: 'g-arbeit', geraete: 'g-arbeit', probe: 'g-arbeit', schulung: 'g-wissen' };

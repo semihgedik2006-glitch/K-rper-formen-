@@ -88,7 +88,7 @@ const nav = (p, g) => p.evaluate((g) => document.querySelector('.mobnav [data-gr
   console.log('\n── 2. Schulung: der offene Rest ──');
   {
     const p = await oeffne(b, 390, 844);
-    /* Bis Runde 179: „Alles" bzw. „Ich" → Reiter Schulung. Seit Runde 180
+    /* Bis Runde 179: „Alles" bzw. „Ich" → Reiter Schulung. Seit Runde 183
        („fünf Räume", aus dem Betrieb 22.10.2026: „das problem mit dem zu
        viel bleibt immer noch bestehen") steht die Schulung unter
        „Wissen", unten in der Leiste. */

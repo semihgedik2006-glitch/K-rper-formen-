@@ -121,7 +121,7 @@ async function zuDenAufgaben(p) {
 
     /* ══ 3. Hochzählen im Überblick ══ */
     /* Bis Runde 179 stand „Alles" als Knopf in Seitenleiste bzw. Leiste.
-       Seit Runde 180 („fünf Räume", aus dem Betrieb 22.10.2026: „das
+       Seit Runde 183 („fünf Räume", aus dem Betrieb 22.10.2026: „das
        problem mit dem zu viel bleibt immer noch bestehen") öffnet der
        ☰-Griff #bereichKopf dieselbe Liste als Schublade. */
     await p.evaluate(() => { const a = document.getElementById('bereichKopf'); if (a) a.click(); });
@@ -153,7 +153,7 @@ async function zuDenAufgaben(p) {
     console.log('\n── weniger Bewegung ──');
     const ctx = await b.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
     const p = await oeffne(ctx, 'chef');
-    // Runde 180: „Alles" über den ☰-Griff (siehe oben).
+    // Runde 183: „Alles" über den ☰-Griff (siehe oben).
     await p.evaluate(() => { const a = document.getElementById('bereichKopf'); if (a) a.click(); });
     await p.waitForTimeout(500);
     const verlauf = await p.evaluate(() => new Promise(fertig => {

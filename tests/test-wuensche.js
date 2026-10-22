@@ -37,7 +37,7 @@ const nurAnliegen = (l) => (l || []).filter(x => /^anliegen\//.test(x.pfad));
 
 async function reiter(p, name) {
   return p.evaluate(async (x) => {
-    /* Runde 180 („fünf Räume“): „Ich“ und „Persönlich“ sind Reiter unter
+    /* Runde 183 („fünf Räume“): „Ich“ und „Persönlich“ sind Reiter unter
        „Heute“ (g-start); die Gruppe g-ich gibt es nicht mehr. Aus dem
        Betrieb, 22.10.2026: „das problem mit dem zu viel bleibt immer noch
        bestehen“ – nichts gestrichen, nur neu geordnet. */

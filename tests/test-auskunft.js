@@ -39,7 +39,7 @@ async function oeffne(b, w, h, rolle) {
 }
 async function allesZu(p, sel) {
   /* Bis Runde 179 stand „Alles" als Knopf in Seitenleiste bzw. Leiste.
-     Seit Runde 180 („fünf Räume", aus dem Betrieb 22.10.2026: „das
+     Seit Runde 183 („fünf Räume", aus dem Betrieb 22.10.2026: „das
      problem mit dem zu viel bleibt immer noch bestehen") öffnet der
      ☰-Griff #bereichKopf dieselbe Liste als Schublade — Handy wie
      Rechner. */

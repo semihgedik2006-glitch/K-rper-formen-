@@ -79,16 +79,13 @@ async function oeffne(b, w, h, opt) {
   return p;
 }
 const zu = (p) => p._ctx.close();
-/* Der Eingang zu Formi. Bis Runde 179 stand ein „Gehirn"-Knopf je nach
-   Aussehen und Breite an einer von drei Stellen (Bereichszeile, Seitenkopf,
-   Kopfleiste). Runde 180, aus dem Betrieb (22.10.2026): „das problem mit
-   dem zu viel bleibt immer noch bestehen" — Formi hat seitdem EINEN
-   Eingang, die Kugel #formiKugel. Die drei alten Knöpfe sind immer
-   verborgen (geprüft mit altKnopfSichtbar). */
+/* Der „Gehirn"-Knopf steht je nach Aussehen und Breite an einer von drei
+   Stellen: Bereichszeile (neu, Handy), Seitenkopf (bisher, Handy),
+   Kopfleiste (Rechner). */
+/* Seit Runde 182 (22.10.2026, „der alte formi knopf oben kann weg")
+   öffnet nur noch die Kugel Formi. */
 const jvKnopf = (p) => p.evaluate(() => ['#formiKugel'].find(s => {
-  const el = document.querySelector(s); return el && !el.hidden && el.getClientRects().length && getComputedStyle(el).display !== 'none'; }) || null);
-const altKnopfSichtbar = (p) => p.evaluate(() => ['#jarvisStart', '#jarvisStartAlt', '#jarvisStartPc'].filter(s => {
-  const el = document.querySelector(s); return el && el.getClientRects().length && getComputedStyle(el).display !== 'none'; }));
+  const el = document.querySelector(s); return el && el.getClientRects().length && getComputedStyle(el).display !== 'none'; }) || null);
 const sichtbar = (p, sel) => p.evaluate((s) => {
   const el = document.querySelector(s);
   return !!el && el.getClientRects().length > 0 && getComputedStyle(el).display !== 'none';
@@ -139,7 +136,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await aufSeite(p);
     pruefe('die Zeile öffnet die eigene Seite', await sichtbar(p, '#view-gehirn.show'));
     const reiter = await p.evaluate(() => [...document.querySelectorAll('#subnav [data-subview]')].map(x => x.getAttribute('data-subview')));
-    /* Bis Runde 179 stand der Reiter unter „Ich". Seit Runde 180 („fünf
+    /* Bis Runde 179 stand der Reiter unter „Ich". Seit Runde 183 („fünf
        Räume", aus dem Betrieb 22.10.2026: „das problem mit dem zu viel
        bleibt immer noch bestehen") gehört Formi zu „Wissen", neben
        Dokumenten und Schulung. */
@@ -601,11 +598,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     const p = await oeffne(b, w, h);
     await p.waitForTimeout(300);
     const knopf = await jvKnopf(p);
-    /* Runde 180: auf der Startseite steht die Kugel — auf jeder Breite
-       dieselbe Stelle, kein zweiter Formi-Knopf daneben („das problem mit
-       dem zu viel bleibt immer noch bestehen", 22.10.2026). */
-    const alte = await altKnopfSichtbar(p);
-    pruefe(w + ' px: Formi-Kugel steht auf der Startseite (' + knopf + '), kein alter Knopf daneben', await sichtbar(p, '#view-home.show') && knopf === '#formiKugel' && !alte.length, alte.join(' '));
+    pruefe(w + ' px: die Formi-Kugel steht auf der Startseite (' + knopf + ')', await sichtbar(p, '#view-home.show') && knopf === '#formiKugel');
     await p.click(knopf); await p.waitForTimeout(400);
     pruefe(w + ' px: ein Tipp öffnet das eigene Fenster', await sichtbar(p, '#jarvis') && await p.evaluate(() => {
       const r = document.getElementById('jarvis').getBoundingClientRect(); return r.width >= innerWidth - 1 && r.height >= innerHeight - 1; }));
@@ -665,29 +658,22 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     pruefe('Escape schliesst das Fenster', !(await sichtbar(p, '#jarvis')) && await sichtbar(p, '#view-home.show'));
     await zu(p);
   }
-  /* Neues Aussehen (live): bis Runde 179 stand der Knopf in der
-     Bereichszeile (ohne zusätzliche Höhe, auf 320 × 568 weg). Seit Runde
-     180 ist #jarvisStart immer verborgen und die Kugel der Eingang, auf
-     jeder Breite — aus dem Betrieb (22.10.2026): „das problem mit dem zu
-     viel bleibt immer noch bestehen". Geprüft wird weiter, dass die
-     Bereichszeile einreihig bleibt. */
-  for (const [w, h] of [[360, 780], [390, 844], [430, 932], [820, 1180], [320, 568]]) {
-    const ctx = await b.newContext({ viewport: { width: w, height: h } });
+  /* Runde 182 (22.10.2026, aus dem Betrieb: „der alte formi knopf oben
+     kann weg"): die Knöpfe in der Bereichszeile, neben der Begrüssung
+     und oben am Rechner gibt es nicht mehr — nur die Kugel. Im neuen
+     Aussehen wie im bisherigen, auch auf 320 × 568. */
+  for (const [w, h, neu] of [[360, 780, true], [390, 844, false], [820, 1180, true], [320, 568, true], [1440, 900, true]]) {
+    const ctx = await b.newContext({ viewport: { width: w, height: h }, serviceWorkers: 'block' });
     const p = await ctx.newPage();
     await p.addInitScript({ path: SP + '/stub-chef.js' });
     await p.route('**://www.gstatic.com/**', r => r.abort());
-    await p.goto(APP + '?neu=1', { waitUntil: 'domcontentloaded' });
+    await p.goto(APP + (neu ? '?neu=1' : ''), { waitUntil: 'domcontentloaded' });
     await p.waitForFunction(() => !!document.querySelector('#app.show'), null, { timeout: 15000 });
     await p.waitForTimeout(800);
-    const k = await jvKnopf(p);
-    /* Einreihig = die Zeile ist mit Knopf nicht höher als ohne. */
-    const zeile = await p.evaluate(() => { const z = document.getElementById('bereichZeile'), k = document.getElementById('jarvisStart');
-      const mit = z.getBoundingClientRect().height; const war = k.hidden; k.hidden = true; const ohne = z.getBoundingClientRect().height; k.hidden = war;
-      return Math.round(mit - ohne); });
-    const alte = await altKnopfSichtbar(p);
-    pruefe('neues Aussehen ' + w + '×' + h + ': kein Formi-Knopf in der Bereichszeile, die Kugel steht da, Zeile bleibt einreihig',
-      !alte.length && k === '#formiKugel' && zeile <= 0, k + ' · alt sichtbar: ' + alte.join(' ') + ' · Zeile ' + zeile + ' px höher');
-    if (k) { await p.click(k); await p.waitForTimeout(300); pruefe('… und die Kugel öffnet das Fenster', await sichtbar(p, '#jarvis')); }
+    const alt = await p.evaluate(() => ['jarvisStart', 'jarvisStartAlt', 'jarvisStartPc'].filter(id => document.getElementById(id)));
+    pruefe((neu ? 'neues' : 'bisheriges') + ' Aussehen ' + w + '×' + h + ': kein alter Formi-Knopf, die Kugel ist da', !alt.length && await sichtbar(p, '#formiKugel'), alt.join(','));
+    await p.click('#formiKugel'); await p.waitForTimeout(300);
+    pruefe('… und die Kugel öffnet Formi', await sichtbar(p, '#jarvis'));
     await ctx.close();
   }
   console.log('\n── 12c Mini-Fenster, Rückgängig, Gespräche, Taste J (20.10.2026) ──');
@@ -1107,7 +1093,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await p.fill('#hilfeSuche', 'quokka'); await p.waitForTimeout(300);
     pruefe('fremde Firma: kein Verweis unter den Treffern', !(await p.$('#hilfeTreffer [data-hgehirn]')));
     await p.evaluate(() => { const z = document.getElementById('hilfeZu'); if (z) z.click(); });
-    pruefe('fremde Firma: keine Formi-Kugel und kein alter Knopf auf der Startseite', !(await jvKnopf(p)) && !(await altKnopfSichtbar(p)).length);
+    pruefe('fremde Firma: keine Formi-Kugel auf der Startseite', !(await jvKnopf(p)));
     await zu(p);
   }
 
@@ -1266,7 +1252,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
       await p.fill('#gehirnFeld', 'Wie wasche ich die Westen?'); await p.click('#gehirnFragen'); await fertig(p);
       if (!(await p.$('#gehirnVerlauf [data-gdaumen]'))) zuKlein.push('Daumen fehlt');
       zuKlein = zuKlein.concat(await ids('#gehirnVerlauf [data-gdaumen]'));
-      // Das eigene Fenster: Eingang auf der Startseite (seit Runde 180 die Kugel) und die Knöpfe darin
+      // Das eigene Fenster: Eingang auf der Startseite (seit Runde 183 die Kugel) und die Knöpfe darin
       await p.evaluate(() => { location.hash = '#home'; }); await p.waitForTimeout(400);
       const jk = await jvKnopf(p);
       if (!jk) zuKlein.push('Formi-Kugel fehlt'); else zuKlein = zuKlein.concat(await ids(jk));

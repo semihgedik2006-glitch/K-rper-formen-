@@ -156,6 +156,133 @@ function ki(antworten) {
   pruefe(sendungen.some(u => /graph\.facebook\.com/.test(u)), 'mit WA_AKTIV=1 geht die Meldung an die Admins wieder raus');
   global.fetch = altFetch;
 
+  /* ── 2.13: Suche nach Bedeutung und Lernschleife ───────────────────
+     Die echten Fingerabdrücke (bge-m3) gibt es hier nicht. Die Attrappe
+     rechnet Wörter in „Begriffe" um (Rücken = LWS = Lendenwirbelsäule …)
+     — geprüft wird damit der WEG (speichern, laden, mischen, vorschlagen,
+     freigeben), nicht die Güte des echten Modells. */
+  console.log('\n2.13: Bedeutung und Lernschleife');
+  {
+    const v = [0.3, -0.5, 0.8, 0.1];
+    const n = w.vektorNorm(v);
+    const back = w.vektorAuspacken(w.vektorPacken(v));
+    pruefe(Math.abs(w.aehnlich(n, back) - 1) < 0.02, 'Fingerabdruck packen/auspacken: Ähnlichkeit mit sich selbst ≈ 1 (' + w.aehnlich(n, back).toFixed(3) + ')');
+    const anders = w.vektorAuspacken(w.vektorPacken([-0.3, 0.5, -0.8, -0.1]));
+    pruefe(w.aehnlich(n, anders) < -0.95, 'Gegenteil ≈ −1');
+    pruefe(JSON.stringify(w.rangMischen([[1, 2, 3], [3, 4]], 4)) === '[3,1,2,4]', 'Ranglisten mischen: in beiden vorn kommt zuerst (' + JSON.stringify(w.rangMischen([[1, 2, 3], [3, 4]], 4)) + ')');
+    pruefe(w.korrekturText('stimmt nicht, richtig ist: die Westen nur bei 30 Grad waschen') === 'die Westen nur bei 30 Grad waschen', 'Korrektur: Text nach „richtig ist" wird erkannt');
+    pruefe(w.korrekturText('stimmt nicht') === '', 'Korrektur: bloßes „stimmt nicht" ist keine Richtigstellung');
+    pruefe(w.korrekturText('Falsch. Bei Herzschrittmacher gar kein EMS, auch nicht mit Freigabe.').startsWith('Bei Herzschrittmacher'), 'Korrektur: „Falsch. …" wird erkannt');
+  }
+  {
+    const BEGRIFFE = [['rücken', 'ruecken', 'lws', 'lendenwirbelsäule', 'kreuz', 'kreuzschmerzen'], ['weste', 'westen', 'waschen', 'wäsche', 'waschmaschine'], ['krampf', 'krämpfe', 'verkrampft'], ['kündigen', 'kündigung', 'vertrag']];
+    const fake = (t) => {
+      const v = new Array(16).fill(0.01);
+      String(t).toLowerCase().split(/[^a-zäöüß]+/).forEach(x => { const g = BEGRIFFE.findIndex(b => b.includes(x)); if (g >= 0) v[g] += 1; });
+      return v;
+    };
+    const env2 = { DB: d1(), STUDIO_KEY: 'k', ADMIN_KEY: 'admin' };
+    const kiQ = [];
+    const gefragt = [];
+    env2.AI = { run: async (modell, e) => {
+      if (/bge-m3/.test(modell)) return { data: e.text.map(fake), shape: [e.text.length, 16] };
+      gefragt.push(modell);
+      const a = kiQ.length ? kiQ.shift() : '';
+      return { response: typeof a === 'string' ? a : JSON.stringify(a) };
+    } };
+    /* ohne das Startwissen aus schema.sql — hier zählen nur die drei */
+    env2.DB.roh.exec('DELETE FROM wissen; DELETE FROM wissen_fts;');
+    const lws = await w.wissenSpeichern(env2, { thema: 'Was tun wenn Kunde LWS hat', inhalt: 'Akut: erst ärztlich abklären. Chronisch und abgeklärt: EMS ist gut untersucht.', kategorie: 'Gesundheit & Atteste' });
+    const weste = await w.wissenSpeichern(env2, { thema: 'Wie wasche ich die EMS-Westen?', inhalt: 'Schonprogramm, wenig Umdrehungen, 3–4 Kappen Pflegespüler.' });
+    const krampf = await w.wissenSpeichern(env2, { thema: 'Ein Kunde bekommt einen Krampf', inhalt: 'Training pausieren, Muskel locker dehnen.' });
+    const vk = env2.DB.roh.prepare('SELECT COUNT(*) AS n FROM wissen_vektor').get().n;
+    pruefe(vk === 3, 'beim Speichern entsteht gleich der Fingerabdruck (' + vk + ' von 3)');
+    const t1 = await w.findeWissen(env2, 'Kreuzschmerzen, was mach ich?');
+    pruefe(t1.length && t1[0].id === lws, 'Bedeutung findet „LWS" für „Kreuzschmerzen", ohne gemeinsames Wort (' + t1.map(x => x.id).join(',') + ')');
+    const t2 = await w.findeWissen(env2, 'wie wasche ich die westen');
+    pruefe(t2.length && t2[0].id === weste, 'Gegenprobe: Wortsuche + Bedeutung — Westen bleibt vorn');
+    env2.AI.run = (orig => async (m, e) => { if (/bge-m3/.test(m)) throw new Error('4006: daily free allocation'); return orig(m, e); })(env2.AI.run);
+    const t3 = await w.findeWissen(env2, 'wie wasche ich die westen');
+    pruefe(t3.length && t3[0].id === weste, 'fällt die Bedeutung aus (Kontingent), sucht Formi mit Wörtern weiter');
+    env2.AI.run = async (modell, e) => {
+      if (/bge-m3/.test(modell)) return { data: e.text.map(fake) };
+      gefragt.push(modell);
+      const a = kiQ.length ? kiQ.shift() : '';
+      return { response: typeof a === 'string' ? a : JSON.stringify(a) };
+    };
+    env2.DB.roh.prepare('DELETE FROM wissen_vektor').run();
+    const auf = await w.vektorenAufbauen(env2, 100);
+    pruefe(auf.neu === 3 && auf.fertig, '„Bedeutung berechnen" holt fehlende Fingerabdrücke nach (' + JSON.stringify(auf) + ')');
+
+    /* Lernlauf: Selbsttest findet Krampf über eine Umschreibung nicht → Vorschlag */
+    env2.DB.roh.prepare("INSERT INTO offen (frage, status, erstellt) VALUES ('Kunde will kündigen, was tun?', 'offen', 1)").run();
+    env2.DB.roh.prepare("INSERT INTO offen (frage, status, erstellt) VALUES ('Mein Rücken zwickt beim Training, weiter?', 'offen', 2)").run();
+    env2.DB.roh.prepare("UPDATE wissen SET geaendert = 1 WHERE id = ?").run(krampf);
+    kiQ.push({ frage: 'Kreuzschmerzen, darf der trainieren?' }, { frage: 'westen in die maschine?' }, { frage: 'Bein ist plötzlich steinhart, was jetzt?' });
+    kiQ.push({ reicht: true, antwort: 'Kommt drauf an: akut erst ärztlich abklären, chronisch und abgeklärt ist EMS gut untersucht.', quellen: [lws] });
+    const lauf = await w.lernlauf(env2, { tests: 3, luecken: 3 });
+    const vs = env2.DB.roh.prepare("SELECT * FROM vorschlag ORDER BY id").all();
+    const art = (a) => vs.filter(x => x.art === a);
+    pruefe(lauf.getestet === 3 && art('frage').length === 1 && art('frage')[0].wissen_id === krampf, 'Selbsttest: 3 geprüft, Krampf über „Bein ist plötzlich steinhart" nicht gefunden → 1 Vorschlag (' + JSON.stringify(lauf) + ')');
+    const l1 = art('luecke').find(x => /kündigen/.test(x.thema));
+    const l2 = art('luecke').find(x => /Rücken/.test(x.thema));
+    pruefe(l1 && l1.status === 'leer', 'Lücke ohne passendes Wissen (Kündigung): kein Entwurf, bleibt bei dir');
+    pruefe(l2 && l2.status === 'neu' && /Nr\. \d/.test(l2.begruendung), 'Lücke mit Wissen (Rücken): Entwurf nur aus Wissen, mit Nummer (' + (l2 && l2.begruendung) + ')');
+    pruefe(art('veraltet').length === 1 && art('veraltet')[0].wissen_id === krampf, 'veraltet: der seit Jahren unberührte Eintrag wird zur Prüfung vorgelegt');
+    const nochmal = await w.lernlauf(env2, { tests: 0, luecken: 3 });
+    pruefe(env2.DB.roh.prepare("SELECT COUNT(*) AS n FROM vorschlag").get().n === vs.length, 'zweiter Lauf: nichts doppelt vorgeschlagen');
+
+    /* Freigeben */
+    const fr = art('frage')[0];
+    const u1 = await w.vorschlagUrteil(env2, { id: fr.id, gut: true });
+    const krampfNeu = env2.DB.roh.prepare('SELECT inhalt FROM wissen WHERE id = ?').get(krampf).inhalt;
+    pruefe(u1.ok && /Auch gefragt als: „Bein ist plötzlich steinhart/.test(krampfNeu), 'Selbsttest übernehmen: Frage steht im Eintrag');
+    const t4 = await w.findeWissen(env2, 'Bein ist plötzlich steinhart, was jetzt?');
+    pruefe(t4.slice(0, 3).some(x => x.id === krampf), '… und danach findet Formi ihn');
+    const u2 = await w.vorschlagUrteil(env2, { id: l2.id, gut: true, inhalt: 'Geprüft: akut erst Arzt, chronisch mit Freigabe EMS möglich.' });
+    pruefe(u2.ok && env2.DB.roh.prepare("SELECT status FROM offen WHERE id = ?").get(l2.ref).status === 'erledigt', 'Lücke übernehmen: offene Frage erledigt, mit deinem Text als Wissen');
+    const u3 = await w.vorschlagUrteil(env2, { id: art('veraltet')[0].id, gut: false });
+    pruefe(u3.ok && env2.DB.roh.prepare("SELECT status FROM vorschlag WHERE id = ?").get(art('veraltet')[0].id).status === 'verworfen', 'verwerfen geht');
+    pruefe(!(await w.vorschlagUrteil(env2, { id: fr.id, gut: true })).ok, 'zweimal freigeben geht nicht');
+
+    /* Doppelt */
+    const d2 = await w.wissenSpeichern(env2, { thema: 'EMS-Westen waschen', inhalt: 'Westen im Schonprogramm waschen, Pflegespüler.' });
+    const lauf2 = await w.lernlauf(env2, { tests: 0, luecken: 0, doppelt: 10 });
+    /* Mit der groben Attrappe gilt auch die eben übernommene Rücken-Antwort
+       als fast gleich zu LWS — das ist hier richtig so. Geprüft wird das
+       Westen-Paar. */
+    const dop = env2.DB.roh.prepare("SELECT * FROM vorschlag WHERE art = 'doppelt' AND ref = ?").get(d2);
+    pruefe(dop && dop.wissen_id === weste && dop.ref === d2, 'doppelt: zwei fast gleiche Einträge werden vorgeschlagen (' + JSON.stringify(lauf2) + ')');
+    const u4 = await w.vorschlagUrteil(env2, { id: dop.id, gut: true, inhalt: 'Schonprogramm, wenig Umdrehungen, Pflegespüler.' });
+    pruefe(u4.ok && !env2.DB.roh.prepare('SELECT id FROM wissen WHERE id = ?').get(d2), 'zusammenführen: der zweite ist weg, der erste hat deinen Text');
+
+    /* Korrektur aus dem Team über die echte Schnittstelle */
+    const altFetch2 = global.fetch; global.fetch = async () => ({ ok: true, status: 200, text: async () => '{}', json: async () => ({}) });
+    kiQ.push({ antwort: 'Westen: Schonprogramm.', art: 'frage', abgedeckt: true, quellen: [weste] });
+    const fragen = async (text) => {
+      const r = await w.default.fetch(new Request('https://x.test/api/frage', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-studio-key': 'k' },
+        body: JSON.stringify({ frage: text, name: 'Anna Test', studio: 'Hürth', vorname: 'Anna' }) }), env2, { waitUntil() {} });
+      return r.json();
+    };
+    await fragen('wie wasche ich die westen');
+    await fragen('stimmt nicht, richtig ist: maximal 30 Grad und nie in den Trockner');
+    const ko = env2.DB.roh.prepare("SELECT * FROM vorschlag WHERE art = 'korrektur'").get();
+    pruefe(ko && ko.inhalt === 'maximal 30 Grad und nie in den Trockner' && ko.wissen_id === weste, 'Korrektur aus dem Team wird ein Vorschlag, mit dem Eintrag, den Formi benutzt hatte');
+    const u5 = await w.vorschlagUrteil(env2, { id: ko.id, gut: true });
+    pruefe(u5.ok && env2.DB.roh.prepare("SELECT COUNT(*) AS n FROM wissen WHERE quelle = 'Korrektur aus dem Team'").get().n === 1, 'Korrektur übernehmen: neues Wissen, Quelle „Korrektur aus dem Team"');
+    global.fetch = altFetch2;
+
+    /* Leitstand und Zahlen */
+    const st = await (await w.default.fetch(new Request('https://x.test/api/statistik', { headers: { 'x-admin-key': 'admin' } }), env2, {})).json();
+    pruefe(st.training.goldLernen === 2 && typeof st.vorschlaege === 'number' && st.vektoren.mit === st.vektoren.gesamt, 'Übersicht zählt Vorschläge, Bedeutung und freigegebene Paare (' + JSON.stringify({ g: st.training.goldLernen, v: st.vorschlaege, vk: st.vektoren }) + ')');
+    const exp = await (await w.default.fetch(new Request('https://x.test/api/training/export', { headers: { 'x-admin-key': 'admin' } }), env2, {})).text();
+    pruefe(/"quelle":"selbsttest"/.test(exp) && /"quelle":"korrektur"/.test(exp), 'Trainingsdaten enthalten Selbsttest- und Korrektur-Paare');
+    const html = await (await w.default.fetch(new Request('https://x.test/leitstand'), env2, {})).text();
+    pruefe(/"vorschlaege","Vorschläge"/.test(html) && /Jetzt lernen/.test(html) && /Bedeutung berechnen/.test(html), 'Leitstand: Reiter „Vorschläge", Knöpfe „Jetzt lernen" und „Bedeutung berechnen"');
+    const ohne = await w.default.fetch(new Request('https://x.test/api/vorschlaege'), env2, {});
+    pruefe(ohne.status === 401, 'Vorschläge nur mit ADMIN_KEY');
+  }
+
   console.log(`\n${ok} bestanden, ${fehler} fehlgeschlagen`);
   process.exit(fehler ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

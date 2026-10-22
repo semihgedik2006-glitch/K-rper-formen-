@@ -39,7 +39,7 @@ async function seite(b, rolle, w, h) {
   await p.waitForTimeout(400);
   return p;
 }
-/* Der Weg zu „Meine Woche" über „Alles". Seit Runde 180 steht „Alles"
+/* Der Weg zu „Meine Woche" über „Alles". Seit Runde 183 steht „Alles"
    nicht mehr in der Leiste (aus dem Betrieb, 22.10.2026: „das problem
    mit dem zu viel bleibt immer noch bestehen") — der ☰-Griff
    #bereichKopf öffnet dieselbe Liste als Schublade. */

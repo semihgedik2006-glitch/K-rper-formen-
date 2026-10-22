@@ -121,7 +121,7 @@ async function seite(b, stub, such, breite) {
     }));
     console.log('NEU:', JSON.stringify(neu));
     pruefe('body trägt die Klasse „neu"', neu.klasse === true);
-    /* Runde 180, aus dem Betrieb, 22.10.2026: „das problem mit dem zu
+    /* Runde 183, aus dem Betrieb, 22.10.2026: „das problem mit dem zu
        viel bleibt immer noch bestehen" — zu viele Menüpunkte, man findet
        nichts; „jede Funktion hat ihren Sinn" (nichts streichen, nur neu
        ordnen); die Raumnamen „passen". Seitdem fünf Räume, am Handy
@@ -293,7 +293,7 @@ async function seite(b, stub, such, breite) {
 
   /* Seite und Schublade müssen dasselbe zeigen — sonst gibt es zwei
      Wahrheiten, und eine davon ist immer die alte. */
-  /* Runde 180: die Seite „Alles" hat keinen Leistenknopf mehr. Sie
+  /* Runde 183: die Seite „Alles" hat keinen Leistenknopf mehr. Sie
      bleibt für gespeicherte Wege (#alles) bestehen — also über genau
      so einen Link geöffnet. Solange es sie gibt, muss sie dasselbe
      zeigen wie die Schublade. */
@@ -537,7 +537,7 @@ async function seite(b, stub, such, breite) {
   ]) {
     const p3 = await seite(b, stub, '?neu=1');
     const r = await p3.evaluate(async () => {
-      /* Runde 180: „Alles" öffnet man über den ☰-Griff am Seitenkopf;
+      /* Runde 183: „Alles" öffnet man über den ☰-Griff am Seitenkopf;
          gelesen wird, was in der Schublade steht. */
       document.getElementById('bereichKopf').click();
       await new Promise(r => setTimeout(r, 900));

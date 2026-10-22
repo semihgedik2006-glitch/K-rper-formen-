@@ -21,7 +21,7 @@ async function start(stub, errs) {
   await page.waitForTimeout(1600);
   await page.mouse.click(195, 400).catch(() => {});
   await page.waitForTimeout(2700);
-  /* Seit Runde 180 („fünf Räume", aus dem Betrieb 22.10.2026: „das
+  /* Seit Runde 183 („fünf Räume", aus dem Betrieb 22.10.2026: „das
      problem mit dem zu viel bleibt immer noch bestehen") stehen die
      Dokumente unter „Wissen" — dort sind sie der erste Reiter. */
   await page.evaluate(() => document.querySelector('.mobnav [data-group="g-wissen"]').click());
