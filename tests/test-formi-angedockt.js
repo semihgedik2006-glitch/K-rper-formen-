@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════════
-   FORMI ANGEDOCKT (Runde 191, 22.10.2026)
+   FORMI ANGEDOCKT (Runde 193, 22.10.2026)
 
    Aus dem Betrieb, auf „am Rechner als feste Spalte andocken oder
    schwebend?": „was sinnvoller ist". Entschieden: ab 1440 px dockt das
