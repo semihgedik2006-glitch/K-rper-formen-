@@ -49,7 +49,7 @@ const TREFFER = (el) => {
 
 async function oeffne(b, w, h, opt) {
   opt = opt || {};
-  const ctx = await b.newContext(Object.assign({ viewport: { width: w, height: h } },
+  const ctx = await b.newContext(Object.assign({ serviceWorkers: 'block', viewport: { width: w, height: h } },
     opt.touch ? { hasTouch: true, isMobile: true } : {}));
   const p = await ctx.newPage();
   p._fehler = [];

@@ -55,7 +55,7 @@ const TREFFER = (el) => {
 
   console.log('\n── Speicherhinweis beim ersten Öffnen ──');
   for (const [w, h] of [[390, 844], [1440, 900]]) {
-    const ctx = await b.newContext({ viewport: { width: w, height: h } });
+    const ctx = await b.newContext({ serviceWorkers: 'block', viewport: { width: w, height: h } });
     const p = await ctx.newPage();
     const fehler = [];
     p.on('pageerror', e => fehler.push(e.message.slice(0, 160)));
@@ -139,7 +139,7 @@ const TREFFER = (el) => {
 
   console.log('\n── AGB im Fenster „Rechtliches" ──');
   {
-    const ctx = await b.newContext({ viewport: { width: 1440, height: 900 } });
+    const ctx = await b.newContext({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
     const p = await ctx.newPage();
     await p.route('**://www.gstatic.com/**', r => r.abort());
     await p.addInitScript({ path: path.join(__dirname, 'stub-ohne-login.js') });
@@ -159,7 +159,7 @@ const TREFFER = (el) => {
 
   console.log('\n── Zustimmung an der Kasse (Demo, Chef) ──');
   {
-    const ctx = await b.newContext({ viewport: { width: 390, height: 900 } });
+    const ctx = await b.newContext({ serviceWorkers: 'block', viewport: { width: 390, height: 900 } });
     const p = await ctx.newPage();
     const fehler = [];
     p.on('pageerror', e => fehler.push(e.message.slice(0, 160)));

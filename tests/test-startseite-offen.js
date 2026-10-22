@@ -129,7 +129,7 @@ async function startseite(p) {
 
   for (const rolle of ['mitarbeiter', 'leiter', 'chef']) {
     console.log('\n── ' + rolle + ' ──');
-    const p = await b.newPage({ viewport: { width: 390, height: 900 } });
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 900 } });
     const fehler = [];
     p.on('pageerror', e => fehler.push(e.message.slice(0, 160)));
     await p.route('**://www.gstatic.com/**', r => r.abort());
@@ -227,7 +227,7 @@ async function startseite(p) {
      trotzdem irrefuehrend. */
   console.log('\n── GEGENPROBE: nichts offen ──');
   {
-    const p = await b.newPage({ viewport: { width: 390, height: 900 } });
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 900 } });
     await p.route('**://www.gstatic.com/**', r => r.abort());
     /* Alle Aufgaben als erledigt einsetzen, BEVOR die App sie liest.
        Über die Attrappe, nicht über Innereien der App. */

@@ -35,7 +35,7 @@ function pruefe(name, ok, zusatz) {
 async function lauf() {
   const pageErrs = [];
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-  const page = await b.newPage({ viewport: { width: 430, height: 900 } });
+  const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 430, height: 900 } });
   page.on('pageerror', e => pageErrs.push('PAGEERROR: ' + e.message.slice(0, 180)));
   await page.route('**://www.gstatic.com/**', r => r.abort());
   await page.route('**fonts.googleapis.com/**', r => r.abort());

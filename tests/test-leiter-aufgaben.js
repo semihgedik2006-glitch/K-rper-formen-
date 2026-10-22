@@ -85,7 +85,7 @@ function stub(datei, keys) {
 }
 
 async function oeffne(b, datei, keys, w, h) {
-  const p = await b.newPage({ viewport: { width: w || 1440, height: h || 900 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w || 1440, height: h || 900 } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
@@ -207,7 +207,7 @@ async function anlegen(p, titel) {
   {
     /* Eintrag unter System → Fehler: fehlerMelden schreibt fehler/<sig>.
        Mitgeschnitten über eine Attrappe für genau diese Sammlung. */
-    const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
     await p.route('**://www.gstatic.com/**', r => r.abort());
     await p.addInitScript({ content: stub('stub-leiter.js', null) });
     await p.addInitScript(() => {

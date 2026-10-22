@@ -7,7 +7,7 @@ const SP = process.env.SP || __dirname;
     executablePath: process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
     args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-capture', '--alsa-input-device=null', '--no-sandbox'],
   });
-  const ctx = await b.newContext({ viewport: { width: 430, height: 950 }, deviceScaleFactor: 2, permissions: ['microphone'], hasTouch: true, isMobile: true });
+  const ctx = await b.newContext({ serviceWorkers: 'block', viewport: { width: 430, height: 950 }, deviceScaleFactor: 2, permissions: ['microphone'], hasTouch: true, isMobile: true });
   const page = await ctx.newPage();
   const errs = [];
   page.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 250)));

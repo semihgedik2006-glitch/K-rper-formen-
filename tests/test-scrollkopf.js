@@ -34,7 +34,7 @@ const errs = [];
 
 (async () => {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-  const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 } });
   p.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 200)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
   await p.route('**fonts.googleapis.com/**', r => r.abort());

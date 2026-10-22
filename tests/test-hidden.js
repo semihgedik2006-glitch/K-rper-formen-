@@ -70,7 +70,7 @@ async function durchgehen(p, merk) {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
   for (const rolle of ['chef', 'leiter', 'mitarbeiter']) {
     for (const [w, h] of [[1440, 900], [390, 844]]) {
-      const p = await b.newPage({ viewport: { width: w, height: h } });
+      const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
       const fehler = [];
       p.on('pageerror', e => fehler.push(e.message.slice(0, 160)));
       await p.route('**://www.gstatic.com/**', r => r.abort());

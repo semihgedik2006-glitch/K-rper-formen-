@@ -41,7 +41,7 @@ const TREFFER = (el) => {
 };
 
 async function oeffne(b, w, h, vorher) {
-  const p = await b.newPage({ viewport: { width: w, height: h } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
@@ -175,7 +175,7 @@ function karte(p) {
 
   /* Erst 13 Tage her: keine Frage. Die Demo legt den Durchlauf 16 Tage vor
      „jetzt" an; die Uhr springt nach dem Laden drei Tage zurück. */
-  const r = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const r = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 } });
   await r.route('**://www.gstatic.com/**', x => x.abort());
   await r.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
   const jetzt = Date.now();

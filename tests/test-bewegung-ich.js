@@ -39,8 +39,7 @@ const NOTIZEN = [
 ];
 
 async function seite(b, ruhe) {
-  const p = await b.newPage({
-    viewport: { width: 430, height: 900 },
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 430, height: 900 },
     reducedMotion: ruhe ? 'reduce' : 'no-preference'
   });
   p.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 200)));

@@ -81,7 +81,7 @@ const MESSEN = erlaubt => {
 
   for (const rolle of ['chef', 'mitarbeiter']) {
     for (const breite of [320, 390]) {
-      const page = await b.newPage({ viewport: { width: breite, height: 800 } });
+      const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: breite, height: 800 } });
       page.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 160)));
       await page.route('**://www.gstatic.com/**', r => r.abort());
       await page.route('**fonts.googleapis.com/**', r => r.abort());

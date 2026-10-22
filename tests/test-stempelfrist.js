@@ -23,7 +23,7 @@ function pruefe(was, bedingung, hinweis) {
 (async () => {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
   for (const [w, h] of [[1440, 900], [390, 844]]) {
-    const p = await b.newPage({ viewport: { width: w, height: h } });
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
     const fehler = [];
     p.on('pageerror', e => fehler.push(e.message.slice(0, 160)));
     await p.route('**://www.gstatic.com/**', r => r.abort());
@@ -58,7 +58,7 @@ function pruefe(was, bedingung, hinweis) {
     await p.close();
   }
   /* 3. Datenschutzerklärung */
-  const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
   await p.route('**://www.gstatic.com/**', r => r.abort());
   await p.goto(APP + '?demo=mitarbeiter', { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(3000);

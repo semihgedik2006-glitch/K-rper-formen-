@@ -37,7 +37,7 @@ function pruefe(was, bedingung, hinweis) {
 }
 
 async function starte(b, pause) {
-  const p = await b.newPage({ viewport: { width: 430, height: 950 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 430, height: 950 } });
   const fehler = [];
   p.on('pageerror', e => fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());

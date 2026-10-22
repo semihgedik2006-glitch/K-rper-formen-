@@ -27,7 +27,7 @@ function pruefe(was, bedingung, hinweis) {
 }
 
 async function seite(b, rolle, ruhig) {
-  const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: ruhig ? 'reduce' : 'no-preference' });
+  const ctx = await b.newContext({ serviceWorkers: 'block', viewport: { width: 390, height: 844 }, reducedMotion: ruhig ? 'reduce' : 'no-preference' });
   const p = await ctx.newPage();
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));

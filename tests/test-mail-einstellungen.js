@@ -30,7 +30,7 @@ const errs = [];
 const pruefe = (b, m) => { if (!b) errs.push(m); };
 
 async function seite(b, stub) {
-  const p = await b.newPage({ viewport: { width: 430, height: 900 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 430, height: 900 } });
   p.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 200)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
   await p.route('**fonts.googleapis.com/**', r => r.abort());

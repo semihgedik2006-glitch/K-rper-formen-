@@ -34,7 +34,7 @@ const errs = [];
 const pruefe = (b, m) => { if (!b) errs.push(m); };
 
 async function seite(b, stub, prefs) {
-  const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 } });
   p.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 200)));
   p.on('console', m => {
     if (m.type() === 'error' && !/Failed to load resource|net::ERR_/.test(m.text())) {

@@ -47,7 +47,7 @@ const TREFFER = (el) => {
   return { w: Math.round(re - l + 1), h: Math.round(u - o + 1) };
 };
 async function oeffne(b, w, h, rolle) {
-  const p = await b.newPage({ viewport: { width: w, height: h } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   p.on('dialog', d => d.accept());
@@ -215,7 +215,7 @@ const zustand = (p) => p.evaluate(() => ({
 
   console.log('\n── 4. Das Anmeldeformular ──');
   {
-    const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 } });
     await p.route('**://www.gstatic.com/**', r => r.abort());
     await p.addInitScript({ path: __dirname + '/stub-ohne-login.js' });
     await p.goto(APP, { waitUntil: 'domcontentloaded' });

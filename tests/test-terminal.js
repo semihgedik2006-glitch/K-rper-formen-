@@ -119,7 +119,7 @@ const ZUSATZ = `
 
 async function starten(errs, vorbereiten) {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-  const page = await b.newPage({ viewport: { width: 900, height: 1000 }, deviceScaleFactor: 2 });
+  const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 900, height: 1000 }, deviceScaleFactor: 2 });
   page.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 160)));
   page.on('console', m => {
     if (m.type() === 'error' && !/ERR_|Failed to load/.test(m.text())) {
@@ -421,7 +421,7 @@ async function starten(errs, vorbereiten) {
      Berechtigungen nicht mit. */
   {
     const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-    const page = await b.newPage({ viewport: { width: 900, height: 1000 }, deviceScaleFactor: 2 });
+    const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 900, height: 1000 }, deviceScaleFactor: 2 });
     page.on('pageerror', e => errs.push('PAGEERROR (Mitarbeiter): ' + e.message.slice(0, 160)));
     await page.route('**://www.gstatic.com/**', r => r.abort());
     await page.route('**fonts.googleapis.com/**', r => r.abort());

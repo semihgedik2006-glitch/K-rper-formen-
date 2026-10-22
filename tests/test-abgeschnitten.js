@@ -130,7 +130,7 @@ const errs = [];
 const alle = [];
 
 async function durchlauf(b, stub, breite, angemeldet) {
-  const p = await b.newPage({ viewport: { width: breite, height: 900 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: breite, height: 900 } });
   await p.route('**://www.gstatic.com/**', r => r.abort());
   await p.route('**fonts.googleapis.com/**', r => r.abort());
   await p.route('**script.google.com/**', r => r.fulfill({ status: 200, body: 'ok' }));
@@ -272,7 +272,7 @@ async function durchlauf(b, stub, breite, angemeldet) {
 
   /* Gegenprobe: findet der Messer überhaupt etwas? Ein absichtlich zu
      enges Feld muss auffallen — sonst ist ein leeres Ergebnis wertlos. */
-  const probe = await b.newPage({ viewport: { width: 390, height: 700 } });
+  const probe = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 700 } });
   await probe.setContent(
     '<input id="eng" style="width:60px;font:16px system-ui" ' +
     'placeholder="Ein deutlich zu langer Platzhalter für dieses Feld">' +

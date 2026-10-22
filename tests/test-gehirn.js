@@ -1223,14 +1223,26 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
       } });
       if (dichte === 'kompakt') await p.evaluate(() => document.body.setAttribute('data-dichte', 'kompakt'));
       await aufSeite(p);
-      const ids = async (sel) => p.evaluate(({ s, T }) => {
+      /* Gemessen wird erst, wenn nichts mehr scrollt. Nach einer neuen
+         Nachricht rollt Formi den Verlauf sanft nach unten; wer direkt
+         nach scrollIntoView misst, erwischt den Knopf mitten in der
+         Fahrt halb unter der Kante (22.10.2026: 34 bzw. 42 px gemessen,
+         ruhend sind es 44). Die Schwelle bleibt 44. */
+      const ids = async (sel) => p.evaluate(async ({ s, T }) => {
         const F = eval('(' + T + ')'); const zuKlein = [];
-        document.querySelectorAll(s).forEach(el => {
-          if (!el.getClientRects().length) return;
+        const bild = () => new Promise(r => requestAnimationFrame(() => r()));
+        for (const el of document.querySelectorAll(s)) {
+          if (!el.getClientRects().length) continue;
           el.scrollIntoView({ block: 'center' });
+          let vorher = '', ruhig = 0;
+          for (let i = 0; i < 60 && ruhig < 3; i++) {
+            await bild();
+            const r = el.getBoundingClientRect(), jetzt = r.top + '/' + r.left;
+            ruhig = jetzt === vorher ? ruhig + 1 : 0; vorher = jetzt;
+          }
           const m = F(el);
           if (m.w < 44 || m.h < 44) zuKlein.push((el.id || el.textContent.trim()).slice(0, 24) + ' ' + m.w + '×' + m.h);
-        });
+        }
         return zuKlein;
       }, { s: sel, T: TREFFER.toString() });
       let zuKlein = await ids('#gehirnChips .gehirn-chip, #gehirnFragen, #gehirnMic, #gehirnBericht button, #gehirnVorschlaege button');

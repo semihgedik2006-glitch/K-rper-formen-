@@ -47,7 +47,7 @@ const TREFFER = (el) => {
 
 async function oeffne(b, w, h, opt) {
   opt = opt || {};
-  const ctx = await b.newContext({ viewport: { width: w, height: h } });
+  const ctx = await b.newContext({ serviceWorkers: 'block', viewport: { width: w, height: h } });
   const p = await ctx.newPage();
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));

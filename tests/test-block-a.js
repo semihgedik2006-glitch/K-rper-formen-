@@ -40,7 +40,7 @@ function pruefe(was, bedingung, hinweis) {
 
 async function seite(b, rolle, opt) {
   opt = opt || {};
-  const p = await b.newPage({ viewport: { width: opt.w || 390, height: opt.h || 844 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: opt.w || 390, height: opt.h || 844 } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
@@ -225,7 +225,7 @@ async function leiste(p) {
   }
   /* GEGENPROBE: im bisherigen Design gibt es die Zeile nicht. */
   {
-    const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 } });
     await p.route('**://www.gstatic.com/**', r => r.abort());
     await p.addInitScript({ path: __dirname + '/stub-mitarbeiter.js' });
     await p.goto(APP, { waitUntil: 'domcontentloaded' });

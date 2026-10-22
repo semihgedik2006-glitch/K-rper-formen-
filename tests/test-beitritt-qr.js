@@ -63,7 +63,7 @@ async function zumBeitritt(p) {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
 
   console.log('\n── In der Verwaltung ──');
-  const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 } });
   const fehler = [];
   p.on('pageerror', e => fehler.push(e.message.slice(0, 160)));
   p.on('dialog', d => d.accept());
@@ -148,7 +148,7 @@ async function zumBeitritt(p) {
 
   console.log('\n── Wer scannt ──');
   for (const [w, h] of [[390, 844], [1440, 900]]) {
-    const q = await b.newPage({ viewport: { width: w, height: h } });
+    const q = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
     await q.route('**://www.gstatic.com/**', r => r.abort());
     await q.addInitScript({ path: SP + '/stub-ohne-login.js' });
     await q.goto(APP + '?beitritt=KF7Q-M4XP', { waitUntil: 'domcontentloaded' });
@@ -163,7 +163,7 @@ async function zumBeitritt(p) {
     pruefe(w + ' px: die Angabe ist aus der Adresse verschwunden', !/beitritt/.test(s.adresse), s.adresse);
     await q.close();
   }
-  const g = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const g = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 } });
   await g.route('**://www.gstatic.com/**', r => r.abort());
   await g.addInitScript({ path: SP + '/stub-ohne-login.js' });
   await g.goto(APP, { waitUntil: 'domcontentloaded' });

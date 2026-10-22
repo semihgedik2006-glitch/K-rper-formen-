@@ -64,7 +64,7 @@ async function zustand(p) {
   const fehlerAlle = [];
 
   async function seite(rolle, abo) {
-    const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 } });
     p.on('pageerror', e => fehlerAlle.push(rolle + '/' + abo + ': ' + e.message.slice(0, 120)));
     await p.goto(APP + '?demo=' + rolle + (abo ? '&abo=' + abo : ''),
       { waitUntil: 'domcontentloaded' });
@@ -131,7 +131,7 @@ async function zustand(p) {
      eine Aushilfe nichts an. */
   console.log('\n── Die Abo-Karte ──');
   for (const rolle of ['chef', 'mitarbeiter']) {
-    const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 } });
     p.on('pageerror', e => fehlerAlle.push('karte/' + rolle + ': ' + e.message.slice(0, 120)));
     await p.goto(APP + '?demo=' + rolle, { waitUntil: 'domcontentloaded' });
     await p.waitForTimeout(4200);

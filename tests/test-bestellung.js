@@ -49,7 +49,7 @@ const GROESSEN = [[320, 568], [390, 844], [430, 932], [820, 1180], [1280, 800], 
 const BEST = 'firmen/koerperformen/bestellungen';
 
 async function oeffne(b, rolle, w, h) {
-  const p = await b.newPage({ viewport: { width: w, height: h }, permissions: ['clipboard-read', 'clipboard-write'] });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h }, permissions: ['clipboard-read', 'clipboard-write'] });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   p.on('dialog', d => d.accept());

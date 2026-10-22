@@ -47,7 +47,7 @@ const TREFFER = (el) => {
 const GROESSEN = [[320, 568], [390, 844], [430, 932], [820, 1180], [1280, 800], [1440, 900], [1920, 1080]];
 
 async function oeffne(b, rolle, w, h) {
-  const ctx = await b.newContext({ viewport: { width: w, height: h }, permissions: ['clipboard-read', 'clipboard-write'] });
+  const ctx = await b.newContext({ serviceWorkers: 'block', viewport: { width: w, height: h }, permissions: ['clipboard-read', 'clipboard-write'] });
   const p = await ctx.newPage();
   p._fehler = [];
   p.on('pageerror', (e) => p._fehler.push(e.message.slice(0, 160)));

@@ -36,6 +36,22 @@ Workers AI, **nicht** über GitHub Actions.
 - Je Lauf wird wenig gerechnet. Kommt im Cloudflare-Log ein Fehler 1102
   (Rechenzeit), die Zahlen in `lernlauf` senken.
 
+## Viel Wissen auf einmal, Freigabe durch die Leitung (ab 2.14)
+
+- `POST /api/vorschlag/import` (Studio- oder Admin-Schlüssel) nimmt bis zu
+  50 Einträge `{thema, inhalt, kategorie, quelle}` und macht daraus
+  **Vorschläge** der Art „Neues Wissen“. Gibt es das Thema schon, wird der
+  Vorschlag zur Änderung dieses Eintrags. Steht derselbe Text schon da,
+  entsteht nichts.
+- Die Studioleitung sieht die Vorschläge in der App bei Formi („Formi
+  lernt“) und gibt sie frei. Es gelten **vier Augen**: den eigenen
+  Vorschlag gibt jemand anderes frei. „Doppelt“ löscht einen Eintrag und
+  bleibt deshalb im Leitstand.
+- `GET /api/suche?q=…` (nur Leitstand) zeigt, warum Formi etwas findet
+  oder nicht: Suchwörter, Volltext-Treffer und die Ähnlichkeit nach
+  Bedeutung ohne Schwelle. Danach wird `VEKTOR_MIN` eingestellt.
+- Die neuen Spalten der Tabelle `vorschlag` legt der Worker selbst an.
+
 ## Variablen
 
 | Name | Wofür |

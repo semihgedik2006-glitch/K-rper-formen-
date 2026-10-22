@@ -36,7 +36,7 @@ function pruefe(was, bedingung, hinweis) {
 }
 
 async function starte(b, rolle, breite, hoehe) {
-  const p = await b.newPage({ viewport: { width: breite || 390, height: hoehe || 844 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: breite || 390, height: hoehe || 844 } });
   await p.route('**://www.gstatic.com/**', r => r.abort());
   await p.addInitScript(() => {
     localStorage.setItem('kf_prefs', JSON.stringify({ theme: 'dark' }));

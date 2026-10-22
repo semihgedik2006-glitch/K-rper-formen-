@@ -27,7 +27,7 @@ const pruefe = (b, m) => { if (!b) errs.push(m); };
 
 (async () => {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-  const p = await b.newPage({ viewport: { width: 430, height: 900 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 430, height: 900 } });
   const fehler = [];
   p.on('pageerror', e => fehler.push('PAGEERROR: ' + e.message.slice(0, 200)));
   p.on('console', m => {
