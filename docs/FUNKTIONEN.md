@@ -297,7 +297,7 @@ Teams. Ein Durchlauf prüft das bei jedem Lauf mit.
 
 | Funktion | Status | Anmerkung |
 |---|---|---|
-| Stempeln am Terminal | **VERIFIZIERT** | Gerätegeheimnis + PIN der Person |
+| Stempeln am Terminal | **VERIFIZIERT** | Gerätegeheimnis + PIN der Person; der eigene Stand erst nach der PIN (`stempelStand`), dann Pause **oder** Feierabend (seit Runde 189) |
 | Stempeln mit dem eigenen Telefon | **VERIFIZIERT** | Freigabe je Konto + sechsstelliger Code, der alle 30 Sekunden wechselt |
 | Erfasst wird | **VERIFIZIERT** | Person, Zeitpunkt, Art, Studio, Gerät, Quelle, „fremdes Studio"-Kennzeichen |
 | Standort / GPS | **NICHT ERFASST** | zusätzlich gesperrt durch `Permissions-Policy: geolocation=()` |

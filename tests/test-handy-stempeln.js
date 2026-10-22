@@ -164,7 +164,7 @@ async function zurIchKarte(page) {
   await page.evaluate(() => document.querySelector('[data-subview="ich"]').click());
   await page.waitForTimeout(400);
   await page.evaluate(() => {
-    const t = document.querySelector('[data-ichtab="daten"]');
+    const t = document.querySelector('[data-ichtab="zeiten"]');
     if (t) t.click();
   });
   await page.waitForTimeout(1200);
@@ -200,7 +200,7 @@ async function zurIchKarte(page) {
     /* Die Freigabe nachträglich setzen und die Ansicht neu zeichnen —
        session entsteht beim Start aus dem Profil der Attrappe. */
     await page.evaluate(() => {
-      const t = document.querySelector('[data-ichtab="daten"]');
+      const t = document.querySelector('[data-ichtab="zeiten"]');
       void t;
     });
     await page.evaluate(() => {
@@ -256,6 +256,7 @@ async function zurIchKarte(page) {
       return {
         aufrufe: a.length,
         mitCode: a.length ? (a[a.length - 1].daten || {}).code : null,
+        mitArt: a.length ? (a[a.length - 1].daten || {}).art : null,
         meldung: (window.__meldungen || []).join(' | '),
         feld: (document.getElementById('ichHandyCode') || {}).value,
         schreib: (window.__zeitSchreib || []).length
@@ -264,6 +265,8 @@ async function zurIchKarte(page) {
     console.log('GESTEMPELT:', JSON.stringify(ok));
     if (ok.aufrufe !== 1) errs.push('Der Stempel geht nicht über die Funktion (' + ok.aufrufe + ' Aufrufe)');
     if (ok.mitCode !== '482917') errs.push('Der Code kommt nicht mit: ' + ok.mitCode);
+    /* Runde 189: der Knopf sagt, was er stempelt — der Server prüft. */
+    if (ok.mitArt !== 'kommen') errs.push('Der Knopf schickt nicht, was er stempelt (art): ' + ok.mitArt);
     if (!/Kommen/.test(ok.meldung)) errs.push('Der Erfolg wird nicht gemeldet: „' + ok.meldung + '"');
     if (ok.feld !== '') errs.push('Der Code bleibt nach dem Stempeln im Feld stehen');
     if (ok.schreib !== 0) {

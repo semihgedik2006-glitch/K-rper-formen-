@@ -386,3 +386,44 @@ höchstens fünf Minuten an Codes — nicht mehr, als es ohnehin hergibt.
 Gerechnet wird gegen die **Serverzeit**: ein Rechner am Empfang geht
 gern falsch, und ein Code, den der Server nicht mehr kennt, ist ein
 Fehler, den am Tresen niemand erklären kann.
+
+---
+
+## Nachtrag 22.10. — „so wie crewmeister" · Schritt 1 gebaut
+
+Aus dem Betrieb: „die stempel seite … müssen wir auch sehr viel
+verbessern das sie so wie crewmeister funktioniert am besten". Plan und
+Rückfragen vorgelegt, Antworten:
+
+| Frage | Entscheidung |
+|---|---|
+| Soll | **Schichtplan** fürs Tagessoll, **Vertragsstunden** (`wocheStd`, `maxMonatStd` aus dem Planer) fürs Stundenkonto |
+| Pausen | **wie Crewmeister: auffüllen** — die gestempelte Pause zählt; fehlt etwas zur gesetzlichen (30 min über 6 h, 45 über 9 h), wird nur die Differenz abgezogen, sichtbar markiert |
+| Korrekturanträge | Mitarbeiter stellen sie, **nur die Geschäftsführung** bestätigt |
+| Terminal | **kein Stand an den Kacheln** — erst nach der PIN |
+| Lohnbüro | **Excel/CSV und DATEV** |
+
+### Reihenfolge
+
+1. ✅ **Pause oder Feierabend, Stand jetzt, Plan neben Ist, Jetzt im
+   Studio** (Runde 189). Dabei gefunden: am Terminal und am Handy liess
+   sich gar kein Feierabend stempeln.
+2. **Pausenregel (auffüllen) und Hinweise nach dem Arbeitszeitgesetz** —
+   über 10 h am Tag, Ruhezeit unter 11 h, über 6 h ohne Pause. Die
+   Rohdaten bleiben unverändert; abgezogen wird in der Rechnung, und
+   jeder Abzug steht als solcher da.
+3. **Korrekturantrag** vom Mitarbeiter („Feierabend 16:30 vergessen",
+   mit Grund), Bestätigung nur durch die Geschäftsführung; bestätigt läuft
+   der vorhandene Weg `zeitNachtragen`. Neue Sammlung → in BEIDE Teile von
+   `firestore.rules`, in den Regeltest und in beide Einstiege der
+   Attrappen.
+4. **Stundenkonto und Monatsabschluss**: Ist gegen Vertragssoll je Monat,
+   Übertrag, Korrekturbuchung mit Grund; die Geschäftsführung schliesst
+   einen Monat ab, danach ändert sich darin nichts mehr ohne neuen
+   Eintrag.
+5. **Export**: Excel/CSV je Person und Tag, dazu DATEV. **Offen und vor
+   dem Bau zu klären:** DATEV hat mehrere Formate (u. a. ASCII für
+   Lohn und Gehalt, LODAS); welches das Lohnbüro einliest, entscheidet
+   das Lohnbüro. Der Export enthält nie `zeitPins` oder `terminalCodes`.
+6. **Erinnerung**, wenn eine Stunde nach Schichtende noch kein Feierabend
+   gestempelt ist.
