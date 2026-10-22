@@ -17081,3 +17081,34 @@ eingebauter Browser, fünf Testfragen):
 nicht. Die App landet in der Anmeldemaske, sobald die Schriften abgefangen
 werden. Der neue Fall in `test-gehirn` ist deshalb hier nicht gelaufen.
 Geprüft wird live nach der Auslieferung.
+
+## Runde 174 — Formi: Wissen aufgeräumt, „Gold“ nur noch echt (22.10.2026)
+
+**Fund.** „was kannst du alles“ kam auch nach Worker 2.11 aus einem alten
+Eintrag. Die Ursache steckte im Wissen selbst: 23 von 31 „geprüften“
+Einträgen mit der Quelle „Offene Frage N“ waren ungeprüfte KI-Entwürfe, die
+per „Ok“ übernommen worden waren. Darunter waren Smalltalk („damn“,
+„Hallo“, Tastatursalat), „Ich bin das Studio-Gehirn“, „die Uhrzeit kann ich
+nicht sagen“, eine falsche App-Beschreibung und eine Kundenmail mit
+erfundenen Konditionen. Solche Einträge überstimmen den Systemtext. Und sie
+zählen als Gold für das spätere Nachtrainieren, Nr. 276 hätte einer
+eigenen KI also das Erfinden von Konditionen beigebracht.
+
+**Getan** (mit Semih im Leitstand, gelöscht hat er selbst, vorher
+gesichert):
+- 23 Einträge gelöscht.
+- 2 Einträge berichtigt:
+  - 273 „Darf ich gehen“: Checkliste statt Vorstellung.
+  - 279 „Kunde krank, ich muss weg“: ohne „Kundendaten prüfen“, mit 112
+    im Ernstfall.
+- Offene Frage 42 beantwortet: Aufgaben → „+ Neu“ (`#todoNew`, im Code
+  nachgesehen) oder als Leitung über Formi. Daraus wurde Wissen Nr. 298.
+- Offene Fragen 39, 40 und 41 verworfen. Öffnungszeiten kommen auf Semihs
+  Wunsch nicht ins Wissen („sollten die mitarbeiter wissen“).
+
+**Stand danach:** 275 Wissenseinträge, 18 geprüfte Beispiele (vorher
+angezeigt 40), 0 offene Fragen.
+
+**Für später:** „Ok N“ übernimmt den KI-Entwurf ungelesen als Gold. Ein
+„Ok“ sollte nur kommen, nachdem man den Entwurf gelesen hat. Sonst lieber
+„Verwerfen“.
