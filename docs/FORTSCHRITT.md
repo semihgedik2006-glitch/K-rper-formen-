@@ -18455,9 +18455,255 @@ Nicht umgebaut, weil es eine Entscheidung des Betriebs ist:
   Schicht abgibt, und ist eilig. An den anderen Tagen steht der Putzplan.
   Gefragt.
 
-## Runde 193 — Formi am Rechner in der Seitenleiste, Chat-Meldungen auf neuen Geräten aus (22.10.2026)
+## Runde 193 — Formi am Rechner angedockt (22.10.2026)
 
-**Aus dem Betrieb:** auf die drei Fragen aus Runde 192 „1. a 2. ja lassen
+**Aus dem Betrieb:** Auf „am Rechner als feste Spalte andocken oder
+schwebend?“ kam „was sinnvoller ist“. In Runde 186 entschieden: ab
+1440 px andocken, in einer eigenen Runde mit Messung. Auf „mach weiter“
+ist das hier gebaut.
+
+**Gebaut**
+- Ist Formi offen und klein (nicht „Groß“), steht ab 1440 px rechts eine
+  Spalte von oben bis unten: 380 px breit, ab 1680 px 420 px.
+- `.app` bekommt rechts genau diese Breite als Abstand. Kopfzeile,
+  Seitenleiste und Inhalt rücken zusammen, statt unter dem Fenster zu
+  liegen.
+- Gesteuert wird über die Klasse `formi-angedockt` am `<body>`. Ob die
+  Breite reicht, entscheidet allein das CSS; es gibt kein Messen und
+  keinen Resize-Horcher.
+- Unter 1440 px bleibt alles wie bisher: schwebend bei 1280, Blatt von
+  unten am Handy.
+
+**Warum**
+- Bei 1440 px deckte das Fenster vorher die Formi-Zeile und halb „Mein
+  Dienst“ zu, während links über 1.100 px Inhalt breiter stand als nötig.
+- Kein Übergang auf die Breite: Hausregel, nichts auf `width`/`padding`
+  animieren. Es springt einmal; die Spalte glitcht herein wie zuvor das
+  Fenster.
+- Ab 1440 und nicht schon bei 1280: Neben Seitenleiste (210 px) und
+  Spalte (380 px) blieben bei 1280 nur 690 px für Liste + Detail.
+
+**Geprüft — `tests/test-formi-angedockt.js` (neu, 32 Zusicherungen)**
+- Lage bei 1440, 1920, 1280, 820 und 390 px: Spalte an der Kante, der
+  Inhalt endet genau dort; zu → volle Breite. Die Knöpfe im Spaltenkopf
+  sind ≥ 44 × 44, frei und im Bild.
+- Wechselt man selbst die Seite, bleibt Formi angedockt.
+- Je Rolle (Chef, Leitung, Mitarbeiter), bei 1440 × 900 und
+  1920 × 1080, normal und kompakt, auf jeder Ansicht und jedem Reiter:
+  - Jedes Bedienelement, das ohne Formi per Hit-Test trifft, trifft auch
+    mit angedocktem Formi und liegt links der Spalte.
+  - Kein neuer Querlauf.
+  - Gemessen: 308 Ansichten/Reiter, 10 664 Bedienelemente, keins neu
+    verdeckt.
+  - 592 trafen schon ohne Formi nicht (zum Beispiel unter der Kopfzeile
+    oder unter einer klebenden Leiste). Das ist nicht von hier, wird aber
+    mitgezählt.
+- Gegenprobe mit dem `index.html` von vorher: Die Lage-Prüfungen
+  schlagen an.
+- Grün: test-formi-kugel, test-formi-lebt, test-knoepfe, test-gestaltung
+  (meldete zuerst einen festen Schatten an der Spalte, jetzt `--e3`),
+  test-quer, test-csp, test-abgeschnitten.
+
+**Nicht geprüft:** echte Bildschirme und Studio-Rechner. Wie es sich
+anfühlt, wenn die Seite beim Öffnen zur Seite springt, lässt sich hier
+nicht beurteilen.
+
+## Runde 194 — Sammelknopf im Leitstand ohne confirm() (Worker 2.17, 22.10.2026)
+
+Aus dem Betrieb: „der knopf im leitstand funktioniert irgendwie nicht das
+ich alles freigeben kann".
+
+**Gefunden:** Die Knöpfe waren da und die Schnittstelle antwortete (live
+geprüft: 9 Gruppen). Der Knopf fragte aber mit `confirm()` nach.
+Eingebettete Browser — vermutlich auch das Browser-Fenster der Claude-App —
+zeigen diesen Dialog nicht und geben still „nein" zurück; dann passiert
+nichts. Nachgestellt im Test: Playwright schliesst Dialoge ebenso, und mit
+2.16 bleibt der Knopf wirkungslos (Gegenprobe: 3 rot).
+
+**Geändert:** Die Rückfrage steht im Knopf („Wirklich alle … übernehmen?
+Nochmal klicken"), wie in der App. Der Worker-Durchlauf bedient den
+Leitstand jetzt im echten Browser gegen den Worker (109/109).
+
+**Im Test selbst gefunden:** Ein Locator nach Text („Knopftest") wartet,
+bis der Text wieder passt — nach dem ersten Klick also bis zum Zurück-
+setzen nach 6 s. Deshalb ein fester Griff auf das Element.
+
+## Runde 195 — Formi hat ein Gesicht: weisses Loch, Teilchen, Atmen (22.10.2026)
+
+**Aus dem Betrieb:** „können wir formi mehr animationen geben oder vlt
+ein kleines gesicht was der maus folgt und reagiert und so im schwarzen
+loch drinen und wenn er sich freut weil eine aufgabe erledigt wurde oder
+so spuckt er partikel aus und wird zu einem weissen loch und danach zu
+einem schwarzen was die partikel wieder einsaugt und vlt auch mehr das
+gefühl das es ein lebendes schwarzes/weisses loch ist“.
+
+**Gebaut**
+- **Gesicht im Loch.**
+  - Statt Pupille mit Lichtpunkt hat das Loch zwei Augen und einen Mund
+    in Weiss. Das ganze Loch folgt der Maus wie bisher.
+  - Ausdrücke:
+    - freut sich: Augen als Halbmonde, breites Lachen;
+    - staunt: grosse Augen, runder Mund;
+    - erschrickt: kleine Augen, der Mund kippt nach unten;
+    - nickt beim Tippen, blinzelt;
+    - schläft: Augen zu, kleiner Mund;
+    - neugierig unter der Maus: grosse Augen.
+- **Weisses Loch.**
+  - Bei Freude (jeder Haken) wird das Loch für 1,5 s weiss und bläht sich
+    auf. Es spuckt 12 Teilchen in den Ringfarben aus, wird wieder schwarz
+    und saugt sie schneller werdend ein; zuletzt schluckt es.
+  - Beim Feiern (Putzplan fertig) sind es 22 Teilchen, weiter hinaus und
+    1,9 s lang.
+  - Das Gesicht wird dabei von selbst schwarz (`mix-blend-mode:
+    difference`), es bleibt also zu sehen.
+- **Atmen.** Alle 7–12 s dreht sich der Ring einmal ganz und langsam
+  (3,6 s), das Loch weitet sich kaum merklich, und drei Krümel fallen
+  spiralig hinein.
+- **Kleinigkeit:** Wer mit dem Mausrad scrollt, dem schaut Formi kurz in
+  die Richtung nach.
+- Der Ring liegt jetzt auf einer eigenen Ebene (`.fk-wirbel`), damit er
+  sich drehen kann, ohne Gesicht und Schatten mitzudrehen.
+
+**Warum so**
+- *Kein `infinite`, trotz „lebend“.*
+  - Das Atmen hängt an einem Zeitgeber wie das Blinzeln.
+  - Eine volle Drehung endet genau dort, wo sie anfing; es bleibt keine
+    Animation stehen.
+  - So gilt die Hausregel „keine Endlos-Animation ohne Grund“ weiter, und
+    zwischen zwei Atemzügen kostet die Kugel nichts.
+- *Teilchen als ein paar `<i>` in der Kugel, nicht als Leinwand.*
+  - Für 12–22 Punkte, die 1,5 s leben, lohnt sich keine Leinwand mit
+    eigener Bildschleife.
+  - Die Punkte bewegen sich nur per `transform`/`opacity`, lassen jeden
+    Tipp durch und sind danach wieder weg.
+- *Nichts davon bei „weniger Bewegung“ oder „Gefühle der Kugel: Aus“*
+  (Runde 188).
+- *Für Durchläufe* gibt es `__formiLebt.uhrenAus()`. Blinzeln und Atmen
+  kommen zu zufälligen Zeiten und hätten jede Prüfung „danach läuft
+  nichts mehr“ zufällig rot machen können.
+
+**Gemessen** (Arbeit je Bild, CPU ÷4, ohne Mausbewegung)
+
+| | Rechner 1440 | Handy 390 |
+|---|---|---|
+| Freude (weisses Loch, 12 Teilchen) | 3,2 ms | 3,0 ms |
+| Feiern (22 Teilchen) | 3,1 ms | 4,4 ms |
+| Atmen (Drehung, 3 Krümel) | 2,0 ms | 1,9 ms |
+
+Die Grenze ist 8,3 ms.
+
+**Geprüft** (`tests/test-formi-lebt.js`, jetzt 102 Zusicherungen)
+- Das Gesicht ist da: zwei Augen, ein Mund.
+- Alle Gefühle laufen endlich und nur auf `transform`/`opacity`; danach
+  läuft nichts mehr, und es liegen keine Teilchen herum.
+- Freude: Das Loch geht von schwarz über weiss zurück zu schwarz. Zwölf
+  Teilchen landen wieder in der Mitte und lassen Tipps durch.
+- Feiern: 22 Teilchen, danach weg.
+- Atmen: eine volle Drehung, endlich, drei Krümel, danach Ruhe.
+- Staunen beim dritten Haken (grosse Augen).
+- „Weniger Bewegung“: keine Teilchen, kein Atmen.
+- Gegenprobe mit dem `index.html` von vorher: schlägt an.
+- Grün: test-formi-kugel, test-knoepfe, test-gestaltung, test-csp,
+  test-uebersicht, test-stil-formi, test-quer, test-abgeschnitten.
+
+**Nicht geprüft:** Wie das Gesicht auf einem echten Handy-Bildschirm
+wirkt (es ist 30 px gross) und ob es im Team als „zu viel“ empfunden wird.
+Dafür gibt es den Schalter aus Runde 188.
+
+## Runde 196 — Formi als Kumpel aus dem Studio (Worker 2.18, 22.10.2026)
+
+Aus dem Betrieb: „lass uns formi wirklich richtig persönlichkeit geben" —
+auf die Rückfrage gewählt: „Kumpel aus dem Studio".
+
+**Gebaut**
+- Worker 2.18: Charakterblock im Systemtext (nur im lockeren Ton): locker,
+  direkt, feiert Erledigtes kurz mit, eigene Running Gags (frisch
+  gewaschene Westen, leere Handtuchregale, der Montagskaffee), geht auf
+  Tageszeit und Wochentag ein. **Ernstes zuerst**: Notfall, Gesundheit,
+  Beschwerde, Stress → sofort sachlich, kein Witz, kein Emoji. Der Witz
+  kommt nach der Antwort, nie statt ihr; Formi tut nicht so, als wäre es
+  ein Mensch.
+- App: Formis Sprechblase neben der Kugel — Tagesgruss mit Namen und
+  einem Satz zur Lage (einmal am Tag je Gerät), Lob beim ersten Haken des
+  Tages, Spruch bei einer Haken-Serie, „Wieder da!" nach über 30 Minuten.
+  Im leeren Formi-Fenster steht der Satz zur Lage statt „Ich bin Formi".
+
+**Warum so**
+- *Die Gefühle der Kugel (Runde 186/195) zeigen, wie es Formi geht; der
+  Charakter ist, was Formi sagt.* Beides zusammen, getrennt gebaut.
+- *Höchstens eine Blase je 45 s, nie bei offenem Formi.* Persönlichkeit
+  durch wenige, gute Momente — nicht durch Dauerbeschallung (Vorbild
+  Duolingo, `docs/design-vorbilder/ki-assistent.md`).
+- *Still auf Wunsch.* „Gefühle der Kugel: Aus" oder Ton „sachlich"
+  schalten die Blase ab; „sachlich" auch den Charakter im Worker.
+- *Keine KI für die Blase.* Die Sätze stehen in der App: sofort da, kein
+  Kontingent, offline möglich.
+- *Die Blase hat keine Trefferfläche* und steht über der Kugel: gemessen
+  bei 320 / 390 / 430 / 820 / 1280 / 1440 / 1920 ganz im Bild
+  (`tests/test-formi-kumpel.js`, 21 Prüfungen). Die Lage wird im Bild
+  gelesen, die eigene Grösse nie gemessen (rechte untere Ecke an der
+  Kugel, max-width hält sie im Bild).
+
+**Nicht geprüft:** wie die KI den Charakter tatsächlich umsetzt — das
+zeigt sich erst live nach dem Einspielen von 2.18.
+
+## Runde 197 — Schichtplaner: klarer Anfang, Regeln in Reitern (22.10.2026)
+
+**Aus dem Betrieb:** ein Bildschirmfoto vom echten Konto (Verwaltung →
+Schichtplaner) mit „mach weiter mit dem design und aufbau, ausserdem sieht
+das bei mir noch gleich aus".
+
+**Warum es „gleich aussah":** Runde 191 hat am Planer die Ansicht des
+fertigen Plans umgebaut (Wochen-Reiter, feste Spalten). Im echten Konto
+ist noch kein Team eingelesen, also gibt es keinen Plan, und von all dem
+war nichts zu sehen. Ausgeliefert war es (live geprüft: die Seite ist
+Byte für Byte main).
+
+**Was auf dem Foto zu sehen war**
+- „Plan für November erstellen" grau, ohne ein Wort warum.
+- Schritt „Wünsche" mit Haken bei „0 von 0 eingetragen".
+- „Excel einlesen" und „Vorlage" klein im Schritt „Team"; darunter
+  „Regeln & Sonderfälle" mit vier Formularen 2 × 2, deren Auswahlfelder
+  ohne Team leer bleiben.
+
+**Was gebaut ist**
+- **„So fängst du an"** — solange kein Team da ist, statt Schritten und
+  Regeln: Vorlage holen (Knopf), ausfüllen (was auf welches Blatt gehört),
+  hier einlesen (Knopf); darunter, was danach kommt (Wunschfrist aus der
+  Einstellung, „Plan erstellen"). Zwei nummerierte Listen übereinander
+  wären doppelt gewesen, deshalb verschwinden die Schritte in diesem
+  Zustand.
+- **Der graue Knopf sagt, warum** („Geht, sobald Team und Schichten
+  eingelesen sind …" bzw. „Es fehlen die Schichtzeiten …").
+- **Zustand des Monats** unter dem Monatsnamen: „noch kein Plan",
+  „Entwurf" oder „veröffentlicht 03.11." (nur das letzte grün).
+- **„Wünsche"** ist ohne Team kein erledigter Schritt mehr.
+- **Regeln & Sonderfälle in vier Reitern** (Einstellungen · Feste
+  Einteilungen · Sondertage · Notiz), je einer sichtbar, am Rechner
+  höchstens 880 px breit. Die Überschrift im Block sagt der Reiter schon;
+  sie bleibt für Vorleser.
+
+**Geprüft**
+- test-schichtplan-raster um 16 Prüfungen erweitert (Abschnitt 10): mit
+  Team Regeln in Reitern, ohne Team die Anfangskarte mit beiden Knöpfen,
+  Grund am grauen Knopf, Zustand am Monat, Trefferflächen ≥ 44 × 44 und
+  nichts ragt hinaus — bei 390 und 1440 px. Ohne Team erzeugt der Test,
+  indem er in der Demo `planerTeam` leert.
+- Gegenprobe: Anfangskarte und Grund abgeschaltet → rot (Anfangskarte, ihre Knöpfe, Grund — bei beiden Breiten).
+- **Gefunden beim Messen:** in einer Zeile rollte der Reiter „Notiz" am
+  Handy aus dem Bild und war bei 320–430 px nur 36–43 px breit zu treffen.
+  Unter 820 px stehen die vier Reiter jetzt 2 × 2.
+- test-schichtplaner misst die zehn Bedienelemente der Regeln jetzt je
+  Reiter (plus die Reiter selbst): 140 Prüfungen, grün. Angepasst mit Zitat.
+- test-schichtplan-raster, test-gestaltung, test-doppelte-namen,
+  test-abgeschnitten, test-knoepfe, test-team-woche: grün.
+
+**Nicht geprüft:** das echte Konto selbst (Anmeldung lädt hier nicht);
+gemessen ist der Zustand „Team leer" in der Demo, nachgestellt nach dem
+Foto.
+## Runde 198 — Formi am Rechner in der Seitenleiste, Chat-Meldungen auf neuen Geräten aus (22.10.2026)
+
+**Aus dem Betrieb:** auf die drei Fragen aus Runde 192: „1. a 2. ja lassen
 wir so 3. ja“.
 
 1. **Formi wohnt am Rechner unten in der Seitenleiste.**

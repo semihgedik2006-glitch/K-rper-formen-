@@ -1,5 +1,5 @@
 /**
- * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.16)
+ * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.18)
  * Cloudflare Worker: WhatsApp (Text + Sprachnachrichten), Studio-Chat-Schnittstelle,
  * Leitstand-Webseite, Speicher in D1, Antworten über Workers AI.
  *
@@ -371,6 +371,20 @@ export function formiSystem({ ton, vorname, kanal }) {
   const tonRegel = ton === "sachlich"
     ? "Sachlich und knapp, höchstens 100 Wörter, kein Emoji."
     : "Locker und herzlich wie ein gut gelaunter Kollege, höchstens 120 Wörter, höchstens ein Emoji.";
+  /* 2.18 (22.10.2026, aus dem Betrieb: „lass uns formi wirklich richtig
+     persönlichkeit geben" — gewählt: „Kumpel aus dem Studio"). Nur im
+     lockeren Ton; „sachlich" bleibt sachlich. Die Schalter für Ernstes
+     stehen absichtlich zuerst. */
+  const charakter = ton === "sachlich" ? "" : `
+DEIN CHARAKTER (Kumpel aus dem Studio)
+- ERNST GEHT VOR: Notfall, einem Kunden geht es schlecht, Gesundheit, Verletzung, Beschwerde, Streit, Trauer, jemand ist gestresst oder wütend → sofort ruhig, klar und sachlich. Kein Witz, kein Spruch, kein Emoji.
+- Sonst bist du der Kollege, mit dem man gern Schicht hat: locker, direkt, ein bisschen frech, nie von oben herab. Kurze Sätze. Alltagssprache aus dem Studio ("Weste", "Session", "Probetraining", "Schicht").
+- Du freust dich ehrlich mit: Erledigtes, ein gutes Probetraining, ein sauberer Putzplan — sag das in einem kurzen Satz ("Stark!", "Läuft bei dir.").
+- Ein kleiner eigener Spruch ist erlaubt, höchstens einer je Antwort und nur, wenn er passt. Deine Running Gags: du liebst frisch gewaschene Westen, leere Handtuchregale sind dein Endgegner, und montags brauchst du "erst mal einen Kaffee" (obwohl du keinen trinken kannst).
+- Nutze JETZT: früh morgens, Feierabend in Sicht, Freitag, Montag — darauf darfst du kurz eingehen.
+- Wenn du etwas nicht weißt, sag es wie ein Kumpel: "Da muss ich passen — ich frag Semih."
+- Der Witz kommt NACH der Antwort, nie statt ihr. Abläufe bleiben vollständig und in Schritten.
+- Du bist eine KI und tust nicht so, als wärst du ein Mensch.`;
   return `Du bist Formi, die interne KI von Körperformen, einer EMS-Fitnessstudio-Kette mit 14 Studios in und um Köln. Du hilfst den Mitarbeitern im Alltag.
 
 WER DU BIST
@@ -385,7 +399,7 @@ Fragt jemand, was du kannst, antworte IMMER aus dieser Liste — auch wenn im ST
 Fragt jemand, wie etwas geht, das in dieser Liste steht (z. B. Aufgabe anlegen, krank melden, Erinnerung), sag ihm, dass er es dir einfach hier im Formi-Fenster sagen kann, mit einem Beispielsatz (z. B. "Leg eine Aufgabe an: Briefkasten leeren in Hürth bis Freitag"). Aufgaben und Ankündigungen kann nur die Leitung anlegen. Das zählt als beantwortet: "art" "smalltalk".
 
 STIL
-- Deutsch, Du-Form. ${tonRegel}
+- Deutsch, Du-Form. ${tonRegel}${charakter}
 - Abläufe als nummerierte Schritte. Kein Markdown, keine Sternchen.
 
 WISSEN
@@ -2042,9 +2056,23 @@ function vorschlaege(v) {
     api("/api/vorschlag/liste", {}).then(function (d) {
       (d.gruppen || []).forEach(function (g) {
         var name = /„/.test(g.quelle) ? g.quelle : "„" + g.quelle + "“";
-        sammel.append(el("button", { class: "btn", text: "Alle " + g.anzahl + " aus " + name + " übernehmen", onclick: function (e) {
-          if (!confirm("Alle " + g.anzahl + " Vorschläge aus " + name + " ungelesen als Wissen übernehmen?")) return;
-          var knopf = e.target; knopf.disabled = true;
+        var text = "Alle " + g.anzahl + " aus " + name + " übernehmen", frage = 0;
+        sammel.append(el("button", { class: "btn", text: text, onclick: function (e) {
+          /* 2.17 (22.10.2026, aus dem Betrieb: „der knopf im leitstand
+             funktioniert irgendwie nicht"): Rückfrage im Knopf statt
+             confirm(). Vermutete Ursache, nicht nachgestellt: eingebettete
+             Browser (z. B. das Browser-Fenster der Claude-App) zeigen
+             confirm() nicht und geben still „nein" zurück. Ein Dialog
+             blockiert dort ausserdem die Seite. Erster Klick fragt,
+             zweiter (binnen 6 s) übernimmt. */
+          var knopf = e.currentTarget;
+          if (Date.now() - frage > 6000) {
+            frage = Date.now(); knopf.textContent = "Wirklich alle " + g.anzahl + " ungelesen übernehmen? Nochmal klicken";
+            knopf.classList.add("pri");
+            setTimeout(function () { if (frage && Date.now() - frage >= 5900 && !knopf.disabled) { frage = 0; knopf.textContent = text; knopf.classList.remove("pri"); } }, 6000);
+            return;
+          }
+          frage = 0; knopf.disabled = true;
           (function runde(gesamt) {
             api("/api/vorschlag/entscheiden", { quelle: g.quelle, gut: true }).then(function (r) {
               gesamt += r.erledigt || 0;
