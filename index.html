@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-j1HKIKC8LI8Hv9k3caIAMYtytZiNVN99Mz0RnVaEgTs='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-k25+glmNJHxBVda5KvZbCf8MbjDqVVj1vTK+w9Wz35g='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -20421,6 +20421,9 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-22-formi-gefuehle-schalter', datum:'22.10.2026', titel:'Formis Gefühle lassen sich abstellen', wo:'gehirn', punkte:[
+    'Ist dir die Kugel zu lebendig? Öffne Formi, tippe oben auf den Regler (Persönlichkeit und Stimme) und stelle „Gefühle der Kugel" auf „Aus". Dann schaut, blinzelt und freut sie sich nicht mehr und schläft nicht ein.',
+    'Der Punkt „Formi hat etwas für dich" und der Hinweis „über Formi" bleiben. Die Wahl gilt nur für dein Gerät.' ] },
   { id:'2026-10-22-zusammengelegt', datum:'22.10.2026', titel:'Noch weniger Knöpfe: Bestand, Chats und Pinnwand', wo:'todos', punkte:[
     'Unter „Studio" heisst es jetzt „Bestand": Material und Geräte liegen dort zusammen, oben schaltest du zwischen beiden um.',
     'Unter „Nachrichten" gibt es nur noch „Chats" und „Pinnwand". In den Chats steht „Direkt" in derselben Zeile wie Studios und Gruppen; am Rechner stehen deine letzten Direktnachrichten links in der Liste mit drin.',
@@ -25806,7 +25809,7 @@ function gehirnTonfall(){ return jvPersona().ton==='sachlich' ? 'sachlich' : 'lo
    Je Gerät: Name, Tonfall, Stimme (menschlich über Google oder die des
    Geräts), Weckwort. Aus dem Betrieb: „wie ein echter mensch als
    assistent" — und auf die Ideenliste „mach alles davon". */
-var JV_PERSONA_STD={ name:'Formi', ton:'locker', stimme:'profi', profiStimme:'de-DE-Chirp3-HD-Aoede', geraetStimme:'', weckwort:false, studio:'', effekte:'auto' };
+var JV_PERSONA_STD={ name:'Formi', ton:'locker', stimme:'profi', profiStimme:'de-DE-Chirp3-HD-Aoede', geraetStimme:'', weckwort:false, studio:'', effekte:'auto', gefuehle:'an' };
 var JV_PROFI_STIMMEN=[['de-DE-Chirp3-HD-Aoede','Aoede (weiblich)'],['de-DE-Chirp3-HD-Kore','Kore (weiblich)'],['de-DE-Chirp3-HD-Charon','Charon (männlich)'],['de-DE-Chirp3-HD-Puck','Puck (männlich)']];
 function jvPersona(){
   var p={}; try{ p=JSON.parse(localStorage.getItem('kf_jv_persona')||'{}')||{}; }catch(e){}
@@ -25820,6 +25823,7 @@ function jvPersona(){
 function jvPersonaSetzen(aenderung){
   var p=Object.assign(jvPersona(), aenderung);
   try{ localStorage.setItem('kf_jv_persona', JSON.stringify(p)); }catch(e){}
+  if('gefuehle' in aenderung) formiGefuehleAnwenden(p.gefuehle!=='aus');
   jvPersonaAnwenden();
   return p;
 }
@@ -25844,6 +25848,11 @@ function jvPersonaAuf(auf){
       '</div><p class="jv-phinweis">Hier nehme ich an, dass du bist, wenn du kein Studio nennst.</p></div>' : '')+
     '<div class="jv-pz">Effekte<div class="jv-pw" role="group" aria-label="Effekte">'+wahl('effekte','auto','Automatisch')+wahl('effekte','voll','Voll')+wahl('effekte','sparsam','Sparsam')+'</div>'+
       '<p class="jv-phinweis">Automatisch: weniger Teilchen, sobald dein Gerät ins Stocken kommt.</p></div>'+
+    /* Runde 188 — aus dem Betrieb auf „ein Schalter für Formis Gefühle?":
+       „Ja aber versteckter". Deshalb hier in Formis eigenen Einstellungen
+       und nicht unter Profil → Aussehen. */
+    '<div class="jv-pz">Gefühle der Kugel<div class="jv-pw" role="group" aria-label="Gefühle der Kugel">'+wahl('gefuehle','an','Zeigen')+wahl('gefuehle','aus','Aus')+'</div>'+
+      '<p class="jv-phinweis">Aus: Die Kugel schaut nicht mit, blinzelt nicht, freut sich nicht und schläft nicht ein. Der Punkt „hat etwas für dich" und „über Formi" bleiben.</p></div>'+
     '<div class="jv-pz">Tonfall<div class="jv-pw" role="group" aria-label="Tonfall">'+wahl('ton','locker','Locker')+wahl('ton','sachlich','Sachlich')+'</div></div>'+
     '<div class="jv-pz">Stimme<div class="jv-pw" role="group" aria-label="Stimme">'+wahl('stimme','profi','Menschlich')+wahl('stimme','geraet','Vom Gerät')+'</div>'+
     (_jvProfiAus && p.stimme==='profi' ? '<p class="jv-phinweis">Die menschliche Stimme ist gerade nicht eingerichtet — ich spreche mit der Stimme des Geräts.</p>' : '')+'</div>'+
@@ -26259,7 +26268,20 @@ var _fl={ gestartet:false, x:0, y:0, raf:0, mitte:null, mitteBis:0, zuletzt:Date
 var FK_SCHRITT={ easing:'steps(1, end)' };
 function formiLebtAn(){
   var k=$('formiKugel');
-  return !!(k && !k.hidden && !gehirnWenigBewegung() && document.visibilityState!=='hidden' && document.body.animate);
+  return !!(k && !k.hidden && !_fl.gefuehleAus && !gehirnWenigBewegung() && document.visibilityState!=='hidden' && document.body.animate);
+}
+/* Der versteckte Schalter (Runde 188, Formis Einstellungen → „Gefühle
+   der Kugel"). Gemerkt in der Persönlichkeit je Gerät; hier nur als
+   Zahl im Speicher, damit formiLebtAn() nicht in jedem Bild JSON liest.
+   Beim Abschalten: wach, Auge geradeaus, nichts läuft weiter. */
+function formiGefuehleAnwenden(an){
+  _fl.gefuehleAus=!an;
+  if(an) return;
+  _fl.schlaeft=false;
+  var t=formiTeile(); if(!t) return;
+  t.k.classList.remove('fk-schlaeft');
+  t.k.getAnimations({ subtree:true }).forEach(function(a){ try{ a.cancel(); }catch(e){} });
+  _fl.blick=null; _fl.blickZiel='';
 }
 function formiTeile(){
   var k=$('formiKugel'); if(!k) return null;
@@ -26411,6 +26433,7 @@ function formiGesehen(){
 }
 function formiLebtStart(){
   if(_fl.gestartet) return; _fl.gestartet=true;
+  _fl.gefuehleAus = jvPersona().gefuehle==='aus';
   var maus=!!(window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches);
   function tun(){ formiWach(); }
   document.addEventListener('pointermove', function(e){ _fl.zuletzt=Date.now(); if(_fl.schlaeft) formiWach(); if(maus) formiSchauNach(e.clientX, e.clientY); }, { passive:true });
