@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════════
-   VERWALTUNG IN GRUPPEN, RUHIGERE ZEILEN (Runde 174)
+   VERWALTUNG IN GRUPPEN, RUHIGERE ZEILEN (Runde 176)
 
    Aus dem Betrieb, 21.10.2026: „grade sieht alles aus wie ein komplettes
    durcheinander" — auf beiden Geräten. Auf den Vorschlag „Verwaltung mit

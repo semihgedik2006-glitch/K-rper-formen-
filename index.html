@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-qr+QlDnMUhxA/+WxdAExZRXD5QDQBdfldXMhy7vPcpA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Z6VdovEKdc3v99NstKza6OUCXnraCeLHi/aeUIIYrCw='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1441,7 +1441,7 @@ html.demo #terminalSchirm{top:44px}
 .t-knoepfe{display:flex;flex-shrink:0;margin:calc(-1 * var(--s8)) calc(-1 * var(--s6)) 0 0}
 .t-knoepfe .t-edit,.t-knoepfe .t-del,.t-knoepfe .t-mehr{width:44px;min-height:44px;padding:0;
   display:inline-grid;place-items:center}
-/* Ruhigere Zeilen am Rechner (Runde 174). Aus dem Betrieb, 21.10.2026:
+/* Ruhigere Zeilen am Rechner (Runde 176). Aus dem Betrieb, 21.10.2026:
    „grade sieht alles aus wie ein komplettes durcheinander". In jeder
    Zeile standen für die Leitung Griff, Stift und Papierkorb, bei 30
    Aufgaben also 90 Zeichen, die keiner gerade braucht.
@@ -4643,14 +4643,14 @@ html{font-size:var(--fs,100%)}
 
 /* margin-top: Die Reiter der Gruppe darüber (Chef · Schichtplaner ·
    Archiv) reichen mit ihrer Trefferfläche 5 px nach unten und deckten
-   die Oberkante von „‹ Übersicht" ab (Hit-Test 39 statt 44, Runde 174). */
+   die Oberkante von „‹ Übersicht" ab (Hit-Test 39 statt 44, Runde 176). */
 .chef-bar{display:flex;align-items:center;gap:var(--s10);margin-top:var(--s6);margin-bottom:var(--s16);min-width:0}
 .chef-back{flex:0 0 auto;display:inline-flex;align-items:center;gap:var(--s4);
   background:none;border:1.5px solid var(--line-2);border-radius:var(--r-pille);
   padding:var(--s8) var(--s12) var(--s8) var(--s10);font-family:var(--font-body);font-weight:600;
   font-size:var(--t-sm);color:var(--text-2);cursor:pointer;white-space:nowrap;
   transition:border-color .2s,color .2s,transform .25s var(--spring);
-  /* 44 statt 31 px hoch. Gefunden in Runde 174 vom Hit-Test der neuen
+  /* 44 statt 31 px hoch. Gefunden in Runde 176 vom Hit-Test der neuen
      Liste. test-knoepfe hatte den Knopf nie gemessen, weil er auf der
      Startseite der Verwaltung verborgen ist. */
   min-height:44px;box-sizing:border-box}
@@ -4677,7 +4677,7 @@ html{font-size:var(--fs,100%)}
 .chef-tab.on{color:var(--accent-d);font-weight:700}
 .chef-pane{animation:cardUp .4s var(--ease-ios) both}
 
-/* ── Verwaltung in Gruppen (Runde 174) ── */
+/* ── Verwaltung in Gruppen (Runde 176) ── */
 .ch-gruppe{grid-column:1 / -1;margin:var(--s12) 0 0;font-family:var(--font-body);
   font-size:var(--t-2xs);font-weight:700;letter-spacing:var(--ls-l);text-transform:uppercase;
   color:var(--text-3)}
@@ -4702,7 +4702,7 @@ html{font-size:var(--fs,100%)}
   #view-chef .chef-liste > *{grid-column:2;min-width:0}
   /* Nicht sticky: Die Liste ist mit elf Reitern und vier Marken rund
      620 px hoch. Bei 1360 × 800 läge „System" dann unter dem Rand und
-     wäre durch kein Scrollen zu erreichen (gemessen, Runde 174). */
+     wäre durch kein Scrollen zu erreichen (gemessen, Runde 176). */
   #view-chef .chef-liste > .chef-bar{grid-column:1;grid-row:1 / span 40;
     flex-direction:column;align-items:flex-start;gap:var(--s4);margin-bottom:0}
   #view-chef .chef-liste .chef-tabs{flex-direction:column;align-items:flex-start;
@@ -6844,7 +6844,7 @@ body.neu .heute-ruhe.lade-ruhe{padding:var(--s12) var(--s16);margin-bottom:var(-
 .emp{display:flex;align-items:flex-start;gap:var(--s10);padding:var(--s12) 0;border-top:1px solid var(--line)}
 .emp:first-child{border-top:none}
 .emp-info{flex:1;min-width:0}
-/* Chef-Zugänge (Runde 174): Name und Mail liefen ohne Stil als zwei
+/* Chef-Zugänge (Runde 176): Name und Mail liefen ohne Stil als zwei
    <span> ineinander („Ohne Namentest2@example.com"). Dieselbe Form wie
    .emp-info darüber. */
 .emp-main{flex:1;min-width:0}
@@ -37269,7 +37269,7 @@ var CHEFTABS=[
   {id:'firmen',     label:'Firmen',     ico:ikon('krone'), adminOnly:true, gruppe:'einst',
    was:'Firmen anlegen, sperren, Zahlen — nur für den Betreiber'}
 ];
-/* Vier Gruppen statt elf gleichrangiger Reiter (Runde 174). Aus dem
+/* Vier Gruppen statt elf gleichrangiger Reiter (Runde 176). Aus dem
    Betrieb, 21.10.2026: „grade sieht alles aus wie ein komplettes
    durcheinander". Elf Kacheln ohne Ordnung muss man alle lesen, um eine
    zu finden. In vier Gruppen liest man die Überschriften. Die Gruppen
