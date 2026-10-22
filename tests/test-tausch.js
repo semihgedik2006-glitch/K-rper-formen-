@@ -31,7 +31,7 @@ async function lauf(stub, wer) {
   });
   await page.waitForTimeout(900);
 
-  /* Runde 186: „Ich kann nicht" steht nicht mehr an jeder eigenen
+  /* Runde 189: „Ich kann nicht" steht nicht mehr an jeder eigenen
      Schicht, sondern im Schicht-Blatt — ein Tipp auf die Schicht öffnet
      es. Aus dem Betrieb, 22.10.2026, auf die Frage, ob Löschen und „Ich
      kann nicht" ins Detail wandern dürfen: „JA". Der Durchlauf tippt

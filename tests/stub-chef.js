@@ -92,6 +92,10 @@ var USERS = [
     'studio-6': [
       { id: 't1', title: 'Geräte desinfizieren', desc: 'Nach jedem Training', done: false, createdBy: 'Chef', ts: Date.now() - 90000000, due: Date.now() - 86400000, steps:[{t:'Geräte abwischen',d:true},{t:'Gurte prüfen',d:false},{t:'Kabel aufrollen',d:false}] },
       { id: 't2', title: 'Handtücher waschen', desc: '', done: true, doneBy: 'Anna', doneAt: Date.now() - 3000, createdBy: 'Chef', ts: Date.now() - 80000000 },
+      /* Nur mit window.__tdAlt (test-zusammengelegt): vor zwei Stunden
+         erledigt, also EINGEKLAPPT unter „… erledigt" (Runde 187). Liegt in
+         TODOS und erreicht damit beide Einstiege, get() und onSnapshot. */
+      ...(window.__tdAlt ? [{ id: 't9', title: 'Spind aufräumen', desc: '', done: true, doneBy: 'Ben', doneAt: Date.now() - 2 * 3600000, createdBy: 'Chef', ts: Date.now() - 60000000 }] : []),
       { id: 't3', title: 'Wasserspender auffüllen', desc: 'Beide Spender', done: false, createdBy: 'Chef', ts: Date.now() - 70000000, recurring: 'daily' },
       // Aus einer Defektmeldung entstanden: traegt die Geraete-Kennung. Eine
       // ZWEITE Meldung zu demselben Geraet darf keine zweite Aufgabe anlegen.
