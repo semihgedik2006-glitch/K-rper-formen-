@@ -19780,3 +19780,13 @@ DTEND am Tag der Frist. Die App rechnet richtig (DTEND 26.10.). Der Test
 zählt jetzt Kalendertage ab dem heutigen Berliner Datum; die Erwartung ist
 unverändert. Gegenprobe: mit der alten Rechnung sind tag(2) und tag(3) zu
 diesem Zeitpunkt gleich, mit der neuen nicht.
+**Nachtrag zu Runde 214 (23.10.2026):** Nach dem Zusammenführen mit Runde
+212/213 (Formi-Welt Stufe 2, Akkretionsscheibe) misst `test-gehirn` bei
+1920 px, CPU ÷4 wieder 9,8 ms je Bild bei offenem Formi (Grenze 8,3; vor
+212/213: 2,3 ms). Laufend sind dann zwei Endlos-Animationen
+`formiScheibe` (an `.fk-wirbel` und `.fk-innen`, je Figur im Fensterkopf
+und auf dem Startschirm). Das ist gewollt („dreht sich ständig“), kostet
+aber bei grossen Figuren Malarbeit je Bild. Nicht angefasst, weil es
+gerade in einer zweiten Sitzung gebaut wird — gemeldet.
+Ausserdem misst `test-gehirn` die Spalte bei 1440 px erst, wenn sie
+nicht mehr hereinspringt (sonst 2 px vom Rand, je nach Last).
