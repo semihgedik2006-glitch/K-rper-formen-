@@ -19461,3 +19461,47 @@ Handbuch; ohne Beleg kein Feld.
   zugeklappten Box mit (0 × 0). Chromium meldet für Inhalt in einem
   geschlossenen `<details>` trotzdem Rechtecke; der Test lässt diesen Inhalt
   jetzt aus und misst dafür die Klappzeile (161 × 44).
+
+## Runde 211 — Schulung: Nachweis der Unterweisung zum Drucken (22.10.2026)
+
+**Aus dem Betrieb:** „jo mach weitert“ — auf den Vorschlag „ein
+druckbarer Nachweis der Hygiene- und Notfallunterweisung für Kontrollen“.
+
+**Was gebaut ist**
+- Unter Schulung → Verwalten → „Pflicht“ die Karte **„Nachweis drucken“**:
+  Modul wählen, drucken. Das Blatt läuft über die Druckvorlage der App
+  (`#printArea`, schwarz auf weiss, wie Putzplan und Aufgaben) und enthält:
+  - Titel, Firma, Stand; „Pflichtmodul“ und „zu wiederholen alle N Monate“,
+    wenn das so eingestellt ist;
+  - **Inhalt**: die Schritte des Moduls; bei einer Bestätigung der Satz,
+    der bestätigt wurde; die Zahl der Fragen;
+  - je Person den **jüngsten bestandenen** Durchlauf: Datum mit Jahr,
+    Ergebnis, aktive Dauer, Durchgang, leere Spalte „Unterschrift“;
+  - bei Pflicht: wer es noch nicht hat (ohne Stillgelegte);
+  - unten: „Ob dieses Blatt eine bestimmte Vorschrift erfüllt, prüft die
+    App nicht.“
+
+**Entschieden, und warum**
+- **Keine Aussage über Vorschriften.** Welche Angaben ein
+  Unterweisungsnachweis braucht, hängt vom Thema und von der Stelle ab,
+  die fragt. Das Blatt enthält das, was die App sicher weiss, und sagt,
+  was es nicht ist.
+- **Testläufe und nicht bestandene Durchläufe stehen nicht darauf.** Ein
+  Nachweis, auf dem ein Test der Leitung steht, wäre keiner.
+- **Mit Jahr**: Ein Nachweis wird oft erst Monate später gelesen.
+- **Unterschrift auf Papier**: Die App hat keine elektronische
+  Unterschrift, und eine nachgebaute wäre keine.
+
+**Im Durchlauf gefunden**
+- Beim ersten Druckbild stand „Bestanden am 19.10.“ ohne Jahr und als
+  Inhalt „4. Kurz bestätigen“ — ohne den Satz, um den es ging. Beides
+  behoben, beides geprüft.
+
+**Tests**
+- `tests/test-schulung-nachweis.js` neu (29): Titel, Inhalt mit dem
+  bestätigten Satz, Spalten, Jamie mit Datum samt Jahr, „Noch offen“;
+  Gegenproben: ein Testlauf mit dem Testcode steht nicht darauf (ohne die
+  Bedingung im Code: fällt), ein nur angefangener auch nicht, ein
+  freiwilliges Modul hat keine „Noch offen“-Liste, eine stillgelegte Person
+  fehlt dort; im Druckbild (media print) nur der Nachweis, keine Knöpfe;
+  Fingerziele bei sieben Breiten, normal und kompakt.
