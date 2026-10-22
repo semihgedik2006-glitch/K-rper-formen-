@@ -19557,3 +19557,122 @@ Gesicht, Atmen, Glitch, Teilchen.
 Kontrast, Teilchen und Tagesabschluss, mit Gegenproben für „Bewegung
 reduzieren“ und den Stil Hell. Leere Listen und Laden prüft
 test-formi-lebt (Runde 209).
+
+## Runde 213 — Formi als schwarzes Loch: Akkretionsscheibe, Umgebung, Frage ins Loch; Suche und Formi in einem Feld (22.10.2026)
+
+**Aus dem Betrieb:**
+- Paket 3 der Ideenliste („mach alles davon“): Suche und Formi in einem
+  Feld.
+- Dazu: „kannst du formi noch eine akkretions scheibe geben also dieser
+  bunte kreis soll die akkretionsscheibe sein und er soll auch so die
+  physik von einem schwarzen loch haben oder weissem loch halt und sich
+  dann die umgebung in der app dementsprechen ändert und wenn man fragen
+  stellt fliegt die frage ins schwarze loch mit der passenden phsik halt
+  und spuckt sie im weissen loch auch wieder aus“.
+
+**Gebaut**
+- **Akkretionsscheibe.**
+  - Der bunte Ring dreht sich ständig, aussen 9 s je Runde, die
+    Innenscheibe (`.fk-innen`) 3,6 s. Je näher am Loch, desto schneller.
+  - Darüber liegt `.fk-licht`, das sich nicht mitdreht: Die Seite, die auf
+    uns zukommt, leuchtet heller (Doppler), und am Rand des Lochs liegt
+    ein heller Photonenring. Beides hängt vom Blickwinkel ab, nicht vom
+    Gas.
+  - Denkt Formi, dreht die Scheibe im Fensterkopf schneller (1,1 s /
+    0,6 s).
+- **Physik der Teilchen.** Was das weisse Loch ausspuckt, fällt spiralig
+  und schneller werdend zurück: Der Drehimpuls bleibt, also dreht ein
+  Teilchen umso schneller, je näher es kommt (7 Stationen statt 4).
+- **Umgebung.**
+  - Wird Formi zum weissen Loch, stösst es eine Lichtwelle in die App
+    hinaus (`.formi-welle.schub`).
+  - Wird es wieder schwarz, zieht sich das Licht um das Loch zusammen
+    (`.sog`).
+  - Ein Element von 900 px, das nur per `transform`/`opacity` wächst oder
+    schrumpft; eine einzige weiche Welle.
+- **Frage ins Loch.**
+  - Im kleinen Formi-Fenster lösen sich die Buchstaben der Frage (bis 36)
+    aus dem Feld und fallen in einer enger werdenden Spirale ins Gesicht
+    im Kopf, immer schneller und in Flugrichtung gestreckt
+    („Spaghettifizierung“).
+  - Zuletzt zuckt das Loch, und die Umgebung zieht sich zusammen.
+- **Antwort aus dem weissen Loch.** Kommt die Antwort, wird das Loch im
+  Kopf weiss, stösst eine Welle aus und spuckt Lichtpunkte auf die
+  Antwortkarte, die von oben hereinkommt.
+- **Suche und Formi in einem Feld.**
+  - Das Feld heisst jetzt „Suchen oder Formi fragen …“.
+  - Sieht der Satz wie eine Frage (Fragewort oder „?“) oder ein Auftrag
+    („hak … ab“, „leg … an“) aus, steht Formi oben, mit Gesicht und einer
+    leisen Formi-Kante; die Eingabetaste bringt ihn ins Formi-Feld.
+  - Abgeschickt wird dort mit „Senden“. Die erste Fassung schickte Fragen
+    gleich ab. test-uebersicht hält aber die Entscheidung vom 21.10.2026
+    fest: Die Suche setzt nichts in Gang, was man nicht sieht. Daran hält
+    sich die App jetzt, der Test bleibt, wie er ist.
+  - Ein Wort allein bleibt eine Suche; Formi steht dann unten, wie bisher.
+  - Ohne Formi-Zeile öffnet die Eingabetaste den ersten Treffer.
+
+**Warum so**
+- *Eine Dauer-Bewegung, mit Grund.* Die Drehung der Scheibe ist die
+  einzige ständige Bewegung ausserhalb von „arbeitet gerade“. Der Grund
+  ist der Wunsch oben; eine stehende Scheibe ist keine.
+  - Sie läuft nur auf `transform`.
+  - Sie steht bei „weniger Bewegung“ und bei „Gefühle der Kugel: Aus“
+    (`html.fk-still`).
+  - In Antworten, leeren Listen, Suche, Zeiger und Formi-Zeile dreht sich
+    nichts.
+- *Ohne Maske.* Die Innenscheibe war zuerst ein Ring aus `mask`. Ein
+  einfacher Verlauf sieht gleich aus und lässt die Drehung dem Compositor.
+- *Das Ziel der Frage erst im nächsten Bild.*
+  - Mit dem Abschicken verschwindet der Startschirm samt grossem Gesicht.
+  - Die erste Fassung zielte dorthin und brach ab, ohne dass etwas flog
+    (gefunden beim Ansehen).
+  - Jetzt fliegt die Frage ins Gesicht im Kopf.
+
+**Gemessen** (Arbeit je Bild, CPU ÷4)
+
+| | neu | vorher |
+|---|---|---|
+| Leerlauf, Rechner 1440 | 1,8 ms | 1,5 ms |
+| Leerlauf, Handy 390 | 2,0 ms | 1,0 ms |
+| Maus über dem Inhalt | 6,8–7,3 ms | 7,6–7,8 ms |
+| Freude (Runde 195) | 3,2 ms | — |
+
+- Die Grenze ist 8,3 ms.
+- Der Leerlauf kostet etwas, weil sich die Scheibe dreht. Die App ruht
+  damit nie ganz, solange die Kugel zu sehen ist.
+
+**Geprüft** (`tests/test-formi-lebt.js`, jetzt 169 Zusicherungen)
+- Scheibe, Innenscheibe, Licht: Die Drehung ist endlos, innen schneller,
+  nur `transform`.
+- Freude: Welle hinaus, Licht zusammen, Teilchen spiralig (7 Stationen),
+  danach nichts übrig.
+- Frage:
+  - Jeder Buchstabe fliegt in ≥ 8 Stationen und landet genau im Gesicht
+    im Kopf.
+  - Die Animationen sind endlich und bewegen nur `transform`/`opacity`.
+  - Die Antwort lässt das Loch weiss werden und spuckt ≥ 10 Lichtpunkte
+    aus, mit Welle; danach liegt nichts mehr herum.
+- „Weniger Bewegung“: Die Scheibe steht, keine fliegende Frage.
+- Suche bei 1440 und 390 px:
+  - Bei einer Frage steht Formi oben (≥ 44 px hoch, im Bild); die
+    Eingabetaste bringt sie ins Formi-Feld, abgeschickt ist noch nichts.
+  - Ein Wort lässt Formi unten.
+  - Ein Auftrag steht nur im Feld, nichts wird gespeichert.
+- Gefunden von test-block8 und test-mitarbeiter: Jede Suchzeile trägt
+  ihre Art („Aufgabe“, „Chat“ …); die Formi-Zeile hatte sie zuerst
+  verloren. Jetzt steht „Formi“ neben dem Gesicht.
+- Angepasst, nicht gelockert:
+  - „läuft nichts mehr“ nimmt die Scheibe aus (sie wird eigens geprüft).
+  - Der Atmen-Test aus Runde 195 prüft jetzt das Weiten des Lochs statt
+    einer einzelnen Ringdrehung, weil der Ring sich ohnehin dreht.
+- Zusammengeführt mit Runde 212 (Formi-Welt Stufe 2) der anderen
+  Sitzung. Grün sind dabei test-formi-welt, test-formi-lebt, test-csp,
+  test-gestaltung, test-knoepfe, test-uebersicht, test-leerzustand,
+  test-formi-kugel, test-abgeschnitten, test-quer und test-block8, dazu
+  test-mitarbeiter, test-formi-kumpel, test-formi-platz, test-stil-formi,
+  test-formi-angedockt und test-all.
+- test-gehirn: Rot sind nur die drei bekannten Leistungsprüfungen.
+
+**Nicht geprüft:** echte Geräte und echte 120 Hz. Wie sich die ständig
+drehende Scheibe auf den Akku eines Studio-Tablets auswirkt, lässt sich
+hier nicht messen; „Gefühle der Kugel: Aus“ stellt sie ab.
