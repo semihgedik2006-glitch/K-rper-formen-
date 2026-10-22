@@ -291,7 +291,7 @@ const KUGEL_ANIM = () => {
     for (const [w, h] of [[1440, 900], [390, 844]]) {
       const p = await oeffne(b, w, h);
       await p.click('#formiKugel'); await p.waitForTimeout(400);
-      /* Runde 207: im kleinen Fenster liegen die Einstellungen hinter „…". */
+      /* Runde 208: im kleinen Fenster liegen die Einstellungen hinter „…". */
       await p.click('#jarvisMehr'); await p.waitForTimeout(200);
       await p.click('#jarvisPersonaBtn'); await p.waitForTimeout(300);
       const aus = '#jarvisPersona [data-jvp="gefuehle"][data-jvw="aus"]', an = '#jarvisPersona [data-jvp="gefuehle"][data-jvw="an"]';
@@ -329,7 +329,7 @@ const KUGEL_ANIM = () => {
       await p._ctx.close();
     }
 
-    /* Runde 207 — aus dem Betrieb, auf die Ideenliste: „mach alles davon".
+    /* Runde 208 — aus dem Betrieb, auf die Ideenliste: „mach alles davon".
        Das Formi-Fenster aufgeräumt, Formi in leeren Listen, beim Laden und
        vor jeder Antwort. */
     console.log('\n── Formi-Fenster aufgeräumt, Formi in leeren Listen und beim Laden ──');
