@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-CUzmtMv99KzBnSUFPpCfI1TJZyugCXNGfXCgL9CWG+s='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-ULv3V0OB4YTMtpLz2RFL+tAAfSaGP0Wn2ci0O8ISkiI='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -690,7 +690,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
   border-radius:var(--r-rund);animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .formi-lade .formi-figur{--fg:64px;display:block}
-.formi-lade .fk-wirbel{animation:spin 1.4s linear infinite}
+.formi-lade .fk-wirbel{animation-duration:1.4s}
 .formi-lade .fk-gesicht{transform:translate(9%,-11%)}
 @media (prefers-reduced-motion:reduce){ .formi-lade .fk-wirbel{animation:none} }
 #loadingWrap p{color:var(--text-2);font-size:var(--t-sm)}
@@ -1988,6 +1988,11 @@ body.nurlesen .kopf-plus{display:none !important}
 .sr-formi{width:100%;min-height:44px;text-align:left;font:inherit;color:var(--text);
   background:none;border:none;border-top:1px solid var(--line);border-radius:0;margin-top:var(--s4)}
 .sr-formi:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.sr-formi .formi-figur{--fg:30px}
+/* Frage oder Auftrag: Formi steht oben und ist als Ziel der Eingabetaste
+   zu erkennen — eine leise Formi-Kante links, keine Statusfarbe. */
+.sr-formi.oben{background:linear-gradient(90deg, rgba(182,156,255,.16), rgba(95,225,255,.05) 45%, rgba(95,225,255,0) 80%);
+  box-shadow:inset 3px 0 0 #B69CFF}
 /* Direktnachrichten */
 #dmConvo{flex:1;min-height:0;flex-direction:column}
 .dm-head{display:flex;align-items:center;gap:var(--s10);padding:var(--s10) var(--rand);
@@ -6141,6 +6146,51 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
    kann (das „Atmen" des Lochs), ohne dass Gesicht und Schatten mitdrehen. */
 .fk-wirbel{position:absolute;inset:0;border-radius:var(--r-rund);background:var(--formi-ring);
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.22), inset 0 0 10px 3px rgba(2,4,10,.55)}
+/* ── Akkretionsscheibe (Runde 209) ────────────────────────────────────
+   Aus dem Betrieb: „kannst du formi noch eine akkretions scheibe geben
+   also dieser bunte kreis soll die akkretionsscheibe sein und er soll auch
+   so die physik von einem schwarzen loch haben".
+
+   Was davon zu sehen ist:
+   - die Scheibe dreht sich, innen schneller als aussen (Kepler: je näher
+     am Loch, desto schneller) — .fk-wirbel aussen 9 s je Runde, .fk-innen
+     3,6 s;
+   - die Seite, die auf uns zukommt, leuchtet heller (Doppler) und am
+     Rand des Lochs liegt ein heller Photonenring — beides in .fk-licht,
+     das sich NICHT mitdreht, weil es vom Blickwinkel abhängt, nicht vom
+     Gas;
+   - Teilchen fallen spiralig hinein, schneller werdend (Drehimpuls).
+   Die Drehung ist die einzige Dauer-Bewegung der App ausserhalb von
+   „arbeitet gerade": der Grund ist der Wunsch oben. Sie läuft nur auf
+   transform (Compositor), steht bei „weniger Bewegung" und bei „Gefühle
+   der Kugel: Aus" (html.fk-still) still, und in Antworten und leeren
+   Listen dreht sich nichts — dort stehen viele kleine Figuren. */
+.fk-wirbel{animation:formiScheibe 9s linear infinite}
+/* Ohne mask: ein Ring aus zwei Verläufen. Eine Maske kann verhindern,
+   dass der Compositor die Drehung allein übernimmt. */
+.fk-innen{position:absolute;inset:15%;border-radius:var(--r-rund);
+  background:radial-gradient(circle, #02040A 0 56%, rgba(2,4,10,0) 62%),
+    conic-gradient(from 30deg, rgba(255,240,220,.85), rgba(255,168,92,.2), rgba(255,143,200,.65), rgba(95,225,255,.2), rgba(255,240,220,.85));
+  opacity:.75;animation:formiScheibe 3.6s linear infinite}
+.fk-licht{position:absolute;inset:0;border-radius:var(--r-rund);pointer-events:none;mix-blend-mode:screen;
+  background:radial-gradient(circle, rgba(0,0,0,0) 0 47%, rgba(255,246,230,.9) 50.5%, rgba(255,214,170,.3) 54%, rgba(0,0,0,0) 60%),
+    linear-gradient(105deg, rgba(255,255,255,.32), rgba(255,255,255,0) 55%)}
+@keyframes formiScheibe{to{transform:rotate(360deg)}}
+.ga-loch .fk-wirbel,.ga-loch .fk-innen,.leer-formi .fk-wirbel,.leer-formi .fk-innen,.fz-ring .fk-wirbel,.fz-ring .fk-innen,
+.sr-formi .fk-wirbel,.sr-formi .fk-innen,.formi-zeiger .fk-wirbel,.formi-zeiger .fk-innen,
+html.fk-still .fk-wirbel,html.fk-still .fk-innen{animation:none}
+@media (prefers-reduced-motion:reduce){ .fk-wirbel,.fk-innen{animation:none} }
+/* Umgebung (Runde 209): das weisse Loch stösst eine Welle in die App
+   hinaus, das schwarze zieht das Licht um sich zusammen (.formi-welle,
+   formiUmgebung). Ein Element von 900 px, das nur per transform/opacity
+   wächst oder schrumpft — eine einzige weiche Welle, kein Flackern. */
+.formi-welle{position:fixed;left:0;top:0;width:900px;height:900px;margin:-450px 0 0 -450px;z-index:149;pointer-events:none;border-radius:var(--r-rund);opacity:0}
+.formi-welle.schub{background:radial-gradient(circle, rgba(255,255,255,0) 0 38%, rgba(255,246,230,.46) 46%, rgba(182,156,255,.26) 52%, rgba(255,255,255,0) 60%)}
+.formi-welle.sog{background:radial-gradient(circle, rgba(2,4,10,.5) 0, rgba(2,4,10,.22) 30%, rgba(2,4,10,0) 62%)}
+/* Die Frage auf dem Weg ins Loch (formiFrageFliegt). */
+.formi-flug{position:fixed;inset:0;z-index:1200;pointer-events:none;overflow:hidden}
+.formi-flug i{position:absolute;left:0;top:0;font-style:normal;font-weight:700;font-size:var(--t-md);color:#E8F8FF;
+  text-shadow:0 0 6px rgba(95,225,255,.8);opacity:0}
 /* Das Loch: 52 % der Figur (bei der Kugel 30 von 58 px, wie vorher der
    schwarze Kern). Runde 205: alles im Gesicht ist in Anteilen gemessen,
    damit dieselbe Figur auch 26 px klein im Fensterkopf, in der
@@ -6305,7 +6355,10 @@ body[data-bereich="g-arbeit"] .fk-wirbel::before,body[data-bereich="g-team"] .fk
 .jarvis:not(.jv-kompakt) .formi-gesicht{display:none}
 /* Denken: nur der Ring dreht sich (solange Formi arbeitet — keine
    Endlos-Animation ohne Grund), die Augen schauen nach oben zur Seite. */
-.jarvis.jv-kompakt.jv-z-denkt .formi-gesicht .fk-wirbel{animation:jvDreh 1.1s linear infinite}
+/* Denkt Formi, dreht die Scheibe schneller (Runde 209: die Scheibe dreht
+   sich ohnehin — beim Denken nur die Dauer kürzer). */
+.jarvis.jv-kompakt.jv-z-denkt .formi-gesicht .fk-wirbel{animation-duration:1.1s}
+.jarvis.jv-kompakt.jv-z-denkt .formi-gesicht .fk-innen{animation-duration:.6s}
 .jarvis.jv-z-denkt .formi-gesicht .fk-gesicht{transform:translate(9%,-11%)}
 /* Sprechen: der Mund geht auf und zu, solange Formi spricht. Mit
    Pegel (menschliche Stimme) folgt er stattdessen der Lautstärke
@@ -8946,7 +8999,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
 <div id="loadingWrap">
   <!-- Runde 209: beim Laden dreht sich Formis Ring, die Augen schauen
        nach oben — Formi denkt. -->
-  <div class="formi-lade" aria-hidden="true"><span class="formi-figur"><span class="fk-koerper"><span class="fk-wirbel"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i></span></span></span></span></span></div>
+  <div class="formi-lade" aria-hidden="true"><span class="formi-figur"><span class="fk-koerper"><span class="fk-wirbel"></span><span class="fk-innen"></span><span class="fk-licht"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i></span></span></span></span></span></div>
   <p id="loadingStatus">Verbindung wird hergestellt …</p>
   <p id="loadingStep">Schritt 1/3: Lade Code …</p>
   <button id="loadingForce" class="btn btn-ghost btn-sm" hidden>Login trotzdem anzeigen</button>
@@ -12394,7 +12447,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
   <div class="search-box">
     <div class="search-bar">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      <input id="searchInput" type="search" placeholder="Suchen …" autocomplete="off" />
+      <input id="searchInput" type="search" placeholder="Suchen oder Formi fragen …" autocomplete="off" enterkeyhint="search" />
       <button id="searchClose" aria-label="Schließen"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
     <div id="searchResults"></div>
@@ -13107,7 +13160,7 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
     <span class="jv-ecke ul" aria-hidden="true"></span><span class="jv-ecke ur" aria-hidden="true"></span>
     <ol class="jv-log" aria-hidden="true"><li>&gt; Systeme starten</li><li>&gt; Studio-Wissen verbunden</li><li>&gt; App-Steuerung bereit</li><li>&gt; Online</li></ol>
     <div class="jv-kopf">
-      <span class="jv-titel"><span class="formi-gesicht formi-figur mini" aria-hidden="true"><span class="fk-koerper"><span class="fk-wirbel"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i></span></span></span></span></span><span class="jv-punkt" aria-hidden="true"></span><span id="jarvisTitel">Formi</span><span class="jv-weck" id="jarvisWeck" hidden>hört auf dich</span><span class="jv-offline" id="jarvisOffline" hidden>offline · Schnellbefehle gehen</span></span>
+      <span class="jv-titel"><span class="formi-gesicht formi-figur mini" aria-hidden="true"><span class="fk-koerper"><span class="fk-wirbel"></span><span class="fk-innen"></span><span class="fk-licht"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i></span></span></span></span></span><span class="jv-punkt" aria-hidden="true"></span><span id="jarvisTitel">Formi</span><span class="jv-weck" id="jarvisWeck" hidden>hört auf dich</span><span class="jv-offline" id="jarvisOffline" hidden>offline · Schnellbefehle gehen</span></span>
       <span class="jv-kopf-knoepfe">
         <button type="button" class="icon-btn" id="jarvisMehr" data-ikon="mehr" aria-expanded="false" aria-label="Mehr: Einstellungen, Gespräche, Ton" title="Mehr"></button>
         <button type="button" class="icon-btn" id="jarvisPersonaBtn" data-ikon="regler" aria-expanded="false" aria-controls="jarvisPersona" aria-label="Persönlichkeit und Stimme" title="Persönlichkeit und Stimme"></button>
@@ -13161,7 +13214,7 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
      als Auge (Pupille mit Lichtpunkt) und ein Punkt „hat etwas für dich".
      Alles Schmuck: aria-hidden, keine Trefferfläche (pointer-events:none). -->
 <button type="button" class="formi-kugel" id="formiKugel" hidden aria-haspopup="dialog" aria-controls="jarvis"
-  aria-label="Formi öffnen" title="Formi — frag mich oder sag, was ich tun soll"><span class="fk-koerper" aria-hidden="true"><span class="fk-wirbel"></span><span class="fk-geist a"></span><span class="fk-geist b"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-braue l"></i><i class="fk-braue r"></i><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i></span></span></span></span><span class="fk-punkt" aria-hidden="true"></span></button>
+  aria-label="Formi öffnen" title="Formi — frag mich oder sag, was ich tun soll"><span class="fk-koerper" aria-hidden="true"><span class="fk-wirbel"></span><span class="fk-innen"></span><span class="fk-licht"></span><span class="fk-geist a"></span><span class="fk-geist b"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-braue l"></i><i class="fk-braue r"></i><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i></span></span></span></span><span class="fk-punkt" aria-hidden="true"></span></button>
 <span id="formiKugelHat" hidden>Formi hat etwas für dich</span>
 <!-- Formis Sprechblase (Runde 196): ein kurzer Satz, 4,5 s, dann weg.
      Keine Trefferfläche — sie verdeckt nie einen Knopf. -->
@@ -21273,6 +21326,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-22-formi-schwarzes-loch', datum:'22.10.2026', titel:'Formi ist jetzt ein echtes schwarzes Loch – und die Suche fragt Formi', wo:'home', punkte:[
+    'Der bunte Ring um Formi ist eine Akkretionsscheibe: Er dreht sich ständig, innen schneller als aussen, die eine Seite leuchtet heller und am Rand des Lochs liegt ein heller Lichtring – wie bei einem echten schwarzen Loch.',
+    'Freut sich Formi, wird es zum weissen Loch und stösst eine Lichtwelle in die App hinaus. Danach wird es wieder schwarz, zieht das Licht zusammen und saugt die Teilchen spiralig wieder ein.',
+    'Stellst du Formi eine Frage, lösen sich die Buchstaben aus dem Feld und fallen in einer Spirale ins Loch. Kommt die Antwort, wird das Loch weiss und spuckt sie dir aus.',
+    'Suchen und Fragen in einem Feld: Tippst du in der Suche eine Frage („wer hat heute Dienst?"), steht Formi ganz oben – die Eingabetaste bringt sie direkt ins Formi-Feld, du schickst sie dort ab. Genauso bei einem Auftrag („hak … ab"): gespeichert wird erst, wenn du es bestätigst.' ] },
   { id:'2026-10-22-formi-fenster-ruhiger', datum:'22.10.2026', titel:'Formi-Fenster aufgeräumt, Formi in leeren Listen', wo:'home', punkte:[
     'Öffnest du Formi, begrüsst dich oben ein grosses Formi-Gesicht, das dir mit den Augen folgt. Die drei Zeilen „Aufgaben offen / Putzplan / Material" stehen dort nicht mehr – das zeigt schon die Formi-Zeile auf der Startseite.',
     'Oben im kleinen Formi-Fenster sind nur noch drei Knöpfe: „…", Gross und Schliessen. Hinter „…" findest du Einstellungen, gespeicherte Gespräche und den Ton.',
@@ -26678,6 +26736,7 @@ function gehirnSenden(art, feldId){
   var f=$(feldId||'gehirnFeld');
   var text=String((f && f.value)||'').trim();
   if(!text){ toast('Bitte zuerst etwas eintippen.', true); if(f) f.focus(); return; }
+  if(feldId==='jarvisFeld' && typeof formiFrageFliegt==='function') formiFrageFliegt(text, f);
   jvThema(jvThemaAusText(text));
   var v={ text:text, art:art, laeuft:true, schritte:[], _z:Date.now() };
   _gVerlauf.push(v); _gLaeuft=true; if(f) f.value='';
@@ -27232,6 +27291,7 @@ function formiLebtAn(){
    Beim Abschalten: wach, Auge geradeaus, nichts läuft weiter. */
 function formiGefuehleAnwenden(an){
   _fl.gefuehleAus=!an;
+  document.documentElement.classList.toggle('fk-still', !an);
   if(an) return;
   _fl.schlaeft=false; _fl.muede=false; _fl.nah=false; _fl.pup=null; _fl.pupZiel='';
   var t=formiTeile(); if(!t) return;
@@ -27339,16 +27399,135 @@ function formiAusbruch(stark){
   [].forEach.call(box.children, function(el, i){
     var w=(i/n)*Math.PI*2 + Math.random()*0.5, d=(stark ? 70 : 42) + Math.random()*(stark ? 50 : 30);
     var x=Math.cos(w)*d, y=Math.sin(w)*d, g=.7+Math.random()*.7;
+    /* Runde 209: zurück geht es nicht gerade, sondern spiralig und immer
+       schneller — der Drehimpuls bleibt, also dreht ein Teilchen umso
+       schneller um das Loch, je näher es kommt. */
+    function pt(rf, dw, sc, op, off, ez){ var a=w+dw, rr=d*1.12*rf;
+      var k={ transform:'translate('+(Math.cos(a)*rr).toFixed(1)+'px,'+(Math.sin(a)*rr).toFixed(1)+'px) scale('+sc.toFixed(2)+')', opacity:op, offset:off };
+      if(ez) k.easing=ez; return k; }
     try{
       el.animate([
         { transform:'translate(0,0) scale(.3)', opacity:0, easing:'cubic-bezier(.15,.8,.3,1)' },
         { transform:'translate('+x.toFixed(1)+'px,'+y.toFixed(1)+'px) scale('+g.toFixed(2)+')', opacity:1, offset:.38 },
-        { transform:'translate('+(x*1.12).toFixed(1)+'px,'+(y*1.12).toFixed(1)+'px) scale('+(g*.85).toFixed(2)+')', opacity:.9, offset:.55, easing:'cubic-bezier(.7,0,.9,.5)' },
+        pt(1, 0, g*.85, .9, .55),
+        pt(.7, .7, g*.7, .9, .7),
+        pt(.42, 1.8, g*.5, .85, .82),
+        pt(.18, 3.4, g*.3, .6, .92),
         { transform:'translate(0,0) scale(.1)', opacity:0 }
       ], { duration:dauer+Math.round(Math.random()*200), delay:Math.round(Math.random()*60) });
     }catch(e){}
   });
   setTimeout(function(){ if(box.parentNode) box.parentNode.removeChild(box); }, dauer+400);
+  /* Umgebung: erst stösst das weisse Loch eine Welle hinaus, dann zieht
+     das schwarze das Licht wieder zusammen. */
+  formiUmgebung(t.k, 'schub', 0);
+  formiUmgebung(t.k, 'sog', Math.round(dauer*.55));
+}
+/* ── Die Umgebung reagiert (Runde 209) ───────────────────────────────
+   „…und sich dann die umgebung in der app dementsprechen ändert". */
+function formiUmgebung(el, art, verz){
+  if(!el || gehirnWenigBewegung() || _fl.gefuehleAus || !document.body.animate) return;
+  setTimeout(function(){
+    requestAnimationFrame(function(){
+      if(!el.getClientRects().length) return;
+      var q=el.getBoundingClientRect();
+      var w=document.createElement('div');
+      w.className='formi-welle '+art; w.setAttribute('aria-hidden', 'true');
+      var x=Math.round(q.left+q.width/2), y=Math.round(q.top+q.height/2);
+      document.body.appendChild(w);
+      var bild = art==='schub'
+        ? [{ transform:'translate('+x+'px,'+y+'px) scale(.12)', opacity:1 }, { transform:'translate('+x+'px,'+y+'px) scale(1.4)', opacity:.7, offset:.45 }, { transform:'translate('+x+'px,'+y+'px) scale(2.6)', opacity:0 }]
+        : [{ transform:'translate('+x+'px,'+y+'px) scale(2.2)', opacity:0 }, { transform:'translate('+x+'px,'+y+'px) scale(.9)', opacity:1, offset:.6 }, { transform:'translate('+x+'px,'+y+'px) scale(.2)', opacity:0 }];
+      try{ w.animate(bild, { duration: art==='schub' ? 900 : 800, easing: art==='schub' ? 'cubic-bezier(.2,.7,.3,1)' : 'cubic-bezier(.6,0,.9,.4)' }).onfinish=function(){ if(w.parentNode) w.parentNode.removeChild(w); }; }
+      catch(e){ if(w.parentNode) w.parentNode.removeChild(w); }
+      setTimeout(function(){ if(w.parentNode) w.parentNode.removeChild(w); }, 1400);
+    });
+  }, verz||0);
+}
+/* ── Die Frage fliegt ins Loch (Runde 209) ────────────────────────────
+   Aus dem Betrieb: „wenn man fragen stellt fliegt die frage ins schwarze
+   loch mit der passenden physik halt und spuckt sie im weissen loch auch
+   wieder aus". Im kleinen Formi-Fenster: die Buchstaben der Frage lösen
+   sich aus dem Feld und fallen in einer enger werdenden Spirale ins
+   Gesicht, immer schneller, in Flugrichtung gestreckt
+   („Spaghettifizierung"), zuletzt zieht das Loch die Umgebung zusammen.
+   Kommt die Antwort, wird das Loch weiss und spuckt Licht auf die
+   Antwort (formiAntwortSpucken). */
+function formiFensterZiel(){
+  var a=document.querySelector('#jarvisVerlauf .jv-start-figur');
+  if(a && a.getClientRects().length) return a;
+  var k=document.querySelector('#jarvis .jv-titel .formi-gesicht');
+  return k && k.getClientRects().length ? k : null;
+}
+function formiFrageFliegt(text, feld){
+  if(!_jvKompakt || !jarvisOffen() || gehirnWenigBewegung() || _fl.gefuehleAus || !document.body.animate || !feld) return;
+  var zeichen=String(text||'').slice(0, 36);
+  if(!zeichen.trim()) return;
+  /* Das Ziel erst im nächsten Bild bestimmen: mit dem Abschicken
+     verschwindet der Startschirm samt grossem Gesicht — dann fliegt die
+     Frage ins Gesicht im Kopf. Gemessen wird ebenfalls erst dort. */
+  requestAnimationFrame(function(){
+    var ziel=formiFensterZiel();
+    if(!ziel || !feld.getClientRects().length) return;
+    var f=feld.getBoundingClientRect(), z=ziel.getBoundingClientRect();
+    var cx=z.left+z.width/2, cy=z.top+z.height/2;
+    var x0=f.left+16, y0=f.top+22, schritt=Math.min(9, (f.width-32)/Math.max(1, zeichen.length));
+    var box=document.createElement('div'); box.className='formi-flug'; box.setAttribute('aria-hidden', 'true');
+    var html='';
+    for(var i=0;i<zeichen.length;i++) html+='<i>'+esc(zeichen[i]===' ' ? '\u00a0' : zeichen[i])+'</i>';
+    box.innerHTML=html;
+    document.body.appendChild(box);
+    var dreh = Math.random()<.5 ? 1 : -1, dauerMax=0;
+    [].forEach.call(box.children, function(el, i){
+      var px=x0+i*schritt, py=y0, dx=px-cx, dy=py-cy;
+      var r0=Math.sqrt(dx*dx+dy*dy)||1, w0=Math.atan2(dy, dx), N=9, bild=[];
+      for(var k=0;k<=N;k++){
+        var t=k/N, rr=r0*Math.pow(1-t, 1.6), w=w0+dreh*t*t*Math.PI*3.2;
+        var x=cx+Math.cos(w)*rr, y=cy+Math.sin(w)*rr;
+        var tang=(w+dreh*Math.PI/2)*180/Math.PI, sc=1-t*.85, st=1+t*1.8;
+        bild.push({ transform:'translate('+x.toFixed(1)+'px,'+y.toFixed(1)+'px) rotate('+(t<.15 ? 0 : tang).toFixed(0)+'deg) scale('+(sc*st).toFixed(2)+','+(sc/st).toFixed(2)+')',
+          opacity: k===0 ? 0 : (t>.9 ? 0 : 1), offset:t });
+      }
+      var dauer=1250, verz=i*22; dauerMax=Math.max(dauerMax, dauer+verz);
+      try{ el.animate(bild, { duration:dauer, delay:verz, easing:'linear', fill:'backwards' }); }catch(e){}
+    });
+    setTimeout(function(){
+      if(box.parentNode) box.parentNode.removeChild(box);
+      /* geschluckt: das Loch zuckt, die Umgebung zieht sich zusammen */
+      var pu=ziel.querySelector('.fk-pupille');
+      if(pu) try{ pu.animate([{transform:'none'},{transform:'scale(.82)',offset:.35},{transform:'scale(1.06)',offset:.7},{transform:'none'}], { duration:380 }); }catch(e){}
+    }, dauerMax+60);
+    formiUmgebung(ziel, 'sog', Math.max(0, dauerMax-500));
+  });
+}
+function formiAntwortSpucken(){
+  if(!_jvKompakt || gehirnWenigBewegung() || _fl.gefuehleAus || !document.body.animate) return;
+  var g=document.querySelector('#jarvis .jv-titel .formi-gesicht'); if(!g) return;
+  var weiss=g.querySelector('.fk-weiss');
+  if(weiss) try{ weiss.animate([{opacity:0},{opacity:1,offset:.2},{opacity:1,offset:.55},{opacity:0}], { duration:900, easing:'ease-in-out' }); }catch(e){}
+  formiUmgebung(g, 'schub', 0);
+  requestAnimationFrame(function(){
+    var karten=document.querySelectorAll('#jarvisVerlauf .gehirn-antwort'), karte=karten[karten.length-1];
+    if(!g.getClientRects().length) return;
+    var q=g.getBoundingClientRect(), cx=q.left+q.width/2, cy=q.top+q.height/2;
+    var ziel = karte && karte.getClientRects().length ? karte.getBoundingClientRect() : null;
+    var box=document.createElement('div'); box.className='formi-flug'; box.setAttribute('aria-hidden', 'true');
+    var n=14, html='';
+    for(var i=0;i<n;i++) html+='<i style="color:'+FK_FARBEN[i%FK_FARBEN.length]+'">•</i>';
+    box.innerHTML=html; document.body.appendChild(box);
+    [].forEach.call(box.children, function(el, i){
+      var w=(i/n)*Math.PI*2, d=34+Math.random()*26;
+      var zx = ziel ? ziel.left+20+Math.random()*Math.max(10, ziel.width-40) : cx+Math.cos(w)*d*2;
+      var zy = ziel ? ziel.top+12+Math.random()*Math.min(60, Math.max(10, ziel.height-24)) : cy+Math.sin(w)*d*2;
+      try{ el.animate([
+        { transform:'translate('+cx.toFixed(0)+'px,'+cy.toFixed(0)+'px) scale(.3)', opacity:0, easing:'cubic-bezier(.15,.8,.3,1)' },
+        { transform:'translate('+(cx+Math.cos(w)*d).toFixed(0)+'px,'+(cy+Math.sin(w)*d).toFixed(0)+'px) scale(1.2)', opacity:1, offset:.35, easing:'cubic-bezier(.4,0,.6,1)' },
+        { transform:'translate('+zx.toFixed(0)+'px,'+zy.toFixed(0)+'px) scale(.6)', opacity:0 }
+      ], { duration:900+Math.round(Math.random()*200), delay:Math.round(Math.random()*80) }); }catch(e){}
+    });
+    if(karte) try{ karte.animate([{ opacity:0, transform:'translateY(-14px) scale(.96)' }, { opacity:1, transform:'none' }], { duration:420, delay:160, easing:'cubic-bezier(.2,.8,.2,1)', fill:'backwards' }); }catch(e){}
+    setTimeout(function(){ if(box.parentNode) box.parentNode.removeChild(box); }, 1500);
+  });
 }
 /* ── Atmen (Runde 195) ───────────────────────────────────────────────
    „vlt auch mehr das gefühl das es ein lebendes schwarzes/weisses loch
@@ -27361,7 +27540,6 @@ function formiAtmen(){
   if(!formiLebtAn() || _fl.schlaeft) return;
   var t=formiTeile(); if(!t || !t.wirbel) return;
   try{
-    t.wirbel.animate([{ transform:'rotate(0deg)' }, { transform:'rotate(360deg)' }], { duration:3600, easing:'ease-in-out' });
     t.pupille.animate([{ transform:'none' }, { transform:'scale(1.07)', offset:.5 }, { transform:'none' }], { duration:3600, easing:'ease-in-out' });
   }catch(e){ return; }
   var box=formiTeilchen(t, 3, true);
@@ -27390,7 +27568,7 @@ function formiAtmenPlanen(){
    Punkt — für Fensterkopf, Formi-Zeile und den fliegenden Zeiger. */
 function formiFigurKlasse(){ return 'formi-figur mini'; }
 function formiFigurInnen(brauen){
-  return '<span class="fk-koerper"><span class="fk-wirbel"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span>'+
+  return '<span class="fk-koerper"><span class="fk-wirbel"></span><span class="fk-innen"></span><span class="fk-licht"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span>'+
     '<span class="fk-gesicht">'+(brauen ? '<i class="fk-braue l"></i><i class="fk-braue r"></i>' : '')+
     '<i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i></span></span></span></span>';
 }
@@ -27696,6 +27874,7 @@ function formiGesehen(){
 function formiLebtStart(){
   if(_fl.gestartet) return; _fl.gestartet=true;
   _fl.gefuehleAus = jvPersona().gefuehle==='aus';
+  if(_fl.gefuehleAus) document.documentElement.classList.add('fk-still');
   var maus=!!(window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches);
   function tun(){ formiWach(); }
   document.addEventListener('pointermove', function(e){
@@ -29131,7 +29310,7 @@ function jvZustand(){
   if(jarvisOffen()){
     if(_gLaeuft && !war.laeuft){ jvTon('senden'); jvStill(); jvZeichenStart(letzte && letzte.text); }
     else if(_gLaeuft && schr>war.schritte) jvTon('schritt');
-    if(!_gLaeuft && war.laeuft && letzte) formiKopfAha();
+    if(!_gLaeuft && war.laeuft && letzte){ formiKopfAha(); formiAntwortSpucken(); }
     if(!_gLaeuft && war.laeuft && letzte){
       jvZeichenRaus(letzte.fehler ? '' : (letzte.art==='frage' ? letzte.antwort : (letzte.spruch || letzte.angelegt || letzte.hinweis || '')));
       if(letzte.fehler){ jvTon('fehler'); gehirnStimmung('fehler'); jvVibrieren([40,60,40]); }
@@ -48177,7 +48356,26 @@ function doSearch(q){
   var res=sucheTreffer(q);
   if(!res.length) box.innerHTML='<div class="search-empty">Nichts gefunden.</div>';
   else sucheZeichnen(box, res);
-  sucheFormiAnhaengen(box);
+  sucheFormiAnhaengen(box, sucheIstFrage((($('searchInput')||{}).value)||''));
+}
+/* ── Suche und Formi in einem Feld (Runde 207) ──────────────────────
+   Aus dem Betrieb, auf die Ideenliste: „mach alles davon" — Idee 6,
+   „Suche und Formi als ein Feld". Die Suche hatte Formi schon als
+   letzte Zeile (seit 21.10.2026). Neu:
+   - Sieht der Satz wie eine Frage oder ein Auftrag aus, steht Formi
+     OBEN, mit Gesicht, und die Eingabetaste bringt ihn zu Formi.
+   - Abgeschickt wird dort mit „Senden" — wie seit dem 21.10.2026: die
+     Suche soll nichts in Gang setzen, was man nicht sieht
+     (test-uebersicht prüft das).
+   Ein Wort allein („Westen") bleibt eine Suche. */
+var SUCHE_FRAGEWORT=/^(wer|wie|was|wann|wo|wieso|warum|weshalb|welche[rsnm]?|darf|kann|muss|soll|gibt|ist|sind|hat|haben)\b/i;
+var SUCHE_AUFTRAG=/^(hak|leg|öffne|oeffne|zeig|erinner|schreib|meld|plan|trag|mach|schick|sag)\w*\b/i;
+function sucheIstFrage(roh){
+  roh=String(roh||'').trim();
+  if(roh.split(/\s+/).length<2) return '';
+  if(/\?\s*$/.test(roh) || SUCHE_FRAGEWORT.test(roh)) return 'frage';
+  if(SUCHE_AUFTRAG.test(roh)) return 'auftrag';
+  return '';
 }
 /* Unter jeder Suche: „Formi fragen". Aus dem Betrieb, 21.10.2026: Formi
    „mehr nutzen und einbauen". Die Suche findet nur Wörter, die irgendwo
@@ -48186,21 +48384,24 @@ function doSearch(q){
    auf Tipp — die Suche soll nichts auslösen, was man nicht sieht.
 
    Den Wortlaut aus dem Feld, nicht das kleingeschriebene q. */
-function sucheFormiAnhaengen(box){
+function sucheFormiAnhaengen(box, art){
   if(typeof gehirnVerfuegbar!=='function' || !gehirnVerfuegbar()) return;
   var roh=($('searchInput').value||'').trim().slice(0,200);
   if(roh.length<2) return;
-  box.insertAdjacentHTML('beforeend',
-    '<button type="button" class="sr sr-formi" id="sucheFormi">'+
-    '<span class="sr-type">Formi</span>'+
+  var unter = art ? 'Eingabetaste: zu Formi — dort abschicken'
+            : 'Antwort in eigenen Worten statt Treffer';
+  box.insertAdjacentHTML(art ? 'afterbegin' : 'beforeend',
+    '<button type="button" class="sr sr-formi'+(art ? ' oben' : '')+'" id="sucheFormi" data-art="'+(art||'')+'">'+
+    '<span class="formi-figur mini" aria-hidden="true">'+formiFigurInnen()+'</span><span class="sr-type">Formi</span>'+
     '<div class="sr-main"><b>Formi fragen: „'+esc(roh.slice(0,60))+'“</b>'+
-    '<span>Antwort in eigenen Worten statt Treffer</span></div></button>');
-  $('sucheFormi').addEventListener('click', function(){
-    closeSearch();
-    jarvisAuf();
-    var f=$('jarvisFeld');
-    if(f){ f.value=roh; setTimeout(function(){ f.focus(); }, 80); }
-  });
+    '<span>'+unter+'</span></div></button>');
+  $('sucheFormi').addEventListener('click', function(){ sucheFormiFragen(roh); });
+}
+function sucheFormiFragen(roh){
+  closeSearch();
+  jarvisAuf();
+  var f=$('jarvisFeld');
+  if(f){ f.value=roh; setTimeout(function(){ f.focus(); }, 80); }
 }
 /* Die Treffer der Suche — auch für „such nach …" im Studio-Gehirn
    (20.10.2026). Unverändert aus doSearch herausgelöst. */
@@ -49455,6 +49656,15 @@ function bindActions(){
   // Suche
   var sb=$('searchBtn'); if(sb) sb.addEventListener('click',openSearch);
   var si=$('searchInput'); if(si) si.addEventListener('input',function(){ doSearch(this.value); });
+  /* Runde 207: Eingabetaste — ist der Satz eine Frage oder ein Auftrag,
+     geht er an Formi; sonst der erste Treffer. */
+  if(si) si.addEventListener('keydown', function(e){
+    if(e.key!=='Enter' || e.isComposing) return;
+    var b=$('sucheFormi');
+    if(b && b.getAttribute('data-art')){ e.preventDefault(); b.click(); return; }
+    var erster=document.querySelector('#searchResults .sr[data-view]');
+    if(erster){ e.preventDefault(); erster.click(); }
+  });
   var scl=$('searchClose'); if(scl) scl.addEventListener('click',closeSearch);
   var so=$('searchOverlay'); if(so) so.addEventListener('click',function(e){ if(e.target===so) closeSearch(); });
   document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeSearch(); });
