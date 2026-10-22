@@ -19505,3 +19505,55 @@ druckbarer Nachweis der Hygiene- und Notfallunterweisung für Kontrollen“.
   freiwilliges Modul hat keine „Noch offen“-Liste, eine stillgelegte Person
   fehlt dort; im Druckbild (media print) nur der Nachweis, keine Knöpfe;
   Fingerziele bei sieben Breiten, normal und kompakt.
+## Runde 212 — Formi-Welt, Stufe 2: die App im Formi-Look (22.10.2026)
+
+**Aus dem Betrieb:** „können wir noch mehr am design anpassen und auch
+mehr auf den formi look eingehen also das die app so ein ähnliches
+verhalten und design hat“. Gefragt wurde mit Probebildern (jetzt / A
+dezent / B stark). Die Antworten: „1. b 2. ja 3. alle vier“.
+
+**Was Formi ausmacht** (aus Runde 186/195): Ring in vier Farben (türkis
+#5FE1FF, violett #B69CFF, rosa #FF8FC8, orange #FFA85C), schwarzer Kern mit
+Gesicht, Atmen, Glitch, Teilchen.
+
+**Gebaut** (alles unter `body.formi:not(.light)`; Hell bleibt, wie es war):
+1. **Flächen:** Karten, Verwaltungskarten und Startseiten-Zeilen haben
+   einen fast schwarzen Kern (`--formi-kern`) und eine schillernde Kante:
+   den Verlauf `--formi-lin` als unterste Hintergrundschicht
+   (border-box). Es gibt kein zusätzliches Element und keine Maske.
+   - Ein erster Versuch mit `::after` und Maske scheiterte an
+     test-gestaltung: `inherit` als Rundung und 1 px als Abstand stehen
+     nicht auf der Leiter.
+   - Die Farbe der Art (rot überfällig, orange heute …) liegt als eigene
+     Schicht links darüber. Statusfarben nur für Status.
+   - Aufgaben- und Putzplan-Zeilen behalten ihren Hintergrund, weil dort
+     Zustände wie „eben abgehakt“ eine eigene Fläche tragen. Sie bekommen
+     Formis Violett als Kante.
+2. **Wo man ist:** aktiver Raum links (Leiste im Verlauf, Schein in
+   Violett), Strich unter dem offenen Reiter, Seitentitel als
+   Verlaufsschrift. Der Strich lag vorher in der Bereichsfarbe. Die Wahl
+   B heisst: Formis Farben sind die Farbe des Orts.
+3. **Der Ring bleibt Formi** („2. ja“). Das Zeichen im Seitenkopf ist ein
+   Quadrat mit Verlaufsrand, kein Kreis.
+4. **Hauptknöpfe** in Formis Verlauf mit dunkler Schrift. An echten
+   Bildpunkten gemessen: Die schwächste Stelle liegt über 4,5 : 1
+   (test-formi-welt).
+5. **Momente** („alle vier“):
+   - Teilchen beim Abhaken (`hakenTeilchen`): zehn Punkte in den vier
+     Farben, 600 ms. Der erste Name `formiTeilchen` war schon vergeben
+     (Runde 195), die spätere Fassung hätte die neue still
+     überschrieben, und der Test fand 0 Teilchen.
+   - Leere Listen und Laden: parallel in Runde 209 gebaut (Formi mit
+     „Frag Formi“ in jedem leeren Zustand, Formis drehender Ring mit
+     Gesicht beim Laden). Beim Zusammenführen gilt deren Fassung. Meine
+     eigene (ein Formi-Gesicht nur im Stil Formi, ein atmender Kern) ist
+     entfallen, sie nutzte sogar denselben Klassennamen `leer-formi`.
+   - Tagesabschluss (`formiTagesabschluss`): Glitch über dem Kopf,
+     Konfetti in Formis Farben, Formi freut sich, ein Satz. Ausgelöst,
+     wenn alle Aufgaben oder der Putzplan eines Studios fertig sind.
+   - Bei „Bewegung reduzieren“ bleibt jeweils nur das Bild bzw. der Satz.
+
+**Geprüft:** test-formi-welt prüft Flächen, Farben, Ring nur Formi,
+Kontrast, Teilchen und Tagesabschluss, mit Gegenproben für „Bewegung
+reduzieren“ und den Stil Hell. Leere Listen und Laden prüft
+test-formi-lebt (Runde 209).
