@@ -93,6 +93,11 @@ function ki(antworten) {
   pruefe(/IMMER aus dieser Liste/.test(sys), 'Systemtext: „was kannst du" kommt aus der Liste, nicht aus altem Wissen');
   pruefe(/Leg eine Aufgabe an:/.test(sys), 'Systemtext: zeigt, wie man Formi etwas anlegen lässt');
   pruefe(/Sprich nie vom "Studio-Wissen"/.test(sys), 'Systemtext: kein „Das Studio-Wissen sagt"');
+  /* 2.18: Charakter „Kumpel aus dem Studio" — nur locker, Ernstes zuerst. */
+  const sysSach = w.formiSystem({ ton: 'sachlich', vorname: 'Semih', kanal: 'app' });
+  pruefe(/Kumpel aus dem Studio/.test(sys) && !/Kumpel aus dem Studio/.test(sysSach), 'Charakter nur im lockeren Ton');
+  pruefe(sys.indexOf('ERNST GEHT VOR') >= 0 && sys.indexOf('ERNST GEHT VOR') < sys.indexOf('Running Gags'), 'Charakter: Ernstes (Notfall, Gesundheit) steht vor jedem Spruch');
+  pruefe(/NACH der Antwort, nie statt ihr/.test(sys) && /nicht so, als wärst du ein Mensch/.test(sys), 'Charakter: Antwort zuerst, keine vorgetäuschte Menschlichkeit');
   const sysMail = w.formiSystem({ ton: 'locker', vorname: 'Mail', kanal: 'mail' });
   pruefe(!/heißt Mail/.test(sysMail) && /kennst du nicht/.test(sysMail), 'Mail: kein Vorname „Mail"');
   pruefe(/\d{1,2}:\d{2} Uhr$/.test(w.jetztText(Date.UTC(2026, 9, 22, 12, 5))), 'Uhrzeit in Köln: ' + w.jetztText(Date.UTC(2026, 9, 22, 12, 5)));
