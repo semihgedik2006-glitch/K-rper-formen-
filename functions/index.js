@@ -4183,7 +4183,7 @@ exports.stempelzeitenAblaufen = region
         weg += snap.size;
         if (snap.size < 400) break;
       }
-      /* Runde 201: Korrekturanträge laufen mit derselben Frist ab. */
+      /* Runde 204: Korrekturanträge laufen mit derselben Frist ab. */
       for (;;) {
         const snap = await W(firma).collection('zeitAntraege').where('tag', '<', grenz).limit(400).get();
         if (snap.empty) break;
@@ -5637,7 +5637,7 @@ exports.zeitStornieren = region.https.onCall(async (data, context) => {
 });
 
 /* ══════════════════════════════════════════════════════════════════════
-   KORREKTURANTRAG (Runde 201)
+   KORREKTURANTRAG (Runde 204)
 
    Aus dem Betrieb, 22.10.2026, auf die Frage, wer einen Antrag der
    Mitarbeiter bestätigt: „nur geschäftsführung".
@@ -6310,27 +6310,12 @@ async function schulungTestStarten(uid, profil, firma, modulId) {
            ohneVideoSperre: profil.role === 'chef', test: true };
 }
 
-/* ── Anfangen ──
-   Der einzige Weg, auf dem ein Durchlauf entsteht. In firestore.rules
-   ist `create` auf `schulungLaeufe` fuer JEDEN gesperrt — auch fuer die
-   Leitung. Sonst koennte man sich mit der Browser-Konsole einen
-   fertigen, bestandenen Durchlauf auf einen fremden Namen schreiben,
-   und die ganze Liste waere eine Behauptung. */
-exports.schulungStart = region.https.onCall(async (data, context) => {
-  const { uid, profil, firma } = await anruferProfil(context);
-  const roh = schulungCodeNormal(data && data.code);
-  const modulId = String((data && data.modul) || '');
-  if (!modulId) throw new functions.https.HttpsError('invalid-argument', 'Kein Modul angegeben.');
-  if (roh.length !== SCHULUNG_KENNUNG_LAENGE + SCHULUNG_GEHEIM_LAENGE) {
-    throw new functions.https.HttpsError('invalid-argument',
-      'Der Code besteht aus ' + (SCHULUNG_KENNUNG_LAENGE + SCHULUNG_GEHEIM_LAENGE) +
-      ' Zeichen. Bitte noch einmal ansehen.');
-  }
+/* ── Wer steckt hinter diesem Code? ──
+   Seit Runde 201 an ZWEI Stellen gebraucht: beim Anfangen und beim
+   Auffrischen. Eine zweite Abschrift der Prüfung wäre die Stelle, an der
+   eines Tages die Bremse fehlt — deshalb steht sie genau einmal hier. */
+async function schulungTeilnehmerAusCode(firma, uid, roh) {
   const F = W(firma);
-  /* Der Testcode kommt VOR der Bremse: „IMMER" heisst auch nach zehn
-     Fehlversuchen an diesem Gerät. Raten muss ihn niemand — er steht
-     offen im Repository. Die Schranke ist die Rolle, nicht der Code. */
-  if (roh === SCHULUNG_TESTCODE) return schulungTestStarten(uid, profil, firma, modulId);
   const bremse = await schulungVersuchPruefen(firma, uid);
 
   const kennung = roh.slice(0, SCHULUNG_KENNUNG_LAENGE);
@@ -6381,6 +6366,31 @@ exports.schulungStart = region.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('permission-denied',
       'Dieser Code ist stillgelegt. Bitte bei der Leitung melden.');
   }
+  return { tSnap, t };
+}
+
+/* ── Anfangen ──
+   Der einzige Weg, auf dem ein Durchlauf entsteht. In firestore.rules
+   ist `create` auf `schulungLaeufe` fuer JEDEN gesperrt — auch fuer die
+   Leitung. Sonst koennte man sich mit der Browser-Konsole einen
+   fertigen, bestandenen Durchlauf auf einen fremden Namen schreiben,
+   und die ganze Liste waere eine Behauptung. */
+exports.schulungStart = region.https.onCall(async (data, context) => {
+  const { uid, profil, firma } = await anruferProfil(context);
+  const roh = schulungCodeNormal(data && data.code);
+  const modulId = String((data && data.modul) || '');
+  if (!modulId) throw new functions.https.HttpsError('invalid-argument', 'Kein Modul angegeben.');
+  if (roh.length !== SCHULUNG_KENNUNG_LAENGE + SCHULUNG_GEHEIM_LAENGE) {
+    throw new functions.https.HttpsError('invalid-argument',
+      'Der Code besteht aus ' + (SCHULUNG_KENNUNG_LAENGE + SCHULUNG_GEHEIM_LAENGE) +
+      ' Zeichen. Bitte noch einmal ansehen.');
+  }
+  const F = W(firma);
+  /* Der Testcode kommt VOR der Bremse: „IMMER" heisst auch nach zehn
+     Fehlversuchen an diesem Gerät. Raten muss ihn niemand — er steht
+     offen im Repository. Die Schranke ist die Rolle, nicht der Code. */
+  if (roh === SCHULUNG_TESTCODE) return schulungTestStarten(uid, profil, firma, modulId);
+  const { tSnap, t } = await schulungTeilnehmerAusCode(firma, uid, roh);
 
   /* ── Warum das Modul hier NICHT ueberprueft wird ──
      Der Grundstock der Schulungen liegt als Datei (schulungen-basis.js)
@@ -6413,6 +6423,40 @@ exports.schulungStart = region.https.onCall(async (data, context) => {
     .where('teilnehmer', '==', tSnap.id).where('modul', '==', modulId).get();
 
   const jetzt = Date.now();
+  /* Die Geschäftsführung muss ein Video nicht bis zum Ende laufen
+     lassen, bevor „Weiter" geht (30.9.2026, aus dem Betrieb: „weiter zu
+     sperren ist gut aber ich würde die funktion dann bei den chefs
+     aussen vor lassen"). Entscheidend ist, WER die Schulung macht — der
+     Teilnehmer und sein verknüpftes Konto —, nicht, auf wessen Gerät
+     sie läuft: sonst klickte sich jeder am Rechner des Chefs durch. */
+  let ohneVideoSperre = false;
+  if (t.uid) {
+    const tu = await db.collection('users').doc(String(t.uid)).get();
+    const tp = tu.exists ? (tu.data() || {}) : {};
+    ohneVideoSperre = tp.role === 'chef' && (tp.firma || 'koerperformen') === firma;
+  }
+  /* ── Weitermachen statt von vorn (Runde 201) ──
+     „Das Beratungsgespräch" hat 17 Schritte und 67 Fragen, etwa
+     150 Minuten. Zwischen zwei Kunden schafft das niemand am Stück. Ein
+     angefangener Durchlauf derselben Person, der weniger als 30 Tage alt
+     ist und schon etwas enthält, wird deshalb FORTGESETZT: dieselbe
+     Kennung, derselbe Durchgang, die gesehenen Schritte und Antworten
+     bleiben. Das Gerät wird auf das neue umgeschrieben — sonst liessen
+     die Regeln das neue Gerät nicht hineinschreiben (`geraetUid`). */
+  const offen = schulungOffenerLauf(frueher.docs.map((d) => Object.assign({ id: d.id }, d.data() || {})), jetzt);
+  if (offen) {
+    await F.collection('schulungLaeufe').doc(offen.id).update({
+      geraetUid: uid, geraetName: profil.name || ''
+    });
+    return {
+      ok: true, lauf: offen.id, name: t.name || '', durchgang: offen.durchgang || 1, ohneVideoSperre,
+      fortsetzen: {
+        schritteGesehen: Array.isArray(offen.schritteGesehen) ? offen.schritteGesehen : [],
+        fragen: Array.isArray(offen.fragen) ? offen.fragen : [],
+        aktivMs: offen.aktivMs || 0
+      }
+    };
+  }
   const lauf = F.collection('schulungLaeufe').doc();
   await lauf.set({
     modul: modulId, modulTitel: (m && m.titel) || '', kategorie: (m && m.kategorie) || '',
@@ -6430,20 +6474,221 @@ exports.schulungStart = region.https.onCall(async (data, context) => {
     punkte: 0, bestanden: false, status: 'laeuft',
     ts: jetzt
   });
-  /* Die Geschäftsführung muss ein Video nicht bis zum Ende laufen
-     lassen, bevor „Weiter" geht (30.9.2026, aus dem Betrieb: „weiter zu
-     sperren ist gut aber ich würde die funktion dann bei den chefs
-     aussen vor lassen"). Entscheidend ist, WER die Schulung macht — der
-     Teilnehmer und sein verknüpftes Konto —, nicht, auf wessen Gerät
-     sie läuft: sonst klickte sich jeder am Rechner des Chefs durch. */
-  let ohneVideoSperre = false;
-  if (t.uid) {
-    const tu = await db.collection('users').doc(String(t.uid)).get();
-    const tp = tu.exists ? (tu.data() || {}) : {};
-    ohneVideoSperre = tp.role === 'chef' && (tp.firma || 'koerperformen') === firma;
-  }
   return { ok: true, lauf: lauf.id, name: t.name || '', durchgang: frueher.size + 1, ohneVideoSperre };
 });
+
+/* ══════════════════════════════════════════════════════════════════════
+   AUFFRISCHEN: WENIGE FRAGEN, IN WACHSENDEN ABSTÄNDEN (Runde 201)
+
+   Aus dem Betrieb, 22.10.2026, auf den Plan „aus der einen Frage nach
+   14 Tagen wird eine kleine Runde“: „plan klingt gut“ — und auf die
+   Frage, wo die Antworten liegen sollen: „das was leichter ist für
+   leute ohne zugang“.
+
+   Leute ohne Zugang haben kein Konto. Sie haben nur ihren Code — also
+   hängt der Lernplan am TEILNEHMER, nicht am Gerät und nicht am Konto.
+   Am Studio-Tablet tippt man denselben Code wie beim Anfangen; wer ein
+   verknüpftes Konto hat, braucht ihn nicht. Auf dem Gerät allein ginge
+   es nicht: das Tablet weiss nicht, wer davor sitzt, und am nächsten
+   Tag sitzt jemand anderes davor.
+
+   Was die Studien sagen und woraus die Zahlen folgen:
+   - Abfragen hält länger als Wiederlesen (Roediger & Karpicke 2006:
+     nach zwei Tagen und nach einer Woche liegt Abfragen vorn).
+   - Verteilt hält länger als am Stück; der beste Abstand wächst mit der
+     Zeit, über die man es behalten will (Cepeda u. a. 2006, 2008).
+   - Nach jeder Antwort gleich die Lösung zeigen (Butler & Roediger
+     2008) — das macht die App.
+   Die Tage 2 · 7 · 30 · 90 · 180 sind daraus ABGELEITET, nicht
+   gemessen. Wer sie ändert, ändert nur die Liste unten.
+
+   - Je Modul höchstens sechs Fragen im Plan, die beim Durchlauf
+     danebengegangenen zuerst. Sonst brächte „Das Beratungsgespräch“ mit
+     67 Fragen den Plan auf Wochen hinaus allein.
+   - Je Runde höchstens drei, aus verschiedenen Modulen gemischt.
+   - Richtig: eine Stufe weiter. Falsch: zurück auf zwei Tage.
+
+   Was gespeichert wird: je Teilnehmer, welche Frage auf welcher Stufe
+   steht und wann sie wieder dran ist (`schulungLernplan`). Die Antwort
+   selbst nicht. Lesen darf den Plan im Browser niemand, auch nicht die
+   Leitung („Wird es als Kontrolle empfunden, schadet es.“, Runde 134);
+   die Leitung sieht nur die Summe je Frage, ohne Namen
+   (`schulungFragenStat`). Beide schreibt nur diese Funktion.
+   ══════════════════════════════════════════════════════════════════════ */
+const AUFFRISCH_STUFEN_TAGE = [2, 7, 30, 90, 180];
+const AUFFRISCH_JE_MODUL = 6;
+const AUFFRISCH_JE_RUNDE = 3;
+const SCHULUNG_FORTSETZEN_MS = 30 * 86400000;
+const TAG_MS = 86400000;
+
+/* Ein angefangener Durchlauf, der fortgesetzt werden kann: nicht
+   fertig, kein Test, jünger als 30 Tage und nicht leer. Ein leerer wäre
+   nur ein Code, der eingetippt und wieder liegen gelassen wurde. */
+function schulungOffenerLauf(laeufe, jetzt) {
+  return (laeufe || []).filter((l) => l && l.status === 'laeuft' && !l.test &&
+      (jetzt - (l.ts || 0)) < SCHULUNG_FORTSETZEN_MS &&
+      ((l.schritteGesehen || []).length > 0 || (l.fragen || []).some((f) => f && f.versuche > 0)))
+    .sort((a, b) => (b.ts || 0) - (a.ts || 0))[0] || null;
+}
+
+function auffrischHash(text) {
+  let h = 0;
+  for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) >>> 0;
+  return h;
+}
+
+/* Der ganze Plan als Rechnung, ohne Datenbank — deshalb prüfbar.
+   laeufe: die bestandenen Durchläufe der Person. karten: der Plan, wie
+   er gespeichert ist ({ 'm-start#1': { s: Stufe, f: fällig ab } }).
+   sofort: beim Testcode ist alles gleich dran, damit die Leitung es
+   ausprobieren kann, ohne zwei Tage zu warten. */
+function auffrischRunde(laeufe, karten, jetzt, sofort) {
+  const neu = Object.assign({}, karten || {});
+  const juengster = {};
+  (laeufe || []).forEach((l) => {
+    if (!l || !l.modul || l.status !== 'fertig' || !l.bestanden) return;
+    const j = juengster[l.modul];
+    if (!j || (l.ende || 0) > (j.ende || 0)) juengster[l.modul] = l;
+  });
+  const texte = {};
+  Object.keys(juengster).forEach((modul) => {
+    const l = juengster[modul];
+    const fragen = Array.isArray(l.fragen) ? l.fragen : [];
+    fragen.forEach((f, i) => { texte[modul + '#' + i] = String((f && f.frage) || '').slice(0, 200); });
+    const schonDa = Object.keys(neu).filter((k) => k.indexOf(modul + '#') === 0).length;
+    if (schonDa >= AUFFRISCH_JE_MODUL) return;
+    const wahl = fragen.map((f, i) => ({
+      i,
+      daneben: !!f && ((f.versuche || 1) > 1 || f.richtig === false),
+      h: auffrischHash(String(l.id || '') + '#' + i)
+    })).sort((a, b) => (a.daneben === b.daneben ? a.h - b.h : (a.daneben ? -1 : 1)));
+    let platz = AUFFRISCH_JE_MODUL - schonDa;
+    wahl.forEach((w) => {
+      const key = modul + '#' + w.i;
+      if (platz <= 0 || neu[key]) return;
+      neu[key] = { s: 0, f: sofort ? jetzt : (l.ende || jetzt) + AUFFRISCH_STUFEN_TAGE[0] * TAG_MS };
+      /* `d`: beim Durchlauf danebengegangen. Bei gleicher Fälligkeit kommt
+         sie zuerst — sie hat es am nötigsten. */
+      if (w.daneben) neu[key].d = 1;
+      platz--;
+    });
+  });
+  /* Fällig ist nur, was zu einem bestandenen Modul gehört. Wird ein
+     Durchlauf gelöscht, bleiben seine Karten liegen, kommen aber nicht. */
+  const faellig = Object.keys(neu)
+    .filter((k) => neu[k].f <= jetzt && juengster[k.split('#')[0]])
+    .sort((a, b) => (neu[a].f - neu[b].f) || ((neu[b].d || 0) - (neu[a].d || 0)) || (a < b ? -1 : 1));
+  /* Gemischt: reihum aus den Modulen, die älteste zuerst. */
+  const runde = [], genommen = {};
+  while (runde.length < AUFFRISCH_JE_RUNDE) {
+    const vorher = runde.length;
+    const inDieserRunde = {};
+    for (const k of faellig) {
+      if (runde.length >= AUFFRISCH_JE_RUNDE) break;
+      const modul = k.split('#')[0];
+      if (genommen[k] || inDieserRunde[modul]) continue;
+      genommen[k] = true; inDieserRunde[modul] = true; runde.push(k);
+    }
+    if (runde.length === vorher) break;
+  }
+  const spaeter = Object.keys(neu).filter((k) => neu[k].f > jetzt && juengster[k.split('#')[0]])
+    .map((k) => neu[k].f);
+  return {
+    karten: neu,
+    faellig: runde.map((k) => ({ modul: k.split('#')[0], idx: Number(k.split('#')[1]), frage: texte[k] || '' })),
+    offen: faellig.length,
+    naechste: spaeter.length ? Math.min.apply(null, spaeter) : 0
+  };
+}
+
+/* Eine beantwortete Karte: richtig eine Stufe weiter, falsch zurück an
+   den Anfang. Die letzte Stufe bleibt die letzte. */
+function auffrischWeiter(karte, richtig, jetzt) {
+  const s = richtig ? Math.min((karte.s || 0) + 1, AUFFRISCH_STUFEN_TAGE.length - 1) : 0;
+  return richtig ? { s, f: jetzt + AUFFRISCH_STUFEN_TAGE[s] * TAG_MS } : { s, f: jetzt + AUFFRISCH_STUFEN_TAGE[s] * TAG_MS, d: 1 };
+}
+
+exports.schulungAuffrischen = region.https.onCall(async (data, context) => {
+  const { uid, profil, firma } = await anruferProfil(context);
+  const F = W(firma);
+  const roh = schulungCodeNormal(data && data.code);
+  let tId = '', t = {}, test = false;
+  if (roh) {
+    if (roh === SCHULUNG_TESTCODE) {
+      if (!schulungTestErlaubt(profil)) {
+        throw new functions.https.HttpsError('permission-denied',
+          'Der Testcode ist nur für die Leitung. Deinen eigenen Code bekommst du von der Studioleitung.');
+      }
+      tId = 'test:' + uid; t = { name: profil.name || '' }; test = true;
+    } else {
+      if (roh.length !== SCHULUNG_KENNUNG_LAENGE + SCHULUNG_GEHEIM_LAENGE) {
+        throw new functions.https.HttpsError('invalid-argument',
+          'Der Code besteht aus ' + (SCHULUNG_KENNUNG_LAENGE + SCHULUNG_GEHEIM_LAENGE) +
+          ' Zeichen. Bitte noch einmal ansehen.');
+      }
+      const r = await schulungTeilnehmerAusCode(firma, uid, roh);
+      tId = r.tSnap.id; t = r.t;
+    }
+  } else {
+    /* Ohne Code: das eigene, verknüpfte Konto. Wer keins hat, bekommt
+       eine leere Antwort und keinen Fehler — die App fragt dann nach dem
+       Code. */
+    const q = await F.collection('schulungTeilnehmer').where('uid', '==', uid).limit(1).get();
+    if (q.empty) return { ok: true, ohneTeilnehmer: true };
+    tId = q.docs[0].id; t = q.docs[0].data() || {};
+    if (t.gesperrt) return { ok: true, ohneTeilnehmer: true };
+  }
+  const lSnap = await F.collection('schulungLaeufe').where('teilnehmer', '==', tId).get();
+  const laeufe = lSnap.docs.map((d) => Object.assign({ id: d.id }, d.data() || {}))
+    .filter((l) => (test ? l.test === true : !l.test));
+  const planRef = F.collection('schulungLernplan').doc(tId);
+  const planSnap = await planRef.get();
+  const karten = Object.assign({}, ((planSnap.exists && planSnap.data()) || {}).karten || {});
+  const jetzt = Date.now();
+
+  /* Erst die Antworten der letzten Runde eintragen, dann die nächste
+     Runde rechnen. Gezählt wird nur eine Karte, die es gibt und die
+     dran WAR — sonst schriebe ein Aufruf aus der Konsole beliebige
+     Zahlen in die Summe der Leitung. */
+  const antworten = Array.isArray(data && data.antworten) ? data.antworten.slice(0, 10) : [];
+  const summe = {};
+  let gezaehlt = 0;
+  antworten.forEach((a) => {
+    const key = String((a && a.modul) || '').slice(0, 80) + '#' + (Number(a && a.idx) | 0);
+    const k = karten[key];
+    if (!k || k.f > jetzt) return;
+    const richtig = !!(a && a.richtig);
+    karten[key] = auffrischWeiter(k, richtig, jetzt);
+    gezaehlt++;
+    const [modul, idx] = key.split('#');
+    summe[modul] = summe[modul] || {};
+    summe[modul][idx] = summe[modul][idx] || { r: 0, x: 0 };
+    summe[modul][idx][richtig ? 'r' : 'x']++;
+  });
+  const r = auffrischRunde(laeufe, karten, jetzt, test);
+  await planRef.set({ teilnehmer: tId, uid: t.uid || null, test, karten: r.karten, ts: jetzt });
+  /* Die Summe für die Leitung: je Modul und Frage, wie oft richtig und
+     wie oft daneben. Ohne Namen, ohne Zeitpunkt. Testläufe nicht. */
+  if (!test) {
+    const inc = admin.firestore.FieldValue.increment;
+    await Promise.all(Object.keys(summe).map((modul) => {
+      const f = {};
+      Object.keys(summe[modul]).forEach((idx) => {
+        f[idx] = {};
+        if (summe[modul][idx].r) f[idx].r = inc(summe[modul][idx].r);
+        if (summe[modul][idx].x) f[idx].x = inc(summe[modul][idx].x);
+      });
+      return F.collection('schulungFragenStat').doc(modul).set({ modul, f, ts: jetzt }, { merge: true });
+    }));
+  }
+  return {
+    ok: true, name: t.name || '', test, gezaehlt,
+    /* Für die Frist der Pflichtmodule: seit wann die Person dabei ist. */
+    angelegt: t.ts || 0,
+    faellig: r.faellig, offen: r.offen, naechste: r.naechste
+  };
+});
+
 
 /* ══════════════════════════════════════════════════════════════════════
    BEITRITT PER FIRMENCODE (Runde 117)
@@ -8432,6 +8677,8 @@ exports.__intern = { antragUhrPruefen, ANTRAG_TAGE_MAX, erlaubteSchritte, schrit
                      pinZuSchwach, pinHashen, pinPruefen,
                      schulungZeichen, schulungCodeNormal, SCHULUNG_ALPHABET,
                      SCHULUNG_TESTCODE, schulungTestErlaubt,
+                     schulungOffenerLauf, auffrischRunde, auffrischWeiter, AUFFRISCH_STUFEN_TAGE,
+                     AUFFRISCH_JE_MODUL, AUFFRISCH_JE_RUNDE, SCHULUNG_FORTSETZEN_MS,
                      wichtigFehlende, wichtigFaellig, wichtigTitel, wichtigText,
                      WICHTIG_AB_MS, WICHTIG_BIS_MS,
                      SCHULUNG_VERSUCHE_MAX, SCHULUNG_VERSUCHE_FENSTER_MS,
