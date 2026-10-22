@@ -17670,3 +17670,31 @@ vorschlag klingt super".
   Schwelle bleibt 44.
 - Ohne Service-Worker-Sperre landeten die Oberflächen-Durchläufe hier in
   der Anmeldemaske („Die App ist gar nicht gestartet").
+
+## Runde 184 — Suche nach Bedeutung nachgemessen (Worker 2.15, 22.10.2026)
+
+Nach dem Einspielen von 2.14 mit `/api/suche` an zehn echten Fragen gegen
+275 Einträge gemessen, statt die Schwelle zu schätzen.
+
+**Gemessen**
+- Fragen ohne Bezug zum Studio: höchstens 0,48 („pizza bestellen" → 0,479,
+  „wie wird das wetter morgen" → 0,393).
+- Der richtige Eintrag: 0,52 bis 0,73 („Kunde sagt kurzfristig ab" 0,73,
+  „Kunde will kündigen" 0,64, „Gerät macht ungewöhnliche Geräusche" 0,52).
+- „darf eine schwangere trainieren": nach Bedeutung Platz 1 („Warum kein
+  EMS in der Schwangerschaft", 0,62), im Volltext gar nicht — und nach
+  dem Mischen mit gleichem Gewicht nicht unter den ersten drei.
+
+**Geändert**
+- `VEKTOR_MIN` 0,42 → 0,50 (zwischen Rauschen und echten Treffern).
+- Beim Mischen zählt die Bedeutung doppelt (`GEWICHT_BEDEUTUNG = 2`). Der
+  beste Volltext-Treffer bleibt unter den sechs, die die KI sieht.
+
+**Warum nicht höher:** „Gerät piept dreimal" fand den passenden Eintrag
+mit 0,52. Eine Schwelle von 0,55 hätte ihn verloren.
+
+**Eingespielt:** 124 Vorschläge aus den Schulungen (Texte und
+Quizfragen mit richtiger Antwort), Quelle „Schulung „…“". Sie sind noch
+kein Wissen; die Leitung gibt sie in der Karte „Formi lernt" frei. Einige
+Quizfragen beziehen sich auf Szenen aus den Schulungsvideos und taugen
+allein wenig — verwerfen ist dort richtig.

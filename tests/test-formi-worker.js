@@ -170,6 +170,14 @@ function ki(antworten) {
     const anders = w.vektorAuspacken(w.vektorPacken([-0.3, 0.5, -0.8, -0.1]));
     pruefe(w.aehnlich(n, anders) < -0.95, 'Gegenteil ≈ −1');
     pruefe(JSON.stringify(w.rangMischen([[1, 2, 3], [3, 4]], 4)) === '[3,1,2,4]', 'Ranglisten mischen: in beiden vorn kommt zuerst (' + JSON.stringify(w.rangMischen([[1, 2, 3], [3, 4]], 4)) + ')');
+    /* 2.15, live gemessen: „darf eine schwangere trainieren" — Volltext
+       [Fachkunde 10, Herzschrittmacher 11, Wer darf kein 12], Bedeutung
+       [Schwangerschaft 20, Periode 21, Wer darf kein 12]. */
+    const sw = w.rangMischen([[10, 11, 12], [20, 21, 12]], 6, [1, w.GEWICHT_BEDEUTUNG]);
+    pruefe(sw[0] === 12 && sw[1] === 20 && sw.indexOf(10) >= 0, 'Bedeutung zählt doppelt: Schwangerschaft auf Platz 2, der beste Volltext-Treffer bleibt unter den sechs für die KI (' + JSON.stringify(sw) + ')');
+    const gl = w.rangMischen([[10, 11, 12], [20, 21, 12]], 6);
+    pruefe(gl.indexOf(10) < gl.indexOf(20), 'Gegenprobe: mit gleichem Gewicht steht der Volltext davor (' + JSON.stringify(gl) + ')');
+    pruefe(w.VEKTOR_MIN > 0.48 && w.VEKTOR_MIN <= 0.52, 'Schwelle zwischen Rauschen (≤ 0,48) und echten Treffern (≥ 0,52): ' + w.VEKTOR_MIN);
     pruefe(w.korrekturText('stimmt nicht, richtig ist: die Westen nur bei 30 Grad waschen') === 'die Westen nur bei 30 Grad waschen', 'Korrektur: Text nach „richtig ist" wird erkannt');
     pruefe(w.korrekturText('stimmt nicht') === '', 'Korrektur: bloßes „stimmt nicht" ist keine Richtigstellung');
     pruefe(w.korrekturText('Falsch. Bei Herzschrittmacher gar kein EMS, auch nicht mit Freigabe.').startsWith('Bei Herzschrittmacher'), 'Korrektur: „Falsch. …" wird erkannt');
