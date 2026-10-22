@@ -18265,7 +18265,157 @@ Breiten × 2 Dichten (`test-formi-lernt` 48/48). Worker-Durchlauf 106/106
 unberührt).
 
 
-## Runde 191 — Die Stempelseite, Schritt 2: Pausenregel wie Crewmeister, Hinweise nach dem Arbeitszeitgesetz (22.10.2026)
+
+## Runde 191 — Schichtplan: Raster nach Person, Schicht-Blatt, Planer Woche für Woche (22.10.2026)
+
+**Aus dem Betrieb:** „bei der einen nur auf den schichtplan eingehen“.
+Erst Plan und Rückfragen (CLAUDE.md, neuer Bereich), dann: „plan klingt
+gut!“. Die Antworten auf die Rückfragen:
+1. Wer schaut am Rechner in den Plan? „Beide schauen oft rein denk ich“.
+2. Eintragen direkt im Raster statt Formular unten? „Ja“.
+3. Löschen und „Ich kann nicht“ ins Detail? „JA“.
+4. Stunden: Summe oder Soll aus dem Schichtplaner? „Beides am besten“.
+5. Schichtplaner: „er wirkt für mich noch unfertig … aber das grundgrüst
+   soll stehen erstmal“ (die PDFs der Chefin und ihre offenen Fragen
+   kommen später).
+
+**Gemessen vorher** (Demo, Leitung, 1440 × 900):
+- Sieben Tagesspalten à 152 px; jede Schicht stand in drei Zeilen (Zeit ·
+  ✕ allein · Name), eine Schicht ~97 px hoch, ein Tag mit drei Schichten
+  449 px. Namen brachen mitten im Wort („Geschäftsführun|g“).
+- Die Woche begann bei y = 547; „Schicht eintragen“ stand als Formular
+  unter der Woche, ohne Tag.
+- **Fehler:** die Zahl über der Woche zählte alle geladenen Schichten des
+  Studios (`_shifts.length`): 14 statt 8 (Leitung), 17 statt 11 (Team).
+- Abwesenheiten als bernstein-/rote Chips — Statusfarbe ohne Status.
+- Schichtplaner: fünf Wochentabellen untereinander, 3.042 px hoch; jede
+  Tabelle hatte ihre Spalten woanders; die Monatspfeile 270 px
+  auseinander.
+
+**Was gebaut ist — Plan → Schichten**
+- **Kopf in einer Zeile** (Planday): links ‹ KW ›, Heute; in der Mitte
+  die Zahlen der Woche; rechts „Tage | Personen“, „Nur meine“ (Tagesliste)
+  und für die Leitung „＋ Schicht“. Am Handy zwei Zeilen; bei 320 px rutscht
+  Heute in die zweite.
+- **Raster „Personen“** ab 1.100 px (Deputy, Planday): Personen links,
+  sieben Tage, rechts die Wochenstunden. Eine Schicht ist eine Pille in
+  einer Zeile („09–21“, Schichtname klein darunter). Die eigene Zeile
+  steht oben. Wer diese Woche weder Schicht noch Abwesenheit hat, steht
+  unter „＋ n weitere Personen ohne Schicht“ — nicht stumm weg.
+- **Welche Ansicht?** Beide für alle, weil „beide schauen oft rein“.
+  Ohne eigene Wahl: Leitung „Personen“, Team „Tage“. Die Wahl merkt sich
+  das Gerät (`PREFS.planAnsicht`).
+- **Stunden und Soll** („Beides“): die Summe immer; das Soll aus
+  `planerTeam.wocheStd`. Lesen darf es laut Regel nur der Chef (alle) und
+  jede Person ihre eigene Zeile — die Leitung eines Studios sieht deshalb
+  nur Summen. Das ist die bestehende Regel, nicht geändert. Unter 85 % oder
+  über 115 % des Solls ist die Zahl bernstein (dieselben Grenzen wie im
+  Planer).
+- **Schicht-Blatt** (Teams Shifts): ein Tipp auf eine Schicht öffnet sie;
+  zuerst, was man tun kann (Ich kann nicht · Zurückziehen · Ich übernehme
+  · Bestätigen/Ablehnen), „Entfernen“ zuletzt und nur für die Leitung.
+  Die Knöpfe tragen dieselben `data-tausch-*` wie bisher und laufen über
+  `bindTauschClicks()` — kein zweiter Weg. Laufende Tausche („wird
+  abgegeben“, „wartet auf die Leitung“) bleiben in der Liste sichtbar,
+  im Raster als Block „Tausch“ darüber; dort führt auch der Startseiten-
+  Block „Zum Übernehmen“ hin.
+- **Eintragen per Klick:** leere Zelle im Raster (Tag und Person
+  gesetzt), am Handy das ＋ am Tag. Darüber die Schichtzeiten aus dem
+  Schichtplaner als Vorlagen — nur die, die es an diesem Wochentag gibt.
+  Das Formular unter der Woche ist weg; die Felder heissen gleich
+  (`shDate`, `shPerson`, `shAdd` …) und stehen im Blatt.
+- **Abwesenheit** neutral schraffiert, in der Zeile der Person; beantragter
+  Urlaub heisst „Urlaub (beantragt)“, abgelehnter fehlt.
+- **Tastenkürzel** (nur auf der Schichtseite): ← → blättern, H heute,
+  V Tage/Personen; unter „?“ eingetragen. Belegt jemand H oder V selbst,
+  gilt seine Belegung.
+- **Am Rechner** stehen Studio-Auswahl und Reiter in einer Zeile, und
+  „Wartet auf deine Entscheidung“ hat Satz und Studios in einer Zeile.
+
+**Was gebaut ist — Schichtplaner (Grundgerüst)**
+- Der Monat **Woche für Woche**: oben die Kalenderwochen als Reiter, jeder
+  mit seinem Zustand („2 Lücken“, „1 Rückfrage“, „✓ besetzt“), dazu
+  „Ganzer Monat“. Zuerst die Woche von heute, sonst die erste mit offenen
+  Punkten. Ein Punkt unter „Zu klären“ springt in seine Woche.
+- **Feste Spalten** ab 820 px: Früh/Spät/Samstag stehen in jeder Woche an
+  derselben Stelle. Am Handy bleibt die Tabelle wie sie war (Namen lesbar,
+  seitlich rollbar).
+- Die Monatspfeile stehen am Monat.
+- Gemessen: Planerseite 3.042 → 1.956 px (1440 × 900), 4.199 → 2.846 px
+  (390 × 844).
+
+**Gefunden dabei**
+- **P-12 war nicht ganz weg.** `heuteInsBild()` maß 260 ms nach dem
+  Öffnen mit `getBoundingClientRect` — da schwebt der Tag noch in seiner
+  Einblendung (cardUp) und der Kopf ist noch nicht geschrumpft. Bei der
+  Leitung am Handy (390 px) rollte die Seite deshalb 101 px (vor dieser
+  Runde, test-team-woche rot). Jetzt misst sie die Lage (`offsetTop`) und
+  rollt nur, wenn nicht einmal die Überschrift des Tages (40 px) zu sehen
+  ist; dazu ist der Kopf am Handy niedriger („＋ Schicht“ nur am Rechner,
+  der Satz unter „Wartet …“ nur am Rechner).
+- **Die Formi-Kugel (z-index 150) lag über jedem Blatt** (.msg-sheet,
+  z-index 70) — am Schicht-Blatt bei 390 px auf dem ersten Knopf. Solange
+  ein Blatt offen ist, ist sie unsichtbar. Gilt für alle Blätter.
+- Die alten `.abs-chip`- und `.shift-x`-Regeln waren danach ohne Nutzer
+  und sind weg.
+
+**Warum so entschieden**
+- **Kein eigenes Raster am Handy.** Sieben Spalten mit Namen werden unter
+  1.100 px zu schmal (Google-Kalender-Notiz in den Vorbildern); dort
+  bleibt die Tagesliste, mit „Nur meine“ (Planday App).
+- **Offene Tausche bleiben in der Liste**, nur „Ich kann nicht“ und ✕
+  wandern ins Blatt: ein laufender Tausch wartet auf jemanden, der ihn
+  sehen muss; „Ich kann nicht“ stand dagegen an jeder eigenen Schicht.
+- **Rot erst, wenn es etwas meldet**: Abweichung vom Soll ist ein Status
+  (Bernstein), Abwesenheit nicht.
+
+**Geprüft**
+- **Neu: `tests/test-schichtplan-raster.js`**, 72 Prüfungen: Ansicht je
+  Rolle und gemerkt; Wochenzahl = Schichten der Woche (auch nächste Woche);
+  Stunden = Summe der Schichten, Soll nur wo lesbar, Markierung genau bei
+  > 15 % Abweichung; Eintragen per Zelle mit Vorlagen nach Wochentag;
+  Blatt mit „Ich kann nicht“ zuerst, „Entfernen“ nur Leitung, Kugel
+  verdeckt nichts; Abwesenheit schraffiert; Tasten ← → H V und „?“;
+  Trefferflächen per Hit-Test bei 320/390/430/820/1280/1440/1920 px,
+  normal und kompakt, in beiden Ansichten und im Blatt, nichts ragt
+  hinaus; Planer mit
+  Wochen-Reitern, einer Woche, „Ganzer Monat“, festen Spalten,
+  „Zu klären“ springt in die Woche.
+- **Gegenprobe** (alter Zustand kurz zurückgebaut): Wochenzahl wieder
+  `_shifts.length` → 6 rot („14 Schichten“ statt 8, „17“ statt 11);
+  ohne feste Spalten → rot (Früh bei 722/692/699/700 px); Schwelle 60 statt
+  40 in `heuteInsBild` → test-team-woche rot (rollt 78 px).
+- **Angepasst, mit Zitat im Test** (nicht gelockert — jede Prüfung prüft
+  dasselbe am neuen Ort): test-team-woche (sieben Spalten in „Tage“; heute
+  im Raster als Spaltenkopf), test-tausch („Ich kann nicht“ im Blatt),
+  test-schichtplaner (zuerst eine Woche, „Ganzer Monat“ 28–31 Zeilen;
+  Wochen als Reiter; Schichtname im Raster).
+- **Grün:** test-team-woche (**vorher rot**: Leitung 390 px rollte 101 px),
+  test-schichtplan-raster, test-tausch, test-block-b, test-mitarbeiter,
+  test-schichtplaner, test-team-bereich7, test-funktionen-schalter,
+  test-doppelte-namen, test-gestaltung, test-knoepfe, test-abgeschnitten,
+  test-tagesband, test-alltag, test-pc-durchsicht, test-video-hochladen.
+- **Gesamtlauf** (`tests/alle.sh`, alle 200 Durchläufe): rot sind nur
+  - dieselben wie auf main, gegen einen unveränderten main-Stand
+    nachgemessen mit gleicher Zahl Fehler: test-neu-design (3),
+    test-p4-seitenleiste (2), test-startseite-putz (4), test-p1-aufgaben (2),
+    test-block-d, test-navigation (2,28 Bildschirme wie in Runde 184);
+  - fehlende Module in dieser Umgebung: test-abo-leiter, test-gehirn-aktion,
+    test-mail-versand, test-stripe-felder, test-regelumgebung;
+  - Zeitüberschreitung im vollen Lauf, einzeln grün: test-pc-durchsicht,
+    test-video-hochladen, test-formi-verdeckt (19/19); test-gehirn (Last,
+    wie Runde 184, einzeln nicht nachgemessen).
+
+**Nicht geprüft / hier nicht prüfbar**
+- Echte Datenbank und Anmeldeweg (Firebase-SDK lädt hier nicht) — alles in
+  der Demo.
+- Das Soll mit echten `planerTeam`-Zeilen; in der Demo ist es aus der
+  erfundenen Excel-Einlesung.
+- 1280 × 800 mit „Wartet auf deine Entscheidung“: die letzte Zeile des
+  Rasters (Demo, Brühl, drei Personen mit Doppelschichten) liegt 31 px
+  unter dem Rand. Ohne den Block passt die Woche.
+
+## Runde 192 — Die Stempelseite, Schritt 2: Pausenregel wie Crewmeister, Hinweise nach dem Arbeitszeitgesetz (22.10.2026)
 
 Antwort aus dem Betrieb auf „nur warnen oder wie Crewmeister auffüllen?":
 „genau wie bei crewmeister".
