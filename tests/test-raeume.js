@@ -148,6 +148,31 @@ const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel
     await zu(p);
   }
 
+  console.log('\n── 4b Reiter kosten auf „Heute" keine Zeile ──');
+  /* „am besten steht alles auf einer Seite ohne dass man scrollen muss":
+     Am Rechner stehen die Reiter in der Kopfzeile, am Handy fehlen sie
+     auf „Heute" – „Ich" bleibt über ☰ zwei Tipps entfernt. */
+  for (const [w, h, touch] of [[1280, 800, false], [1440, 900, false], [1920, 1080, false], [390, 844, true], [320, 568, true]]) {
+    const p = await oeffne(b, w, h, { touch });
+    const m = await p.evaluate(() => {
+      const kopf = document.getElementById('bereichKopf').getBoundingClientRect();
+      const z = document.getElementById('subnavZeile'); const r = z.getBoundingClientRect();
+      const sa = document.querySelector('#view-home .scroll-area').getBoundingClientRect();
+      return { zeile: !!z.getClientRects().length && r.height > 0, inKopf: r.height > 0 && r.top >= kopf.top && r.bottom <= kopf.bottom,
+               scrollOben: Math.round(sa.top), kopfUnten: Math.round(kopf.bottom) };
+    });
+    if (w > 820) pruefe(w + ' px: Reiter stehen in der Kopfzeile, die Liste beginnt direkt darunter', m.zeile && m.inKopf && m.scrollOben <= m.kopfUnten + 2, JSON.stringify(m));
+    else pruefe(w + ' px: auf „Heute" keine Reiterzeile', !m.zeile && m.scrollOben <= m.kopfUnten + 2, JSON.stringify(m));
+    if (w <= 820) {
+      await p.click('#bereichKopf'); await p.waitForTimeout(400);
+      await p.evaluate(() => document.querySelector('#allesLade [data-alles="ich"]').click()); await p.waitForTimeout(500);
+      const v = await p.evaluate(() => ({ ansicht: (document.querySelector('.view.show') || {}).id,
+        reiter: [...document.querySelectorAll('#subnav [data-subview]')].filter(e => e.getClientRects().length).map(e => e.dataset.subview) }));
+      pruefe(w + ' px: „Ich" über ☰ in zwei Tipps, dort stehen die Reiter wieder', v.ansicht === 'view-ich' && v.reiter.join('|') === 'home|ich|persoenlich', JSON.stringify(v));
+    }
+    await zu(p);
+  }
+
   console.log('\n── 5 Schnellzugriffe ──');
   {
     const p = await oeffne(b, 1440, 900);
