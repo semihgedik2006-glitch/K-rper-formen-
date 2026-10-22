@@ -18090,3 +18090,56 @@ geben soll, falls die Gefühle der Kugel jemandem im Team zu viel sind:
   - Der Punkt bleibt, und nach dem Neuladen ist es weiter aus.
   - Mit „Zeigen“ freut Formi sich wieder.
 - Gegenprobe mit dem `index.html` von `main`: schlägt an.
+
+## Runde 189 — Formi am Rechner angedockt (22.10.2026)
+
+**Aus dem Betrieb:** Auf „am Rechner als feste Spalte andocken oder
+schwebend?“ kam „was sinnvoller ist“. In Runde 186 entschieden: ab
+1440 px andocken, in einer eigenen Runde mit Messung. Auf „mach weiter“
+ist das hier gebaut.
+
+**Gebaut**
+- Ist Formi offen und klein (nicht „Groß“), steht ab 1440 px rechts eine
+  Spalte von oben bis unten: 380 px breit, ab 1680 px 420 px.
+- `.app` bekommt rechts genau diese Breite als Abstand. Kopfzeile,
+  Seitenleiste und Inhalt rücken zusammen, statt unter dem Fenster zu
+  liegen.
+- Gesteuert wird über die Klasse `formi-angedockt` am `<body>`. Ob die
+  Breite reicht, entscheidet allein das CSS; es gibt kein Messen und
+  keinen Resize-Horcher.
+- Unter 1440 px bleibt alles wie bisher: schwebend bei 1280, Blatt von
+  unten am Handy.
+
+**Warum**
+- Bei 1440 px deckte das Fenster vorher die Formi-Zeile und halb „Mein
+  Dienst“ zu, während links über 1.100 px Inhalt breiter stand als nötig.
+- Kein Übergang auf die Breite: Hausregel, nichts auf `width`/`padding`
+  animieren. Es springt einmal; die Spalte glitcht herein wie zuvor das
+  Fenster.
+- Ab 1440 und nicht schon bei 1280: Neben Seitenleiste (210 px) und
+  Spalte (380 px) blieben bei 1280 nur 690 px für Liste + Detail.
+
+**Geprüft — `tests/test-formi-angedockt.js` (neu, 32 Zusicherungen)**
+- Lage bei 1440, 1920, 1280, 820 und 390 px: Spalte an der Kante, der
+  Inhalt endet genau dort; zu → volle Breite. Die Knöpfe im Spaltenkopf
+  sind ≥ 44 × 44, frei und im Bild.
+- Wechselt man selbst die Seite, bleibt Formi angedockt.
+- Je Rolle (Chef, Leitung, Mitarbeiter), bei 1440 × 900 und
+  1920 × 1080, normal und kompakt, auf jeder Ansicht und jedem Reiter:
+  - Jedes Bedienelement, das ohne Formi per Hit-Test trifft, trifft auch
+    mit angedocktem Formi und liegt links der Spalte.
+  - Kein neuer Querlauf.
+  - Gemessen: 308 Ansichten/Reiter, 10 664 Bedienelemente, keins neu
+    verdeckt.
+  - 592 trafen schon ohne Formi nicht (zum Beispiel unter der Kopfzeile
+    oder unter einer klebenden Leiste). Das ist nicht von hier, wird aber
+    mitgezählt.
+- Gegenprobe mit dem `index.html` von vorher: Die Lage-Prüfungen
+  schlagen an.
+- Grün: test-formi-kugel, test-formi-lebt, test-knoepfe, test-gestaltung
+  (meldete zuerst einen festen Schatten an der Spalte, jetzt `--e3`),
+  test-quer, test-csp, test-abgeschnitten.
+
+**Nicht geprüft:** echte Bildschirme und Studio-Rechner. Wie es sich
+anfühlt, wenn die Seite beim Öffnen zur Seite springt, lässt sich hier
+nicht beurteilen.

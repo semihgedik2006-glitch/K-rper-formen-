@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-k25+glmNJHxBVda5KvZbCf8MbjDqVVj1vTK+w9Wz35g='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Mruh1krO12U0DoVsrWd05bAEkbOd4q2+jm0FvBIc9H0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5895,6 +5895,26 @@ body.formi-kugel-an .main{padding-bottom:calc(var(--s16) + 58px + var(--s16))}
 @media(max-width:820px){
   .jarvis.jv-kompakt{left:0;right:0;bottom:0;width:auto;height:min(74dvh, 640px);border-radius:var(--radius) var(--radius) 0 0;border-bottom:0}
 }
+/* ── Formi angedockt (Runde 189) ─────────────────────────────────────
+   Aus dem Betrieb, auf „am Rechner als feste Spalte andocken oder
+   schwebend?": „was sinnvoller ist". Entschieden in Runde 186: ab
+   1440 px andocken, darunter schwebt es weiter (bei 1280 bliebe neben
+   Seitenleiste und Spalte zu wenig für Liste + Detail).
+
+   Vorher lag das kleine Fenster ÜBER der Seite und deckte bei 1440 px
+   die Hinweise und halb „Mein Dienst" zu — während links über 1.100 px
+   Inhalt breiter stand als nötig. Jetzt macht die Spalte die App
+   schmaler: .app bekommt rechts genau so viel Platz, wie die Spalte
+   breit ist. Kein Übergang auf die Breite (Hausregel: keine Bewegung
+   auf width/padding) — es springt, einmal. Die Spalte selbst glitcht
+   beim Öffnen herein (jarvisAuf). */
+@media(min-width:1440px){
+  :root{--formi-spalte:380px}
+  body.formi-angedockt .app{padding-right:var(--formi-spalte)}
+  body.formi-angedockt .jarvis.jv-kompakt{top:0;right:0;bottom:0;width:var(--formi-spalte);height:auto;
+    border-radius:0;border:0;border-left:1px solid rgba(var(--jv-rgb),.35);box-shadow:var(--e3)}
+}
+@media(min-width:1680px){ :root{--formi-spalte:420px} }
 .jarvis.jv-kompakt .jv-feld,.jarvis.jv-kompakt .jv-raster,.jarvis.jv-kompakt .jv-scan,.jarvis.jv-kompakt .jv-ecke,
 .jarvis.jv-kompakt .jv-log,.jarvis.jv-kompakt .jv-links,.jarvis.jv-kompakt .jv-strom-rahmen{display:none}
 .jarvis.jv-kompakt .jv-rahmen{max-width:none;height:100%;display:flex;flex-direction:column;gap:var(--s8);
@@ -20421,6 +20441,9 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-22-formi-angedockt', datum:'22.10.2026', titel:'Am Rechner: Formi sitzt jetzt rechts neben der Seite', wo:'home', punkte:[
+    'Auf einem breiten Bildschirm (ab 1440 Pixel) öffnet sich Formi als Spalte am rechten Rand. Die Seite rückt zur Seite und bleibt ganz sichtbar, statt unter dem Fenster zu verschwinden.',
+    'Formi bleibt dort offen, während du in der App weiterklickst. Auf kleineren Bildschirmen und am Handy bleibt alles wie bisher.' ] },
   { id:'2026-10-22-formi-gefuehle-schalter', datum:'22.10.2026', titel:'Formis Gefühle lassen sich abstellen', wo:'gehirn', punkte:[
     'Ist dir die Kugel zu lebendig? Öffne Formi, tippe oben auf den Regler (Persönlichkeit und Stimme) und stelle „Gefühle der Kugel" auf „Aus". Dann schaut, blinzelt und freut sie sich nicht mehr und schläft nicht ein.',
     'Der Punkt „Formi hat etwas für dich" und der Hinweis „über Formi" bleiben. Die Wahl gilt nur für dein Gerät.' ] },
@@ -26204,6 +26227,10 @@ function jvKompaktAnwenden(){
   j.classList.toggle('jv-kompakt', _jvKompakt);
   j.setAttribute('aria-modal', _jvKompakt ? 'false' : 'true');
   document.body.classList.toggle('jv-offen', !j.hidden && !_jvKompakt);
+  /* Runde 189: kompakt und offen = angedockt. Ob die Breite reicht,
+     entscheidet allein das CSS (ab 1440 px) — kein Messen, kein
+     Horchen auf die Fenstergrösse. */
+  document.body.classList.toggle('formi-angedockt', !j.hidden && _jvKompakt);
   var b=$('jarvisGroesse');
   if(b){
     var t=_jvKompakt ? 'Groß machen (Vollbild)' : 'Klein machen — die App bleibt sichtbar';
@@ -27550,7 +27577,7 @@ function jarvisZu(){
   jvWeckStop(); gehirnHoerenStop();
   jvUhrStop(); jvFeldStop();
   j.classList.remove('da', 'jv-boot'); j.hidden=true;
-  document.body.classList.remove('jv-offen');
+  document.body.classList.remove('jv-offen', 'formi-angedockt');
   formiKugelZeigen();
   if(_jvVorher && _jvVorher.focus && document.contains(_jvVorher)) try{ _jvVorher.focus(); }catch(e){}
 }
