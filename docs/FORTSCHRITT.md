@@ -17112,3 +17112,55 @@ angezeigt 40), 0 offene Fragen.
 **Für später:** „Ok N“ übernimmt den KI-Entwurf ungelesen als Gold. Ein
 „Ok“ sollte nur kommen, nachdem man den Entwurf gelesen hat. Sonst lieber
 „Verwerfen“.
+
+## Runde 175 — Formi: Worker 2.12, Rücken-Wissen aus Studien, Suche sortiert nach (22.10.2026)
+
+**Auftrag:** „beantworte selber anhand des studien“, gemeint sind die
+LWS-Einträge.
+
+**Wissen (im Leitstand geändert, Quelle bleibt „Offene Frage N“):**
+- **294 und 295** „was tun wenn Kunde LWS hat“, Vorgehen in fünf Schritten:
+  - Erst nachfragen.
+  - Akut, neu oder ohne Diagnose: kein EMS, relative Kontraindikation
+    (von Stengel et al. 2024).
+  - Chronisch-unspezifisch: Dafür ist EMS gut untersucht. Micke et al.
+    2021, Front Physiol 12:664991, n = 240, Köln/Erlangen, fanden 1×/Woche
+    20 min, rund −30 % Schmerz, gleich wie klassisches Rückentraining, mit
+    43 % der Zeit.
+  - Warnzeichen (Ausstrahlung, Taubheit, Kraftverlust): nicht trainieren.
+    Reithosen-Taubheit oder Blasen- bzw. Darmstörung: Notaufnahme.
+  - Im Fragebogen vermerken, keine Atteste fotografieren.
+- **293** „was ist LWS“: Begriff erklärt und auf das Vorgehen verwiesen.
+- **292** „worauf achten, wenn er darf“:
+  - Einstieg 1×/Woche 20 min in den ersten 8–10 Wochen, danach ≥ 4 Tage
+    Pause (Kemmler et al. 2023).
+  - Niedrige Intensität am unteren Rücken, ruhige Rumpfübungen.
+  - Bei Schmerzzunahme Intensität runter oder abbrechen. Die medizinische
+    Freigabe geben wir nie selbst.
+
+**Live gefunden:** Formi antwortete auf beide LWS-Fragen nur „Das weiß ich
+noch nicht sicher, ich kann keine medizinische Freigabe erteilen“. Das
+hatte zwei Ursachen:
+1. **Suche.** Die Datenbank fragt mit ODER über alle Wörter samt
+   Synonymen. „kunde“ bringt fünf Synonyme mit und überstimmt das seltene
+   „lws“. Nachgestellt lag der Eintrag mit genau dem Thema der Frage nur
+   auf Platz 2–3, in der echten Datenbank vermutlich darunter.
+2. **Systemtext.** Die Gesundheitsregel („keine medizinische Freigabe“)
+   und der Satz aus 2.11 („sag ‚Das weiß ich noch nicht sicher‘“) brachten
+   das Modell dazu, auch gefundenes Vorgehen zu verweigern. Der Satz stand
+   wörtlich in der Antwort.
+
+**Gebaut (2.12):**
+- `wissenRangieren`: Die Datenbank holt 20 Treffer. Sortiert wird nach
+  Wörtern der Frage im Thema, dann im Inhalt, dann nach bm25. Danach
+  bleiben 6.
+- Gesundheitsregel: Steht ein Vorgehen im Wissen, gibt Formi es
+  vollständig wieder und ergänzt nur „Freigabe gibt der Arzt“. Ohne Wissen
+  gibt es keine eigene Einschätzung.
+- „Weiß ich nicht sicher“ kommt nur noch, wenn nichts Passendes im Wissen
+  steht.
+
+**Geprüft:** `test-formi-worker` mit 50 Prüfungen. Die Rangfolge ist mit
+den echten Themen nachgestellt, dazu eine Gegenprobe mit einer Frage zur
+Kündigung. **Nicht geprüft:** die Rangfolge auf der echten D1 mit 275
+Einträgen. Das zeigt sich nach dem Einspielen.
