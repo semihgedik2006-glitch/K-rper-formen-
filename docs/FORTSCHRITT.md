@@ -18701,3 +18701,39 @@ Byte für Byte main).
 **Nicht geprüft:** das echte Konto selbst (Anmeldung lädt hier nicht);
 gemessen ist der Zustand „Team leer" in der Demo, nachgestellt nach dem
 Foto.
+## Runde 198 — Formi am Rechner in der Seitenleiste, Chat-Meldungen auf neuen Geräten aus (22.10.2026)
+
+**Aus dem Betrieb:** auf die drei Fragen aus Runde 192: „1. a 2. ja lassen
+wir so 3. ja“.
+
+1. **Formi wohnt am Rechner unten in der Seitenleiste.**
+   - Bis hierher hielt `.main` unter jeder Seite 90 px über die ganze
+     Breite frei, damit die Kugel unten rechts nichts verdeckt. Jetzt
+     sitzt die Kugel mittig unten in der 210 px breiten Leiste. Die
+     Leiste hält unten so viel frei, wie die Kugel braucht, und
+     „Tastenkürzel“ sowie die Schnellzugriffe stehen darüber.
+   - Grün geworden: test-p4-seitenleiste (Liste ≥ 690 px) und
+     test-p1-aufgaben (unterste Zeile bei 1280 × 800).
+   - In test-bestellung ist „Bestellen“ am Rechner jetzt treffbar. Rot
+     bleibt dort „Ändern“ beim Lieferanten bei 320 px kompakt (61 × 32).
+     Das war schon vorher rot, hat eine andere Ursache und ist als eigene
+     Aufgabe vorgeschlagen.
+   - Am Handy bleibt alles, wie es war. Dort gibt es keine Seitenleiste,
+     und die Kugel steht über der Leiste.
+2. **Startseite am Handy:** „Zum Übernehmen“ bleibt vor dem Putzplan.
+3. **„Alle Chat-Nachrichten“ ist auf neuen Geräten aus.**
+   - Neu heisst: In `kf_prefs` steht noch nichts.
+   - Ein eingerichtetes Gerät behält seine Wahl. Auch ein altes
+     `kf_prefs` ohne `notify` bleibt an, weil dort zusammengeführt wird
+     und die Voreinstellung in `PREFS` `chat:true` bleibt.
+   - Der Server filtert wie bisher nach dem Gerät-Eintrag (`willHaben`);
+     ein neues Gerät meldet dort `chat:false`.
+   - Begründung: `docs/design-vorbilder/studien-psychologie.md`,
+     Folgerung 9.
+
+**Gefunden:** test-raeume öffnete ohne Service-Worker-Sperre und sah in
+einem Durchlauf eine leere Seitenleiste, also einen alten Stand. Die Sperre
+ist nachgezogen, wie in den anderen Oberflächen-Durchläufen seit Runde 183.
+
+**Gemessen:** test-formi-platz hat 35 Zusicherungen. Die Gegenprobe gegen
+main ergibt 13 falsch.
