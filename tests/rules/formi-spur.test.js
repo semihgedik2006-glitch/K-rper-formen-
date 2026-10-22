@@ -1,4 +1,4 @@
-/* ── FORMI-SPUR BEIM ABHAKEN (Runde 185) ─────────────────────────────────
+/* ── FORMI-SPUR BEIM ABHAKEN (Runde 186) ─────────────────────────────────
    Aus dem Betrieb, 22.10.2026: auf „die Spur an allem, was Formi getan
    hat" — „ja".
 

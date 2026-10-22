@@ -522,7 +522,7 @@ Die Top 3 wurden alle mit „ja“ bestätigt. Dazu kam der Wunsch: „Formi sol
 einfach ganz integriert sein wie ein kleiner glitch im system mässig
 welcher die app übernimmt“.
 
-**Gebaut in Runde 185:** Formi-Zeile (Idee 1), Ring nur für Formi
+**Gebaut in Runde 186:** Formi-Zeile (Idee 1), Ring nur für Formi
 (Idee 4), Spur (Idee 3), Kugel mit Zuständen und Gefühlen (Ideen 2 und 9)
 sowie Glitch statt Lichtkante (Idee 5, als Glitch umgesetzt). Einzelheiten
-stehen in `docs/FORTSCHRITT.md`, Runde 185.
+stehen in `docs/FORTSCHRITT.md`, Runde 186.
