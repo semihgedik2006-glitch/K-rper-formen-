@@ -112,12 +112,12 @@ const LAGE = () => {
       if (breit) {
         pruefe(`${w} px: Spalte ${l.w} px breit, von oben bis unten am rechten Rand`, l.w === breit && l.t === 0 && l.h === h && l.l + l.w === w, JSON.stringify(l));
         pruefe(`${w} px: der Inhalt endet an der Spalte (${l.mainRechts} = ${l.l})`, Math.abs(l.mainRechts - l.l) <= 1, JSON.stringify(l));
-        const knoepfe = await p.evaluate(() => ['jarvisPersonaBtn', 'jarvisGroesse', 'jarvisZu', 'jarvisSenden'].map(id => {
+        const knoepfe = await p.evaluate(() => ['jarvisMehr', 'jarvisGroesse', 'jarvisZu', 'jarvisSenden'].map(id => {
           const el = document.getElementById(id); if (!el || !el.getClientRects().length) return id + ':fehlt';
           const r = el.getBoundingClientRect(); const t = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
           return (t && (t === el || el.contains(t)) && r.width >= 44 && r.height >= 44 && r.right <= innerWidth && r.bottom <= innerHeight) ? 'ok' : id + ':' + Math.round(r.width) + '×' + Math.round(r.height);
         }));
-        pruefe(`${w} px: Regler, Groß, Schließen, Senden ≥ 44 × 44, frei, im Bild`, knoepfe.every(k => k === 'ok'), knoepfe.join(' '));
+        pruefe(`${w} px: „…“ (seit Runde 209), Groß, Schließen, Senden ≥ 44 × 44, frei, im Bild`, knoepfe.every(k => k === 'ok'), knoepfe.join(' '));
       } else {
         /* Nicht angedockt: der Inhalt behält die volle Breite, und das
            Fenster ist keine Spalte von oben (am Handy ein Blatt von

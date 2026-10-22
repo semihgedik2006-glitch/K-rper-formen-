@@ -1574,7 +1574,7 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    /* ── Lohn-Export: DATEV-Einstellungen (Runde 209) ────────────────
+    /* ── Lohn-Export: DATEV-Einstellungen (Runde 210) ────────────────
        Berater-, Mandanten- und Personalnummern. NICHT in config: das
        liest jeder Aktive. Lesen und schreiben nur die Geschäftsführung,
        nur das eine Dokument 'datev', nur diese Felder. */
@@ -2500,7 +2500,7 @@ service cloud.firestore {
           allow read: if inFirma(f) && isChef();
           allow write: if false;
         }
-        // DATEV-Einstellungen (Runde 209) — dieselbe Regel wie flach, siehe dort.
+        // DATEV-Einstellungen (Runde 210) — dieselbe Regel wie flach, siehe dort.
         match /lohnEinstellungen/{doc} {
           allow read: if inFirma(f) && isChef();
           allow write: if schreibtIn(f) && isChef() && doc == 'datev' && lohnEinstellungOk();

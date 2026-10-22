@@ -1,4 +1,4 @@
-/* ── DATEV-Einstellungen (Runde 209) ───────────────────────────────────
+/* ── DATEV-Einstellungen (Runde 210) ───────────────────────────────────
    Berater-, Mandanten- und Personalnummern liegen in
    lohnEinstellungen/datev — NICHT in config, das jeder Aktive liest.
 

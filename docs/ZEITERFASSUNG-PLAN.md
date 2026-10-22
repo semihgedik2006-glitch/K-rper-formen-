@@ -421,7 +421,7 @@ Rückfragen vorgelegt, Antworten:
    Übertrag, Korrekturbuchung mit Grund; die Geschäftsführung schliesst
    einen Monat ab, danach ändert sich darin nichts mehr ohne neuen
    Eintrag.
-5. **Export**: ✅ Excel/CSV je Person und Tag (Runde 208), dazu ✅ DATEV LODAS (Runde 209; nicht gegen LODAS getestet, Lohn und Gehalt nicht gebaut). **Offen und vor
+5. **Export**: ✅ Excel/CSV je Person und Tag (Runde 208), dazu ✅ DATEV LODAS (Runde 210; nicht gegen LODAS getestet, Lohn und Gehalt nicht gebaut). **Offen und vor
    dem Bau zu klären:** DATEV hat mehrere Formate (u. a. ASCII für
    Lohn und Gehalt, LODAS); welches das Lohnbüro einliest, entscheidet
    das Lohnbüro. Der Export enthält nie `zeitPins` oder `terminalCodes`.
