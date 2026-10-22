@@ -492,3 +492,37 @@ Gedächtnis zitiert und nicht neu abgerufen. Vor dem Bauen nachschlagen.
 - Produktmuster (Copilot, Notion AI, Duolingo, Apple Intelligence, Linear,
   Clippy): Das ist beschrieben, wie es öffentlich bekannt ist. Die
   Herstellerseiten wurden für dieses Papier nicht neu aufgerufen.
+
+---
+
+## Entschieden (22.10.2026)
+
+Antworten aus dem Betrieb auf die Rückfragen:
+
+1. **Hinweisbänder:** „ja“.
+2. **Persönlichkeit:** „ja viele emotionen und so am besten auch
+   reaktionen falls das geht auf kleinigkeiten“.
+3. **Name des Stils:** „das was du für sinnvoller hältst“.
+   - Entschieden: Der Stil heisst **weiter „Formi“**.
+   - Erstens heisst der App-Hintergrund schon „Raum“ (Runde 178). Zwei
+     Wahlen mit demselben Namen in denselben Einstellungen wären die
+     nächste Verwechslung.
+   - Zweitens ist der neue Wunsch, dass Formi die App „übernimmt“. Dazu
+     passt der Name: Die App ist dann Formis Welt.
+   - Lesbar bleibt Formi trotzdem, weil der **Ring** nur Formi gehört
+     (Idee 4).
+4. **Andocken am Rechner:** „was sinnvoller ist“.
+   - Entschieden: Ab 1440 px andocken ist sinnvoll, aber **in einer
+     eigenen Runde**.
+   - Das Andocken macht jede Ansicht schmaler, auch Liste + Detail ab
+     1100 px. Vorher muss gemessen werden, ob dort alles Platz hat.
+   - Bis dahin bleibt das Fenster schwebend.
+
+Die Top 3 wurden alle mit „ja“ bestätigt. Dazu kam der Wunsch: „Formi soll
+einfach ganz integriert sein wie ein kleiner glitch im system mässig
+welcher die app übernimmt“.
+
+**Gebaut in Runde 185:** Formi-Zeile (Idee 1), Ring nur für Formi
+(Idee 4), Spur (Idee 3), Kugel mit Zuständen und Gefühlen (Ideen 2 und 9)
+sowie Glitch statt Lichtkante (Idee 5, als Glitch umgesetzt). Einzelheiten
+stehen in `docs/FORTSCHRITT.md`, Runde 185.
