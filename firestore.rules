@@ -1574,6 +1574,26 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    /* ── Lohn-Export: DATEV-Einstellungen (Runde 210) ────────────────
+       Berater-, Mandanten- und Personalnummern. NICHT in config: das
+       liest jeder Aktive. Lesen und schreiben nur die Geschäftsführung,
+       nur das eine Dokument 'datev', nur diese Felder. */
+    function lohnEinstellungOk() {
+      return request.resource.data.keys().hasOnly(['beraterNr', 'mandantenNr', 'lohnartStunden', 'urlaubstage', 'personalNr', 'geaendert', 'geaendertVon'])
+        && request.resource.data.get('beraterNr', '') is string
+        && request.resource.data.get('beraterNr', '').size() <= 7
+        && request.resource.data.get('mandantenNr', '') is string
+        && request.resource.data.get('mandantenNr', '').size() <= 5
+        && request.resource.data.get('lohnartStunden', '') is string
+        && request.resource.data.get('lohnartStunden', '').size() <= 4
+        && request.resource.data.get('personalNr', {}) is map
+        && request.resource.data.get('personalNr', {}).size() <= 500;
+    }
+    match /lohnEinstellungen/{doc} {
+      allow read: if aufFlachenPfaden() && isChef();
+      allow write: if aufFlachenPfaden() && isChef() && doc == 'datev' && lohnEinstellungOk();
+    }
+
 
     match /appointments/{apptId}     { allow read, write: if false; }
     match /emailTemplates/{tplId}    { allow read, write: if false; }
@@ -2479,6 +2499,11 @@ service cloud.firestore {
         match /zeitAbschluesse/{monat} {
           allow read: if inFirma(f) && isChef();
           allow write: if false;
+        }
+        // DATEV-Einstellungen (Runde 210) — dieselbe Regel wie flach, siehe dort.
+        match /lohnEinstellungen/{doc} {
+          allow read: if inFirma(f) && isChef();
+          allow write: if schreibtIn(f) && isChef() && doc == 'datev' && lohnEinstellungOk();
         }
 
 
