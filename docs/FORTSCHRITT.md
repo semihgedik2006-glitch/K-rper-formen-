@@ -18052,3 +18052,41 @@ Was daraus folgt, ist dort je Massnahme aufgeschrieben.
   Schicht: Das ist Folgerung 9 der Studienlage und noch nicht gebaut.
 - Findezeiten vorher/nachher messen (Folgerung 14): Ein schönerer Eindruck
   beweist keine bessere Findbarkeit.
+
+## Runde 188 — Versteckter Schalter für Formis Gefühle (22.10.2026)
+
+**Aus dem Betrieb:** Auf die Frage aus Runde 186, ob es einen Schalter
+geben soll, falls die Gefühle der Kugel jemandem im Team zu viel sind:
+„Ja aber versteckter“.
+
+**Gebaut**
+- In Formis eigenen Einstellungen (Regler-Symbol im Formi-Fenster →
+  „Persönlichkeit und Stimme“) steht „Gefühle der Kugel: Zeigen · Aus“.
+  Standard ist „Zeigen“.
+- Bei „Aus“ schaut die Kugel nicht mit, blinzelt nicht, nickt nicht,
+  freut sich nicht, staunt, feiert und erschrickt nicht und schläft nicht
+  ein. Was gerade läuft, wird abgebrochen, das Auge steht geradeaus.
+- Es bleiben: der Punkt „hat etwas für dich“, die Spur „über Formi“ und
+  der Glitch, wenn Formi eine Seite öffnet. Die drei sind keine Gefühle,
+  sie sagen etwas.
+- Gemerkt wird je Gerät in Formis Persönlichkeit (`kf_jv_persona`,
+  `gefuehle`), wie Tonfall und Stimme.
+
+**Warum dort**
+- „Versteckter“ heisst: nicht unter Profil → Aussehen, wo jeder vorbeikommt.
+  Formis Einstellungen öffnet nur, wer Formi schon benutzt und etwas an
+  ihm ändern will. Erreichbar bleibt der Schalter in zwei Tipps (Kugel,
+  Regler).
+- Der Zustand liegt zusätzlich als Zahl im Speicher (`_fl.gefuehleAus`).
+  `formiLebtAn()` läuft in jedem Bild, in dem das Auge folgt, und soll
+  dort kein JSON lesen.
+
+**Geprüft** (`tests/test-formi-lebt.js`, jetzt 95 Zusicherungen)
+- Am Rechner (1440) und am Handy (390):
+  - Der Schalter steht in Formis Einstellungen, Standard „Zeigen“.
+  - „Zeigen“ und „Aus“ treffen 67 × 45 bzw. 50 × 45 px und liegen im Bild.
+  - „Aus“ wird gemerkt; danach bewegt sich nichts, das Auge schaut nicht
+    mit und schläft nicht ein.
+  - Der Punkt bleibt, und nach dem Neuladen ist es weiter aus.
+  - Mit „Zeigen“ freut Formi sich wieder.
+- Gegenprobe mit dem `index.html` von `main`: schlägt an.

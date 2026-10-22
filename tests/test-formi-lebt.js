@@ -211,6 +211,47 @@ const KUGEL_ANIM = () => {
       await p._ctx.close();
     }
 
+    /* Runde 188 — aus dem Betrieb: „Ja aber versteckter". Der Schalter
+       steht in Formis eigenen Einstellungen (Regler im Formi-Fenster). */
+    console.log('\n── Versteckter Schalter: Gefühle aus ──');
+    for (const [w, h] of [[1440, 900], [390, 844]]) {
+      const p = await oeffne(b, w, h);
+      await p.click('#formiKugel'); await p.waitForTimeout(400);
+      await p.click('#jarvisPersonaBtn'); await p.waitForTimeout(300);
+      const aus = '#jarvisPersona [data-jvp="gefuehle"][data-jvw="aus"]', an = '#jarvisPersona [data-jvp="gefuehle"][data-jvw="an"]';
+      pruefe(`${w} px: der Schalter steht in Formis Einstellungen, Standard „Zeigen"`,
+        await p.evaluate((s) => document.querySelector(s) && document.querySelector(s).getAttribute('aria-pressed') === 'true', an));
+      for (const sel of [an, aus]) {
+        await p.evaluate((s) => document.querySelector(s).scrollIntoView({ block: 'center' }), sel);
+        const m = await p.evaluate(([TR, s]) => (eval(TR))(document.querySelector(s)), [TREFFER.toString(), sel]);
+        pruefe(`${w} px: „${sel.includes('aus') ? 'Aus' : 'Zeigen'}" trifft ${m.w}×${m.h}, im Bild`, m.w >= 44 && m.h >= 44 && m.imBild, JSON.stringify(m));
+      }
+      await p.click(aus); await p.waitForTimeout(200);
+      pruefe(`${w} px: „Aus" ist gewählt und gemerkt`, await p.evaluate(() => JSON.parse(localStorage.getItem('kf_jv_persona') || '{}').gefuehle === 'aus'));
+      await p.click('#jarvisZu'); await p.waitForTimeout(400);
+      await p.evaluate(() => { window.__formiLebt.fuehlt('freut'); window.__formiLebt.fuehlt('feiert'); window.__formiLebt.haken(); });
+      if (w > 820) { await p.mouse.move(10, 10); await p.waitForTimeout(300); }
+      const still = await p.evaluate(() => ({ n: document.getElementById('formiKugel').getAnimations({ subtree: true }).length,
+        schlaf: window.__formiLebt.einschlafen() }));
+      pruefe(`${w} px: Gefühle aus — keine Bewegung, kein Schauen, kein Einschlafen`, still.n === 0 && !still.schlaf, JSON.stringify(still));
+      // Formi war eben offen, also ist der Stand „gesehen". Vergessen lassen:
+      await p.evaluate(() => localStorage.removeItem('kf_formi_gesehen'));
+      await p.reload({ waitUntil: 'domcontentloaded' });
+      await p.waitForFunction(() => !!document.querySelector('#app.show'), null, { timeout: 15000 });
+      await p.waitForTimeout(900);
+      await p.evaluate(() => window.__formiLebt.fuehlt('freut'));
+      pruefe(`${w} px: nach dem Neuladen bleibt es aus`, await p.evaluate(() => document.getElementById('formiKugel').getAnimations({ subtree: true }).length === 0));
+      pruefe(`${w} px: der Punkt „hat etwas für dich" gibt es auch mit Gefühlen aus`, await p.evaluate(() => document.getElementById('formiKugel').classList.contains('fk-hat')));
+      await p.click('#formiKugel'); await p.waitForTimeout(400);
+      await p.click('#jarvisPersonaBtn'); await p.waitForTimeout(300);
+      await p.click(an); await p.waitForTimeout(200);
+      await p.click('#jarvisZu'); await p.waitForTimeout(400);
+      await p.evaluate(() => window.__formiLebt.fuehlt('freut'));
+      pruefe(`${w} px: wieder „Zeigen" — Formi freut sich wieder`, await p.evaluate(() => document.getElementById('formiKugel').getAnimations({ subtree: true }).length > 0));
+      pruefe(`${w} px: keine Fehler auf der Seite`, !p._fehler.length, p._fehler.join(' | '));
+      await p._ctx.close();
+    }
+
     console.log('\n── Weniger Bewegung ──');
     {
       const p = await oeffne(b, 1440, 900, { wenigBewegung: true });
