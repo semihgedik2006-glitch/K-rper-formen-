@@ -1331,6 +1331,153 @@ const TAG = 86400000;
       ((await F.collection('schulungVersuche').doc('schulMit').get()).data() || {}).zahl === 1);
   }
 
+  /* ══ Schulung: Auffrischen und Weitermachen (Runde 201) ══
+     Aus dem Betrieb, 22.10.2026: „plan klingt gut", und für die Frage,
+     wo die Antworten liegen: „das was leichter ist für leute ohne
+     zugang". Deshalb hängt der Plan am Teilnehmer und geht mit dem Code
+     — geprüft wird vor allem, dass der Code dieselbe Schranke ist wie
+     beim Anfangen (Bremse!), und dass die Summe für die Leitung nur
+     zählt, was wirklich dran war. */
+  {
+    const I = fns.__intern;
+    const TAG = 86400000, jetzt = Date.now();
+    // ── Die Rechnung, ohne Datenbank ──
+    const l = (id, modul, ende, fragen) => ({ id, modul, ende, status: 'fertig', bestanden: true, fragen });
+    const drei = [{ frage: 'a', versuche: 1, richtig: true }, { frage: 'b', versuche: 3, richtig: true },
+                  { frage: 'c', versuche: 1, richtig: true }];
+    const r1 = I.auffrischRunde([l('x1', 'm-a', jetzt - 16 * TAG, drei)], {}, jetzt, false);
+    pruefe('AUFFRISCHEN · aus drei Fragen werden drei Karten', Object.keys(r1.karten).length === 3,
+      Object.keys(r1.karten).join(','));
+    pruefe('AUFFRISCHEN · fällig zwei Tage nach dem Bestehen',
+      r1.karten['m-a#0'].f === jetzt - 14 * TAG && r1.karten['m-a#0'].s === 0);
+    pruefe('AUFFRISCHEN · die danebengegangene Frage steht vorn', r1.faellig[0].idx === 1,
+      JSON.stringify(r1.faellig));
+    pruefe('AUFFRISCHEN · … und trägt ihren Text mit', r1.faellig[0].frage === 'b');
+    const r2 = I.auffrischRunde([l('x1', 'm-a', jetzt - TAG, drei)], {}, jetzt, false);
+    pruefe('GEGENPROBE einen Tag nach dem Bestehen ist noch nichts dran',
+      r2.faellig.length === 0 && r2.naechste === jetzt + TAG, JSON.stringify(r2));
+    const viele = Array.from({ length: 67 }, (_, i) => ({ frage: 'f' + i, versuche: i === 50 ? 2 : 1, richtig: true }));
+    const r3 = I.auffrischRunde([l('b1', 'm-beratung', jetzt - 30 * TAG, viele), l('x1', 'm-a', jetzt - 20 * TAG, drei)],
+      {}, jetzt, false);
+    const beratung = Object.keys(r3.karten).filter(k => k.indexOf('m-beratung#') === 0);
+    pruefe('AUFFRISCHEN · 67 Fragen → höchstens sechs im Plan', beratung.length === I.AUFFRISCH_JE_MODUL,
+      String(beratung.length));
+    pruefe('AUFFRISCHEN · die eine danebengegangene ist dabei', !!r3.karten['m-beratung#50']);
+    pruefe('AUFFRISCHEN · eine Runde hat höchstens drei', r3.faellig.length === 3 && r3.offen === 9,
+      r3.faellig.length + ' / offen ' + r3.offen);
+    pruefe('AUFFRISCHEN · gemischt: beide Module in derselben Runde',
+      new Set(r3.faellig.map(f => f.modul)).size === 2, JSON.stringify(r3.faellig));
+    const ungueltig = I.auffrischRunde([{ id: 'n', modul: 'm-n', ende: 1, status: 'fertig', bestanden: false, fragen: drei }],
+      {}, jetzt, false);
+    pruefe('GEGENPROBE ein NICHT bestandener Durchlauf bringt keine Karten', Object.keys(ungueltig.karten).length === 0);
+    const w1 = I.auffrischWeiter({ s: 0, f: 0 }, true, jetzt);
+    const w2 = I.auffrischWeiter({ s: 3, f: 0 }, false, jetzt);
+    const w3 = I.auffrischWeiter({ s: 4, f: 0 }, true, jetzt);
+    pruefe('AUFFRISCHEN · richtig: eine Stufe weiter, nach 7 Tagen', w1.s === 1 && w1.f === jetzt + 7 * TAG);
+    pruefe('AUFFRISCHEN · falsch: zurück auf zwei Tage', w2.s === 0 && w2.f === jetzt + 2 * TAG);
+    pruefe('AUFFRISCHEN · die letzte Stufe bleibt die letzte (180 Tage)', w3.s === 4 && w3.f === jetzt + 180 * TAG);
+    pruefe('WEITERMACHEN · ein leerer, angefangener Durchlauf zählt nicht',
+      I.schulungOffenerLauf([{ id: 'e', status: 'laeuft', ts: jetzt, schritteGesehen: [], fragen: [] }], jetzt) === null);
+    pruefe('WEITERMACHEN · einer mit gesehenen Schritten schon',
+      (I.schulungOffenerLauf([{ id: 'g', status: 'laeuft', ts: jetzt, schritteGesehen: [0] }], jetzt) || {}).id === 'g');
+    pruefe('GEGENPROBE … aber nicht nach 31 Tagen, und kein Testlauf',
+      I.schulungOffenerLauf([{ id: 'g', status: 'laeuft', ts: jetzt - 31 * TAG, schritteGesehen: [0] },
+                             { id: 't', status: 'laeuft', test: true, ts: jetzt, schritteGesehen: [0] }], jetzt) === null);
+
+    // ── Die echte Funktion ──
+    const F = db.collection('firmen').doc('alpha');
+    await db.doc('users/aufKonto').set({ name: 'Konto Person', role: 'mitarbeiter', firma: 'alpha', aktiv: true, studioKeys: ['s1'] });
+    await db.doc('users/aufTablet').set({ name: 'Tablet', role: 'mitarbeiter', firma: 'alpha', aktiv: true, studioKeys: ['s1'] });
+    await F.collection('schulungTeilnehmer').doc('t-auf').set({
+      name: 'Ohne Konto', uid: null, kennung: 'Q7WZ', code: 'Q7WZ-3HKM-P2RT', gesperrt: false, ts: 5 });
+    await F.collection('schulungTeilnehmer').doc('t-konto').set({
+      name: 'Mit Konto', uid: 'aufKonto', kennung: 'Z9XY', code: 'Z9XY-AAAA-BBBB', gesperrt: false, ts: 6 });
+    await F.collection('schulungLaeufe').doc('auf-l1').set({
+      modul: 'm-hygiene', teilnehmer: 't-auf', uid: null, status: 'fertig', bestanden: true,
+      ende: jetzt - 10 * TAG, ts: jetzt - 10 * TAG, fragen: drei });
+    await F.collection('schulungLaeufe').doc('auf-l2').set({
+      modul: 'm-start', teilnehmer: 't-konto', uid: 'aufKonto', status: 'fertig', bestanden: true,
+      ende: jetzt - 10 * TAG, ts: jetzt - 10 * TAG, fragen: drei });
+    const auf = (d, wer) => fns.schulungAuffrischen.run(d, { auth: { uid: wer } });
+    const fehler = async (v) => { try { await v; return null; } catch (e) { return e; } };
+
+    const a1 = await auf({ code: 'q7wz 3hkm p2rt' }, 'aufTablet');
+    pruefe('AUFFRISCHEN · mit dem Code am Tablet: Name und drei Fragen',
+      a1.ok && a1.name === 'Ohne Konto' && a1.faellig.length === 3 && a1.angelegt === 5, JSON.stringify(a1));
+    const plan1 = (await F.collection('schulungLernplan').doc('t-auf').get()).data() || {};
+    pruefe('AUFFRISCHEN · der Plan liegt am Teilnehmer, nicht am Gerät',
+      Object.keys(plan1.karten || {}).length === 3 && plan1.uid === null);
+    const a2 = await auf({ code: 'Q7WZ-3HKM-P2RT', antworten: [
+      { modul: 'm-hygiene', idx: a1.faellig[0].idx, richtig: true },
+      { modul: 'm-hygiene', idx: a1.faellig[1].idx, richtig: false },
+      { modul: 'm-hygiene', idx: 2, richtig: true },
+      { modul: 'm-erfunden', idx: 0, richtig: true }] }, 'aufTablet');
+    pruefe('AUFFRISCHEN · gezählt wird nur, was dran war (3 von 4; das erfundene Modul nicht)',
+      a2.gezaehlt === 3, 'gezaehlt ' + a2.gezaehlt);
+    const plan2 = (await F.collection('schulungLernplan').doc('t-auf').get()).data() || {};
+    const k0 = plan2.karten['m-hygiene#' + a1.faellig[0].idx], k1 = plan2.karten['m-hygiene#' + a1.faellig[1].idx];
+    pruefe('AUFFRISCHEN · richtig → in 7 Tagen wieder, falsch → in 2 Tagen',
+      k0.s === 1 && Math.round((k0.f - jetzt) / TAG) === 7 && k1.s === 0 && Math.round((k1.f - jetzt) / TAG) === 2,
+      JSON.stringify(plan2.karten));
+    pruefe('AUFFRISCHEN · danach ist nichts mehr dran', a2.faellig.length === 0 && a2.naechste > jetzt);
+    const stat = (await F.collection('schulungFragenStat').doc('m-hygiene').get()).data() || {};
+    const summe = Object.values(stat.f || {}).reduce((s, x) => ({ r: s.r + (x.r || 0), x: s.x + (x.x || 0) }), { r: 0, x: 0 });
+    pruefe('AUFFRISCHEN · die Summe für die Leitung: 2 richtig, 1 daneben — ohne Namen',
+      summe.r === 2 && summe.x === 1 && !JSON.stringify(stat).includes('Ohne Konto') && !('teilnehmer' in stat),
+      JSON.stringify(stat));
+    pruefe('GEGENPROBE kein Eintrag für das erfundene Modul',
+      !(await F.collection('schulungFragenStat').doc('m-erfunden').get()).exists);
+    const a3 = await auf({ code: 'Q7WZ-3HKM-P2RT', antworten: [{ modul: 'm-hygiene', idx: a1.faellig[0].idx, richtig: true }] }, 'aufTablet');
+    pruefe('GEGENPROBE dieselbe Antwort noch einmal zählt nicht (die Karte ist nicht mehr dran)', a3.gezaehlt === 0);
+
+    const e1 = await fehler(auf({ code: 'Q7WZ-3HKM-P2RA' }, 'aufTablet'));
+    pruefe('AUFFRISCHEN · ein falscher Code wird abgewiesen …', e1 && e1.code === 'permission-denied', e1 ? e1.code : 'ging durch');
+    pruefe('AUFFRISCHEN · … und zählt an der Bremse dieses Geräts',
+      ((await F.collection('schulungVersuche').doc('aufTablet').get()).data() || {}).zahl === 1);
+    await F.collection('schulungVersuche').doc('aufTablet').set({ zahl: 10, seit: Date.now() });
+    const e2 = await fehler(auf({ code: 'Q7WZ-3HKM-P2RT' }, 'aufTablet'));
+    pruefe('AUFFRISCHEN · bei geschlossener Bremse geht auch der richtige Code nicht',
+      e2 && e2.code === 'resource-exhausted', e2 ? e2.code : 'ging durch');
+    await F.collection('schulungVersuche').doc('aufTablet').delete();
+
+    const a4 = await auf({}, 'aufKonto');
+    pruefe('AUFFRISCHEN · mit verknüpftem Konto geht es ohne Code', a4.ok && a4.name === 'Mit Konto' && a4.faellig.length === 3,
+      JSON.stringify(a4));
+    const a5 = await auf({}, 'aufTablet');
+    pruefe('GEGENPROBE ohne Code und ohne Verknüpfung: nichts, und kein Fehler', a5.ok && a5.ohneTeilnehmer === true);
+
+    await F.collection('schulungLaeufe').doc('auf-test').set({
+      modul: 'm-testauf', teilnehmer: 'test:schulChef', uid: null, test: true, status: 'fertig', bestanden: true,
+      ende: jetzt - TAG / 2, ts: jetzt - TAG, fragen: drei });
+    const a6 = await auf({ code: '0000-0000-0000' }, 'schulChef');
+    pruefe('AUFFRISCHEN · Testcode: die Leitung sieht ihre Testläufe sofort',
+      a6.ok && a6.test === true && a6.faellig.length >= 1, JSON.stringify(a6));
+    const a7 = await auf({ code: '0000-0000-0000', antworten: [{ modul: a6.faellig[0].modul, idx: a6.faellig[0].idx, richtig: false }] }, 'schulChef');
+    const statTest = await F.collection('schulungFragenStat').doc(a6.faellig[0].modul).get();
+    pruefe('AUFFRISCHEN · ein Test zählt nicht in der Summe (die Antwort zählt nur im Testplan)',
+      a6.faellig[0].modul === 'm-testauf' && a7.gezaehlt === 1 && !statTest.exists, JSON.stringify(a6.faellig));
+    const e3 = await fehler(auf({ code: '0000-0000-0000' }, 'schulMit'));
+    pruefe('AUFFRISCHEN · Testcode für Mitarbeitende: abgewiesen', e3 && e3.code === 'permission-denied');
+
+    // ── Weitermachen ──
+    const st = (code, wer) => fns.schulungStart.run({ code, modul: 'm-beratung' }, { auth: { uid: wer } });
+    const s1 = await st('Q7WZ-3HKM-P2RT', 'aufTablet');
+    pruefe('WEITERMACHEN · der erste Start legt einen neuen Durchlauf an', s1.ok && !s1.fortsetzen);
+    await F.collection('schulungLaeufe').doc(s1.lauf).update({ schritteGesehen: [0, 1, 2], aktivMs: 600000,
+      fragen: [{ frage: 'x', versuche: 2, falsch: [1], richtig: true }] });
+    const s2 = await st('Q7WZ-3HKM-P2RT', 'aufKonto');
+    const l2 = (await F.collection('schulungLaeufe').doc(s1.lauf).get()).data() || {};
+    pruefe('WEITERMACHEN · der zweite Start setzt denselben Durchlauf fort',
+      s2.lauf === s1.lauf && s2.fortsetzen && s2.fortsetzen.schritteGesehen.length === 3 &&
+      s2.fortsetzen.aktivMs === 600000 && s2.durchgang === s1.durchgang, JSON.stringify(s2));
+    pruefe('WEITERMACHEN · … und schreibt das neue Gerät ein (sonst sperrten die Regeln)',
+      l2.geraetUid === 'aufKonto' && l2.teilnehmer === 't-auf');
+    await F.collection('schulungLaeufe').doc(s1.lauf).update({ status: 'fertig', ende: Date.now(), bestanden: true });
+    const s3 = await st('Q7WZ-3HKM-P2RT', 'aufTablet');
+    pruefe('GEGENPROBE nach dem Abschluss beginnt ein neuer Durchgang',
+      s3.lauf !== s1.lauf && !s3.fortsetzen && s3.durchgang === s1.durchgang + 1, JSON.stringify(s3));
+  }
+
   /* ══ Wichtig: einmal am Tag erinnern (Runde 136) ══
      Push lässt sich hier nicht zustellen. Der Versand wird deshalb
      abgefangen: geprüft wird, an WELCHE Geräte die Erinnerung ginge. */

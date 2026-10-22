@@ -135,7 +135,7 @@ const ZUSTAND = () => {
   console.log('\n── 3. Stunden und Soll ──');
   {
     const p = await oeffne(b, 'chef', 1440, 900);
-    const s = await p.evaluate(() => [...document.querySelectorAll('.wp-z:not(.wp-kopfz)')].map(r => ({
+    const s = await p.evaluate(() => [...document.querySelectorAll('.wp-z:not(.wp-kopfz):not(.wp-besetzt)')].map(r => ({
       name: r.querySelector('.wp-p').textContent, std: r.querySelector('.wp-std').textContent.replace(/\s+/g, ' ').trim(),
       warn: r.querySelector('.wp-std').classList.contains('warn'),
       summe: [...r.querySelectorAll('.wp-schicht')].reduce((a, x) => {
@@ -157,11 +157,63 @@ const ZUSTAND = () => {
     const m = await oeffne(b, 'mitarbeiter', 1440, 900);
     await m.evaluate(() => document.querySelector('[data-wpansicht="person"]').click());
     await m.waitForTimeout(400);
-    const t = await m.evaluate(() => [...document.querySelectorAll('.wp-z:not(.wp-kopfz)')].map(r => ({
+    const t = await m.evaluate(() => [...document.querySelectorAll('.wp-z:not(.wp-kopfz):not(.wp-besetzt)')].map(r => ({
       ich: r.classList.contains('ich'), soll: /\//.test(r.querySelector('.wp-std').textContent) })));
     pruefe('Team: Soll nur in der eigenen Zeile (die Regel lässt nur sie lesen)',
       t.length > 1 && t.filter(x => x.soll).every(x => x.ich), JSON.stringify(t));
     await m._ctx.close();
+  }
+
+  console.log('\n── 3b. Besetzung je Tag: Lücken in der Öffnungszeit ──');
+  /* Runde 200 — aus dem Betrieb: „mach weiter mit dem design". Die
+     Leiste unter dem Raster sagt, wann niemand eingeteilt ist, obwohl das
+     Studio offen hat. Nachgerechnet wird unabhängig: aus den Zeiten der
+     Pillen in derselben Spalte, alle 30 Minuten der Öffnungszeit. Über
+     mehrere Studios, damit Tage mit und ohne Lücke vorkommen. */
+  {
+    const p = await oeffne(b, 'chef', 1440, 900);
+    const r = await p.evaluate(async () => {
+      const w = ms => new Promise(r => setTimeout(r, ms));
+      const min = t => { const m = /^(\d{2})(?::(\d{2}))?$/.exec(t); return m ? +m[1] * 60 + (+(m[2] || 0)) : null; };
+      const sel = document.getElementById('teamStudio'), aus = [], fehler = [];
+      for (const o of [...sel.options].slice(0, 6)) {
+        sel.value = o.value; sel.onchange(); await w(400);
+        for (const wo of [0, 1]) {
+          document.getElementById(wo ? 'shiftNext' : 'shiftToday').click(); await w(150);
+          const zeilen = [...document.querySelectorAll('.wp-z:not(.wp-kopfz):not(.wp-besetzt)')];
+          const besetzt = document.querySelector('.wp-besetzt');
+          if (!besetzt) { fehler.push(o.value + ': keine Zeile „Besetzt"'); continue; }
+          const zellen = [...besetzt.querySelectorAll('.wp-c')];
+          zellen.forEach((z, i) => {
+            if (z.classList.contains('vorbei')) return;
+            const band = z.querySelector('.wp-band'); const lab = band ? band.getAttribute('aria-label') : '';
+            const off = /Geöffnet (\S+)–(\S+) Uhr/.exec(lab);
+            const zeiten = zeilen.flatMap(r => [...r.querySelectorAll('.wp-c')[i].querySelectorAll('.wp-schicht')])
+              .map(x => /(\d\d):(\d\d)–(\d\d):(\d\d)/.exec(x.getAttribute('title') || '')).filter(Boolean)
+              .map(m => { const a = +m[1] * 60 + +m[2]; let e = +m[3] * 60 + +m[4]; if (e <= a) e = 1440; return [a, e]; });
+            const luecken = ((/niemand eingeteilt: (.*)$/.exec(lab) || [])[1] || '').split(', ').filter(Boolean)
+              .map(t => t.split('–').map(min));
+            if (!off) { if (luecken.length) fehler.push(o.value + ' Tag ' + i + ': Lücke ohne Öffnungszeit'); return; }
+            const [ov, ob] = [min(off[1]), min(off[2])];
+            for (let t = ov + 15; t < ob; t += 30) {
+              const da = zeiten.some(([a, e]) => a <= t && e > t);
+              const inLuecke = luecken.some(([a, e]) => a <= t && e > t);
+              if (da === inLuecke) fehler.push(o.value + ' Tag ' + i + ' ' + Math.floor(t / 60) + ':' + (t % 60) + ' da=' + da + ' Lücke=' + inLuecke);
+            }
+            aus.push({ st: o.value, tag: i, schichten: zeiten.length, luecken: luecken.length,
+              text: (z.querySelector('.wp-band-txt') || {}).textContent || '' });
+          });
+        }
+      }
+      return { aus, fehler };
+    });
+    const mitL = r.aus.filter(x => x.luecken), ohneL = r.aus.filter(x => !x.luecken);
+    console.log('  Tage geprüft: ' + r.aus.length + ' (mit Lücke ' + mitL.length + ', ohne ' + ohneL.length + ')');
+    pruefe('Lücken stimmen alle 30 Minuten mit den Schichten überein', r.aus.length > 10 && !r.fehler.length, r.fehler.slice(0, 5).join(' | '));
+    pruefe('es kommen Tage mit UND ohne Lücke vor (sonst prüft das nichts)', mitL.length > 0 && ohneL.length > 0);
+    pruefe('eine Lücke steht als Text unter der Leiste („… niemand")', mitL.every(x => /niemand/.test(x.text)), JSON.stringify(mitL.slice(0, 3)));
+    pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await p._ctx.close();
   }
 
   console.log('\n── 4. Eintragen per Klick in eine leere Zelle ──');
@@ -357,6 +409,66 @@ const ZUSTAND = () => {
     pruefe('„Ganzer Monat" zeigt alle Wochen', r.tabellenAlle === r.reiter.length - 1, r.tabellenAlle + ' von ' + (r.reiter.length - 1));
     pruefe('feste Spalten: „Früh" steht in jeder Woche an derselben Stelle', r.xs.length > 1 && new Set(r.xs).size === 1, JSON.stringify(r.xs));
     pruefe('Planer ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await c.close();
+  }
+
+  console.log('\n── 10. Schichtplaner: Anfang ohne Team, Regeln in Reitern ──');
+  /* Gemessen am echten Konto (Bildschirmfoto, 22.10.2026): Team leer,
+     „Plan erstellen" grau ohne ein Wort warum, „Wünsche" mit Haken bei
+     „0 von 0", Regeln als vier Formulare. Aus dem Betrieb: „mach weiter
+     mit dem design und aufbau". */
+  for (const [w, h] of [[390, 844], [1440, 900]]) {
+    const c = await b.newContext({ serviceWorkers: 'block', viewport: { width: w, height: h } });
+    const p = await c.newPage();
+    p._fehler = []; p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
+    await p.route('**://www.gstatic.com/**', r => r.abort());
+    await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
+    await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
+    await p.waitForTimeout(3200);
+    const voll = await p.evaluate(async () => {
+      const wt = ms => new Promise(r => setTimeout(r, ms));
+      const g = document.getElementById('bereichKopf'); if (g && g.offsetParent) { g.click(); await wt(700); }
+      [...document.querySelectorAll('[data-alles="planer"]')].find(e => e.offsetParent).click(); await wt(2500);
+      const d = document.getElementById('spRegeln'); d.open = true; await wt(150);
+      const vorher = [...document.querySelectorAll('[data-spregel]')].filter(x => !x.hidden).map(x => x.dataset.spregel);
+      document.querySelector('[data-spregeltab="sonder"]').click(); await wt(150);
+      const nachher = [...document.querySelectorAll('[data-spregel]')].filter(x => !x.hidden).map(x => x.dataset.spregel);
+      d.open = false;
+      return { vorher, nachher, anfang: !document.getElementById('spAnfang').hidden, regeln: !d.hidden };
+    });
+    pruefe(w + ' px mit Team: Regeln sichtbar, ohne Anfangskarte', voll.regeln && !voll.anfang, JSON.stringify(voll));
+    pruefe(w + ' px: Regeln zeigen EINEN Reiter, der Wechsel zeigt einen anderen',
+      voll.vorher.join() === 'einst' && voll.nachher.join() === 'sonder', JSON.stringify(voll));
+    const leer = await p.evaluate(async () => {
+      const wt = ms => new Promise(r => setTimeout(r, ms));
+      const db = firebase.firestore().collection('firmen').doc('koerperformen');
+      const sn = await db.collection('planerTeam').get();
+      for (const d of sn.docs) await db.collection('planerTeam').doc(d.id).delete();
+      await db.collection('config').doc('schichtplaner').set({ wunschFristTag: 15 });
+      document.getElementById('spMonatVor').click(); await wt(400);
+      document.getElementById('spMonatZurueck').click(); await wt(1200);
+      const los = document.getElementById('spLos');
+      return { anfang: !document.getElementById('spAnfang').hidden, regeln: !document.getElementById('spRegeln').hidden,
+        schritte: !document.getElementById('spSchritte').hidden, grau: los.disabled,
+        grund: document.getElementById('spLosGrund').hidden ? '' : document.getElementById('spLosGrund').textContent,
+        zustand: document.getElementById('spZustand').textContent,
+        knoepfe: [...document.querySelectorAll('#spAnfang .btn')].filter(e => e.offsetParent).map(e => e.textContent.trim()) };
+    });
+    console.log('  ' + JSON.stringify(leer));
+    pruefe(w + ' px ohne Team: „So fängst du an" statt Regeln und Schritten', leer.anfang && !leer.regeln && !leer.schritte, JSON.stringify(leer));
+    pruefe(w + ' px: Vorlage und Einlesen stehen in der Anfangskarte', /Vorlage/.test(leer.knoepfe.join()) && /einlesen/.test(leer.knoepfe.join()), JSON.stringify(leer.knoepfe));
+    pruefe(w + ' px: der graue Knopf sagt, warum', leer.grau && /eingelesen/.test(leer.grund), leer.grund);
+    pruefe(w + ' px: neben dem Monat steht „noch kein Plan"', /noch kein Plan/.test(leer.zustand), leer.zustand);
+    const ziel = await p.evaluate(async (SRC) => {
+      const T = eval('(' + SRC + ')'); const zu = [];
+      for (const el of [...document.querySelectorAll('#view-planer .spl-start button, #spAnfang .btn')].filter(e => e.offsetParent && !e.disabled)) {
+        el.scrollIntoView({ block: 'center' }); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        const m = T(el); if (m.w < 44 || m.h < 44) zu.push(el.textContent.trim() + ' ' + m.w + '×' + m.h);
+      }
+      return { zu, quer: document.documentElement.scrollWidth - innerWidth };
+    }, TREFFER.toString());
+    pruefe(w + ' px: Knöpfe im Anfang ≥ 44 × 44, nichts ragt hinaus', !ziel.zu.length && ziel.quer <= 0, JSON.stringify(ziel));
+    pruefe(w + ' px ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await c.close();
   }
 

@@ -51,7 +51,9 @@ const TREFFER = (el) => {
 };
 async function oeffne(b, w, h, opt) {
   opt = opt || {};
-  const ctx = await b.newContext(Object.assign({ viewport: { width: w, height: h } },
+  /* Service-Worker gesperrt wie in allen Oberflächen-Durchläufen (Runde 183):
+     sonst liefert ein früher registrierter Worker einen alten Stand. */
+  const ctx = await b.newContext(Object.assign({ viewport: { width: w, height: h }, serviceWorkers: 'block' },
     opt.touch ? { hasTouch: true, isMobile: true } : {}));
   const p = await ctx.newPage();
   p._fehler = [];

@@ -1146,6 +1146,13 @@
     { id: 'tn-nora', name: 'Nora Haas', uid: 'u5', kennung: 'M4K7',
       code: 'M4K7-9TQD-B2HX',
       gesperrt: false, angelegtVon: 'Demo-Studioleitung', ts: vorTag(30), codeAm: vorTag(30) },
+    /* Runde 201: das angemeldete Demo-Konto ist selbst Teilnehmer —
+       verknüpft, wie es im Betrieb sein soll. Vorher hingen seine
+       Durchläufe an „Nora Haas", deren Eintrag aber auf ein anderes
+       Konto zeigte; das Auffrischen ohne Code fand deshalb niemanden. */
+    { id: 'tn-ich', name: 'Du (Demo-Konto)', uid: 'demo-ich', kennung: 'D3MQ',
+      code: 'D3MQ-7WKP-H2CX',
+      gesperrt: false, angelegtVon: 'Demo-Studioleitung', ts: vorTag(20), codeAm: vorTag(20) },
     { id: 'tn-neu', name: 'Jamie Kurz', uid: null, kennung: 'RPQ2',
       code: 'RPQ2-K7MV-4NDS',
       gesperrt: false, angelegtVon: 'Demo-Studioleitung', ts: vorTag(4), codeAm: vorTag(4) }
@@ -1171,15 +1178,34 @@
     /* Ein Durchlauf des angemeldeten Demo-Kontos selbst — damit oben
        auf der Seite die Karte „was du schon gemacht hast" steht. */
     { id: 'lauf3', modul: 'm-notfall', modulTitel: 'Wenn einem Kunden schlecht wird',
-      kategorie: 'notfall', teilnehmer: 'tn-nora', teilnehmerName: 'Nora Haas',
+      kategorie: 'notfall', teilnehmer: 'tn-ich', teilnehmerName: 'Du (Demo-Konto)',
       uid: 'demo-ich', geraetUid: 'demo-ich', geraetName: 'Empfang Brühl', studioKey: sk(7),
       start: vorTag(16), ende: vorTag(16) + 580000, aktivMs: 552000, durchgang: 2,
       schritteGesehen: [0, 1, 2, 3],
       fragen: [{ frage: 'Erster Schritt?', versuche: 1, falsch: [], richtig: true },
                { frage: 'Kunde sagt, es sei nichts …', versuche: 1, falsch: [], richtig: true },
                { frage: 'Wer entscheidet?', versuche: 2, falsch: [1], richtig: true }],
-      punkte: 100, bestanden: true, status: 'fertig', ts: vorTag(16) }
+      punkte: 100, bestanden: true, status: 'fertig', ts: vorTag(16) },
+    /* Runde 201: ein angefangenes „Beratungsgespräch" des Demo-Kontos —
+       damit „angefangen · 2/17" und das Weitermachen zu sehen sind. */
+    { id: 'lauf4', modul: 'm-beratung', modulTitel: 'Das Beratungsgespräch — vom Anruf bis zur Empfehlung',
+      kategorie: 'verkauf', teilnehmer: 'tn-ich', teilnehmerName: 'Du (Demo-Konto)',
+      uid: 'demo-ich', geraetUid: 'demo-ich', geraetName: 'Empfang Brühl', studioKey: sk(7),
+      start: vorTag(2), ende: 0, aktivMs: 1500000, durchgang: 1,
+      schritteGesehen: [0, 1], fragen: [],
+      punkte: 0, bestanden: false, status: 'laeuft', ts: vorTag(2) }
   ]);
+  /* Die Summe je Frage aus dem Auffrischen (Runde 201) — ohne Namen,
+     wie im Betrieb. Damit „Fragen, die im Team nicht sitzen" in der
+     Vorführung etwas zeigt. */
+  legen(P('schulungFragenStat'), [
+    { id: 'm-hygiene', modul: 'm-hygiene', f: { '1': { r: 3, x: 4 }, '0': { r: 6, x: 1 } } },
+    { id: 'm-notfall', modul: 'm-notfall', f: { '2': { r: 2, x: 3 } } },
+    /* Nur zwei Antworten: steht in der Liste der Leitung NICHT — zu
+       wenige, um niemanden herauszulesen (tests/test-schulung-lernen.js). */
+    { id: 'm-start', modul: 'm-start', f: { '0': { r: 1, x: 1 } } }
+  ]);
+  legen(P('schulungLernplan'), []);
 
 
   /* ── Zeiterfassung in der Demo ──────────────────────────────────────
@@ -1297,6 +1323,29 @@
     });
   })();
   legen(P('zeiten'), STEMPEL);
+
+  /* Runde 204: Korrekturanträge. Einer aus dem Team wartet auf die
+     Geschäftsführung; einer der eigenen ist schon entschieden — damit die
+     Vorführung beide Seiten zeigt. */
+  (function () {
+    var gestern = new Date(); gestern.setDate(gestern.getDate() - 1);
+    if (gestern.getDay() === 0) gestern.setDate(gestern.getDate() - 1);
+    var tg = gestern.toLocaleDateString('sv-SE');
+    var andere = leuteIn(sk(6)).filter(function (u) { return u.id !== (ICH && ICH.id); });
+    var liste = [];
+    if (andere[0]) liste.push({ id: 'demo-antrag-1', uid: andere[0].id, name: andere[0].name, studioKey: sk(6),
+      tag: tg, monat: tg.slice(0, 7), art: 'gehen', uhr: '17:30', ts: new Date(tg + 'T17:30:00').getTime(),
+      grund: 'Feierabend vergessen zu stempeln, Schicht ging bis 17:30', status: 'offen', erstellt: Date.now() - 3 * STD });
+    if (ICH && ICH.role !== 'chef') {
+      var vor = new Date(); vor.setDate(vor.getDate() - 6);
+      var tv = vor.toLocaleDateString('sv-SE');
+      liste.push({ id: 'demo-antrag-2', uid: ICH.id, name: ICH.name, studioKey: (ICH.studioKeys || [])[0] || sk(6),
+        tag: tv, monat: tv.slice(0, 7), art: 'kommen', uhr: '08:00', ts: new Date(tv + 'T08:00:00').getTime(),
+        grund: 'Terminal war aus, kam um 8 Uhr', status: 'angenommen', erstellt: Date.now() - 5 * 24 * STD,
+        entschiedenVonName: 'Demo-Geschäftsführung', entschiedenAm: Date.now() - 4 * 24 * STD });
+    }
+    legen(P('zeitAntraege'), liste);
+  })();
 
   legen('firmen', [{ id: KENNUNG, name: 'Körperformen', aktiv: true, kennung: KENNUNG }]);
   /* ── Das Abo in der Demo ──
@@ -1463,8 +1512,24 @@
       }
       if (!t) throw new Error('Zu diesem Code gibt es keinen Namen mehr.');
       if (t.gesperrt) throw new Error('Dieser Code ist stillgelegt. Bitte bei der Leitung melden.');
-      var frueher = holen(P('schulungLaeufe')).filter(function (l) {
-        return l.teilnehmer === t.id && l.modul === modul; }).length;
+      var frueherListe = holen(P('schulungLaeufe')).filter(function (l) {
+        return l.teilnehmer === t.id && l.modul === modul; });
+      var frueher = frueherListe.length;
+      var konto = t.uid ? holen('users').filter(function (u) { return u.id === t.uid; })[0] : null;
+      /* Weitermachen (Runde 201), wie functions/index.js: ein angefangener,
+         nicht leerer Durchlauf unter 30 Tagen wird fortgesetzt. */
+      var offen = frueherListe.filter(function (l) {
+        return l.status === 'laeuft' && !l.test && (Date.now() - (l.ts || 0)) < 30 * 86400000 &&
+          ((l.schritteGesehen || []).length > 0 || (l.fragen || []).some(function (f) { return f && f.versuche > 0; }));
+      }).sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); })[0];
+      if (offen) {
+        offen.geraetUid = ICH.id; offen.geraetName = ICH.name || '';
+        melden(P('schulungLaeufe'));
+        return { ok: true, lauf: offen.id, name: t.name || '', durchgang: offen.durchgang || 1,
+                 ohneVideoSperre: !!(konto && konto.role === 'chef'),
+                 fortsetzen: { schritteGesehen: (offen.schritteGesehen || []).slice(),
+                               fragen: (offen.fragen || []).slice(), aktivMs: offen.aktivMs || 0 } };
+      }
       var id = neueId();
       holen(P('schulungLaeufe')).push({
         id: id, modul: modul, modulTitel: '', kategorie: '',
@@ -1478,9 +1543,104 @@
       melden(P('schulungLaeufe'));
       /* Wie functions/index.js: ohne Video-Sperre nur, wenn der
          Teilnehmer mit einem Konto der Geschäftsführung verknüpft ist. */
-      var konto = t.uid ? holen('users').filter(function (u) { return u.id === t.uid; })[0] : null;
       return { ok: true, lauf: id, name: t.name || '', durchgang: frueher + 1,
                ohneVideoSperre: !!(konto && konto.role === 'chef') };
+    },
+
+    /* ── Auffrischen (Runde 201) ──
+       Dieselbe Rechnung wie functions/index.js (auffrischRunde,
+       auffrischWeiter): Stufen 2 · 7 · 30 · 90 · 180 Tage, höchstens
+       sechs Fragen je Modul, drei je Runde, gemischt. Der Plan liegt in
+       der Demo unter derselben Sammlung — gelesen wird er auch hier nur
+       von dieser Funktion. */
+    schulungAuffrischen: function (d) {
+      var TAG = 86400000, STUFEN = [2, 7, 30, 90, 180], jetzt = Date.now();
+      var roh = String((d && d.code) || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+      var t = null, tId = '', test = false;
+      if (roh) {
+        if (roh === '000000000000') {
+          if (ICH.role !== 'chef' && ICH.role !== 'leiter') {
+            throw new Error('Der Testcode ist nur für die Leitung. Deinen eigenen Code bekommst du von der Studioleitung.');
+          }
+          tId = 'test:' + ICH.id; t = { name: ICH.name || '' }; test = true;
+        } else {
+          if (roh.length !== 12) throw new Error('Der Code besteht aus 12 Zeichen. Bitte noch einmal ansehen.');
+          t = holen(P('schulungTeilnehmer')).filter(function (x) {
+            return x.code && String(x.code).toUpperCase().replace(/[^A-Z0-9]/g, '') === roh; })[0];
+          if (!t) throw new Error('Dieser Code stimmt nicht.');
+          if (t.gesperrt) throw new Error('Dieser Code ist stillgelegt. Bitte bei der Leitung melden.');
+          tId = t.id;
+        }
+      } else {
+        t = holen(P('schulungTeilnehmer')).filter(function (x) { return x.uid === ICH.id && !x.gesperrt; })[0];
+        if (!t) return { ok: true, ohneTeilnehmer: true };
+        tId = t.id;
+      }
+      var laeufe = holen(P('schulungLaeufe')).filter(function (l) {
+        return l.teilnehmer === tId && (test ? l.test === true : !l.test) &&
+          l.status === 'fertig' && l.bestanden;
+      });
+      var plaene = holen(P('schulungLernplan'));
+      var plan = plaene.filter(function (x) { return x.id === tId; })[0];
+      if (!plan) { plan = { id: tId, teilnehmer: tId, uid: t.uid || null, karten: {} }; plaene.push(plan); }
+      var karten = plan.karten;
+      var gezaehlt = 0, stat = holen(P('schulungFragenStat'));
+      ((d && d.antworten) || []).slice(0, 10).forEach(function (a) {
+        var key = String(a.modul || '') + '#' + (Number(a.idx) | 0);
+        var k = karten[key];
+        if (!k || k.f > jetzt) return;
+        var s2 = a.richtig ? Math.min((k.s || 0) + 1, STUFEN.length - 1) : 0;
+        karten[key] = { s: s2, f: jetzt + STUFEN[s2] * TAG };
+        if (!a.richtig) karten[key].d = 1;
+        gezaehlt++;
+        if (test) return;
+        var m = key.split('#');
+        var e = stat.filter(function (x) { return x.id === m[0]; })[0];
+        if (!e) { e = { id: m[0], modul: m[0], f: {} }; stat.push(e); }
+        e.f[m[1]] = e.f[m[1]] || { r: 0, x: 0 };
+        e.f[m[1]][a.richtig ? 'r' : 'x']++;
+      });
+      var juengster = {}, texte = {};
+      laeufe.forEach(function (l) {
+        var j = juengster[l.modul];
+        if (!j || (l.ende || 0) > (j.ende || 0)) juengster[l.modul] = l;
+      });
+      Object.keys(juengster).forEach(function (modul) {
+        var l = juengster[modul], fragen = l.fragen || [];
+        fragen.forEach(function (f, i) { texte[modul + '#' + i] = String((f && f.frage) || ''); });
+        var platz = 6 - Object.keys(karten).filter(function (k) { return k.indexOf(modul + '#') === 0; }).length;
+        fragen.map(function (f, i) {
+          var h = 0, txt = String(l.id) + '#' + i;
+          for (var j = 0; j < txt.length; j++) h = (h * 31 + txt.charCodeAt(j)) >>> 0;
+          return { i: i, daneben: !!f && ((f.versuche || 1) > 1 || f.richtig === false), h: h };
+        }).sort(function (a, b) { return a.daneben === b.daneben ? a.h - b.h : (a.daneben ? -1 : 1); })
+          .forEach(function (w) {
+            var key = modul + '#' + w.i;
+            if (platz <= 0 || karten[key]) return;
+            karten[key] = { s: 0, f: test ? jetzt : (l.ende || jetzt) + STUFEN[0] * TAG };
+            if (w.daneben) karten[key].d = 1;
+            platz--;
+          });
+      });
+      var faellig = Object.keys(karten).filter(function (k) {
+        return karten[k].f <= jetzt && juengster[k.split('#')[0]]; })
+        .sort(function (a, b) { return (karten[a].f - karten[b].f) || ((karten[b].d || 0) - (karten[a].d || 0)) || (a < b ? -1 : 1); });
+      var runde = [], genommen = {};
+      while (runde.length < 3) {
+        var vorher = runde.length, drin = {};
+        faellig.forEach(function (k) {
+          var m = k.split('#')[0];
+          if (runde.length >= 3 || genommen[k] || drin[m]) return;
+          genommen[k] = drin[m] = true; runde.push(k);
+        });
+        if (runde.length === vorher) break;
+      }
+      var spaeter = Object.keys(karten).filter(function (k) {
+        return karten[k].f > jetzt && juengster[k.split('#')[0]]; }).map(function (k) { return karten[k].f; });
+      melden(P('schulungLernplan'));
+      return { ok: true, name: t.name || '', test: test, gezaehlt: gezaehlt, angelegt: t.ts || 0,
+        faellig: runde.map(function (k) { var m = k.split('#'); return { modul: m[0], idx: Number(m[1]), frage: texte[k] || '' }; }),
+        offen: faellig.length, naechste: spaeter.length ? Math.min.apply(null, spaeter) : 0 };
     },
 
     /* ── Die zwei Wege zur Kasse ──
@@ -1737,6 +1897,50 @@
       });
       melden(P('zeiten'));
       return { ok: true, id: id, ts: ts };
+    },
+    /* Runde 204: wie der Server — die Person beantragt, nur die
+       Geschäftsführung entscheidet, nie den eigenen Antrag. */
+    zeitAntragStellen: function (d) {
+      if (String(d.grund || '').trim().length < 5) throw new Error('Bitte kurz den Grund angeben.');
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(String(d.tag || '')) || !/^\d{2}:\d{2}$/.test(String(d.uhr || ''))) throw new Error('Tag oder Uhrzeit fehlt oder stimmt nicht.');
+      var ts = new Date(d.tag + 'T' + d.uhr + ':00').getTime();
+      if (ts > Date.now()) throw new Error('Ein Stempel in der Zukunft lässt sich nicht beantragen.');
+      if (Date.now() - ts > 31 * 24 * STD) throw new Error('Beantragen geht bis 31 Tage zurück. Für Älteres bitte die Geschäftsführung ansprechen.');
+      var eigene = ICH.studioKeys || [];
+      var studioKey = eigene.indexOf(d.studioKey) >= 0 ? d.studioKey : (eigene[0] || sk(6));
+      var id = neueId();
+      holen(P('zeitAntraege')).push({ id: id, uid: ICH.id, name: ICH.name || '', studioKey: studioKey,
+        tag: d.tag, monat: String(d.tag).slice(0, 7), art: d.art, uhr: d.uhr, ts: ts,
+        grund: String(d.grund).trim(), status: 'offen', erstellt: Date.now() });
+      melden(P('zeitAntraege'));
+      return { ok: true, id: id };
+    },
+    zeitAntragZurueckziehen: function (d) {
+      var a = holen(P('zeitAntraege')).filter(function (x) { return x.id === String(d.id || '') && x.uid === ICH.id; })[0];
+      if (!a) throw new Error('Diesen Antrag gibt es nicht.');
+      if (a.status !== 'offen') throw new Error('Dieser Antrag ist schon entschieden.');
+      a.status = 'zurueckgezogen'; a.entschiedenAm = Date.now();
+      melden(P('zeitAntraege'));
+      return { ok: true };
+    },
+    zeitAntragEntscheiden: function (d) {
+      if (ICH.role !== 'chef') throw new Error('Korrekturanträge entscheidet die Geschäftsführung.');
+      var a = holen(P('zeitAntraege')).filter(function (x) { return x.id === String(d.id || ''); })[0];
+      if (!a) throw new Error('Diesen Antrag gibt es nicht.');
+      if (a.status !== 'offen') throw new Error('Dieser Antrag ist schon entschieden.');
+      if (a.uid === ICH.id) throw new Error('Den eigenen Antrag entscheidet jemand anderes aus der Geschäftsführung.');
+      var antwort = String(d.antwort || '').trim();
+      if (d.annehmen !== true && antwort.length < 5) throw new Error('Bitte kurz sagen, warum der Antrag abgelehnt wird.');
+      a.entschiedenVon = ICH.id; a.entschiedenVonName = ICH.name || ''; a.entschiedenAm = Date.now();
+      if (antwort) a.antwort = antwort;
+      if (d.annehmen !== true) { a.status = 'abgelehnt'; melden(P('zeitAntraege')); return { ok: true, status: 'abgelehnt' }; }
+      var id = neueId();
+      holen(P('zeiten')).push({ id: id, uid: a.uid, name: a.name || '', studioKey: a.studioKey,
+        art: a.art, ts: a.ts, tag: a.tag, monat: a.monat, fremd: false, quelle: 'korrektur', antragId: a.id,
+        grund: 'Antrag: ' + a.grund, korrigiertVon: ICH.id, korrigiertVonName: ICH.name || '', korrigiertAm: Date.now() });
+      a.status = 'angenommen'; a.zeitId = id;
+      melden(P('zeitAntraege')); melden(P('zeiten'));
+      return { ok: true, status: 'angenommen', zeitId: id };
     },
     zeitStornieren: function (d) {
       var z = holen(P('zeiten')).filter(function (x) { return x.id === String(d.id || ''); })[0];
