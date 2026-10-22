@@ -68,13 +68,13 @@ async function oeffne(b, w, h, opt) {
   await p.route('**script.google.com/**', r => r.fulfill({ status: 200, body: 'ok' }));
   /* Seit Runde 177 öffnet Formi standardmäßig KOMPAKT (Kugel, Fenster
      neben der App; geprüft in test-formi-kugel). Diese Datei prüft die
-     Bedienung mit Mini-Fenstern — seit Runde 211 („das grosse hud
+     Bedienung mit Mini-Fenstern — seit Runde 214 („das grosse hud
      entfernen oder überarbeiten", gewählt „Ruhig neu bauen") mit „Mehr
      Platz" statt Vollbild. kf_jv_kompakt=0 ist der alte Schlüssel und
      wird dabei übernommen (Übergang für Geräte, die „Groß" gewählt hatten). */
   if (!opt.kompakt) await p.addInitScript(() => { try { localStorage.setItem('kf_jv_kompakt', '0'); } catch (e) {} });
   /* Runde 209 (zweite Sitzung): Persönlichkeit, Gespräche und Ton stehen im
-     Fensterkopf hinter „…". Mit dem Vollbild (Runde 211) gilt das überall —
+     Fensterkopf hinter „…". Mit dem Vollbild (Runde 214) gilt das überall —
      ein Mensch tippt erst „…". Genau das tut der Durchlauf hier auch. */
   const klick = p.click.bind(p);
   p.click = async (sel, o) => {
@@ -614,7 +614,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     const knopf = await jvKnopf(p);
     pruefe(w + ' px: die Formi-Kugel steht auf der Startseite (' + knopf + ')', await sichtbar(p, '#view-home.show') && knopf === '#formiKugel');
     await p.click(knopf); await p.waitForTimeout(400);
-    /* Runde 211 (22.10.2026, „das grosse hud entfernen oder überarbeiten",
+    /* Runde 214 (22.10.2026, „das grosse hud entfernen oder überarbeiten",
        gewählt: „Ruhig neu bauen"): kein Vollbild mehr. „Mehr Platz" ist am
        Handy die ganze Höhe, am Rechner ein grosses Fenster bzw. die breite
        Spalte — die App bleibt daneben bedienbar, kein Dialog. */
@@ -854,7 +854,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
       window.__antwort.gehirnStimme = (d) => { window.__stimme.push(d); return Promise.resolve({ data: { audio: 'SUQz', mime: 'audio/mpeg' } }); };
       localStorage.setItem('kf_jv_brief', new Date().toLocaleDateString('sv-SE')); });
     await p.keyboard.press('j'); await p.waitForTimeout(600);
-    /* Runde 211: der Kern des grossen HUD ist weg; Gedrückthalten geht
+    /* Runde 214: der Kern des grossen HUD ist weg; Gedrückthalten geht
        jetzt am Knopf „Sprechen" („das grosse hud entfernen oder
        überarbeiten", gewählt „Ruhig neu bauen"). */
     pruefe('„Sprechen" ist ein Knopf zum Gedrückthalten (mit Spracherkennung)', await sichtbar(p, '#jarvisMic'));
@@ -985,7 +985,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     pruefe('beim Öffnen fährt das HUD hoch (jv-boot)', boot);
     await p.waitForTimeout(2400);
     pruefe('… und das Hochfahren endet wieder', !(await p.evaluate(() => document.getElementById('jarvis').classList.contains('jv-boot'))));
-    /* Runde 211 („das grosse hud entfernen oder überarbeiten", gewählt
+    /* Runde 214 („das grosse hud entfernen oder überarbeiten", gewählt
        „Ruhig neu bauen"): Partikelfeld und Sekunden-Uhr gehörten zum
        grossen HUD. Geprüft wird jetzt, dass sie NICHT mehr laufen. */
     const feld = await p.evaluate(() => { const c = document.getElementById('jarvisFeldchen'); if (!c) return { n: 0, sichtbar: false }; const d = c.getContext('2d').getImageData(0, 0, Math.max(1, c.width), Math.max(1, c.height)).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i]) n++; return { n, sichtbar: !!c.getClientRects().length }; });
@@ -1225,7 +1225,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await p.evaluate(() => { window.__antwort.gehirnAktion = () => new Promise(r => setTimeout(() => r({ data: { art: 'frage', antwort: 'Die Westen kommen bei 30 Grad in die Maschine.', abgedeckt: true } }), 2500)); });
     await p.fill('#jarvisFeld', 'Wie wasche ich die Westen?'); await p.click('#jarvisSenden');
     await p.waitForTimeout(700);
-    /* Runde 211 („das grosse hud entfernen oder überarbeiten", gewählt
+    /* Runde 214 („das grosse hud entfernen oder überarbeiten", gewählt
        „Ruhig neu bauen"): die wirbelnden Buchstaben sassen im Kern des
        grossen HUD. Mit ihm sind sie weg — geprüft wird, dass auf der
        unsichtbaren Leinwand auch nichts mehr rechnet. */

@@ -12,14 +12,14 @@
     2. Ein Tipp öffnet Formi KOMPAKT: kein Dialog (aria-modal=false), die
        Seite dahinter bleibt scrollbar (kein body.jv-offen), die grossen
        Leinwände laufen nicht. Die Kugel ist dann weg.
-    3. Seit Runde 211 („das grosse hud entfernen oder überarbeiten",
+    3. Seit Runde 214 („das grosse hud entfernen oder überarbeiten",
        gewählt: „Ruhig neu bauen") gibt es kein Vollbild mehr: „Mehr
        Platz" macht das Fenster grösser, bleibt aber kein Dialog; das
        Gerät merkt es sich.
     4. „öffne die Aufgaben" im kompakten Fenster: ein Zeiger erscheint,
        danach ist die ECHTE Seite offen (kein Mini-Fenster). Am Rechner
        bleibt Formi offen, am Handy wird es zur Kugel.
-    5. (entfallen mit dem Vollbild, Runde 211)
+    5. (entfallen mit dem Vollbild, Runde 214)
     6. Kugel und Gross-Knopf: Trefferfläche ≥ 44 × 44 per Hit-Test bei
        320 / 390 / 430 / 820 / 1280 / 1440 / 1920, normal und kompakt,
        ganz im Bild und nicht über der Leiste unten.
@@ -154,7 +154,7 @@ const sichtbar = (p, sel) => p.evaluate((s) => { const el = document.querySelect
         const zu = await p.evaluate(TREFFER, '#jarvisZu');
         pruefe(`${w} px ${dichte}: Groß ${g.w}×${g.h}, Schließen ${zu.w}×${zu.h}, Senden ${s.w}×${s.h}`,
           [g, s, zu].every(x => x.w >= 44 && x.h >= 44 && x.imBild), JSON.stringify({ g, s, zu }));
-        /* Runde 211: dasselbe mit „Mehr Platz". */
+        /* Runde 214: dasselbe mit „Mehr Platz". */
         await p.click('#jarvisGroesse'); await p.waitForTimeout(300);
         const g2 = await p.evaluate(TREFFER, '#jarvisGroesse'), s2 = await p.evaluate(TREFFER, '#jarvisSenden'), zu2 = await p.evaluate(TREFFER, '#jarvisZu');
         const breit2 = await p.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
