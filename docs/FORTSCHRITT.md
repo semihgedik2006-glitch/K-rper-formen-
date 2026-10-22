@@ -17787,3 +17787,36 @@ nachgemessen, nicht gelockert):
 - Chat und Direkt in eine Liste.
 - „Erledigt“ eingeklappt.
 - Punkte statt Zahlen an den Räumen.
+
+## Verkaufsplan und Roadmap bis zum ersten zahlenden Kunden (22.10.2026) — nur Doku
+
+Aus dem Betrieb: „einen konkreten verkaufsplan bzw roadmap erstellen was
+alles erledigt werden muss und wie wir premium von standard unterscheiden
+und so und das wir die app bald auch mal an kunden bringen können“.
+
+**Gebaut:** `docs/verkauf/verkaufsplan-roadmap.md` — Ist-Stand aus dem
+Code, Standard/Premium mit Begründung, Preisvorschlag mit
+Wettbewerbsvergleich (Quellen mit Datum), Muss/Soll/Kann bis zum ersten
+Kunden, Vertriebsplan für die ersten 90 Tage, offene Fragen. Kein
+App-Code geändert.
+
+**Dabei gefunden:**
+- `tests/rules/kreuz.test.js` prüft die Firmengrenze über eine
+  **Handliste mit 26 Pfaden**; unter `firmen/{f}` stehen inzwischen rund
+  50 Sammlungen. Viele haben eigene Tests, für einige war per Textsuche
+  keiner erkennbar. Keine nachgewiesene Lücke, aber eine fehlende
+  Prüfung — als Muss-Punkt M6 im Plan.
+- `docs/PITCH.md` und `docs/ROADMAP.md` sagen noch „keine
+  Zeiterfassung“; seit den Stempel-Runden stimmt das nicht mehr.
+- Die Demo zeigt laut `docs/VERKAUF.md` echte Körperformen-Standorte —
+  für den Verkauf an andere Studios ungeeignet (M8).
+
+**Warum Premium jetzt mehr ist als im August:** damals blieben nur
+Nachweise und Auswertung übrig, und der Rat war „erst ein Preis“.
+Inzwischen gibt es Zeiterfassung, Schulungen mit Video und den
+Schichtplaner — Funktionen für die Leitung, die sich serverseitig sperren
+lassen und teils echte Kosten verursachen. Damit trägt eine zweite Stufe.
+
+**Nicht geprüft:** Herstellerpreisseiten (aus dieser Umgebung nicht
+erreichbar, Zahlen aus Vergleichsportalen), Stripe-Schlüssel und
+Google-DPA (nicht einsehbar).
