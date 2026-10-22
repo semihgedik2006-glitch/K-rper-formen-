@@ -132,8 +132,19 @@ const ERST = '[data-cpane="erstellen"] ';
     const k = [];
     for (const s of KARTEN) { const x = await kasten(p, s); if (x) k.push(x); }
     const breit = k.filter(x => x.w > 1000);
-    const paar = k.some((a, i) => k.some((c, j) => i !== j && nebeneinander(a, c)));
-    pruefe(w + ' px: ' + k.length + ' Karten, keine über 1.000 px, nebeneinander', k.length >= 2 && !breit.length && paar, JSON.stringify(k));
+    /* Runde 187: Die persönlichen Karten stehen jetzt als Spalte LINKS,
+       die Module rechts daneben — vorher standen die drei Karten
+       nebeneinander, und die Modulliste begann bei 1280 × 800 erst bei
+       Pixel 1.059, unter dem Rand. Aus dem Betrieb (22.10.2026) zum Plan
+       „am Rechner zwei Spalten: links was für dich ansteht, rechts die
+       Module": „plan klingt gut". Geprüft wird deshalb, dass die Breite
+       genutzt ist — eine Karte steht NEBEN der Modulliste — statt der
+       Karten untereinander. Strenger als vorher: zusätzlich muss die
+       Liste im ersten Bild beginnen. */
+    const liste = await kasten(p, '#schListe');
+    const paar = !!liste && k.some(a => liste.l >= a.r - 1 && Math.abs(a.t - liste.t) < 300);
+    pruefe(w + ' px: ' + k.length + ' Karten, keine über 1.000 px, die Modulliste daneben und im ersten Bild',
+      k.length >= 2 && !breit.length && paar && liste.t < h, JSON.stringify({ k, liste }));
     pruefe(w + ' px: ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await p.close();
   }
