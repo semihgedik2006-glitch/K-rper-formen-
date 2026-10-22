@@ -1,6 +1,6 @@
 /* ══════════════════════════════════════════════════════════════════════
    SCHICHTPLAN: RASTER NACH PERSON, SCHICHT-BLATT, WOCHEN IM PLANER
-   (Runde 185)
+   (Runde 186)
 
    Aus dem Betrieb, 22.10.2026, auf den Plan mit Raster nach Person,
    Eintragen per Klick und Löschen/„Ich kann nicht" im Detail:
