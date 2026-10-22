@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-CR2QaBp6xhJXWE2maDnYx/VPTO87u1NrNfSyEN9dSNs='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-4mOZVEkkpuX1p8hhL1dsf7buJztMUVdinLXgJrCFNoE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3518,7 +3518,7 @@ button.ich-zeile:active{opacity:.7}
 .st-antrag .ich-dazu{padding-left:0}
 .st-zurueckziehen{min-height:44px}
 .st-antrag-hier{margin:var(--s6) 0 0;min-height:44px}
-/* Monat & Konto (Runde 206). Am Rechner die ganze Tabelle; am Handy
+/* Monat & Konto (Runde 207). Am Rechner die ganze Tabelle; am Handy
    rollt nur die Tabelle seitlich, die Seite nicht. */
 .zk-ansicht{display:inline-flex;gap:var(--s2);background:var(--auf-1);border-radius:var(--r-pille);
   padding:var(--s2);margin:var(--s4) 0 var(--s12)}
@@ -11411,7 +11411,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                   <button type="button" class="ich-pfeil zk-pfeil" id="zkNext" aria-label="Nächster Monat">›</button>
                 </div>
               </div>
-              <!-- Monat & Konto (Runde 206): nur die Geschäftsführung — darin
+              <!-- Monat & Konto (Runde 207): nur die Geschäftsführung — darin
                    stehen alle Konten nebeneinander, und die Vertragsstunden
                    (planerTeam) liest ohnehin nur sie. -->
               <div class="zk-ansicht" id="zkAnsicht" role="group" aria-label="Ansicht" hidden>
@@ -14558,7 +14558,7 @@ function renderRecht(){
         'Fenster des Terminals. Sehen können '+
         'die Zeiten du, die Leitung deines Studios und die Geschäftsführung.</p>'+
       /* Runde 204: Korrekturanträge sind eine neue Sorte Daten. */
-      /* Runde 206: der Monatsabschluss hält Summen je Person fest. */
+      /* Runde 207: der Monatsabschluss hält Summen je Person fest. */
       '<p><b>Monatsabschluss:</b> Schliesst die Geschäftsführung einen Monat ab, '+
         'werden je Person die Summen festgehalten (Stunden, Soll, Urlaub/Krank, '+
         'Saldo, Konto) und wer wann abgeschlossen hat. Sehen kann das nur die '+
@@ -21211,6 +21211,9 @@ var NEUIGKEITEN = [
     '„Excel" und „CSV" laden den Monat für das Lohnbüro herunter – Stunden als Dezimalzahlen mit Komma, in Excel zusätzlich jeder Tag einzeln.',
     'Ist ein Monat vorbei, schliesst „Monat abschliessen" ihn ab. Danach lässt sich darin nichts mehr nachtragen, stornieren oder beantragen; sein Konto ist der Übertrag für den nächsten Monat. „Wieder öffnen …" geht nur mit Grund.'
   ]},
+  { id:'2026-10-22-schichtplaner-fragen', datum:'22.10.2026', titel:'Schichtplaner: neue Vorlage mit allen Fragen', wo:'planer', punkte:[
+    'Die Excel-Vorlage im Schichtplaner (Verwaltung → Schichtplaner → „Vorlage herunterladen") hat ein neues Blatt „Fragen": 24 Fragen, nach denen der erste Plan ohne Nacharbeit läuft.',
+    'Bei jeder Frage steht, was die App heute annimmt. Passt das, reicht als Antwort „passt".' ] },
   { id:'2026-10-22-formi-augen', datum:'22.10.2026', titel:'Formis Augen leben: Pupillen, Brauen, Umsehen', wo:'home', punkte:[
     'Formis Augen haben jetzt Pupillen mit Lichtpunkt und Brauen. Die Pupillen folgen der Maus, kommst du nah heran, werden die Augen gross. Steht alles still, schaut Formi sich um und blinzelt manchmal zweimal.',
     'Formi schaut hin, wo etwas passiert – zu einem Hinweis unten oder zur Glocke, wenn eine neue Meldung kommt. Nach einer Minute ohne Bedienung wird es müde, später schläft es ein.',
@@ -38631,7 +38634,7 @@ function zkAntragEntscheiden(btn, id, annehmen){
   });
 }
 
-/* ══ MONAT & KONTO (Runde 206) ══════════════════════════════════════
+/* ══ MONAT & KONTO (Runde 207) ══════════════════════════════════════
    Aus dem Betrieb, 22.10.2026: das Soll fürs Konto aus den
    Vertragsstunden („JA"), Export für das Lohnbüro und Abschluss („mach
    beides").
@@ -50622,7 +50625,7 @@ function bindActions(){
   var zkp=$('zkPrev'), zkn=$('zkNext');
   if(zkp) zkp.addEventListener('click', function(){ _zkMonat=new Date(_zkMonat.getFullYear(), _zkMonat.getMonth()-1, 1); _zkWahl=null; zkLaden(); if(_zkAnsicht==='konto') zkKontoLaden(); });
   if(zkn) zkn.addEventListener('click', function(){ _zkMonat=new Date(_zkMonat.getFullYear(), _zkMonat.getMonth()+1, 1); _zkWahl=null; zkLaden(); if(_zkAnsicht==='konto') zkKontoLaden(); });
-  // ── Monat & Konto (Runde 206) ──
+  // ── Monat & Konto (Runde 207) ──
   var zkAns=$('zkAnsicht');
   if(zkAns) zkAns.addEventListener('click', function(e){
     var b=e.target.closest('[data-zkansicht]'); if(b){ zkAnsichtSetzen(b.getAttribute('data-zkansicht')); tick(6); }

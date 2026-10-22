@@ -4183,7 +4183,7 @@ exports.stempelzeitenAblaufen = region
         weg += snap.size;
         if (snap.size < 400) break;
       }
-      /* Runde 206: Monatsabschlüsse auch — gelöscht, wenn der ganze Monat
+      /* Runde 207: Monatsabschlüsse auch — gelöscht, wenn der ganze Monat
          vor der Grenze liegt. */
       {
         const snap = await W(firma).collection('zeitAbschluesse').where('monat', '<', grenz.slice(0, 7)).limit(400).get();
@@ -5573,7 +5573,7 @@ function korrekturGrund(data) {
   return grund;
 }
 
-/* ── Ist der Monat abgeschlossen? (Runde 206) ──
+/* ── Ist der Monat abgeschlossen? (Runde 207) ──
    Nach dem Monatsabschluss durch die Geschäftsführung ändert sich in
    diesem Monat nichts mehr — weder Nachtrag noch Storno noch Antrag. Das
    ist der Sinn des Abschlusses: die Zahl, die ans Lohnbüro ging, bleibt
@@ -5822,7 +5822,7 @@ exports.zeitAntragEntscheiden = region.https.onCall(async (data, context) => {
 });
 
 /* ══════════════════════════════════════════════════════════════════════
-   MONATSABSCHLUSS (Runde 206)
+   MONATSABSCHLUSS (Runde 207)
 
    Aus dem Betrieb, 22.10.2026, auf die Frage nach Export und Abschluss:
    „mach beides". Die Geschäftsführung schliesst einen VERGANGENEN Monat

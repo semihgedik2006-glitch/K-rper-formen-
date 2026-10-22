@@ -1565,7 +1565,7 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    /* ── Zeiterfassung: Monatsabschluss (Runde 206) ──────────────────
+    /* ── Zeiterfassung: Monatsabschluss (Runde 207) ──────────────────
        Stunden, Soll und Konto je Person für einen Monat. Lesen nur die
        Geschäftsführung — darin stehen alle Konten nebeneinander. Schreiben
        nur über monatAbschliessen / monatOeffnen. */
@@ -2475,7 +2475,7 @@ service cloud.firestore {
             && (istAktiv() && (resource.data.uid == request.auth.uid || isChef()));
           allow write: if false;
         }
-        // Monatsabschluss (Runde 206) — dieselbe Regel wie flach, siehe dort.
+        // Monatsabschluss (Runde 207) — dieselbe Regel wie flach, siehe dort.
         match /zeitAbschluesse/{monat} {
           allow read: if inFirma(f) && isChef();
           allow write: if false;
