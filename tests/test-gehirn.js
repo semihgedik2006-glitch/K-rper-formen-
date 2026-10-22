@@ -67,9 +67,23 @@ async function oeffne(b, w, h, opt) {
   await p.route('**fonts.googleapis.com/**', r => r.abort());
   await p.route('**script.google.com/**', r => r.fulfill({ status: 200, body: 'ok' }));
   /* Seit Runde 177 öffnet Formi standardmäßig KOMPAKT (Kugel, Fenster
-     neben der App; geprüft in test-formi-kugel). Diese Datei prüft das
-     Vollbild mit Mini-Fenstern, das per „Groß" weiter da ist. */
+     neben der App; geprüft in test-formi-kugel). Diese Datei prüft die
+     Bedienung mit Mini-Fenstern — seit Runde 211 („das grosse hud
+     entfernen oder überarbeiten", gewählt „Ruhig neu bauen") mit „Mehr
+     Platz" statt Vollbild. kf_jv_kompakt=0 ist der alte Schlüssel und
+     wird dabei übernommen (Übergang für Geräte, die „Groß" gewählt hatten). */
   if (!opt.kompakt) await p.addInitScript(() => { try { localStorage.setItem('kf_jv_kompakt', '0'); } catch (e) {} });
+  /* Runde 209 (zweite Sitzung): Persönlichkeit, Gespräche und Ton stehen im
+     Fensterkopf hinter „…". Mit dem Vollbild (Runde 211) gilt das überall —
+     ein Mensch tippt erst „…". Genau das tut der Durchlauf hier auch. */
+  const klick = p.click.bind(p);
+  p.click = async (sel, o) => {
+    if (['#jarvisGespraecheBtn', '#jarvisPersonaBtn', '#jarvisTon'].includes(sel)) {
+      const da = await p.evaluate((s) => { const el = document.querySelector(s); return !!el && el.getClientRects().length > 0; }, sel);
+      if (!da && await p.$('#jarvisMehr')) { await klick('#jarvisMehr'); await p.waitForTimeout(150); }
+    }
+    return klick(sel, o);
+  };
   if (opt.vorher) await p.addInitScript(opt.vorher);
   await p.addInitScript({ path: SP + '/' + (opt.stub || 'stub-chef.js') });
   await p.goto(APP, { waitUntil: 'domcontentloaded' });
