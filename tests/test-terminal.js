@@ -283,7 +283,7 @@ async function starten(errs, vorbereiten) {
     if (!/\d\d:\d\d/.test(schirm.uhr)) errs.push('Die Uhr zeigt nichts: ' + schirm.uhr);
     if (!schirm.leute) errs.push('Es wird niemand zum Antippen angeboten');
     if (!schirm.pinZu) errs.push('Das Tastenfeld steht offen, bevor jemand gewählt wurde');
-    /* Runde 186 — umgekehrt zu vorher: KEIN Stand an den Kacheln.
+    /* Runde 189 — umgekehrt zu vorher: KEIN Stand an den Kacheln.
        Aus dem Betrieb, 22.10.2026, auf die Frage, ob „im Dienst / noch
        nicht da" am Terminal verschwinden soll: „ja". Am Tresen sieht
        jeder das Tablet; wer da ist, geht dort niemanden etwas an. Den
@@ -358,7 +358,7 @@ async function starten(errs, vorbereiten) {
       errs.push('Vor der PIN steht schon, was dran ist: „' + tasten.was + '"');
     }
 
-    /* Runde 186: erst „Weiter" → stempelStand (dieselben drei
+    /* Runde 189: erst „Weiter" → stempelStand (dieselben drei
        Schlüssel), DANN der eigene Stand und die passenden Knöpfe. Nach
        dem Kommen sind das zwei: Pause und Feierabend — wie bei
        Crewmeister. Vorher gab es am Terminal gar keinen Feierabend. */

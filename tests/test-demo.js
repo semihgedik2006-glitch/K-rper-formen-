@@ -292,7 +292,7 @@ async function seite(b, url, errs, marke) {
     if (!/Zurück/.test(term.raus)) {
       errs.push('„Terminal beenden" führt in der Demo in eine Schleife statt zurück zur App');
     }
-    /* Runde 186: der Stand steht NICHT mehr an den Kacheln („ja" aus dem
+    /* Runde 189: der Stand steht NICHT mehr an den Kacheln („ja" aus dem
        Betrieb, 22.10.2026). Dass in der Demo Leute im Dienst sind, zeigt
        sich jetzt nach der PIN — unten. */
     if (term.imDienst) errs.push('Am Terminal steht der Stand an den Namen (' + term.imDienst + '×) — für jeden am Tresen lesbar');

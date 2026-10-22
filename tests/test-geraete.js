@@ -22,9 +22,18 @@ async function lauf(stub, wer) {
   // Über die Gruppe "Arbeit" zur neuen Seite
   await page.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
   await page.waitForTimeout(450);
-  const sub = await page.$('[data-subview="geraete"]');
-  if (!sub) { errs.push('Geraete-Seite ist in der Unter-Navigation nicht erreichbar'); }
-  else { await sub.click(); await page.waitForTimeout(800); }
+  /* Runde 187 (aus dem Betrieb: „das problem mit dem zu viel bleibt
+     immer noch bestehen"): Material und Geräte sind EIN Reiter
+     „Bestand"; Geräte erreicht man über den Umschalter oben in der
+     Seite. Weiterhin geprüft: der Weg muss da sein. */
+  const sub = await page.$('#subnav [data-paar="bestand"]');
+  if (!sub) { errs.push('Geraete-Seite ist in der Unter-Navigation nicht erreichbar (kein Reiter „Bestand")'); }
+  else {
+    await sub.click(); await page.waitForTimeout(600);
+    const um = await page.$('#view-material .umschalter [data-umschalt="geraete"]');
+    if (!um) errs.push('Geraete-Seite ist nicht erreichbar (kein Umschalter „Geräte" im Bestand)');
+    else { await um.click(); await page.waitForTimeout(800); }
+  }
 
   // Auf das Studio wechseln, fuer das die Testdaten liegen (Huerth = studio-6).
   // Der Chef landet sonst alphabetisch zuerst bei Bruehl.

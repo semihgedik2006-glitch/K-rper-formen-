@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-kzv4O4sm2yoP10N2iWXy0OEWZY9RO+1UGZLql6zbKCs='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-OkslWNMOyGEl2e1NATAt1cemTnp5wf3Ke+6//sVaFfc='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1078,6 +1078,7 @@ html.demo #terminalSchirm{top:44px}
 .tab .badge{margin-left:auto;background:var(--accent);color:var(--on-accent);font-family:var(--font-body);
   font-weight:700;font-size:var(--t-2xs);min-width:19px;height:19px;border-radius:var(--r-pille);display:none;
   place-items:center;padding:0 var(--s4)}
+.tab .badge.punkt,.mobnav .badge.punkt,.mn-reihe .badge.punkt{min-width:0;width:9px;height:9px;padding:0}
 
 .main{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column}
 .view{display:none;flex:1;min-height:0;flex-direction:column}
@@ -1147,6 +1148,19 @@ html.demo #terminalSchirm{top:44px}
   padding:var(--s2);background:var(--auf-1);border-radius:var(--r-pille);
   align-self:flex-start;flex-shrink:0}
 .chat-arten[hidden]{display:none}
+/* Runde 187: derselbe Umschalter in Bestand, Pinnwand und Direkt. */
+.umschalter{margin-bottom:var(--s8)}
+/* Am Handy nennt der Umschalter die Seite schon („Material | Geräte").
+   Die Überschrift darüber wäre die zweite Antwort auf dieselbe Frage und
+   kostete 77 px: die erste Materialzeile rutschte von 570 auf 626 px
+   (test-rahmen). Am Rechner bleibt die Überschrift. */
+@media(max-width:820px){
+  .view:has(> .umschalter:not([hidden])) > .view-head{display:none}
+  .umschalter{margin-top:var(--s4)}
+}
+[data-teamtab="brett"].pin-umgezogen,#obCard.pin-weg,#annArea[hidden]{display:none !important}
+.ks-punkt{flex:0 0 auto;width:8px;height:8px;border-radius:var(--r-rund);background:var(--accent)}
+.ks-alle .ks-txt b{color:var(--text-2);font-weight:600}
 .chat-art{border:none;background:none;cursor:pointer;font-family:var(--font-head);
   font-weight:700;font-size:var(--t-xs);letter-spacing:var(--ls-s);
   text-transform:uppercase;color:var(--text-3);padding:var(--s6) var(--s16);
@@ -1456,6 +1470,16 @@ html.demo #terminalSchirm{top:44px}
    Nur bei (hover:hover) und (pointer:fine). Am Handy gibt es kein
    Überfahren; dort bliebe ein Knopf, den man nicht sieht, aber trifft.
    Putzplan und Aufgaben gleich: „GENAU so wie der Putzplan" (9.10.). */
+/* Am Handy (Runde 187, aus dem Betrieb „deine 2 fragen können wir so
+   umsetzen"): Stift und Papierkorb wandern hinter „…". Jede Zeile hat
+   damit EIN Zeichen statt drei; Bearbeiten und Löschen sind seltene
+   Handlungen und stehen zwei Tipps entfernt, immer an derselben Stelle
+   (rechts, „…"). Am Rechner bleiben sie beim Überfahren in der Zeile. */
+.pp-mehr{display:none}
+@media(max-width:820px){
+  .t-knoepfe .t-edit,.t-knoepfe .t-del,.pp-item .pp-edit,.pp-item .pp-del{display:none}
+  .pp-item .pp-mehr{display:inline-grid;place-items:center;width:44px;min-height:44px;padding:0;flex-shrink:0}
+}
 @media (hover:hover) and (pointer:fine){
   .todo .griff,.todo .t-edit,.todo .t-del,
   .pp-item .griff,.pp-item .pp-edit,.pp-item .pp-del{opacity:0;transition:opacity .15s}
@@ -2765,6 +2789,13 @@ body.nurlesen .kopf-plus{display:none !important}
    (Profil → Aussehen, mit „wie das Gerät" sogar mit mehr). Abmelden
    bleibt: am geteilten Gerät beim Schichtwechsel der häufigste Griff. */
 #themeBtn{display:none}
+/* Runde 187: Abmelden zieht ins Profil (Bild oben rechts → ganz unten).
+   Oben bleiben Glocke, Profil, Hilfe und Suche. Der Knopf bleibt im
+   Markup, das Profil drückt ihn – eine Rückfrage, ein Ablauf. */
+#logoutBtn{display:none !important}
+.pm-abmelden{display:flex;align-items:center;justify-content:center;gap:var(--s8);
+  width:100%;min-height:44px;margin-top:var(--s12);color:var(--text-2)}
+.pm-abmelden svg{width:18px;height:18px}
 /* Und bei 320px reicht auch das nicht — für die Leitung. Sie trägt
    zwei Knoepfe mehr in der Zeile (Bericht und Glocke), gemessen 24
    Pixel über dem Rand. Der Bericht geht: denselben Knopf gibt es in
@@ -3004,6 +3035,17 @@ body.nurlesen .kopf-plus{display:none !important}
    solchen Zeilen nicht die Zeile, sondern jedes Teil AUSSER dem Danke
    zurückgenommen. */
 .todo.done:has(.t-danke-zeile){opacity:1}
+/* Erledigt eingeklappt (Runde 187): eine leise Zeile, voll antippbar. */
+.td-erledigt > summary{display:flex;align-items:center;gap:var(--s6);min-height:44px;
+  padding:0 var(--s8);cursor:pointer;list-style:none;color:var(--text-2);
+  font-size:var(--t-sm);font-weight:600;border-radius:var(--r-md)}
+.td-erledigt > summary::-webkit-details-marker{display:none}
+.td-erledigt > summary::before{content:'';width:7px;height:7px;flex:0 0 auto;
+  border-right:2px solid currentColor;border-bottom:2px solid currentColor;
+  transform:rotate(-45deg);transition:transform .2s var(--ease-ios)}
+.td-erledigt[open] > summary::before{transform:rotate(45deg)}
+.td-erledigt > summary:hover{color:var(--text)}
+.td-erledigt > summary:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
 .todo.done:has(.t-danke-zeile) .swipe-body > :not(.t-body),
 .todo.done:has(.t-danke-zeile) .t-body > :not(.t-danke-zeile){opacity:.58}
 
@@ -3400,7 +3442,7 @@ button.ich-zeile:active{opacity:.7}
    breiten Bildschirm wuchs das Raster sonst in die Breite und blieb
    44 Pixel hoch — sieben Briefkastenschlitze. */
 .ich-monat-nav{display:flex;gap:var(--s4)}
-/* 44 statt 38 (Runde 186): per elementFromPoint nachgemessen trafen
+/* 44 statt 38 (Runde 189): per elementFromPoint nachgemessen trafen
    ‹ und › nur 38 × 38 — in „Meine Zeiten" und im Kalender. */
 .ich-pfeil{min-width:44px;min-height:44px;padding:0 var(--s10);border:none;
   background:none;color:var(--text-2);font-family:var(--font-body);
@@ -3417,7 +3459,7 @@ button.ich-zeile:active{opacity:.7}
   font-variant-numeric:tabular-nums}
 .mz-summe span{font-size:var(--t-xs);color:var(--text-2)}
 .mz-neben{margin:0 0 var(--s10)}
-/* ── Zeiten (Runde 186) ──
+/* ── Zeiten (Runde 189) ──
    Am Rechner zwei Spalten: links Jetzt und Woche, rechts der Monat. Eine
    Liste über 1.174 px (gemessen bei 1440, vorher) ist dort genauso
    ungestaltet wie ein abgeschnittener Knopf am Handy. */
@@ -4626,6 +4668,7 @@ html{font-size:var(--fs,100%)}
   font-weight:600;font-size:var(--t-sm);white-space:nowrap;cursor:pointer;
   transition:background .2s,color .2s}
 .chan-alle:hover{background:var(--auf-2);color:var(--text)}
+.chan-zeile > .chan-direkt{margin-left:var(--rand)}
 .kn-gruppe{margin:var(--s12) 0 var(--s4);font-size:var(--t-2xs);color:var(--text-3);
   font-weight:700;letter-spacing:var(--ls-l);text-transform:uppercase}
 .kn-gruppe:first-child{margin-top:0}
@@ -4654,19 +4697,57 @@ html{font-size:var(--fs,100%)}
 .home-tile.ok .hn{color:var(--ok-tx)}
 .home-tile.muted .hn{color:var(--text-3)}
 
-.alert-bar{display:flex;align-items:center;gap:var(--s10);padding:var(--s10) var(--s12);border-radius:var(--r-md);
-  margin-bottom:var(--s8);cursor:pointer;animation:cardUp .45s var(--ease-ios) both;
-  background:var(--f-bad-leise);border:none;border-left:3px solid var(--danger)}
-.alert-bar.warn{background:var(--f-warn-leise);border-left-color:var(--warm)}
-.alert-bar.pin{background:rgba(var(--akz-rgb),.07);border-left-color:var(--accent)}
-/* Die Sammelzeile ist selbst keine Warnung – sie darf nicht rot sein */
-.alert-bar.mehr{background:var(--bg-soft);border-left-color:var(--line-2);color:var(--text-2)}
-.alert-bar .ab-ico{font-size:var(--t-lg);flex-shrink:0}
-.alert-bar .ab-t{flex:1;min-width:0;font-size:var(--t-sm);font-weight:600;
-  /* Eine Zeile statt zwei: vier Hinweise haben vorher den ganzen ersten
-     Bildschirm gefüllt, die Zahlen darunter sah man erst nach dem Scrollen. */
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.alert-bar .ab-go{font-size:var(--t-xs);color:var(--text-3);white-space:nowrap}
+/* ── Die Formi-Zeile (Runde 186) ────────────────────────────────────────
+   Aus dem Betrieb (22.10.2026), auf „Formi-Zeile statt drei Bändern":
+   „mega find ich auch gut". Vorher standen oben bis zu vier Balken
+   (Angeheftet, überfällig, Material) — und dasselbe noch einmal im
+   Formi-Fenster. Jetzt meldet Formi es in EINER Zeile: links der Ring,
+   daneben die Meldungen als Knöpfe. Die Statusfarbe bleibt als Punkt
+   vor der Meldung, sie heisst weiter etwas (rot überfällig, bernstein
+   fehlt). Die Farbe der Zeile selbst ist Formis Violett von der linken
+   Kante, auslaufend — kein Status. */
+.formi-zeile{display:flex;align-items:center;gap:var(--s8);margin:0 0 var(--s12);padding:var(--s4) var(--s6) var(--s4) var(--s4);
+  border-radius:var(--r-md);border:1px solid var(--line);box-shadow:var(--e1);
+  background:linear-gradient(90deg, rgba(182,156,255,.16), rgba(95,225,255,.05) 38%, rgba(95,225,255,0) 70%), var(--bg-2)}
+.fz-gesicht{flex:0 0 auto;width:44px;height:44px;padding:0;border:0;border-radius:var(--r-rund);background:none;
+  display:grid;place-items:center;cursor:pointer;color:inherit}
+.fz-ring{display:block;width:28px;height:28px;border-radius:var(--r-rund);
+  background:radial-gradient(circle, #02040A 0 34%, rgba(2,4,10,0) 38%), var(--formi-ring);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.2), 0 0 10px rgba(95,225,255,.35);transition:transform .16s ease}
+@media (hover:hover){ .fz-gesicht:hover .fz-ring{transform:scale(1.08)} }
+.fz-gesicht:active .fz-ring{transform:scale(.92)}
+.fz-teile{flex:1 1 auto;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:var(--s4) var(--s6)}
+.fz-teil{display:inline-flex;align-items:center;gap:var(--s6);min-height:44px;max-width:100%;padding:0 var(--s12);
+  border:1px solid var(--line);border-radius:var(--r-rund);background:var(--bg-soft);box-shadow:var(--e1);
+  color:var(--text);font:inherit;font-size:var(--t-sm);font-weight:600;cursor:pointer;
+  transition:transform .14s var(--ease-ios), border-color .2s}
+@media (hover:hover){ .fz-teil:hover{border-color:var(--line-2)} }
+.fz-teil:active{transform:translateY(1px)}
+.fz-gesicht:focus-visible,.fz-teil:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* Eine Zeile je Meldung; ein langer Aushang wird gekürzt, ganz steht er
+   im Titel und unten unter „Zum Lesen". */
+.fz-t{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fz-teil.pin .fz-t{max-width:32ch}
+.fz-kurz{display:none}
+@media(max-width:600px){ .fz-kurz{display:inline} .fz-lang{display:none} .fz-teil.pin .fz-t{max-width:21ch} }
+.fz-punkt{flex:0 0 auto;width:8px;height:8px;border-radius:var(--r-rund);background:var(--accent)}
+.fz-teil.bad .fz-punkt{background:var(--danger)}
+.fz-teil.warn .fz-punkt{background:var(--warm)}
+.fz-teil.mehr{color:var(--text-2)}
+.fz-teil.mehr .fz-punkt{background:var(--text-3)}
+/* Einmal je Sitzung „übernimmt" Formi die Zeile: die Meldungen springen
+   glitchend herein (Stufen statt Gleiten), nacheinander. backwards, nicht
+   both — nach dem Ende gilt wieder der ruhende Zustand. */
+.formi-zeile.fz-ein .fz-teil{animation:fzEin .42s steps(1, end) backwards;animation-delay:calc(var(--i, 0) * 70ms)}
+.formi-zeile.fz-ein .fz-ring{animation:fzRing .6s cubic-bezier(.3,1.4,.5,1) backwards}
+@keyframes fzEin{0%{opacity:0;transform:translateX(-8px)}25%{opacity:1;transform:translateX(5px)}
+  50%{opacity:.55;transform:translateX(-3px)}75%{opacity:1;transform:translateX(1px)}100%{opacity:1;transform:none}}
+@keyframes fzRing{from{opacity:0;transform:scale(.4) rotate(-120deg)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){ .formi-zeile.fz-ein .fz-teil,.formi-zeile.fz-ein .fz-ring{animation:none} }
+/* Die Spur: was Formi getan hat, trägt den kleinen Ring (Runde 186). */
+.formi-spur{display:inline-flex;align-items:center;gap:var(--s4);font-size:var(--t-xs);color:var(--text-2);white-space:nowrap}
+.formi-ring-mini{flex:0 0 auto;display:inline-block;width:10px;height:10px;border-radius:var(--r-rund);
+  background:radial-gradient(circle, #02040A 0 30%, rgba(2,4,10,0) 36%), var(--formi-ring)}
 
 /* Kleine Zwischenüberschrift mit auslaufender Linie. Teilt lange Seiten in
    benannte Blöcke, ohne so schwer zu wirken wie eine weitere Karte. */
@@ -5772,14 +5853,63 @@ html{font-size:var(--fs,100%)}
    nie einen Speichern-Knopf verdecken. Das kompakte Fenster liegt
    ebenso darunter (190): es ist kein Dialog mehr, die App bleibt
    bedienbar. */
+/* Runde 186 — Formis Zeichen. Der bunte Ring gehört NUR Formi: Kugel,
+   Gesicht im Fenster, Formi-Zeile auf „Heute" und die Spur an allem, was
+   Formi getan hat. Nichts anderes in der App trägt diesen Verlauf
+   (test-formi-lebt prüft es) — sonst heisst er nichts mehr, wie eine
+   Statusfarbe, die nichts meldet. */
+:root{--formi-ring:conic-gradient(from 210deg, #5FE1FF, #B69CFF, #FF8FC8, #FFA85C, #5FE1FF)}
 .formi-kugel{--jv-rgb:95,225,255;position:fixed;z-index:150;right:max(var(--s16), var(--sar, 0px));
   bottom:calc(var(--s16) + var(--sab));width:58px;height:58px;padding:0;border:0;border-radius:var(--r-rund);cursor:pointer;
-  background:radial-gradient(circle at 50% 50%, #02040A 0 37%, rgba(2,4,10,.0) 39%),
-    conic-gradient(from 210deg, #5FE1FF, #B69CFF, #FF8FC8, #FFA85C, #5FE1FF);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.22), inset 0 0 10px 3px rgba(2,4,10,.55),
-    var(--e2), 0 0 22px rgba(var(--jv-rgb),.35);
+  background:none;color:inherit;
   transition:transform .16s ease}
 .formi-kugel[hidden]{display:none}
+/* ── Formi lebt (Runde 186) ────────────────────────────────────────────
+   Aus dem Betrieb (22.10.2026): „viele emotionen und so am besten auch
+   reaktionen falls das geht auf kleinigkeiten" — und: „Formi soll
+   einfach ganz integriert sein wie ein kleiner glitch im system".
+
+   Der Körper trägt Ring und Schein, das Loch ist ein Auge: es schaut dem
+   Zeiger nach, blinzelt, schläft ein, freut sich, erschrickt. Bewegt wird
+   NUR transform und opacity, und zwar an den Kindern — der Knopf selbst
+   behält sein transform für Hover und das Ausweichen vor „Rückgängig".
+   Die Gefühle laufen als Web Animations (endlich, ohne Klassen-Neustart),
+   siehe formiFuehlt(). Bei „weniger Bewegung" steht alles still. */
+.fk-koerper{position:absolute;inset:0;border-radius:var(--r-rund);pointer-events:none;background:var(--formi-ring);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.22), inset 0 0 10px 3px rgba(2,4,10,.55),
+    var(--e2), 0 0 22px rgba(var(--jv-rgb),.35);
+  transition:opacity .6s ease}
+/* Das Loch: 30 px wie vorher der schwarze Kern (37 % des Verlaufs). */
+.fk-loch{position:absolute;left:50%;top:50%;width:30px;height:30px;margin:-15px 0 0 -15px}
+.fk-pupille{position:absolute;inset:0;border-radius:var(--r-rund);background:#02040A;
+  box-shadow:0 0 0 1px rgba(2,4,10,.65), 0 0 7px 2px rgba(2,4,10,.55);transition:transform .3s ease}
+.fk-pupille i{position:absolute;left:7px;top:6px;width:5px;height:5px;border-radius:var(--r-rund);background:rgba(255,255,255,.85)}
+/* Die Geister für den Glitch: zwei Ringe in Cyan und Magenta, die für
+   einen Wimpernschlag neben dem Körper stehen. Ruhend unsichtbar. */
+.fk-geist{position:absolute;inset:0;border-radius:var(--r-rund);border:3px solid rgba(95,225,255,.9);opacity:0}
+.fk-geist.b{border-color:rgba(255,90,205,.85)}
+/* „Hat etwas für dich": ein Punkt in Formi-Violett — NICHT Rot, Formi
+   ist kein Alarm. Er geht weg, sobald man Formi einmal geöffnet hat. */
+.fk-punkt{position:absolute;right:1px;top:1px;width:13px;height:13px;border-radius:var(--r-rund);pointer-events:none;
+  background:#B69CFF;box-shadow:0 0 0 2px #02040A, 0 0 8px rgba(182,156,255,.8);opacity:0;transform:scale(.3);
+  transition:opacity .2s ease, transform .3s cubic-bezier(.3,1.6,.5,1)}
+.formi-kugel.fk-hat .fk-punkt{opacity:1;transform:none}
+/* Schläft: das Auge geht zu, der Ring wird leiser. Aufwachen = Glitch. */
+.formi-kugel.fk-schlaeft .fk-pupille{transform:scaleY(.12)}
+.formi-kugel.fk-schlaeft .fk-koerper{opacity:.7}
+/* Neugierig, wenn die Maus darüber steht: die Pupille wird gross. */
+@media (hover:hover){ .formi-kugel:not(.fk-schlaeft):hover .fk-pupille{transform:scale(1.18)} }
+/* Der Glitch über einem Ziel in der App (formiGlitch): zwei Balken, die
+   springen, dann ist es vorbei. Kein Flackern der ganzen Fläche: eine
+   einzige Abblendung, die Balken bewegen sich nur seitlich (WCAG 2.3.1,
+   nicht mehr als drei Blitze je Sekunde). */
+.formi-glitch{position:fixed;left:0;top:0;z-index:1190;pointer-events:none;border-radius:var(--r-sm);
+  box-shadow:0 0 0 1px rgba(95,225,255,.55), 0 0 18px rgba(182,156,255,.35)}
+.formi-glitch i{position:absolute;left:-2%;right:-2%;display:block;top:18%;height:min(22%, 14px);
+  background:linear-gradient(90deg, rgba(95,225,255,0), rgba(95,225,255,.5) 18%, rgba(95,225,255,.5) 72%, rgba(95,225,255,0))}
+.formi-glitch i + i{top:62%;height:min(11%, 8px);
+  background:linear-gradient(90deg, rgba(255,90,205,0), rgba(255,90,205,.5) 30%, rgba(255,90,205,.5) 86%, rgba(255,90,205,0))}
+@media (prefers-reduced-motion:reduce){ .fk-loch,.fk-pupille,.fk-koerper,.fk-punkt{transition:none} .formi-glitch{display:none} }
 .formi-kugel::after{content:"";position:absolute;inset:-4px;border-radius:var(--r-rund);border:1px solid rgba(var(--jv-rgb),.35);pointer-events:none}
 .formi-kugel:hover{transform:scale(1.05)}
 .formi-kugel:active{transform:scale(.94)}
@@ -5815,6 +5945,7 @@ body.formi-kugel-an .main{padding-bottom:calc(var(--s16) + 58px + var(--s16))}
 }
 /* Kleines Gesicht im Kopf des kompakten Fensters — dieselbe Kugel. */
 .formi-gesicht{flex:0 0 auto;width:22px;height:22px;border-radius:var(--r-rund);
+  /* Formis Ring, in den Farben des Themas (Runde 186: nur Formi trägt ihn). */
   background:radial-gradient(circle, #02040A 0 36%, rgba(2,4,10,0) 40%),
     conic-gradient(from 210deg, rgb(var(--jv-t1)), rgb(var(--jv-t2)), rgb(var(--jv-t3)), rgb(var(--jv-t1)));
   box-shadow:0 0 10px rgba(var(--jv-rgb),.5)}
@@ -8772,7 +8903,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
           <div class="card still" id="homeBoardCard" data-fold="startbrett" data-fold-offen="1" style="display:none">
             <div class="karten-kopf">
               <h3 data-ikon="anheften">Schwarzes Brett</h3>
-              <button class="mini-link" data-go="team">Alle ›</button>
+              <button class="mini-link" data-go="ann" data-pin="brett">Alle ›</button>
             </div>
             <div id="homeBoardList"></div>
           </div>
@@ -8926,7 +9057,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             </div>
           </div>
 
-          <!-- ── ZEITEN (Runde 186) ──
+          <!-- ── ZEITEN (Runde 189) ──
                Aus dem Betrieb, 22.10.2026: „so wie crewmeister funktioniert
                am besten". Oben der Stand JETZT und — mit Freigabe — die
                Knöpfe, die gerade passen (Pause ODER Feierabend). Darunter
@@ -9311,6 +9442,12 @@ body.neu .kn-zeile{min-height:var(--zeile)}
              Zahl. Ein Mitarbeiter mit zwei Studios braucht es nicht; der
              Chef hat fünfzehn Kanäle, von denen drei zu sehen waren. -->
         <div class="chan-zeile">
+          <!-- „Direkt" (Runde 187): Chat und Direktnachrichten unter einem
+               Reiter. Fest vorn in der Kanalzeile statt in einer eigenen
+               Zeile – eine eigene Zeile kostete bei 320 × 640 den Verlauf
+               die Höhe, die Runde 127 ihm gerade gegeben hatte
+               (test-chat-klein). -->
+          <button type="button" class="chan-alle chan-direkt" id="kanalDirekt">Direkt</button>
           <button type="button" class="chan-alle" id="kanalAlle" hidden
                   aria-haspopup="dialog">Alle Kanäle</button>
           <div class="chat-channels" id="chatChannels"></div>
@@ -9501,7 +9638,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
 
       <!-- ANNOUNCEMENTS -->
       <section class="view" id="view-ann">
-        <div class="view-head shrink"><h2>Ankündigungen</h2><p>Neuigkeiten von der Leitung. Gelesenes wird automatisch bestätigt.</p></div>
+        <div class="view-head shrink"><h2>Pinnwand</h2><p>Infos von der Leitung und Aushänge vom Team. Gelesene Infos werden automatisch bestätigt.</p></div>
         <div class="scroll-area" data-shrinks="1">
           <div class="card" id="obCard" style="display:none"></div>
           <div id="annArea"></div>
@@ -10769,7 +10906,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                   <button type="button" class="ich-pfeil zk-pfeil" id="zkNext" aria-label="Nächster Monat">›</button>
                 </div>
               </div>
-              <!-- Jetzt im Studio (Runde 186): wer ist da, wer in der Pause,
+              <!-- Jetzt im Studio (Runde 189): wer ist da, wer in der Pause,
                    wer laut Plan erwartet wird und noch nicht gestempelt hat.
                    Wie die „Live-Übersicht" bei Crewmeister — aber nur hier,
                    bei der Leitung, und nicht mehr am Terminal am Tresen. -->
@@ -11301,7 +11438,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
     <div class="tm-was" id="tmWas">—</div>
     <div class="tm-punkte" id="tmPunkte"></div>
     <div class="tm-tasten" id="tmTasten"></div>
-    <!-- Runde 186: erst nach der PIN steht hier der eigene Stand und
+    <!-- Runde 189: erst nach der PIN steht hier der eigene Stand und
          die passenden Knöpfe — Pause ODER Feierabend, wie bei Crewmeister. -->
     <div class="tm-wahl" id="tmWahl" hidden>
       <p class="tm-stand" id="tmStand" role="status"></p>
@@ -11876,6 +12013,16 @@ body.neu .kn-zeile{min-height:var(--zeile)}
       <p class="hint" id="mailState" style="margin:12px 0 0"></p>
     </div>
 
+    <!-- Abmelden steht seit Runde 187 hier und nicht mehr oben in der
+         Kopfzeile (aus dem Betrieb: „deine 2 fragen können wir so
+         umsetzen"). Auf jedem Reiter dieses Fensters an derselben Stelle,
+         direkt über „Speichern" – am geteilten Gerät sind es zwei Tipps:
+         Bild oben rechts, dann Abmelden. Nicht darunter: „Speichern"
+         klebt unten und deckte mit seiner Fläche den Knopf 12 px weit zu
+         (Hit-Test 33 statt 44 px hoch). -->
+    <button type="button" class="btn btn-ghost pm-abmelden" id="pmLogout">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      <span>Abmelden</span></button>
     <p class="auth-err" id="pmErr"></p>
     <button class="btn btn-primary" id="pmSave" style="width:100%">Speichern</button>
     <p class="hint" id="pmAppearanceNote" style="display:none;text-align:center;margin-top:10px">
@@ -12395,9 +12542,13 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
     </div>
   </div>
 </div>
-<!-- Formi als schwebende Kugel (Runde 177): auf jeder Seite unten rechts. -->
+<!-- Formi als schwebende Kugel (Runde 177): auf jeder Seite unten rechts.
+     Runde 186: die Kugel lebt — Körper, Geister für den Glitch, das Loch
+     als Auge (Pupille mit Lichtpunkt) und ein Punkt „hat etwas für dich".
+     Alles Schmuck: aria-hidden, keine Trefferfläche (pointer-events:none). -->
 <button type="button" class="formi-kugel" id="formiKugel" hidden aria-haspopup="dialog" aria-controls="jarvis"
-  aria-label="Formi öffnen" title="Formi — frag mich oder sag, was ich tun soll"></button>
+  aria-label="Formi öffnen" title="Formi — frag mich oder sag, was ich tun soll"><span class="fk-koerper" aria-hidden="true"><span class="fk-geist a"></span><span class="fk-geist b"></span><span class="fk-loch"><span class="fk-pupille"><i></i></span></span></span><span class="fk-punkt" aria-hidden="true"></span></button>
+<span id="formiKugelHat" hidden>Formi hat etwas für dich</span>
 <script>
 (function(){
 'use strict';
@@ -15082,7 +15233,7 @@ function terminalLeuteLaden(){
     .catch(function(e){ $('tmHinweis').textContent = errMsg(e); });
 }
 
-/* Bis Runde 185 fragte das Terminal hier die Stempel des Studios ab, um
+/* Bis Runde 188 fragte das Terminal hier die Stempel des Studios ab, um
    „im Dienst" an die Kacheln zu schreiben. Das ist weg (siehe tmKachel),
    und die Abfrage war für ein normales Mitarbeiter-Konto ohnehin
    verboten: `zeiten` liest man nur für sich selbst (firestore.rules).
@@ -15148,7 +15299,7 @@ function tmGehoert(u){
   return (u.studioKeys||[]).indexOf(_tmStudio)>=0;
 }
 
-/* Runde 186: KEIN Stand mehr an der Kachel. Vorher stand „im Dienst /
+/* Runde 189: KEIN Stand mehr an der Kachel. Vorher stand „im Dienst /
    noch nicht da" an jedem Namen, für jeden am Tresen lesbar. Aus dem
    Betrieb, 22.10.2026, auf die Frage, ob das weg soll: „ja". Den eigenen
    Stand sieht man jetzt nach der PIN (stempelStand). */
@@ -15340,7 +15491,7 @@ function tmWsHinweisHTML(){
   return h;
 }
 
-/* ── Nach der PIN: der eigene Stand (Runde 186) ──
+/* ── Nach der PIN: der eigene Stand (Runde 189) ──
    „Weiter" fragt stempelStand — dieselben drei Schlösser wie beim
    Stempeln (Gerät, Person, PIN, mit Bremse). Erst die Antwort zeigt den
    Stand und die Knöpfe, die gerade passen: Kommen; oder Pause und
@@ -16913,6 +17064,7 @@ function fmtStand(ts){
 var _toastTimer;
 function toast(msg, isErr){
   var t=$('toast'); t.textContent=msg;
+  if(isErr && typeof formiFuehlt==='function') formiFuehlt('erschrickt');
   t.style.borderColor = isErr ? 'var(--danger)' : 'var(--accent-d)';
   t.classList.add('show');
   clearTimeout(_toastTimer);
@@ -20108,7 +20260,7 @@ var NAV = [
   {id:'persoenlich', label:'Persönlich', icon:'<path d="M12 21s-7-4.35-7-10a4 4 0 0 1 7-2.65A4 4 0 0 1 19 11c0 5.65-7 10-7 10z"/>'},
   {id:'chat',  label:'Chat',     icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>'},
   {id:'todos', label:'Aufgaben', icon:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'},
-  {id:'ann',   label:'Infos',    icon:'<path d="M3 11l18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>'},
+  {id:'ann',   label:'Pinnwand',    icon:'<path d="M3 11l18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>'},
   {id:'material', label:'Material', icon:'<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12.01l8.73-5.05"/><path d="M12 22.08V12"/>'},
   {id:'putzplan', label:'Putzplan', icon:'<path d="M3 21h18"/><path d="M9 21V9l6-4v16"/><path d="M15 9l4-2v14"/><path d="M9 13h.01M9 17h.01"/>'},
   {id:'geraete', label:'Geräte', icon:'<rect x="2" y="7" width="20" height="12" rx="2"/><path d="M6 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/><path d="M12 11v4M10 13h4"/>'},
@@ -20355,7 +20507,7 @@ function allesGruppen(){
      was:'Eigene Termine und Notizen'},
     {label:'Meine Zeiten',  view:'ich', ichtab:'zeiten',   ikon:'uhr',
      was:'Stempeln, Woche und Monat, Plan neben Ist'},
-    /* Bis Runde 185 hiess dieser Schlüssel (ich:daten) „Meine Zeiten".
+    /* Bis Runde 188 hiess dieser Schlüssel (ich:daten) „Meine Zeiten".
        Die Zeiten haben jetzt einen eigenen Reiter; was unter „Ich"
        bleibt, sind Nachweise, Stammdaten und die Auskunft. */
     {label:'Meine Daten',   view:'ich', ichtab:'daten',    ikon:'ich',
@@ -20466,6 +20618,22 @@ var NEUIGKEITEN = [
     'Neu unter Heute → Ich → „Zeiten": oben dein Stand jetzt, wie lange du heute gearbeitet hast und was laut Schichtplan geplant ist. Darunter deine Woche mit Plan neben den gestempelten Stunden, daneben der Monat. Am Rechner steht beides nebeneinander.',
     'Für Leitung und Geschäftsführung: Verwaltung → Zeiten zeigt oben „Jetzt im Studio" – wer im Dienst ist, wer Pause macht, und wer laut Plan schon da sein müsste und noch nicht gestempelt hat.'
   ]},
+  { id:'2026-10-22-formi-gefuehle-schalter', datum:'22.10.2026', titel:'Formis Gefühle lassen sich abstellen', wo:'gehirn', punkte:[
+    'Ist dir die Kugel zu lebendig? Öffne Formi, tippe oben auf den Regler (Persönlichkeit und Stimme) und stelle „Gefühle der Kugel" auf „Aus". Dann schaut, blinzelt und freut sie sich nicht mehr und schläft nicht ein.',
+    'Der Punkt „Formi hat etwas für dich" und der Hinweis „über Formi" bleiben. Die Wahl gilt nur für dein Gerät.' ] },
+  { id:'2026-10-22-zusammengelegt', datum:'22.10.2026', titel:'Noch weniger Knöpfe: Bestand, Chats und Pinnwand', wo:'todos', punkte:[
+    'Unter „Studio" heisst es jetzt „Bestand": Material und Geräte liegen dort zusammen, oben schaltest du zwischen beiden um.',
+    'Unter „Nachrichten" gibt es nur noch „Chats" und „Pinnwand". In den Chats steht „Direkt" in derselben Zeile wie Studios und Gruppen; am Rechner stehen deine letzten Direktnachrichten links in der Liste mit drin.',
+    'Die Pinnwand vereint die Infos der Leitung und die Aushänge vom Team (das frühere Schwarze Brett unter „Plan").',
+    'Erledigte Aufgaben stehen eingeklappt unter „3 erledigt" am Ende ihrer Gruppe – ein Tipp klappt sie auf. Was du gerade abgehakt hast, bleibt noch eine Minute stehen.',
+    'Am Raum „Studio" steht ein Punkt statt einer Zahl. Wie viel offen ist, steht direkt oben auf der Seite.',
+    'Am Handy stehen Bearbeiten und Löschen bei Aufgaben und im Putzplan hinter „…". Abmelden findest du jetzt über dein Bild oben rechts, ganz unten.' ] },
+  { id:'2026-10-22-formi-lebt', datum:'22.10.2026', titel:'Formi lebt: es schaut, freut sich und meldet sich oben', wo:'home', punkte:[
+    'Wo oben auf der Startseite bisher bunte Hinweis-Balken standen, steht jetzt eine Zeile von Formi: links der bunte Ring, daneben z. B. „1 Aufgabe ist überfällig" oder „5 Artikel fehlen". Antippen führt direkt hin, der Ring öffnet Formi.',
+    'Die Kugel unten rechts hat jetzt ein Auge: Sie schaut der Maus nach, blinzelt, freut sich bei jedem Haken, staunt, wenn du schnell hintereinander abhakst, feiert, wenn der Putzplan für heute fertig ist, und erschrickt bei einer Fehlermeldung. Lässt du die App eine Weile liegen, schläft sie ein.',
+    'Ein kleiner violetter Punkt an der Kugel heisst: Formi hat etwas für dich. Er verschwindet, sobald du Formi öffnest.',
+    'Was Formi für dich abgehakt oder angelegt hat, steht in Aufgaben und Putzplan mit „über Formi" und dem kleinen Ring.',
+    'Öffnet Formi eine Seite für dich, flackert sie kurz wie ein Glitch: Dann weisst du, dass gerade Formi am Werk war. Wer am Gerät „Bewegung reduzieren" eingestellt hat, sieht nichts davon.' ] },
   { id:'2026-10-22-formi-findet-besser', datum:'22.10.2026', titel:'Formi findet die passende Antwort öfter', wo:'gehirn', punkte:[
     'Fragst du in eigenen Worten – etwa „Was mache ich, wenn ein Kunde im letzten Moment absagt?" oder „Darf eine Schwangere trainieren?" –, findet Formi jetzt eher den richtigen Eintrag, auch wenn deine Wörter dort nicht vorkommen.',
     'Fragen, die mit dem Studio nichts zu tun haben, ziehen keine unpassenden Einträge mehr mit.'
@@ -21166,7 +21334,7 @@ function schnellRolle(){ return isChef() ? 'chef' : (canManage() ? 'leiter' : 'm
 function schnellEigen(){
   var alle=PREFS.schnell||{};
   if(!(session && Array.isArray(alle[session.uid]))) return null;
-  /* Runde 186: wer „Meine Zeiten" gewählt hatte, hat es unter dem
+  /* Runde 189: wer „Meine Zeiten" gewählt hatte, hat es unter dem
      Schlüssel ich:daten gespeichert — der heisst jetzt „Meine Daten".
      Gemeint war die Zeit, also führt der Schnellzugriff dorthin. */
   return alle[session.uid].map(function(k){ return k==='ich:daten' ? 'ich:zeiten' : k; })
@@ -21911,6 +22079,135 @@ function bereichKopfSetzen(){
 }
 
 /* Reiter innerhalb der aktuellen Gruppe (oben unter der Kopfzeile) */
+/* ══ ZUSAMMENGELEGT (Runde 187) ═══════════════════════════════════════
+   Aus dem Betrieb, 22.10.2026: „das problem mit dem zu viel bleibt
+   immer noch bestehen" und „jede funktion hat ja ihren sinn". Also
+   nichts streichen, sondern verwandte Dinge unter EINEN Reiter:
+     · Bestand  = Material + Geräte (beides: „was steht im Studio")
+     · Chats    = Studio-/Gruppenchats + Direktnachrichten
+     · Pinnwand = Infos der Leitung + Aushänge vom Team (das frühere
+                  Schwarze Brett unter „Plan")
+   Weniger gleichrangige Wahlmöglichkeiten heisst kürzere Wahlzeit
+   (Hick-Hyman) und weniger, was man im Kopf halten muss; der zweite
+   Schritt steht sichtbar in der Seite (Umschalter), nicht versteckt.
+   Der Umschalter ist dieselbe Bauform wie „Studios | Gruppen" im Chat —
+   eine Form für dieselbe Sache, kein neues Bedienelement. */
+var REITER_PAARE = [
+  { id:'bestand', label:'Bestand', views:['material','geraete'],
+    teile:[{ view:'material', label:'Material' }, { view:'geraete', label:'Geräte' }] },
+  { id:'chats', label:'Chats', views:['chat','dm'] }
+];
+function reiterPaar(v){
+  for(var i=0;i<REITER_PAARE.length;i++) if(REITER_PAARE[i].views.indexOf(v)>=0) return REITER_PAARE[i];
+  return null;
+}
+/* Der Umschalter steht direkt unter der Überschrift der Ansicht. Nur
+   wenn es wirklich zwei gibt: ein Umschalter mit einem Knopf ist Zierrat. */
+function umschalterZeichnen(views){
+  REITER_PAARE.forEach(function(paar){
+    if(!paar.teile) return;
+    var teile=paar.teile.filter(function(t){ return views.indexOf(t.view)>=0; });
+    paar.views.forEach(function(v){
+      var sec=$('view-'+v); if(!sec) return;
+      var box=sec.querySelector('.umschalter[data-umschalter="'+paar.id+'"]');
+      if(teile.length<2){ if(box) box.hidden=true; return; }
+      if(!box){
+        box=document.createElement('div');
+        box.className='chat-arten umschalter'; box.setAttribute('data-umschalter', paar.id);
+        box.setAttribute('role','tablist'); box.setAttribute('aria-label', paar.label);
+        var kopf=sec.querySelector('.view-head');
+        if(kopf) kopf.insertAdjacentElement('afterend', box); else sec.insertBefore(box, sec.firstChild);
+        box.addEventListener('click', function(e){
+          var t=e.target.closest('[data-umschalt]'); if(!t || t.classList.contains('active')) return;
+          showView(t.getAttribute('data-umschalt')); tick(8);
+        });
+      }
+      box.hidden=false;
+      box.innerHTML=teile.map(function(t){
+        var an=t.view===v;
+        return '<button type="button" role="tab" aria-selected="'+an+'" class="chat-art'+(an?' active':'')+
+          '" data-umschalt="'+t.view+'">'+esc(t.label)+'</button>';
+      }).join('');
+    });
+  });
+  pinnwandZeichnen();
+  chatArtenDirekt();
+}
+
+/* ── Pinnwand: Infos + Aushänge ──
+   Die Aushänge (bis Runde 184 „Brett" unter Plan) ziehen in die Seite
+   der Infos. Das Element wird umgehängt, nicht kopiert: alle Wege, die
+   bisher den Reiter „Brett" antippen (Startseite, Wünsche, „Alles"),
+   landen über pinnwandUmleiten hier. */
+var _pinTeil='infos';
+function pinnwandZeichnen(){
+  var sec=$('view-ann'), brett=$('teamPaneBrett'); if(!sec || !brett) return;
+  var flaeche=sec.querySelector('.scroll-area');
+  if(brett.parentNode!==flaeche){ flaeche.appendChild(brett); pinnwandUmleiten(); }
+  var mitBrett=featureAn('brett');
+  if(!mitBrett) _pinTeil='infos';
+  var box=sec.querySelector('.umschalter[data-umschalter="pinnwand"]');
+  if(!box){
+    box=document.createElement('div');
+    box.className='chat-arten umschalter'; box.setAttribute('data-umschalter','pinnwand');
+    box.setAttribute('role','tablist'); box.setAttribute('aria-label','Pinnwand');
+    sec.querySelector('.view-head').insertAdjacentElement('afterend', box);
+    box.addEventListener('click', function(e){
+      var t=e.target.closest('[data-pinteil]'); if(!t || t.classList.contains('active')) return;
+      _pinTeil=t.getAttribute('data-pinteil'); pinnwandZeichnen(); tick(8);
+    });
+  }
+  box.hidden=!mitBrett;
+  box.innerHTML=[['infos','Infos'],['brett','Aushänge']].map(function(x){
+    var an=x[0]===_pinTeil;
+    return '<button type="button" role="tab" aria-selected="'+an+'" class="chat-art'+(an?' active':'')+
+      '" data-pinteil="'+x[0]+'">'+x[1]+'</button>';
+  }).join('');
+  var infos=_pinTeil==='infos';
+  var ann=$('annArea'); if(ann) ann.hidden=!infos;
+  var ob=$('obCard'); if(ob) ob.classList.toggle('pin-weg', !infos);
+  brett.style.display = infos ? 'none' : '';
+  if(!infos) foldAufbauen();
+}
+function pinnwandUmleiten(){
+  var tab=document.querySelector('[data-teamtab="brett"]'); if(!tab || tab._umgeleitet) return;
+  tab._umgeleitet=true;
+  tab.classList.add('pin-umgezogen');
+  /* Vor dem eigenen Hörer des Reiters (Fangphase am Ziel läuft zuerst). */
+  tab.addEventListener('click', function(e){
+    e.stopImmediatePropagation(); e.preventDefault();
+    _pinTeil='brett'; showView('ann');
+  }, true);
+}
+/* „Alle ›" auf der Startseite und andere Verweise mit data-pin. */
+document.addEventListener('click', function(e){
+  var t=e.target.closest && e.target.closest('[data-pin]'); if(t) _pinTeil=t.getAttribute('data-pin');
+}, true);
+
+/* ── Chats: Direkt in derselben Zeile wie Studios | Gruppen ── */
+function chatArtenDirekt(){
+  var dm=$('view-dm'), pille=$('kanalDirekt'); if(!dm) return;
+  if(pille && !pille._gebunden){
+    pille._gebunden=true;
+    pille.addEventListener('click', function(){ showView('dm'); tick(8); });
+  }
+  var box=dm.querySelector('.umschalter[data-umschalter="chats"]');
+  if(!box){
+    box=document.createElement('div');
+    box.className='chat-arten umschalter'; box.setAttribute('data-umschalter','chats');
+    box.setAttribute('role','tablist'); box.setAttribute('aria-label','Chats');
+    dm.querySelector('.view-head').insertAdjacentElement('afterend', box);
+    box.addEventListener('click', function(e){
+      var t=e.target.closest('[data-chatart]'); if(!t || t.classList.contains('active')) return;
+      _chatArt=t.getAttribute('data-chatart'); showView('chat'); tick(8);
+    });
+  }
+  var gruppen=gruppenKanaele().length>0;
+  box.innerHTML='<button type="button" role="tab" aria-selected="false" class="chat-art" data-chatart="studios">Studios</button>'+
+    (gruppen ? '<button type="button" role="tab" aria-selected="false" class="chat-art" data-chatart="gruppen">Gruppen</button>' : '')+
+    '<button type="button" role="tab" aria-selected="true" class="chat-art active">Direkt</button>';
+}
+
 /* Am Rechner stehen die Reiter IN der Kopfzeile, rechts neben dem
    Titel (Runde 184). Gemessen: der Kopf ist 85 px hoch und rechts vom
    Titel 700 px leer; die eigene Reiterzeile darunter kostete jede
@@ -21940,6 +22237,7 @@ function buildSubNav(){
      Durchläufe (test-handy-stempeln, test-kalender, test-notizen …)
      fielen darüber. Ein Tipp für das tägliche Ziel geht vor 40 px. */
   if(views.length<2){
+    umschalterZeichnen(views);
     bar.innerHTML=''; bar.style.display='none';
     /* Die ganze Zeile weg, nicht nur die Leiste — sonst bliebe „Alle"
        allein in einer sonst leeren Zeile stehen. */
@@ -21949,13 +22247,27 @@ function buildSubNav(){
   }
   var zeile=$('subnavZeile'); if(zeile) zeile.style.display='flex';
   bar.style.display='flex';
+  /* Zusammengelegte Reiter (Runde 187): zwei Ansichten, EIN Reiter. Er
+     führt zur ersten sichtbaren, trägt die Marke für beide und hat für
+     jede seinen Punkt. Innen schaltet der Umschalter (umschalterZeichnen). */
+  var gesehen={};
   bar.innerHTML=views.map(function(v){
-    var it=navItem(v); if(!it) return '';
-    return '<button class="subtab'+(v===currentView?' on':'')+'" data-subview="'+v+'">'+
+    var paar=reiterPaar(v), ziel=v, teile=[v], it=navItem(v); if(!it) return '';
+    if(paar){
+      if(gesehen[paar.id]) return '';
+      gesehen[paar.id]=true;
+      teile=paar.views.filter(function(x){ return views.indexOf(x)>=0; });
+      ziel=teile.indexOf(currentView)>=0 ? currentView : teile[0];
+      if(teile.length>1) it={ label:paar.label, icon:navItem(teile[0]).icon };
+    }
+    var an=teile.indexOf(currentView)>=0;
+    return '<button class="subtab'+(an?' on':'')+'" data-subview="'+ziel+'"'+
+      (paar && teile.length>1 ? ' data-paar="'+paar.id+'"' : '')+'>'+
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'+it.icon+'</svg>'+
       '<span>'+esc(it.label)+'</span>'+
-      '<span class="sub-dot" data-ndot="'+v+'"></span></button>';
+      teile.map(function(t){ return '<span class="sub-dot" data-ndot="'+t+'"></span>'; }).join('')+'</button>';
   }).join('');
+  umschalterZeichnen(views);
   requestAnimationFrame(subnavMehrPruefen);
   bar.querySelectorAll('[data-subview]').forEach(function(b){
     b.addEventListener('click',function(){ showView(b.getAttribute('data-subview')); tick(8); });
@@ -22397,9 +22709,10 @@ function buildChannels(){
   var arten=$('chatArten');
   /* Ohne Gruppe keine Umschaltung. Ein Reiter, hinter dem nichts liegt,
      ist schlimmer als keiner. */
+  chatArtenDirekt();
   if(arten){
     arten.hidden = !gruppen.length;
-    if(!gruppen.length) _chatArt='studios';
+    if(!gruppen.length || _chatArt==='direkt') _chatArt=(_chatArt==='gruppen' && gruppen.length) ? 'gruppen' : 'studios';
     arten.querySelectorAll('[data-chatart]').forEach(function(t){
       t.classList.toggle('active', t.dataset.chatart===_chatArt);
     });
@@ -22596,16 +22909,41 @@ function kanalSpalteZeichnen(){
       '</button>';
   }
   var html='';
-  if(studios.length && gruppen.length) html+='<p class="ks-gruppe">Studios</p>';
+  html+='<p class="ks-gruppe">Studios</p>';
   html+=studios.map(zeile).join('');
-  if(studios.length && gruppen.length) html+='<p class="ks-gruppe">Gruppen</p>';
+  if(gruppen.length) html+='<p class="ks-gruppe">Gruppen</p>';
   html+=gruppen.map(zeile).join('');
+  /* Direktnachrichten in derselben Liste (Runde 187, „Chat und Direkt
+     in eine Liste"): die fünf letzten Unterhaltungen, darunter der Weg
+     zu allen und zu einer neuen. */
+  var faeden=(_dmThreads||[]).filter(function(t){
+    var peer=(t.participants||[]).filter(function(u){ return u!==session.uid; })[0];
+    return peer && !(_allUsers.length && !_userById(peer));
+  }).slice(0,5);
+  html+='<p class="ks-gruppe">Direkt</p>';
+  html+=faeden.map(function(t){
+    var peer=(t.participants||[]).filter(function(u){ return u!==session.uid; })[0];
+    var nm=(t.names&&t.names[peer])||'?';
+    var neu=(t.lastTs||0) > ((t.readTs&&t.readTs[session.uid])||0) && t.lastSender!==session.uid;
+    var vorschau=(t.lastSender===session.uid?'Du: ':'')+(t.last||'');
+    return '<button type="button" class="ks-zeile'+(neu?' neu':'')+'" data-dmuid="'+esc(peer)+'" data-dmname="'+esc(nm)+'">'+
+      '<span class="ks-txt"><b>'+esc(nm)+'</b><i>'+esc(vorschau)+'</i></span>'+
+      (neu ? '<span class="ks-punkt" aria-label="ungelesen"></span>' : '')+'</button>';
+  }).join('');
+  html+='<button type="button" class="ks-zeile ks-alle" data-dmalle="1"><span class="ks-txt"><b>'+
+    (faeden.length ? 'Alle Direktnachrichten ›' : 'Jemandem direkt schreiben ›')+'</b></span></button>';
   /* Kein scrollTop lesen und zurückschreiben: das erzwänge mitten im
      Zeichnen ein Layout, und der Browser behält die Lage ohnehin. */
   box.innerHTML=html;
   if(!box._gebunden){
     box._gebunden=true;
     box.addEventListener('click', function(e){
+      var d=e.target.closest('[data-dmuid],[data-dmalle]');
+      if(d){
+        showView('dm');
+        if(d.dataset.dmuid) openDm(d.dataset.dmuid, d.dataset.dmname);
+        tick(8); return;
+      }
       var z=e.target.closest('[data-kanalwahl]'); if(!z) return;
       if(z.dataset.kanalwahl===currentChannel) return;
       kanalWaehlen(z.dataset.kanalwahl, z.dataset.kanalart);
@@ -25673,7 +26011,7 @@ function gehirnTonfall(){ return jvPersona().ton==='sachlich' ? 'sachlich' : 'lo
    Je Gerät: Name, Tonfall, Stimme (menschlich über Google oder die des
    Geräts), Weckwort. Aus dem Betrieb: „wie ein echter mensch als
    assistent" — und auf die Ideenliste „mach alles davon". */
-var JV_PERSONA_STD={ name:'Formi', ton:'locker', stimme:'profi', profiStimme:'de-DE-Chirp3-HD-Aoede', geraetStimme:'', weckwort:false, studio:'', effekte:'auto' };
+var JV_PERSONA_STD={ name:'Formi', ton:'locker', stimme:'profi', profiStimme:'de-DE-Chirp3-HD-Aoede', geraetStimme:'', weckwort:false, studio:'', effekte:'auto', gefuehle:'an' };
 var JV_PROFI_STIMMEN=[['de-DE-Chirp3-HD-Aoede','Aoede (weiblich)'],['de-DE-Chirp3-HD-Kore','Kore (weiblich)'],['de-DE-Chirp3-HD-Charon','Charon (männlich)'],['de-DE-Chirp3-HD-Puck','Puck (männlich)']];
 function jvPersona(){
   var p={}; try{ p=JSON.parse(localStorage.getItem('kf_jv_persona')||'{}')||{}; }catch(e){}
@@ -25687,6 +26025,7 @@ function jvPersona(){
 function jvPersonaSetzen(aenderung){
   var p=Object.assign(jvPersona(), aenderung);
   try{ localStorage.setItem('kf_jv_persona', JSON.stringify(p)); }catch(e){}
+  if('gefuehle' in aenderung) formiGefuehleAnwenden(p.gefuehle!=='aus');
   jvPersonaAnwenden();
   return p;
 }
@@ -25711,6 +26050,11 @@ function jvPersonaAuf(auf){
       '</div><p class="jv-phinweis">Hier nehme ich an, dass du bist, wenn du kein Studio nennst.</p></div>' : '')+
     '<div class="jv-pz">Effekte<div class="jv-pw" role="group" aria-label="Effekte">'+wahl('effekte','auto','Automatisch')+wahl('effekte','voll','Voll')+wahl('effekte','sparsam','Sparsam')+'</div>'+
       '<p class="jv-phinweis">Automatisch: weniger Teilchen, sobald dein Gerät ins Stocken kommt.</p></div>'+
+    /* Runde 188 — aus dem Betrieb auf „ein Schalter für Formis Gefühle?":
+       „Ja aber versteckter". Deshalb hier in Formis eigenen Einstellungen
+       und nicht unter Profil → Aussehen. */
+    '<div class="jv-pz">Gefühle der Kugel<div class="jv-pw" role="group" aria-label="Gefühle der Kugel">'+wahl('gefuehle','an','Zeigen')+wahl('gefuehle','aus','Aus')+'</div>'+
+      '<p class="jv-phinweis">Aus: Die Kugel schaut nicht mit, blinzelt nicht, freut sich nicht und schläft nicht ein. Der Punkt „hat etwas für dich" und „über Formi" bleiben.</p></div>'+
     '<div class="jv-pz">Tonfall<div class="jv-pw" role="group" aria-label="Tonfall">'+wahl('ton','locker','Locker')+wahl('ton','sachlich','Sachlich')+'</div></div>'+
     '<div class="jv-pz">Stimme<div class="jv-pw" role="group" aria-label="Stimme">'+wahl('stimme','profi','Menschlich')+wahl('stimme','geraet','Vom Gerät')+'</div>'+
     (_jvProfiAus && p.stimme==='profi' ? '<p class="jv-phinweis">Die menschliche Stimme ist gerade nicht eingerichtet — ich spreche mit der Stimme des Geräts.</p>' : '')+'</div>'+
@@ -25858,7 +26202,7 @@ function gehirnJetztAnlegen(i, btn){
       var batch=db.batch();
       targets.forEach(function(sk){
         var data={ title:s.titel, desc:s.text||'', done:false, doneBy:null, doneAt:null,
-          createdBy:session.name, createdByUid:session.uid, ts:Date.now() };
+          createdBy:session.name, createdByUid:session.uid, ts:Date.now(), vonFormi:true };
         if(due) data.due=due;
         if((s.schritte||[]).length) data.steps=s.schritte.slice(0,20).map(function(x){ return { t:String(x).slice(0,120), d:false }; });
         batch.set(S('studios').doc(sk).collection('todos').doc(), data);
@@ -26039,7 +26383,9 @@ function gehirnOeffne(s){
      wird zur Kugel, bevor der Zeiger losfährt. Am Rechner bleibt es
      offen neben der Seite. */
   if(!formiBleibtOffen() || s.ziel==='chat') jarvisZu();
-  formiZeiger(s.ziel).then(wechseln);
+  /* Runde 186: wenn Formi eine Seite öffnet, „übernimmt" es sie kurz —
+     ein Glitch über dem Seitenkopf. */
+  formiZeiger(s.ziel).then(function(){ wechseln(); formiGlitch($('bereichKopf')); });
 }
 function formiHandy(){ return !!(window.matchMedia && window.matchMedia('(max-width:820px)').matches); }
 /* Bleibt Formi neben der Seite offen? Nur kompakt und nur am Rechner. */
@@ -26088,10 +26434,245 @@ function formiKugelZeigen(){
     }
     return;
   }
-  if(!k._gebunden){ k._gebunden=true; k.addEventListener('click', function(){ jarvisAuf(); }); }
+  if(!k._gebunden){ k._gebunden=true; k.addEventListener('click', function(){ jarvisAuf(); }); formiLebtStart(); }
   k.hidden=!(gehirnVerfuegbar() && !jarvisOffen() && currentView!=='gehirn' && currentView!=='chat');
   document.body.classList.toggle('formi-kugel-an', !k.hidden);
 }
+
+/* ══ Formi lebt (Runde 186, 22.10.2026) ══════════════════════════════
+   Aus dem Betrieb: „ja viele emotionen und so am besten auch reaktionen
+   falls das geht auf kleinigkeiten" und „Formi soll einfach ganz
+   integriert sein wie ein kleiner glitch im system mässig welcher die
+   app übernimmt".
+
+   Was die Kugel tut, und worauf:
+     schaut      dem Mauszeiger nach (nur Maus), einem Eingabefeld beim Tippen
+     blinzelt    alle 4–11 s, solange sie zu sehen ist
+     nickt       beim Tippen in ein Feld (höchstens alle 0,4 s)
+     freut sich  bei jedem Haken in Aufgaben und Putzplan
+     staunt      beim dritten Haken binnen 20 s
+     feiert      wenn der Putzplan eines Studios für heute fertig ist
+     erschrickt  bei jeder Fehlermeldung
+     schläft     nach 90 s ohne Bedienung ein; wacht mit einem Glitch auf
+     freut sich  wenn man nach über einer Minute zurück in die App kommt
+     Punkt       „hat etwas für dich" (siehe formiHatEtwas)
+
+   Regeln, damit das nicht teuer und nicht lästig wird:
+   - nur transform und opacity, als Web Animations: endlich, kein
+     Neustart über Klassen und kein Messen im Ereignis;
+   - Lage der Kugel wird im Bild gelesen und eine Sekunde gemerkt; die
+     Zeigerbewegung schreibt höchstens einmal je Bild;
+   - nichts davon bei „weniger Bewegung", nichts bei verborgener Kugel
+     oder verborgenem Tab; keine Dauer-Animation — Blinzeln und Schlafen
+     laufen über Zeitgeber, nicht über `infinite`. */
+var _fl={ gestartet:false, x:0, y:0, raf:0, mitte:null, mitteBis:0, zuletzt:Date.now(), schlaeft:false,
+          blinzelUhr:0, nickBis:0, haken:[], weg:0, hatKey:'', zeileGezeigt:false };
+var FK_SCHRITT={ easing:'steps(1, end)' };
+function formiLebtAn(){
+  var k=$('formiKugel');
+  return !!(k && !k.hidden && !_fl.gefuehleAus && !gehirnWenigBewegung() && document.visibilityState!=='hidden' && document.body.animate);
+}
+/* Der versteckte Schalter (Runde 188, Formis Einstellungen → „Gefühle
+   der Kugel"). Gemerkt in der Persönlichkeit je Gerät; hier nur als
+   Zahl im Speicher, damit formiLebtAn() nicht in jedem Bild JSON liest.
+   Beim Abschalten: wach, Auge geradeaus, nichts läuft weiter. */
+function formiGefuehleAnwenden(an){
+  _fl.gefuehleAus=!an;
+  if(an) return;
+  _fl.schlaeft=false;
+  var t=formiTeile(); if(!t) return;
+  t.k.classList.remove('fk-schlaeft');
+  t.k.getAnimations({ subtree:true }).forEach(function(a){ try{ a.cancel(); }catch(e){} });
+  _fl.blick=null; _fl.blickZiel='';
+}
+function formiTeile(){
+  var k=$('formiKugel'); if(!k) return null;
+  return { k:k, koerper:k.querySelector('.fk-koerper'), loch:k.querySelector('.fk-loch'),
+           pupille:k.querySelector('.fk-pupille'), geister:k.querySelectorAll('.fk-geist') };
+}
+/* Die Gefühle als Bewegung. Jede Zeile: [Teil, Bildfolge, Dauer]. */
+function formiGefuehl(art){
+  var hops=[{transform:'none'},{transform:'translateY(-8px) scale(1.07)',offset:.35},{transform:'translateY(1px) scale(.97)',offset:.7},{transform:'none'}];
+  var grins=[{transform:'none'},{transform:'scale(1.12,.42)',offset:.22},{transform:'scale(1.12,.42)',offset:.8},{transform:'none'}];
+  return {
+    freut:     [['koerper', hops, 460], ['pupille', grins, 700]],
+    staunt:    [['koerper', [{transform:'none'},{transform:'scale(1.12)',offset:.3},{transform:'none'}], 520],
+                ['pupille', [{transform:'none'},{transform:'scale(1.35)',offset:.25},{transform:'scale(1.35)',offset:.75},{transform:'none'}], 900]],
+    feiert:    [['koerper', [{transform:'none'},{transform:'rotate(200deg) scale(1.16)',offset:.45},{transform:'rotate(360deg) scale(1)'}], 820],
+                ['pupille', grins, 1100]],
+    erschrickt:[['koerper', [{transform:'none'},{transform:'translateX(-5px)',offset:.15},{transform:'translateX(5px)',offset:.35},
+                  {transform:'translateX(-4px)',offset:.55},{transform:'translateX(3px)',offset:.75},{transform:'none'}], 380],
+                ['pupille', [{transform:'none'},{transform:'scale(.6)',offset:.12},{transform:'scale(.6)',offset:.8},{transform:'none'}], 600]],
+    nickt:     [['koerper', [{transform:'none'},{transform:'scale(.94)',offset:.4},{transform:'none'}], 200]],
+    blinzelt:  [['pupille', [{transform:'none'},{transform:'scaleY(.1)',offset:.5},{transform:'none'}], 170]]
+  }[art] || [];
+}
+function formiFuehlt(art){
+  if(!formiLebtAn()) return;
+  var t=formiTeile(); if(!t) return;
+  if(art!=='blinzelt') formiWach(true);
+  formiGefuehl(art).forEach(function(z){
+    var el=t[z[0]]; if(!el) return;
+    try{ el.animate(z[1], { duration:z[2], easing:'cubic-bezier(.3,.7,.2,1)' }); }catch(e){}
+  });
+  if(art==='feiert' || art==='erschrickt' || art==='staunt') formiKugelGlitch();
+}
+/* Der Glitch an der Kugel: zwei Geister springen neben den Körper. */
+function formiKugelGlitch(){
+  if(!formiLebtAn()) return;
+  var t=formiTeile(); if(!t) return;
+  var wege=[['translate(-4px,1px)','translate(3px,-2px)','translate(-2px,2px)'],
+            ['translate(4px,-1px)','translate(-3px,2px)','translate(2px,-2px)']];
+  [].forEach.call(t.geister, function(g, i){
+    var w=wege[i%2];
+    try{
+      g.animate([Object.assign({opacity:.9, transform:w[0]}, FK_SCHRITT), Object.assign({opacity:.6, transform:w[1], offset:.33}, FK_SCHRITT),
+                 Object.assign({opacity:.85, transform:w[2], offset:.66}, FK_SCHRITT), {opacity:0, transform:'none'}],
+                { duration:300 });
+    }catch(e){}
+  });
+}
+/* Formi „übernimmt" ein Stück der App: zwei Balken springen über das
+   Ziel. Gemessen wird im nächsten Bild, nie im Klick. */
+function formiGlitch(el){
+  if(!el || gehirnWenigBewegung() || !document.body.animate) return;
+  requestAnimationFrame(function(){
+    if(!el.getClientRects || !el.getClientRects().length) return;
+    var r=el.getBoundingClientRect();
+    if(!r.width || !r.height || r.bottom<0 || r.top>innerHeight) return;
+    var g=document.createElement('div');
+    g.className='formi-glitch'; g.setAttribute('aria-hidden', 'true');
+    g.style.width=Math.round(r.width)+'px'; g.style.height=Math.round(r.height)+'px';
+    g.style.transform='translate('+Math.round(r.left)+'px,'+Math.round(r.top)+'px)';
+    g.innerHTML='<i></i><i></i>';
+    document.body.appendChild(g);
+    function weg(){ if(g.parentNode) g.parentNode.removeChild(g); }
+    try{
+      g.animate([{opacity:1},{opacity:.85, offset:.6},{opacity:0}], { duration:360 }).onfinish=weg;
+      g.children[0].animate([{transform:'translateX(-12px)'},{transform:'translateX(9px)'},{transform:'translateX(-4px)'},{transform:'none'}],
+        { duration:360, easing:'steps(3, end)' });
+      g.children[1].animate([{transform:'translateX(10px)'},{transform:'translateX(-7px)'},{transform:'translateX(3px)'},{transform:'none'}],
+        { duration:360, easing:'steps(3, end)' });
+    }catch(e){ weg(); }
+    setTimeout(weg, 700);
+  });
+}
+/* Wohin das Auge schaut. Nur hier wird gemessen — im Bild, einmal je
+   Sekunde; die Kugel steht fest und bewegt sich sonst nicht. */
+function formiSchauen(){
+  _fl.raf=0;
+  var t=formiTeile(); if(!t || !t.loch || !formiLebtAn() || _fl.schlaeft) return;
+  var jetzt=Date.now();
+  if(!_fl.mitte || jetzt>_fl.mitteBis){
+    var r=t.k.getBoundingClientRect();
+    _fl.mitte={ x:r.left+r.width/2, y:r.top+r.height/2 }; _fl.mitteBis=jetzt+1000;
+  }
+  var dx=_fl.x-_fl.mitte.x, dy=_fl.y-_fl.mitte.y, d=Math.sqrt(dx*dx+dy*dy)||1;
+  var weit=Math.min(4.5, d/60);
+  var ziel='translate('+(dx/d*weit).toFixed(1)+'px,'+(dy/d*weit).toFixed(1)+'px)';
+  if(ziel===_fl.blickZiel) return;
+  /* Als Web Animation, NICHT über style.transform: jede Änderung am
+     style-Attribut liess die :has()-Regeln am <body> den ganzen Baum neu
+     berechnen und die ganze Seite neu malen — gemessen 12,9 ms je Bild
+     statt 1,9 (CPU ÷4, Maus über der leeren Seitenleiste, Spur
+     „StyleInvalidator … BODY … invalidates subtree"). Eine Animation
+     ändert kein Attribut. Die vorige wird abgelöst, nicht gestapelt. */
+  var alt=_fl.blick;
+  try{
+    _fl.blick=t.loch.animate([{ transform:_fl.blickZiel||'none' }, { transform:ziel }], { duration:140, easing:'ease-out', fill:'forwards' });
+    _fl.blickZiel=ziel;
+  }catch(e){}
+  if(alt) try{ alt.cancel(); }catch(e){}
+}
+function formiSchauNach(x, y){
+  _fl.x=x; _fl.y=y;
+  if(!_fl.raf) _fl.raf=requestAnimationFrame(formiSchauen);
+}
+function formiWach(stumm){
+  _fl.zuletzt=Date.now();
+  if(!_fl.schlaeft) return;
+  _fl.schlaeft=false;
+  var k=$('formiKugel'); if(k) k.classList.remove('fk-schlaeft');
+  if(!stumm){ formiKugelGlitch(); setTimeout(function(){ formiFuehlt('blinzelt'); }, 320); }
+}
+function formiBlinzelnPlanen(){
+  clearTimeout(_fl.blinzelUhr);
+  _fl.blinzelUhr=setTimeout(function(){
+    if(formiLebtAn() && !_fl.schlaeft) formiFuehlt('blinzelt');
+    formiBlinzelnPlanen();
+  }, 4000+Math.random()*7000);
+}
+/* Zählt Haken; ab dem dritten binnen 20 s staunt Formi statt sich zu freuen. */
+function formiHaken(){
+  var jetzt=Date.now();
+  _fl.haken=_fl.haken.filter(function(t){ return jetzt-t<20000; }); _fl.haken.push(jetzt);
+  formiFuehlt(_fl.haken.length>=3 ? 'staunt' : 'freut');
+}
+function formiFeiert(text){
+  formiFuehlt('feiert');
+  if(text) toast(text);
+}
+/* „Hat etwas für dich": der Punkt steht, solange es Überfälliges oder
+   fehlendes Material gibt, das man in Formi noch nicht gesehen hat.
+   Gesehen heisst: Formi seit diesem Stand einmal geöffnet. */
+function formiHatEtwas(schluessel){
+  _fl.hatKey=schluessel||'';
+  var k=$('formiKugel'); if(!k) return;
+  var gesehen=''; try{ gesehen=localStorage.getItem('kf_formi_gesehen')||''; }catch(e){}
+  var an=!!_fl.hatKey && _fl.hatKey!==gesehen;
+  k.classList.toggle('fk-hat', an);
+  /* Der Name bleibt „Formi öffnen" (test-uebersicht); der Punkt kommt
+     als Beschreibung dazu, damit Vorleser ihn auch melden. */
+  /* Nur schreiben, wenn es sich ändert: jede Attributänderung lässt die
+     :has()-Regeln am <body> nachrechnen (siehe formiSchauen). */
+  if(an !== k.hasAttribute('aria-describedby')){
+    if(an) k.setAttribute('aria-describedby', 'formiKugelHat'); else k.removeAttribute('aria-describedby');
+  }
+}
+function formiGesehen(){
+  try{ localStorage.setItem('kf_formi_gesehen', _fl.hatKey||''); }catch(e){}
+  formiHatEtwas(_fl.hatKey);
+}
+function formiLebtStart(){
+  if(_fl.gestartet) return; _fl.gestartet=true;
+  _fl.gefuehleAus = jvPersona().gefuehle==='aus';
+  var maus=!!(window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches);
+  function tun(){ formiWach(); }
+  document.addEventListener('pointermove', function(e){ _fl.zuletzt=Date.now(); if(_fl.schlaeft) formiWach(); if(maus) formiSchauNach(e.clientX, e.clientY); }, { passive:true });
+  ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(function(n){ document.addEventListener(n, tun, { passive:true, capture:true }); });
+  /* Tippen in ein Feld: hinschauen und nicken. Die Lage des Feldes wird
+     im Bild gelesen, nicht im Ereignis. */
+  document.addEventListener('input', function(e){
+    var f=e.target; if(!f || !/^(INPUT|TEXTAREA)$/.test(f.tagName) && !f.isContentEditable) return;
+    var jetzt=Date.now(); if(jetzt<_fl.nickBis) return; _fl.nickBis=jetzt+400;
+    requestAnimationFrame(function(){
+      if(!f.getClientRects().length) return;
+      var r=f.getBoundingClientRect(); formiSchauNach(r.left+r.width/2, r.top+r.height/2);
+    });
+    formiFuehlt('nickt');
+  }, true);
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState==='hidden'){ _fl.weg=Date.now(); return; }
+    if(_fl.weg && Date.now()-_fl.weg>60000) setTimeout(function(){ formiFuehlt('freut'); }, 400);
+    _fl.weg=0;
+  });
+  addEventListener('resize', function(){ _fl.mitte=null; }, { passive:true });
+  setInterval(formiSchlafPruefen, 10000);
+  formiBlinzelnPlanen();
+}
+function formiSchlafPruefen(){
+  if(_fl.schlaeft || !formiLebtAn()) return;
+  if(Date.now()-_fl.zuletzt>90000){ _fl.schlaeft=true; var k=$('formiKugel'); if(k) k.classList.add('fk-schlaeft'); }
+}
+/* Für die Durchläufe (test-formi-lebt): Gefühle auslösen und die Uhr
+   vorstellen, statt 90 Sekunden zu warten. Liest und schreibt nichts
+   ausser Formis eigenem Zustand. */
+window.__formiLebt = {
+  fuehlt: function(a){ formiFuehlt(a); },
+  haken: function(){ formiHaken(); },
+  glitch: function(sel){ formiGlitch(document.querySelector(sel)); },
+  einschlafen: function(){ _fl.zuletzt=Date.now()-91000; formiSchlafPruefen(); return _fl.schlaeft; }
+};
 /* Wohin der Zeiger fährt: der Knopf des Bereichs in der Seitenleiste
    (Rechner) oder unten in der Leiste (Handy), sonst der Bereichskopf. */
 function formiZeigerZiel(ziel){
@@ -26126,7 +26707,7 @@ function formiZeiger(ziel){
       var ok=false;
       function weiter(){
         if(ok) return; ok=true;
-        z.classList.add('tippt'); leuchten(); jvTon('schritt');
+        z.classList.add('tippt'); leuchten(); jvTon('schritt'); formiGlitch(el);
         setTimeout(fertig, 260);
         setTimeout(function(){ if(z.parentNode) z.parentNode.removeChild(z); }, 900);
       }
@@ -26953,13 +27534,19 @@ function gehirnAbhakenSuchen(v){
 }
 function gehirnAbhakenSchreiben(bereich, k, t, done){
   if(bereich==='aufgabe'){
-    return aufgabeHaken(k, t.id, done).catch(function(e){ throw new Error(aufgabeFehlerText(e, k)); });
+    return aufgabeHaken(k, t.id, done, true).catch(function(e){ throw new Error(aufgabeFehlerText(e, k)); });
   }
   var kuerzel = done ? putzKuerzel() : null;
-  return S('studios').doc(k).collection('cleaning').doc(t.id)
-    .update({ done:done, doneBy:done?session.name:null, doneByUid:done?session.uid:null,
-              doneKuerzel:kuerzel||null, doneAt:done?Date.now():null })
-    .then(function(){ schedulePutzplanSheets(k); });
+  var jetzt = done ? Date.now() : null;
+  var ref = S('studios').doc(k).collection('cleaning').doc(t.id);
+  var daten = { done:done, doneBy:done?session.name:null, doneByUid:done?session.uid:null,
+                doneKuerzel:kuerzel||null, doneAt:jetzt, formiAt:jetzt };
+  /* Runde 186: die Formi-Spur (formiAt), Übergang wie in aufgabeHaken. */
+  return ref.update(daten).catch(function(e){
+    if(!e || !/permission/i.test(String(e.code||''))) throw e;
+    delete daten.formiAt;
+    return ref.update(daten);
+  }).then(function(){ schedulePutzplanSheets(k); });
 }
 function gehirnAbhaken(v, x, btn){
   /* Ohne Netz wartet die Datenbank, bis sie wieder durchkommt (der
@@ -27150,6 +27737,13 @@ function jarvisAuf(){
   jvTon('auf');
   setTimeout(jvBriefingSprechen, 1300);
   requestAnimationFrame(function(){ j.classList.add('da'); var f=$('jarvisFeld'); if(f && !('ontouchstart' in window)) f.focus(); gehirnNachUnten(); });
+  /* Runde 186: das kleine Fenster springt glitchend auf — Formi kommt aus
+     dem System, nicht aus einer Schublade. Nur transform/opacity. */
+  if(_jvKompakt && !gehirnWenigBewegung() && j.animate){
+    try{ j.animate([Object.assign({ transform:'translateX(-6px)', opacity:.4 }, FK_SCHRITT), Object.assign({ transform:'translateX(5px)', opacity:.9, offset:.3 }, FK_SCHRITT),
+                    Object.assign({ transform:'translateX(-2px)', opacity:.7, offset:.6 }, FK_SCHRITT), { transform:'none', opacity:1 }], { duration:280 }); }catch(e){}
+  }
+  formiGesehen();
   tick(8);
 }
 function jarvisZu(){
@@ -31915,7 +32509,9 @@ function buildTeamTabs(){
     var id=b.getAttribute('data-teamtab');
     var an=featureAn(id);
     b.style.display = an ? '' : 'none';
-    if(an){ sichtbar++; return; }
+    /* „Brett" ist umgezogen (Pinnwand, Runde 187) – der Knopf bleibt als
+       Umleitung, zählt aber nicht als Reiter dieser Leiste. */
+    if(an){ if(id!=='brett') sichtbar++; return; }
     b.classList.remove('on');
     var p=$(TEAMPANES[id]); if(p) p.style.display='none';
   });
@@ -33184,6 +33780,9 @@ function renderHome(){
   });
   var putzOffen=putzOffenGesamt(keys);
   var dmUngelesen=dmUnreadCount();
+  /* Runde 186: hat Formi etwas für dich? Der Stand als Schlüssel — ändert
+     er sich, ist es neu. */
+  if(typeof formiHatEtwas==='function') formiHatEtwas(ueber||matArtikel ? 'u'+ueber+'m'+matArtikel : '');
 
   // Begrüßung
   var h=new Date().getHours();
@@ -33210,8 +33809,8 @@ function renderHome(){
        beim Namen. Ein Balken, der daneben „5 Aufgaben sind überfällig"
        sagt, wiederholt nur — und Wiederholung ist genau die Unruhe,
        gegen die die Startseite umgebaut wurde. */
-    if(ueber && !layoutNeu()) alerts.push({k:'',i:ikon('warnung'),t:ueber+(ueber===1?' Aufgabe ist überfällig':' Aufgaben sind überfällig'),v:'todos',f:'faellig'});
-    if(matArtikel) alerts.push({k:' warn',i:ikon('paket'),t:matArtikel+' Artikel fehlen in '+matStudios+(matStudios===1?' Studio':' Studios'),v:'material'});
+    if(ueber && !layoutNeu()) alerts.push({k:' bad',i:ikon('warnung'),t:ueber+(ueber===1?' Aufgabe ist überfällig':' Aufgaben sind überfällig'),kurz:ueber+' überfällig',v:'todos',f:'faellig'});
+    if(matArtikel) alerts.push({k:' warn',i:ikon('paket'),t:matArtikel+' Artikel fehlen in '+matStudios+(matStudios===1?' Studio':' Studios'),kurz:matArtikel+' Artikel fehlen',v:'material'});
     // Die Hinweiszeile entfällt: der Text der Aushänge steht ein Stück
     // weiter unten unter „Zum Lesen". Zweimal dasselbe zu melden ist genau
     // die Unruhe, die die Startseite unlesbar macht.
@@ -33225,13 +33824,27 @@ function renderHome(){
     if(alerts.length>4){
       var rest=alerts.length-3;
       alerts=alerts.slice(0,3);
-      alerts.push({k:' mehr',i:'•',t:'und '+rest+' weitere Hinweise',v:'todos'});
+      alerts.push({k:' mehr',i:'•',t:'und '+rest+' weitere Hinweise',kurz:'+'+rest,v:'todos'});
     }
-    al.innerHTML=alerts.map(function(a){
-      return '<div class="alert-bar'+a.k+'" data-go="'+a.v+'"'+(a.f?' data-f="'+a.f+'"':'')+'>'+
-        '<span class="ab-ico">'+a.i+'</span><span class="ab-t">'+esc(a.t)+'</span>'+
-        '<span class="ab-go">ansehen ›</span></div>';
-    }).join('');
+    /* Runde 186: Formi meldet es — EINE Zeile statt eines Balkens je
+       Hinweis (siehe .formi-zeile). Ohne Formi (abgeschaltet) steht die
+       Zeile ohne Ring da: das Zeichen gehört nur Formi. */
+    var mitFormi=gehirnVerfuegbar();
+    var ersteZeile=!_fl.zeileGezeigt && alerts.length>0 && !gehirnWenigBewegung();
+    if(alerts.length) _fl.zeileGezeigt=true;
+    al.innerHTML = !alerts.length ? '' :
+      '<div class="formi-zeile'+(ersteZeile?' fz-ein':'')+'" role="group" aria-label="'+(mitFormi?'Formi meldet':'Hinweise')+'">'+
+      (mitFormi ? '<button type="button" class="fz-gesicht" data-fzformi aria-label="Formi fragen" title="Formi fragen"><span class="fz-ring" aria-hidden="true"></span></button>' : '')+
+      '<div class="fz-teile">'+alerts.map(function(a, i){
+        return '<button type="button" class="fz-teil'+a.k+'" style="--i:'+i+'" data-go="'+a.v+'"'+(a.f?' data-f="'+a.f+'"':'')+
+          ' title="'+esc(a.t)+' — ansehen"><i class="fz-punkt" aria-hidden="true"></i><span class="fz-t">'+
+          /* Am Handy die kurze Form: drei lange Meldungen standen sonst
+             untereinander, und die Zeile wäre so hoch wie drei Balken. */
+          (a.kurz ? '<span class="fz-lang">'+esc(a.t)+'</span><span class="fz-kurz">'+esc(a.kurz)+'</span>' : esc(a.t))+'</span></button>';
+      }).join('')+'</div></div>';
+    var fzg=al.querySelector('[data-fzformi]');
+    if(fzg) fzg.addEventListener('click', function(){ jarvisAuf(); });
+    if(ersteZeile) formiGlitch(al.querySelector('.formi-zeile'));
     al.querySelectorAll('[data-go]').forEach(function(el){
       el.addEventListener('click',function(){
         var f=el.getAttribute('data-f');
@@ -34152,7 +34765,17 @@ function aufgabeFehlerText(e, sk){
   return errMsg(e);
 }
 
-function aufgabeHaken(sk, id, done){
+/* Die Formi-Spur (Runde 186): was Formi getan hat, trägt den kleinen
+   Ring. „über Formi" — die Person bleibt die, in deren Namen es geschah. */
+function formiSpurHTML(t, done){
+  if(!t) return '';
+  if(done && t.formiAt && t.formiAt===t.doneAt)
+    return '<span class="formi-spur" title="Über Formi abgehakt"><i class="formi-ring-mini" aria-hidden="true"></i>über Formi</span>';
+  if(t.vonFormi)
+    return '<span class="formi-spur" title="Über Formi angelegt"><i class="formi-ring-mini" aria-hidden="true"></i>über Formi angelegt</span>';
+  return '';
+}
+function aufgabeHaken(sk, id, done, vonFormi){
   var ref=S('studios').doc(sk).collection('todos').doc(id);
   var daten={ done:done, doneBy:done?session.name:null,
               doneByUid:done?session.uid:null,
@@ -34169,9 +34792,20 @@ function aufgabeHaken(sk, id, done){
   var t=todoFinden(sk, id);
   var k=done ? putzKuerzel() : '';
   if(k || (t && t.doneKuerzel)) daten.doneKuerzel = k || null;
-  return ref.update(daten).catch(function(e){
-    if(!('doneKuerzel' in daten) || !e || !/permission/i.test(String(e.code||''))) throw e;
-    delete daten.doneKuerzel;
+  /* Runde 186, Formi-Spur: hakt Formi ab, steht formiAt = doneAt daneben.
+     Angezeigt wird „über Formi" nur, solange beide gleich sind — hakt
+     danach ein Mensch neu ab, hat doneAt einen anderen Wert und die Spur
+     ist von selbst weg, ohne dass jeder Haken-Weg davon wissen muss.
+     ÜBERGANG wie beim Kürzel: lehnt eine noch alte Regel das Feld ab,
+     geht der Haken ohne Spur noch einmal raus. */
+  if(vonFormi && done) daten.formiAt = daten.doneAt;
+  else if(vonFormi && t && t.formiAt) daten.formiAt = null;
+  return ref.update(daten).then(function(){
+    if(done && !vonFormi && typeof formiHaken==='function') formiHaken();
+  }, function(e){
+    if(!e || !/permission/i.test(String(e.code||''))) throw e;
+    if(!('doneKuerzel' in daten) && !('formiAt' in daten)) throw e;
+    delete daten.doneKuerzel; delete daten.formiAt;
     return ref.update(daten);
   });
 }
@@ -35633,7 +36267,7 @@ function ichZeitenLaden(){
   if(mon) mon.textContent='im '+_zeitMonat.toLocaleDateString('de-DE',{month:'long',year:'numeric'});
   var box=$('ichZeitenListe');
   if(box) box.innerHTML=emptyMini('Wird geladen …');
-  /* Runde 186: dazu die eigenen Schichten des Monats — für „Plan"
+  /* Runde 189: dazu die eigenen Schichten des Monats — für „Plan"
      neben der gestempelten Zeit. Fehlen sie (Schichtplan aus, kein
      Studio), steht die Liste wie bisher da. */
   var mLetzt=ymd(new Date(_zeitMonat.getFullYear(), _zeitMonat.getMonth()+1, 0));
@@ -35663,7 +36297,7 @@ function renderIchZeiten(rows){
   var summeMs=0, pauseMs=0;
   gezaehlt.forEach(function(t){ summeMs+=t.arbeit; pauseMs+=t.pause; });
   var luecken=tage.filter(function(t){ return t.offen && !t.laeuft; }).length;
-  /* Plan bis heute (Runde 186): die Schichten des Monats, die schon
+  /* Plan bis heute (Runde 189): die Schichten des Monats, die schon
      vorbei sind oder heute laufen. Ein geplanter Tag nächste Woche ist
      noch kein Minus. */
   var sollMs=0, mitPlan=false;
@@ -35766,7 +36400,7 @@ function zkOeffnen(){
   zkJetztLaden();
 }
 
-/* ── Jetzt im Studio (Runde 186) ──
+/* ── Jetzt im Studio (Runde 189) ──
    Die Stempel von HEUTE in diesem Studio (studioKey und tag — zwei
    Gleichheitsfilter, kein Index nötig) und die Schichten von heute.
    Lesen darf das die Leitung des Studios und die Geschäftsführung
@@ -36045,7 +36679,7 @@ function zkDetailBinden(box, t){
    firestore.rules und in der Funktion), sondern Höflichkeit: ein Feld,
    das bei jedem Versuch „nicht freigeschaltet" sagt, ist schlimmer als
    keins. */
-/* Runde 186: der Knopf sagt, WAS gestempelt wird (data-handyart), und
+/* Runde 189: der Knopf sagt, WAS gestempelt wird (data-handyart), und
    der Server prüft, ob das gerade passt. Vorher entschied allein der
    Server, und der kannte keinen Feierabend. */
 function ichHandyStempeln(btn){
@@ -36075,7 +36709,7 @@ function ichHandyStempeln(btn){
   });
 }
 
-/* ══ ZEITEN: Stand jetzt, Woche, Plan neben Ist (Runde 186) ══════════
+/* ══ ZEITEN: Stand jetzt, Woche, Plan neben Ist (Runde 189) ══════════
    Aus dem Betrieb, 22.10.2026: „so wie crewmeister funktioniert am
    besten", und auf die Frage, woher das Soll kommt: aus dem
    Schichtplan („JA").
@@ -37265,6 +37899,28 @@ var _tdGezeichnetFuer=null, _tdStand=null;
 function todoStand(){
   return [_todoStudio, _todoMode, _todoFilter, _todoDring?1:0, _todoSort].join('|');
 }
+/* ══ ERLEDIGT EINGEKLAPPT (Runde 187) ═════════════════════════════════
+   Aus dem Betrieb: „zu viel auf einem Bildschirm". Erledigtes ist
+   erledigt – es stand trotzdem blass in voller Höhe zwischen dem, was
+   noch zu tun ist. Jetzt steht es eingeklappt unter „3 erledigt" am Ende
+   seiner Gruppe (wie Google Tasks, Microsoft To Do, Things). Nichts geht
+   verloren: ein Tipp klappt es auf, und wer gerade abhakt, sieht seine
+   Zeile noch eine Minute lang – sonst verschwände die Rückmeldung mitten
+   im Tippen. Aufgeklappt bleibt aufgeklappt, bis man es wieder zuklappt. */
+var TD_FRISCH_MS = 60000;
+var _tdErledigtOffen = {};
+function tdMitErledigt(rows, zeile, gruppe){
+  var jetzt=Date.now();
+  var offen=[], zu=[];
+  rows.forEach(function(x){
+    var frisch = isDone(x.t) && x.t.doneAt && (jetzt - x.t.doneAt) < TD_FRISCH_MS;
+    (isDone(x.t) && !frisch ? zu : offen).push(x);
+  });
+  var html=offen.map(zeile).join('');
+  if(!zu.length) return html;
+  return html+'<details class="td-erledigt" data-tderledigt="'+esc(gruppe)+'"'+(_tdErledigtOffen[gruppe]?' open':'')+'>'+
+    '<summary><span>'+zu.length+' erledigt</span></summary>'+zu.map(zeile).join('')+'</details>';
+}
 function renderTodos(){
   var area=$('todoArea'); if(!area) return;
   var liste=todoStudioListe();
@@ -37341,10 +37997,10 @@ function renderTodos(){
           '<div class="pg-kopf"><h4>'+esc(g.wort)+'</h4>'+
             '<span class="pg-zahl">'+zahl+'</span>'+
             '<i class="pg-balken" aria-hidden="true"><i style="width:'+pct+'%"></i></i></div>'+
-          drin.map(zeile).join('')+'</section>';
+          tdMitErledigt(drin, zeile, g.id)+'</section>';
       }).join('')+'</div>';
     } else {
-      area.innerHTML=list.map(zeile).join('');
+      area.innerHTML=tdMitErledigt(list, zeile, 'flach');
     }
   }
   /* ── Eingeblendet wird, was man sieht ──
@@ -37352,6 +38008,9 @@ function renderTodos(){
      die Zeilen ohne Bewegung (gemessen am 23.9.2026, siehe dort). */
   var reihen=area.querySelectorAll('.todo');
   for(var ri=12; ri<reihen.length; ri++) reihen[ri].classList.add('ohne-ein');
+  area.querySelectorAll('details.td-erledigt').forEach(function(d){
+    d.addEventListener('toggle', function(){ _tdErledigtOffen[d.getAttribute('data-tderledigt')]=d.open; });
+  });
   bindTodoClicks(area);
   _tdStand=todoStand();
   tdNotizenLaden();
@@ -37548,7 +38207,7 @@ function todoHTML(t,sk,chefView,mitStudio,ziehbar){
     ((ziehbar && !done) ? griffHTML() : '')+
     '<button class="check" aria-label="abhaken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg></button>'+
     '<div class="t-body"><div class="t-title">'+esc(t.title)+rep+dueBadge+stepCount+'</div>'+
-    '<div class="pp-meta t-foot">'+studioMarke+stand+assign+'</div>'+
+    '<div class="pp-meta t-foot">'+studioMarke+stand+formiSpurHTML(t, done)+assign+'</div>'+
     (t.desc?'<div class="t-desc">'+esc(t.desc)+'</div>':'')+
     stepsHtml+
     grundHtml+
@@ -40891,10 +41550,22 @@ function updateBadges(){
     });
   }
   var text = open>99 ? '99+' : String(open);
-  document.querySelectorAll(
-    '[data-badge="todos"],[data-mbadge="todos"],'+
-    '[data-badge="g-arbeit"],[data-mbadge="g-arbeit"]').forEach(function(b){
+  document.querySelectorAll('[data-badge="todos"],[data-mbadge="todos"]').forEach(function(b){
     b.textContent=text; b.style.display=open?'grid':'none';
+  });
+  /* PUNKT STATT ZAHL am Raum (Runde 187). Die Zahl zählte alle offenen
+     Aufgaben ALLER Studios – sie stand nie still und sagte nie „du bist
+     gemeint". Zahlen-Abzeichen ziehen nachweislich Aufmerksamkeit
+     (Bartoli & Benedetto 2022), und ständige Unterbrechungen erhöhen
+     den Stress (Kushlev 2016; Mark 2008). Also: ein Punkt sagt „hier ist
+     etwas offen"; die Zahl steht eine Ebene tiefer (Kopfzeile „4 offen",
+     Gruppen) und im Vorlesetext. Zahlen bleiben nur, wo jemand
+     persönlich gemeint ist (Glocke der Leitung, Direktnachrichten). */
+  document.querySelectorAll('[data-badge="g-arbeit"],[data-mbadge="g-arbeit"]').forEach(function(b){
+    b.textContent=''; b.classList.add('punkt');
+    b.setAttribute('role','img');
+    b.setAttribute('aria-label', open+' offen'); b.title=open+' offen';
+    b.style.display=open?'grid':'none';
   });
 }
 
@@ -41882,7 +42553,7 @@ function renderPutzplan(){
       ? esc(t.doneKuerzel)+' <span class="pp-konto">('+esc(t.doneBy||'')+')</span>'
       : esc(t.doneBy||'')) : '';
     var doneInfo = d && (t.doneBy || t.doneKuerzel)
-      ? '<span class="pp-doneby">✓ '+wer+' · '+fmtDateTime(t.doneAt)+'</span>'
+      ? '<span class="pp-doneby">✓ '+wer+' · '+fmtDateTime(t.doneAt)+'</span>'+formiSpurHTML(t, d)
       : '';
     /* Stift VOR dem Papierkorb: die haeufigere Handlung steht zuerst,
        und ein Loeschknopf, den der Daumen als erstes trifft, ist an
@@ -41908,7 +42579,8 @@ function renderPutzplan(){
       '<div class="pp-meta">'+(pause
         ? '<span class="pp-pausetxt">'+esc(ppPauseText(t))+'</span>'
         : (doneInfo||'<span>noch offen</span>'))+pauseKnopf+'</div></div>'+
-      stift+del+'</div></div>';
+      stift+del+(chef ? '<button class="t-mehr pp-mehr" data-ppmehr="'+esc(t.id)+'" title="Mehr: Bearbeiten, Löschen" aria-label="Mehr">⋯</button>' : '')+
+      '</div></div>';
   }
   /* ── Gruppiert nach Rhythmus (Runde 103, P2) ──
      In der Standard-Sortierung steht der Plan in Gruppen: täglich, wöchentlich, in eigenem Abstand, einmalig —
@@ -42281,7 +42953,12 @@ function bindPutzplanClicks(box){
       if(willDone){
         frischMerken(id);
         if(node){ node.classList.add('just-done'); setTimeout(function(){ node.classList.remove('just-done'); },720); }
-        burstAt(chk); tick(); toast(pickPraise());
+        burstAt(chk); tick();
+        /* Runde 186: Formi freut sich mit — und feiert, wenn damit der
+           Putzplan dieses Studios für heute fertig ist. */
+        var nochOffen=_ppTasks.filter(function(x){ return x.id!==id && !isDone(x) && !ppPausiert(x); }).length;
+        if(!nochOffen && typeof formiFeiert==='function'){ formiFeiert('Putzplan '+studioName(_ppStudioKey)+' für heute fertig – Formi feiert mit'); }
+        else { toast(pickPraise()); if(typeof formiHaken==='function') formiHaken(); }
       }
       /* Das Kürzel wird MITGESCHRIEBEN, nicht statt des Kontonamens.
          Beides zusammen beantwortet die Frage, die der Chef wirklich
@@ -42326,6 +43003,17 @@ function bindPutzplanClicks(box){
           })
           .catch(function(e){ toast(errMsg(e),true); });
       });
+    });
+  });
+  /* „…" am Handy (Runde 187): dasselbe Blatt wie bei den Aufgaben. Die
+     Einträge drücken die Knöpfe der Zeile – EIN Weg zum Bearbeiten und
+     Löschen, nicht zwei. */
+  box.querySelectorAll('[data-ppmehr]').forEach(function(b){
+    b.addEventListener('click',function(e){
+      e.stopPropagation();
+      var id=b.getAttribute('data-ppmehr'), t=null;
+      _ppTasks.forEach(function(x){ if(x.id===id) t=x; });
+      if(t) ppBlattOeffnen(t, b.closest('.pp-item'));
     });
   });
   box.querySelectorAll('[data-ppedit]').forEach(function(b){
@@ -43272,7 +43960,7 @@ function todoBlattOeffnen(t, sk){
     eintraege.push({ id:'danke', ico:ikon('herz'),
       txt:(bedankt ? 'Danke zurücknehmen' : 'Danke sagen')+(t.doneBy ? ' an '+t.doneBy : '') });
   }
-  if(canManage()){
+  if(canManage() && darfAufgabeIn(sk)){
     eintraege.push({ id:'bearbeiten', ico:ikon('stift'), txt:'Bearbeiten' });
     if(t.due && !done){
       eintraege.push({ id:'plus1', ico:ikon('uhr'), txt:'Frist: einen Tag später' });
@@ -43297,9 +43985,34 @@ function todoBlattOeffnen(t, sk){
   blatt.classList.add('show');
   tick(8);
 }
-function todoBlattSchliessen(){ var b=$('todoSheet'); if(b) b.classList.remove('show'); _tbTodo=null; _tbSk=null; }
+function todoBlattSchliessen(){ var b=$('todoSheet'); if(b) b.classList.remove('show'); _tbTodo=null; _tbSk=null; _tbPpZeile=null; }
+var _tbPpZeile=null;
+function ppBlattOeffnen(t, zeile){
+  var blatt=$('todoSheet'); if(!blatt || !zeile) return;
+  _tbTodo=null; _tbSk=null; _tbPpZeile=zeile;
+  $('tbWho').textContent=t.title||'Putzaufgabe';
+  $('tbWhere').textContent=studioName(_ppStudioKey)+' · Putzplan';
+  var gb=$('tbGrundBox'); if(gb) gb.style.display='none';
+  var pause=ppPausiert(t);
+  $('tbActs').innerHTML=[
+    { id:'ppedit', ico:ikon('stift'), txt:'Bearbeiten' },
+    { id:'pause', ico:ikon('pause'), txt:pause ? 'Fortsetzen' : 'Vier Wochen pausieren' },
+    { id:'del', ico:ikon('papierkorb'), txt:'Löschen', warn:true }
+  ].map(function(e){
+    return '<button class="ms-act'+(e.warn?' warn':'')+'" data-tba="pp-'+e.id+'">'+
+      '<span class="ms-ico">'+e.ico+'</span><span>'+esc(e.txt)+'</span></button>';
+  }).join('');
+  blatt.classList.add('show');
+  tick(8);
+}
 
 function todoBlattAktion(was){
+  if(_tbPpZeile && /^pp-/.test(was)){
+    var zeile=_tbPpZeile, knopf=zeile.querySelector('[data-'+was.slice(3)+']');
+    todoBlattSchliessen();
+    if(knopf) knopf.click();
+    return;
+  }
   var t=_tbTodo, sk=_tbSk;
   if(!t || !sk) return;
   var ref=S('studios').doc(sk).collection('todos').doc(t.id);
@@ -44805,6 +45518,7 @@ function listenDmThreads(){
       _dmThreadsFirst=false;
       if(_dmId) dmHakenAktualisieren();
       updateDmBadge();
+      if(currentView==='chat') kanalSpalteZeichnen();
       if(currentView==='dm' && $('dmConvo').style.display==='none' && (!$('dmSearch')||!$('dmSearch').value)) renderDmPeople('');
     }, function(e){ ladeFehler('dmListe', e); });
 }
@@ -47116,7 +47830,8 @@ function bindActions(){
     });
   });
 
-  // Abmelden
+  // Abmelden – der Knopf im Profil drückt denselben (ein Weg, eine Rückfrage)
+  $('pmLogout').addEventListener('click',function(){ $('logoutBtn').click(); });
   $('logoutBtn').addEventListener('click',function(){
     if(confirm('Abmelden?\n\nDeine Daten bleiben gespeichert – du kannst dich jederzeit wieder anmelden.')){
       stopListeners();

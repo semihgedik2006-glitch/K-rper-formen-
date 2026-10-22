@@ -153,7 +153,7 @@ const leiste = (p) => p.evaluate(() => { const l = document.getElementById('offl
       k.click(); await w(250);
       for (const t of ['1', '2', '3', '4']) document.querySelector('#tmTasten [data-tmt="' + t + '"]').click();
       document.querySelector('#tmTasten [data-tmt="ok"]').click(); await w(500);
-      /* Runde 186: nach der PIN wählt man, WAS gestempelt wird. Ohne Netz
+      /* Runde 189: nach der PIN wählt man, WAS gestempelt wird. Ohne Netz
          ist der Stand unbekannt — dann stehen alle vier Knöpfe da. */
       window.__knoepfeOhneNetz = [...document.querySelectorAll('#tmWahlKnoepfe [data-tmart]')].map(k => k.getAttribute('data-tmart'));
       const k2 = document.querySelector('#tmWahlKnoepfe [data-tmart="kommen"]');

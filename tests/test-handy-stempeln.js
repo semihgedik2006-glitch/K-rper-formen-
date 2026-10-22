@@ -265,7 +265,7 @@ async function zurIchKarte(page) {
     console.log('GESTEMPELT:', JSON.stringify(ok));
     if (ok.aufrufe !== 1) errs.push('Der Stempel geht nicht über die Funktion (' + ok.aufrufe + ' Aufrufe)');
     if (ok.mitCode !== '482917') errs.push('Der Code kommt nicht mit: ' + ok.mitCode);
-    /* Runde 186: der Knopf sagt, was er stempelt — der Server prüft. */
+    /* Runde 189: der Knopf sagt, was er stempelt — der Server prüft. */
     if (ok.mitArt !== 'kommen') errs.push('Der Knopf schickt nicht, was er stempelt (art): ' + ok.mitArt);
     if (!/Kommen/.test(ok.meldung)) errs.push('Der Erfolg wird nicht gemeldet: „' + ok.meldung + '"');
     if (ok.feld !== '') errs.push('Der Code bleibt nach dem Stempeln im Feld stehen');

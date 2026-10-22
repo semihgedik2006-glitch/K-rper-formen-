@@ -406,7 +406,7 @@ Rückfragen vorgelegt, Antworten:
 ### Reihenfolge
 
 1. ✅ **Pause oder Feierabend, Stand jetzt, Plan neben Ist, Jetzt im
-   Studio** (Runde 186). Dabei gefunden: am Terminal und am Handy liess
+   Studio** (Runde 189). Dabei gefunden: am Terminal und am Handy liess
    sich gar kein Feierabend stempeln.
 2. **Pausenregel (auffüllen) und Hinweise nach dem Arbeitszeitgesetz** —
    über 10 h am Tag, Ruhezeit unter 11 h, über 6 h ohne Pause. Die

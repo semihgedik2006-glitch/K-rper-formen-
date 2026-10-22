@@ -167,7 +167,7 @@ pruefe('Ein richtiger Versuch setzt den Zähler zurück',
 
 /* ── Was das Stempeln alles prüft ── */
 console.log('\n── Drei Schlüssel, nicht einer ──');
-/* Runde 186: Gerät, Person und PIN stehen in terminalUndPinPruefen —
+/* Runde 189: Gerät, Person und PIN stehen in terminalUndPinPruefen —
    dieselbe Prüfung für stempeln UND stempelStand. Der Text von stempeln
    zählt deshalb nur MIT dieser Hilfe, und nur, wenn stempeln sie auch
    aufruft. Sonst wären die Zeilen unten grün, obwohl stempeln gar nichts

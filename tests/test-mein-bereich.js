@@ -178,7 +178,7 @@ async function reiterOeffnen(p, tab) {
       'STELLE: „Heute" (mit dem Reiter „Ich") steht an Position ' + ankunft.stelle +
       ' statt an erster');
     /* In der Uebersicht liegen vier Reiter: Woche, Kalender, Zeiten, Ich.
-       „Zeiten" kam in Runde 186 dazu — aus dem Betrieb, 22.10.2026:
+       „Zeiten" kam in Runde 189 dazu — aus dem Betrieb, 22.10.2026:
        „erstelle bitte noch eine session nur für die stempel seite … das
        sie so wie crewmeister funktioniert". Die Stempelseite ist damit
        ein eigener Reiter statt drei Karten unter „Ich". */

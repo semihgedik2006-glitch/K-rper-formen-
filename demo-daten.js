@@ -1855,7 +1855,7 @@
     }
   };
 
-  /* Runde 186: wie der echte Server — mit `art` sagt der Aufruf, was er
+  /* Runde 189: wie der echte Server — mit `art` sagt der Aufruf, was er
      will (Pause ODER Feierabend), ohne bleibt es beim alten Ablauf. */
   function demoLetzte(liste) {
     var l = liste.filter(function (z) { return !z.storno; });

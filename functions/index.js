@@ -5238,9 +5238,9 @@ function offlineZeitPruefen(roh, jetzt) {
   return Math.round(o);
 }
 
-/* ── Gerät, Person, PIN (Runde 186) ──
+/* ── Gerät, Person, PIN (Runde 189) ──
    Dieselben drei Prüfungen für stempeln und stempelStand. Sie standen
-   bis Runde 185 nur in stempeln; eine zweite Abschrift wäre die Stelle,
+   bis Runde 188 nur in stempeln; eine zweite Abschrift wäre die Stelle,
    an der eine künftige Verschärfung nur auf einer Seite ankommt. */
 async function terminalUndPinPruefen(firma, data) {
   const terminalId = String((data && data.terminalId) || '').trim();
@@ -5325,12 +5325,12 @@ async function terminalUndPinPruefen(firma, data) {
   return { tSnap, term, person, fremd, terminalId, uid };
 }
 
-/* ── Welcher Schritt darf jetzt kommen? (Runde 186) ──
+/* ── Welcher Schritt darf jetzt kommen? (Runde 189) ──
    Aus dem Betrieb, 22.10.2026: „so wie crewmeister funktioniert am
    besten". Dort stehen nach dem Kommen ZWEI Knöpfe: Pause und
    Feierabend.
 
-   Hier stand bis Runde 185 nur naechsterSchritt(), und der kennt den
+   Hier stand bis Runde 188 nur naechsterSchritt(), und der kennt den
    Feierabend nicht: kommen → pause → zurueck → pause → … Am Terminal und
    am Handy liess sich „gehen" gar nicht stempeln; jeder Tag endete mit
    „Feierabend fehlt", bis die Leitung ihn nachtrug.
@@ -5451,7 +5451,7 @@ exports.stempeln = region.https.onCall(async (data, context) => {
   return { ok: true, art, ts: wann, name: person.name || '', fremd, ohneNetz };
 });
 
-/* ── Wo stehe ich gerade? (Runde 186) ──
+/* ── Wo stehe ich gerade? (Runde 189) ──
    Am Terminal: Name antippen, PIN, und DANN erst sieht man den eigenen
    Stand und die passenden Knöpfe — so wie bei Crewmeister. Vorher stand
    „im Dienst / noch nicht da" an jeder Kachel, für jeden am Tresen

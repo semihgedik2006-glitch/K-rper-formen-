@@ -1,4 +1,4 @@
-/* ── Die Stempelseite (Runde 186) ──────────────────────────────────────
+/* ── Die Stempelseite (Runde 189) ──────────────────────────────────────
    Aus dem Betrieb, 22.10.2026: „die stempel seite … müssen wir auch sehr
    viel verbessern das sie so wie crewmeister funktioniert am besten".
    Und auf die Rückfragen: Soll aus dem Schichtplan „JA", den Stand am

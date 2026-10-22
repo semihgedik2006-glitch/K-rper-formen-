@@ -1,4 +1,4 @@
-/* ── Pause ODER Feierabend: der Stempel sagt, was er will (Runde 186) ──
+/* ── Pause ODER Feierabend: der Stempel sagt, was er will (Runde 189) ──
    Aus dem Betrieb, 22.10.2026: „so wie crewmeister funktioniert am
    besten". Dort stehen nach dem Kommen zwei Knöpfe, Pause und
    Feierabend.
@@ -124,7 +124,7 @@ const als = (uid) => ({ auth: { uid } });
   pruefe('Handy: Feierabend', h2.art === 'gehen');
   pruefe('Handy: zwei Stempel, nicht drei', await anzahl('hanna') === 2);
 
-  console.log('\nPause oder Feierabend (Runde 186)\n' + protokoll.join('\n'));
+  console.log('\nPause oder Feierabend (Runde 189)\n' + protokoll.join('\n'));
   console.log('\n' + bestanden + ' bestanden, ' + gefallen + ' gefallen');
   process.exit(gefallen ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(1); });
