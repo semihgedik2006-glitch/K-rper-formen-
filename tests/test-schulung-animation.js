@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════════
-   SCHULUNG: ANIMATION STATT „VIDEO FOLGT" (Runde 188)
+   SCHULUNG: ANIMATION STATT „VIDEO FOLGT" (Runde 198)
 
    Aus dem Betrieb, 22.10.2026: „bis jetzt gibts nur für die
    verkaufsschulung videos den rest können wir sonst auch selber erstellen

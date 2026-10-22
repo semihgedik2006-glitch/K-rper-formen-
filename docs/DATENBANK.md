@@ -422,19 +422,19 @@ beim ersten Hinterlegen und als Rückfall fürs Mailprogramm.
 
 ---
 
-### Schulung: sieben Sammlungen (seit 22.9.2026; zwei seit Runde 187)
+### Schulung: sieben Sammlungen (seit 22.9.2026; zwei seit Runde 197)
 
 Webinare mit Videos und Fragen — und ein Nachweis, wer sie wann gemacht
 hat.
 
 | Sammlung | Was drin steht | Wer darf |
 |---|---|---|
-| `schulungen` | Module, die der Betrieb SELBST anlegt: `titel`, `kategorie`, `beschreibung`, `dauer`, `pflicht`, `fristTage` (seit Runde 187; ohne Angabe 14), `gueltigMonate`, `strenge`, `grenze`, `schritte[]`, `fragen[]`, `basis`, `aktiv`. Der Grundstock liegt als Datei (`schulungen-basis.js`) und kostet nichts | lesen: jeder Aktive · schreiben: die Leitung |
+| `schulungen` | Module, die der Betrieb SELBST anlegt: `titel`, `kategorie`, `beschreibung`, `dauer`, `pflicht`, `fristTage` (seit Runde 197; ohne Angabe 14), `gueltigMonate`, `strenge`, `grenze`, `schritte[]`, `fragen[]`, `basis`, `aktiv`. Der Grundstock liegt als Datei (`schulungen-basis.js`) und kostet nichts | lesen: jeder Aktive · schreiben: die Leitung |
 | `schulungTeilnehmer` | `name`, `uid` (freiwillig), `kennung`, **`code` (Klartext)**, `codeAm`, `gesperrt` | lesen: die Leitung und die Person selbst · schreiben: die Leitung |
 | `schulungCodes/{kennung}` | `salz`, `hash`, `teilnehmer` — **nur noch Rückfall für Codes von vor dem 22.9.2026** | **niemand** — `allow read, write: if false` |
 | `schulungVersuche/{uid}` | die Bremse gegen Durchprobieren | **niemand** |
-| `schulungLernplan/{teilnehmer}` | seit Runde 187: der Plan zum Auffrischen — `teilnehmer`, `uid`, `test`, `karten` (`'<modul>#<nr>': { s: Stufe, f: fällig ab, d: 1 wenn danebengegangen }`), `ts` | **niemand** im Browser; nur die Cloud Function `schulungAuffrischen` |
-| `schulungFragenStat/{modul}` | seit Runde 187: die Summe je Frage aus dem Auffrischen — `f: { '<nr>': { r: richtig, x: daneben } }`, ohne Namen | lesen: die Leitung · schreiben: **niemand** (nur die Funktion) |
+| `schulungLernplan/{teilnehmer}` | seit Runde 197: der Plan zum Auffrischen — `teilnehmer`, `uid`, `test`, `karten` (`'<modul>#<nr>': { s: Stufe, f: fällig ab, d: 1 wenn danebengegangen }`), `ts` | **niemand** im Browser; nur die Cloud Function `schulungAuffrischen` |
+| `schulungFragenStat/{modul}` | seit Runde 197: die Summe je Frage aus dem Auffrischen — `f: { '<nr>': { r: richtig, x: daneben } }`, ohne Namen | lesen: die Leitung · schreiben: **niemand** (nur die Funktion) |
 | `schulungLaeufe` | ein Durchlauf: `teilnehmer`, `teilnehmerName`, `uid`, `modul`, `geraetUid`, `geraetName`, `studioKey`, `start`, `ende`, `aktivMs`, `durchgang`, `schritteGesehen`, `fragen[]`, `punkte`, `bestanden`, `status`; bei einem Testlauf mit dem Testcode 0000-0000-0000 zusätzlich `test: true`, `uid: null`, `teilnehmer: 'test:<uid>'` | lesen: die Leitung und die Person selbst · **anlegen: niemand** · ändern: nur das Gerät, nur solange `status == 'laeuft'`, und nie `teilnehmer`, `modul`, `geraetUid`, `uid` oder `test` |
 
 **Die Videos selbst liegen nicht in der Datenbank**, sondern im Eimer

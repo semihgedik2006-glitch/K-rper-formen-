@@ -156,7 +156,7 @@ Frage, Ergebnis, Durchgang. Wie weit ein Video angesehen wurde, wird
 **nicht** gespeichert. Testläufe der Leitung mit dem Testcode
 0000-0000-0000 tragen `test: true` und hängen an keiner Person.
 
-**Auffrischen (seit Runde 187, 22.10.2026):** je Teilnehmer ein
+**Auffrischen (seit Runde 197, 22.10.2026):** je Teilnehmer ein
 Lernplan (`schulungLernplan`): welche Frage aus einem bestandenen Modul
 auf welcher Stufe steht und wann sie wieder dran ist. Die gewählte
 Antwort selbst wird nicht gespeichert. Lesen kann den Plan im Browser
@@ -250,7 +250,7 @@ Vollständig in `LOESCHKONZEPT.md`. Kurzfassung:
 | Arbeitsinhalte einer ausgeschiedenen Person | **bleiben** — siehe Löschkonzept 2.2 |
 | Stempelzeiten | **drei Jahre** ab dem Tag des Stempels, jede Nacht 3:50 Uhr (`stempelzeitenAblaufen`), vom Betrieb festgelegt am 27.9.2026; § 16 Abs. 2 ArbZG verlangt mindestens zwei |
 | Schulungs-Durchläufe | keine automatische Frist; bleiben als Nachweis, bis die Geschäftsführung sie löscht |
-| Lernplan zum Auffrischen | keine automatische Frist; wird beim Löschen eines Teilnehmers **nicht** von selbst mitgelöscht (offen, siehe FORTSCHRITT Runde 187) |
+| Lernplan zum Auffrischen | keine automatische Frist; wird beim Löschen eines Teilnehmers **nicht** von selbst mitgelöscht (offen, siehe FORTSCHRITT Runde 197) |
 | Alle Daten eines Kunden | bei Vertragsende auf Weisung; Sicherungen laufen binnen 7 Tagen aus |
 
 ---

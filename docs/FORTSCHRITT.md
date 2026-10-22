@@ -17963,7 +17963,7 @@ mehr ins design integrieren können“. Daraus entstand das Ideenpapier
 - Die Regel `formiAt` ist noch nicht ausgerollt. Bis dahin greift der
   Übergang: Der Haken geht ohne Spur raus.
 
-## Runde 187 — Schulung: auffrischen in Runden, Fristen, weitermachen, am Rechner zwei Spalten (22.10.2026)
+## Runde 197 — Schulung: auffrischen in Runden, Fristen, weitermachen, am Rechner zwei Spalten (22.10.2026)
 
 **Aus dem Betrieb:** „bei der anderen auf die schulungen“ eingehen. Erst
 Ist-Stand, Vergleich und Plan mit Rückfragen, dann bauen. Auf den Plan:
@@ -17976,7 +17976,7 @@ Ist-Stand, Vergleich und Plan mit Rückfragen, dann bauen. Auf den Plan:
 4. Fristen für Pflichtmodule jetzt oder später? „ja jetzt“
 5. Videos: „bis jetzt gibts nur für die verkaufsschulung videos den rest
    können wir sonst auch selber erstellen mit animationen“ — das ist
-   Runde 188.
+   Runde 198.
 
 **Ist-Stand, gemessen** (Demo, vor dem Umbau):
 - Handy 390 px: die Modulliste begann bei Pixel 1.540, nach zwei
@@ -18151,7 +18151,7 @@ Strängen und waren einzeln grün.
   7 Zeilen rot), Leitung: Fristen je Teilnehmer, Fragen ohne Namen, die
   Schwelle von drei Antworten, das Fristfeld im Editor.
 
-## Runde 188 — Schulung: Animationen statt „Video folgt“ (22.10.2026)
+## Runde 198 — Schulung: Animationen statt „Video folgt“ (22.10.2026)
 
 **Aus dem Betrieb:** „bis jetzt gibts nur für die verkaufsschulung videos
 den rest können wir sonst auch selber erstellen mit animationen lade

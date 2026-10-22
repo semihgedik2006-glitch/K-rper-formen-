@@ -401,7 +401,7 @@ async function codeHolen(p, name) {
     if (st.frage) break;
     schritte++;
     if (st.video) videoGesagt = videoGesagt || /Video folgt/.test(st.video);
-    /* Runde 188, aus dem Betrieb: „den rest können wir sonst auch selber
+    /* Runde 198, aus dem Betrieb: „den rest können wir sonst auch selber
        erstellen mit animationen". Ein Video-Schritt ohne Video zeigt
        jetzt eine Animation aus dem Handbuch — und „Weiter" kommt wie beim
        Video erst, wenn jedes Bild zu sehen war. Durchgeklickt wird mit
@@ -427,7 +427,7 @@ async function codeHolen(p, name) {
   /* Solange kein Video hinterlegt ist, MUSS die App das sagen. Ein
      leerer Rahmen liesse jeden glauben, sein Gerät sei schuld — und
      ein Schritt, der so tut, als sei er vollständig, ist schlimmer. */
-  /* Bis Runde 187 stand hier „Video folgt". Seit Runde 188 zeigt der
+  /* Bis Runde 197 stand hier „Video folgt". Seit Runde 198 zeigt der
      Schritt eine Animation; leer oder stumm ist er weiterhin nie (die
      Gegenprobe „ohne Szenen → Video folgt" steht in
      tests/test-schulung-animation.js). */

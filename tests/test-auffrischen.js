@@ -1,7 +1,7 @@
 /* ══════════════════════════════════════════════════════════════════════
-   KURZ AUFFRISCHEN — die kleine Runde (Runde 187)
+   KURZ AUFFRISCHEN — die kleine Runde (Runde 197)
 
-   Bis Runde 185: EINE Frage, 14 Tage nach dem Bestehen, gemerkt nur auf
+   Bis Runde 196: EINE Frage, 14 Tage nach dem Bestehen, gemerkt nur auf
    dem Gerät. Aus dem Betrieb, 22.10.2026, auf den Plan „aus der einen
    Frage wird eine Runde von höchstens drei, in wachsenden Abständen":
    „plan klingt gut". Und auf die Frage, wo die Antworten liegen: „das was

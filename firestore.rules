@@ -1234,7 +1234,7 @@ service cloud.firestore {
     /* Die Bremse gegen Durchprobieren. Ebenfalls zu: wer den eigenen
        Zaehler zuruecksetzen koennte, haette keine Bremse. */
     match /schulungVersuche/{uid} { allow read, write: if false; }
-    /* Auffrischen (Runde 187): der Lernplan je Teilnehmer — welche Frage
+    /* Auffrischen (Runde 197): der Lernplan je Teilnehmer — welche Frage
        auf welcher Stufe steht. Schreibt und liest nur die Cloud Function
        `schulungAuffrischen`. Im Browser niemand, auch nicht die Leitung:
        „Wird es als Kontrolle empfunden, schadet es.“ (Runde 134). */
@@ -2223,7 +2223,7 @@ service cloud.firestore {
         }
         match /schulungCodes/{kennung} { allow read, write: if false; }
         match /schulungVersuche/{uid} { allow read, write: if false; }
-        // Auffrischen (Runde 187) — Begründung bei der flachen Fassung.
+        // Auffrischen (Runde 197) — Begründung bei der flachen Fassung.
         match /schulungLernplan/{tId} { allow read, write: if false; }
         match /schulungFragenStat/{modul} {
           allow read: if inFirma(f) && (istAktiv() && (isChef() || isLeiter()));

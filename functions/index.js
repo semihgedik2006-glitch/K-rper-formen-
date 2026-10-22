@@ -6064,7 +6064,7 @@ async function schulungTestStarten(uid, profil, firma, modulId) {
 }
 
 /* ── Wer steckt hinter diesem Code? ──
-   Seit Runde 187 an ZWEI Stellen gebraucht: beim Anfangen und beim
+   Seit Runde 197 an ZWEI Stellen gebraucht: beim Anfangen und beim
    Auffrischen. Eine zweite Abschrift der Prüfung wäre die Stelle, an der
    eines Tages die Bremse fehlt — deshalb steht sie genau einmal hier. */
 async function schulungTeilnehmerAusCode(firma, uid, roh) {
@@ -6188,7 +6188,7 @@ exports.schulungStart = region.https.onCall(async (data, context) => {
     const tp = tu.exists ? (tu.data() || {}) : {};
     ohneVideoSperre = tp.role === 'chef' && (tp.firma || 'koerperformen') === firma;
   }
-  /* ── Weitermachen statt von vorn (Runde 187) ──
+  /* ── Weitermachen statt von vorn (Runde 197) ──
      „Das Beratungsgespräch" hat 17 Schritte und 67 Fragen, etwa
      150 Minuten. Zwischen zwei Kunden schafft das niemand am Stück. Ein
      angefangener Durchlauf derselben Person, der weniger als 30 Tage alt
@@ -6231,7 +6231,7 @@ exports.schulungStart = region.https.onCall(async (data, context) => {
 });
 
 /* ══════════════════════════════════════════════════════════════════════
-   AUFFRISCHEN: WENIGE FRAGEN, IN WACHSENDEN ABSTÄNDEN (Runde 187)
+   AUFFRISCHEN: WENIGE FRAGEN, IN WACHSENDEN ABSTÄNDEN (Runde 197)
 
    Aus dem Betrieb, 22.10.2026, auf den Plan „aus der einen Frage nach
    14 Tagen wird eine kleine Runde“: „plan klingt gut“ — und auf die
