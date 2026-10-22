@@ -19408,3 +19408,56 @@ Format muss das Lohnbüro einmal mit einer Probedatei bestätigen.
   test-formi-platz, test-formi-angedockt, test-uebersicht, test-quer.
 - test-gehirn (Vollbild): Rot sind nur die drei bekannten
   Leistungsprüfungen unter CPU ÷4.
+
+## Runde 210 — Die Stempelseite, Schritt 5: DATEV (LODAS) fürs Lohnbüro (22.10.2026)
+
+Antwort aus dem Betrieb auf „Excel/CSV oder DATEV?": „mach beides". Excel
+und CSV kamen in Runde 208; hier die DATEV-Datei.
+
+**Was belegt ist und was nicht.** Recherchiert wurde für diese Runde. Die
+DATEV-Quellen selbst (Hilfe-Center, developer.datev.de, Community) waren
+aus dieser Umgebung nicht lesbar (401, 403). Gelesen werden konnte eine
+**Kopie des DATEV-Handbuchs „SSH Schnittstellenhandbuch LODAS", 45.
+Auflage, Januar 2016**, auf einer fremden Seite. Daraus, wörtlich: ANSI,
+Satzende nur CR/LF, ein Mandant und ein Monat je Datei, Kopf `[Allgemein]`
+mit `Ziel=LODAS`, `BeraterNr` (4–7 Stellen), `MandantenNr` (1–5), Tabelle
+`u_lod_bwd_buchung_standard`, Bearbeitungsschlüssel 01 = Stunden, 71 =
+genommene Urlaubstage. **Gegen ein echtes LODAS eingespielt wurde die
+Datei nie.** Deshalb sagt es die App an zwei Stellen: in den Einstellungen
+und in der Neuigkeit — das Lohnbüro bestätigt einmal mit einer Probe.
+
+**Nicht gebaut:** Lohn und Gehalt (LuG) — dort braucht der Import eine
+eigene Formatbeschreibung (INI), die das Lohnbüro vorgibt. Krankheitstage
+(Schlüssel 72) — nur aus einer Suchzusammenfassung belegt, nicht aus dem
+Handbuch; ohne Beleg kein Feld.
+
+**Wie es gebaut ist.**
+- Verwaltung → Zeiten → Monat & Konto → „DATEV". Ohne Nummern öffnen sich
+  die Einstellungen statt einer leeren Datei.
+- Einstellungen in `lohnEinstellungen/datev`, **nicht** in `config` — das
+  liest jeder Aktive, und Personalnummern gehen das Team nichts an. Lesen
+  und schreiben nur die Geschäftsführung, nur dieses Dokument, nur diese
+  Felder, Längen begrenzt (beide Teile von `firestore.rules`).
+- Personalnummern von Leuten, die im angezeigten Monat nicht vorkommen,
+  bleiben beim Speichern erhalten — sonst löschte ein Blick auf einen
+  ruhigen Monat die Nummern der anderen.
+- Die Datei enthält nur Ziffern, Semikolons und Kopfzeilen, also reines
+  ASCII: „ANSI" ist damit keine Frage der Kodierung (der Browser kann
+  Windows-1252 gar nicht schreiben). Keine Namen.
+- Stunden = Ist nach der Pausenregel, zwei Nachkommastellen, Komma.
+- Wer keine Personalnummer hat, steht nicht in der Datei; die Meldung nennt
+  die Namen.
+- Nicht abgeschlossener Monat: Rückfrage vor dem Erzeugen.
+
+**Geprüft**
+- `tests/rules/lohn-einstellungen.test.js` (neu, 22, beide Welten).
+  Gegenprobe: Feldprüfung herausgenommen → „ein fremdes Feld" rot, in
+  beiden Welten.
+- `tests/test-stempelseite.js` jetzt 191: Einstellungen öffnen sich ohne
+  Nummern; Datei nur ASCII, nur CR/LF, Kopf, Satzbeschreibung, jede
+  Bewegungszeile im Format, ein Zeitraum, keine Namen. Gegenprobe: LF
+  statt CR/LF → fünf rote Zeilen.
+- Ein Messfehler im eigenen Test: er zählte den Speichern-Knopf in der
+  zugeklappten Box mit (0 × 0). Chromium meldet für Inhalt in einem
+  geschlossenen `<details>` trotzdem Rechtecke; der Test lässt diesen Inhalt
+  jetzt aus und misst dafür die Klappzeile (161 × 44).
