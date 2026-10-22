@@ -18646,3 +18646,58 @@ auf die Rückfrage gewählt: „Kumpel aus dem Studio".
 
 **Nicht geprüft:** wie die KI den Charakter tatsächlich umsetzt — das
 zeigt sich erst live nach dem Einspielen von 2.18.
+
+## Runde 197 — Schichtplaner: klarer Anfang, Regeln in Reitern (22.10.2026)
+
+**Aus dem Betrieb:** ein Bildschirmfoto vom echten Konto (Verwaltung →
+Schichtplaner) mit „mach weiter mit dem design und aufbau, ausserdem sieht
+das bei mir noch gleich aus".
+
+**Warum es „gleich aussah":** Runde 191 hat am Planer die Ansicht des
+fertigen Plans umgebaut (Wochen-Reiter, feste Spalten). Im echten Konto
+ist noch kein Team eingelesen, also gibt es keinen Plan, und von all dem
+war nichts zu sehen. Ausgeliefert war es (live geprüft: die Seite ist
+Byte für Byte main).
+
+**Was auf dem Foto zu sehen war**
+- „Plan für November erstellen" grau, ohne ein Wort warum.
+- Schritt „Wünsche" mit Haken bei „0 von 0 eingetragen".
+- „Excel einlesen" und „Vorlage" klein im Schritt „Team"; darunter
+  „Regeln & Sonderfälle" mit vier Formularen 2 × 2, deren Auswahlfelder
+  ohne Team leer bleiben.
+
+**Was gebaut ist**
+- **„So fängst du an"** — solange kein Team da ist, statt Schritten und
+  Regeln: Vorlage holen (Knopf), ausfüllen (was auf welches Blatt gehört),
+  hier einlesen (Knopf); darunter, was danach kommt (Wunschfrist aus der
+  Einstellung, „Plan erstellen"). Zwei nummerierte Listen übereinander
+  wären doppelt gewesen, deshalb verschwinden die Schritte in diesem
+  Zustand.
+- **Der graue Knopf sagt, warum** („Geht, sobald Team und Schichten
+  eingelesen sind …" bzw. „Es fehlen die Schichtzeiten …").
+- **Zustand des Monats** unter dem Monatsnamen: „noch kein Plan",
+  „Entwurf" oder „veröffentlicht 03.11." (nur das letzte grün).
+- **„Wünsche"** ist ohne Team kein erledigter Schritt mehr.
+- **Regeln & Sonderfälle in vier Reitern** (Einstellungen · Feste
+  Einteilungen · Sondertage · Notiz), je einer sichtbar, am Rechner
+  höchstens 880 px breit. Die Überschrift im Block sagt der Reiter schon;
+  sie bleibt für Vorleser.
+
+**Geprüft**
+- test-schichtplan-raster um 16 Prüfungen erweitert (Abschnitt 10): mit
+  Team Regeln in Reitern, ohne Team die Anfangskarte mit beiden Knöpfen,
+  Grund am grauen Knopf, Zustand am Monat, Trefferflächen ≥ 44 × 44 und
+  nichts ragt hinaus — bei 390 und 1440 px. Ohne Team erzeugt der Test,
+  indem er in der Demo `planerTeam` leert.
+- Gegenprobe: Anfangskarte und Grund abgeschaltet → rot (Anfangskarte, ihre Knöpfe, Grund — bei beiden Breiten).
+- **Gefunden beim Messen:** in einer Zeile rollte der Reiter „Notiz" am
+  Handy aus dem Bild und war bei 320–430 px nur 36–43 px breit zu treffen.
+  Unter 820 px stehen die vier Reiter jetzt 2 × 2.
+- test-schichtplaner misst die zehn Bedienelemente der Regeln jetzt je
+  Reiter (plus die Reiter selbst): 140 Prüfungen, grün. Angepasst mit Zitat.
+- test-schichtplan-raster, test-gestaltung, test-doppelte-namen,
+  test-abgeschnitten, test-knoepfe, test-team-woche: grün.
+
+**Nicht geprüft:** das echte Konto selbst (Anmeldung lädt hier nicht);
+gemessen ist der Zustand „Team leer" in der Demo, nachgestellt nach dem
+Foto.
