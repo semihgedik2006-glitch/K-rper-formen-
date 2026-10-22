@@ -17231,3 +17231,101 @@ Aufgabenkarten ruhiger machen“ kam: „ja“.
 **Offen für den Betrieb:** Sollen Stift und Papierkorb am Handy aus der
 Aufgabenzeile ins „…“ wandern? Dort stehen sie schon. Das hiesse, den
 Beschluss vom 9.10. für das Handy zu ändern.
+
+## Runde 177 — Stil „Formi“: die ganze App in Formis Welt, Bewegung beim Wechseln (22.10.2026)
+
+**Aus dem Betrieb:** „es sieht aber noch alles gleich aus wir sollten am
+ganzen hud arbeiten und den farben und mehr motion“. Vorgelegt wurden drei
+Skizzen auf der echten App: A Formi-Welt, B Kräftig hell, C Impuls dunkel.
+Gewählt wurden „A · Formi-Welt“, Bewegung „spürbar, aber gezielt“ und
+„Neuer Stil ist Standard, Wahl bleibt“.
+
+**Warum A:** Formi war die einzige Stelle mit eigener Welt (dunkler Raum,
+Lichtkanten, Cockpit-Ecken). Daneben sah die helle, blasse App aus wie ein
+anderes Programm. Der Bruch war auf jedem Bildschirmfoto die auffälligste
+Stelle.
+
+**Was gebaut ist** (Grundgerüst)
+- **Neuer Modus `formi`** neben auto, dark und light (`PREFS.theme`,
+  `body.formi`). Er baut auf den dunklen Werten auf und setzt eigene
+  Flächen-Token (`--bg`, `--bg-2`, `--line`, `--hud-glas`, `--hud-licht`).
+- **Der Raum** liegt auf `.app::before`, mit zwei Nebeln in den Akzentfarben
+  und einem feinen Sternenfeld, fest stehend. Das gilt nur, wenn kein eigener
+  App-Hintergrund gewählt ist.
+- **Glas ohne Weichzeichner:** Kopfzeile, Seitenleiste, untere Leiste und
+  Karten sind fast deckend und tragen eine helle Oberkante. Der Weichzeichner
+  ist seit 23.9. aus der Kopfzeile verbannt, weil er jedes Bild neu rechnete.
+  Das bleibt so.
+- **Cockpit-Ecken** über dem Bereichskopf in der Farbe des Bereichs, dazu ein
+  Schein um den Titel. Beim Zeigen leuchtet der Rand einer Karte im Akzent.
+- **Statusfarben bleiben Status:** Leuchten tut nur der Akzent. Rot,
+  Bernstein und Grün behalten ihre Bedeutung.
+- **Bewegung, zwei Momente, beide nur mit `transform`/`opacity`:**
+  - Beim Öffnen einer Seite bauen sich die ersten Zeilen gestaffelt auf.
+    Dafür liegt `.hud-ein` 700 ms an der Ansicht und fällt dann ab. Was
+    danach neu gezeichnet wird, bewegt sich nicht mehr; die Regel aus dem
+    Design-System gilt weiter.
+  - Unter der Kopfzeile läuft ein Lichtimpuls einmal durch
+    (`body.hud-impuls`, 950 ms). Er wird ohne `offsetWidth` neu
+    gestartet: Klasse ab, im nächsten Bild wieder an.
+  - Bei „Bewegung reduzieren“ gibt es keins von beiden. Es gibt keine
+    Endlos-Animation; der Test sucht danach.
+  - Der Impuls lief über den rechten Rand hinaus. Deshalb gilt
+    `overflow-x:clip` an der Kopfzeile, `clip` statt `hidden`, damit kein
+    Scroll-Bereich entsteht.
+- **Übergang:** Wer die alte Voreinstellung `auto` gespeichert hat, bekommt
+  einmal je Gerät Formi (`stil2`). Wer ausdrücklich Hell oder Dunkel gewählt
+  hat, behält es. „Zurücksetzen“ führt auf Formi.
+
+**Geprüft** (`tests/test-stil-formi.js`, 30 Zusicherungen)
+- Neues Gerät mit Formi und der Statusleiste in `#070A14`.
+- Übergang auto → Formi, ausdrücklich Hell bleibt Hell.
+- Aussehen: Formi steht zuerst. Hell schaltet ab und bleibt nach dem
+  Neuladen, Formi schaltet wieder an.
+- Bewegung: Einblendung nur an der neuen Ansicht, der Impuls läuft, nach
+  1 s hängt nichts mehr, bei reduzierter Bewegung gibt es nichts, und es
+  gibt keine Endlos-Animation.
+- Kein Querlauf bei 320–1920 px, auch während der Impuls läuft.
+- **Kontrast an echten Bildpunkten:**
+
+  | Stelle | 1440 px | 390 px |
+  |---|---|---|
+  | Titel einer Zeile | 17,1 : 1 | 17,0 : 1 |
+  | Unterzeile | 8,0 : 1 | 8,1 : 1 |
+  | Seitenleiste | 13,7 : 1 | — |
+  | Gruppenüberschrift | 8,2 : 1 | 8,1 : 1 |
+
+- **Gegenprobe:** Mit dem alten `index.html` schlagen 5 Zusicherungen an,
+  danach bricht der Durchlauf ab.
+
+**Gefunden vom Gesamtdurchlauf** (196 Läufe, drei Stränge nebeneinander):
+- **test-aussehen:** „Schlicht“ heisst „kein Muster“. Der Sternenraum lag
+  zuerst genau auf `appbg=keiner`. Jetzt ist er ein eigener App-Hintergrund
+  **„Raum“** und die neue Voreinstellung (Übergang wie beim Stil: `keiner` →
+  `raum`, alles andere bleibt). Der Durchlauf wählt „Schlicht“ jetzt
+  ausdrücklich, mit Zitat; die Aussage ist dieselbe.
+- **test-leiter-aufgaben** (1,9 : 1): Der Durchlauf schaltet nur `.light` an.
+  Das dunkle Glas blieb liegen, und darauf stand die helle Schrift des
+  Hellmodus. Jede Formi-Regel trägt jetzt `:not(.light)`: Hell gewinnt
+  immer.
+- **test-gleiten-rahmen:** Der Schatten der Kopfzeile nahm die Bereichsfarbe
+  an und sprang beim Wechsel. Er ist jetzt `var(--e1)` ohne Farbe; die
+  Farbe trägt der Lichtimpuls. test-gestaltung hatte daneben den festen
+  Schatten gemeldet.
+- **test-gestaltung:** Die Staffel stand als `:is(…)` mit vier
+  `animation-delay`. Der Prüfer liest das zu Recht als dieselbe Eigenschaft
+  mehrfach. Jetzt ist es eine Regel mit `calc(var(--hud-i) * 40ms)`, und die
+  `nth-of-type`-Regeln setzen nur die Zahl.
+- **test-konto-ohne-firma** zählte drei Modi. Jetzt sind es vier, mit Zitat.
+- **Nicht von hier:** test-gehirn (zwei Leistungsmessungen unter CPU ÷4, auf
+  `main` genauso rot). test-abo-leiter, test-gehirn-aktion, test-stripe-felder,
+  test-mail-versand und test-regelumgebung scheitern hier, weil
+  `functions/node_modules` und `tests/rules/node_modules` fehlen.
+
+**Nicht geprüft:** Bildrate auf einem echten Handy (die Umgebung taktet mit
+60 Hz, siehe CLAUDE.md), Arbeit je Bild der neuen Einblendung, Anmeldeweg,
+echte Daten.
+
+**Was noch fehlt** (Ausbau nach dem Grundgerüst): Die Formulare und Fenster
+(Dialoge, Aktionsblätter) tragen noch den dunklen Stil ohne Lichtkante. Die
+Anmeldeseite ist noch nicht im Formi-Look.

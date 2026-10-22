@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Z6VdovEKdc3v99NstKza6OUCXnraCeLHi/aeUIIYrCw='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-jiZoAEO/TDpbCBusQXQkWnY7ZCwmN8llz4S5/vvFWJQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -4164,6 +4164,128 @@ body[data-appbg="raster"] .app::before{
   background-image:linear-gradient(var(--dot) 1px, transparent 1px),
                    linear-gradient(90deg, var(--dot) 1px, transparent 1px);
   background-size:40px 40px}
+
+/* ══ STIL „FORMI" (Runde 177) ═══════════════════════════════════════
+   Aus dem Betrieb, 22.10.2026: „es sieht aber noch alles gleich aus wir
+   sollten am ganzen hud arbeiten und den farben und mehr motion". Auf
+   drei Skizzen fiel die Wahl auf „A · Formi-Welt“, Bewegung „spürbar,
+   aber gezielt“, Hell und Dunkel bleiben wählbar.
+
+   Der Gedanke: Formi war die einzige Stelle mit eigener Welt (dunkler
+   Raum, Lichtkanten, Ecken wie im Cockpit), und der Rest der App sah
+   daneben aus wie ein anderes Programm. Jetzt trägt die ganze App diese
+   Welt, und Formi ist darin zuhause.
+
+   Was bewusst NICHT übernommen ist:
+   - Weichzeichner (backdrop-filter). Die Kopfzeile ist seit 23.9.
+     deckend, weil der Weichzeichner jedes Bild neu rechnete. Glas
+     entsteht hier aus Deckkraft und einer Lichtkante.
+   - Dauerhafte Bewegung. Schwebende Lichtpunkte gibt es nur im
+     Formi-Fenster. Die App bewegt sich, wenn man etwas tut.
+   - Die Statusfarben. Rot, Bernstein und Grün behalten ihre Bedeutung.
+     Leuchten tut nur der Akzent des Bereichs. */
+/* :not(.light) an jeder Regel: Hell gewinnt immer. applyPrefs setzt
+   die beiden nie zugleich, aber Durchläufe und künftiger Code schalten
+   gern nur .light. Dann darf kein dunkles Glas unter heller Schrift
+   liegen (test-leiter-aufgaben fand genau das: 1,9 : 1). */
+body.formi:not(.light){
+  --bg:#070A14;--bg-2:#0F1729;--bg-soft:#0B1222;--bg-3:#16213A;
+  --line:rgba(120,200,255,.13);--line-2:rgba(120,200,255,.34);
+  --kante:rgba(160,220,255,.10);
+  --hud-glas:rgba(13,21,38,.86);
+  --hud-licht:rgba(var(--akz-rgb),.55);
+  --hud-schein:0 0 0 1px rgba(var(--akz-rgb),.22), 0 0 22px rgba(var(--akz-rgb),.16);
+  --e1:0 1px 0 rgba(255,255,255,.04) inset, 0 10px 26px -14px rgba(0,0,0,.9);
+  --e2:0 1px 0 rgba(255,255,255,.05) inset, 0 16px 34px -14px rgba(0,0,0,.95);
+}
+/* Der Raum: zwei Nebel und ein feines Sternenfeld, fest stehend. Ein
+   eigener App-Hintergrund („Raum", Voreinstellung), wählbar wie die
+   anderen. „Schlicht" bleibt ohne Muster. */
+body[data-appbg="raum"] .app::before{
+  background-image:
+    radial-gradient(900px 520px at 88% -8%, rgba(var(--akz2-rgb),.16), transparent 62%),
+    radial-gradient(820px 620px at 6% 108%, rgba(var(--akz-rgb),.13), transparent 62%),
+    radial-gradient(1px 1px at 12% 22%, rgba(255,255,255,.55), transparent 1.5px),
+    radial-gradient(1px 1px at 37% 64%, rgba(255,255,255,.35), transparent 1.5px),
+    radial-gradient(1px 1px at 58% 18%, rgba(255,255,255,.45), transparent 1.5px),
+    radial-gradient(1px 1px at 76% 72%, rgba(255,255,255,.35), transparent 1.5px),
+    radial-gradient(1px 1px at 91% 41%, rgba(255,255,255,.5), transparent 1.5px);
+  background-size:auto,auto,340px 340px,420px 420px,380px 380px,460px 460px,300px 300px;
+  background-repeat:no-repeat,no-repeat,repeat,repeat,repeat,repeat,repeat}
+body.formi:not(.light) .main,body.formi:not(.light) .shell{background:transparent}
+/* Kopfzeile und Seitenleiste: Glas mit Lichtkante. */
+/* overflow-x:clip: Der Lichtimpuls unten läuft über den rechten Rand
+   hinaus und erzeugte sonst einen Querlauf der Seite. clip, nicht
+   hidden: kein eigener Scroll-Bereich, senkrecht bleibt alles sichtbar. */
+/* Der Schatten trägt KEINE Bereichsfarbe: Er hätte beim Wechsel ohne
+   Übergang gesprungen (test-gleiten-rahmen), und ein Übergang auf
+   box-shadow malt die ganze Leiste in jedem Bild neu. Die Farbe bringt
+   der Lichtimpuls. */
+body.formi:not(.light) .topbar{overflow-x:clip;background:var(--hud-glas);border-bottom:1px solid var(--line);
+  box-shadow:var(--e1)}
+body.formi:not(.light) .side{background:rgba(7,10,20,.55);border-right:1px solid var(--line)}
+body.formi:not(.light) .side .tab.active{background:linear-gradient(90deg,rgba(var(--akz-rgb),.20),rgba(var(--akz-rgb),.02) 80%);
+  color:var(--text);box-shadow:inset 3px 0 0 var(--accent), 0 0 18px -6px rgba(var(--akz-rgb),.6)}
+body.formi:not(.light) .mobnav{background:var(--hud-glas);border-top:1px solid var(--line)}
+/* Der Bereichskopf bekommt die Ecken aus dem Formi-Fenster. */
+body.formi:not(.light) .bereich-zeile{position:relative}
+body.formi:not(.light) .bereich-zeile::before,body.formi:not(.light) .bereich-zeile::after{content:'';position:absolute;top:var(--s6);
+  width:22px;height:22px;border:2px solid var(--hud-licht);pointer-events:none}
+body.formi:not(.light) .bereich-zeile::before{left:var(--s8);border-right:none;border-bottom:none}
+body.formi:not(.light) .bereich-zeile::after{right:var(--s8);border-left:none;border-bottom:none}
+body.formi:not(.light) #bkTitel{text-shadow:0 0 22px rgba(var(--akz-rgb),.45)}
+/* Flächen: Glas, eine helle Oberkante, beim Zeigen leuchtet der Rand. */
+body.formi:not(.light) .card,body.formi:not(.light) .chef-card,body.formi:not(.light) .todo,body.formi:not(.light) .pp-item,body.formi:not(.light).neu .heute-zeile{
+  border-color:var(--line)}
+body.formi:not(.light) .card,body.formi:not(.light) .chef-card{background:var(--hud-glas);box-shadow:inset 0 1px 0 var(--kante), var(--e1);
+  outline:1px solid var(--line);outline-offset:-1px}
+body.formi:not(.light).neu .heute-zeile{background:linear-gradient(100deg,var(--kat-f) 0 12%,var(--hud-glas) 58%);
+  outline:1px solid var(--line);outline-offset:-1px}
+@media (hover:hover){
+  body.formi:not(.light) .card:hover,body.formi:not(.light) .chef-card:hover,body.formi:not(.light).neu .heute-zeile:hover,
+  body.formi:not(.light) .todo:hover,body.formi:not(.light) .pp-item:hover{outline-color:rgba(var(--akz-rgb),.5)}
+}
+body.formi:not(.light) .icon-btn,body.formi:not(.light) .jv-kachel,body.formi:not(.light) .neu-pille,body.formi:not(.light) .kopf-plus{
+  box-shadow:inset 0 1px 0 var(--kante), var(--hud-schein)}
+/* Die kleinen Überschriften wie die Anzeigen im Formi-Fenster. */
+body.formi:not(.light) .heute-kopf,body.formi:not(.light) .ch-gruppe,body.formi:not(.light) .kn-gruppe,body.formi:not(.light) .ks-gruppe{
+  color:rgba(170,225,255,.82)}
+
+/* ── Bewegung: einmal, wenn man etwas tut ──
+   Zwei Momente, beide nur mit transform und opacity:
+   1. Beim Öffnen einer Seite bauen sich die ersten Zeilen gestaffelt
+      auf (.hud-ein liegt 700 ms an der Ansicht, siehe hudBewegung()).
+      Was danach neu gezeichnet wird, bewegt sich nicht mehr — die Regel
+      „was sich neu zeichnet, darf sich nicht bewegen" gilt weiter.
+   2. Unter der Kopfzeile läuft beim Wechsel ein Lichtimpuls in der
+      Farbe des Bereichs einmal von links nach rechts.
+   fill-mode backwards, nicht both: Nach dem Ende hängt kein Zustand am
+   Element. */
+@keyframes hudEin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+body.formi:not(.light) .hud-ein .heute-zeile,body.formi:not(.light) .hud-ein .todo,body.formi:not(.light) .hud-ein .pp-item,
+body.formi:not(.light) .hud-ein .chef-card,body.formi:not(.light) .hud-ein .card{animation:hudEin .42s var(--ease-out) backwards;
+  animation-delay:calc(var(--hud-i,0) * 40ms)}
+/* Die Staffel als Zahl, nicht als vier Regeln mit animation-delay:
+   test-gestaltung (zu Recht) meldet dieselbe Eigenschaft mehrfach am
+   selben Selektor. Gezählt wird nach Elementart (nth-of-type). Das ist
+   für eine Staffel von 40 ms genau genug. */
+body.formi:not(.light) .hud-ein .heute-zeile:nth-of-type(2),body.formi:not(.light) .hud-ein .todo:nth-of-type(2),body.formi:not(.light) .hud-ein .pp-item:nth-of-type(2),
+body.formi:not(.light) .hud-ein .chef-card:nth-of-type(2),body.formi:not(.light) .hud-ein .card:nth-of-type(2){--hud-i:1}
+body.formi:not(.light) .hud-ein .heute-zeile:nth-of-type(3),body.formi:not(.light) .hud-ein .todo:nth-of-type(3),body.formi:not(.light) .hud-ein .pp-item:nth-of-type(3),
+body.formi:not(.light) .hud-ein .chef-card:nth-of-type(3),body.formi:not(.light) .hud-ein .card:nth-of-type(3){--hud-i:2}
+body.formi:not(.light) .hud-ein .heute-zeile:nth-of-type(4),body.formi:not(.light) .hud-ein .todo:nth-of-type(4),body.formi:not(.light) .hud-ein .pp-item:nth-of-type(4),
+body.formi:not(.light) .hud-ein .chef-card:nth-of-type(4),body.formi:not(.light) .hud-ein .card:nth-of-type(4){--hud-i:3}
+body.formi:not(.light) .hud-ein .heute-zeile:nth-of-type(n+5),body.formi:not(.light) .hud-ein .todo:nth-of-type(n+5),body.formi:not(.light) .hud-ein .pp-item:nth-of-type(n+5),
+body.formi:not(.light) .hud-ein .chef-card:nth-of-type(n+5),body.formi:not(.light) .hud-ein .card:nth-of-type(n+5){--hud-i:4}
+body.formi:not(.light) .topbar::after{content:'';position:absolute;left:0;bottom:-1px;width:40%;height:2px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0;transform:translateX(-100%)}
+@keyframes hudImpuls{0%{opacity:0;transform:translateX(-100%)}15%{opacity:1}85%{opacity:1}100%{opacity:0;transform:translateX(250%)}}
+body.formi:not(.light).hud-impuls .topbar::after{animation:hudImpuls .9s var(--ease-out)}
+@media (prefers-reduced-motion:reduce){
+  body.formi .hud-ein .heute-zeile,body.formi .hud-ein .todo,body.formi .hud-ein .pp-item,
+  body.formi .hud-ein .chef-card,body.formi .hud-ein .card{animation:none}
+  body.formi.hud-impuls .topbar::after{animation:none}
+}
 
 /* ============================================================
    CHAT-ERWEITERUNGEN
@@ -12079,9 +12201,9 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
    Ansicht selbst ein, ohne die anderen zu beeinflussen.
    ============================================================ */
 var PREFS = {
-  theme:'auto',     // auto | dark | light
+  theme:'formi',    // formi | auto | dark | light (formi seit Runde 177)
   chatbg:'verlauf', // siehe CHAT_BGS
-  appbg:'keiner',   // siehe APP_BGS — der Hintergrund der ganzen App
+  appbg:'raum',     // siehe APP_BGS — der Hintergrund der ganzen App (raum seit Runde 177)
   /* 'bunt' ist seit dem 21.9.2026 die Voreinstellung: die Farbe folgt
      dem Bereich (siehe BEREICH_FARBE). Jeder feste Wert aus ACCENTS
      bleibt wählbar und wechselt dann NICHT mit der Ansicht.
@@ -12471,6 +12593,10 @@ function akzentAnwenden(){
    ersten Start gemustert ist, nimmt dem Benutzer die Entscheidung ab,
    die er hier gerade bekommen soll. */
 var APP_BGS = [
+  /* „Raum" (Runde 177): der Hintergrund des Stils Formi, zwei Nebel und
+     ein Sternenfeld. Ein eigener Eintrag und nicht an „Schlicht"
+     gehängt: Schlicht heisst „kein Muster", und das muss es bleiben. */
+  {id:'raum',     name:'Raum'},
   {id:'keiner',   name:'Schlicht'},
   {id:'schimmer', name:'Schimmer'},
   {id:'oben',     name:'Licht von oben'},
@@ -12492,6 +12618,19 @@ function loadPrefs(){
     // alte Einstellung übernehmen
     var old=localStorage.getItem('kf_theme');
     if(old && !raw) PREFS.theme = (old==='light'?'light':'dark');
+    /* Runde 177: „Formi" wird die Voreinstellung, auch für alle, die nie
+       etwas gewählt haben. Ihr gespeichertes 'auto' ist die alte
+       Voreinstellung, keine Wahl. Wer ausdrücklich Hell oder Dunkel
+       gewählt hat, behält es. Einmal je Gerät (stil2), danach gilt, was
+       jemand unter Profil → Aussehen einstellt. */
+    if(!PREFS.stil2){
+      if(PREFS.theme==='auto') PREFS.theme='formi';
+      /* Derselbe Gedanke beim Hintergrund: 'keiner' war die alte
+         Voreinstellung. Wer Schimmer, Ecken o. Ä. gewählt hat, behält es. */
+      if(PREFS.appbg==='keiner' || !PREFS.appbg) PREFS.appbg='raum';
+      PREFS.stil2=true;
+      if(raw) savePrefs();
+    }
   }catch(e){}
 }
 function savePrefs(){
@@ -12502,8 +12641,10 @@ function systemPrefersLight(){
   return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
 }
 function applyPrefs(){
-  var light = PREFS.theme==='light' || (PREFS.theme==='auto' && systemPrefersLight());
+  var formi = PREFS.theme==='formi';
+  var light = !formi && (PREFS.theme==='light' || (PREFS.theme==='auto' && systemPrefersLight()));
   document.body.classList.toggle('light', light);
+  document.body.classList.toggle('formi', formi);
   document.body.setAttribute('data-chatbg', PREFS.chatbg||'keiner');
   // Eigenes Foto als Hintergrund einsetzen (nur auf diesem Gerät gespeichert)
   var eigen = (PREFS.chatbg==='eigenes') ? (_chatBgImg||loadChatBgImg()) : null;
@@ -12519,7 +12660,7 @@ function applyPrefs(){
   document.body.setAttribute('data-appbg', PREFS.appbg||'keiner');
   // Farbe der Statusleiste mitziehen
   var m=document.querySelector('meta[name="theme-color"]');
-  if(m) m.setAttribute('content', light?'#F4F6FA':'#12131C');
+  if(m) m.setAttribute('content', light?'#F4F6FA':(formi?'#070A14':'#12131C'));
 }
 (function initTheme(){
   loadPrefs(); applyPrefs();
@@ -20030,6 +20171,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-22-stil-formi', datum:'22.10.2026', titel:'Neuer Look: die ganze App in Formis Welt', wo:'home', punkte:[
+    'Die App sieht jetzt aus wie Formi: dunkler Raum mit leisem Sternenfeld, Flächen wie Glas mit einer Lichtkante, Ecken wie im Cockpit über jeder Seite.',
+    'Mehr Bewegung, aber nur wenn du etwas tust: Beim Öffnen einer Seite bauen sich die Zeilen kurz nacheinander auf, und unter der Kopfzeile läuft ein Lichtimpuls in der Farbe des Bereichs.',
+    'Hell oder Dunkel wie bisher? Profil (dein Bild oben rechts) → Aussehen → Hell, Dunkel oder Automatisch. Wer dort schon ausdrücklich Hell oder Dunkel gewählt hatte, behält das.' ] },
   { id:'2026-10-22-verwaltung-gruppen', datum:'22.10.2026', titel:'Verwaltung geordnet, ruhigere Listen am Rechner', wo:'chef', punkte:[
     'Die Startseite der Verwaltung ist in vier Gruppen geordnet: Jeden Tag, Team & Studios, Zahlen, Einstellungen. Man liest die Überschriften statt elf Kacheln.',
     'Am grossen Bildschirm stehen die Bereiche der Verwaltung links als Liste – mit denselben Gruppen –, rechts der Inhalt. Vorher lagen zwei Reiterzeilen übereinander.',
@@ -21742,6 +21887,27 @@ function showView(id, fromKey, ausVerlauf){
   if(id!=='gehirn') jarvisZu();
   if(id==='team'){ ensureTeamLoaded(); buildTeamTabs(); spWunschZeigen(); }
   if(id==='dm'){ closeDmConvo(); renderDmPeople($('dmSearch')?$('dmSearch').value:''); }
+  hudBewegung(id);
+}
+/* Die zwei Momente des Stils „Formi" (siehe Stylesheet, Runde 177).
+   Nur Klassen setzen, nichts messen. Die Klassen fallen nach Ablauf
+   wieder ab, damit spätere Neuzeichnungen sich nicht bewegen. */
+var _hudUhr=0, _hudImpulsUhr=0;
+function hudBewegung(id){
+  if(!document.body.classList.contains('formi') || willRuhe()) return;
+  var v=$('view-'+id);
+  document.querySelectorAll('.view.hud-ein').forEach(function(x){ x.classList.remove('hud-ein'); });
+  if(v) v.classList.add('hud-ein');
+  clearTimeout(_hudUhr);
+  _hudUhr=setTimeout(function(){ if(v) v.classList.remove('hud-ein'); }, 700);
+  /* Neu starten heisst: Klasse ab, im nächsten Bild wieder an. Kein
+     offsetWidth dazwischen (DESIGN-SYSTEM, „Eine Animation neu starten"). */
+  document.body.classList.remove('hud-impuls');
+  clearTimeout(_hudImpulsUhr);
+  requestAnimationFrame(function(){
+    document.body.classList.add('hud-impuls');
+    _hudImpulsUhr=setTimeout(function(){ document.body.classList.remove('hud-impuls'); }, 950);
+  });
 }
 
 /* Auffällige Marker (Punkte) auf der Navigation aktualisieren */
@@ -44540,7 +44706,7 @@ function buildAppearanceOptions(){
   // 4) Hell / Dunkel / Automatisch
   var th=$('thOpts');
   if(th){
-    var modes=[['auto','Automatisch',''],['dark','Dunkel',''],['light','Hell','']];
+    var modes=[['formi','Formi',''],['auto','Automatisch',''],['dark','Dunkel',''],['light','Hell','']];
     th.innerHTML=modes.map(function(m){
       return '<div class="opt'+(PREFS.theme===m[0]?' on':'')+'" data-th="'+m[0]+'">'+
         '<div style="font-size:20px">'+m[2]+'</div><span>'+m[1]+'</span></div>';
@@ -44584,12 +44750,12 @@ function aussehenZuruecksetzen(){
               'auf den Auslieferungsstand zurück. Dein Profil, deine '+
               'Meldungen und alle Daten bleiben unberührt.\n\n'+
               'Gilt nur auf diesem Gerät.')) return;
-  PREFS.theme  = 'auto';
+  PREFS.theme  = 'formi';
   PREFS.fs     = '100';
   PREFS.dichte = 'normal';
   PREFS.accent = 'bunt';
   PREFS.chatbg = 'verlauf';
-  PREFS.appbg  = 'keiner';
+  PREFS.appbg  = 'raum';
   savePrefs();
   applyPrefs();
   buildAppearanceOptions();
@@ -44633,6 +44799,9 @@ function previewBgFor(id){
   if(id==='oben')     return 'linear-gradient(180deg, '+av('1',.45)+', transparent 55%)';
   if(id==='ecken')    return 'radial-gradient(40px 40px at 0% 0%, '+av('1',.45)+', transparent 68%),radial-gradient(40px 40px at 100% 100%, '+av('2',.4)+', transparent 68%)';
   if(id==='raster')   return 'linear-gradient('+dot+' 1px, transparent 1px),linear-gradient(90deg, '+dot+' 1px, transparent 1px)';
+  /* Raum: ein paar Sterne auf Nachtgrund, die Nebel in den Akzenten. Der
+     Grund ist fest dunkel, auch in Hell, denn so sieht er aus. */
+  if(id==='raum')     return 'radial-gradient(1px 1px at 30% 30%, #fff, transparent 1.5px),radial-gradient(1px 1px at 70% 60%, #fff, transparent 1.5px),radial-gradient(1px 1px at 50% 85%, #fff, transparent 1.5px),radial-gradient(60px 40px at 85% 5%, '+av('2',.5)+', transparent 65%),radial-gradient(60px 40px at 10% 95%, '+av('1',.45)+', transparent 65%),linear-gradient(#070A14,#070A14)';
   return 'none';
 }
 
