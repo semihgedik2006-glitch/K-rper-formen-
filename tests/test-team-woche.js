@@ -55,8 +55,12 @@ async function oeffne(b, rolle, w, h) {
   await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
   await p.goto(APP + '?demo=' + rolle, { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(3200);
-  await p.evaluate(() => [...document.querySelectorAll('.mobnav [data-group], #side [data-group]')]
-    .find(x => /Team/.test(x.textContent)).click());
+  /* Runde 184 („fünf Räume“): der Raum heisst „Plan“ („wer arbeitet
+     wann?“), die Gruppe bleibt g-team. Aus dem Betrieb, 22.10.2026: die
+     Raumnamen „passen“. Gesucht wird nach der Gruppe, nicht nach dem Wort,
+     und nur unter den sichtbaren Knöpfen. */
+  await p.evaluate(() => [...document.querySelectorAll('.mobnav [data-group="g-team"], #side [data-group="g-team"]')]
+    .find(x => x.getClientRects().length).click());
   await p.waitForTimeout(1600);
   return p;
 }

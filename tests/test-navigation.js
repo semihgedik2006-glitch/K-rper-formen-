@@ -41,7 +41,14 @@ const ansicht = page => page.evaluate(() => {
        angehaengt laege der Bereich beim Chef auf Platz sechs, also
        hinter dem Rand der verschiebbaren Leiste. Wer ihn spaeter
        verschiebt, soll das hier merken. */
-    const soll = ['Start', 'Ich', 'Chat', 'Betrieb', 'Team', 'Verwaltung'];
+    /* Runde 184, aus dem Betrieb, 22.10.2026: „das problem mit dem zu
+       viel bleibt immer noch bestehen" — zu viele Menüpunkte, man findet
+       nichts; „jede Funktion hat ihren Sinn" (nichts streichen, nur neu
+       ordnen); die Raumnamen „passen". Seitdem fünf Räume, für die
+       Leitung die Verwaltung als sechster. „Ich" ist kein eigener Knopf
+       mehr, sondern ein Reiter unter „Heute". Die Reihenfolge folgt der
+       Nutzung: Studio (Putzplan und Aufgaben, täglich) vor Nachrichten. */
+    const soll = ['Heute', 'Studio', 'Plan', 'Nachrichten', 'Wissen', 'Verwaltung'];
     if (JSON.stringify(gruppen) !== JSON.stringify(soll)) {
       errs.push('Gruppen stimmen nicht: ' + JSON.stringify(gruppen) +
         ' — erwartet ' + JSON.stringify(soll));
@@ -50,8 +57,15 @@ const ansicht = page => page.evaluate(() => {
     await page.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
     await page.waitForTimeout(600);
     const unter = await page.evaluate(() => [...document.querySelectorAll('[data-subview]')].map(s => s.textContent.trim()));
-    console.log('BETRIEB:', JSON.stringify(unter));
-    if (!unter.some(u => /Dokumente/.test(u))) errs.push('Dokumente liegt nicht unter Betrieb');
+    console.log('STUDIO:', JSON.stringify(unter));
+    /* Runde 184: Dokumente sind von „Betrieb" nach „Wissen" gezogen
+       (neben Schulung und Formi) — „Studio" beantwortet nur noch, was
+       HEUTE im Studio zu tun ist. Beides wird geprüft: weg von hier, da
+       drüben. */
+    if (unter.some(u => /Dokumente/.test(u))) errs.push('Dokumente liegt noch unter Studio');
+    ['Aufgaben', 'Putzplan'].forEach(w => {
+      if (!unter.some(u => u.indexOf(w) >= 0)) errs.push('„' + w + '" fehlt unter Studio');
+    });
     /* Sechs seit dem 13.8. (Probetraining). Am 22.9. kamen die
        Lösungen als siebter Reiter dazu — und noch am selben Tag
        wieder heraus: sie hängen jetzt als Rettungsring in der
@@ -65,7 +79,17 @@ const ansicht = page => page.evaluate(() => {
        Reiter hier und ist noch am selben Tag nach „Ich" gezogen — auf
        Ansage aus dem Betrieb: unter „Betrieb" liegt, was HEUTE im
        Studio zu tun ist, und eine Schulung ist nichts davon. */
-    if (unter.length !== 6) errs.push('Betrieb hat ' + unter.length + ' statt 6 Unterseiten');
+    /* Runde 184: fünf — Aufgaben, Putzplan, Material, Geräte,
+       Probetraining. Die Dokumente sind der sechste von früher, jetzt
+       unter „Wissen" (siehe oben). */
+    if (unter.length !== 5) errs.push('Studio hat ' + unter.length + ' statt 5 Unterseiten');
+
+    await page.evaluate(() => document.querySelector('.mobnav [data-group="g-wissen"]').click());
+    await page.waitForTimeout(600);
+    const wissen = await page.evaluate(() => [...document.querySelectorAll('[data-subview]')].map(s => s.textContent.trim()));
+    console.log('WISSEN:', JSON.stringify(wissen));
+    if (!wissen.some(u => /Dokumente/.test(u))) errs.push('Dokumente liegt nicht unter Wissen');
+    if (!wissen.some(u => /Schulung/.test(u))) errs.push('Schulung liegt nicht unter Wissen');
     await b.close();
   }
 

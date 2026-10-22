@@ -19,6 +19,22 @@ const SP = process.env.SP || __dirname;
   await page.evaluate(() => [...document.querySelectorAll('.chef-tab')].find(t => /System/.test(t.textContent)).click());
   await page.waitForTimeout(600);
 
+  /* Nur den Aufruf von sendTestReport festhalten. window.__aufruf der
+     Attrappe hält den LETZTEN Aufruf irgendeiner Function — und beim
+     Chef-Start läuft syncAllToSheets im Hintergrund (14 Studios
+     nacheinander gelesen). Unter Last kam dessen sheetsPush („putzplan")
+     erst NACH dem Klick an und überschrieb den Bericht: am 22.10.2026
+     einmal in sechs Läufen „9999 Tage werden nicht auf 370 gedeckelt"
+     mit {"name":"sheetsPush"…}. Geprüft wird dasselbe, nur ohne dass ein
+     fremder Aufruf die Messung überschreibt. */
+  await page.evaluate(() => {
+    window.__antwort = window.__antwort || {};
+    window.__antwort.sendTestReport = (d) => {
+      window.__berichtAufruf = { name: 'sendTestReport', data: d };
+      return Promise.resolve({ data: { ok: true, empfaenger: 1, tage: (d && d.tage) || 30 } });
+    };
+  });
+
   const karte = await page.evaluate(() => ({
     da: !!document.getElementById('repTestSend'),
     zeitraeume: [...document.querySelectorAll('#repTestTage option')].map(o => o.textContent),
@@ -36,7 +52,7 @@ const SP = process.env.SP || __dirname;
   await page.evaluate(() => document.getElementById('repTestSend').click());
   await page.waitForTimeout(900);
   const nach = await page.evaluate(() => ({
-    aufruf: window.__aufruf,
+    aufruf: window.__berichtAufruf,
     hinweis: document.getElementById('repTestNote').textContent,
     toast: document.getElementById('toast').textContent,
   }));
@@ -65,10 +81,10 @@ const SP = process.env.SP || __dirname;
     const box = document.getElementById('repTageEigenBox');
     const sichtbar = box && box.offsetParent !== null;
     document.getElementById('repTageEigen').value = '45';
-    window.__aufruf = null;
+    window.__berichtAufruf = null;
     document.getElementById('repTestSend').click();
     await new Promise(r => setTimeout(r, 900));
-    return { sichtbar, aufruf: window.__aufruf,
+    return { sichtbar, aufruf: window.__berichtAufruf,
       hinweis: document.getElementById('repTestNote').textContent };
   });
   console.log('EIGENE ZAHL:', JSON.stringify(eigen));
@@ -82,10 +98,10 @@ const SP = process.env.SP || __dirname;
      wie die Mail, sonst widersprechen sich Anzeige und Postfach. */
   const zuViel = await page.evaluate(async () => {
     document.getElementById('repTageEigen').value = '9999';
-    window.__aufruf = null;
+    window.__berichtAufruf = null;
     document.getElementById('repTestSend').click();
     await new Promise(r => setTimeout(r, 900));
-    return { aufruf: window.__aufruf,
+    return { aufruf: window.__berichtAufruf,
       hinweis: document.getElementById('repTestNote').textContent };
   });
   console.log('ZU VIEL:', JSON.stringify(zuViel));

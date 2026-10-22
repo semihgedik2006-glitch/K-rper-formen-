@@ -33,9 +33,14 @@ async function oeffne(b, w, h, rolle) {
   await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
   await p.goto(APP + '?demo=' + rolle, { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(3200);
-  await p.evaluate(() => { const a = document.querySelector('#side [data-group="g-alles"], .mobnav [data-group="g-alles"]'); if (a) a.click(); });
+  /* Bis Runde 179 stand „Alles" als Knopf in Seitenleiste bzw. Leiste.
+     Seit Runde 184 („fünf Räume", aus dem Betrieb 22.10.2026: „das
+     problem mit dem zu viel bleibt immer noch bestehen") öffnet der
+     ☰-Griff #bereichKopf dieselbe Liste als Schublade — Handy wie
+     Rechner. */
+  await p.evaluate(() => { const a = document.getElementById('bereichKopf'); if (a) a.click(); });
   await p.waitForTimeout(500);
-  await p.evaluate(() => { const k = document.querySelector('#allesLadeInhalt [data-alles="docs"], #allesSeite [data-alles="docs"]'); if (k) k.click(); });
+  await p.evaluate(() => { const k = document.querySelector('#allesLadeInhalt [data-alles="docs"]'); if (k) k.click(); });
   await p.waitForTimeout(1200);
   return p;
 }

@@ -69,10 +69,14 @@ async function starte(b, w, h) {
   await p.waitForTimeout(3300);
   return p;
 }
+/* Die Schulung lag bis Runde 179 unter „Ich". Seit Runde 184 („fünf
+   Räume", aus dem Betrieb 22.10.2026: „das problem mit dem zu viel bleibt
+   immer noch bestehen") steht sie unter „Wissen" — unten in der Leiste
+   am Handy, in der Seitenleiste am Rechner, Reiter „Schulung". */
 async function zurSchulung(p) {
   await p.evaluate(() => {
-    const k = document.querySelector('.mobnav [data-group="g-ich"]') ||
-              document.querySelector('#side [data-group="g-ich"]');
+    const k = document.querySelector('.mobnav [data-group="g-wissen"]') ||
+              document.querySelector('#side [data-group="g-wissen"]');
     if (k) k.click();
   });
   await p.waitForTimeout(700);

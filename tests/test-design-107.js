@@ -88,8 +88,11 @@ const nav = (p, g) => p.evaluate((g) => document.querySelector('.mobnav [data-gr
   console.log('\n── 2. Schulung: der offene Rest ──');
   {
     const p = await oeffne(b, 390, 844);
-    await nav(p, 'g-alles').catch(() => {});
-    await p.evaluate(() => { const k = document.querySelector('.mobnav [data-group="g-ich"], #side [data-group="g-ich"]'); if (k) k.click(); });
+    /* Bis Runde 179: „Alles" bzw. „Ich" → Reiter Schulung. Seit Runde 184
+       („fünf Räume", aus dem Betrieb 22.10.2026: „das problem mit dem zu
+       viel bleibt immer noch bestehen") steht die Schulung unter
+       „Wissen", unten in der Leiste. */
+    await nav(p, 'g-wissen');
     await p.waitForTimeout(700);
     await p.evaluate(() => { const t = [...document.querySelectorAll('[data-subview]')].find(x => /Schulung/.test(x.textContent)); t.click(); });
     await p.waitForTimeout(1500);

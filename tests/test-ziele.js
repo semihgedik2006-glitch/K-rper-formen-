@@ -44,7 +44,11 @@ const VORMONAT = MONATSANFANG - 86400000;          // sicher draußen
 
 async function persoenlichZiele(p) {
   return p.evaluate(async () => {
-    document.querySelector('.mobnav [data-group="g-ich"]').click();
+    /* Runde 184 („fünf Räume“): „Ich“ und „Persönlich“ sind Reiter unter
+       „Heute“ (g-start); die Gruppe g-ich gibt es nicht mehr. Aus dem
+       Betrieb, 22.10.2026: „das problem mit dem zu viel bleibt immer noch
+       bestehen“ – nichts gestrichen, nur neu geordnet. */
+    document.querySelector('.mobnav [data-group="g-start"]').click();
     await new Promise(r => setTimeout(r, 500));
     const sub = document.querySelector('[data-subview="persoenlich"]');
     if (!sub) return false;

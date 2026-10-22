@@ -171,7 +171,10 @@ const zustand = (p) => p.evaluate(() => ({
   console.log('\n── 3. Der Chef gibt frei ──');
   for (const [w, h] of [[390, 844], [1440, 900]]) {
     const p = await oeffne(b, w, h, 'chef');
-    await p.evaluate(() => { const a = document.querySelector('#side [data-group="g-alles"], .mobnav [data-group="g-alles"]'); if (a) a.click(); });
+    /* Runde 184 („das problem mit dem zu viel bleibt immer noch
+       bestehen"): „Alles" ist kein Leistenknopf mehr, sondern der
+       ☰-Griff am Seitenkopf (#bereichKopf). Derselbe Weg, andere Stelle. */
+    await p.evaluate(() => { const a = [...document.querySelectorAll('#bereichKopf, #side [data-group="g-alles"], .mobnav [data-group="g-alles"]')].find(e => e.offsetParent); if (a) a.click(); });
     await p.waitForTimeout(400);
     await p.evaluate(() => { const k = document.querySelector('[data-al-cgo="team"]'); if (k) k.click(); });
     await p.waitForTimeout(1000);

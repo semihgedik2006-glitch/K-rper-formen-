@@ -55,10 +55,15 @@ const TAG20 = MON + '-20';
   await p.goto(APP, { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(2600);
 
+  /* „Ich" war bis Runde 179 ein eigener Knopf unten (g-ich). Seit Runde
+     180 („fünf Räume", aus dem Betrieb 22.10.2026: „das problem mit dem zu
+     viel bleibt immer noch bestehen") ist es ein Reiter unter „Heute":
+     erst der Raum, dann der Reiter. */
   await p.evaluate(async () => {
-    document.querySelector('.mobnav [data-group="g-ich"]').click();
+    document.querySelector('.mobnav [data-group="g-start"]').click();
+    await new Promise(r => setTimeout(r, 300));
+    document.querySelector('[data-subview="ich"]').click();
     await new Promise(r => setTimeout(r, 400));
-    (function(){var s=document.querySelector('[data-subview="ich"]');if(s) s.click();})();
     document.querySelector('[data-ichtab="kalender"]').click();
     await new Promise(r => setTimeout(r, 500));
   });
