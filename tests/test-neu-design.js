@@ -96,8 +96,8 @@ async function seite(b, stub, such, breite) {
     await page.close();
   }
 
-  /* ══ 2. MIT SCHALTER: VIER KNÖPFE UND EINE LISTE ════════════════════ */
-  console.log('\n── Mit ?neu=1: vier Knöpfe, eine Liste ──');
+  /* ══ 2. MIT SCHALTER: FÜNF RÄUME UND EINE LISTE ════════════════════ */
+  console.log('\n── Mit ?neu=1: fünf Räume, eine Liste ──');
   const page = await seite(b, 'stub-chef.js', '?neu=1');
   {
     const neu = await page.evaluate(() => ({
@@ -121,13 +121,19 @@ async function seite(b, stub, such, breite) {
     }));
     console.log('NEU:', JSON.stringify(neu));
     pruefe('body trägt die Klasse „neu"', neu.klasse === true);
-    pruefe('unten stehen vier Knöpfe', neu.reihe.length === 4, JSON.stringify(neu.reihe));
-    /* Seit Runde 103, P5 steht der Putzplan an dritter Stelle, die
-       Nachrichten liegen unter „Alles". Aus dem Betrieb, 24.9.2026:
-       „der am meisten benutzte Bereich [ist] der Aufgaben- und
-       Putzplan-Bereich … aber der Chat eher wenig". */
-    pruefe('und zwar Start, Aufgaben, Putzplan, Alles',
-      neu.reihe.join('|') === 'Start|Aufgaben|Putzplan|Alles', JSON.stringify(neu.reihe));
+    /* Runde 180, aus dem Betrieb, 22.10.2026: „das problem mit dem zu
+       viel bleibt immer noch bestehen" — zu viele Menüpunkte, man findet
+       nichts; „jede Funktion hat ihren Sinn" (nichts streichen, nur neu
+       ordnen); die Raumnamen „passen". Seitdem fünf Räume, am Handy
+       unten und am Rechner links dieselben. „Alles" ist kein Knopf mehr
+       in der Leiste, sondern der ☰-Griff am Seitenkopf; der Putzplan ist
+       Reiter unter „Studio". Die Reihenfolge folgt weiter der Nutzung
+       (24.9.2026: „der am meisten benutzte Bereich [ist] der Aufgaben-
+       und Putzplan-Bereich … aber der Chat eher wenig") — Studio vor
+       Nachrichten. */
+    pruefe('unten stehen fünf Knöpfe', neu.reihe.length === 5, JSON.stringify(neu.reihe));
+    pruefe('und zwar Heute, Studio, Plan, Nachrichten, Wissen',
+      neu.reihe.join('|') === 'Heute|Studio|Plan|Nachrichten|Wissen', JSON.stringify(neu.reihe));
     pruefe('die Schublade ist beim Start zu', neu.ladeZu === true);
     pruefe('der Bereichskopf trägt einen sichtbaren Griff', neu.griff === true);
   }
@@ -287,15 +293,20 @@ async function seite(b, stub, such, breite) {
 
   /* Seite und Schublade müssen dasselbe zeigen — sonst gibt es zwei
      Wahrheiten, und eine davon ist immer die alte. */
-  const gleich = await page.evaluate(async () => {
-    document.querySelector('.mn-reihe [data-group="g-alles"]').click();
-    await new Promise(r => setTimeout(r, 900));
+  /* Runde 180: die Seite „Alles" hat keinen Leistenknopf mehr. Sie
+     bleibt für gespeicherte Wege (#alles) bestehen — also über genau
+     so einen Link geöffnet. Solange es sie gibt, muss sie dasselbe
+     zeigen wie die Schublade. */
+  const pAlles = await seite(b, 'stub-chef.js', '?neu=1#alles');
+  const gleich = await pAlles.evaluate(async () => {
+    await new Promise(r => setTimeout(r, 300));
     const seite = [...document.querySelectorAll('#allesSeite .al-zeile b')].map(x => x.textContent);
     document.getElementById('bereichKopf').click();
     await new Promise(r => setTimeout(r, 450));
     const lade = [...document.querySelectorAll('#allesLadeInhalt .al-zeile b')].map(x => x.textContent);
     return { seite: seite.length, lade: lade.length, gleich: seite.join('|') === lade.join('|') };
   });
+  await pAlles.close();
   console.log('SEITE gegen SCHUBLADE:', JSON.stringify(gleich));
   pruefe('Seite und Schublade zeigen exakt dasselbe',
     gleich.gleich && gleich.seite > 0, JSON.stringify(gleich));
@@ -526,11 +537,13 @@ async function seite(b, stub, such, breite) {
   ]) {
     const p3 = await seite(b, stub, '?neu=1');
     const r = await p3.evaluate(async () => {
-      document.querySelector('.mn-reihe [data-group="g-alles"]').click();
+      /* Runde 180: „Alles" öffnet man über den ☰-Griff am Seitenkopf;
+         gelesen wird, was in der Schublade steht. */
+      document.getElementById('bereichKopf').click();
       await new Promise(r => setTimeout(r, 900));
       return {
-        fragen: [...document.querySelectorAll('#allesSeite .al-frage')].map(x => x.textContent),
-        ziele: [...document.querySelectorAll('#allesSeite .al-zeile b')].map(x => x.textContent),
+        fragen: [...document.querySelectorAll('#allesLadeInhalt .al-frage')].map(x => x.textContent),
+        ziele: [...document.querySelectorAll('#allesLadeInhalt .al-zeile b')].map(x => x.textContent),
       };
     });
     const hatVerwalten = r.fragen.some(f => /Verwalten/.test(f || ''));

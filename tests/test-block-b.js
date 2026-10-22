@@ -39,10 +39,14 @@ async function seite(b, rolle, w, h) {
   await p.waitForTimeout(400);
   return p;
 }
+/* Der Weg zu „Meine Woche" über „Alles". Seit Runde 180 steht „Alles"
+   nicht mehr in der Leiste (aus dem Betrieb, 22.10.2026: „das problem
+   mit dem zu viel bleibt immer noch bestehen") — der ☰-Griff
+   #bereichKopf öffnet dieselbe Liste als Schublade. */
 async function zurWoche(p) {
-  await p.evaluate(() => [...document.querySelectorAll('.mobnav button, .side button')].find(x => /Alles/.test(x.textContent)).click());
+  await p.evaluate(() => document.getElementById('bereichKopf').click());
   await p.waitForTimeout(400);
-  await p.evaluate(() => document.querySelector('#allesSeite [data-alles="ich"][data-al-ichtab="woche"]').click());
+  await p.evaluate(() => document.querySelector('#allesLadeInhalt [data-alles="ich"][data-al-ichtab="woche"]').click());
   await p.waitForTimeout(900);
 }
 

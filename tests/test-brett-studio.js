@@ -48,12 +48,13 @@ async function oeffne(b, rolle, w, h) {
   await p.waitForTimeout(3000);
   /* Die Abfragen ans Brett mitschreiben (Haken in demo-daten.js). */
   await p.evaluate(() => { window.DEMO_ABFRAGEN = []; });
-  /* Der Weg wie im Studio: „Alles" → „Schwarzes Brett". */
-  await p.evaluate(() => {
-    [...document.querySelectorAll('[data-group="g-alles"]')].find(x => x.getClientRects().length).click();
-  });
+  /* Der Weg wie im Studio: „Alles" → „Schwarzes Brett". Seit Runde 180
+     steht „Alles" nicht mehr als Knopf in der Leiste (aus dem Betrieb,
+     22.10.2026: „das problem mit dem zu viel bleibt immer noch
+     bestehen"); dieselbe Liste öffnet der ☰-Griff #bereichKopf. */
+  await p.evaluate(() => document.getElementById('bereichKopf').click());
   await p.waitForTimeout(400);
-  await p.evaluate(() => document.querySelector('[data-al-teamtab="brett"]').click());
+  await p.evaluate(() => document.querySelector('#allesLadeInhalt [data-al-teamtab="brett"]').click());
   await p.waitForTimeout(1200);
   /* „Aushang schreiben" ist eingeklappt — aufklappen wie im Studio. */
   await p.evaluate(() => { const k = document.querySelector('[data-fold="brettneu"].zu .fold-head'); if (k) k.click(); });

@@ -120,7 +120,11 @@ async function zuDenAufgaben(p) {
     pruefe('wieder online: alles normal', !an.klasse && !an.leiste, JSON.stringify(an));
 
     /* ══ 3. Hochzählen im Überblick ══ */
-    await p.evaluate(() => { const a = document.querySelector('#side [data-group="g-alles"], .mobnav [data-group="g-alles"]'); if (a) a.click(); });
+    /* Bis Runde 179 stand „Alles" als Knopf in Seitenleiste bzw. Leiste.
+       Seit Runde 180 („fünf Räume", aus dem Betrieb 22.10.2026: „das
+       problem mit dem zu viel bleibt immer noch bestehen") öffnet der
+       ☰-Griff #bereichKopf dieselbe Liste als Schublade. */
+    await p.evaluate(() => { const a = document.getElementById('bereichKopf'); if (a) a.click(); });
     await p.waitForTimeout(500);
     const verlauf = await p.evaluate(() => new Promise(fertig => {
       const k = document.querySelector('#allesSeite [data-alles="chef"][data-al-cgo="ueberblick"], #allesLadeInhalt [data-al-cgo="ueberblick"]');
@@ -149,7 +153,8 @@ async function zuDenAufgaben(p) {
     console.log('\n── weniger Bewegung ──');
     const ctx = await b.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
     const p = await oeffne(ctx, 'chef');
-    await p.evaluate(() => { const a = document.querySelector('#side [data-group="g-alles"], .mobnav [data-group="g-alles"]'); if (a) a.click(); });
+    // Runde 180: „Alles" über den ☰-Griff (siehe oben).
+    await p.evaluate(() => { const a = document.getElementById('bereichKopf'); if (a) a.click(); });
     await p.waitForTimeout(500);
     const verlauf = await p.evaluate(() => new Promise(fertig => {
       const k = document.querySelector('#allesSeite [data-al-cgo="ueberblick"], #allesLadeInhalt [data-al-cgo="ueberblick"]');

@@ -113,8 +113,12 @@ async function starte(b, w, h) {
   await p.waitForTimeout(3300);
   return p;
 }
+/* Runde 180 („fünf Räume“): Die Schulung liegt jetzt unter „Wissen“
+   (g-wissen), neben Dokumenten und Formi. Aus dem Betrieb, 22.10.2026:
+   „das problem mit dem zu viel bleibt immer noch bestehen“, „jede
+   Funktion hat ihren Sinn“ – nichts gestrichen, nur neu geordnet. */
 async function zurSchulung(p) {
-  await p.evaluate(() => { const k = document.querySelector('.mobnav [data-group="g-ich"]') || document.querySelector('#side [data-group="g-ich"]'); if (k) k.click(); });
+  await p.evaluate(() => { const k = document.querySelector('.mobnav [data-group="g-wissen"]') || document.querySelector('#side [data-group="g-wissen"]'); if (k) k.click(); });
   await p.waitForTimeout(700);
   await p.evaluate(() => { const t = [...document.querySelectorAll('[data-subview]')].find(x => /Schulung/.test(x.textContent)); if (t) t.click(); });
   await p.waitForTimeout(1500);

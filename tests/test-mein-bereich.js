@@ -133,12 +133,20 @@ async function reiterOeffnen(p, tab) {
   await p.waitForTimeout(2600);
 
   // ══ 1. Gibt es den Bereich ueberhaupt, und kommt man hin? ══
+  /* Runde 180 („das problem mit dem zu viel bleibt immer noch
+     bestehen"; „jede Funktion hat ihren Sinn" — nichts streichen, nur
+     neu ordnen): „Ich" hat keinen eigenen Leistenknopf mehr. Der Bereich
+     ist ein Reiter unter „Heute" (g-start), denn er beantwortet dieselbe
+     Frage wie die Startseite — was betrifft MICH heute. Der Weg ist
+     also: „Heute" → Reiter „Ich". */
   const ankunft = await p.evaluate(async () => {
-    const g = document.querySelector('.mobnav [data-group="g-ich"]');
+    const g = document.querySelector('.mobnav [data-group="g-start"]');
     if (!g) return { keinReiter: true };
     const beschriftung = (g.textContent || '').trim();
     g.click();
     await new Promise(r => setTimeout(r, 500));
+    const sub = document.querySelector('#subnav [data-subview="ich"]');
+    if (sub) { sub.click(); await new Promise(r => setTimeout(r, 500)); }
     const v = document.getElementById('view-ich');
     return {
       beschriftung,
@@ -151,22 +159,24 @@ async function reiterOeffnen(p, tab) {
          der Bereich dann nur noch ueber eine To-do-Zeile. */
       unter: [...document.querySelectorAll('#subnav [data-subview]')]
         .map(x => x.getAttribute('data-subview')),
-      // Der Reiter muss VOR dem Chat stehen, sonst war die Entscheidung
-      // aus dem Kommentar in NAVGROUPS nur Absicht.
+      // Der Raum „Heute" steht an erster Stelle — vor Studio, Plan,
+      // Nachrichten und Wissen (Runde 180, NAVGROUPS).
       stelle: [...document.querySelectorAll('.mobnav [data-group]')]
-        .map(x => x.getAttribute('data-group')).indexOf('g-ich')
+        .map(x => x.getAttribute('data-group')).indexOf('g-start')
     };
   });
 
   if (ankunft.keinReiter) {
-    errs.push('FEHLT: die untere Leiste hat keinen Eintrag „g-ich"');
+    errs.push('FEHLT: die untere Leiste hat keinen Eintrag „g-start" (Heute)');
   } else {
     console.log('Beschriftung:', JSON.stringify(ankunft.beschriftung),
       '· Stelle:', ankunft.stelle, '· Reiter:', ankunft.reiter.join(', '));
-    pruefe(ankunft.sichtbar, 'NICHT SICHTBAR: der Klick öffnet #view-ich nicht');
-    pruefe(ankunft.stelle === 1,
-      'STELLE: „Mein Bereich" steht an Position ' + ankunft.stelle +
-      ' statt an zweiter — bei sechs Einträgen rutscht er sonst aus dem Bild');
+    pruefe(ankunft.sichtbar, 'NICHT SICHTBAR: „Heute" → Reiter „Ich" öffnet #view-ich nicht');
+    pruefe(ankunft.beschriftung === 'Heute',
+      'BESCHRIFTUNG: der Raum heisst „' + ankunft.beschriftung + '" statt „Heute"');
+    pruefe(ankunft.stelle === 0,
+      'STELLE: „Heute" (mit dem Reiter „Ich") steht an Position ' + ankunft.stelle +
+      ' statt an erster');
     // In der Uebersicht liegen jetzt drei Reiter, nicht mehr fuenf
     ['woche', 'kalender', 'daten'].forEach(t => {
       pruefe(ankunft.reiter.indexOf(t) >= 0, 'FEHLT: der Reiter „' + t + '"');
@@ -177,7 +187,7 @@ async function reiterOeffnen(p, tab) {
       'ZU VIELE REITER in der Übersicht: ' + ankunft.reiter.join(', ') +
       ' — To-do und Notizen gehören auf den zweiten Schreibtisch');
     console.log('Unternavigation:', ankunft.unter.join(', '));
-    ['ich', 'persoenlich'].forEach(v => {
+    ['home', 'ich', 'persoenlich'].forEach(v => {
       pruefe(ankunft.unter.indexOf(v) >= 0,
         'FEHLT in der Unternavigation: „' + v + '"');
     });
@@ -851,7 +861,13 @@ async function reiterOeffnen(p, tab) {
      werden. */
   {
     await p.evaluate(() => {
-      document.querySelector('.mobnav [data-group="g-ich"]').click();
+      // Runde 180: „Heute" → Reiter „Ich" (siehe Abschnitt 1).
+      document.querySelector('.mobnav [data-group="g-start"]').click();
+    });
+    await p.waitForTimeout(400);
+    await p.evaluate(() => {
+      const s = document.querySelector('#subnav [data-subview="ich"]');
+      if (s) s.click();
     });
     await p.waitForTimeout(400);
     await p.evaluate(() => {

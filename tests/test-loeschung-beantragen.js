@@ -56,15 +56,18 @@ async function oeffne(b, w, h, rolle) {
   await p.waitForTimeout(3000);
   return p;
 }
-/* Ich → Daten: über „Alles", wie ein Mensch — zwei Tipps. */
+/* Ich → Daten: über „Alles", wie ein Mensch — zwei Tipps.
+   Runde 180 („das problem mit dem zu viel bleibt immer noch bestehen"):
+   „Alles" ist kein Leistenknopf mehr, sondern der ☰-Griff am Seitenkopf
+   (#bereichKopf). Derselbe Weg, andere Stelle. */
 async function zuDaten(p) {
-  await p.evaluate(() => { const a = [...document.querySelectorAll('[data-group="g-alles"]')].find(x => x.getClientRects().length); if (a) a.click(); });
+  await p.evaluate(() => { const a = [...document.querySelectorAll('#bereichKopf, [data-group="g-alles"]')].find(x => x.getClientRects().length); if (a) a.click(); });
   await p.waitForTimeout(400);
   await p.evaluate(() => { const k = document.querySelector('[data-al-ichtab="daten"]'); if (k) k.click(); });
   await p.waitForTimeout(900);
 }
 async function zuTeam(p) {
-  await p.evaluate(() => { const a = [...document.querySelectorAll('[data-group="g-alles"]')].find(x => x.getClientRects().length); if (a) a.click(); });
+  await p.evaluate(() => { const a = [...document.querySelectorAll('#bereichKopf, [data-group="g-alles"]')].find(x => x.getClientRects().length); if (a) a.click(); });
   await p.waitForTimeout(400);
   await p.evaluate(() => { const k = document.querySelector('[data-al-cgo="team"]'); if (k) k.click(); });
   await p.waitForTimeout(900);

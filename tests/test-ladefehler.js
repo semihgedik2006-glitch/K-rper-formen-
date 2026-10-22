@@ -65,7 +65,10 @@ async function oeffne(b, w, h, rolle, fehler) {
    Seite gerade nicht offen ist. Die Startseite über ihren Reiter. */
 async function zu(p, v) {
   if (v !== 'home') {
-    await p.evaluate(() => { const a = document.querySelector('#side [data-group="g-alles"], .mobnav [data-group="g-alles"]'); if (a) a.click(); });
+    /* Runde 180 („das problem mit dem zu viel bleibt immer noch
+       bestehen"): „Alles" ist kein Leistenknopf mehr, sondern der
+       ☰-Griff am Seitenkopf (#bereichKopf). */
+    await p.evaluate(() => { const a = [...document.querySelectorAll('#bereichKopf, #side [data-group="g-alles"], .mobnav [data-group="g-alles"]')].find(e => e.offsetParent); if (a) a.click(); });
     await p.waitForTimeout(500);
   }
   const ok = await p.evaluate((v) => {

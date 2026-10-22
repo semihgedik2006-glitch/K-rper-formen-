@@ -63,7 +63,11 @@ async function zuKennzahlen(p) {
   return p.evaluate(async () => {
     const w = (ms) => new Promise(r => setTimeout(r, ms));
     const s = (sel) => [...document.querySelectorAll(sel)].find(e => e.offsetParent);
-    const alles = s('[data-view="alles"], [data-group="g-alles"], .mobnav [data-alles-auf]') ||
+    /* Runde 180 („das problem mit dem zu viel bleibt immer noch
+       bestehen"): „Alles" steht nicht mehr als Knopf in der Leiste,
+       sondern hinter dem ☰-Griff am Seitenkopf (#bereichKopf) — auf
+       jeder Seite, am Handy und am Rechner. Weiterhin zwei Tipps. */
+    const alles = s('#bereichKopf, [data-view="alles"], [data-group="g-alles"], .mobnav [data-alles-auf]') ||
       [...document.querySelectorAll('.mobnav button, #side button, #side a')].find(e => e.offsetParent && /^\s*Alles\s*$/.test(e.textContent));
     if (alles) { alles.click(); await w(700); }
     /* Der Eintrag des Reiters — nicht die Zeile „Was ist neu", die den
@@ -248,7 +252,8 @@ function tabelle(p) {
   console.log('\n── Mitarbeiter ──');
   const r = await oeffne(b, 'mitarbeiter', 390, 844);
   const ma = await r.evaluate(async () => {
-    const a = [...document.querySelectorAll('[data-group="g-alles"]')].find(e => e.offsetParent);
+    // Runde 180: „Alles" liegt hinter dem ☰-Griff #bereichKopf (siehe oben).
+    const a = [...document.querySelectorAll('#bereichKopf, [data-group="g-alles"]')].find(e => e.offsetParent);
     if (a) { a.click(); await new Promise(x => setTimeout(x, 700)); }
     return { offen: document.querySelectorAll('[data-alles]').length,
              kz: !!document.querySelector('[data-al-cgo="kennzahlen"], [data-cgo="kennzahlen"], [data-ctab="kennzahlen"]') };

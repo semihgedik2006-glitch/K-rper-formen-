@@ -64,11 +64,16 @@ async function oeffne(b, rolle, w, h) {
 }
 /* Seit Runde 169 eine eigene Seite (view-planer) statt eines
    Verwaltungs-Reiters — der Weg bleibt „Alles" → Schichtplaner. */
+/* Runde 180 („fünf Räume“): „Alles“ steht nicht mehr in der Leiste,
+   sondern hinter dem ☰-Griff am Seitenkopf (#bereichKopf), der die
+   Schublade öffnet. Aus dem Betrieb, 22.10.2026: „das problem mit dem zu
+   viel bleibt immer noch bestehen“ – derselbe Weg, zwei Tipps, nur der
+   erste Tipp sitzt jetzt oben links. */
 async function zuAlles(p) {
   return p.evaluate(async () => {
     const w = (ms) => new Promise((r) => setTimeout(r, ms));
-    const alles = [...document.querySelectorAll('.mobnav button, #side button, #side a')].find((e) => e.offsetParent && /^\s*Alles\s*$/.test(e.textContent));
-    if (alles) { alles.click(); await w(700); }
+    const griff = document.getElementById('bereichKopf');
+    if (griff && griff.offsetParent && griff.getAttribute('aria-expanded') !== 'true') { griff.click(); await w(700); }
     const z = [...document.querySelectorAll('[data-alles="planer"]')].find((e) => e.offsetParent);
     if (!z) return false;
     z.click(); await w(1500);
@@ -215,7 +220,8 @@ async function messen(p, wer, liste) {
   // In der Demo sind veröffentlichte Schichten im Team-Schichtplan zu sehen
   const imTeam = await p.evaluate(async () => {
     const w = (ms) => new Promise((r) => setTimeout(r, ms));
-    const team = [...document.querySelectorAll('.mobnav button, #side button, #side a')].find((e) => e.offsetParent && /^\s*Team\s*$/.test(e.textContent));
+    /* Runde 180: der Raum „Team“ heisst jetzt „Plan“ („wer arbeitet wann?“). */
+    const team = [...document.querySelectorAll('.mobnav button, #side button, #side a')].find((e) => e.offsetParent && /^\s*Plan\s*$/.test(e.textContent));
     if (!team) return -1;
     team.click(); await w(900);
     const vor = document.getElementById('shiftNext');
@@ -376,8 +382,12 @@ async function messen(p, wer, liste) {
   const l = await oeffne(b, 'leiter', 390, 844);
   const lHat = await l.evaluate(async () => {
     const w = (ms) => new Promise((r) => setTimeout(r, ms));
-    const alles = [...document.querySelectorAll('.mobnav button')].find((e) => e.offsetParent && /Alles/.test(e.textContent));
-    if (alles) { alles.click(); await w(700); }
+    /* Runde 180: „Alles“ liegt hinter dem ☰-Griff (#bereichKopf), nicht
+       mehr in der unteren Leiste. Ohne die Schublade zu öffnen, wäre
+       „hat den Reiter nicht“ immer wahr und sagte nichts. */
+    const griff = document.getElementById('bereichKopf');
+    if (!griff || !griff.offsetParent) return 'kein Griff';
+    griff.click(); await w(700);
     return !!document.querySelector('[data-alles="planer"]');
   });
   pruefe('die Studioleitung hat den Reiter (noch) nicht', !lHat);
@@ -387,8 +397,12 @@ async function messen(p, wer, liste) {
   const m = await oeffne(b, 'mitarbeiter', 390, 844);
   const mHat = await m.evaluate(async () => {
     const w = (ms) => new Promise((r) => setTimeout(r, ms));
-    const alles = [...document.querySelectorAll('.mobnav button')].find((e) => e.offsetParent && /Alles/.test(e.textContent));
-    if (alles) { alles.click(); await w(700); }
+    /* Runde 180: „Alles“ liegt hinter dem ☰-Griff (#bereichKopf), nicht
+       mehr in der unteren Leiste. Ohne die Schublade zu öffnen, wäre
+       „hat den Reiter nicht“ immer wahr und sagte nichts. */
+    const griff = document.getElementById('bereichKopf');
+    if (!griff || !griff.offsetParent) return 'kein Griff';
+    griff.click(); await w(700);
     return !!document.querySelector('[data-alles="planer"]');
   });
   pruefe('ein Mitarbeiter hat den Reiter nicht', !mHat);

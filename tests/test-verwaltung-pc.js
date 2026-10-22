@@ -52,8 +52,12 @@ async function oeffne(b, w, h, rolle) {
   await p.waitForTimeout(3200);
   return p;
 }
+/* Runde 180 („fünf Räume“): „Alles“ steht nicht mehr in Seitenleiste oder
+   unterer Leiste, sondern hinter dem ☰-Griff am Seitenkopf (#bereichKopf).
+   Aus dem Betrieb, 22.10.2026: „das problem mit dem zu viel bleibt immer
+   noch bestehen“. Der Weg bleibt „Alles“ → Verwaltung → Reiter. */
 async function reiter(p, id) {
-  await p.evaluate(() => { const a = document.querySelector('#side [data-group="g-alles"], .mobnav [data-group="g-alles"]'); if (a) a.click(); });
+  await p.evaluate(() => { const a = document.getElementById('bereichKopf'); if (a && a.getClientRects().length && a.getAttribute('aria-expanded') !== 'true') a.click(); });
   await p.waitForTimeout(500);
   await p.evaluate(() => { const k = document.querySelector('#allesLadeInhalt [data-alles="chef"], #allesSeite [data-alles="chef"]'); if (k) k.click(); });
   await p.waitForTimeout(700);

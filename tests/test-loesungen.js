@@ -149,7 +149,10 @@ async function starte(b, rolle) {
      absucht, findet ihn dort. */
   const imVerzeichnis = await p.evaluate(() => {
     document.getElementById('hilfeZu').click();
-    const a = document.querySelector('.mobnav [data-group="g-alles"]');
+    /* Runde 180 („das problem mit dem zu viel bleibt immer noch
+       bestehen"): „Alles" ist kein Leistenknopf mehr, sondern der
+       ☰-Griff am Seitenkopf (#bereichKopf). */
+    const a = [...document.querySelectorAll('#bereichKopf, .mobnav [data-group="g-alles"]')].find(e => e.offsetParent);
     if (a) a.click();
     return new Promise(r => setTimeout(() => {
       const z = document.querySelector('[data-al-hilfe]');

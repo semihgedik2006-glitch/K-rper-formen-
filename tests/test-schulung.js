@@ -88,18 +88,22 @@ async function starte(b, rolle) {
   await p.waitForTimeout(3300);
   return p;
 }
-/* Der Weg, den ein Mensch geht: untere Leiste → „Ich" → Reiter
+/* Der Weg, den ein Mensch geht: untere Leiste → „Wissen" → Reiter
    „Schulung". Kein showView() von aussen — das prüfte die Funktion
    statt den Weg.
 
-   Unter „Ich" und nicht unter „Betrieb", seit dem 22.9.2026 und auf
+   Nicht unter „Betrieb"/„Studio", seit dem 22.9.2026 und auf
    Ansage: dort liegt, was HEUTE im Studio zu tun ist. Eine Schulung
-   gehört zu dem, was man selbst kann — wie „Meine Zeiten" und
-   „Meine Nachweise". */
+   gehört zu dem, was man selbst kann und wissen muss.
+
+   Runde 180 („fünf Räume“): Die Schulung liegt jetzt unter „Wissen“
+   (g-wissen), neben Dokumenten und Formi. Aus dem Betrieb, 22.10.2026:
+   „das problem mit dem zu viel bleibt immer noch bestehen“, „jede
+   Funktion hat ihren Sinn“ – nichts gestrichen, nur neu geordnet. */
 async function zurSchulung(p) {
   await p.evaluate(() => {
-    const k = document.querySelector('.mobnav [data-group="g-ich"]') ||
-              document.querySelector('#side [data-group="g-ich"]');
+    const k = document.querySelector('.mobnav [data-group="g-wissen"]') ||
+              document.querySelector('#side [data-group="g-wissen"]');
     if (k) k.click();
   });
   await p.waitForTimeout(700);
@@ -152,7 +156,7 @@ async function codeHolen(p, name) {
 
   // ══ 1. Der Weg dorthin ══
   console.log('\n── Der Weg dorthin ──');
-  pruefe('der Reiter „Schulung" steht unter „Ich"', await zurSchulung(p));
+  pruefe('der Reiter „Schulung" steht unter „Wissen"', await zurSchulung(p));
   const offen = await p.evaluate(() => ({
     seite: (document.querySelector('.view.show') || {}).id,
     basis: ((window.SCHULUNGEN_BASIS || {}).module || []).length,
@@ -239,9 +243,13 @@ async function codeHolen(p, name) {
      oder so steht". Ein siebter Bereich in der Navigation waere die
      falsche Antwort auf den Wunsch gewesen, es moege einfacher werden:
      die untere Leiste hat vier feste Plaetze. */
+  /* Runde 180: „Alles" steht nicht mehr unten in der Leiste, sondern
+     hinter dem ☰-Griff am Seitenkopf (#bereichKopf), der die Schublade
+     öffnet – „das problem mit dem zu viel bleibt immer noch bestehen"
+     (22.10.2026). */
   const imVerzeichnis = await p.evaluate(() => {
-    const a = document.querySelector('.mobnav [data-group="g-alles"]');
-    if (a) a.click();
+    const a = document.getElementById('bereichKopf');
+    if (a && a.offsetParent) a.click();
     return new Promise(r => setTimeout(() => {
       const ziel = document.querySelector('[data-alles="schulung"]');
       const gr = ziel && ziel.closest('.al-gruppe');

@@ -51,7 +51,11 @@ async function zuDenAufgaben(b, rolle, w, h) {
   await p.goto(APP + '?demo=' + rolle, { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(3200);
   await p.evaluate(() => { const t = document.getElementById('tourWeg'); if (t && t.offsetParent) t.click(); });
-  await p.evaluate(() => { const n = [...document.querySelectorAll('.mobnav button, .side button')].find(x => /Aufgaben/.test(x.textContent) && x.getClientRects().length); n.click(); });
+  /* Runde 180 („das problem mit dem zu viel bleibt immer noch
+     bestehen"; die Raumnamen „passen"): der Raum heisst „Studio", nicht
+     mehr „Aufgaben". Aufgaben sind sein erster Reiter — der Knopf
+     führt direkt hin. */
+  await p.evaluate(() => { const n = [...document.querySelectorAll('.mobnav button, .side button')].find(x => /^\s*Studio/.test(x.textContent) && x.getClientRects().length); n.click(); });
   await p.waitForTimeout(900);
   return p;
 }

@@ -47,7 +47,10 @@ async function oeffne(b, w, h) {
   await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
   await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(3000);
-  await p.evaluate(() => { const a = [...document.querySelectorAll('[data-group="g-alles"]')].find(x => x.getClientRects().length); if (a) a.click(); });
+  /* Runde 180 („fünf Räume“): „Alles“ liegt hinter dem ☰-Griff am
+     Seitenkopf (#bereichKopf), nicht mehr in einer Leiste. Aus dem Betrieb,
+     22.10.2026: „das problem mit dem zu viel bleibt immer noch bestehen“. */
+  await p.evaluate(() => { const a = document.getElementById('bereichKopf'); if (a && a.getClientRects().length && a.getAttribute('aria-expanded') !== 'true') a.click(); });
   await p.waitForTimeout(400);
   await p.evaluate(() => { const k = document.querySelector('[data-al-cgo="team"]'); if (k) k.click(); });
   await p.waitForTimeout(900);

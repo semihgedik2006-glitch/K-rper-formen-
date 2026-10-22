@@ -44,7 +44,10 @@ const TREFFER = (el) => {
   while (re < innerWidth && trifft(re + 1, cy)) re++;
   return { w: Math.round(re - l + 1), h: Math.round(u - o + 1) };
 };
-const GRUPPE = { material: 'g-arbeit', geraete: 'g-arbeit', probe: 'g-arbeit', schulung: 'g-ich' };
+/* Runde 180 („das problem mit dem zu viel bleibt immer noch bestehen";
+   „jede Funktion hat ihren Sinn" — nur neu ordnen): die Schulung steht
+   unter „Wissen" (g-wissen), die Gruppe „Ich" gibt es nicht mehr. */
+const GRUPPE = { material: 'g-arbeit', geraete: 'g-arbeit', probe: 'g-arbeit', schulung: 'g-wissen' };
 async function oeffne(b, w, h, rolle) {
   const p = await b.newPage({ viewport: { width: w, height: h } });
   p._fehler = [];
@@ -56,7 +59,9 @@ async function oeffne(b, w, h, rolle) {
   return p;
 }
 async function zu(p, v) {
-  await p.evaluate((g) => { const k = document.querySelector('.mobnav [data-group="' + g + '"], #side [data-group="' + g + '"]'); if (k) k.click(); }, GRUPPE[v]);
+  /* Der Knopf, der im Bild ist: am Handy unten, am Rechner links. Ohne
+     den Filter traf querySelector am Handy die verborgene Seitenleiste. */
+  await p.evaluate((g) => { const k = [...document.querySelectorAll('.mobnav [data-group="' + g + '"], #side [data-group="' + g + '"]')].find(e => e.offsetParent); if (k) k.click(); }, GRUPPE[v]);
   await p.waitForTimeout(700);
   await p.evaluate((v) => { const b = document.querySelector('[data-subview="' + v + '"]'); if (b) b.click(); }, v);
   await p.waitForTimeout(1300);

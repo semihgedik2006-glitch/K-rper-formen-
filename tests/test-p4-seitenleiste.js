@@ -10,20 +10,29 @@
    (zwei Klicks). Die Schnellzugriffe standen am PC unten auf der
    Startseite in einer 600 px schmalen Reihe und nahmen der Liste 86 px.
 
+   Runde 180, aus dem Betrieb, 22.10.2026: „das problem mit dem zu viel
+   bleibt immer noch bestehen" — zu viele Menüpunkte, zu viel auf einem
+   Bildschirm, man findet nichts; „jede Funktion hat ihren Sinn" (nichts
+   streichen, nur neu ordnen); die Raumnamen „passen". Seitdem stehen
+   links dieselben fünf Räume wie am Handy unten, für die Leitung die
+   Verwaltung dazu. Der eigene Putzplan-Knopf ist wieder Reiter unter
+   „Studio", „Alles" liegt hinter dem ☰-Griff am Seitenkopf. Die Schnellzugriffe
+   bleiben links, abgesetzt unter den Räumen.
+
    Was dieser Durchlauf festhält:
-     · Reihenfolge Start, Aufgaben, Putzplan, Ich, Nachrichten, Team,
-       (Verwaltung), Alles
-     · „Putzplan" öffnet den Putzplan mit EINEM Klick und trägt dann die
-       Marke, nicht „Aufgaben"; der Reiter unter „Aufgaben" bleibt
+     · Reihenfolge Heute, Studio, Plan, Nachrichten, Wissen, (Verwaltung)
+       — Studio vor Nachrichten, weiter nach Nutzung
+     · „Studio" öffnet die Aufgaben und trägt die Marke; der Putzplan ist
+       der Reiter daneben, und auch dort trägt „Studio" die Marke
      · die Schnellzugriffe stehen in der Seitenleiste (Vorschlag je
        Rolle), führen hin, „Anpassen" öffnet die Wahl; eine geänderte
        Wahl steht sofort in der Leiste
-     · unten auf der Startseite stehen sie am PC nicht mehr; die Liste
-       ist dadurch höher
+     · unten auf der Startseite stehen sie am PC nicht
      · jedes Bedienelement der Seitenleiste ≥ 44 × 44 bei 1100/1280/
        1366/1440/1920, normal und kompakt (Hit-Test), und erreichbar
      · GEGENPROBEN: am Handy bleiben die Schnellzugriffe unten; im
-       bisherigen Design ist die Seitenleiste unverändert
+       bisherigen Design dieselben Räume, ohne Putzplan-Knopf und ohne
+       Schnellzugriffe
    ══════════════════════════════════════════════════════════════════ */
 const { chromium } = require('playwright');
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
@@ -89,8 +98,9 @@ async function trefferSeite(p) {
     const p = await start(b, 'chef', 1440, 900);
     const a = await p.evaluate(LEISTE);
     console.log('  ' + JSON.stringify(a));
-    pruefe('Reihenfolge nach Nutzung: Start, Aufgaben, Putzplan, …',
-      a.reihe.join('|') === 'Start|Aufgaben|Putzplan|Ich|Nachrichten|Team|Verwaltung|Alles', a.reihe.join('|'));
+    // Runde 180: „das problem mit dem zu viel bleibt immer noch bestehen" — fünf Räume plus Verwaltung.
+    pruefe('Reihenfolge nach Nutzung: Heute, Studio, Plan, Nachrichten, Wissen, Verwaltung',
+      a.reihe.join('|') === 'Heute|Studio|Plan|Nachrichten|Wissen|Verwaltung', a.reihe.join('|'));
     pruefe('Schnellzugriffe in der Seitenleiste (Vorschlag Chef) und „Anpassen"',
       a.schnell.join('|') === 'Überblick|Schichtplan|Anliegen|Anpassen', a.schnell.join('|'));
     const unten = await p.evaluate(() => {
@@ -101,21 +111,23 @@ async function trefferSeite(p) {
     pruefe('unten auf der Startseite stehen sie am PC nicht mehr', !unten.sichtbar, JSON.stringify(unten));
     pruefe('die Liste der Startseite ist dadurch höher (vorher 619 px)', unten.hoehe >= 690, String(unten.hoehe));
 
-    await klick(p, '#side > button', 'Putzplan');
-    const pz = await p.evaluate(LEISTE);
-    pruefe('„Putzplan" öffnet den Putzplan mit einem Klick', pz.ansicht === 'view-putzplan', pz.ansicht);
-    pruefe('… und trägt die Marke, nicht „Aufgaben"', pz.aktiv.join('|') === 'Putzplan', pz.aktiv.join('|'));
-    const reiter = await p.evaluate(() => !!document.querySelector('[data-subview="putzplan"]'));
-    pruefe('der Reiter „Putzplan" unter „Aufgaben" bleibt', reiter);
-    await klick(p, '#side > button', 'Aufgaben');
+    /* Runde 180: kein eigener Putzplan-Knopf mehr. Der Weg: „Studio" →
+       Reiter „Putzplan"; die Marke bleibt dabei auf „Studio". */
+    await klick(p, '#side > button', 'Studio');
     const au = await p.evaluate(LEISTE);
-    pruefe('„Aufgaben" öffnet die Aufgaben und trägt die Marke', au.ansicht === 'view-todos' && au.aktiv.join('|') === 'Aufgaben',
+    pruefe('„Studio" öffnet die Aufgaben und trägt die Marke', au.ansicht === 'view-todos' && au.aktiv.join('|') === 'Studio',
       JSON.stringify(au));
+    await klick(p, '[data-subview]', 'Putzplan');
+    const pz = await p.evaluate(LEISTE);
+    pruefe('„Studio" → Reiter „Putzplan" öffnet den Putzplan', pz.ansicht === 'view-putzplan', pz.ansicht);
+    pruefe('… und die Marke bleibt auf „Studio"', pz.aktiv.join('|') === 'Studio', pz.aktiv.join('|'));
+    const keinKnopf = await p.evaluate(() => !document.querySelector('[data-group="g-putz"]'));
+    pruefe('kein eigener Putzplan-Knopf mehr', keinKnopf);
 
     await klick(p, '#side .ss-knopf', 'Schichtplan');
     const sp = await p.evaluate(() => ({ ansicht: document.querySelector('.view.show').id,
       reiter: (document.querySelector('[data-teamtab].on, [data-teamtab].active') || { getAttribute: () => null }).getAttribute('data-teamtab') }));
-    pruefe('ein Schnellzugriff führt hin (Schichtplan → Team, Reiter Schichtplan)',
+    pruefe('ein Schnellzugriff führt hin (Schichtplan → Plan, Reiter Schichtplan)',
       sp.ansicht === 'view-team' && sp.reiter === 'schicht', JSON.stringify(sp));
 
     await klick(p, '#side .ss-knopf', 'Anpassen');
@@ -140,8 +152,9 @@ async function trefferSeite(p) {
     const p = await start(b, rolle, w, h);
     const a = await p.evaluate(LEISTE);
     if (rolle === 'mitarbeiter')
-      pruefe('Mitarbeiter: Start, Aufgaben, Putzplan, Ich, Nachrichten, Team, Alles',
-        a.reihe.join('|') === 'Start|Aufgaben|Putzplan|Ich|Nachrichten|Team|Alles', a.reihe.join('|'));
+      // Runde 180: dieselben fünf Räume wie am Handy, ohne Verwaltung.
+      pruefe('Mitarbeiter: Heute, Studio, Plan, Nachrichten, Wissen',
+        a.reihe.join('|') === 'Heute|Studio|Plan|Nachrichten|Wissen', a.reihe.join('|'));
     for (const dichte of ['normal', 'kompakt']) {
       await p.evaluate((d) => { document.body.dataset.dichte = d; }, dichte);
       await p.waitForTimeout(200);
@@ -177,14 +190,17 @@ async function trefferSeite(p) {
     const a = await p.evaluate(() => ({ neu: document.body.classList.contains('neu'),
       reihe: [...document.querySelectorAll('#side > button')].map(x => x.dataset.group),
       schnell: !!document.querySelector('.side-schnell') }));
-    pruefe('GEGENPROBE bisheriges Design: Reihenfolge wie immer, kein Putzplan-Knopf, keine Schnellzugriffe',
-      a.neu === false && a.reihe[1] === 'g-ich' && a.reihe.indexOf('g-putz') < 0 && !a.schnell, JSON.stringify(a));
+    /* Runde 180: auch im bisherigen Design dieselben fünf Räume (die
+       untere Leiste und die Seitenleiste lesen dieselben NAVGROUPS). */
+    pruefe('GEGENPROBE bisheriges Design: dieselben Räume, kein Putzplan-Knopf, keine Schnellzugriffe',
+      a.neu === false && a.reihe.join('|') === 'g-start|g-arbeit|g-team|g-komm|g-wissen' &&
+      a.reihe.indexOf('g-putz') < 0 && !a.schnell, JSON.stringify(a));
     await p.close();
   }
 
   await b.close();
   console.log(schlecht
     ? '\n✗ Seitenleiste P4: ' + schlecht + ' von ' + (gut + schlecht) + ' Zusicherungen falsch'
-    : '\n✓ Seitenleiste P4: nach Nutzung, Putzplan mit einem Klick, Schnellzugriffe links — ' + gut + ' Zusicherungen');
+    : '\n✓ Seitenleiste P4: fünf Räume nach Nutzung, Putzplan unter Studio, Schnellzugriffe links — ' + gut + ' Zusicherungen');
   process.exit(schlecht ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

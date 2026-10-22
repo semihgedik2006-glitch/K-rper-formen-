@@ -17460,3 +17460,73 @@ Runde 178: Fenster, Menüs und die Anmeldeseite.
 
 **Nicht geprüft:** jedes einzelne der rund 20 Fenster. Gemessen sind
 Einstellungen, Suche und Anmeldung; die übrigen teilen dieselbe Klasse.
+
+## Runde 180 — Fünf Räume: eine Navigation auf allen Geräten (22.10.2026)
+
+**Aus dem Betrieb:** „das problem mit dem zu viel bleibt immer noch
+bestehen“. Vorher kam die Bitte um Recherche: vergleichbare Apps, Studien
+zur Psychologie und zur Ergonomie, und wie man Funktionen einteilt oder
+zusammenlegt.
+
+**Antworten auf die Rückfragen:**
+- Was ist „zu viel“? Alle vier Antworten zugleich: zu viele Menüpunkte,
+  zu viel auf einem Bildschirm, man findet nichts, zu viele Funktionen.
+- Täglich genutzt werden „Putzplan, Aufgaben hauptsächlich“, am
+  wenigsten die Nachrichten.
+- „jede Funktion hat ihren Sinn“, also nichts streichen, nur neu ordnen.
+- Die Raumnamen „passen“, Chat und Direkt in eine Liste: „ja warum
+  nicht“.
+- Card Sorting mit dem Team entfällt: Die App betreut eine Person, die
+  anderen nutzen sie nur.
+
+**Recherche, kurz:**
+- Apple und Google empfehlen 3–5 Hauptziele in der unteren Leiste.
+- Das Arbeitsgedächtnis hält etwa 4 Dinge auf einmal (Cowan 2001).
+- Versteckte Navigation wird seltener gefunden (NN/g 2016).
+- Visuelle Unruhe bestimmt den ersten Eindruck stärker als Farbe
+  (Reinecke & Gajos 2013).
+- Selten Gebrauchtes gehört auf eine zweite Ebene (NN/g, progressive
+  disclosure).
+- Vergleichbare Apps:
+  - Deputy hat „Me“ und „Dashboard“ zu einem „Home“ zusammengelegt.
+  - Microsoft heftet für Frontline-Kräfte nur 4 Apps an.
+  - Connecteam ordnet in 4 Gruppen.
+- Frontline-Kräfte geben Apps mit überladener Startseite nach wenigen Tagen
+  auf (Anbieterquellen, mit Vorsicht).
+
+**Was gebaut ist** (Grundgerüst; Zusammenlegungen auf Datenebene folgen)
+- **Fünf Räume** in `NAVGROUPS`:
+  - Heute (Start, Ich, Persönlich)
+  - Studio (Aufgaben, Putzplan, Material, Geräte, Probetraining)
+  - Plan (Team-Seite)
+  - Nachrichten (Chat, Direkt, Infos)
+  - Wissen (Dokumente, Schulung, Formi; neue Gruppe `g-wissen` in Violett,
+    der Farbe des früheren „Ich“)
+  - dazu Verwaltung für die Leitung
+- **Reihenfolge nach Nutzung:** Studio steht vor Nachrichten.
+- **Dieselben fünf am Rechner links und am Handy unten**, in beiden
+  Designs. Vorher zeigte das Handy (neues Design) nur Start, Aufgaben,
+  Putzplan und Alles; Ich, Team, Nachrichten und Verwaltung fehlten dort.
+- **Was wegfiel, weil es doppelt war:**
+  - Putzplan als eigener Knopf. Er ist Reiter unter Studio, ein Tipp
+    mehr, dafür nur noch an einer Stelle.
+  - „Alles“ in den Leisten. Es bleibt hinter ☰ am Seitenkopf, auf jeder
+    Seite. Damit gilt der Wunsch „jedes Ziel in zwei Tipps“ weiter: Raum,
+    dann Reiter.
+  - Schnellzugriffe in der Seitenleiste. Sie stehen jetzt auch am Rechner
+    auf „Heute“; gewählt wird wie bisher.
+  - Bericht und Formi-Knöpfe in der Kopfzeile. Der Bericht steht unter
+    Verwaltung → Berichte. Formi erreicht man über die Kugel, die Taste J,
+    die Suche und Wissen → Formi.
+- **Bewusst NICHT verschoben:**
+  - Hilfe im Studio bleibt oben, ausdrücklich gewünscht am 22.9.
+  - Abmelden bleibt oben, wegen des geteilten Geräts beim Schichtwechsel.
+    Die Rückfrage dazu ist offen.
+- **Zwei Funde beim Ansehen:**
+  - Ohne den Bericht stand die Glocke allein in der Mitte der Kopfzeile;
+    sie rückt jetzt zu den Werkzeugen (`margin-left:auto`).
+  - Die Formi-Kugel (Runde 177) lag am Handy auf „+ Aufgabe“; sie rückt
+    eine Knopfhöhe hoch, wenn es den Knopf gibt (`:has`).
+- **Gemessen** (Demo als Geschäftsführung, Startseite):
+  - Rechner: Kopfzeile 7 → 5 Griffe, Seitenleiste 13 → 7.
+  - Handy: untere Leiste 4 → 5, alle Bereiche erreichbar.

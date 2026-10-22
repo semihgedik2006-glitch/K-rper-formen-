@@ -79,7 +79,10 @@ const zustand = (p) => p.evaluate(() => {
   console.log('\n── 1. Das Werkzeug der Geschäftsführung ──');
   {
     const p = await oeffne(b, 1440, 900, 'chef', true);
-    await p.evaluate(() => { const a = [...document.querySelectorAll('[data-group="g-alles"]')].find(x => x.getClientRects().length); if (a) a.click(); });
+    /* Runde 180 („fünf Räume“): „Alles“ liegt hinter dem ☰-Griff am
+       Seitenkopf (#bereichKopf), nicht mehr in einer Leiste. Aus dem Betrieb,
+       22.10.2026: „das problem mit dem zu viel bleibt immer noch bestehen“. */
+    await p.evaluate(() => { const a = document.getElementById('bereichKopf'); if (a && a.getClientRects().length && a.getAttribute('aria-expanded') !== 'true') a.click(); });
     await p.waitForTimeout(400);
     await p.evaluate(() => { const k = document.querySelector('[data-al-cgo="team"]'); if (k) k.click(); });
     await p.waitForTimeout(900);

@@ -9,18 +9,26 @@
    Der Putzplan war zwei Tipps entfernt (Aufgaben → Reiter Putzplan),
    die Nachrichten einer.
 
+   Runde 180, aus dem Betrieb, 22.10.2026: „das problem mit dem zu viel
+   bleibt immer noch bestehen" — zu viele Menüpunkte, man findet nichts.
+   Auf Rückfrage: hinter den vier Knöpfen fehlten Ich, Team, Nachrichten
+   und Verwaltung; „jede Funktion hat ihren Sinn" (nichts streichen, nur
+   neu ordnen); die Raumnamen „passen". Seitdem fünf Räume, dieselben
+   wie am Rechner links. Die Reihenfolge folgt weiter der Nutzung vom
+   24.9.: Studio (Aufgaben und Putzplan) vor Nachrichten.
+
    Was dieser Durchlauf festhält:
-     · unten stehen Start · Aufgaben · Putzplan · Alles
-     · „Putzplan" öffnet den Putzplan mit einem Tipp und trägt die Marke
-     · die Nachrichten sind über „Alles" in zwei Tipps da; im Chat trägt
-       „Alles" die Marke
-     · eine neue Chatnachricht setzt den Punkt an „Alles" — Ungelesenes
-       verschwindet nicht hinter der Liste
-     · die Schnellzugriffe schlagen den Putzplan nicht mehr vor (er steht
-       jetzt unten), sondern die eigene Woche
+     · unten stehen Heute · Studio · Plan · Nachrichten · Wissen
+     · „Studio" öffnet die Aufgaben und trägt die Marke; der Putzplan ist
+       der Reiter daneben (kein eigener Knopf mehr), die Marke bleibt
+       auf „Studio"
+     · die Nachrichten sind wieder EIN Tipp und tragen im Chat die Marke
+     · eine neue Chatnachricht setzt den Punkt an „Nachrichten" —
+       Ungelesenes verschwindet nicht
+     · der Schnellzugriff-Vorschlag bleibt die eigene Woche, Zeiten, Geräte
      · jeder Knopf der Leiste ≥ 44 × 44 bei 320 / 390 / 430 / 820 px,
        normal und kompakt, und im Bild
-     · GEGENPROBE: im bisherigen Design bleibt die Leiste, wie sie war
+     · GEGENPROBE: im bisherigen Design dieselben Räume, kein Putzplan-Knopf
    ══════════════════════════════════════════════════════════════════ */
 const { chromium } = require('playwright');
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
@@ -58,7 +66,8 @@ const LAGE = () => ({
   reihe: [...document.querySelectorAll('.mn-reihe > button')].map(x => x.querySelector('span:not(.badge):not(.ndot)').textContent.trim()),
   aktiv: [...document.querySelectorAll('.mn-reihe > button.active')].map(x => x.querySelector('span:not(.badge):not(.ndot)').textContent.trim()),
   ansicht: (document.querySelector('.view.show') || {}).id,
-  punktAlles: !!document.querySelector('.mn-reihe [data-ndot="g-alles"].show')
+  // Runde 180: Ungelesenes trägt der Knopf „Nachrichten" (g-komm), nicht mehr „Alles".
+  punktKomm: !!document.querySelector('.mn-reihe [data-ndot="g-komm"].show')
 });
 async function tippe(p, wort) {
   await p.evaluate(w => [...document.querySelectorAll('.mn-reihe > button')].find(x => x.textContent.includes(w)).click(), wort);
@@ -73,28 +82,32 @@ async function tippe(p, wort) {
     const p = await start(b, 'mitarbeiter', 390, 844);
     const a = await p.evaluate(LAGE);
     console.log('  ' + JSON.stringify(a));
-    pruefe('unten stehen Start · Aufgaben · Putzplan · Alles', a.reihe.join('|') === 'Start|Aufgaben|Putzplan|Alles', a.reihe.join('|'));
+    // Runde 180: „das problem mit dem zu viel bleibt immer noch bestehen" — fünf Räume.
+    pruefe('unten stehen Heute · Studio · Plan · Nachrichten · Wissen',
+      a.reihe.join('|') === 'Heute|Studio|Plan|Nachrichten|Wissen', a.reihe.join('|'));
 
-    await tippe(p, 'Putzplan');
-    const pz = await p.evaluate(LAGE);
-    pruefe('„Putzplan" öffnet den Putzplan mit einem Tipp', pz.ansicht === 'view-putzplan', pz.ansicht);
-    pruefe('… und trägt die Marke, nicht „Aufgaben"', pz.aktiv.join('|') === 'Putzplan', pz.aktiv.join('|'));
-    await tippe(p, 'Aufgaben');
+    await tippe(p, 'Studio');
     const au = await p.evaluate(LAGE);
-    pruefe('„Aufgaben" öffnet die Aufgaben und trägt die Marke', au.ansicht === 'view-todos' && au.aktiv.join('|') === 'Aufgaben',
+    pruefe('„Studio" öffnet die Aufgaben und trägt die Marke', au.ansicht === 'view-todos' && au.aktiv.join('|') === 'Studio',
       JSON.stringify(au));
+    /* Runde 180: kein eigener Putzplan-Knopf mehr — er ist der Reiter
+       neben den Aufgaben. */
+    await p.evaluate(() => document.querySelector('[data-subview="putzplan"]').click());
+    await p.waitForTimeout(700);
+    const pz = await p.evaluate(LAGE);
+    pruefe('„Studio" → Reiter „Putzplan" öffnet den Putzplan', pz.ansicht === 'view-putzplan', pz.ansicht);
+    pruefe('… und die Marke bleibt auf „Studio"', pz.aktiv.join('|') === 'Studio', pz.aktiv.join('|'));
+    pruefe('kein eigener Putzplan-Knopf mehr', await p.evaluate(() => !document.querySelector('[data-group="g-putz"]')));
 
-    /* Nachrichten: zwei Tipps über „Alles". */
-    await tippe(p, 'Alles');
-    await p.evaluate(() => document.querySelector('#allesSeite [data-alles="chat"]').click());
-    await p.waitForTimeout(900);
+    /* Nachrichten: seit Runde 180 wieder ein Tipp. */
+    await tippe(p, 'Nachrichten');
     const ch = await p.evaluate(LAGE);
-    pruefe('die Nachrichten sind über „Alles" in zwei Tipps da', ch.ansicht === 'view-chat', ch.ansicht);
-    pruefe('im Chat trägt „Alles" die Marke', ch.aktiv.join('|') === 'Alles', ch.aktiv.join('|'));
+    pruefe('die Nachrichten sind mit einem Tipp da', ch.ansicht === 'view-chat', ch.ansicht);
+    pruefe('im Chat trägt „Nachrichten" die Marke', ch.aktiv.join('|') === 'Nachrichten', ch.aktiv.join('|'));
 
-    /* Ungelesenes: zurück zur Startseite, dann schreibt jemand. */
-    await tippe(p, 'Start');
-    const vorher = (await p.evaluate(LAGE)).punktAlles;
+    /* Ungelesenes: zurück auf „Heute", dann schreibt jemand. */
+    await tippe(p, 'Heute');
+    const vorher = (await p.evaluate(LAGE)).punktKomm;
     /* Der Chat hat oben „allgemein" geöffnet; sein Horcher läuft weiter. */
     await p.evaluate(async () => {
       await firebase.firestore().collection('firmen').doc('koerperformen').collection('channels')
@@ -102,12 +115,13 @@ async function tippe(p, wort) {
         .add({ uid: 'jemand-anders', name: 'Juna Ritter', text: 'Kann jemand morgen früher?', ts: Date.now() + 5 });
     });
     await p.waitForTimeout(600);
-    const nachher = (await p.evaluate(LAGE)).punktAlles;
-    pruefe('eine neue Chatnachricht setzt den Punkt an „Alles"', !vorher && nachher, JSON.stringify({ vorher, nachher }));
+    const nachher = (await p.evaluate(LAGE)).punktKomm;
+    pruefe('eine neue Chatnachricht setzt den Punkt an „Nachrichten"', !vorher && nachher, JSON.stringify({ vorher, nachher }));
 
-    /* Schnellzugriffe: der Vorschlag nennt den Putzplan nicht mehr. */
+    /* Schnellzugriffe: der Vorschlag für Mitarbeiter ist unverändert —
+       Runde 180 hat die Wahl nicht angefasst, nur die Stelle. */
     const sz = await p.evaluate(() => [...document.querySelectorAll('#schnellLeiste .sz-wort')].map(x => x.textContent));
-    pruefe('der Schnellzugriff-Vorschlag: Meine Woche, Meine Zeiten, Geräte (Putzplan steht unten)',
+    pruefe('der Schnellzugriff-Vorschlag: Meine Woche, Meine Zeiten, Geräte',
       sz.slice(0, 3).join('|') === 'Meine Woche|Meine Zeiten|Geräte', sz.join('|'));
     pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await p.close();
@@ -126,8 +140,9 @@ async function tippe(p, wort) {
           return { t: x.textContent.trim().slice(0, 12), m: TREFFER(x), imBild: r.left >= 0 && r.right <= innerWidth + .5 };
         });
       }, '(' + TREFFER.toString() + ')');
-      pruefe(w + ' px, ' + dichte + ': vier Knöpfe, jeder ≥ 44 × 44 und im Bild',
-        k.length === 4 && k.every(x => x.m.w >= 44 && x.m.h >= 44 && x.imBild), JSON.stringify(k));
+      // Runde 180: fünf Räume statt vier Knöpfe (siehe oben).
+      pruefe(w + ' px, ' + dichte + ': fünf Knöpfe, jeder ≥ 44 × 44 und im Bild',
+        k.length === 5 && k.every(x => x.m.w >= 44 && x.m.h >= 44 && x.imBild), JSON.stringify(k));
     }
     pruefe(w + ' px ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await p.close();
@@ -142,14 +157,16 @@ async function tippe(p, wort) {
     await p.waitForTimeout(3200);
     const a = await p.evaluate(() => ({ neu: document.body.classList.contains('neu'),
       gruppen: [...document.querySelectorAll('.mobnav button')].map(x => x.dataset.group) }));
-    pruefe('GEGENPROBE bisheriges Design: Nachrichten bleiben unten, kein Putzplan-Knopf',
-      a.neu === false && a.gruppen.indexOf('g-komm') >= 0 && a.gruppen.indexOf('g-putz') < 0, JSON.stringify(a));
+    // Runde 180: auch im bisherigen Design dieselben fünf Räume.
+    pruefe('GEGENPROBE bisheriges Design: dieselben fünf Räume, kein Putzplan-Knopf',
+      a.neu === false && a.gruppen.join('|') === 'g-start|g-arbeit|g-team|g-komm|g-wissen' &&
+      a.gruppen.indexOf('g-putz') < 0, JSON.stringify(a));
     await p.close();
   }
 
   await b.close();
   console.log(schlecht
     ? '\n✗ Leiste P5: ' + schlecht + ' von ' + (gut + schlecht) + ' Zusicherungen falsch'
-    : '\n✓ Leiste P5: Start · Aufgaben · Putzplan · Alles, Nachrichten über „Alles", Ungelesenes sichtbar — ' + gut + ' Zusicherungen');
+    : '\n✓ Leiste P5: Heute · Studio · Plan · Nachrichten · Wissen, Putzplan unter Studio, Ungelesenes sichtbar — ' + gut + ' Zusicherungen');
   process.exit(schlecht ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

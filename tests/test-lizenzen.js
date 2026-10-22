@@ -78,7 +78,10 @@ async function seite(b, certs) {
 }
 
 const ichDaten = p => p.evaluate(async () => {
-  document.querySelector('.mobnav [data-group="g-ich"]').click();
+  /* Runde 180 („das problem mit dem zu viel bleibt immer noch
+     bestehen"): „Ich" ist keine eigene Gruppe mehr, sondern ein Reiter
+     unter „Heute" (g-start). Der Reiter wird gleich darunter gewählt. */
+  document.querySelector('.mobnav [data-group="g-start"]').click();
   await new Promise(r => setTimeout(r, 400));
   (function(){var s=document.querySelector('[data-subview="ich"]');if(s) s.click();})();
   document.querySelector('[data-ichtab="daten"]').click();

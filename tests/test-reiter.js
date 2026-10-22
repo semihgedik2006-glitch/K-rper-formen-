@@ -36,7 +36,10 @@ async function oeffne(b, w, h) {
   return p;
 }
 async function zu(p, v) {
-  await p.evaluate(() => { const a = document.querySelector('#side [data-group="g-alles"], .mobnav [data-group="g-alles"]'); if (a) a.click(); });
+  /* Runde 180 („das problem mit dem zu viel bleibt immer noch
+     bestehen"): „Alles" ist kein Leistenknopf mehr, sondern der
+     ☰-Griff am Seitenkopf (#bereichKopf). */
+  await p.evaluate(() => { const a = [...document.querySelectorAll('#bereichKopf, #side [data-group="g-alles"], .mobnav [data-group="g-alles"]')].find(e => e.offsetParent); if (a) a.click(); });
   await p.waitForTimeout(500);
   await p.evaluate((v) => {
     const k = document.querySelector('#allesLadeInhalt [data-alles="' + v + '"], #allesSeite [data-alles="' + v + '"]');

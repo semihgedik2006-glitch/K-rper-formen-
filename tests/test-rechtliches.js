@@ -167,7 +167,10 @@ const TREFFER = (el) => {
     await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
     await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
     await p.waitForTimeout(3000);
-    await p.evaluate(() => { const a = document.querySelector('.mobnav [data-group="g-alles"]'); if (a) a.click(); });
+    /* Runde 180 („das problem mit dem zu viel bleibt immer noch
+       bestehen"): „Alles" ist kein Leistenknopf mehr, sondern der
+       ☰-Griff am Seitenkopf (#bereichKopf). */
+    await p.evaluate(() => { const a = [...document.querySelectorAll('#bereichKopf, .mobnav [data-group="g-alles"]')].find(e => e.offsetParent); if (a) a.click(); });
     await p.waitForTimeout(500);
     await p.evaluate(() => { const k = document.querySelector('#allesLadeInhalt [data-alles="chef"], #allesSeite [data-alles="chef"]'); if (k) k.click(); });
     await p.waitForTimeout(700);

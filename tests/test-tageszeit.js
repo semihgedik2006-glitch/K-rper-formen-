@@ -180,7 +180,11 @@ const sortieren = (p, id, wert) => p.evaluate(async ([id, wert]) => {
       const f = document.getElementById('ntZeit');
       if (!f || !f.offsetParent) {
         const s = (sel) => [...document.querySelectorAll(sel)].find(e => e.offsetParent);
-        const a = s('[data-group="g-alles"]'); if (a) { a.click(); await new Promise(r => setTimeout(r, 500)); }
+        /* Runde 180 („fünf Räume“): „Alles“ liegt hinter dem ☰-Griff am
+           Seitenkopf (#bereichKopf), nicht mehr in der Leiste. Aus dem
+           Betrieb, 22.10.2026: „das problem mit dem zu viel bleibt immer
+           noch bestehen“. */
+        const a = s('#bereichKopf'); if (a && a.getAttribute('aria-expanded') !== 'true') { a.click(); await new Promise(r => setTimeout(r, 500)); }
         const e = [...document.querySelectorAll('[data-alles][data-al-cgo="erstellen"]')].find(x => x.offsetParent);
         if (e) { e.click(); await new Promise(r => setTimeout(r, 700)); }
         const karte = document.getElementById('ntZeit') && document.getElementById('ntZeit').closest('.card.fold');
@@ -202,7 +206,8 @@ const sortieren = (p, id, wert) => p.evaluate(async ([id, wert]) => {
     p.on('dialog', d => d.accept('Tageszeit-Vorlage'));
     const tpl = await p.evaluate(async () => {
       const w = (ms) => new Promise(r => setTimeout(r, ms));
-      const a = [...document.querySelectorAll('[data-group="g-alles"]')].find(x => x.offsetParent); if (a) { a.click(); await w(500); }
+      /* Runde 180: „Alles“ über den ☰-Griff (#bereichKopf), siehe oben. */
+      const a = [...document.querySelectorAll('#bereichKopf')].find(x => x.offsetParent); if (a && a.getAttribute('aria-expanded') !== 'true') { a.click(); await w(500); }
       const e = [...document.querySelectorAll('[data-alles][data-al-cgo="erstellen"]')].find(x => x.offsetParent); if (e) { e.click(); await w(700); }
       document.querySelectorAll('.card.fold.zu').forEach(k => { if (k.querySelector('#tplSave, #ntZeit')) k.querySelector('.fold-head').click(); });
       await w(300);

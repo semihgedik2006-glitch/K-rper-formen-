@@ -52,27 +52,35 @@ function pruefe(was, bedingung, hinweis) {
    App. Würde sie aus derselben Quelle kommen, prüfte der Durchlauf,
    dass eine Liste sich selbst gleicht. Die Werte sind aus ACCENTS
    abgeschrieben — wer dort etwas ändert, muss hier hinsehen. */
+/* Runde 180 („fünf Räume"), aus dem Betrieb (22.10.2026): „das problem
+   mit dem zu viel bleibt immer noch bestehen" — die Raumnamen „passen".
+   Seitdem: „Ich" ist ein Reiter unter „Heute" und trägt dessen Blau;
+   das Violett gehört „Wissen" (BEREICH_FARBE). „Alles" ist keine Seite
+   mehr, zu der man geht, sondern die Schublade hinter ☰ — sie liegt
+   über der Seite, auf der man steht, und wird deshalb unten eigens
+   geprüft, nicht als siebter Bereich. */
 const ERWARTET = {
-  'g-start':  { name: 'Start',       dunkel: '#60A5FA', hell: '#1D4ED8' },
-  'g-ich':    { name: 'Ich',         dunkel: '#A78BFA', hell: '#6D28D9' },
+  'g-start':  { name: 'Heute',       dunkel: '#60A5FA', hell: '#1D4ED8' },
+  'g-wissen': { name: 'Wissen',      dunkel: '#A78BFA', hell: '#6D28D9' },
   'g-komm':   { name: 'Nachrichten', dunkel: '#2DD4BF', hell: '#0F766E' },
-  'g-arbeit': { name: 'Aufgaben',    dunkel: '#FB923C', hell: '#C2410C' },
-  'g-team':   { name: 'Team',        dunkel: '#F472B6', hell: '#BE185D' },
-  'g-chef':   { name: 'Verwaltung',  dunkel: '#94A3B8', hell: '#475569' },
-  'g-alles':  { name: 'Alles',       dunkel: '#94A3B8', hell: '#475569' }
+  'g-arbeit': { name: 'Studio',      dunkel: '#FB923C', hell: '#C2410C' },
+  'g-team':   { name: 'Plan',        dunkel: '#F472B6', hell: '#BE185D' },
+  'g-chef':   { name: 'Verwaltung',  dunkel: '#94A3B8', hell: '#475569' }
 };
 
-/* Welche Ansicht steht für welchen Bereich? Gebraucht, weil in der
-   unteren Leiste nur vier Bereiche stehen — die übrigen liegen hinter
-   „Alles", und dorthin geht man über die Liste, so wie ein Mensch. */
+/* Welche Ansicht steht für welchen Bereich? Gebraucht, weil nicht jeder
+   Bereich unten in der Leiste steht (die Verwaltung liegt am Handy
+   hinter ☰) — dorthin geht man über die Liste, so wie ein Mensch. */
 const ANSICHT = {
-  'g-start': 'home', 'g-ich': 'ich', 'g-komm': 'chat', 'g-arbeit': 'todos',
-  'g-team': 'team', 'g-chef': 'chef', 'g-alles': 'alles'
+  'g-start': 'home', 'g-wissen': 'docs', 'g-komm': 'chat', 'g-arbeit': 'todos',
+  'g-team': 'team', 'g-chef': 'chef'
 };
 
 /* Der Weg zu einem Bereich, genau wie ihn jemand geht: erst in der
    unteren Leiste suchen, sonst über „Alles". Kein showView() von
-   aussen — das prüfte die Funktion statt den Weg. */
+   aussen — das prüfte die Funktion statt den Weg. Seit Runde 180 steht
+   „Alles" nicht mehr in der Leiste; der Weg dorthin ist der ☰-Griff
+   #bereichKopf, der die Schublade öffnet. */
 async function zumBereich(p, gruppe) {
   const direkt = await p.evaluate((g) => {
     const k = document.querySelector('.mobnav [data-group="' + g + '"]');
@@ -81,8 +89,9 @@ async function zumBereich(p, gruppe) {
   }, gruppe);
   if (direkt) { await p.waitForTimeout(900); return 'Leiste'; }
   await p.evaluate(() => {
-    const a = document.querySelector('.mobnav [data-group="g-alles"]');
-    if (a) a.click();
+    const l = document.getElementById('allesLade');
+    const a = document.getElementById('bereichKopf');
+    if (a && l && l.hidden) a.click();
   });
   await p.waitForTimeout(700);
   await p.evaluate((v) => {
@@ -277,13 +286,46 @@ async function messen(p) {
       }
     }
 
-    /* GEGENPROBE 1: sieben Bereiche dürfen nicht alle dieselbe Farbe
+    /* GEGENPROBE 1: die Bereiche dürfen nicht alle dieselbe Farbe
        haben — sonst wäre oben jede Zeile grün, weil sich nie etwas
-       ändert. Sechs verschiedene, weil „Alles" und „Verwaltung"
-       denselben grauen Ton teilen; das steht so in BEREICH_FARBE. */
+       ändert. Sechs verschiedene für sechs Bereiche. (Bis Runde 179
+       waren es sieben Bereiche mit sechs Farben, weil „Alles" und
+       „Verwaltung" denselben grauen Ton teilten; „Alles" ist seit Runde
+       180 die Schublade und keine eigene Seite mehr.) */
     const verschieden = [...new Set(gesehen)];
     pruefe('GEGENPROBE die Bereiche tragen wirklich verschiedene Farben',
       verschieden.length === 6, verschieden.join(' '));
+
+    /* „Alles" seit Runde 180 (aus dem Betrieb, 22.10.2026: „das problem
+       mit dem zu viel bleibt immer noch bestehen"): kein Knopf mehr in
+       der Leiste, sondern der ☰-Griff auf jeder Seite. Die Schublade
+       liegt ÜBER der Seite — die Farbe bleibt die des Bereichs, in dem
+       man steht. Gemessen auf der Verwaltung, dem letzten Bereich oben. */
+    {
+      const vorher = (await messen(p)).bereich;
+      const griff = await p.evaluate(() => {
+        const k = document.getElementById('bereichKopf'), l = document.getElementById('allesLade');
+        if (!k || !k.getClientRects().length) return 'kein Griff';
+        if (l.hidden) k.click();
+        return 'ok';
+      });
+      await p.waitForTimeout(700);
+      const offen = await p.evaluate(() => {
+        const l = document.getElementById('allesLade');
+        return !!l && !l.hidden && l.getClientRects().length > 0 &&
+          !!l.querySelector('[data-alles]');
+      });
+      const m = await messen(p);
+      pruefe('„Alles": der ☰-Griff öffnet die Schublade mit den Zielen', griff === 'ok' && offen, griff);
+      pruefe('  … und die Seite darunter behält die Farbe ihres Bereichs',
+        m.bereich === vorher && m.accent === ERWARTET['g-chef'][modus === 'dark' ? 'dunkel' : 'hell'],
+        m.bereich + ' ' + m.accent);
+      await p.evaluate(() => {
+        const l = document.getElementById('allesLade');
+        if (l && !l.hidden) document.getElementById('bereichKopf').click();
+      });
+      await p.waitForTimeout(400);
+    }
 
     /* ══ Der Wechsel muss GLEITEN ══════════════════════════════════
        „damit es einfach lebendig und interaktiv wirkt" — das ist eine
@@ -303,25 +345,36 @@ async function messen(p) {
     await zumBereich(p, 'g-start');
     await p.waitForTimeout(700);
     const bewegung = await p.evaluate(async () => {
-      const ziel = document.querySelector('.tb-bericht') ||
-                   document.querySelector('.demo-bar');
+      /* Seit Runde 180 ist „Bericht" oben überall verborgen (er steht
+         unter Verwaltung → Berichte). An einem Element mit display:none
+         läuft kein Übergang — gemessen wird deshalb am ersten der
+         gleitenden Bauteile, das wirklich im Bild steht. */
+      const ziel = ['.tb-bericht', '.demo-bar', '.tb-live', '.tb-brand b']
+        .map(s => document.querySelector(s))
+        .find(el => el && el.getClientRects().length > 0);
       if (!ziel) return null;
       const f = () => {
         const c = getComputedStyle(ziel);
         return c.backgroundImage !== 'none' ? c.backgroundImage : c.backgroundColor;
       };
       const vor = f();
-      /* Putzplan (Orange, Gruppe Betrieb) statt Nachrichten (Teal): seit
-         Runde 103, P5 steht der Putzplan unten an genau der Stelle, an
+      /* Bis Runde 179: Putzplan (Orange, Gruppe Betrieb) statt Nachrichten
+         (Teal), denn seit Runde 103, P5 stand der Putzplan unten an genau der Stelle, an
          der die Nachrichten standen. Gemessen wird weiter ein Wechsel
-         von Start in einen Bereich anderer Farbe.
+         von Start (Heute) in einen Bereich anderer Farbe.
          Zuerst mit „Aufgaben" versucht: dort fiel die Probe bei 90 ms in
          einem von drei Läufen VOR das erste Bild — die Aufgaben brauchen
          bis dahin 250–550 ms (CPU ÷4, vor P1 genauso gemessen). Das ist
          kein Sprung der Farbe, sondern eine langsame Seite; sie steht in
          docs/BEKANNTE-PROBLEME.md. Der Putzplan zeichnet in 120–330 ms. */
-      const k = document.querySelector('.mobnav [data-group="g-putz"]') ||
-                document.querySelector('.nav [data-group="g-putz"]');
+      /* Runde 180: einen eigenen Putzplan-Knopf gibt es nicht mehr (er
+         ist Reiter unter „Studio", und der Knopf „Studio" führt zu den
+         langsamen Aufgaben). Gemessen am 22.10.2026, je drei Läufe: bei
+         „Studio", „Nachrichten" und „Wissen" stand bei 90 ms noch der
+         alte Wert, bei 180 ms ein Zwischenwert — die Seite zeichnet,
+         bevor der Wechsel anläuft (wie oben bei den Aufgaben). „Plan"
+         (Blau nach Pink) lief in allen drei Läufen bei 90 ms schon. */
+      const k = document.querySelector('.mobnav [data-group="g-team"]');
       if (!k) return null;
       k.click();
       const proben = []; let letzte = 0;

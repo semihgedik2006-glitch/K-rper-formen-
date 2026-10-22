@@ -24,7 +24,11 @@ const SP = process.env.SP || __dirname;
 
   const GROUP = { home:'g-start', chat:'g-komm', dm:'g-komm', ann:'g-komm',
                   todos:'g-arbeit', putzplan:'g-arbeit', material:'g-arbeit',
-                  team:'g-team', docs:'g-arbeit' };
+                  /* Runde 180 („das problem mit dem zu viel bleibt immer
+                     noch bestehen"): Dokumente liegen unter „Wissen"
+                     (g-wissen) neben Schulung und Formi, nicht mehr bei
+                     den Aufgaben des Tages. */
+                  team:'g-team', docs:'g-wissen' };
   async function go(view) {
     await page.evaluate(g => document.querySelector('.mobnav [data-group="' + g + '"]').click(), GROUP[view]);
     await page.waitForTimeout(420);
