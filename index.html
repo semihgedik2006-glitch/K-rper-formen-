@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-7lyDnXOStoAsHHjWZEw9w6+SkDLqjiYb7ogGkCPVQCk='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-UO6N50CFAWgBPUNd4s2hrJ/chUOXESh7mirwJAJOKSI='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5480,6 +5480,9 @@ html{font-size:var(--fs,100%)}
   background:none;border:none;border-radius:var(--r-sm);color:var(--text-3);font-size:var(--t-lg);cursor:pointer}
 .wp-tag-plus:hover{color:var(--accent-d);background:var(--auf-1)}
 .shift-day-h span + .wp-tag-plus{margin-left:0}
+/* Die Besetzungs-Leiste darunter läge sonst über seinem unteren Rand
+   (gemessen 44 × 40 statt 44 × 44). */
+.wp-tag-plus{position:relative;z-index:1}
 .cert-item{display:flex;gap:var(--s10);align-items:center;padding:var(--s10) var(--s12);background:var(--bg-soft);
   border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:var(--s8)}
 .cert-ico{font-size:var(--t-lg);flex-shrink:0}
@@ -5641,6 +5644,11 @@ html{font-size:var(--fs,100%)}
   padding:var(--s2) var(--s4);border-radius:var(--r-sm);background:var(--tipp-1);border:1px solid var(--tipp-kante);box-shadow:var(--e1);
   color:var(--text);font:inherit;font-weight:700;font-size:var(--t-sm);font-variant-numeric:tabular-nums;line-height:var(--lh-eng);
   cursor:pointer;transition:transform .2s var(--spring),background .2s}
+/* Zeitbalken unten in der Pille: 6–22 Uhr, die Schicht als Strich. */
+.wp-schicht{position:relative;padding-bottom:var(--s6)}
+.wp-zeit{position:absolute;left:var(--s8);right:var(--s8);bottom:var(--s4);height:3px;border-radius:var(--r-pille);background:var(--auf-2)}
+.wp-zeit::after{content:'';position:absolute;top:0;bottom:0;left:var(--a);width:calc(var(--b) - var(--a));min-width:3px;
+  border-radius:var(--r-pille);background:var(--accent)}
 .wp-schicht small{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--t-2xs);font-weight:500;color:var(--text-3)}
 .wp-schicht:active{transform:scale(.96)}
 @media (hover:hover){ .wp-schicht:hover{background:var(--tipp-2)} }
@@ -5659,6 +5667,20 @@ html{font-size:var(--fs,100%)}
 /* Unter 85 % oder über 115 % des Solls: das IST ein Status. */
 .wp-std.warn{box-shadow:inset -3px 0 0 var(--warm)}
 .wp-std.warn b{color:var(--warm-tx)}
+/* Besetzung je Tag */
+.wp-band-feld{display:flex;flex-direction:column;gap:var(--s2);width:100%;min-width:0}
+.wp-band{position:relative;height:8px;border-radius:var(--r-pille);background:var(--auf-1);overflow:hidden}
+.wp-band > i{position:absolute;top:0;bottom:0}
+.wp-band-offen{box-shadow:inset 0 0 0 1px var(--line-2);border-radius:var(--r-pille)}
+.wp-band-teil.n1{background:rgba(var(--akz-rgb),.45)}
+.wp-band-teil.n2{background:var(--accent)}
+.wp-band-teil.luecke{background:repeating-linear-gradient(135deg,var(--warm) 0 3px,transparent 3px 6px)}
+.wp-band-txt{font-size:var(--t-2xs);color:var(--text-3);line-height:var(--lh-eng)}
+.wp-band-txt.luecke{color:var(--warm-tx);font-weight:700}
+.shift-day > .wp-band-feld{margin:0 0 var(--s8)}
+.wp-besetzt{background:var(--bg-2);border-radius:0 0 var(--r-md) var(--r-md)}
+.wp-besetzt .wp-p{font-size:var(--t-xs);color:var(--text-2);font-weight:700}
+.wp-besetzt .wp-c{padding:var(--s8) var(--s6);min-height:0}
 .wp-mehr{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;margin-top:var(--s8);
   padding:var(--s6) var(--s12);background:none;border:1px dashed var(--line-2);border-radius:var(--r-md);
   color:var(--text-2);font:inherit;font-size:var(--t-sm);cursor:pointer}
@@ -20920,6 +20942,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-22-schichtplan-besetzung', datum:'22.10.2026', titel:'Schichtplan: auf einen Blick, wann niemand da ist', wo:'team', punkte:[
+    'Unter Plan → Schichten hat jeder Tag jetzt eine Leiste: Sie zeigt, wann jemand eingeteilt ist – je kräftiger, desto mehr Leute. Ist das Studio offen und niemand eingeteilt, ist die Stelle orange gestreift, und darunter steht zum Beispiel „07–09 niemand".',
+    'In der Ansicht „Personen" steht diese Leiste als letzte Zeile „Besetzt" unter allen Personen.',
+    'Jede Schicht in „Personen" hat unten einen kleinen Strich: Er zeigt, wo im Tag sie liegt – links früh, rechts spät.',
+    'Bezug sind die Öffnungszeiten des Studios (Verwaltung → Studios → Zeiten). Sind sie nicht eingetragen, gibt es keine Lücken-Markierung.' ] },
   { id:'2026-10-22-schichtplaner-anfang', datum:'22.10.2026', titel:'Schichtplaner: klarer Anfang, Regeln in Reitern', wo:'planer', punkte:[
     'Ist im Schichtplaner (Verwaltung) noch kein Team eingelesen, steht dort jetzt „So fängst du an": Vorlage herunterladen, ausfüllen, einlesen – in drei Schritten, mit den Knöpfen direkt daneben.',
     'Unter „Plan erstellen" steht, warum der Knopf noch grau ist. Neben dem Monat steht, ob es schon einen Plan gibt, ob er ein Entwurf ist oder wann er veröffentlicht wurde.',
@@ -33326,7 +33353,9 @@ function wpTageHTML(tage, heute, ende){
       '" data-tag="'+key+'">'+
       '<div class="shift-day-h"><b>'+namen[i]+'</b><span>'+t.d.toLocaleDateString('de-DE',o)+'</span>'+
       (darf && !vorbei ? '<button type="button" class="wp-tag-plus" data-wpneu="'+key+'|" aria-label="Schicht am '+namen[i]+' eintragen">＋</button>' : '')+
-      '</div>';
+      '</div>'+
+      /* Die Leiste zählt immer alle Schichten des Tages, auch bei „Nur meine". */
+      wpBandHTML(key, _shifts.filter(function(x){ return x.date===key; }), vorbei);
     if(tages.length){
       html+=tages.map(function(x){
         return '<button type="button" class="shift-entry'+(x.uid===session.uid?' mein':'')+'" data-shift="'+esc(x.id)+'">'+
@@ -33360,6 +33389,76 @@ function wpTauschMarke(x){
   if(x.tausch==='offen') return '<span class="wp-marke">wird abgegeben</span>';
   if(x.tausch==='zugesagt') return '<span class="wp-marke">Tausch wartet</span>';
   return '';
+}
+
+/* ── Besetzung je Tag (Runde RUNDE_NR) ──
+   Die „Top 1" aus docs/design-vorbilder/dienstplan-und-schichten.md
+   (Skello): ein Blick, ob jede Stunde besetzt ist — im EMS-Studio die
+   eigentliche Frage. Aus dem Betrieb: „mach weiter mit dem design".
+   Bezug sind die Öffnungszeiten des Studios (config/studios, gepflegt
+   unter Verwaltung). Eine Lücke (niemand eingeteilt, obwohl offen) ist
+   ein Status und trägt Bernstein; ohne gepflegte Öffnungszeit gibt es
+   keine Lücke, nur die Leiste von 6 bis 22 Uhr. */
+function wpMin(t){ var p=String(t||'').split(':'); return (+p[0]||0)*60+(+p[1]||0); }
+function wpUhr(m){ var h=Math.floor(m/60), mi=m%60; return (h<10?'0':'')+h+(mi?':'+(mi<10?'0':'')+mi:''); }
+function wpOeffnung(key){
+  var st=(_studioListe||[]).filter(function(x){ return x.id===_teamStudioKey; })[0];
+  var o=st && st.oeffnung;
+  if(!o) return null;                       // nicht gepflegt
+  var k=['so','mo','di','mi','do','fr','sa'][new Date(key+'T12:00:00').getDay()];
+  var z=zeitPaar(o[k]);
+  return z ? { von:wpMin(z.von), bis:wpMin(z.bis) } : { zu:true };
+}
+function wpBesetzung(key, schichten){
+  var oe=wpOeffnung(key);
+  var von=6*60, bis=22*60;
+  if(oe && !oe.zu){ von=Math.min(von, oe.von); bis=Math.max(bis, oe.bis); }
+  var grenzen=[von, bis];
+  if(oe && !oe.zu) grenzen.push(oe.von, oe.bis);
+  schichten.forEach(function(x){
+    var a=wpMin(x.from), b=wpMin(x.to); if(b<=a) b=24*60;
+    grenzen.push(Math.max(von,Math.min(bis,a)), Math.max(von,Math.min(bis,b)));
+  });
+  grenzen=grenzen.filter(function(v,i,l){ return l.indexOf(v)===i; }).sort(function(a,b){ return a-b; });
+  var stuecke=[];
+  for(var i=0;i<grenzen.length-1;i++){
+    var a=grenzen[i], b=grenzen[i+1], mitte=(a+b)/2;
+    var n=schichten.filter(function(x){ var s=wpMin(x.from), e=wpMin(x.to); if(e<=s) e=24*60; return s<=mitte && e>mitte; }).length;
+    var offen=!!(oe && !oe.zu && mitte>oe.von && mitte<oe.bis);
+    var letzte=stuecke[stuecke.length-1];
+    if(letzte && letzte.n===n && letzte.offen===offen) letzte.b=b;
+    else stuecke.push({ a:a, b:b, n:n, offen:offen });
+  }
+  return { von:von, bis:bis, oe:oe, stuecke:stuecke,
+    luecken:stuecke.filter(function(x){ return x.offen && !x.n; }) };
+}
+/* Die Leiste: ein Balken über den Tag, dunkler, wo mehr Leute da sind;
+   die Öffnungszeit als Rahmen, eine Lücke darin bernstein. */
+function wpBandHTML(key, schichten, vorbei){
+  var bz=wpBesetzung(key, schichten), span=bz.bis-bz.von;
+  function pct(m){ return ((m-bz.von)/span*100).toFixed(2)+'%'; }
+  var teile=bz.stuecke.filter(function(x){ return x.n || (x.offen && !vorbei); }).map(function(x){
+    var k=x.n ? (x.n>1?'n2':'n1') : 'luecke';
+    return '<i class="wp-band-teil '+k+'" style="left:'+pct(x.a)+';width:'+(((x.b-x.a)/span)*100).toFixed(2)+'%"></i>';
+  }).join('');
+  var rahmen=bz.oe && !bz.oe.zu ? '<i class="wp-band-offen" style="left:'+pct(bz.oe.von)+';width:'+(((bz.oe.bis-bz.oe.von)/span)*100).toFixed(2)+'%"></i>' : '';
+  var text='';
+  if(bz.oe && bz.oe.zu) text='<small class="wp-band-txt">geschlossen</small>';
+  else if(bz.luecken.length && !vorbei){
+    text='<small class="wp-band-txt luecke">'+bz.luecken.slice(0,2).map(function(l){ return wpUhr(l.a)+'–'+wpUhr(l.b); }).join(', ')+
+      (bz.luecken.length>2?' …':'')+' niemand</small>';
+  }
+  var titel=bz.oe && !bz.oe.zu ? 'Geöffnet '+wpUhr(bz.oe.von)+'–'+wpUhr(bz.oe.bis)+' Uhr'
+    : (bz.oe ? 'Geschlossen' : 'Öffnungszeiten nicht gepflegt (Verwaltung → Studios)');
+  if(bz.luecken.length) titel+=' · niemand eingeteilt: '+bz.luecken.map(function(l){ return wpUhr(l.a)+'–'+wpUhr(l.b); }).join(', ');
+  return '<div class="wp-band-feld"><div class="wp-band" role="img" aria-label="'+esc(titel)+'" title="'+esc(titel)+'">'+rahmen+teile+'</div>'+text+'</div>';
+}
+/* In der Pille: wo im Tag die Schicht liegt (Früh/Spät auf einen Blick). */
+function wpZeitbalken(x){
+  var a=wpMin(x.from), b=wpMin(x.to); if(b<=a) b=24*60;
+  var von=6*60, span=16*60;
+  var l=Math.max(0,Math.min(100,(a-von)/span*100)), r=Math.max(0,Math.min(100,(b-von)/span*100));
+  return '<i class="wp-zeit" aria-hidden="true" style="--a:'+l.toFixed(1)+'%;--b:'+r.toFixed(1)+'%"></i>';
 }
 
 /* Das Raster: Personen links, sieben Tage, rechts die Stunden. */
@@ -33425,7 +33524,7 @@ function wpRasterHTML(tage, woche, heute){
       html+=hier.map(function(x){
         return '<button type="button" class="wp-schicht'+(x.tausch?' tausch':'')+'" data-shift="'+esc(x.id)+'"'+
           ' title="'+esc((x.from||'')+'–'+(x.to||'')+(x.note?' · '+x.note:''))+'">'+esc(wpZeitKurz(x))+
-          (x.note?'<small>'+esc(x.note)+'</small>':'')+'</button>';
+          (x.note?'<small>'+esc(x.note)+'</small>':'')+wpZeitbalken(x)+'</button>';
       }).join('');
       if(darf && !hier.length && !weg && t.key>=heute && p.id.indexOf('name:')!==0){
         html+='<button type="button" class="wp-leer" data-wpneu="'+t.key+'|'+esc(p.id)+'" aria-label="Schicht für '+
@@ -33441,6 +33540,13 @@ function wpRasterHTML(tage, woche, heute){
     html+='</div>';
   });
   if(!zeigen.length) html+='<p class="lese-leer">In dieser Woche ist niemand eingeteilt.</p>';
+  /* Die letzte Zeile: wann ist jemand da? Gezählt werden ALLE Schichten
+     des Tages, auch die von Leuten unter „weitere". */
+  html+='<div class="wp-z wp-besetzt" role="row"><span class="wp-p" role="rowheader">Besetzt</span>'+
+    tage.map(function(t){
+      return '<div class="wp-c'+(t.key===heute?' heute':'')+(t.key<heute?' vorbei':'')+'" role="cell">'+
+        wpBandHTML(t.key, woche.filter(function(x){ return x.date===t.key; }), t.key<heute)+'</div>';
+    }).join('')+'<span class="wp-std" role="cell"></span></div>';
   html+='</div>';
   if(ohne.length){
     html+='<button type="button" class="wp-mehr" data-wpalle aria-expanded="'+(_wpAlle?'true':'false')+'">'+

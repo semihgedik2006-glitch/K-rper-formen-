@@ -18701,3 +18701,42 @@ Byte für Byte main).
 **Nicht geprüft:** das echte Konto selbst (Anmeldung lädt hier nicht);
 gemessen ist der Zustand „Team leer" in der Demo, nachgestellt nach dem
 Foto.
+
+## Runde RUNDE_NR — Schichtplan: Besetzung je Tag, Zeitstrich in der Schicht (22.10.2026)
+
+**Aus dem Betrieb:** „mach weiter mit dem design“.
+
+**Was gebaut ist**
+- **Besetzungs-Leiste je Tag** — die „Top 1“ aus
+  `docs/design-vorbilder/dienstplan-und-schichten.md` (Skello): Ist jede
+  Stunde besetzt? Ein Balken von 6 bis 22 Uhr (weiter, wenn das Studio
+  länger offen hat); hell, wo eine Person da ist, kräftig ab zwei. Die
+  Öffnungszeit ist als Rahmen eingezeichnet; offen und niemand eingeteilt
+  ist **bernstein gestreift** und steht als Text darunter („07–09
+  niemand“). Das ist ein Status, deshalb die Statusfarbe.
+  - in „Tage“ unter jedem Tageskopf (Handy und Rechner),
+  - in „Personen“ als letzte Zeile „Besetzt“,
+  - vergangene Tage ohne Lücken-Markierung (dort ist nichts mehr zu tun).
+- **Bezug sind die Öffnungszeiten** aus `config/studios` (Verwaltung →
+  Studios → Zeiten). Nicht gepflegt heisst: keine Lücken, nur die Leiste —
+  „nicht gepflegt“ ist nicht „geschlossen“ (derselbe Unterschied wie bei
+  der Zeiterfassung). Geschlossene Tage sagen „geschlossen“.
+- **Zeitstrich in jeder Pille** (Raster): wo im Tag 6–22 Uhr die Schicht
+  liegt — Früh und Spät sieht man, ohne die Ziffern zu lesen.
+
+**Gefunden beim Messen:** Die Leiste lag über den unteren 3–4 px des „＋“
+am Tageskopf (Hit-Test 44 × 40). Das ＋ liegt jetzt darüber.
+
+**Geprüft**
+- test-schichtplan-raster, neuer Abschnitt 3b: in sechs Studios, diese
+  und nächste Woche, 54 Tage (42 mit Lücke, 12 ohne): für jeden halben
+  Stundentakt der Öffnungszeit muss gelten „jemand da“ ⇔ „keine Lücke
+  angezeigt“ — nachgerechnet aus den Zeiten der Pillen in derselben
+  Spalte, nicht aus dem Code. Dazu: Text „… niemand“ bei jeder Lücke.
+  92 Prüfungen, grün.
+- Gegenprobe: Öffnungsbeginn um eine Stunde verschoben gerechnet → rot
+  („studio-7 Tag 3 7:15 da=false Lücke=false“).
+
+**Nicht gelöst:** Bei 1280 × 800 mit „Wartet auf deine Entscheidung“
+steht die Woche im Raster jetzt nicht mehr ganz im Bild — die neue Zeile
+„Besetzt“ kostet ~57 px. Bei 1440 × 900 passt sie (Ende 796, Rand 810).
