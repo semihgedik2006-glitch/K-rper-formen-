@@ -165,7 +165,7 @@ const ZUSTAND = () => {
   }
 
   console.log('\n── 3b. Besetzung je Tag: Lücken in der Öffnungszeit ──');
-  /* Runde RUNDE_NR — aus dem Betrieb: „mach weiter mit dem design". Die
+  /* Runde 200 — aus dem Betrieb: „mach weiter mit dem design". Die
      Leiste unter dem Raster sagt, wann niemand eingeteilt ist, obwohl das
      Studio offen hat. Nachgerechnet wird unabhängig: aus den Zeiten der
      Pillen in derselben Spalte, alle 30 Minuten der Öffnungszeit. Über
