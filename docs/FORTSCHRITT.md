@@ -19718,3 +19718,14 @@ neu bauen".
 Ringe, Protokoll) stehen noch in `index.html`, laufen aber nie. Weg-
 geräumt wird es in einem eigenen Schritt — es hängen viele Stellen
 daran, und parallel arbeitet eine zweite Sitzung an Formis Aussehen.
+
+**Nachtrag zu Runde 214 (23.10.2026):** Nach dem Zusammenführen mit Runde
+212/213 (Formi-Welt Stufe 2, Akkretionsscheibe) misst `test-gehirn` bei
+1920 px, CPU ÷4 wieder 9,8 ms je Bild bei offenem Formi (Grenze 8,3; vor
+212/213: 2,3 ms). Laufend sind dann zwei Endlos-Animationen
+`formiScheibe` (an `.fk-wirbel` und `.fk-innen`, je Figur im Fensterkopf
+und auf dem Startschirm). Das ist gewollt („dreht sich ständig“), kostet
+aber bei grossen Figuren Malarbeit je Bild. Nicht angefasst, weil es
+gerade in einer zweiten Sitzung gebaut wird — gemeldet.
+Ausserdem misst `test-gehirn` die Spalte bei 1440 px erst, wenn sie
+nicht mehr hereinspringt (sonst 2 px vom Rand, je nach Last).

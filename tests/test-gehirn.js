@@ -622,6 +622,8 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
       const j = document.getElementById('jarvis'), r = j.getBoundingClientRect();
       return j.getAttribute('aria-modal') === 'false' && (w <= 820 ? r.height >= innerHeight - 1 : r.height >= innerHeight - 40 && r.width >= 380); }, w));
     if (w === 1440) {
+      /* Erst wenn das Fenster steht: es springt glitchend herein (Runde 186). */
+      await p.waitForFunction(() => !document.getElementById('jarvis').getAnimations({ subtree: true }).some(a => a.playState === 'running' && isFinite(a.effect.getComputedTiming().endTime)), null, { timeout: 4000 }).catch(() => {});
       const sp = await p.evaluate(() => { const r = document.getElementById('jarvis').getBoundingClientRect(), a = document.querySelector('.app').getBoundingClientRect(); return { rechts: Math.round(r.right) >= innerWidth - 1, spalte: Math.round(r.width), appFrei: a.right <= r.left + 1 || parseFloat(getComputedStyle(document.querySelector('.app')).paddingRight) >= r.width - 1 }; });
       pruefe('am Rechner (1440): Formi als breite Spalte rechts, die App rückt daneben', sp.rechts && sp.spalte >= 500 && sp.appFrei, JSON.stringify(sp));
     }
