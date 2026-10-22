@@ -361,6 +361,40 @@ function ki(antworten) {
     pruefe(!r4.ok, 'Ohne Quelle: nichts');
     const lsHtml = await (await w.default.fetch(new Request('https://x.test/leitstand'), env2, {})).text();
     pruefe(/" übernehmen"/.test(lsHtml) && /\/api\/vorschlag\/entscheiden/.test(lsHtml), 'Leitstand hat die Sammelknöpfe');
+    pruefe(!/confirm\(/.test(lsHtml.replace(/\/\*[\s\S]*?\*\//g, '')), 'Leitstand ruft kein confirm() auf (eingebettete Browser zeigen es nicht)');
+
+    /* 2.17: der Knopf im echten Browser — der Leitstand läuft gegen
+       diesen Worker (Anfragen werden in den Test umgeleitet). */
+    let pw = null; try { pw = require('playwright'); } catch (e) { console.log('  (Playwright fehlt — Browser-Teil übersprungen)'); }
+    if (pw) {
+      await post('/api/vorschlag/import', { eintraege: [1, 2, 3].map(i => ({ thema: 'Knopftest ' + i, inhalt: 'Ein Eintrag für den Knopftest Nummer ' + i })), quelle: 'Schulung „Knopftest“' });
+      const br = await pw.chromium.launch({ executablePath: process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox'] });
+      try {
+        const pg = await br.newPage({ serviceWorkers: 'block', viewport: { width: 1280, height: 800 } });
+        let dialog = 0; pg.on('dialog', d => { dialog++; d.dismiss(); });
+        await pg.route('https://leitstand.test/**', async (route) => {
+          const rq = route.request();
+          const antwort = await w.default.fetch(new Request(rq.url(), { method: rq.method(), headers: rq.headers(), body: rq.method() === 'POST' ? rq.postData() : undefined }), env2, { waitUntil() {} });
+          route.fulfill({ status: antwort.status, headers: Object.fromEntries(antwort.headers), body: Buffer.from(await antwort.arrayBuffer()) });
+        });
+        await pg.addInitScript(() => { try { sessionStorage.setItem('sg-key', 'admin'); } catch (e) {} });
+        await pg.goto('https://leitstand.test/leitstand');
+        await pg.waitForTimeout(500);
+        await pg.evaluate(() => { tab = 'vorschlaege'; start(); });
+        await pg.waitForFunction(() => [...document.querySelectorAll('button')].some(b => /Knopftest/.test(b.textContent)), null, { timeout: 5000 });
+        /* Ein fester Griff, kein Locator nach Text: der Text ändert sich beim
+           ersten Klick, ein Locator würde bis zum Zurücksetzen warten. */
+        const knopf = await pg.locator('button', { hasText: 'Knopftest' }).elementHandle();
+        await knopf.click(); await pg.waitForTimeout(150);
+        const frage = await knopf.textContent();
+        const nochOffen = env2.DB.roh.prepare("SELECT COUNT(*) AS n FROM vorschlag WHERE status = 'neu' AND quelle = 'Schulung „Knopftest“'").get().n;
+        pruefe(/Nochmal klicken/.test(frage) && nochOffen === 3 && !dialog, 'Leitstand: erster Klick fragt im Knopf nach, ohne Dialog, nichts passiert (' + frage + ')');
+        await knopf.click();
+        await pg.waitForFunction(() => ![...document.querySelectorAll('button')].some(b => /Knopftest/.test(b.textContent)), null, { timeout: 8000 }).catch(() => {});
+        const danach = env2.DB.roh.prepare("SELECT COUNT(*) AS n FROM vorschlag WHERE status = 'neu' AND quelle = 'Schulung „Knopftest“'").get().n;
+        pruefe(danach === 0 && env2.DB.roh.prepare("SELECT COUNT(*) AS n FROM wissen WHERE thema LIKE 'Knopftest %'").get().n === 3, 'Leitstand: zweiter Klick übernimmt alle drei, der Knopf ist danach weg');
+      } finally { await br.close(); }
+    }
   }
 
   console.log(`\n${ok} bestanden, ${fehler} fehlgeschlagen`);

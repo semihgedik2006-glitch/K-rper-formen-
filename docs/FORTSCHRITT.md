@@ -18455,7 +18455,80 @@ Nicht umgebaut, weil es eine Entscheidung des Betriebs ist:
   Schicht abgibt, und ist eilig. An den anderen Tagen steht der Putzplan.
   Gefragt.
 
-## Runde RUNDE_NR — Schichtplaner: klarer Anfang, Regeln in Reitern (22.10.2026)
+## Runde 193 — Formi am Rechner angedockt (22.10.2026)
+
+**Aus dem Betrieb:** Auf „am Rechner als feste Spalte andocken oder
+schwebend?“ kam „was sinnvoller ist“. In Runde 186 entschieden: ab
+1440 px andocken, in einer eigenen Runde mit Messung. Auf „mach weiter“
+ist das hier gebaut.
+
+**Gebaut**
+- Ist Formi offen und klein (nicht „Groß“), steht ab 1440 px rechts eine
+  Spalte von oben bis unten: 380 px breit, ab 1680 px 420 px.
+- `.app` bekommt rechts genau diese Breite als Abstand. Kopfzeile,
+  Seitenleiste und Inhalt rücken zusammen, statt unter dem Fenster zu
+  liegen.
+- Gesteuert wird über die Klasse `formi-angedockt` am `<body>`. Ob die
+  Breite reicht, entscheidet allein das CSS; es gibt kein Messen und
+  keinen Resize-Horcher.
+- Unter 1440 px bleibt alles wie bisher: schwebend bei 1280, Blatt von
+  unten am Handy.
+
+**Warum**
+- Bei 1440 px deckte das Fenster vorher die Formi-Zeile und halb „Mein
+  Dienst“ zu, während links über 1.100 px Inhalt breiter stand als nötig.
+- Kein Übergang auf die Breite: Hausregel, nichts auf `width`/`padding`
+  animieren. Es springt einmal; die Spalte glitcht herein wie zuvor das
+  Fenster.
+- Ab 1440 und nicht schon bei 1280: Neben Seitenleiste (210 px) und
+  Spalte (380 px) blieben bei 1280 nur 690 px für Liste + Detail.
+
+**Geprüft — `tests/test-formi-angedockt.js` (neu, 32 Zusicherungen)**
+- Lage bei 1440, 1920, 1280, 820 und 390 px: Spalte an der Kante, der
+  Inhalt endet genau dort; zu → volle Breite. Die Knöpfe im Spaltenkopf
+  sind ≥ 44 × 44, frei und im Bild.
+- Wechselt man selbst die Seite, bleibt Formi angedockt.
+- Je Rolle (Chef, Leitung, Mitarbeiter), bei 1440 × 900 und
+  1920 × 1080, normal und kompakt, auf jeder Ansicht und jedem Reiter:
+  - Jedes Bedienelement, das ohne Formi per Hit-Test trifft, trifft auch
+    mit angedocktem Formi und liegt links der Spalte.
+  - Kein neuer Querlauf.
+  - Gemessen: 308 Ansichten/Reiter, 10 664 Bedienelemente, keins neu
+    verdeckt.
+  - 592 trafen schon ohne Formi nicht (zum Beispiel unter der Kopfzeile
+    oder unter einer klebenden Leiste). Das ist nicht von hier, wird aber
+    mitgezählt.
+- Gegenprobe mit dem `index.html` von vorher: Die Lage-Prüfungen
+  schlagen an.
+- Grün: test-formi-kugel, test-formi-lebt, test-knoepfe, test-gestaltung
+  (meldete zuerst einen festen Schatten an der Spalte, jetzt `--e3`),
+  test-quer, test-csp, test-abgeschnitten.
+
+**Nicht geprüft:** echte Bildschirme und Studio-Rechner. Wie es sich
+anfühlt, wenn die Seite beim Öffnen zur Seite springt, lässt sich hier
+nicht beurteilen.
+
+## Runde 194 — Sammelknopf im Leitstand ohne confirm() (Worker 2.17, 22.10.2026)
+
+Aus dem Betrieb: „der knopf im leitstand funktioniert irgendwie nicht das
+ich alles freigeben kann".
+
+**Gefunden:** Die Knöpfe waren da und die Schnittstelle antwortete (live
+geprüft: 9 Gruppen). Der Knopf fragte aber mit `confirm()` nach.
+Eingebettete Browser — vermutlich auch das Browser-Fenster der Claude-App —
+zeigen diesen Dialog nicht und geben still „nein" zurück; dann passiert
+nichts. Nachgestellt im Test: Playwright schliesst Dialoge ebenso, und mit
+2.16 bleibt der Knopf wirkungslos (Gegenprobe: 3 rot).
+
+**Geändert:** Die Rückfrage steht im Knopf („Wirklich alle … übernehmen?
+Nochmal klicken"), wie in der App. Der Worker-Durchlauf bedient den
+Leitstand jetzt im echten Browser gegen den Worker (109/109).
+
+**Im Test selbst gefunden:** Ein Locator nach Text („Knopftest") wartet,
+bis der Text wieder passt — nach dem ersten Klick also bis zum Zurück-
+setzen nach 6 s. Deshalb ein fester Griff auf das Element.
+
+## Runde 195 — Schichtplaner: klarer Anfang, Regeln in Reitern (22.10.2026)
 
 **Aus dem Betrieb:** ein Bildschirmfoto vom echten Konto (Verwaltung →
 Schichtplaner) mit „mach weiter mit dem design und aufbau, ausserdem sieht
@@ -18498,7 +18571,13 @@ Byte für Byte main).
   nichts ragt hinaus — bei 390 und 1440 px. Ohne Team erzeugt der Test,
   indem er in der Demo `planerTeam` leert.
 - Gegenprobe: Anfangskarte und Grund abgeschaltet → rot (Anfangskarte, ihre Knöpfe, Grund — bei beiden Breiten).
-- ERGEBNISSE_FOLGEN
+- **Gefunden beim Messen:** in einer Zeile rollte der Reiter „Notiz" am
+  Handy aus dem Bild und war bei 320–430 px nur 36–43 px breit zu treffen.
+  Unter 820 px stehen die vier Reiter jetzt 2 × 2.
+- test-schichtplaner misst die zehn Bedienelemente der Regeln jetzt je
+  Reiter (plus die Reiter selbst): 140 Prüfungen, grün. Angepasst mit Zitat.
+- test-schichtplan-raster, test-gestaltung, test-doppelte-namen,
+  test-abgeschnitten, test-knoepfe, test-team-woche: grün.
 
 **Nicht geprüft:** das echte Konto selbst (Anmeldung lädt hier nicht);
 gemessen ist der Zustand „Team leer" in der Demo, nachgestellt nach dem
