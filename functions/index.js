@@ -4183,6 +4183,17 @@ exports.stempelzeitenAblaufen = region
         weg += snap.size;
         if (snap.size < 400) break;
       }
+      /* Runde 205: Monatsabschlüsse auch — gelöscht, wenn der ganze Monat
+         vor der Grenze liegt. */
+      {
+        const snap = await W(firma).collection('zeitAbschluesse').where('monat', '<', grenz.slice(0, 7)).limit(400).get();
+        if (!snap.empty) {
+          const batch = db.batch();
+          snap.docs.forEach((d) => batch.delete(d.ref));
+          await batch.commit();
+          weg += snap.size;
+        }
+      }
       /* Runde 204: Korrekturanträge laufen mit derselben Frist ab. */
       for (;;) {
         const snap = await W(firma).collection('zeitAntraege').where('tag', '<', grenz).limit(400).get();
@@ -5562,6 +5573,19 @@ function korrekturGrund(data) {
   return grund;
 }
 
+/* ── Ist der Monat abgeschlossen? (Runde 205) ──
+   Nach dem Monatsabschluss durch die Geschäftsführung ändert sich in
+   diesem Monat nichts mehr — weder Nachtrag noch Storno noch Antrag. Das
+   ist der Sinn des Abschlusses: die Zahl, die ans Lohnbüro ging, bleibt
+   die Zahl. Wer doch etwas ändern muss, öffnet den Monat mit Grund. */
+async function monatOffenPruefen(firma, monat) {
+  const snap = await W(firma).collection('zeitAbschluesse').doc(String(monat)).get();
+  if (snap.exists && (snap.data() || {}).abgeschlossen === true) {
+    throw new functions.https.HttpsError('failed-precondition',
+      'Der Monat ' + monat + ' ist abgeschlossen. Die Geschäftsführung kann ihn mit Grund wieder öffnen.');
+  }
+}
+
 exports.zeitNachtragen = region.https.onCall(async (data, context) => {
   const { uid, profil, firma } = await anruferProfil(context);
   const personUid = String((data && data.uid) || '').trim();
@@ -5597,6 +5621,7 @@ exports.zeitNachtragen = region.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('invalid-argument',
       'Ein Stempel in der Zukunft lässt sich nicht nachtragen.');
   }
+  await monatOffenPruefen(firma, tag.slice(0, 7));
   if (jetzt - ts > KORREKTUR_TAGE_MAX * 86400000) {
     throw new functions.https.HttpsError('invalid-argument',
       'Nachtragen geht bis ' + KORREKTUR_TAGE_MAX + ' Tage zurück.');
@@ -5630,6 +5655,7 @@ exports.zeitStornieren = region.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('failed-precondition',
       'Dieser Stempel ist schon als ungültig markiert.');
   }
+  await monatOffenPruefen(firma, String(z.tag || '').slice(0, 7));
   /* Nur dieses eine Feld kommt dazu. Zeitpunkt, Art, Gerät und Person
      bleiben, wie sie gestempelt wurden. */
   await ref.update({ storno: { von: uid, vonName: profil.name || '', am: Date.now(), grund } });
@@ -5685,6 +5711,7 @@ exports.zeitAntragStellen = region.https.onCall(async (data, context) => {
   }
   const { tag, uhr, art, ts } = antragUhrPruefen(data);
   const grund = korrekturGrund(data);
+  await monatOffenPruefen(firma, tag.slice(0, 7));
   const eigene = profil.studioKeys || [];
   let studioKey = String((data && data.studioKey) || '').trim();
   /* Das Studio: angegeben und eines der eigenen — sonst das erste
@@ -5755,6 +5782,15 @@ exports.zeitAntragEntscheiden = region.https.onCall(async (data, context) => {
     const snap = await tx.get(ref);
     if (!snap.exists) throw new functions.https.HttpsError('not-found', 'Diesen Antrag gibt es nicht.');
     const a = snap.data() || {};
+    /* Angenommen würde ein Stempel in einem abgeschlossenen Monat
+       entstehen; abgelehnt ändert an den Stunden nichts und geht. */
+    if (annehmen) {
+      const ab = await tx.get(W(firma).collection('zeitAbschluesse').doc(String(a.tag || '').slice(0, 7)));
+      if (ab.exists && (ab.data() || {}).abgeschlossen === true) {
+        throw new functions.https.HttpsError('failed-precondition',
+          'Der Monat ' + String(a.tag || '').slice(0, 7) + ' ist abgeschlossen. Erst wieder öffnen, dann annehmen.');
+      }
+    }
     if (a.status !== 'offen') {
       throw new functions.https.HttpsError('failed-precondition', 'Dieser Antrag ist schon entschieden.');
     }
@@ -5783,6 +5819,95 @@ exports.zeitAntragEntscheiden = region.https.onCall(async (data, context) => {
     tx.update(ref, Object.assign({ status: 'angenommen', zeitId: zeitRef.id }, antwort ? { antwort } : {}, entscheid));
     return { ok: true, status: 'angenommen', zeitId: zeitRef.id };
   });
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+   MONATSABSCHLUSS (Runde 205)
+
+   Aus dem Betrieb, 22.10.2026, auf die Frage nach Export und Abschluss:
+   „mach beides". Die Geschäftsführung schliesst einen VERGANGENEN Monat
+   ab. Gespeichert wird die Übersicht, wie sie in dem Moment dastand —
+   je Person Ist, Soll, Gutschrift, Saldo, Übertrag, Konto. Der nächste
+   Monat liest daraus seinen Übertrag.
+
+   Die Zahlen rechnet die App (dieselbe Rechnung, die sie anzeigt:
+   Pausenregel, Soll aus den Vertragsstunden). Der Server prüft Form und
+   Grenzen und dass der Monat vorbei ist; er rechnet nicht ein zweites
+   Mal nach. Das ist eine bewusste Grenze: die Zahl, die die
+   Geschäftsführung gesehen und bestätigt hat, ist die, die stehen bleibt.
+
+   `zeitAbschluesse` in firestore.rules: lesen nur die Geschäftsführung,
+   schreiben niemand (nur diese Funktionen). */
+const ABSCHLUSS_ZEILEN_MAX = 500;
+function abschlussZahl(x) {
+  const n = Math.round(Number(x));
+  if (!Number.isFinite(n) || Math.abs(n) > 100000 * 60) {
+    throw new functions.https.HttpsError('invalid-argument', 'Eine Zahl im Abschluss stimmt nicht.');
+  }
+  return n;
+}
+function abschlussZeilenPruefen(zeilen) {
+  if (!Array.isArray(zeilen) || !zeilen.length || zeilen.length > ABSCHLUSS_ZEILEN_MAX) {
+    throw new functions.https.HttpsError('invalid-argument', 'Der Abschluss enthält keine Personen.');
+  }
+  return zeilen.map((z) => ({
+    uid: String((z && z.uid) || '').slice(0, 128),
+    name: String((z && z.name) || '').slice(0, 120),
+    /* Alles in Minuten, ganze Zahlen. */
+    ist: abschlussZahl(z.ist), soll: abschlussZahl(z.soll), gutschrift: abschlussZahl(z.gutschrift),
+    saldo: abschlussZahl(z.saldo), uebertrag: abschlussZahl(z.uebertrag), konto: abschlussZahl(z.konto),
+    tage: abschlussZahl(z.tage), offen: abschlussZahl(z.offen)
+  })).filter((z) => z.uid);
+}
+
+exports.monatAbschliessen = region.https.onCall(async (data, context) => {
+  const { uid, profil, firma } = await anruferProfil(context);
+  if (profil.role !== 'chef') {
+    throw new functions.https.HttpsError('permission-denied', 'Den Monat schliesst die Geschäftsführung ab.');
+  }
+  const monat = String((data && data.monat) || '').trim();
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(monat)) {
+    throw new functions.https.HttpsError('invalid-argument', 'Kein gültiger Monat.');
+  }
+  if (monat >= berlinDatum(new Date()).slice(0, 7)) {
+    throw new functions.https.HttpsError('failed-precondition',
+      'Abschliessen geht erst, wenn der Monat vorbei ist.');
+  }
+  const zeilen = abschlussZeilenPruefen(data && data.zeilen);
+  const ref = W(firma).collection('zeitAbschluesse').doc(monat);
+  const jetzt = Date.now();
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const alt = snap.exists ? (snap.data() || {}) : null;
+    if (alt && alt.abgeschlossen === true) {
+      throw new functions.https.HttpsError('failed-precondition', 'Dieser Monat ist schon abgeschlossen.');
+    }
+    const verlauf = ((alt && alt.verlauf) || []).slice(-20);
+    verlauf.push({ art: 'abgeschlossen', von: uid, vonName: profil.name || '', am: jetzt });
+    tx.set(ref, { monat, abgeschlossen: true, zeilen, von: uid, vonName: profil.name || '', am: jetzt, verlauf });
+    return { ok: true, monat, personen: zeilen.length };
+  });
+});
+
+exports.monatOeffnen = region.https.onCall(async (data, context) => {
+  const { uid, profil, firma } = await anruferProfil(context);
+  if (profil.role !== 'chef') {
+    throw new functions.https.HttpsError('permission-denied', 'Den Monat öffnet die Geschäftsführung.');
+  }
+  const monat = String((data && data.monat) || '').trim();
+  const grund = korrekturGrund(data);
+  const ref = W(firma).collection('zeitAbschluesse').doc(monat);
+  const snap = await ref.get();
+  if (!snap.exists || (snap.data() || {}).abgeschlossen !== true) {
+    throw new functions.https.HttpsError('failed-precondition', 'Dieser Monat ist nicht abgeschlossen.');
+  }
+  const alt = snap.data() || {};
+  const verlauf = (alt.verlauf || []).slice(-20);
+  verlauf.push({ art: 'geoeffnet', von: uid, vonName: profil.name || '', am: Date.now(), grund });
+  /* Die alten Zahlen bleiben stehen — wer wieder abschliesst, ersetzt sie;
+     bis dahin sieht man, was zuletzt galt. */
+  await ref.update({ abgeschlossen: false, verlauf });
+  return { ok: true };
 });
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -8667,7 +8792,7 @@ exports.gehirnWissen = region
     return json;
   });
 
-exports.__intern = { antragUhrPruefen, ANTRAG_TAGE_MAX, erlaubteSchritte, schrittWaehlen, tagesStand, gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnStimmePruefen, GEHIRN_STIMMEN, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
+exports.__intern = { abschlussZeilenPruefen, antragUhrPruefen, ANTRAG_TAGE_MAX, erlaubteSchritte, schrittWaehlen, tagesStand, gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnStimmePruefen, GEHIRN_STIMMEN, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
                      gehirnVorschlagPruefen, gehirnBefehlPruefen, gehirnWeg, gehirnKontextText, lageberichtOhneKi,
                      geminiSperreAufheben: () => { _geminiAusBis = 0; }, geminiGesperrt: () => Date.now() < _geminiAusBis, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,
                      authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
