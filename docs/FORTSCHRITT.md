@@ -18078,6 +18078,21 @@ selbst gelesen):
   die Probe prüft es.
 - `test-gestaltung`: fester Buchstabenabstand am neuen Codefeld (jetzt
   `--ls-l`) und `#schListe` zweimal mit `grid-template-columns`.
+- **Der Hintergrund-Abruf für die Startseite** (höchstens alle 20 Stunden)
+  hatte drei Nebenwirkungen, alle von bestehenden Proben gefunden:
+  - Er lief auch am **Stempel-Terminal** und überschrieb dort den letzten
+    Funktionsaufruf (`test-terminal`). Am Terminal läuft er jetzt nicht.
+  - Konnte die Funktion gar nicht aufgerufen werden, landete das als
+    Fehler auf der Seite (`test-zugang-rolle`). Jetzt abgefangen.
+  - Er zeichnete die Startseite nach vier Sekunden neu, auch wenn sich
+    nichts geändert hatte (`test-scrollkopf`). Jetzt nur, wenn sich die
+    Schulungszeile wirklich ändert.
+- **Zwei Modulspalten am Rechner** (`test-pc-spalten`, Wunsch aus Runde
+  143): Neben der linken Spalte blieb bei 1280 px nur Platz für eine.
+  Jetzt `minmax(max(300px, 30%), 1fr)`: zwei bei 1280, drei bei 1920.
+- **Beim Zusammenführen mit `main`** verlor der NEUIGKEITEN-Eintrag seine
+  schliessende Klammer. Die Demo merkte es nicht sofort, die Attrappen
+  schon (`Unexpected token '{'`). Behoben vor dem ersten Push.
 
 **Entschieden, und warum**
 - **Plan am Teilnehmer statt auf dem Gerät.** Auf dem Gerät allein wüsste
@@ -18103,6 +18118,16 @@ selbst gelesen):
 - **Offen:** Wird ein Teilnehmer gelöscht, bleibt sein Lernplan liegen
   (kein Auslöser räumt ihn weg). Er kommt nicht mehr dran, weil es keine
   Durchläufe mehr gibt, belegt aber Platz.
+
+**Gesamtdurchlauf** (alle 203 Browser-Durchläufe, Regeln und Funktionen
+im Emulator): Regeln und Funktionen grün. Von den Browser-Durchläufen
+waren nach einer Wiederholung acht rot, und alle acht sind auf dem
+unveränderten `main` genauso rot (gegengeprüft auf einer zweiten Kopie):
+`test-block-d`, `test-formi-verdeckt`, `test-gehirn`, `test-neu-design`,
+`test-p1-aufgaben`, `test-p4-seitenleiste`, `test-startseite-putz`,
+`test-team-woche`. Sie gehören nicht zu dieser Runde und sind nicht
+angefasst. Rund 30 weitere fielen nur unter der Last von zwei parallelen
+Strängen und waren einzeln grün.
 
 **Tests**
 - `tests/rules/funktionen.test.js` (+36, jetzt 248): die Rechnung ohne

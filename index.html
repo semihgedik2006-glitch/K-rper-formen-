@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-CKJDQVHDNun5JDfMFdRrYjx+vBLro5QtK27Ln4vAAn8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-7o7mdfYpdOBF6nzGnD+7mv4/W1pf9XEJDXpVnGOKtYw='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1375,9 +1375,10 @@ html.demo #terminalSchirm{top:44px}
   #view-probe .scroll-area > #pbQuotenCard{grid-column:2;grid-row:1}
   /* Die Schulungsliste in zwei Spalten: eine Karte über 1.175 px trug
      eine Zeile Beschreibung und viel Leere. */
-  /* Runde 187: auto-fill statt fest zwei — rechts neben der Spalte „für
-     dich" ist bei 1280 px Platz für eine, bei 1920 für drei. */
-  #schListe{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:var(--s10)}
+  /* Runde 187: auto-fill statt fest zwei. Rechts neben der Spalte „für
+     dich" bleiben bei 1280 px gut 600 px — zwei Spalten zu je 300 px —,
+     bei 1920 drei (30 % Mindestbreite, damit es nicht vier werden). */
+  #schListe{display:grid;grid-template-columns:repeat(auto-fill,minmax(max(300px,30%),1fr));gap:var(--s10)}
   #schListe > .sch-karte{margin-bottom:0}
   #schListe > .empty{grid-column:1 / -1}
   /* Runde 143: „Das steht für dich an", „Kurz auffrischen", „Was du
@@ -28871,7 +28872,10 @@ function schAufStandSchreiben(teil){
 function schAufHolen(antworten){
   var code=_schAuf.code;
   _schAuf.stand='laedt'; _schAuf.fehler='';
-  return schFn('schulungAuffrischen')({ code:code||'', antworten:antworten||[] })
+  var ruf;
+  try{ ruf=schFn('schulungAuffrischen')({ code:code||'', antworten:antworten||[] }); }
+  catch(e){ ruf=Promise.reject(e); }
+  return ruf
     .then(function(r){
       var d=(r&&r.data)||{};
       _schAuf.geholt=Date.now();
@@ -29111,6 +29115,9 @@ function schFristText(bis){
 function schStartHinweise(){
   if(!session || !featureAn('schulung')) return [];
   var s=schAufStandLesen(); schStandNachholen(s);
+  return schStartHinweiseAus(s);
+}
+function schStartHinweiseAus(s){
   if(!s || !s.verknuepft) return [];
   var raus=[], jetzt=Date.now();
   (s.fristen||[]).forEach(function(fr){
@@ -29127,8 +29134,13 @@ function schStartHinweise(){
 var _schStandHolt=false;
 function schStandNachholen(s){
   if(_schStandHolt || !session) return;
+  /* Nicht am Stempel-Terminal: dort steht niemand Bestimmtes davor, und
+     der Abruf hätte mitten zwischen zwei Stempeln nichts zu suchen
+     (gefunden von test-terminal: er überschrieb den letzten Aufruf). */
+  if(_tmAktiv || terminalAufGeraetLesen()) return;
   if(s && (Date.now()-(s.ts||0)) < 20*3600000) return;
   _schStandHolt=true;
+  var vorher=JSON.stringify(schStartHinweiseAus(s).map(function(x){ return x.t; }));
   setTimeout(function(){
     schBasisLaden().then(function(){
       return Promise.all([
@@ -29139,7 +29151,15 @@ function schStandNachholen(s){
       ]);
     }).then(function(r){
       if(r && r[1]) schFristenMerken(r[1]);
-      if(currentView==='home') renderHome();
+      /* Nur neu zeichnen, wenn sich die Zeile wirklich ändert — sonst
+         baute die Startseite vier Sekunden nach dem Start grundlos neu
+         auf (gefunden von test-scrollkopf). */
+      var nachher=JSON.stringify(schStartHinweiseAus(schAufStandLesen()).map(function(x){ return x.t; }));
+      if(nachher!==vorher && currentView==='home') renderHome();
+    }).catch(function(e){
+      /* Ein Hintergrund-Abruf darf nie als Fehler auf der Seite landen
+         (gefunden von test-zugang-rolle). */
+      console.warn('Schulungsstand:', e && e.message);
     });
   }, 4000);
 }
