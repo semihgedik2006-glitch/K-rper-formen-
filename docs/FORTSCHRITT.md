@@ -17460,3 +17460,29 @@ Runde 178: Fenster, Menüs und die Anmeldeseite.
 
 **Nicht geprüft:** jedes einzelne der rund 20 Fenster. Gemessen sind
 Einstellungen, Suche und Anmeldung; die übrigen teilen dieselbe Klasse.
+## Runde 180 — Ordner mit Design-Vorbildern für Claude Code (22.10.2026)
+
+**Aus dem Betrieb:** „gib in github für claude code einen ordner an mit
+design und layout vorschlägen aus anderen apps welche wir nutzen und
+kopieren können“.
+
+**Angelegt:** `docs/design-vorbilder/`, eine README und sechs Themen mit
+zusammen 43 Vorbildern: KI-Assistent (Formi), Navigation und Startseite,
+Listen und Abhaken, Dienstplan, Farbe/Tiefe/Bewegung sowie Formulare. Zu
+jedem Vorbild steht da:
+- was die App macht
+- was wir übernehmen
+- wo in StudioChat es hingehört
+- „passt zu / reibt sich mit“ den Wünschen aus `CLAUDE.md`
+- die Quelle
+
+**Warum Muster und keine Kopien:** Übernommen werden Abläufe, Abstände und
+Verhalten, nie fremde Logos, Bilder, Schriften oder Texte. Das Repository
+ist öffentlich, und ein fremdes Aussehen gehört dem Hersteller. Eine Zeile
+in `CLAUDE.md` verweist auf den Ordner, damit jede neue Sitzung ihn vor
+Gestaltungsänderungen liest.
+
+**Geprüft:**
+- Alle Links bis auf drei wurden beim Schreiben abgerufen. Die drei sind in
+  den Dateien als „nicht nachgeprüft“ markiert.
+- Maße für StudioChat sind Vorschläge und noch nicht gemessen.
