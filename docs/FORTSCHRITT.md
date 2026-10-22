@@ -17423,3 +17423,79 @@ echte Daten.
 **Was noch fehlt** (Ausbau nach dem Grundgerüst): Die Formulare und Fenster
 (Dialoge, Aktionsblätter) tragen noch den dunklen Stil ohne Lichtkante. Die
 Anmeldeseite ist noch nicht im Formi-Look.
+
+## Runde 181 — Formi lernt selbst: Suche nach Bedeutung und Lernschleife (Worker 2.13, 22.10.2026)
+
+**Aus dem Betrieb:** „wie können wir ihm mehr wissen geben das sich die ki
+halt weiter entwickelt, am besten … wenn sich die ki sozusagen selber
+trainieren könnte“. Antwort und Plan: Formi soll selbst sammeln, entwerfen
+und prüfen, und Semih gibt mit einem Tipp frei. Auf „fang ruhig an“ wurde
+das hier gebaut.
+
+**Warum nicht ganz allein:** In der Nacht auf den 22.10. standen 23
+ungeprüfte KI-Entwürfe als Wissen in der Datenbank (Runde 174). Einer davon
+hatte erfundene Konditionen. Eine KI, die sich daraus selbst trainiert,
+lernt das Erfinden.
+
+**Gebaut:**
+- **Suche nach Bedeutung.**
+  - Jeder Eintrag bekommt einen Fingerabdruck (`@cf/baai/bge-m3`,
+    mehrsprachig). Gespeichert wird er als 8-Bit-Zahlen in D1
+    (`wissen_vektor`) und 10 Minuten im Speicher gehalten.
+  - Die Frage wird genauso umgerechnet. Wörter- und Bedeutungs-Rangliste
+    werden gemischt (Reciprocal Rank Fusion), was nur die Bedeutung fand,
+    wird nachgeladen.
+  - Fällt die Bedeutung aus (z. B. Kontingent), sucht Formi mit Wörtern
+    weiter wie bisher.
+  - Beim Speichern entsteht der Fingerabdruck sofort. Was fehlt, holen
+    „Bedeutung berechnen“ und der nächtliche Lauf nach.
+  - Warum kein Vectorize: Bei ein paar hundert Einträgen reicht D1, und es
+    gibt nichts einzurichten.
+- **Lernschleife** (`lernlauf`, nachts und per „Jetzt lernen“). Daraus
+  werden Vorschläge, kein Wissen:
+  - *Selbsttest:* Formi schreibt zu einem Eintrag eine Alltagsfrage ohne
+    die Wörter des Themas und sucht. Ist der Eintrag nicht unter den
+    ersten drei, entsteht der Vorschlag „Auch gefragt als …“.
+  - *Lücke:* Entwurf zu einer offenen Frage, NUR aus gefundenem Wissen und
+    mit Nummern. Reicht das Wissen nicht, gibt es keinen Vorschlag, die
+    Frage bleibt bei Semih.
+  - *Veraltet:* Einträge, die über ein Jahr nicht geändert wurden.
+  - *Doppelt:* Bedeutung ≥ 0,95. Geprüft wird reihum, wegen der Rechenzeit
+    des kostenlosen Workers.
+  - *Korrektur:* „stimmt nicht, richtig ist …“ aus dem Team.
+- **Leitstand:**
+  - Reiter „Vorschläge“ mit Übernehmen, Verwerfen und änderbarem Text.
+  - Karte „Formi lernt selbst“ mit „Jetzt lernen“ und „Bedeutung
+    berechnen“.
+  - Zahl der Vorschläge in der Übersicht.
+- **Training:**
+  - Freigegebene Selbsttest-Fragen und Korrekturen zählen als geprüfte
+    Beispiele und stehen im Export (`selbsttest`, `korrektur`).
+  - So füllt sich der Weg zur eigenen KI, ohne dass das Team 500 Fragen
+    stellen muss.
+
+**Geprüft:** `test-formi-worker`, 79 Prüfungen, davon 29 neu. D1 läuft
+über node:sqlite, die Fingerabdrücke kommen aus einer Attrappe, die
+Begriffe gruppiert (Rücken = LWS = Kreuz).
+- Packen und Auspacken, Mischen, Erkennen von Korrekturen.
+- „Kreuzschmerzen“ findet LWS ohne gemeinsames Wort. Ausfall der Bedeutung
+  → Wortsuche läuft weiter.
+- Selbsttest, Lücke mit und ohne Wissen, veraltet, doppelt, kein doppelter
+  Vorschlag.
+- Freigeben (Frage steht im Eintrag und wird danach gefunden), Lücke
+  erledigt die offene Frage, Zusammenführen löscht den zweiten Eintrag,
+  Korrektur über die echte Schnittstelle.
+- Zahlen, Export, Leitstand, nur mit ADMIN_KEY.
+
+**Nicht geprüft:**
+- Das echte bge-m3. Die Doku nennt zwei Schreibweisen, deshalb probiert der
+  Worker beide und liest jede bekannte Antwortform.
+- Die Schwelle 0,42.
+- Die Rechenzeit auf dem kostenlosen Plan.
+
+Das alles zeigt sich nach dem Einspielen über „Bedeutung berechnen“ und den
+Verlauf.
+
+**Noch nicht gebaut** (aus dem Plan): Inhalte aus der App (Ankündigungen,
+Dokumente, „Hilfe im Studio“) als Vorschläge, und Freigabe durch
+Studioleitungen in der App.
