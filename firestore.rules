@@ -1553,6 +1553,18 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    /* ── Zeiterfassung: Korrekturanträge (Runde 204) ─────────────────
+       Die Person beantragt, NUR die Geschäftsführung entscheidet („nur
+       geschäftsführung", 22.10.2026). Geschrieben wird ausschliesslich
+       über zeitAntragStellen / -Zurueckziehen / -Entscheiden.
+       Lesen: die eigenen Anträge, und die Geschäftsführung alle. Die
+       Studioleitung bewusst NICHT — sie entscheidet sie auch nicht. */
+    match /zeitAntraege/{aid} {
+      allow read: if aufFlachenPfaden()
+        && (istAktiv() && (resource.data.uid == request.auth.uid || isChef()));
+      allow write: if false;
+    }
+
 
     match /appointments/{apptId}     { allow read, write: if false; }
     match /emailTemplates/{tplId}    { allow read, write: if false; }
@@ -2446,6 +2458,12 @@ service cloud.firestore {
           allow read: if inFirma(f)
             && (istAktiv() && (resource.data.uid == request.auth.uid
                                || manages(resource.data.studioKey)));
+          allow write: if false;
+        }
+        // Korrekturanträge (Runde 204) — dieselbe Regel wie flach, siehe dort.
+        match /zeitAntraege/{aid} {
+          allow read: if inFirma(f)
+            && (istAktiv() && (resource.data.uid == request.auth.uid || isChef()));
           allow write: if false;
         }
 

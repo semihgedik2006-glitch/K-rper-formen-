@@ -4183,6 +4183,16 @@ exports.stempelzeitenAblaufen = region
         weg += snap.size;
         if (snap.size < 400) break;
       }
+      /* Runde 204: Korrekturanträge laufen mit derselben Frist ab. */
+      for (;;) {
+        const snap = await W(firma).collection('zeitAntraege').where('tag', '<', grenz).limit(400).get();
+        if (snap.empty) break;
+        const batch = db.batch();
+        snap.docs.forEach((d) => batch.delete(d.ref));
+        await batch.commit();
+        weg += snap.size;
+        if (snap.size < 400) break;
+      }
       if (weg) console.log('Stempelzeiten abgelaufen (' + (firma || 'flach') + '): ' + weg + ' vor ' + grenz);
     }
     return null;
@@ -5624,6 +5634,155 @@ exports.zeitStornieren = region.https.onCall(async (data, context) => {
      bleiben, wie sie gestempelt wurden. */
   await ref.update({ storno: { von: uid, vonName: profil.name || '', am: Date.now(), grund } });
   return { ok: true };
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+   KORREKTURANTRAG (Runde 204)
+
+   Aus dem Betrieb, 22.10.2026, auf die Frage, wer einen Antrag der
+   Mitarbeiter bestätigt: „nur geschäftsführung".
+
+   Wie bei Crewmeister trägt die Person selbst ein, was fehlt („Feierabend
+   16:30 vergessen") — aber es wird NICHT sofort zu einem Stempel. Erst
+   wenn die Geschäftsführung annimmt, legt der Server ihn an, und zwar wie
+   zeitNachtragen: neuer Stempel mit quelle 'korrektur', Grund, wer, wann.
+   Der Urbestand bleibt unberührt.
+
+   `zeitAntraege` steht in firestore.rules auf write:false für alle, in
+   beiden Welten. Lesen: die Person ihre eigenen, die Geschäftsführung
+   alle des Betriebs.
+
+   Zurück bis ANTRAG_TAGE_MAX Tage — wie Crewmeister (31). Weiter zurück
+   ist ein Fall für ein Gespräch, nicht für ein Formular. */
+const ANTRAG_TAGE_MAX = 31;
+const ANTRAG_OFFEN_MAX = 20;
+function antragUhrPruefen(data) {
+  const tag = String((data && data.tag) || '').trim();
+  const uhr = String((data && data.uhr) || '').trim();
+  const art = String((data && data.art) || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(tag) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(uhr)) {
+    throw new functions.https.HttpsError('invalid-argument', 'Tag oder Uhrzeit fehlt oder stimmt nicht.');
+  }
+  if (ZEIT_ARTEN.indexOf(art) < 0) {
+    throw new functions.https.HttpsError('invalid-argument', 'Unbekannte Art des Stempels.');
+  }
+  const ts = berlinZeitpunkt(tag, uhr);
+  const jetzt = Date.now();
+  if (ts > jetzt) {
+    throw new functions.https.HttpsError('invalid-argument', 'Ein Stempel in der Zukunft lässt sich nicht beantragen.');
+  }
+  if (jetzt - ts > ANTRAG_TAGE_MAX * 86400000) {
+    throw new functions.https.HttpsError('invalid-argument',
+      'Beantragen geht bis ' + ANTRAG_TAGE_MAX + ' Tage zurück. Für Älteres bitte die Geschäftsführung ansprechen.');
+  }
+  return { tag, uhr, art, ts };
+}
+
+exports.zeitAntragStellen = region.https.onCall(async (data, context) => {
+  const { uid, profil, firma } = await anruferProfil(context);
+  if (profil.aktiv === false) {
+    throw new functions.https.HttpsError('permission-denied', 'Dieser Zugang ist gesperrt.');
+  }
+  const { tag, uhr, art, ts } = antragUhrPruefen(data);
+  const grund = korrekturGrund(data);
+  const eigene = profil.studioKeys || [];
+  let studioKey = String((data && data.studioKey) || '').trim();
+  /* Das Studio: angegeben und eines der eigenen — sonst das erste
+     eigene. Ein Antrag für ein fremdes Studio wäre ein Weg, Stempel
+     dorthin zu schreiben, wo man nicht arbeitet. */
+  if (!studioKey || eigene.indexOf(studioKey) < 0) studioKey = eigene[0] || '';
+  if (!/^studio-\d+$/.test(studioKey)) {
+    throw new functions.https.HttpsError('failed-precondition', 'Dir ist kein Studio zugeordnet.');
+  }
+  const offen = await W(firma).collection('zeitAntraege')
+    .where('uid', '==', uid).where('status', '==', 'offen').get();
+  if (offen.size >= ANTRAG_OFFEN_MAX) {
+    throw new functions.https.HttpsError('resource-exhausted',
+      'Es sind schon ' + ANTRAG_OFFEN_MAX + ' Anträge offen. Bitte warten, bis die Geschäftsführung sie bearbeitet hat.');
+  }
+  const doppelt = offen.docs.find((d) => {
+    const a = d.data() || {};
+    return a.tag === tag && a.art === art && a.uhr === uhr;
+  });
+  if (doppelt) return { ok: true, id: doppelt.id, schonDa: true };
+  const ref = await W(firma).collection('zeitAntraege').add({
+    uid, name: profil.name || '', studioKey,
+    tag, monat: tag.slice(0, 7), art, uhr, ts, grund,
+    status: 'offen', erstellt: Date.now()
+  });
+  return { ok: true, id: ref.id };
+});
+
+/* Zurückziehen: nur die Person selbst, nur solange offen. Der Antrag
+   bleibt mit Status stehen — wie beim Stempel geht nichts still weg. */
+exports.zeitAntragZurueckziehen = region.https.onCall(async (data, context) => {
+  const { uid, firma } = await anruferProfil(context);
+  const id = String((data && data.id) || '').trim();
+  if (!id) throw new functions.https.HttpsError('invalid-argument', 'Kein Antrag angegeben.');
+  const ref = W(firma).collection('zeitAntraege').doc(id);
+  const snap = await ref.get();
+  if (!snap.exists || (snap.data() || {}).uid !== uid) {
+    throw new functions.https.HttpsError('not-found', 'Diesen Antrag gibt es nicht.');
+  }
+  if ((snap.data() || {}).status !== 'offen') {
+    throw new functions.https.HttpsError('failed-precondition', 'Dieser Antrag ist schon entschieden.');
+  }
+  await ref.update({ status: 'zurueckgezogen', entschiedenAm: Date.now() });
+  return { ok: true };
+});
+
+/* Entscheiden: NUR die Geschäftsführung (role 'chef'). Angenommen →
+   ein neuer Stempel wie bei zeitNachtragen; abgelehnt → mit Antwort. In
+   einer Transaktion, damit ein doppelter Klick nicht zwei Stempel macht. */
+exports.zeitAntragEntscheiden = region.https.onCall(async (data, context) => {
+  const { uid, profil, firma } = await anruferProfil(context);
+  if (profil.role !== 'chef') {
+    throw new functions.https.HttpsError('permission-denied',
+      'Korrekturanträge entscheidet die Geschäftsführung.');
+  }
+  const id = String((data && data.id) || '').trim();
+  if (!id) throw new functions.https.HttpsError('invalid-argument', 'Kein Antrag angegeben.');
+  const annehmen = data && data.annehmen === true;
+  const antwort = String((data && data.antwort) || '').trim().slice(0, 200);
+  if (!annehmen && antwort.length < 5) {
+    throw new functions.https.HttpsError('invalid-argument',
+      'Bitte kurz sagen, warum der Antrag abgelehnt wird.');
+  }
+  const ref = W(firma).collection('zeitAntraege').doc(id);
+  const zeitRef = W(firma).collection('zeiten').doc();
+  const jetzt = Date.now();
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists) throw new functions.https.HttpsError('not-found', 'Diesen Antrag gibt es nicht.');
+    const a = snap.data() || {};
+    if (a.status !== 'offen') {
+      throw new functions.https.HttpsError('failed-precondition', 'Dieser Antrag ist schon entschieden.');
+    }
+    if (a.uid === uid) {
+      /* Auch die Geschäftsführung bestätigt den eigenen Antrag nicht
+         selbst — das wäre genau die Änderung ohne zweite Person. Sie
+         trägt ihre eigenen Zeiten wie bisher über „Nachtragen" ein. */
+      throw new functions.https.HttpsError('permission-denied',
+        'Den eigenen Antrag entscheidet jemand anderes aus der Geschäftsführung.');
+    }
+    const entscheid = { entschiedenVon: uid, entschiedenVonName: profil.name || '', entschiedenAm: jetzt };
+    if (!annehmen) {
+      tx.update(ref, Object.assign({ status: 'abgelehnt', antwort }, entscheid));
+      return { ok: true, status: 'abgelehnt' };
+    }
+    const pSnap = await tx.get(db.collection('users').doc(a.uid));
+    const person = pSnap.exists ? (pSnap.data() || {}) : {};
+    tx.set(zeitRef, {
+      uid: a.uid, name: a.name || person.name || '', studioKey: a.studioKey,
+      art: a.art, ts: a.ts, tag: a.tag, monat: a.tag.slice(0, 7),
+      fremd: !(person.studioKeys || []).includes(a.studioKey),
+      quelle: 'korrektur', antragId: id,
+      grund: 'Antrag: ' + (a.grund || ''),
+      korrigiertVon: uid, korrigiertVonName: profil.name || '', korrigiertAm: jetzt
+    });
+    tx.update(ref, Object.assign({ status: 'angenommen', zeitId: zeitRef.id }, antwort ? { antwort } : {}, entscheid));
+    return { ok: true, status: 'angenommen', zeitId: zeitRef.id };
+  });
 });
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -8508,7 +8667,7 @@ exports.gehirnWissen = region
     return json;
   });
 
-exports.__intern = { erlaubteSchritte, schrittWaehlen, tagesStand, gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnStimmePruefen, GEHIRN_STIMMEN, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
+exports.__intern = { antragUhrPruefen, ANTRAG_TAGE_MAX, erlaubteSchritte, schrittWaehlen, tagesStand, gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnStimmePruefen, GEHIRN_STIMMEN, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
                      gehirnVorschlagPruefen, gehirnBefehlPruefen, gehirnWeg, gehirnKontextText, lageberichtOhneKi,
                      geminiSperreAufheben: () => { _geminiAusBis = 0; }, geminiGesperrt: () => Date.now() < _geminiAusBis, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,
                      authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,

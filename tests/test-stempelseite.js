@@ -160,6 +160,38 @@ async function zuVerwaltungZeiten(p) {
     pruefe('zwei Schichten am Tag zählen zusammen (8 h → 450 min)', r.zwei === 450, r.zwei);
     pruefe('eine Schicht mit Ende vor Beginn zählt nicht', r.kaputt === 0, r.kaputt);
     pruefe('Abweichung „+0:12", „−1:30", „±0:00"', r.diff.join(' ') === '+0:12 −1:30 ±0:00', r.diff.join(' '));
+
+    /* Runde 203: Pausenregel wie Crewmeister — auffüllen, mit Kappung —
+       und die Hinweise nach §§ 3–5 ArbZG. */
+    const Z = new Function(['pauseAbzugMin', 'stundenText', 'zeitenTage'].map(hole).join('\n') +
+      '; return { pauseAbzugMin, zeitenTage };')();
+    const A = Z.pauseAbzugMin;
+    pruefe('Pause: 6:00 h ohne Pause → nichts abgezogen', A(360, 0) === 0, A(360, 0));
+    pruefe('Pause: 6:10 h ohne Pause → 10 min (nie unter die 6-h-Grenze)', A(370, 0) === 10, A(370, 0));
+    pruefe('Pause: 8:00 h ohne Pause → 30 min', A(480, 0) === 30, A(480, 0));
+    pruefe('Pause: 8:00 h mit 20 min gestempelt → 10 min ergänzt', A(480, 20) === 10, A(480, 20));
+    pruefe('Pause: 8:00 h mit 40 min gestempelt → nichts (die gestempelte zählt)', A(480, 40) === 0, A(480, 40));
+    pruefe('Pause: 9:20 h ohne Pause → 30 min (danach unter 9 h)', A(560, 0) === 30, A(560, 0));
+    pruefe('Pause: 9:50 h ohne Pause → 45 min', A(590, 0) === 45, A(590, 0));
+    pruefe('Pause: 9:50 h mit 30 min → 15 min ergänzt', A(590, 30) === 15, A(590, 30));
+    const T = (h, m) => new Date(2026, 9, 20, h, m).getTime();
+    const T2 = (h, m) => new Date(2026, 9, 21, h, m).getTime();
+    const z = (tag, art, ts) => ({ tag, art, ts });
+    const tage = Z.zeitenTage([
+      z('2026-10-20', 'kommen', T(7, 0)), z('2026-10-20', 'pause', T(12, 0)), z('2026-10-20', 'zurueck', T(12, 10)),
+      z('2026-10-20', 'gehen', T(18, 30)),
+      z('2026-10-21', 'kommen', T2(4, 0)), z('2026-10-21', 'gehen', T2(12, 0))
+    ], '2026-10-22', T2(23, 0));
+    const t20 = tage.find(t => t.tag === '2026-10-20'), t21 = tage.find(t => t.tag === '2026-10-21');
+    const arten = (t) => (t.hinweise || []).map(x => x.art).sort().join(',');
+    /* Meine erste Erwartung war „20 min" — falsch: über 9 h gilt die
+       45-Minuten-Pause, gestempelt sind 10, also 35 ergänzt. */
+    pruefe('Tag 1: 11:20 h Arbeit, 10 min Pause → 35 min ergänzt (45 über 9 h), 10:45 h', t20.abzug === 35 * 60000 && t20.arbeit === 10.75 * 3600000, JSON.stringify({ a: t20.abzug, w: t20.arbeit }));
+    pruefe('Tag 1: „über 10 h" UND „über 6 h am Stück" (10-min-Pause unterbricht nicht)', arten(t20) === 'stueck,zehn', arten(t20));
+    pruefe('Tag 2: Kommen 4:00 nach Feierabend 18:30 → „Ruhezeit 9:30 h"', /Ruhezeit 9:30 h/.test((t21.hinweise || []).map(x => x.text).join()), JSON.stringify(t21.hinweise));
+    pruefe('Tag 2: 8 h ohne Pause → 30 min ergänzt, 7:30 h', t21.abzug === 30 * 60000 && t21.arbeit === 7.5 * 3600000);
+    const offen = Z.zeitenTage([z('2026-10-22', 'kommen', T2(0, 0) + 86400000 - 8 * 3600000)], '2026-10-22', T2(0, 0) + 86400000);
+    pruefe('ein laufender Tag wird noch nicht aufgefüllt', offen[0].laeuft && offen[0].abzug === 0, JSON.stringify(offen[0].abzug));
     pruefe('ohne Skriptfehler (1)', !p._fehler.length, p._fehler.join(' | '));
     await p.close();
   }
@@ -247,6 +279,67 @@ async function zuVerwaltungZeiten(p) {
     pruefe(rolle + ' ' + w + ' px: „Aktualisieren" trifft ≥ 44', j.knopf && j.knopf.w >= 44 && j.knopf.h >= 44, JSON.stringify(j.knopf));
     pruefe(rolle + ' ' + w + ' px: nichts ragt hinaus', j.quer <= 0, j.quer);
     pruefe(rolle + ' ' + w + ' px: ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await p.close();
+  }
+
+  console.log('\n── 8. Korrekturanträge (Runde 204) ──');
+  {
+    const p = await oeffne(b, 'mitarbeiter', 390, 844);
+    await zurSeite(p);
+    const m = await p.evaluate(async () => {
+      const w = (ms) => new Promise(r => setTimeout(r, ms));
+      const luecke = [...document.querySelectorAll('#ichZeitenListe [data-ztag]')].find(z => /Feierabend fehlt/.test(z.textContent));
+      if (!luecke) return { fehlt: 'kein Tag mit fehlendem Feierabend' };
+      luecke.click(); await w(300);
+      const hier = document.querySelector('#mzs-' + luecke.dataset.ztag + ' [data-antragtag]');
+      hier.click(); await w(600);
+      const form = { tag: stAntragTag.value, art: stAntragArt.value, soll: luecke.dataset.ztag };
+      stAntragUhr.value = '17:30'; stAntragGrund.value = 'ok';
+      stAntragBtn.click(); await w(800);
+      const kurz = document.querySelectorAll('#stAntraege [data-antrag]').length;
+      stAntragGrund.value = 'Feierabend vergessen, Schicht bis 17:30';
+      stAntragBtn.click(); await w(1200);
+      const zeilen = [...document.querySelectorAll('#stAntraege [data-antrag]')].map(z => z.innerText.replace(/\s+/g, ' '));
+      const zieh = document.querySelector('#stAntraege [data-antragweg]');
+      zieh.click(); await w(1000);
+      return { form, kurz, zeilen, danach: document.querySelector('#stAntraege [data-antrag]').innerText };
+    });
+    pruefe('„Feierabend beantragen" am fehlenden Tag füllt Tag und Art', m.form && m.form.tag === m.form.soll && m.form.art === 'gehen', JSON.stringify(m.form || m));
+    pruefe('ohne Grund geht kein Antrag raus', m.kurz === 1, m.kurz);
+    pruefe('der Antrag steht oben mit „wartet"', m.zeilen && /Feierabend 17:30 wartet/.test(m.zeilen[0]), JSON.stringify(m.zeilen));
+    pruefe('Zurückziehen → „zurückgezogen", nicht weg', /zurückgezogen/.test(m.danach || ''), m.danach);
+    pruefe('ohne Skriptfehler (Antrag)', !p._fehler.length, p._fehler.join(' | '));
+    await p.close();
+  }
+  for (const [rolle, w, h] of [['chef', 1440, 900], ['chef', 320, 568], ['leiter', 1280, 800]]) {
+    const p = await oeffne(b, rolle, w, h);
+    await zuVerwaltungZeiten(p);
+    const g = await p.evaluate(async (SRC) => {
+      const T = eval('(' + SRC + ')');
+      const ws = (ms) => new Promise(r => setTimeout(r, ms));
+      const box = document.getElementById('zkAntraege');
+      const sichtbar = !box.hidden && !!box.offsetParent;
+      if (!sichtbar) return { sichtbar };
+      const knoepfe = [...box.querySelectorAll('button')];
+      const masse = [];
+      for (const k of knoepfe) { k.scrollIntoView({ block: 'center' }); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); const m = T(k); masse.push(k.textContent.trim() + ' ' + m.w + '×' + m.h); }
+      box.querySelector('[data-zkantragab]').click(); await ws(300);
+      box.querySelector('[data-zkantragnein]').click(); await ws(600);
+      const nochDa = box.querySelectorAll('[data-zkantrag]').length;
+      const zeilenVor = document.querySelectorAll('#zkListe [data-zk]').length;
+      box.querySelector('[data-zkantragzurueck]').click(); await ws(200);
+      box.querySelector('[data-zkantragja]').click(); await ws(1500);
+      return { sichtbar, masse, nochDa, weg: box.hidden, quer: document.documentElement.scrollWidth - innerWidth };
+    }, TREFFER.toString());
+    if (rolle === 'leiter') { pruefe('Studioleitung ' + w + ' px: sieht KEINE Anträge (nur die Geschäftsführung entscheidet)', !g.sichtbar); }
+    else {
+      pruefe('Geschäftsführung ' + w + ' px: der offene Antrag steht oben', g.sichtbar);
+      pruefe('… Annehmen / Ablehnen treffen ≥ 44 (' + (g.masse || []).join(', ') + ')', (g.masse || []).length >= 2 && g.masse.every(x => { const m = /(\d+)×(\d+)/.exec(x); return +m[1] >= 44 && +m[2] >= 44; }));
+      pruefe('… Ablehnen ohne Antwort entscheidet nichts', g.nochDa === 1, g.nochDa);
+      pruefe('… Annehmen räumt ihn weg', g.weg === true);
+      pruefe('… nichts ragt hinaus', g.quer <= 0, g.quer);
+    }
+    pruefe(rolle + ' ' + w + ' px: ohne Skriptfehler (Anträge)', !p._fehler.length, p._fehler.join(' | '));
     await p.close();
   }
 
