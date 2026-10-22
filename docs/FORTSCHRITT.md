@@ -19145,7 +19145,226 @@ Auskunft nach Art. 15 kommen sie von selbst (Feld `uid`).
   aus, ohne Grund kein Antrag, Zurückziehen; bei der Geschäftsführung
   Annehmen/Ablehnen (≥ 44 × 44 bei 1440 und 320), Ablehnen ohne Antwort
   entscheidet nichts; die Studioleitung sieht keine Anträge.
-## Runde 205 — Das große HUD ist weg: Formi ist immer das ruhige Fenster (22.10.2026)
+
+## Runde 205 — Formis Augen leben, ein Gesicht überall (22.10.2026)
+
+**Aus dem Betrieb:** Auf die Ideenliste (11 Ideen, wie Formi mehr ins
+Design kommt) kam „mach alles davon, gib dem gesicht mehr leben auch und
+den augen vorallem“. Gebaut wird in drei Paketen; das ist Paket 1. Paket
+2 bringt das aufgeräumte Formi-Fenster, leere Listen und die
+Ladeanzeige, Paket 3 Suche und Formi in einem Feld.
+
+**Gebaut**
+- **Augen.**
+  - Weiss, mit Pupille und Lichtpunkt, dazu Brauen.
+  - Die Pupillen folgen der Maus (bis 1,8 px), das ganze Loch nur noch
+    ein wenig (bis 2,5 px): So schauen Augen, nicht ein Ball.
+  - Kommt die Maus näher als 150 px, werden die Augen gross.
+  - Steht die Maus still (oder es gibt keine, am Handy), sieht Formi sich
+    alle 1,5–4 s um, mit kleinen schnellen Sprüngen; manchmal blinzelt es
+    zweimal.
+  - Nach 60 s ohne Bedienung wird Formi müde (halb zu, die Brauen
+    sinken), nach 90 s schläft es.
+  - Die Brauen tragen den Ausdruck: hoch beim Staunen, schräg beim
+    Schreck, gehoben bei Freude.
+- **Neue Ausdrücke:** Gähnen (morgens einmal je Gerät), „Aha“ (wenn Formi
+  mit dem Denken fertig ist), zweimal blinzeln.
+- **Hinschauen:** Bei einem Hinweis unten und bei einer neuen Meldung an
+  der Glocke schaut Formi kurz dorthin.
+- **Ein Gesicht überall.**
+  - Die Figur ist in Anteilen gebaut (`--fg`). Dieselbe Figur steht im
+    Kopf des Formi-Fensters (28 px), in der Formi-Zeile (30 px) und als
+    fliegender Zeiger (28 px), wenn Formi eine Seite öffnet.
+  - Unter 32 px fallen Brauen und Lichtpunkt weg; sie wären nur noch
+    Krümel.
+- **Denken und Sprechen im Fensterkopf.**
+  - Beim Denken dreht sich nur der Ring (vorher die ganze Figur), und die
+    Augen schauen nach oben zur Seite.
+  - Beim Sprechen geht der Mund auf und zu. Mit menschlicher Stimme folgt
+    er der Lautstärke: eine angehaltene Animation, deren Zeit je Bild
+    gesetzt wird, ohne ins style-Attribut zu schreiben.
+- **Ring:**
+  - Ein Schimmer in der Farbe des Bereichs, von einer Kante: Heute blau,
+    Wissen violett, Nachrichten türkis, Studio orange, Plan pink. Die
+    Verwaltung bekommt keinen.
+  - Ab 19 Uhr wird der Ring wärmer.
+- **Anlass:** An Silvester und Neujahr feiert Formi beim ersten Öffnen,
+  im Dezember fallen beim Atmen Schneeflocken.
+
+**Warum so**
+- *Blick als Web Animation mit `fill:forwards`*, die vorige wird
+  abgelöst. Wieder kein Schreiben ins style-Attribut, wegen der
+  `:has()`-Regeln am `<body>` (Runde 186).
+- *Umsehen, Müde, Atmen sind Zeitgeber, keine `infinite`-Animation.*
+  Zwischen zwei Momenten kostet die Kugel nichts.
+- *Kein Rot, Grün, Bernstein im Ring*: Die Bereichsfarben sind blau,
+  violett, türkis, orange und pink. Ein fest gewählter Akzent ändert am
+  Ring nichts, weil der Schimmer an `data-bereich` hängt, nicht an
+  `--accent`.
+
+**Gemessen** (Arbeit je Bild, CPU ÷4, die Maus bewegt sich 3 s)
+- Über der leeren Seitenleiste: 3,8 ms (vorher 3,4–3,8).
+- Über dem Inhalt samt Formi-Zeile: 7,3 ms (vorher 6,7).
+- Die Grenze ist 8,3 ms. Die Pupillen kosten also etwas, es bleibt aber
+  unter der Grenze. Weitere Augen-Effekte im Takt der Maus wären hier
+  zu viel.
+
+**Geprüft** (`tests/test-formi-lebt.js`, jetzt 112 Zusicherungen)
+- Das Gesicht hat Pupillen und Brauen; dasselbe Gesicht steht in der
+  Formi-Zeile und im Fensterkopf.
+- Neue Ausdrücke sind endlich und bewegen nur `transform`/`opacity`.
+- Die Pupillen schauen der Maus nach (≤ 1,9 px). Kommt die Maus nah,
+  werden die Augen gross, und danach wieder normal.
+- Formi schaut zum Hinweis oben links; müde und wieder wach.
+- „Läuft nichts mehr“ zählt jetzt nur laufende Animationen. Ein
+  gehaltener Blick (`fill:forwards`, abgeschlossen) ist Stillstand. Das
+  ist eine Anpassung an den gehaltenen Blick, keine gelockerte Grenze.
+- Weitere grüne Durchläufe: test-formi-platz und test-formi-kumpel (die
+  Runden 196/198/199 der anderen Sitzung, mit dieser zusammengeführt),
+  test-formi-kugel, test-formi-angedockt, test-knoepfe, test-gestaltung
+  (meldete zuerst einen festen Schatten an der kleinen Figur, jetzt
+  `--e1` plus Schein), test-csp, test-quer, test-uebersicht.
+- test-gehirn: Rot sind nur die bekannten Leistungsprüfungen unter
+  CPU ÷4 (zwei von drei in diesem Lauf).
+- „Schaut hin“ rechnet die erwartete Richtung aus der Lage von Kugel und
+  Ziel. Seit Runde 198 sitzt die Kugel am Rechner unten links.
+- Gegenprobe mit dem `index.html` von vorher: schlägt an.
+
+**Nicht geprüft:** Wie lebendig die Augen auf einem echten Bildschirm
+wirken. Die Pupillen sind bei der Kugel etwa 3,5 px gross.
+
+## Runde 206 — Schichtplaner: alle Fragen auf einmal, und was von LogX gebraucht wird (22.10.2026)
+
+**Aus dem Betrieb:** „kanst du … uns alle fragen stellen welche wir
+beantworten müssen damit der schichtplan danach direkt klappt“, „gib mir
+die liste als pdf und auch die excel vorlage nochmal“ und „sag mir was
+du von logx brauchst“.
+
+**Was entstanden ist**
+- `docs/schichtplaner/Schichtplaner-Fragen.pdf` neu, jetzt aus
+  `werkzeug/fragen.py` erzeugt (vorher gab es keinen Erzeuger dafür):
+  24 Fragen in fünf Gruppen (Pflicht · Besetzung · Arbeitszeit · Wünsche
+  und Fairness · Ablauf), je Frage **was die App heute annimmt** — passt
+  das, reicht „passt“. Die letzte Seite: was ich von LogX brauche (Export
+  eines alten Plans, Importvorlage, Bildschirmfotos, Mitarbeiterliste mit
+  Personalnummer, Programm und Version, heutiger Ablauf) und der Hinweis,
+  **keine Zugangsdaten** zu schicken.
+- Dieselbe Liste steht in `werkzeug/inhalt.py` und füllt das Blatt
+  „Fragen“ der Excel-Vorlage, jetzt mit eigener Spalte „Heute in der App“.
+  Das Blatt liest der Planer nicht ein (geprüft: `ausVorlage` kennt es
+  nicht); die anderen Blätter sind unverändert.
+
+**Warum je Frage die heutige Annahme dabeisteht:** Die meisten Antworten
+sind „so wie es ist“. Wer nur Abweichungen schreiben muss, ist in zehn
+Minuten fertig statt in einer Stunde.
+
+**Geprüft:** test-schichtplaner-rechnung (82, liest die Vorlage): grün.
+Das PDF ist angesehen (4 Seiten), die Vorlage mit openpyxl geöffnet.
+
+## Runde 207 — Schulung für die Leitung: Pflicht auf einen Blick, Erinnern, Frage nachbessern (22.10.2026)
+
+**Aus dem Betrieb:** „aight mach die nächste runde“ — nach den Runden 201
+und 202. Empfohlen und gebaut: die Seite der Leitung, denn das
+Auffrischen und die Fristen erzeugen jetzt Zahlen, die jemand lesen muss.
+
+**Was gebaut ist**
+- **Reiter „Pflicht“** unter Schulung → Verwalten: Personen ×
+  Pflichtmodule. Je Zelle ✓ mit Datum, „bis …“, „angefangen 2/17“ oder
+  „überfällig“ bzw. „wieder fällig“ (bei `gueltigMonate`). Oben die Summe
+  („3 von 12 erledigt“), Filter Alle / Offen / Überfällig, am Reiter die
+  Zahl der überfälligen. Stillgelegte Personen stehen nicht darin.
+  - Am Rechner eine Tabelle; am Handy je Person eine Karte, Modulname
+    links (gekürzt), Stand rechts. Beim ersten Anlauf schob ein langer
+    Modulname den Stand aus der Zeile (flex); jetzt ein Raster.
+- **„Erinnern“**: eine fertige Nachricht mit Vorname, den offenen
+  Pflichtmodulen samt Frist und dem Code — über das Teilen-Fenster des
+  Geräts, sonst in die Zwischenablage. Dasselbe Muster wie „Weitergeben“.
+- **„Bearbeiten“** bei „Fragen, die im Team nicht sitzen“: öffnet den
+  Modul-Editor bei genau dieser Frage, markiert und ins Bild geholt (bei
+  einem Modul aus der Datei als eigene Fassung, wie sonst auch).
+
+**Entschieden, und warum**
+- **Die App verschickt die Erinnerung nicht selbst.** Leute ohne Zugang
+  erreicht sie gar nicht, und eine Nachricht von der Leitung wirkt anders
+  als eine Meldung „vom System“. Der Preis: Die Leitung muss tippen.
+- **Statusfarbe nur für erledigt und überfällig.** „bis …“ und
+  „angefangen“ sind keine Meldung, also neutral.
+- Der Code steht in der Nachricht: Die Person braucht ihn zum Anfangen,
+  und lesen darf ihn die Leitung ohnehin (Runde 98).
+
+**Tests**
+- `tests/test-schulung-pflicht.js` neu (30): Stand aus den Demo-Daten,
+  Summe und Reiterzahl, Filter (Gegenprobe: heute niemand überfällig),
+  20 Tage später überfällig in der Statusfarbe — und Jamie, erst vor vier
+  Tagen angelegt, noch in der Frist (Gegenprobe); stillgelegt nicht in
+  der Tabelle (Gegenprobe ohne den Filter: fällt); „Erinnern“ mit offenen
+  Modulen und Code, ohne erledigte (Gegenprobe); „Bearbeiten“ springt zur
+  Frage; Tabelle am Rechner, Stand bleibt am Handy im Bild; Fingerziele bei
+  sieben Breiten, normal und kompakt.
+
+## Runde 208 — Die Stempelseite, Schritt 4: Stundenkonto, Monatsabschluss, Export als Excel und CSV (22.10.2026)
+
+Antworten aus dem Betrieb: Soll fürs Konto aus den Vertragsstunden
+(„JA"), Lohnbüro „mach beides", Abschluss mit dabei.
+
+**Verwaltung → Zeiten → „Monat & Konto"** (nur die Geschäftsführung — darin
+stehen alle Konten nebeneinander, und die Vertragsstunden in
+`planerTeam` darf ohnehin nur sie lesen). Je Person, **betriebsweit** und
+nicht je Studio — ein Konto gehört der Person:
+
+| Spalte | Rechnung |
+|---|---|
+| Ist | gestempelte Arbeit nach der Pausenregel; Tage ohne Feierabend zählen nicht und stehen als „Feierabend fehlt" daneben |
+| Soll | Wochenstunden × Kalendertage / 7 — dieselbe Rechnung wie im Schichtplaner; ohne Wochenstunden die Monatsgrenze des Minijobs; ohne beides kein Soll und kein Konto. Im laufenden Monat: bis heute |
+| Urlaub/Krank | genehmigter Urlaub und Krankheit an Werktagen (Mo–Fr) × Tagessoll (Wochenstunden / Tage je Woche, sonst 5) |
+| Saldo | Ist + Urlaub/Krank − Soll |
+| Übertrag | das Konto des **abgeschlossenen** Vormonats; sonst „–" und gerechnet mit 0 |
+
+**Entscheidungen, die eine Begründung brauchen:**
+- *Soll über Kalendertage/7 statt über Arbeitstage.* So rechnet der
+  Schichtplaner seit Runde 168; zwei Rechnungen für dasselbe Wort „Soll"
+  wären die Stelle, an der Plan und Konto auseinanderlaufen.
+- *Gutschrift nur Mo–Fr.* Das ist eine Annahme — ein Studio hat auch
+  samstags offen. Ein Tagessoll je Wochentag (wie Crewmeisters „Zeitregeln")
+  wäre genauer und ist nicht gebaut. Gehört in die Rückfragen.
+- *Die App rechnet, der Server speichert.* `monatAbschliessen` prüft Form,
+  Grenzen und dass der Monat vorbei ist, rechnet aber nicht ein zweites
+  Mal nach. Die Zahl, die die Geschäftsführung gesehen und bestätigt hat,
+  ist die, die stehen bleibt — eine zweite Rechnung auf dem Server wäre
+  eine zweite Stelle, die von der ersten abweichen kann.
+
+**Abschluss.** Nur vergangene Monate. Danach lehnt der Server in diesem
+Monat ab: Nachtragen, Stornieren, Antrag stellen, Antrag **annehmen**
+(Ablehnen geht — es ändert keine Stunden). „Wieder öffnen …" nur mit Grund;
+die alten Zahlen bleiben stehen, bis neu abgeschlossen wird, und der
+Verlauf hält beides fest. Neue Sammlung `zeitAbschluesse` in beiden Teilen
+von `firestore.rules`: lesen nur die Geschäftsführung, schreiben niemand.
+Löschfrist wie die Stempel.
+
+**Export.** „CSV": Semikolon, Dezimalstunden mit Komma, UTF-8 mit BOM — so
+öffnet ein deutsches Excel die Datei ohne Nachfrage. Stunden:Minuten wären
+für Menschen schöner und in einer Tabelle falsch (Excel macht daraus eine
+Uhrzeit). „Excel": Übersicht und jeder Tag einzeln, über den vorhandenen
+`downloadXls`. Keine PIN, kein Hash, kein Geheimnis in einer Datei.
+
+**DATEV kommt in Schritt 5**, mit Einstellungen (Berater-, Mandanten-,
+Personalnummern, Lohnarten) — die Nummern kommen vom Lohnbüro, und das
+Format muss das Lohnbüro einmal mit einer Probedatei bestätigen.
+
+**Geprüft**
+- `tests/rules/monatsabschluss.test.js` (neu, 31): Regeln in beiden Welten,
+  Abschliessen/Öffnen ausgeführt, die vier Sperren. Gegenprobe: Sperre beim
+  Nachtragen herausgenommen → zwei rote Zeilen. Mein erster Testtag war der
+  5. des Vormonats — am 22.10. sind das 47 Tage, und der Antrag scheiterte
+  an der 31-Tage-Grenze statt am Abschluss. Der Fehler lag im Test.
+- Die drei Zeiterfassungs-Tests im Emulator räumen jetzt hinter sich auf;
+  in falscher Reihenfolge zählte `zeitkorrektur` sonst fremde Stempel.
+- `tests/test-stempelseite.js` jetzt 180: Konto bei 320/390/1440/1920,
+  Trefferflächen, CSV-Inhalt, Excel, Abschliessen und danach gesperrtes
+  Nachtragen; die Studioleitung sieht kein Konto.
+- Der Umschalter steht über „Jetzt im Studio"; in der Konto-Ansicht sind
+  Tage, Jetzt und Anträge ausgeblendet.
+## Runde 209 — Das große HUD ist weg: Formi ist immer das ruhige Fenster (22.10.2026)
 
 Aus dem Betrieb: „eventuell auch das grosse hud entfernen oder
 überarbeiten das es besser aussieht" — auf die Rückfrage gewählt: „Ruhig

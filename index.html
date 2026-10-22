@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-4dLWWa80MTy5wUnl4iwyQ//Qh5sudV1X2B6tezFFYSE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-KL5AjjzHV4jbgFG7qfOIGnW4HbrHePAC838OiAQScoE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3518,6 +3518,29 @@ button.ich-zeile:active{opacity:.7}
 .st-antrag .ich-dazu{padding-left:0}
 .st-zurueckziehen{min-height:44px}
 .st-antrag-hier{margin:var(--s6) 0 0;min-height:44px}
+/* Monat & Konto (Runde 208). Am Rechner die ganze Tabelle; am Handy
+   rollt nur die Tabelle seitlich, die Seite nicht. */
+.zk-ansicht{display:inline-flex;gap:var(--s2);background:var(--auf-1);border-radius:var(--r-pille);
+  padding:var(--s2);margin:var(--s4) 0 var(--s12)}
+.zk-ansicht[hidden]{display:none}
+.zk-ansicht-knopf{min-height:44px;padding:0 var(--s16);border:none;background:none;border-radius:var(--r-pille);
+  color:var(--text-2);font-family:var(--font-body);font-size:var(--t-sm);font-weight:600;cursor:pointer}
+.zk-ansicht-knopf.an{background:var(--bg-2);color:var(--text);box-shadow:var(--e1)}
+.zk-konto[hidden]{display:none}
+.zk-konto-kopf{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--s12);margin:0 0 var(--s12)}
+.zk-konto-kopf h3{margin:0 0 var(--s4);font-size:var(--t-md)}
+.zk-konto-kopf .hint{margin:0;max-width:60ch}
+.zk-konto-knoepfe{display:flex;flex-wrap:wrap;gap:var(--s8)}
+.zk-konto-knoepfe .btn{min-height:44px}
+.zk-konto-warn{margin:0 0 var(--s12);padding:var(--s8) var(--s12);border-radius:var(--r-md);
+  background:var(--f-warn);color:var(--warm-tx);font-size:var(--t-sm)}
+.zk-konto-tab-wrap{overflow-x:auto;max-width:100%}
+.zk-konto-tab{width:100%;border-collapse:collapse;font-size:var(--t-sm)}
+.zk-konto-tab th{font-size:var(--t-2xs);font-weight:700;color:var(--text-3);text-transform:uppercase;
+  letter-spacing:var(--ls-l);text-align:left;padding:var(--s6) var(--s8);border-bottom:1px solid var(--line);white-space:nowrap}
+.zk-konto-tab td{padding:var(--s8);border-bottom:1px solid var(--line);vertical-align:top}
+.zk-konto-tab .zahl{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.zk-konto-neben{display:block;font-size:var(--t-2xs);color:var(--text-3);margin-top:var(--s2)}
 .zk-antraege{margin:var(--s12) 0 var(--s4);padding:var(--s12) var(--s16);border-radius:var(--r-md);
   background:var(--auf-1);border:1px solid var(--line)}
 .zk-antraege[hidden]{display:none}
@@ -4785,9 +4808,7 @@ html{font-size:var(--fs,100%)}
   background:linear-gradient(90deg, rgba(182,156,255,.16), rgba(95,225,255,.05) 38%, rgba(95,225,255,0) 70%), var(--bg-2)}
 .fz-gesicht{flex:0 0 auto;width:44px;height:44px;padding:0;border:0;border-radius:var(--r-rund);background:none;
   display:grid;place-items:center;cursor:pointer;color:inherit}
-.fz-ring{display:block;width:28px;height:28px;border-radius:var(--r-rund);
-  background:radial-gradient(circle, #02040A 0 34%, rgba(2,4,10,0) 38%), var(--formi-ring);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.2), 0 0 10px rgba(95,225,255,.35);transition:transform .16s ease}
+.fz-ring.formi-figur{--fg:30px;display:block;transition:transform .16s ease}
 @media (hover:hover){ .fz-gesicht:hover .fz-ring{transform:scale(1.08)} }
 .fz-gesicht:active .fz-ring{transform:scale(.92)}
 .fz-teile{flex:1 1 auto;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:var(--s4) var(--s6)}
@@ -6085,7 +6106,7 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
    (test-formi-lebt prüft es) — sonst heisst er nichts mehr, wie eine
    Statusfarbe, die nichts meldet. */
 :root{--formi-ring:conic-gradient(from 210deg, #5FE1FF, #B69CFF, #FF8FC8, #FFA85C, #5FE1FF)}
-.formi-kugel{--jv-rgb:95,225,255;position:fixed;z-index:150;right:max(var(--s16), var(--sar, 0px));
+.formi-kugel{--fg:58px;--jv-rgb:95,225,255;position:fixed;z-index:150;right:max(var(--s16), var(--sar, 0px));
   bottom:calc(var(--s16) + var(--sab));width:58px;height:58px;padding:0;border:0;border-radius:var(--r-rund);cursor:pointer;
   background:none;color:inherit;
   transition:transform .16s ease}
@@ -6108,8 +6129,11 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
    kann (das „Atmen" des Lochs), ohne dass Gesicht und Schatten mitdrehen. */
 .fk-wirbel{position:absolute;inset:0;border-radius:var(--r-rund);background:var(--formi-ring);
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.22), inset 0 0 10px 3px rgba(2,4,10,.55)}
-/* Das Loch: 30 px wie vorher der schwarze Kern (37 % des Verlaufs). */
-.fk-loch{position:absolute;left:50%;top:50%;width:30px;height:30px;margin:-15px 0 0 -15px}
+/* Das Loch: 52 % der Figur (bei der Kugel 30 von 58 px, wie vorher der
+   schwarze Kern). Runde 205: alles im Gesicht ist in Anteilen gemessen,
+   damit dieselbe Figur auch 26 px klein im Fensterkopf, in der
+   Formi-Zeile und als fliegender Zeiger stehen kann (formiFigurHTML). */
+.fk-loch{position:absolute;left:24%;top:24%;width:52%;height:52%}
 .fk-pupille{position:absolute;inset:0;border-radius:var(--r-rund);background:#02040A;overflow:hidden;
   box-shadow:0 0 0 1px rgba(2,4,10,.65), 0 0 7px 2px rgba(2,4,10,.55);transition:transform .3s ease}
 /* ── Das Gesicht im Loch (Runde 195) ─────────────────────────────────
@@ -6120,12 +6144,51 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
    Die Ausdrücke sind Web Animations auf transform (formiGefuehl). */
 .fk-weiss{position:absolute;inset:-2px;border-radius:var(--r-rund);opacity:0;
   background:radial-gradient(circle, #FFFFFF 0 46%, #F3EEFF 62%, rgba(255,255,255,0) 74%)}
-.fk-gesicht{position:absolute;inset:0;mix-blend-mode:difference}
-.fk-auge{position:absolute;top:9px;width:5px;height:7px;border-radius:var(--r-rund);background:#FFFFFF;transition:transform .3s ease}
-.fk-auge.l{left:8px}
-.fk-auge.r{right:8px}
-.fk-mund{position:absolute;left:10px;top:18px;width:10px;height:5px;border:2px solid #FFFFFF;border-top:0;
+.fk-gesicht{position:absolute;inset:0;mix-blend-mode:difference;transition:transform .35s ease}
+/* Runde 205 — aus dem Betrieb: „gib dem gesicht mehr leben auch und den
+   augen vorallem". Die Augen sind jetzt weiss mit einer Pupille und einem
+   Lichtpunkt darin; die Pupille wandert im Auge (schauen, umsehen), das
+   Auge selbst blinzelt, wird gross oder schmal. Dazu Brauen, die den
+   Ausdruck tragen (hoch = staunen, schräg = Sorge). */
+.fk-auge{position:absolute;top:24%;width:23%;height:31%;border-radius:var(--r-rund);background:#FFFFFF;overflow:hidden;
+  transition:transform .3s ease}
+.fk-auge.l{left:19%}
+.fk-auge.r{right:19%}
+.fk-auge b{position:absolute;left:21%;top:30%;width:58%;height:43%;border-radius:var(--r-rund);background:#02040A}
+.fk-auge b::after{content:"";position:absolute;left:16%;top:12%;width:38%;height:38%;border-radius:var(--r-rund);background:rgba(255,255,255,.95)}
+.fk-braue{position:absolute;top:12%;width:24%;height:max(1px, 5.5%);border-radius:var(--r-rund);background:#FFFFFF;opacity:.85;
+  transition:transform .35s ease}
+.fk-braue.l{left:19%}
+.fk-braue.r{right:19%}
+.fk-mund{position:absolute;left:33%;top:62%;width:34%;height:16%;border:max(1px, calc(var(--fg, 58px) * .034)) solid #FFFFFF;border-top:0;
   border-radius:0 0 var(--r-rund) var(--r-rund);transition:transform .3s ease}
+/* Müde (nach 60 s ohne Bedienung): halb zu, bevor es einschläft. */
+.formi-kugel.fk-muede .fk-auge{transform:scaleY(.55)}
+.formi-kugel.fk-muede .fk-braue{transform:translateY(25%)}
+/* Die kleine Figur — Fensterkopf, Formi-Zeile, Zeiger. Unter 32 px ohne
+   Brauen und Lichtpunkt: die wären nur noch Krümel. */
+.formi-figur{--fg:26px;position:relative;display:inline-block;flex:0 0 auto;width:var(--fg);height:var(--fg);border-radius:var(--r-rund)}
+.formi-figur .fk-koerper{box-shadow:var(--e1), 0 0 10px rgba(95,225,255,.45)}
+.formi-figur .fk-wirbel{box-shadow:inset 0 0 0 1px rgba(255,255,255,.2), inset 0 0 4px 1px rgba(2,4,10,.5)}
+.formi-figur .fk-pupille{box-shadow:0 0 0 1px rgba(2,4,10,.6)}
+.formi-figur.mini .fk-braue,.formi-figur.mini .fk-auge b::after{display:none}
+.formi-figur.mini .fk-auge b{left:15%;top:25%;width:70%;height:52%}
+/* Ring in der Farbe des Bereichs (Runde 205): ein Schimmer von einer
+   Kante, nicht eine Fläche — und nie in Rot, Grün oder Bernstein. Die
+   Verwaltung (Schiefer) bekommt keinen. */
+.fk-wirbel::before{content:"";position:absolute;inset:0;border-radius:var(--r-rund);opacity:0;transition:opacity .4s ease;
+  background:radial-gradient(circle at 28% 18%, var(--fk-ber, transparent), rgba(0,0,0,0) 62%)}
+body[data-bereich="g-start"]  {--fk-ber:#7DB8FF}
+body[data-bereich="g-wissen"] {--fk-ber:#BBA4FF}
+body[data-bereich="g-komm"]   {--fk-ber:#4EE6D2}
+body[data-bereich="g-arbeit"] {--fk-ber:#FFA85C}
+body[data-bereich="g-team"]   {--fk-ber:#FF8FC8}
+body[data-bereich="g-start"] .fk-wirbel::before,body[data-bereich="g-wissen"] .fk-wirbel::before,body[data-bereich="g-komm"] .fk-wirbel::before,
+body[data-bereich="g-arbeit"] .fk-wirbel::before,body[data-bereich="g-team"] .fk-wirbel::before{opacity:.7}
+/* Abends (ab 19 Uhr) wird der Ring wärmer. */
+.fk-wirbel::after{content:"";position:absolute;inset:0;border-radius:var(--r-rund);opacity:0;transition:opacity 1s ease;
+  background:radial-gradient(circle at 72% 86%, rgba(255,160,90,.5), rgba(255,160,90,0) 64%)}
+.formi-kugel.fk-abend .fk-wirbel::after{opacity:1}
 /* Die Teilchen: was das weisse Loch ausspuckt und das schwarze wieder
    einsaugt (formiAusbruch), und was beim „Atmen" hineinfällt. Sie liegen
    in der Kugel, bewegen sich nur per transform/opacity und lassen jeden
@@ -6145,11 +6208,12 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
   transition:opacity .2s ease, transform .3s cubic-bezier(.3,1.6,.5,1)}
 .formi-kugel.fk-hat .fk-punkt{opacity:1;transform:none}
 /* Schläft: das Auge geht zu, der Ring wird leiser. Aufwachen = Glitch. */
-.formi-kugel.fk-schlaeft .fk-auge{transform:scaleY(.15)}
+.formi-kugel.fk-schlaeft .fk-auge{transform:scaleY(.12)}
+.formi-kugel.fk-schlaeft .fk-braue{transform:translateY(40%)}
 .formi-kugel.fk-schlaeft .fk-mund{transform:scale(.5)}
 .formi-kugel.fk-schlaeft .fk-koerper{opacity:.7}
 /* Neugierig, wenn die Maus darüber steht: die Pupille wird gross. */
-@media (hover:hover){ .formi-kugel:not(.fk-schlaeft):hover .fk-auge{transform:scale(1.25)} }
+@media (hover:hover){ .formi-kugel:not(.fk-schlaeft):hover .fk-auge{transform:scale(1.25)} .formi-kugel:not(.fk-schlaeft):hover .fk-braue{transform:translateY(-40%)} }
 /* Der Glitch über einem Ziel in der App (formiGlitch): zwei Balken, die
    springen, dann ist es vorbei. Kein Flackern der ganzen Fläche: eine
    einzige Abblendung, die Balken bewegen sich nur seitlich (WCAG 2.3.1,
@@ -6223,14 +6287,19 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
   body:has(.undobar.show) .formi-kugel,body:has(.toast.show) .formi-kugel{transform:translateY(-72px)}
 }
 /* Kleines Gesicht im Kopf des kompakten Fensters — dieselbe Kugel. */
-.formi-gesicht{flex:0 0 auto;width:22px;height:22px;border-radius:var(--r-rund);
-  /* Formis Ring, in den Farben des Themas (Runde 186: nur Formi trägt ihn). */
-  background:radial-gradient(circle, #02040A 0 36%, rgba(2,4,10,0) 40%),
-    conic-gradient(from 210deg, rgb(var(--jv-t1)), rgb(var(--jv-t2)), rgb(var(--jv-t3)), rgb(var(--jv-t1)));
-  box-shadow:0 0 10px rgba(var(--jv-rgb),.5)}
+/* Runde 205: im Kopf steht dieselbe Figur wie die Kugel, mit Gesicht
+   (formiFigurHTML) — 28 px. */
+.formi-gesicht.formi-figur{--fg:28px}
 .jarvis:not(.jv-kompakt) .formi-gesicht{display:none}
-/* Dreht sich nur, solange Formi arbeitet — keine Endlos-Animation ohne Grund. */
-.jarvis.jv-kompakt.jv-z-denkt .formi-gesicht{animation:jvDreh 1.1s linear infinite}
+/* Denken: nur der Ring dreht sich (solange Formi arbeitet — keine
+   Endlos-Animation ohne Grund), die Augen schauen nach oben zur Seite. */
+.jarvis.jv-kompakt.jv-z-denkt .formi-gesicht .fk-wirbel{animation:jvDreh 1.1s linear infinite}
+.jarvis.jv-z-denkt .formi-gesicht .fk-gesicht{transform:translate(9%,-11%)}
+/* Sprechen: der Mund geht auf und zu, solange Formi spricht. Mit
+   Pegel (menschliche Stimme) folgt er stattdessen der Lautstärke
+   (jvPegelStart). */
+.jarvis.jv-z-spricht:not(.jv-pegel) .formi-gesicht .fk-mund{animation:fgSprechen .22s ease-in-out infinite alternate}
+@keyframes fgSprechen{from{transform:scaleY(.45)}to{transform:scale(1.15,1.8)}}
 .jarvis.jv-kompakt{inset:auto;right:max(var(--s16), var(--sar, 0px));bottom:calc(var(--s16) + var(--sab));
   width:min(420px, calc(100vw - 2 * var(--s16)));height:min(640px, calc(100dvh - 2 * var(--s16)));
   z-index:190;border-radius:var(--radius);border:1px solid rgba(var(--jv-rgb),.35);
@@ -6258,7 +6327,7 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
     border-radius:0;border:0;border-left:1px solid rgba(var(--jv-rgb),.35);box-shadow:var(--e3)}
 }
 @media(min-width:1680px){ :root{--formi-spalte:420px} }
-/* „Mehr Platz" (Runde 205): grösser, aber nie ein Dialog über allem. */
+/* „Mehr Platz" (Runde 209): grösser, aber nie ein Dialog über allem. */
 /* Mit „Mehr Platz" bleibt aus dem alten HUD nur „Heute im Studio": die
    fünf Kacheln als ruhige Zeile über dem Gespräch. Alles andere links
    (Kern, Ringe, Equalizer, Uhr) bleibt weg. */
@@ -6280,16 +6349,18 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
   padding:var(--s8) var(--s12) max(var(--s12), env(safe-area-inset-bottom))}
 .jarvis.jv-kompakt .jv-rechts{flex:1 1 auto;min-height:0}
 /* Der Zeiger: Formi zeigt, wo es hintippt. Bewegt wird nur transform. */
-.formi-zeiger{--jv-rgb:95,225,255;position:fixed;left:0;top:0;z-index:1200;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:var(--r-rund);
-  pointer-events:none;will-change:transform;
-  background:radial-gradient(circle, #fff 0 22%, rgba(var(--jv-rgb),.95) 24% 46%, rgba(var(--jv-rgb),0) 70%);
-  box-shadow:0 0 16px 4px rgba(var(--jv-rgb),.6)}
+/* Runde 205: der Zeiger ist ein Mini-Formi (formiFigurHTML) — man sieht,
+   dass Formi selbst hinfliegt und antippt. */
+.formi-zeiger{--jv-rgb:95,225,255;position:fixed;left:0;top:0;z-index:1200;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:var(--r-rund);
+  pointer-events:none;will-change:transform;box-shadow:0 0 16px 4px rgba(var(--jv-rgb),.55)}
+.formi-zeiger .formi-figur{--fg:28px;display:block}
 .formi-zeiger::after{content:"";position:absolute;inset:-6px;border-radius:var(--r-rund);border:2px solid rgba(var(--jv-rgb),.95);opacity:0}
 .formi-zeiger.tippt::after{animation:formiTipp .45s ease-out backwards}
 @keyframes formiTipp{from{transform:scale(.4);opacity:1}to{transform:scale(2.6);opacity:0}}
 /* Das Ziel leuchtet kurz auf. outline statt Rahmen: verschiebt nichts. */
 .formi-markiert{outline:2px solid #5FE1FF !important;outline-offset:2px}
-@media (prefers-reduced-motion:reduce){ .formi-kugel{transition:none} .jarvis.jv-kompakt.jv-z-denkt .formi-gesicht{animation:none} }
+@media (prefers-reduced-motion:reduce){ .formi-kugel{transition:none} .jarvis.jv-kompakt.jv-z-denkt .formi-gesicht .fk-wirbel,
+  .jarvis.jv-z-spricht .formi-gesicht .fk-mund{animation:none} }
 /* Die Themen. Farbe folgt dem Bereich wie in den Mini-Fenstern; Rot,
    Bernstein und Grün bleiben dem Status vorbehalten. */
 .jarvis[data-thema="putzplan"]{--jv-t1:78,230,210;--jv-t2:95,225,255;--jv-t3:150,140,255}
@@ -7052,6 +7123,40 @@ body.jv-offen{overflow:hidden}
 /* Eine verstrichene Frist ist ein Status — nur sie bekommt die Farbe. */
 .sch-frist.ueber{color:var(--warm-tx);font-weight:700}
 .sch-faellig-zeile .sch-frist{display:inline}
+/* Pflicht: wer hat was (Runde 207). Am Handy je Person eine Karte, am
+   Rechner eine Tabelle. Statusfarbe nur für ✓ und überfällig. */
+.sch-stand-summe{margin:0 0 var(--s8);font-size:var(--t-sm);color:var(--text-2)}
+.sch-stand-summe b{font-family:var(--font-head);font-size:var(--t-md);color:var(--text)}
+.sch-stand{width:100%;border-collapse:collapse}
+.sch-stand thead{display:none}
+.sch-stand tr{display:block;padding:var(--s10) 0;border-top:1px solid var(--line)}
+.sch-stand tbody tr:first-child{border-top:none}
+.sch-stand th[scope=row]{display:block;text-align:left;font-weight:700;margin-bottom:var(--s6)}
+.sch-stand th[scope=row] span,.sch-zelle small{display:block;font-size:var(--t-2xs);font-weight:400;color:var(--text-3)}
+/* Raster statt flex: der Modulname links kürzt sich, der Stand rechts
+   bleibt ganz — mit flex schob ein langer Name den Stand aus der Zeile. */
+.sch-zelle{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:var(--s10);
+  padding:var(--s2) 0;font-size:var(--t-sm)}
+.sch-zelle::before{content:attr(data-modul);grid-row:1 / span 2;color:var(--text-2);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sch-zelle > span,.sch-zelle > small{grid-column:2;text-align:right;white-space:nowrap}
+.sch-zelle.fertig > span{color:var(--ok-tx);font-weight:700}
+.sch-zelle.ueber > span{color:var(--warm-tx);font-weight:700}
+.sch-stand-tun{display:block;padding-top:var(--s6)}
+.sch-stand-tun .btn{min-height:44px}
+.sch-stand-alles{font-size:var(--t-2xs);color:var(--text-3)}
+.sch-feld-markiert{outline:2px solid var(--accent);outline-offset:2px;border-radius:var(--r-md)}
+@media (min-width:1100px){
+  .sch-stand thead{display:table-header-group}
+  .sch-stand tr{display:table-row;padding:0}
+  .sch-stand th,.sch-stand td{display:table-cell;padding:var(--s8) var(--s10);border-top:1px solid var(--line);
+    text-align:left;vertical-align:middle}
+  .sch-stand thead th{font-size:var(--t-2xs);font-weight:700;color:var(--text-3);border-top:none;max-width:180px}
+  .sch-stand th[scope=row]{margin:0}
+  .sch-zelle::before{content:none}
+  .sch-zelle > span,.sch-zelle > small{text-align:left}
+  .sch-stand-tun{text-align:right;padding-top:var(--s8)}
+}
 .sch-fortschritt .sch-pause{flex:0 0 auto;min-height:44px}
 .sch-inhalt,.sch-tasten{display:none}
 @media (min-width:1100px){
@@ -11356,6 +11461,13 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                   <button type="button" class="ich-pfeil zk-pfeil" id="zkNext" aria-label="Nächster Monat">›</button>
                 </div>
               </div>
+              <!-- Monat & Konto (Runde 208): nur die Geschäftsführung — darin
+                   stehen alle Konten nebeneinander, und die Vertragsstunden
+                   (planerTeam) liest ohnehin nur sie. -->
+              <div class="zk-ansicht" id="zkAnsicht" role="group" aria-label="Ansicht" hidden>
+                <button type="button" class="zk-ansicht-knopf an" data-zkansicht="tage">Tage</button>
+                <button type="button" class="zk-ansicht-knopf" data-zkansicht="konto">Monat &amp; Konto</button>
+              </div>
               <!-- Jetzt im Studio (Runde 189): wer ist da, wer in der Pause,
                    wer laut Plan erwartet wird und noch nicht gestempelt hat.
                    Wie die „Live-Übersicht" bei Crewmeister — aber nur hier,
@@ -11367,8 +11479,9 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                    so weit, dass er bei 320 px nach dem Dichtewechsel nur noch
                    38 px hoch traf (test-zeitkorrektur). -->
               <section class="zk-antraege" id="zkAntraege" aria-label="Korrekturanträge" hidden></section>
+              <section class="zk-konto" id="zkKonto" aria-label="Monat und Stundenkonto" hidden></section>
               <p class="hint" id="zkStand"></p>
-              <div class="zk-wrap">
+              <div class="zk-wrap" id="zkWrap">
                 <div id="zkListe"></div>
                 <div id="zkDetail" class="zk-detail"></div>
               </div>
@@ -12982,7 +13095,7 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
     <span class="jv-ecke ul" aria-hidden="true"></span><span class="jv-ecke ur" aria-hidden="true"></span>
     <ol class="jv-log" aria-hidden="true"><li>&gt; Systeme starten</li><li>&gt; Studio-Wissen verbunden</li><li>&gt; App-Steuerung bereit</li><li>&gt; Online</li></ol>
     <div class="jv-kopf">
-      <span class="jv-titel"><span class="formi-gesicht" aria-hidden="true"></span><span class="jv-punkt" aria-hidden="true"></span><span id="jarvisTitel">Formi</span><span class="jv-weck" id="jarvisWeck" hidden>hört auf dich</span><span class="jv-offline" id="jarvisOffline" hidden>offline · Schnellbefehle gehen</span></span>
+      <span class="jv-titel"><span class="formi-gesicht formi-figur mini" aria-hidden="true"><span class="fk-koerper"><span class="fk-wirbel"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i></span></span></span></span></span><span class="jv-punkt" aria-hidden="true"></span><span id="jarvisTitel">Formi</span><span class="jv-weck" id="jarvisWeck" hidden>hört auf dich</span><span class="jv-offline" id="jarvisOffline" hidden>offline · Schnellbefehle gehen</span></span>
       <span class="jv-kopf-knoepfe">
         <button type="button" class="icon-btn" id="jarvisPersonaBtn" data-ikon="regler" aria-expanded="false" aria-controls="jarvisPersona" aria-label="Persönlichkeit und Stimme" title="Persönlichkeit und Stimme"></button>
         <button type="button" class="icon-btn" id="jarvisGespraecheBtn" data-ikon="uhr" aria-expanded="false" aria-controls="jarvisGespraeche" aria-label="Gespeicherte Gespräche" title="Gespeicherte Gespräche"></button>
@@ -13035,7 +13148,7 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
      als Auge (Pupille mit Lichtpunkt) und ein Punkt „hat etwas für dich".
      Alles Schmuck: aria-hidden, keine Trefferfläche (pointer-events:none). -->
 <button type="button" class="formi-kugel" id="formiKugel" hidden aria-haspopup="dialog" aria-controls="jarvis"
-  aria-label="Formi öffnen" title="Formi — frag mich oder sag, was ich tun soll"><span class="fk-koerper" aria-hidden="true"><span class="fk-wirbel"></span><span class="fk-geist a"></span><span class="fk-geist b"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-auge l"></i><i class="fk-auge r"></i><i class="fk-mund"></i></span></span></span></span><span class="fk-punkt" aria-hidden="true"></span></button>
+  aria-label="Formi öffnen" title="Formi — frag mich oder sag, was ich tun soll"><span class="fk-koerper" aria-hidden="true"><span class="fk-wirbel"></span><span class="fk-geist a"></span><span class="fk-geist b"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-braue l"></i><i class="fk-braue r"></i><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i></span></span></span></span><span class="fk-punkt" aria-hidden="true"></span></button>
 <span id="formiKugelHat" hidden>Formi hat etwas für dich</span>
 <!-- Formis Sprechblase (Runde 196): ein kurzer Satz, 4,5 s, dann weg.
      Keine Trefferfläche — sie verdeckt nie einen Knopf. -->
@@ -14495,6 +14608,11 @@ function renderRecht(){
         'Fenster des Terminals. Sehen können '+
         'die Zeiten du, die Leitung deines Studios und die Geschäftsführung.</p>'+
       /* Runde 204: Korrekturanträge sind eine neue Sorte Daten. */
+      /* Runde 208: der Monatsabschluss hält Summen je Person fest. */
+      '<p><b>Monatsabschluss:</b> Schliesst die Geschäftsführung einen Monat ab, '+
+        'werden je Person die Summen festgehalten (Stunden, Soll, Urlaub/Krank, '+
+        'Saldo, Konto) und wer wann abgeschlossen hat. Sehen kann das nur die '+
+        'Geschäftsführung. Gelöscht wird mit derselben Frist wie die Stempelzeiten.</p>'+
       '<p><b>Korrekturanträge:</b> Beantragst du einen fehlenden Stempel, '+
         'stehen Tag, Uhrzeit, Art, dein Grund und der Stand des Antrags da; '+
         'nach der Entscheidung auch, wer entschieden hat, wann und – bei einer '+
@@ -17580,6 +17698,7 @@ var _toastTimer;
 function toast(msg, isErr){
   var t=$('toast'); t.textContent=msg;
   if(isErr && typeof formiFuehlt==='function') formiFuehlt('erschrickt');
+  if(typeof formiSchauHin==='function') formiSchauHin(t);
   t.style.borderColor = isErr ? 'var(--danger)' : 'var(--accent-d)';
   t.classList.add('show');
   clearTimeout(_toastTimer);
@@ -20535,6 +20654,9 @@ function meldMarker(){
   var k=$('tbGlocke'); if(!k) return;
   k.style.display = canManage() ? '' : 'none';
   var n=meldNeu();
+  /* Runde 205: kommt eine neue Meldung dazu, schaut Formi zur Glocke. */
+  if(n>(meldMarker._n||0) && typeof formiSchauHin==='function') formiSchauHin(k);
+  meldMarker._n=n;
   var z=k.querySelector('.gl-zahl');
   if(z){
     z.textContent = n>99 ? '99+' : String(n);
@@ -21140,6 +21262,24 @@ var NEUIGKEITEN = [
     'Sprechen geht jetzt am Knopf „Sprechen": kurz tippen oder gedrückt halten und beim Loslassen abschicken.',
     'Nebenbei: Formi läuft spürbar flüssiger, weil im Hintergrund nichts mehr gezeichnet wird.'
   ]},
+  { id:'2026-10-22-stundenkonto', datum:'22.10.2026', titel:'Stundenkonto, Monatsabschluss und Export fürs Lohnbüro', wo:'chef:zeiten', punkte:[
+    'Für die Geschäftsführung: Verwaltung → Zeiten → oben „Monat & Konto". Je Person stehen dort die gestempelten Stunden (nach der Pausenregel), das Soll aus den Wochenstunden im Schichtplaner, Urlaub und Krankheit, der Saldo, der Übertrag aus dem Vormonat und das Konto.',
+    '„Excel" und „CSV" laden den Monat für das Lohnbüro herunter – Stunden als Dezimalzahlen mit Komma, in Excel zusätzlich jeder Tag einzeln.',
+    'Ist ein Monat vorbei, schliesst „Monat abschliessen" ihn ab. Danach lässt sich darin nichts mehr nachtragen, stornieren oder beantragen; sein Konto ist der Übertrag für den nächsten Monat. „Wieder öffnen …" geht nur mit Grund.'
+  ]},
+  { id:'2026-10-22-schulung-pflicht', datum:'22.10.2026', titel:'Für die Leitung: Pflichtschulungen auf einen Blick', wo:'schulung', punkte:[
+    'Unter Wissen → Schulung → Verwalten gibt es den Reiter „Pflicht": je Person und Pflichtschulung erledigt (✓), offen mit Frist, angefangen oder überfällig. Am Reiter steht, wie viel überfällig ist.',
+    '„Erinnern" neben einer Person gibt eine fertige Nachricht weiter – mit den offenen Schulungen und dem Code. Du schickst sie selbst, per WhatsApp, Mail oder wie du willst.',
+    'Unter „Auswertung" führt „Bearbeiten" bei einer Frage, die im Team oft danebengeht, direkt zu dieser Frage im Modul.'
+  ]},
+  { id:'2026-10-22-schichtplaner-fragen', datum:'22.10.2026', titel:'Schichtplaner: neue Vorlage mit allen Fragen', wo:'planer', punkte:[
+    'Die Excel-Vorlage im Schichtplaner (Verwaltung → Schichtplaner → „Vorlage herunterladen") hat ein neues Blatt „Fragen": 24 Fragen, nach denen der erste Plan ohne Nacharbeit läuft.',
+    'Bei jeder Frage steht, was die App heute annimmt. Passt das, reicht als Antwort „passt".' ] },
+  { id:'2026-10-22-formi-augen', datum:'22.10.2026', titel:'Formis Augen leben: Pupillen, Brauen, Umsehen', wo:'home', punkte:[
+    'Formis Augen haben jetzt Pupillen mit Lichtpunkt und Brauen. Die Pupillen folgen der Maus, kommst du nah heran, werden die Augen gross. Steht alles still, schaut Formi sich um und blinzelt manchmal zweimal.',
+    'Formi schaut hin, wo etwas passiert – zu einem Hinweis unten oder zur Glocke, wenn eine neue Meldung kommt. Nach einer Minute ohne Bedienung wird es müde, später schläft es ein.',
+    'Dasselbe Gesicht steht jetzt auch oben im Formi-Fenster, links in der Formi-Zeile und fliegt als kleiner Formi los, wenn es eine Seite für dich öffnet. Denkt Formi nach, schauen die Augen nach oben; spricht es, bewegt sich der Mund.',
+    'Der Ring schimmert in der Farbe des Bereichs, in dem du bist, und wird abends wärmer. Morgens gähnt Formi einmal.' ] },
   { id:'2026-10-22-korrekturantrag', datum:'22.10.2026', titel:'Fehlenden Stempel selbst beantragen', wo:'ich:zeiten', punkte:[
     'Feierabend vergessen? Unter Heute → Ich → Zeiten gibt es „Korrektur beantragen": Tag, was fehlt, Uhrzeit und ein kurzer Grund. Bei einem Tag mit „Feierabend fehlt" reicht ein Tipp auf den Tag und dann auf „Feierabend beantragen" – Tag und Art sind schon eingetragen.',
     'Beantragen geht bis 31 Tage zurück. Darunter siehst du, ob dein Antrag noch wartet, angenommen oder abgelehnt wurde – mit Antwort. Solange er wartet, kannst du ihn zurückziehen.',
@@ -26989,7 +27129,7 @@ function formiBleibtOffen(){ return _jvKompakt && jarvisOffen() && !formiHandy()
    KOMPAKT ist ab jetzt Standard: ein Fenster unten rechts (Handy: von
    unten), die App bleibt sichtbar und bedienbar. „Gross" bringt das
    Vollbild von bisher zurück; die Wahl merkt sich das Gerät. */
-/* ── Das große HUD ist weg (Runde 205, 22.10.2026) ───────────────────
+/* ── Das große HUD ist weg (Runde 209, 22.10.2026) ───────────────────
    Aus dem Betrieb: „eventuell auch das grosse hud entfernen oder
    überarbeiten das es besser aussieht" — auf die Rückfrage gewählt:
    „Ruhig neu bauen". Formi ist jetzt IMMER das ruhige Fenster: am
@@ -27092,9 +27232,9 @@ function formiLebtAn(){
 function formiGefuehleAnwenden(an){
   _fl.gefuehleAus=!an;
   if(an) return;
-  _fl.schlaeft=false;
+  _fl.schlaeft=false; _fl.muede=false; _fl.nah=false; _fl.pup=null; _fl.pupZiel='';
   var t=formiTeile(); if(!t) return;
-  t.k.classList.remove('fk-schlaeft');
+  t.k.classList.remove('fk-schlaeft', 'fk-muede');
   t.k.getAnimations({ subtree:true }).forEach(function(a){ try{ a.cancel(); }catch(e){} });
   _fl.blick=null; _fl.blickZiel='';
 }
@@ -27103,7 +27243,8 @@ function formiTeile(){
   return { k:k, koerper:k.querySelector('.fk-koerper'), loch:k.querySelector('.fk-loch'),
            pupille:k.querySelector('.fk-pupille'), geister:k.querySelectorAll('.fk-geist'),
            wirbel:k.querySelector('.fk-wirbel'), weiss:k.querySelector('.fk-weiss'), gesicht:k.querySelector('.fk-gesicht'),
-           augen:k.querySelectorAll('.fk-auge'), mund:k.querySelector('.fk-mund') };
+           augen:k.querySelectorAll('.fk-auge'), mund:k.querySelector('.fk-mund'),
+           pupillen:k.querySelectorAll('.fk-auge b'), brauen:k.querySelectorAll('.fk-braue') };
 }
 /* Die Gefühle als Bewegung. Jede Zeile: [Teil, Bildfolge, Dauer]. */
 /* Die Gefühle als Bewegung. Jede Zeile: [Teil, Bildfolge, Dauer].
@@ -27126,15 +27267,36 @@ function formiGefuehl(art){
                 ['augen', [{transform:'none'},{transform:'scale(.6)',offset:.12},{transform:'scale(.6)',offset:.8},{transform:'none'}], 700],
                 ['mund', [{transform:'none'},{transform:'translateY(2px) scaleY(-1)',offset:.12},{transform:'translateY(2px) scaleY(-1)',offset:.8},{transform:'none'}], 700]],
     nickt:     [['gesicht', [{transform:'none'},{transform:'translateY(2px)',offset:.4},{transform:'none'}], 220]],
-    blinzelt:  [['augen', [{transform:'none'},{transform:'scaleY(.1)',offset:.5},{transform:'none'}], 170]]
+    blinzelt:  [['augen', [{transform:'none'},{transform:'scaleY(.1)',offset:.5},{transform:'none'}], 170]],
+    /* Runde 205: zweimal kurz hintereinander, wie man es eben tut. */
+    zwinkert2: [['augen', [{transform:'none'},{transform:'scaleY(.1)',offset:.2},{transform:'none',offset:.4},{transform:'scaleY(.1)',offset:.6},{transform:'none'}], 420]],
+    /* Morgens einmal (formiLebtStart): Mund weit auf, Augen klein. */
+    gaehnt:    [['mund', [{transform:'none'},{transform:'scale(.85,2.6)',offset:.35},{transform:'scale(.85,2.6)',offset:.7},{transform:'none'}], 1600],
+                ['augen', [{transform:'none'},{transform:'scaleY(.25)',offset:.3},{transform:'scaleY(.25)',offset:.75},{transform:'none'}], 1600],
+                ['brauen', [{transform:'none'},{transform:'translateY(-60%)',offset:.35},{transform:'translateY(-60%)',offset:.7},{transform:'none'}], 1600]],
+    /* „Aha" — wenn Formi mit dem Denken fertig ist. */
+    aha:       [['augen', [{transform:'none'},{transform:'scale(1.3)',offset:.25},{transform:'none'}], 520],
+                ['brauen', [{transform:'none'},{transform:'translateY(-70%)',offset:.25},{transform:'none'}], 520]]
   }[art] || [];
 }
+/* Die Brauen tragen den Ausdruck mit (Runde 205). Je Gefühl links und
+   rechts — schräg ist Sorge, hoch ist Staunen. */
+var FK_BRAUEN={
+  freut:      ['translateY(-45%)', 'translateY(-45%)', 900],
+  staunt:     ['translateY(-110%)', 'translateY(-110%)', 900],
+  feiert:     ['translateY(-60%)', 'translateY(-60%)', 1400],
+  erschrickt: ['translateY(-50%) rotate(-22deg)', 'translateY(-50%) rotate(22deg)', 700]
+};
 function formiFuehlt(art){
   if(!formiLebtAn()) return;
   var t=formiTeile(); if(!t) return;
   if(art!=='blinzelt') formiWach(true);
+  var b=FK_BRAUEN[art];
+  if(b) [].forEach.call(t.brauen, function(el, i){
+    try{ el.animate([{transform:'none'},{transform:b[i]||b[0],offset:.2},{transform:b[i]||b[0],offset:.8},{transform:'none'}], { duration:b[2], easing:'cubic-bezier(.3,.7,.2,1)' }); }catch(e){}
+  });
   formiGefuehl(art).forEach(function(z){
-    var els = z[0]==='augen' ? [].slice.call(t.augen) : [t[z[0]]];
+    var els = z[0]==='augen' ? [].slice.call(t.augen) : z[0]==='brauen' ? [].slice.call(t.brauen) : [t[z[0]]];
     els.forEach(function(el){
       if(!el) return;
       try{ el.animate(z[1], { duration:z[2], easing:'cubic-bezier(.3,.7,.2,1)' }); }catch(e){}
@@ -27202,6 +27364,7 @@ function formiAtmen(){
     t.pupille.animate([{ transform:'none' }, { transform:'scale(1.07)', offset:.5 }, { transform:'none' }], { duration:3600, easing:'ease-in-out' });
   }catch(e){ return; }
   var box=formiTeilchen(t, 3, true);
+  if(new Date().getMonth()===11) [].forEach.call(box.children, function(i){ i.style.setProperty('--c', '#FFFFFF'); });
   t.koerper.insertBefore(box, t.loch);
   [].forEach.call(box.children, function(el, i){
     var w=Math.random()*Math.PI*2, r=26;
@@ -27221,6 +27384,13 @@ function formiAtmenPlanen(){
   clearTimeout(_fl.atemUhr);
   if(_fl.uhrenAus) return;
   _fl.atemUhr=setTimeout(function(){ formiAtmen(); formiAtmenPlanen(); }, 7000+Math.random()*5000);
+}
+/* Die kleine Figur (Runde 205): dieselbe wie die Kugel, ohne Geister und
+   Punkt — für Fensterkopf, Formi-Zeile und den fliegenden Zeiger. */
+function formiFigurKlasse(){ return 'formi-figur mini'; }
+function formiFigurInnen(){
+  return '<span class="fk-koerper"><span class="fk-wirbel"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span>'+
+    '<span class="fk-gesicht"><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i></span></span></span></span>';
 }
 /* Der Glitch an der Kugel: zwei Geister springen neben den Körper. */
 function formiKugelGlitch(){
@@ -27273,7 +27443,12 @@ function formiSchauen(){
     _fl.mitte={ x:r.left+r.width/2, y:r.top+r.height/2 }; _fl.mitteBis=jetzt+1000;
   }
   var dx=_fl.x-_fl.mitte.x, dy=_fl.y-_fl.mitte.y, d=Math.sqrt(dx*dx+dy*dy)||1;
-  var weit=Math.min(4.5, d/60);
+  /* Runde 205: Pupillen in den Augen wandern (bis 1,8 px), das ganze
+     Loch nur noch ein wenig (bis 2,5 px) — so schauen Augen, nicht ein
+     Ball. Kommt die Maus näher als 150 px, werden die Augen gross. */
+  formiPupillen(t, dx/d*Math.min(1.8, d/70), dy/d*Math.min(1.8, d/70));
+  formiNah(t, d<150);
+  var weit=Math.min(2.5, d/80);
   var ziel='translate('+(dx/d*weit).toFixed(1)+'px,'+(dy/d*weit).toFixed(1)+'px)';
   if(ziel===_fl.blickZiel) return;
   /* Als Web Animation, NICHT über style.transform: jede Änderung am
@@ -27293,11 +27468,61 @@ function formiSchauNach(x, y){
   _fl.x=x; _fl.y=y;
   if(!_fl.raf) _fl.raf=requestAnimationFrame(formiSchauen);
 }
+/* Pupillen als Web Animation, wie das Loch: kein Schreiben ins style-
+   Attribut (siehe formiSchauen). Die vorige wird abgelöst. */
+function formiPupillen(t, x, y){
+  var ziel='translate('+x.toFixed(1)+'px,'+y.toFixed(1)+'px)';
+  if(ziel===_fl.pupZiel || !t.pupillen.length) return;
+  var alt=_fl.pup||[];
+  _fl.pup=[].map.call(t.pupillen, function(p){
+    try{ return p.animate([{ transform:_fl.pupZiel||'none' }, { transform:ziel }], { duration:110, easing:'ease-out', fill:'forwards' }); }catch(e){ return null; }
+  });
+  _fl.pupZiel=ziel;
+  alt.forEach(function(a){ if(a) try{ a.cancel(); }catch(e){} });
+}
+function formiNah(t, nah){
+  if(nah===!!_fl.nah) return;
+  _fl.nah=nah;
+  var alt=_fl.nahAnim||[];
+  _fl.nahAnim = nah ? [].map.call(t.augen, function(a){
+    try{ return a.animate([{ transform:'none' }, { transform:'scale(1.16)' }], { duration:220, easing:'ease-out', fill:'forwards' }); }catch(e){ return null; }
+  }) : [];
+  alt.forEach(function(a){ if(a) try{ a.cancel(); }catch(e){} });
+}
+/* Hinschauen (Runde 205): wo etwas passiert — ein Hinweis unten, eine
+   neue Meldung an der Glocke —, schaut Formi kurz hin. Gelesen wird im
+   Bild, nicht im Ereignis. */
+function formiSchauHin(el){
+  if(!el || !formiLebtAn()) return;
+  requestAnimationFrame(function(){
+    if(!el.getClientRects().length) return;
+    var r=el.getBoundingClientRect();
+    _fl.hinBis=Date.now()+1600;
+    formiSchauNach(r.left+r.width/2, r.top+r.height/2);
+  });
+}
+/* Umsehen (Runde 205): steht die Maus still (oder gibt es keine, am
+   Handy), schauen die Augen alle 1,5–4 s woanders hin — kleine, schnelle
+   Sprünge wie bei echten Augen. Manchmal zweimal blinzeln. Zeitgeber,
+   keine Dauer-Animation; aus mit uhrenAus() und „Gefühle: Aus". */
+function formiUmsehenPlanen(){
+  clearTimeout(_fl.umsehUhr);
+  if(_fl.uhrenAus) return;
+  _fl.umsehUhr=setTimeout(function(){
+    var jetzt=Date.now();
+    if(formiLebtAn() && !_fl.schlaeft && jetzt-(_fl.mausZuletzt||0)>2500 && jetzt>(_fl.hinBis||0)){
+      formiSchauNach(Math.random()*innerWidth, Math.random()*innerHeight*.9);
+      if(Math.random()<.18) setTimeout(function(){ formiFuehlt('zwinkert2'); }, 300);
+    }
+    formiUmsehenPlanen();
+  }, 1500+Math.random()*2500);
+}
 function formiWach(stumm){
   _fl.zuletzt=Date.now();
+  if(_fl.muede && !_fl.schlaeft){ _fl.muede=false; var km=$('formiKugel'); if(km) km.classList.remove('fk-muede'); return; }
   if(!_fl.schlaeft) return;
-  _fl.schlaeft=false;
-  var k=$('formiKugel'); if(k) k.classList.remove('fk-schlaeft');
+  _fl.schlaeft=false; _fl.muede=false;
+  var k=$('formiKugel'); if(k) k.classList.remove('fk-schlaeft', 'fk-muede');
   if(!stumm){ formiKugelGlitch(); setTimeout(function(){ formiFuehlt('blinzelt'); }, 320); }
 }
 function formiBlinzelnPlanen(){
@@ -27429,7 +27654,7 @@ function formiLebtStart(){
   _fl.gefuehleAus = jvPersona().gefuehle==='aus';
   var maus=!!(window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches);
   function tun(){ formiWach(); }
-  document.addEventListener('pointermove', function(e){ _fl.zuletzt=Date.now(); if(_fl.schlaeft) formiWach(); if(maus) formiSchauNach(e.clientX, e.clientY); }, { passive:true });
+  document.addEventListener('pointermove', function(e){ _fl.zuletzt=_fl.mausZuletzt=Date.now(); if(_fl.schlaeft || _fl.muede) formiWach(); if(maus) formiSchauNach(e.clientX, e.clientY); }, { passive:true });
   ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(function(n){ document.addEventListener(n, tun, { passive:true, capture:true }); });
   /* Tippen in ein Feld: hinschauen und nicken. Die Lage des Feldes wird
      im Bild gelesen, nicht im Ereignis. */
@@ -27455,6 +27680,9 @@ function formiLebtStart(){
   /* Runde 196: Tagesgruss, wenn die App steht. */
   setTimeout(formiTagesgruss, 2500);
   formiAtmenPlanen();
+  formiUmsehenPlanen();
+  formiTageszeit();
+  formiAnlass();
   /* Kleinigkeit (Runde 195): wer mit dem Mausrad scrollt, dem schaut
      Formi kurz in die Richtung nach. */
   if(maus) document.addEventListener('wheel', function(e){
@@ -27463,8 +27691,33 @@ function formiLebtStart(){
   }, { passive:true });
 }
 function formiSchlafPruefen(){
+  formiTageszeit();
   if(_fl.schlaeft || !formiLebtAn()) return;
-  if(Date.now()-_fl.zuletzt>90000){ _fl.schlaeft=true; var k=$('formiKugel'); if(k) k.classList.add('fk-schlaeft'); }
+  var still=Date.now()-_fl.zuletzt, k=$('formiKugel');
+  if(still>90000){ _fl.schlaeft=true; if(k) k.classList.add('fk-schlaeft'); }
+  /* Runde 205: vorher eine Weile müde — halb zu, die Brauen sinken. */
+  else if(still>60000 && !_fl.muede){ _fl.muede=true; if(k) k.classList.add('fk-muede'); }
+}
+/* Tageszeit und Anlass (Runde 205). Abends wird der Ring wärmer; die
+   Klasse wird nur gesetzt, wenn sich die Stunde ändert. */
+function formiTageszeit(){
+  var h=new Date().getHours();
+  if(h===_fl.stunde) return; _fl.stunde=h;
+  var k=$('formiKugel'); if(!k) return;
+  var abend = h>=19 || h<5;
+  if(abend!==k.classList.contains('fk-abend')) k.classList.toggle('fk-abend', abend);
+}
+/* Einmal am Tag je Gerät: morgens ein Gähnen, an Silvester und Neujahr
+   ein Feuerwerk. Im Dezember fallen beim Atmen Schneeflocken statt bunter
+   Krümel (formiAtmen). */
+function formiAnlass(){
+  var d=new Date(), tag=ymd(d), h=d.getHours(), md=(d.getMonth()+1)*100+d.getDate();
+  var gemerkt=''; try{ gemerkt=localStorage.getItem('kf_formi_anlass')||''; }catch(e){}
+  if(gemerkt===tag) return;
+  var art = (md===1231 || md===101) ? 'feiert' : (h>=5 && h<11 ? 'gaehnt' : '');
+  if(!art) return;
+  try{ localStorage.setItem('kf_formi_anlass', tag); }catch(e){}
+  setTimeout(function(){ formiFuehlt(art); }, 2500);
 }
 /* Für die Durchläufe (test-formi-lebt): Gefühle auslösen und die Uhr
    vorstellen, statt 90 Sekunden zu warten. Liest und schreibt nichts
@@ -27480,7 +27733,9 @@ window.__formiLebt = {
   atmen: function(){ formiAtmen(); },
   /* Blinzeln und Atmen kommen zu zufälligen Zeiten — ein Durchlauf, der
      „danach läuft nichts mehr" prüft, schaltet sie dafür ab. */
-  uhrenAus: function(){ _fl.uhrenAus=true; clearTimeout(_fl.blinzelUhr); clearTimeout(_fl.atemUhr); }
+  uhrenAus: function(){ _fl.uhrenAus=true; clearTimeout(_fl.blinzelUhr); clearTimeout(_fl.atemUhr); clearTimeout(_fl.umsehUhr); },
+  muede: function(){ _fl.zuletzt=Date.now()-61000; formiSchlafPruefen(); return _fl.muede; },
+  schauHin: function(sel){ formiSchauHin(document.querySelector(sel)); }
 };
 /* Wohin der Zeiger fährt: der Knopf des Bereichs in der Seitenleiste
    (Rechner) oder unten in der Leiste (Handy), sonst der Bereichskopf. */
@@ -27511,6 +27766,8 @@ function formiZeiger(ziel){
       var x1=b.left+b.width/2, y1=b.top+b.height/2;
       var z=document.createElement('div');
       z.className='formi-zeiger'; z.setAttribute('aria-hidden', 'true');
+      /* Runde 205: ein Mini-Formi fliegt hin, nicht ein Lichtpunkt. */
+      z.innerHTML='<span class="'+formiFigurKlasse()+'">'+formiFigurInnen()+'</span>';
       z.style.transform='translate('+x0+'px,'+y0+'px)';
       document.body.appendChild(z);
       var ok=false;
@@ -28540,7 +28797,7 @@ function jarvisAuf(){
      scrollbar; die grossen Leinwände laufen nur im Vollbild. */
   jvKompaktAnwenden();
   gehirnZeichnen();
-  /* Runde 205: die Uhr und die Leinwände gehörten zum großen HUD — die
+  /* Runde 209: die Uhr und die Leinwände gehörten zum großen HUD — die
      gibt es nicht mehr, also läuft auch keine Sekunden-Uhr mehr. */
   jvWerte();
   jvKachelnZeichnen(); gehirnLageLaden();
@@ -28607,7 +28864,7 @@ function jarvisBinden(){
   });
   var j=$('jarvis');
   if(j) j.addEventListener('keydown', function(ev){ if(ev.key==='Escape'){ ev.preventDefault(); jarvisZu(); } });
-  /* Runde 205: „Sprechen" im Fenster kann jetzt auch gedrückt gehalten
+  /* Runde 209: „Sprechen" im Fenster kann jetzt auch gedrückt gehalten
      werden — das konnte vorher nur der Kern des grossen HUD. */
   (function(){ var m=$('jarvisMic'), SR=window.SpeechRecognition || window.webkitSpeechRecognition; if(m) m.style.display=SR ? '' : 'none'; })();
 }
@@ -28823,6 +29080,7 @@ function jvZustand(){
   if(jarvisOffen()){
     if(_gLaeuft && !war.laeuft){ jvTon('senden'); jvStill(); jvZeichenStart(letzte && letzte.text); }
     else if(_gLaeuft && schr>war.schritte) jvTon('schritt');
+    if(!_gLaeuft && war.laeuft && letzte) formiKopfAha();
     if(!_gLaeuft && war.laeuft && letzte){
       jvZeichenRaus(letzte.fehler ? '' : (letzte.art==='frage' ? letzte.antwort : (letzte.spruch || letzte.angelegt || letzte.hinweis || '')));
       if(letzte.fehler){ jvTon('fehler'); gehirnStimmung('fehler'); jvVibrieren([40,60,40]); }
@@ -28840,6 +29098,15 @@ function jvZustand(){
   if(_gLaeuft && _jvWeck) jvWeckStop();
   jvWerte();
   if(jarvisOffen() && !_gLaeuft && _jvWar.kachelnBei!==_gVerlauf.length){ _jvWar.kachelnBei=_gVerlauf.length; jvKachelnZeichnen(); }
+}
+/* Runde 205: wenn Formi mit dem Denken fertig ist, macht das Gesicht im
+   Fensterkopf kurz „Aha" — grosse Augen. */
+function formiKopfAha(){
+  if(gehirnWenigBewegung() || _fl.gefuehleAus) return;
+  var g=document.querySelector('#jarvis .formi-gesicht'); if(!g || !g.animate) return;
+  [].forEach.call(g.querySelectorAll('.fk-auge'), function(a){
+    try{ a.animate([{transform:'none'},{transform:'scale(1.35)',offset:.3},{transform:'none'}], { duration:560, easing:'cubic-bezier(.3,.7,.2,1)' }); }catch(e){}
+  });
 }
 function jvWerte(){
   if(!jarvisOffen()) return;
@@ -28862,6 +29129,12 @@ function jvPegelStart(analyser){
   var balken=[].slice.call(document.querySelectorAll('#jarvis .jv-eq u')), kugel=document.querySelector('#jarvisKern b');
   var daten=new Uint8Array(analyser.frequencyBinCount);
   j.classList.add('jv-pegel');
+  /* Runde 205: der Mund im Fensterkopf folgt der Lautstärke. Eine
+     angehaltene Animation, deren Zeit je Bild gesetzt wird — kein
+     Schreiben ins style-Attribut. */
+  var mund=j.querySelector('.formi-gesicht .fk-mund'), mundA=null;
+  if(mund && mund.animate){ try{ mundA=mund.animate([{transform:'scaleY(.4)'},{transform:'scale(1.15,1.9)'}], { duration:1000, fill:'both' }); mundA.pause(); }catch(e){ mundA=null; } }
+  _jvPegel.mund=mundA;
   function bild(){
     if(!_jvPegel.analyser) return;
     analyser.getByteFrequencyData(daten);
@@ -28871,6 +29144,7 @@ function jvPegelStart(analyser){
       balken[i].style.transform='scaleY('+(0.12+w*0.88).toFixed(3)+')';
     }
     if(kugel) kugel.style.transform='scale('+(1+Math.min(0.35, summe/balken.length*0.5)).toFixed(3)+')';
+    if(mundA) mundA.currentTime=Math.min(999, summe/Math.max(1, balken.length)*1600);
     _jvPegel.raf=requestAnimationFrame(bild);
   }
   _jvPegel.raf=requestAnimationFrame(bild);
@@ -28878,6 +29152,7 @@ function jvPegelStart(analyser){
 function jvPegelStop(nurAnzeige){
   if(_jvPegel.raf) cancelAnimationFrame(_jvPegel.raf);
   _jvPegel.raf=0; _jvPegel.analyser=null;
+  if(_jvPegel.mund){ try{ _jvPegel.mund.cancel(); }catch(e){} _jvPegel.mund=null; }
   var j=$('jarvis'); if(j) j.classList.remove('jv-pegel');
   [].forEach.call(document.querySelectorAll('#jarvis .jv-eq u, #jarvisKern b'), function(x){ x.style.transform=''; });
   if(nurAnzeige) return;
@@ -28950,7 +29225,7 @@ function jvHaltenBinden(){
   var h=$('jarvisHalten'); if(!h || h._gebunden) return; h._gebunden=true;
   var SR=window.SpeechRecognition || window.webkitSpeechRecognition;
   h.hidden=!SR; if(!SR) return;
-  /* Runde 205: dieselbe Bedienung am Knopf „Sprechen" ($('jarvisMic')) —
+  /* Runde 209: dieselbe Bedienung am Knopf „Sprechen" ($('jarvisMic')) —
      der Kern (#jarvisHalten) ist mit dem grossen HUD unsichtbar. */
   [h, $('jarvisMic')].forEach(function(k){
     if(!k) return;
@@ -31502,6 +31777,9 @@ function schVerwaltenZeichnen(){
   var fertig=_schAlleLaeufe.filter(function(l){ return l.status==='fertig' && !l.test; });
   var reiter=[
     { id:'tn',   name:'Teilnehmer', zahl:_schTeilnehmer.length },
+    /* Runde 207: die Zahl am Reiter ist, was noch überfällig ist — sie
+       soll auffallen, wenn etwas zu tun ist, und sonst 0 sagen. */
+    { id:'stand', name:'Pflicht',   zahl:schStandDaten().zeilen.reduce(function(n,z){ return n+z.ueber; },0) },
     { id:'mod',  name:'Module',     zahl:schModule().length },
     { id:'aus',  name:'Auswertung', zahl:fertig.length }
   ];
@@ -31534,6 +31812,14 @@ function schVerwaltenZeichnen(){
       '<button class="btn btn-primary btn-sm" id="schTnNeu">Teilnehmer anlegen</button>'+
       '<div id="schCodeBox"></div>'+
       '<div id="schTnListe" style="margin-top:14px"></div>'+
+    '</div>';
+  } else if(_schVwTab==='stand'){
+    inhalt=
+    '<div class="card">'+
+      '<h3 data-ikon="schild">Pflichtschulungen: wer hat was</h3>'+
+      '<p class="hint">Je Person und Pflichtmodul: erledigt, offen mit Frist, angefangen oder überfällig. '+
+        '„Erinnern" gibt eine fertige Nachricht mit dem Code weiter.</p>'+
+      '<div id="schStand2"></div>'+
     '</div>';
   } else if(_schVwTab==='mod'){
     inhalt=
@@ -31576,6 +31862,8 @@ function schVerwaltenZeichnen(){
     schTnListeZeichnen();
     var b=$('schTnNeu');
     if(b) b.addEventListener('click', schTnAnlegen);
+  } else if(_schVwTab==='stand'){
+    schStandZeichnen();
   } else if(_schVwTab==='mod'){
     schModulListeZeichnen();
     var mn=$('schModulNeu');
@@ -31651,9 +31939,136 @@ function schSchwerZeichnen(){
            Durchläufe sieht die Leitung ohnehin mit Namen, das Auffrischen
            soll sie nicht einzeln sehen. */
         (e.an>=SCH_SCHWER_MIN ? ' · Auffrischen: '+e.ax+' von '+e.an+' daneben' : '')+'</span></span>'+
-      '<span class="sch-lauf-zahl">'+Math.round(e.quote*100)+'%</span></div>';
+      '<span class="sch-lauf-zahl">'+Math.round(e.quote*100)+'%</span>'+
+      /* Runde 207: von der Zahl direkt zur Frage — wer sieht, dass sie
+         nicht sitzt, will sie meist umformulieren oder den Hinweis
+         schärfen. */
+      '<button type="button" class="btn btn-ghost btn-sm" data-schschwerbearb="'+esc(e.modul+'#'+e.idx)+'">Bearbeiten</button></div>';
   }).join('');
+  box.querySelectorAll('[data-schschwerbearb]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var k=b.getAttribute('data-schschwerbearb').split('#');
+      schModulFormZeigen(k[0]);
+      var feld=document.querySelector('#schModulForm [data-frage="'+Number(k[1])+'"]');
+      if(feld){
+        feld.classList.add('sch-feld-markiert');
+        requestAnimationFrame(function(){ feld.scrollIntoView({ block:'center' }); });
+      }
+    });
+  });
 }
+/* ── Pflicht: wer hat was (Runde 207) ────────────────────────────────
+   Aus dem Betrieb, 22.10.2026: „aight mach die nächste runde“ — auf den
+   Vorschlag, der Leitung den Stand der Pflichtschulungen auf einen Blick
+   zu geben, mit einem Tipp zum Erinnern.
+
+   Vorher stand das verstreut: je Teilnehmer eine Zeile „Pflicht offen:
+   …“ unter „Teilnehmer“, die Durchläufe unter „Auswertung“. Wer wissen
+   wollte, wer bei „Hygiene“ noch fehlt, las jede Zeile einzeln.
+
+   Jetzt: Personen × Pflichtmodule. Am Rechner eine Tabelle (Breite
+   nutzen), am Handy dieselben Zeilen untereinander, je Person eine
+   Karte. Status in den Statusfarben, und nur da: ✓ grün, überfällig
+   rot; „bis …“ und „angefangen“ neutral. */
+var _schStandFilter='alle';
+function schStandZelle(t, m){
+  var laeufe=_schAlleLaeufe.filter(function(l){ return l.teilnehmer===t.id && l.modul===m.id && !l.test; });
+  var fertig=laeufe.filter(function(l){ return l.status==='fertig' && l.bestanden; })
+    .sort(function(a,b){ return (b.ende||0)-(a.ende||0); })[0];
+  if(fertig){
+    /* Wiederholung fällig (gueltigMonate): zählt wieder als offen —
+       dieselbe Rechnung wie schStand() für die eigene Übersicht. */
+    var bis = m.gueltigMonate ? fertig.ende + m.gueltigMonate*30.4*86400000 : 0;
+    if(!bis || Date.now()<=bis) return { art:'fertig', t:'✓ '+fmtDateTime(fertig.ende).split(' ')[0] };
+    return { art:'ueber', t:'wieder fällig' };
+  }
+  var an=laeufe.filter(function(l){ return l.status==='laeuft' && (l.schritteGesehen||[]).length; })[0];
+  var ft=schFristText(schFristBis(m, t.ts||0));
+  if(ft.ueber) return { art:'ueber', t:'überfällig', zusatz:an ? 'angefangen' : '' };
+  return { art: an ? 'an' : 'offen',
+           t: an ? 'angefangen '+(an.schritteGesehen||[]).length+'/'+((m.schritte||[]).length||1) : (ft.t || 'offen'),
+           zusatz: an && ft.t ? ft.t : '' };
+}
+function schStandDaten(){
+  var module=schModule().filter(function(m){ return m.pflicht; });
+  var leute=_schTeilnehmer.filter(function(t){ return !t.gesperrt; });
+  var zeilen=leute.map(function(t){
+    var zellen=module.map(function(m){ return schStandZelle(t, m); });
+    return { t:t, zellen:zellen,
+      offen:zellen.filter(function(z){ return z.art!=='fertig'; }).length,
+      ueber:zellen.filter(function(z){ return z.art==='ueber'; }).length };
+  });
+  return { module:module, zeilen:zeilen };
+}
+function schStandZeichnen(){
+  var box=$('schStand2'); if(!box) return;
+  var d=schStandDaten();
+  if(!d.module.length){ box.innerHTML='<p class="hint">Es gibt kein Pflichtmodul.</p>'; return; }
+  if(!d.zeilen.length){ box.innerHTML='<p class="hint">Noch niemand als Teilnehmer angelegt — unter „Teilnehmer“.</p>'; return; }
+  var gesamt=d.zeilen.length*d.module.length;
+  var erledigt=d.zeilen.reduce(function(s,z){ return s+(d.module.length-z.offen); },0);
+  var ueber=d.zeilen.reduce(function(s,z){ return s+z.ueber; },0);
+  var liste=d.zeilen.filter(function(z){
+    return _schStandFilter==='alle' || (_schStandFilter==='ueber' ? z.ueber>0 : z.offen>0);
+  }).sort(function(a,b){ return (b.ueber-a.ueber) || (b.offen-a.offen) ||
+    String(a.t.name||'').localeCompare(String(b.t.name||'')); });
+  var filter=[['alle','Alle'],['offen','Offen'],['ueber','Überfällig']];
+  box.innerHTML=
+    '<p class="sch-stand-summe"><b>'+erledigt+' von '+gesamt+' erledigt</b>'+
+      (ueber ? ' · <span class="sch-frist ueber">'+ueber+' überfällig</span>' : '')+'</p>'+
+    '<div class="chip-row" style="margin-bottom:10px">'+filter.map(function(f){
+      return '<button type="button" class="chip'+(_schStandFilter===f[0]?' an':'')+'" data-schstandfilter="'+f[0]+'">'+f[1]+'</button>';
+    }).join('')+'</div>'+
+    (liste.length
+      ? '<table class="sch-stand"><thead><tr><th scope="col">Person</th>'+
+          d.module.map(function(m){ return '<th scope="col">'+esc(m.titel||'')+'</th>'; }).join('')+
+          '<th scope="col"><span class="nur-vorlesen">Erinnern</span></th></tr></thead><tbody>'+
+        liste.map(function(z){
+          return '<tr data-schstand="'+esc(z.t.id)+'"><th scope="row">'+esc(z.t.name||'')+
+              (z.t.uid ? '' : '<span>ohne Zugang</span>')+'</th>'+
+            z.zellen.map(function(c, i){
+              return '<td class="sch-zelle '+c.art+'" data-modul="'+esc(d.module[i].titel||'')+'">'+
+                '<span>'+esc(c.t)+'</span>'+(c.zusatz ? '<small>'+esc(c.zusatz)+'</small>' : '')+'</td>';
+            }).join('')+
+            '<td class="sch-stand-tun">'+(z.offen
+              ? '<button type="button" class="btn btn-ghost btn-sm" data-scherinnern="'+esc(z.t.id)+'">Erinnern</button>'
+              : '<span class="sch-stand-alles">alles erledigt</span>')+'</td></tr>';
+        }).join('')+'</tbody></table>'
+      : '<p class="hint">Niemand in dieser Auswahl.</p>');
+  box.querySelectorAll('[data-schstandfilter]').forEach(function(b){
+    b.addEventListener('click', function(){ _schStandFilter=b.getAttribute('data-schstandfilter'); schStandZeichnen(); tick(6); });
+  });
+  box.querySelectorAll('[data-scherinnern]').forEach(function(b){
+    b.addEventListener('click', function(){ schErinnern(b.getAttribute('data-scherinnern')); });
+  });
+}
+/* „Erinnern" reicht eine fertige Nachricht weiter — dasselbe Muster wie
+   „Weitergeben" beim Code: über das, was das Gerät kennt (Nachrichten,
+   Mail), sonst in die Zwischenablage. Die App verschickt selbst nichts:
+   Leute ohne Zugang erreicht sie gar nicht, und wer erinnert wird, soll
+   wissen, von wem. Der Code steht dabei — die Person braucht ihn zum
+   Anfangen, und lesen darf ihn die Leitung ohnehin. */
+function schErinnernText(t){
+  var offen=schModule().filter(function(m){ return m.pflicht; }).map(function(m){
+    var z=schStandZelle(t, m);
+    if(z.art==='fertig') return null;
+    return '„'+(m.titel||'')+'“'+(z.art==='ueber' ? ' (überfällig)' : z.zusatz ? ' ('+z.zusatz+')' : z.art==='offen' && z.t!=='offen' ? ' ('+z.t+')' : '');
+  }).filter(Boolean);
+  var vorname=String(t.name||'').split(' ')[0];
+  return 'Hallo '+vorname+', bitte denk an '+(offen.length===1 ? 'die Pflichtschulung ' : 'die Pflichtschulungen ')+
+    offen.join(', ')+'. Du findest sie in StudioChat unter Wissen → Schulung'+
+    (t.code ? ', dein Code ist '+t.code : '')+'. Danke!';
+}
+function schErinnern(id){
+  var t=_schTeilnehmer.filter(function(x){ return x.id===id; })[0]; if(!t) return;
+  var text=schErinnernText(t);
+  if(navigator.share){
+    navigator.share({ title:'Pflichtschulung', text:text }).catch(function(){});
+  } else {
+    copyText(text).then(function(){ toast('Erinnerung kopiert — jetzt einfügen und senden ✓'); });
+  }
+}
+
 function schTnSelectBauen(){
   var sel=$('schTnKonto'); if(!sel) return;
   var leute=(typeof _employees!=='undefined' && _employees) ? _employees : [];
@@ -35736,7 +36151,7 @@ function renderHome(){
     if(alerts.length) _fl.zeileGezeigt=true;
     al.innerHTML = !alerts.length ? '' :
       '<div class="formi-zeile'+(ersteZeile?' fz-ein':'')+'" role="group" aria-label="'+(mitFormi?'Formi meldet':'Hinweise')+'">'+
-      (mitFormi ? '<button type="button" class="fz-gesicht" data-fzformi aria-label="Formi fragen" title="Formi fragen"><span class="fz-ring" aria-hidden="true"></span></button>' : '')+
+      (mitFormi ? '<button type="button" class="fz-gesicht" data-fzformi aria-label="Formi fragen" title="Formi fragen"><span class="fz-ring '+formiFigurKlasse()+'" aria-hidden="true">'+formiFigurInnen()+'</span></button>' : '')+
       '<div class="fz-teile">'+alerts.map(function(a, i){
         return '<button type="button" class="fz-teil'+a.k+'" style="--i:'+i+'" data-go="'+a.v+'"'+(a.f?' data-f="'+a.f+'"':'')+
           ' title="'+esc(a.t)+' — ansehen"><i class="fz-punkt" aria-hidden="true"></i><span class="fz-t">'+
@@ -38377,6 +38792,8 @@ function zkOeffnen(){
   zkLaden();
   zkJetztLaden();
   zkAntraegeLaden();
+  var ans=$('zkAnsicht'); if(ans) ans.hidden=!isChef();
+  zkAnsichtSetzen(_zkAnsicht);
 }
 
 /* ── Jetzt im Studio (Runde 189) ──
@@ -38442,6 +38859,240 @@ function zkAntragEntscheiden(btn, id, annehmen){
         tick(10);
         zkAntraegeLaden(); zkLaden(); zkJetztLaden();
       })
+      .catch(function(e){ toast(fnFehler(e), true); });
+  });
+}
+
+/* ══ MONAT & KONTO (Runde 208) ══════════════════════════════════════
+   Aus dem Betrieb, 22.10.2026: das Soll fürs Konto aus den
+   Vertragsstunden („JA"), Export für das Lohnbüro und Abschluss („mach
+   beides").
+
+   Je Person, betriebsweit (nicht je Studio — ein Konto gehört der
+   Person, nicht dem Studio):
+     Ist         gestempelte Arbeit nach der Pausenregel; Tage ohne
+                 Feierabend zählen NICHT und stehen als „offen" da
+     Soll        Wochenstunden × Kalendertage / 7 — dieselbe Rechnung wie
+                 im Schichtplaner; ohne Wochenstunden die Monatsgrenze des
+                 Minijobs; ohne beides kein Soll und kein Konto
+     Gutschrift  genehmigter Urlaub und Krankheit an Werktagen (Mo–Fr) ×
+                 Tagessoll (Wochenstunden / Tage je Woche, sonst 5)
+     Saldo       Ist + Gutschrift − Soll
+     Übertrag    das Konto aus dem ABGESCHLOSSENEN Vormonat; ohne Abschluss
+                 steht „–" und es wird mit 0 gerechnet
+   Im laufenden Monat gilt das Soll bis heute, nicht bis zum Monatsende.
+   Alles in Minuten. */
+var _zkAnsicht='tage', _zkKonto=null, _zkKontoNr=0;
+function zkAnsichtSetzen(a){
+  _zkAnsicht = (a==='konto' && isChef()) ? 'konto' : 'tage';
+  document.querySelectorAll('[data-zkansicht]').forEach(function(b){
+    b.classList.toggle('an', b.getAttribute('data-zkansicht')===_zkAnsicht);
+    b.setAttribute('aria-pressed', b.getAttribute('data-zkansicht')===_zkAnsicht ? 'true' : 'false');
+  });
+  var k=$('zkKonto'), w=$('zkWrap'), st=$('zkStudio'), stand=$('zkStand');
+  var konto=_zkAnsicht==='konto';
+  if(k) k.hidden=!konto;
+  if(w) w.hidden=konto;
+  if(stand) stand.hidden=konto;
+  /* „Jetzt im Studio", Anträge und der Vormonats-Hinweis gehören zu den
+     Tagen; in der Monatsübersicht stünden sie zwischen Umschalter und
+     Tabelle im Weg. */
+  ['zkJetzt','zkVormonat','zkAntraege'].forEach(function(id){
+    var el=$(id); if(!el) return;
+    if(konto){ el.dataset.kontoVersteckt = el.hidden ? '' : '1'; el.hidden=true; }
+    else if(el.dataset.kontoVersteckt==='1'){ el.hidden=false; delete el.dataset.kontoVersteckt; }
+  });
+  var jz=$('zkJetzt'); if(jz) jz.style.display = konto ? 'none' : '';
+  /* Das Konto ist betriebsweit — die Studio-Auswahl gilt dort nicht. */
+  if(st) st.disabled=konto;
+  if(konto) zkKontoLaden();
+}
+function kontoText(min){
+  if(min===null || min===undefined) return '–';
+  var neg=min<0, a=Math.abs(Math.round(min));
+  return (neg?'−':'')+Math.floor(a/60)+':'+('0'+(a%60)).slice(-2);
+}
+function kontoWerktage(von, bis){
+  var n=0, d=new Date(von+'T12:00:00'), e=new Date(bis+'T12:00:00');
+  for(; d<=e; d.setDate(d.getDate()+1)){ var w=d.getDay(); if(w>=1 && w<=5) n++; }
+  return n;
+}
+function zkKontoLaden(){
+  var box=$('zkKonto'); if(!box || !isChef()) return;
+  var m=zeitMonatKey(_zkMonat), nr=++_zkKontoNr;
+  var j=+m.slice(0,4), mo=+m.slice(5,7);
+  var erst=m+'-01', letzt=ymd(new Date(j, mo, 0));
+  var vor=new Date(j, mo-2, 1), vorKey=zeitMonatKey(vor);
+  box.innerHTML='<p class="hint">Wird gerechnet …</p>';
+  Promise.all([
+    S('zeiten').where('monat','==',m).get(),
+    S('planerTeam').get().catch(function(){ return null; }),
+    Promise.all((managedKeys()||[]).map(function(sk){
+      return S('studios').doc(sk).collection('absences').where('to','>=',erst).get()
+        .then(function(sn){ return sn.docs.map(function(d){ return d.data()||{}; }); })
+        .catch(function(){ return []; });
+    })),
+    S('zeitAbschluesse').doc(m).get().catch(function(){ return null; }),
+    S('zeitAbschluesse').doc(vorKey).get().catch(function(){ return null; })
+  ]).then(function(r){
+    if(nr!==_zkKontoNr) return;
+    _zkKonto=kontoRechnen(m, erst, letzt,
+      r[0].docs.map(function(d){ return d.data()||{}; }),
+      r[1] ? r[1].docs.map(function(d){ return d.data()||{}; }) : [],
+      [].concat.apply([], r[2]),
+      r[3] && r[3].exists ? r[3].data() : null,
+      r[4] && r[4].exists ? r[4].data() : null);
+    zkKontoZeichnen();
+  }).catch(function(e){
+    if(nr!==_zkKontoNr) return;
+    box.innerHTML='<p class="hint">Das Konto lässt sich gerade nicht rechnen: '+esc(errMsg(e))+'</p>';
+  });
+}
+function kontoRechnen(m, erst, letzt, zeiten, team, abwesend, abschluss, vorAbschluss){
+  var heute=ymd(new Date());
+  var laufend = heute>=erst && heute<=letzt;
+  var bis = laufend ? heute : letzt;
+  var tageImMonat=+letzt.slice(8,10), tageBis=+bis.slice(8,10);
+  var vorKonto={};
+  if(vorAbschluss && vorAbschluss.abgeschlossen===true){
+    (vorAbschluss.zeilen||[]).forEach(function(z){ vorKonto[z.uid]=z.konto; });
+  }
+  var leute={};
+  function person(uid, name){ return leute[uid] || (leute[uid]={ uid:uid, name:name||'', stempel:[] }); }
+  zeiten.forEach(function(z){ if(z.uid) person(z.uid, z.name).stempel.push(z); });
+  var vertrag={};
+  team.forEach(function(p){
+    if(!p.uid) return;
+    vertrag[p.uid]=p;
+    if(+p.wocheStd>0 || +p.maxMonatStd>0) person(p.uid, p.name);
+  });
+  var zeilen=Object.keys(leute).map(function(uid){
+    var p=leute[uid], v=vertrag[uid]||{};
+    var tage=zeitenTage(p.stempel, heute, Date.now());
+    var ist=0, offen=0, abzug=0, hinweise=0;
+    tage.forEach(function(t){
+      if(t.offen && !t.laeuft){ offen++; return; }
+      if(t.laeuft) return;
+      ist+=Math.round(t.arbeit/60000); abzug+=Math.round((t.abzug||0)/60000);
+      hinweise+=(t.hinweise||[]).length;
+    });
+    var woche=+v.wocheStd||0, monatMax=+v.maxMonatStd||0;
+    var soll = woche ? Math.round(woche*60*tageBis/7)
+             : (monatMax ? Math.round(monatMax*60*tageBis/tageImMonat) : null);
+    var tagesSoll = woche ? woche*60/((+v.maxTageWoche||0) || 5) : 0;
+    var gut=0;
+    abwesend.forEach(function(a){
+      if(a.uid!==uid || (a.type!=='urlaub' && a.type!=='krank')) return;
+      if(a.type!=='krank' && (a.status||'genehmigt')!=='genehmigt') return;
+      var von=a.from>erst ? a.from : erst, ende=(a.to||a.from)<bis ? (a.to||a.from) : bis;
+      if(von>ende) return;
+      gut+=Math.round(kontoWerktage(von, ende)*tagesSoll);
+    });
+    var saldo = soll===null ? null : ist+gut-soll;
+    var uebertrag = vorKonto.hasOwnProperty(uid) ? vorKonto[uid] : null;
+    return { uid:uid, name:p.name || v.name || '—', ist:ist, soll:soll, gutschrift:gut, saldo:saldo,
+             uebertrag:uebertrag, konto: saldo===null ? null : (uebertrag||0)+saldo,
+             tage:tage.filter(function(t){ return !(t.offen && !t.laeuft); }).length, offen:offen,
+             abzug:abzug, hinweise:hinweise, tageListe:tage };
+  }).sort(function(a,b){ return String(a.name).localeCompare(String(b.name),'de'); });
+  return { monat:m, laufend:laufend, bis:bis, zeilen:zeilen, abschluss:abschluss,
+           vorAbgeschlossen: !!(vorAbschluss && vorAbschluss.abgeschlossen===true) };
+}
+function zkKontoZeichnen(){
+  var box=$('zkKonto'); if(!box || !_zkKonto) return;
+  var k=_zkKonto, ab=k.abschluss, zu=!!(ab && ab.abgeschlossen===true);
+  var monatName=new Date(k.monat+'-15T12:00:00').toLocaleDateString('de-DE',{month:'long',year:'numeric'});
+  var offenSumme=k.zeilen.reduce(function(n,z){ return n+z.offen; },0);
+  var kopf='<div class="zk-konto-kopf"><div><h3>'+esc(monatName)+'</h3><p class="hint">'+
+      (zu ? 'Abgeschlossen: '+esc(fmtDateTime(ab.am))+', '+esc(ab.vonName||'—')+'. Nachtragen, Stornieren und Anträge sind für diesen Monat gesperrt.'
+          : k.laufend ? 'Läuft noch — Soll bis heute ('+esc(new Date(k.bis+'T12:00:00').toLocaleDateString('de-DE'))+').'
+          : 'Noch nicht abgeschlossen.')+
+      (k.vorAbgeschlossen ? '' : ' Übertrag: der Vormonat ist nicht abgeschlossen, gerechnet wird mit 0.')+
+    '</p></div>'+
+    '<div class="zk-konto-knoepfe">'+
+      '<button type="button" class="btn btn-ghost" data-zkexport="xls">Excel</button>'+
+      '<button type="button" class="btn btn-ghost" data-zkexport="csv">CSV</button>'+
+      (zu ? '<button type="button" class="btn btn-ghost" data-zkoeffnen>Wieder öffnen …</button>'
+          : (!k.laufend ? '<button type="button" class="btn btn-primary" data-zkabschluss>Monat abschliessen</button>' : ''))+
+    '</div></div>';
+  if(!zu && !k.laufend && offenSumme){
+    kopf+='<p class="zk-konto-warn" role="status">'+offenSumme+'× fehlt noch ein Feierabend. Diese Tage zählen nicht mit — erst nachtragen, dann abschliessen.</p>';
+  }
+  if(!k.zeilen.length){ box.innerHTML=kopf+'<p class="hint">In diesem Monat gibt es keine Stempel und keine Vertragsstunden.</p>'; return; }
+  var th=['Person','Ist','Soll','Urlaub/Krank','Saldo','Übertrag','Konto'];
+  box.innerHTML=kopf+'<div class="zk-konto-tab-wrap"><table class="zk-konto-tab"><thead><tr>'+
+      th.map(function(h,i){ return '<th'+(i?' class="zahl"':'')+'>'+esc(h)+'</th>'; }).join('')+'</tr></thead><tbody>'+
+    k.zeilen.map(function(z){
+      return '<tr><td><b>'+esc(z.name)+'</b><span class="zk-konto-neben">'+z.tage+(z.tage===1?' Tag':' Tage')+
+          (z.offen ? ' · '+z.offen+'× Feierabend fehlt' : '')+
+          (z.abzug ? ' · Pause +'+esc(kontoText(z.abzug)) : '')+
+          (z.hinweise ? ' · '+z.hinweise+' Hinweis'+(z.hinweise===1?'':'e')+' ArbZG' : '')+'</span></td>'+
+        '<td class="zahl">'+kontoText(z.ist)+'</td>'+
+        '<td class="zahl">'+kontoText(z.soll)+'</td>'+
+        '<td class="zahl">'+(z.gutschrift ? kontoText(z.gutschrift) : '–')+'</td>'+
+        '<td class="zahl">'+kontoText(z.saldo)+'</td>'+
+        '<td class="zahl">'+kontoText(z.uebertrag)+'</td>'+
+        '<td class="zahl"><b>'+kontoText(z.konto)+'</b></td></tr>';
+    }).join('')+'</tbody></table></div>'+
+    (zu ? '' : '<p class="hint zk-regel">Soll aus den Wochenstunden im Schichtplaner (Verwaltung → Schichtplaner → Team). Ohne Wochenstunden kein Soll und kein Konto.</p>');
+}
+function kontoDateiName(endung){ return 'Stunden-'+_zkKonto.monat+'.'+endung; }
+function zkKontoExport(art){
+  if(!_zkKonto) return;
+  var k=_zkKonto;
+  var kopf=['Person','Tage','Ist (h)','Soll (h)','Urlaub/Krank (h)','Saldo (h)','Übertrag (h)','Konto (h)','Feierabend fehlt','Pause ergänzt (h)'];
+  /* Dezimalstunden mit Komma — so liest sie ein deutsches Excel und jedes
+     Lohnbüro. Stunden:Minuten wären für Menschen schöner und für eine
+     Tabelle falsch (Excel macht daraus eine Uhrzeit). */
+  var dez=function(min){ return min===null || min===undefined ? '' : (Math.round(min/60*100)/100).toFixed(2).replace('.',','); };
+  var zeilen=k.zeilen.map(function(z){
+    return [z.name, z.tage, dez(z.ist), dez(z.soll), dez(z.gutschrift), dez(z.saldo), dez(z.uebertrag), dez(z.konto), z.offen, dez(z.abzug)];
+  });
+  if(art==='csv'){
+    var zelle=function(c){ c=String(c==null?'':c); return /[;"\n]/.test(c) ? '"'+c.replace(/"/g,'""')+'"' : c; };
+    var text=[kopf].concat(zeilen).map(function(r){ return r.map(zelle).join(';'); }).join('\r\n');
+    var blob=new Blob(['\ufeff'+text],{type:'text/csv;charset=utf-8'});
+    var url=URL.createObjectURL(blob), a=document.createElement('a');
+    a.href=url; a.download=kontoDateiName('csv'); document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); },1500);
+    return;
+  }
+  var tage=[];
+  k.zeilen.forEach(function(z){
+    (z.tageListe||[]).slice().reverse().forEach(function(t){
+      var l=t.stempel.filter(function(x){ return !x.storno; });
+      tage.push([z.name, t.tag, l.length ? zeitUhr(l[0].ts) : '', (t.offen && !t.laeuft) ? '' : (l.length ? zeitUhr(l[l.length-1].ts) : ''),
+        dez(Math.round(t.pause/60000)), dez(Math.round((t.abzug||0)/60000)), (t.offen && !t.laeuft) ? 'Feierabend fehlt' : dez(Math.round(t.arbeit/60000)),
+        (t.hinweise||[]).map(function(h){ return h.text; }).join(', ')]);
+    });
+  });
+  downloadXls(kontoDateiName('xls'),
+    '<h2>StudioChat – Stunden '+esc(k.monat)+'</h2><p>Stand '+esc(fmtStand())+
+      (k.abschluss && k.abschluss.abgeschlossen ? ' · abgeschlossen' : ' · nicht abgeschlossen')+'</p>'+
+    xlsTable('Übersicht je Person', kopf, zeilen)+
+    xlsTable('Tage', ['Person','Tag','Kommen','Gehen','Pause (h)','Pause ergänzt (h)','Arbeit (h)','Hinweise'], tage));
+}
+function zkKontoAbschliessen(btn){
+  if(!_zkKonto) return;
+  var k=_zkKonto;
+  var zeilen=k.zeilen.filter(function(z){ return z.soll!==null || z.ist; }).map(function(z){
+    return { uid:z.uid, name:z.name, ist:z.ist, soll:z.soll||0, gutschrift:z.gutschrift, saldo:z.saldo||0,
+             uebertrag:z.uebertrag||0, konto:z.konto||0, tage:z.tage, offen:z.offen };
+  });
+  if(!confirm('„'+k.monat+'" abschliessen?\n\nDanach lässt sich in diesem Monat nichts mehr nachtragen, stornieren oder beantragen, bis jemand aus der Geschäftsführung ihn mit Grund wieder öffnet.')) return;
+  withBusy(btn, function(){
+    return pinFunktion('monatAbschliessen')({ monat:k.monat, zeilen:zeilen })
+      .then(function(){ toast('Monat abgeschlossen ✓'); tick(12); zkKontoLaden(); })
+      .catch(function(e){ toast(fnFehler(e), true); });
+  });
+}
+function zkKontoOeffnen(btn){
+  if(!_zkKonto) return;
+  var grund=prompt('Warum wird '+_zkKonto.monat+' wieder geöffnet?','');
+  if(grund===null) return;
+  withBusy(btn, function(){
+    return pinFunktion('monatOeffnen')({ monat:_zkKonto.monat, grund:String(grund).trim() })
+      .then(function(){ toast('Wieder geöffnet ✓'); zkKontoLaden(); })
       .catch(function(e){ toast(fnFehler(e), true); });
   });
 }
@@ -50201,8 +50852,20 @@ function bindActions(){
   var zks=$('zkStudio');
   if(zks) zks.addEventListener('change', function(){ _zkStudio=zks.value; _zkWahl=null; _zkStorno=null; zkLaden(); zkJetztLaden(); });
   var zkp=$('zkPrev'), zkn=$('zkNext');
-  if(zkp) zkp.addEventListener('click', function(){ _zkMonat=new Date(_zkMonat.getFullYear(), _zkMonat.getMonth()-1, 1); _zkWahl=null; zkLaden(); });
-  if(zkn) zkn.addEventListener('click', function(){ _zkMonat=new Date(_zkMonat.getFullYear(), _zkMonat.getMonth()+1, 1); _zkWahl=null; zkLaden(); });
+  if(zkp) zkp.addEventListener('click', function(){ _zkMonat=new Date(_zkMonat.getFullYear(), _zkMonat.getMonth()-1, 1); _zkWahl=null; zkLaden(); if(_zkAnsicht==='konto') zkKontoLaden(); });
+  if(zkn) zkn.addEventListener('click', function(){ _zkMonat=new Date(_zkMonat.getFullYear(), _zkMonat.getMonth()+1, 1); _zkWahl=null; zkLaden(); if(_zkAnsicht==='konto') zkKontoLaden(); });
+  // ── Monat & Konto (Runde 208) ──
+  var zkAns=$('zkAnsicht');
+  if(zkAns) zkAns.addEventListener('click', function(e){
+    var b=e.target.closest('[data-zkansicht]'); if(b){ zkAnsichtSetzen(b.getAttribute('data-zkansicht')); tick(6); }
+  });
+  var zkK=$('zkKonto');
+  if(zkK) zkK.addEventListener('click', function(e){
+    var x=e.target.closest('[data-zkexport]'), a=e.target.closest('[data-zkabschluss]'), o=e.target.closest('[data-zkoeffnen]');
+    if(x) zkKontoExport(x.getAttribute('data-zkexport'));
+    else if(a) zkKontoAbschliessen(a);
+    else if(o) zkKontoOeffnen(o);
+  });
   var zkv=$('zkVormonat');
   if(zkv) zkv.addEventListener('click', function(){ _zkMonat=new Date(_zkMonat.getFullYear(), _zkMonat.getMonth()-1, 1); _zkWahl=null; zkLaden(); tick(6); });
 
