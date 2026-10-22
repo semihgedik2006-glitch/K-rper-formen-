@@ -161,7 +161,7 @@ async function zuVerwaltungZeiten(p) {
     pruefe('eine Schicht mit Ende vor Beginn zählt nicht', r.kaputt === 0, r.kaputt);
     pruefe('Abweichung „+0:12", „−1:30", „±0:00"', r.diff.join(' ') === '+0:12 −1:30 ±0:00', r.diff.join(' '));
 
-    /* Runde 198: Pausenregel wie Crewmeister — auffüllen, mit Kappung —
+    /* Runde 199: Pausenregel wie Crewmeister — auffüllen, mit Kappung —
        und die Hinweise nach §§ 3–5 ArbZG. */
     const Z = new Function(['pauseAbzugMin', 'stundenText', 'zeitenTage'].map(hole).join('\n') +
       '; return { pauseAbzugMin, zeitenTage };')();
@@ -282,7 +282,7 @@ async function zuVerwaltungZeiten(p) {
     await p.close();
   }
 
-  console.log('\n── 8. Korrekturanträge (Runde 199) ──');
+  console.log('\n── 8. Korrekturanträge (Runde 200) ──');
   {
     const p = await oeffne(b, 'mitarbeiter', 390, 844);
     await zurSeite(p);

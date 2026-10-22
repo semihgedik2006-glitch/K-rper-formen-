@@ -408,11 +408,11 @@ Rückfragen vorgelegt, Antworten:
 1. ✅ **Pause oder Feierabend, Stand jetzt, Plan neben Ist, Jetzt im
    Studio** (Runde 189). Dabei gefunden: am Terminal und am Handy liess
    sich gar kein Feierabend stempeln.
-2. ✅ **Pausenregel (auffüllen) und Hinweise nach dem Arbeitszeitgesetz** (Runde 198) —
+2. ✅ **Pausenregel (auffüllen) und Hinweise nach dem Arbeitszeitgesetz** (Runde 199) —
    über 10 h am Tag, Ruhezeit unter 11 h, über 6 h ohne Pause. Die
    Rohdaten bleiben unverändert; abgezogen wird in der Rechnung, und
    jeder Abzug steht als solcher da.
-3. ✅ **Korrekturantrag** (Runde 199) vom Mitarbeiter („Feierabend 16:30 vergessen",
+3. ✅ **Korrekturantrag** (Runde 200) vom Mitarbeiter („Feierabend 16:30 vergessen",
    mit Grund), Bestätigung nur durch die Geschäftsführung; bestätigt läuft
    der vorhandene Weg `zeitNachtragen`. Neue Sammlung → in BEIDE Teile von
    `firestore.rules`, in den Regeltest und in beide Einstiege der
