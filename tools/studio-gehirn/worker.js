@@ -1,5 +1,5 @@
 /**
- * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.16)
+ * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.17)
  * Cloudflare Worker: WhatsApp (Text + Sprachnachrichten), Studio-Chat-Schnittstelle,
  * Leitstand-Webseite, Speicher in D1, Antworten über Workers AI.
  *
@@ -2042,9 +2042,23 @@ function vorschlaege(v) {
     api("/api/vorschlag/liste", {}).then(function (d) {
       (d.gruppen || []).forEach(function (g) {
         var name = /„/.test(g.quelle) ? g.quelle : "„" + g.quelle + "“";
-        sammel.append(el("button", { class: "btn", text: "Alle " + g.anzahl + " aus " + name + " übernehmen", onclick: function (e) {
-          if (!confirm("Alle " + g.anzahl + " Vorschläge aus " + name + " ungelesen als Wissen übernehmen?")) return;
-          var knopf = e.target; knopf.disabled = true;
+        var text = "Alle " + g.anzahl + " aus " + name + " übernehmen", frage = 0;
+        sammel.append(el("button", { class: "btn", text: text, onclick: function (e) {
+          /* 2.17 (22.10.2026, aus dem Betrieb: „der knopf im leitstand
+             funktioniert irgendwie nicht"): Rückfrage im Knopf statt
+             confirm(). Vermutete Ursache, nicht nachgestellt: eingebettete
+             Browser (z. B. das Browser-Fenster der Claude-App) zeigen
+             confirm() nicht und geben still „nein" zurück. Ein Dialog
+             blockiert dort ausserdem die Seite. Erster Klick fragt,
+             zweiter (binnen 6 s) übernimmt. */
+          var knopf = e.currentTarget;
+          if (Date.now() - frage > 6000) {
+            frage = Date.now(); knopf.textContent = "Wirklich alle " + g.anzahl + " ungelesen übernehmen? Nochmal klicken";
+            knopf.classList.add("pri");
+            setTimeout(function () { if (frage && Date.now() - frage >= 5900 && !knopf.disabled) { frage = 0; knopf.textContent = text; knopf.classList.remove("pri"); } }, 6000);
+            return;
+          }
+          frage = 0; knopf.disabled = true;
           (function runde(gesamt) {
             api("/api/vorschlag/entscheiden", { quelle: g.quelle, gut: true }).then(function (r) {
               gesamt += r.erledigt || 0;
