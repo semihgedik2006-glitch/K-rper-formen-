@@ -74,7 +74,7 @@ async function oeffne(b, rolle, w, h) {
       const p = await oeffne(b, rolle, w, h);
       const r = await p.evaluate(() => {
         const sa = document.querySelector('#view-team .scroll-area');
-        /* Runde 189: am Rechner sieht die Leitung das Raster nach Person;
+        /* Runde 190: am Rechner sieht die Leitung das Raster nach Person;
            dort ist heute die Spalte mit dem Kopf .wp-t.heute. */
         const heute = document.querySelector('#shiftGrid .shift-day.today, #shiftGrid .wp-t.heute');
         const wartet = document.getElementById('teamWartet');
@@ -140,7 +140,7 @@ async function oeffne(b, rolle, w, h) {
   console.log('\n── Am Rechner: sieben Spalten ──');
   for (const [w, h] of [[1280, 800], [1440, 900], [1920, 1080]]) {
     const p = await oeffne(b, 'chef', w, h);
-    /* Runde 189: die Leitung sieht am Rechner zuerst „Personen". Aus dem
+    /* Runde 190: die Leitung sieht am Rechner zuerst „Personen". Aus dem
        Betrieb, 22.10.2026: „Beide schauen oft rein" — deshalb gibt es
        beide Ansichten; die sieben Spalten sind die Ansicht „Tage". Das
        Raster prüft tests/test-schichtplan-raster.js. */
