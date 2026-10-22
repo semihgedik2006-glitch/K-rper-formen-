@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-WN2SVTcJeG8yW9gZ6eou0M4tVEDMudsMim2m55FoRqM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-CUzmtMv99KzBnSUFPpCfI1TJZyugCXNGfXCgL9CWG+s='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3529,6 +3529,29 @@ button.ich-zeile:active{opacity:.7}
 .st-antrag .ich-dazu{padding-left:0}
 .st-zurueckziehen{min-height:44px}
 .st-antrag-hier{margin:var(--s6) 0 0;min-height:44px}
+/* Monat & Konto (Runde 208). Am Rechner die ganze Tabelle; am Handy
+   rollt nur die Tabelle seitlich, die Seite nicht. */
+.zk-ansicht{display:inline-flex;gap:var(--s2);background:var(--auf-1);border-radius:var(--r-pille);
+  padding:var(--s2);margin:var(--s4) 0 var(--s12)}
+.zk-ansicht[hidden]{display:none}
+.zk-ansicht-knopf{min-height:44px;padding:0 var(--s16);border:none;background:none;border-radius:var(--r-pille);
+  color:var(--text-2);font-family:var(--font-body);font-size:var(--t-sm);font-weight:600;cursor:pointer}
+.zk-ansicht-knopf.an{background:var(--bg-2);color:var(--text);box-shadow:var(--e1)}
+.zk-konto[hidden]{display:none}
+.zk-konto-kopf{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--s12);margin:0 0 var(--s12)}
+.zk-konto-kopf h3{margin:0 0 var(--s4);font-size:var(--t-md)}
+.zk-konto-kopf .hint{margin:0;max-width:60ch}
+.zk-konto-knoepfe{display:flex;flex-wrap:wrap;gap:var(--s8)}
+.zk-konto-knoepfe .btn{min-height:44px}
+.zk-konto-warn{margin:0 0 var(--s12);padding:var(--s8) var(--s12);border-radius:var(--r-md);
+  background:var(--f-warn);color:var(--warm-tx);font-size:var(--t-sm)}
+.zk-konto-tab-wrap{overflow-x:auto;max-width:100%}
+.zk-konto-tab{width:100%;border-collapse:collapse;font-size:var(--t-sm)}
+.zk-konto-tab th{font-size:var(--t-2xs);font-weight:700;color:var(--text-3);text-transform:uppercase;
+  letter-spacing:var(--ls-l);text-align:left;padding:var(--s6) var(--s8);border-bottom:1px solid var(--line);white-space:nowrap}
+.zk-konto-tab td{padding:var(--s8);border-bottom:1px solid var(--line);vertical-align:top}
+.zk-konto-tab .zahl{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.zk-konto-neben{display:block;font-size:var(--t-2xs);color:var(--text-3);margin-top:var(--s2)}
 .zk-antraege{margin:var(--s12) 0 var(--s4);padding:var(--s12) var(--s16);border-radius:var(--r-md);
   background:var(--auf-1);border:1px solid var(--line)}
 .zk-antraege[hidden]{display:none}
@@ -6630,7 +6653,7 @@ body.jv-offen{overflow:hidden}
 @media (prefers-reduced-motion:reduce){ .jarvis.jv-boot .jv-brief li,.jarvis.jv-boot .jv-kl{animation:none} .jv-kl{transition:none} }
 /* Leerer Verlauf: Begrüssung und Vorschläge zum Antippen */
 .jv-leer{margin:auto 0;padding:var(--s16) 0;text-align:center}
-/* Runde 208 — das Formi-Fenster aufgeräumt: ein grosses Gesicht statt
+/* Runde 209 — das Formi-Fenster aufgeräumt: ein grosses Gesicht statt
    „Hallo" allein, die Lage nicht doppelt, im Kopf drei Knöpfe statt fünf. */
 .jv-start-figur{--fg:76px;display:none;margin:0 auto var(--s12)}
 .jarvis.jv-kompakt .jv-start-figur{display:block}
@@ -8921,7 +8944,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
 
 <!-- ── Loading ── -->
 <div id="loadingWrap">
-  <!-- Runde 208: beim Laden dreht sich Formis Ring, die Augen schauen
+  <!-- Runde 209: beim Laden dreht sich Formis Ring, die Augen schauen
        nach oben — Formi denkt. -->
   <div class="formi-lade" aria-hidden="true"><span class="formi-figur"><span class="fk-koerper"><span class="fk-wirbel"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i></span></span></span></span></span></div>
   <p id="loadingStatus">Verbindung wird hergestellt …</p>
@@ -11450,6 +11473,13 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                   <button type="button" class="ich-pfeil zk-pfeil" id="zkNext" aria-label="Nächster Monat">›</button>
                 </div>
               </div>
+              <!-- Monat & Konto (Runde 208): nur die Geschäftsführung — darin
+                   stehen alle Konten nebeneinander, und die Vertragsstunden
+                   (planerTeam) liest ohnehin nur sie. -->
+              <div class="zk-ansicht" id="zkAnsicht" role="group" aria-label="Ansicht" hidden>
+                <button type="button" class="zk-ansicht-knopf an" data-zkansicht="tage">Tage</button>
+                <button type="button" class="zk-ansicht-knopf" data-zkansicht="konto">Monat &amp; Konto</button>
+              </div>
               <!-- Jetzt im Studio (Runde 189): wer ist da, wer in der Pause,
                    wer laut Plan erwartet wird und noch nicht gestempelt hat.
                    Wie die „Live-Übersicht" bei Crewmeister — aber nur hier,
@@ -11461,8 +11491,9 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                    so weit, dass er bei 320 px nach dem Dichtewechsel nur noch
                    38 px hoch traf (test-zeitkorrektur). -->
               <section class="zk-antraege" id="zkAntraege" aria-label="Korrekturanträge" hidden></section>
+              <section class="zk-konto" id="zkKonto" aria-label="Monat und Stundenkonto" hidden></section>
               <p class="hint" id="zkStand"></p>
-              <div class="zk-wrap">
+              <div class="zk-wrap" id="zkWrap">
                 <div id="zkListe"></div>
                 <div id="zkDetail" class="zk-detail"></div>
               </div>
@@ -14100,7 +14131,7 @@ function $(id){ return document.getElementById(id); }
    ausgeschrieben; beide Fassungen muessen dieselben Pfade zeichnen. */
 var IKONEN = {
   schliessen:  '<path d="M18 6 6 18M6 6l12 12"/>',
-  /* „…" für Formis Kopfzeile (Runde 208). */
+  /* „…" für Formis Kopfzeile (Runde 209). */
   mehr:        '<path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3"/>',
   /* Eine Karte, kein Geldschein und kein Euro-Zeichen: bezahlt wird
      per Karte oder Lastschrift, und ein Schein stuende fuer etwas,
@@ -14592,6 +14623,11 @@ function renderRecht(){
         'Fenster des Terminals. Sehen können '+
         'die Zeiten du, die Leitung deines Studios und die Geschäftsführung.</p>'+
       /* Runde 204: Korrekturanträge sind eine neue Sorte Daten. */
+      /* Runde 208: der Monatsabschluss hält Summen je Person fest. */
+      '<p><b>Monatsabschluss:</b> Schliesst die Geschäftsführung einen Monat ab, '+
+        'werden je Person die Summen festgehalten (Stunden, Soll, Urlaub/Krank, '+
+        'Saldo, Konto) und wer wann abgeschlossen hat. Sehen kann das nur die '+
+        'Geschäftsführung. Gelöscht wird mit derselben Frist wie die Stempelzeiten.</p>'+
       '<p><b>Korrekturanträge:</b> Beantragst du einen fehlenden Stempel, '+
         'stehen Tag, Uhrzeit, Art, dein Grund und der Stand des Antrags da; '+
         'nach der Entscheidung auch, wer entschieden hat, wann und – bei einer '+
@@ -21241,6 +21277,11 @@ var NEUIGKEITEN = [
     'Öffnest du Formi, begrüsst dich oben ein grosses Formi-Gesicht, das dir mit den Augen folgt. Die drei Zeilen „Aufgaben offen / Putzplan / Material" stehen dort nicht mehr – das zeigt schon die Formi-Zeile auf der Startseite.',
     'Oben im kleinen Formi-Fenster sind nur noch drei Knöpfe: „…", Gross und Schliessen. Hinter „…" findest du Einstellungen, gespeicherte Gespräche und den Ton.',
     'Ist eine Liste leer, sitzt dort Formi mit „Frag Formi". Beim Laden der App dreht sich Formis Ring, und vor jeder Antwort steht Formis Gesicht.' ] },
+  { id:'2026-10-22-stundenkonto', datum:'22.10.2026', titel:'Stundenkonto, Monatsabschluss und Export fürs Lohnbüro', wo:'chef:zeiten', punkte:[
+    'Für die Geschäftsführung: Verwaltung → Zeiten → oben „Monat & Konto". Je Person stehen dort die gestempelten Stunden (nach der Pausenregel), das Soll aus den Wochenstunden im Schichtplaner, Urlaub und Krankheit, der Saldo, der Übertrag aus dem Vormonat und das Konto.',
+    '„Excel" und „CSV" laden den Monat für das Lohnbüro herunter – Stunden als Dezimalzahlen mit Komma, in Excel zusätzlich jeder Tag einzeln.',
+    'Ist ein Monat vorbei, schliesst „Monat abschliessen" ihn ab. Danach lässt sich darin nichts mehr nachtragen, stornieren oder beantragen; sein Konto ist der Übertrag für den nächsten Monat. „Wieder öffnen …" geht nur mit Grund.'
+  ]},
   { id:'2026-10-22-schulung-pflicht', datum:'22.10.2026', titel:'Für die Leitung: Pflichtschulungen auf einen Blick', wo:'schulung', punkte:[
     'Unter Wissen → Schulung → Verwalten gibt es den Reiter „Pflicht": je Person und Pflichtschulung erledigt (✓), offen mit Frist, angefangen oder überfällig. Am Reiter steht, wie viel überfällig ist.',
     '„Erinnern" neben einer Person gibt eine fertige Nachricht weiter – mit den offenen Schulungen und dem Code. Du schickst sie selbst, per WhatsApp, Mail oder wie du willst.',
@@ -26435,7 +26476,7 @@ function jvLeerHTML(){
     var c=GEHIRN_MINI[x[0]];
     return '<li style="--gm:'+c.farbe+';--gm-rgb:'+c.rgb+'">'+ikon(c.ikon)+'<span>'+esc(x[1])+'</span></li>';
   }).join('') : '<li style="--gm:#5FE1FF;--gm-rgb:95,225,255">'+ikon('hakenKreis')+'<span>Alles ruhig — nichts offen.</span></li>')+'</ul>';
-  /* Runde 208: oben das grosse Gesicht (im kleinen Fenster; im
+  /* Runde 209: oben das grosse Gesicht (im kleinen Fenster; im
      Vollbild steht dort das Loch). Die drei Lage-Zeilen fallen im kleinen
      Fenster weg — dasselbe steht schon in der Formi-Zeile und im Satz
      darunter (CSS: .jarvis.jv-kompakt .jv-brief). */
@@ -26465,7 +26506,7 @@ function gehirnZeichnenInRoh(box, tippen){
     var rf=gehirnRein(v, '_abF');
     var frage='<div class="gehirn-frage'+rf.k+'"'+rf.s+'>'+
       (v.art==='idee' ? '<b>Idee:</b> ' : '')+gehirnText(v.text)+'</div>';
-    /* Runde 208: vor jeder Antwort dasselbe Gesicht wie die Kugel. */
+    /* Runde 209: vor jeder Antwort dasselbe Gesicht wie die Kugel. */
     var kopf='<div class="ga-kopf"><span class="ga-loch formi-figur mini" aria-hidden="true">'+formiFigurInnen()+'</span><span>'+esc(jvPersona().name)+'</span></div>';
     var antwort;
     if(v.alt){
@@ -27353,7 +27394,7 @@ function formiFigurInnen(brauen){
     '<span class="fk-gesicht">'+(brauen ? '<i class="fk-braue l"></i><i class="fk-braue r"></i>' : '')+
     '<i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i></span></span></span></span>';
 }
-/* ── Figuren im Formi-Fenster (Runde 208) ─────────────────────────────
+/* ── Figuren im Formi-Fenster (Runde 209) ─────────────────────────────
    Die Kugel ist weg, solange das Fenster offen ist — dann leben die
    Gesichter im Fenster: das grosse auf dem Startschirm und das kleine im
    Kopf schauen der Maus nach und blinzeln mit. Dieselben Regeln wie bei
@@ -28849,7 +28890,7 @@ function jarvisBinden(){
   var gr=$('jarvisGroesse'); if(gr) gr.addEventListener('click', jvGroesseWechseln);
   var gb=$('jarvisGespraecheBtn'); if(gb) gb.addEventListener('click', function(){ jvGesprAuf(); });
   var pb=$('jarvisPersonaBtn'); if(pb) pb.addEventListener('click', function(){ jvPersonaAuf(); });
-  /* Runde 208: im kleinen Fenster liegen Einstellungen, Gespräche und Ton
+  /* Runde 209: im kleinen Fenster liegen Einstellungen, Gespräche und Ton
      hinter „…" — ein Tipp klappt sie in der Kopfzeile auf. */
   var mb=$('jarvisMehr'); if(mb) mb.addEventListener('click', function(){
     var j=$('jarvis'), auf=!j.classList.contains('jv-mehr-auf');
@@ -38797,6 +38838,8 @@ function zkOeffnen(){
   zkLaden();
   zkJetztLaden();
   zkAntraegeLaden();
+  var ans=$('zkAnsicht'); if(ans) ans.hidden=!isChef();
+  zkAnsichtSetzen(_zkAnsicht);
 }
 
 /* ── Jetzt im Studio (Runde 189) ──
@@ -38862,6 +38905,240 @@ function zkAntragEntscheiden(btn, id, annehmen){
         tick(10);
         zkAntraegeLaden(); zkLaden(); zkJetztLaden();
       })
+      .catch(function(e){ toast(fnFehler(e), true); });
+  });
+}
+
+/* ══ MONAT & KONTO (Runde 208) ══════════════════════════════════════
+   Aus dem Betrieb, 22.10.2026: das Soll fürs Konto aus den
+   Vertragsstunden („JA"), Export für das Lohnbüro und Abschluss („mach
+   beides").
+
+   Je Person, betriebsweit (nicht je Studio — ein Konto gehört der
+   Person, nicht dem Studio):
+     Ist         gestempelte Arbeit nach der Pausenregel; Tage ohne
+                 Feierabend zählen NICHT und stehen als „offen" da
+     Soll        Wochenstunden × Kalendertage / 7 — dieselbe Rechnung wie
+                 im Schichtplaner; ohne Wochenstunden die Monatsgrenze des
+                 Minijobs; ohne beides kein Soll und kein Konto
+     Gutschrift  genehmigter Urlaub und Krankheit an Werktagen (Mo–Fr) ×
+                 Tagessoll (Wochenstunden / Tage je Woche, sonst 5)
+     Saldo       Ist + Gutschrift − Soll
+     Übertrag    das Konto aus dem ABGESCHLOSSENEN Vormonat; ohne Abschluss
+                 steht „–" und es wird mit 0 gerechnet
+   Im laufenden Monat gilt das Soll bis heute, nicht bis zum Monatsende.
+   Alles in Minuten. */
+var _zkAnsicht='tage', _zkKonto=null, _zkKontoNr=0;
+function zkAnsichtSetzen(a){
+  _zkAnsicht = (a==='konto' && isChef()) ? 'konto' : 'tage';
+  document.querySelectorAll('[data-zkansicht]').forEach(function(b){
+    b.classList.toggle('an', b.getAttribute('data-zkansicht')===_zkAnsicht);
+    b.setAttribute('aria-pressed', b.getAttribute('data-zkansicht')===_zkAnsicht ? 'true' : 'false');
+  });
+  var k=$('zkKonto'), w=$('zkWrap'), st=$('zkStudio'), stand=$('zkStand');
+  var konto=_zkAnsicht==='konto';
+  if(k) k.hidden=!konto;
+  if(w) w.hidden=konto;
+  if(stand) stand.hidden=konto;
+  /* „Jetzt im Studio", Anträge und der Vormonats-Hinweis gehören zu den
+     Tagen; in der Monatsübersicht stünden sie zwischen Umschalter und
+     Tabelle im Weg. */
+  ['zkJetzt','zkVormonat','zkAntraege'].forEach(function(id){
+    var el=$(id); if(!el) return;
+    if(konto){ el.dataset.kontoVersteckt = el.hidden ? '' : '1'; el.hidden=true; }
+    else if(el.dataset.kontoVersteckt==='1'){ el.hidden=false; delete el.dataset.kontoVersteckt; }
+  });
+  var jz=$('zkJetzt'); if(jz) jz.style.display = konto ? 'none' : '';
+  /* Das Konto ist betriebsweit — die Studio-Auswahl gilt dort nicht. */
+  if(st) st.disabled=konto;
+  if(konto) zkKontoLaden();
+}
+function kontoText(min){
+  if(min===null || min===undefined) return '–';
+  var neg=min<0, a=Math.abs(Math.round(min));
+  return (neg?'−':'')+Math.floor(a/60)+':'+('0'+(a%60)).slice(-2);
+}
+function kontoWerktage(von, bis){
+  var n=0, d=new Date(von+'T12:00:00'), e=new Date(bis+'T12:00:00');
+  for(; d<=e; d.setDate(d.getDate()+1)){ var w=d.getDay(); if(w>=1 && w<=5) n++; }
+  return n;
+}
+function zkKontoLaden(){
+  var box=$('zkKonto'); if(!box || !isChef()) return;
+  var m=zeitMonatKey(_zkMonat), nr=++_zkKontoNr;
+  var j=+m.slice(0,4), mo=+m.slice(5,7);
+  var erst=m+'-01', letzt=ymd(new Date(j, mo, 0));
+  var vor=new Date(j, mo-2, 1), vorKey=zeitMonatKey(vor);
+  box.innerHTML='<p class="hint">Wird gerechnet …</p>';
+  Promise.all([
+    S('zeiten').where('monat','==',m).get(),
+    S('planerTeam').get().catch(function(){ return null; }),
+    Promise.all((managedKeys()||[]).map(function(sk){
+      return S('studios').doc(sk).collection('absences').where('to','>=',erst).get()
+        .then(function(sn){ return sn.docs.map(function(d){ return d.data()||{}; }); })
+        .catch(function(){ return []; });
+    })),
+    S('zeitAbschluesse').doc(m).get().catch(function(){ return null; }),
+    S('zeitAbschluesse').doc(vorKey).get().catch(function(){ return null; })
+  ]).then(function(r){
+    if(nr!==_zkKontoNr) return;
+    _zkKonto=kontoRechnen(m, erst, letzt,
+      r[0].docs.map(function(d){ return d.data()||{}; }),
+      r[1] ? r[1].docs.map(function(d){ return d.data()||{}; }) : [],
+      [].concat.apply([], r[2]),
+      r[3] && r[3].exists ? r[3].data() : null,
+      r[4] && r[4].exists ? r[4].data() : null);
+    zkKontoZeichnen();
+  }).catch(function(e){
+    if(nr!==_zkKontoNr) return;
+    box.innerHTML='<p class="hint">Das Konto lässt sich gerade nicht rechnen: '+esc(errMsg(e))+'</p>';
+  });
+}
+function kontoRechnen(m, erst, letzt, zeiten, team, abwesend, abschluss, vorAbschluss){
+  var heute=ymd(new Date());
+  var laufend = heute>=erst && heute<=letzt;
+  var bis = laufend ? heute : letzt;
+  var tageImMonat=+letzt.slice(8,10), tageBis=+bis.slice(8,10);
+  var vorKonto={};
+  if(vorAbschluss && vorAbschluss.abgeschlossen===true){
+    (vorAbschluss.zeilen||[]).forEach(function(z){ vorKonto[z.uid]=z.konto; });
+  }
+  var leute={};
+  function person(uid, name){ return leute[uid] || (leute[uid]={ uid:uid, name:name||'', stempel:[] }); }
+  zeiten.forEach(function(z){ if(z.uid) person(z.uid, z.name).stempel.push(z); });
+  var vertrag={};
+  team.forEach(function(p){
+    if(!p.uid) return;
+    vertrag[p.uid]=p;
+    if(+p.wocheStd>0 || +p.maxMonatStd>0) person(p.uid, p.name);
+  });
+  var zeilen=Object.keys(leute).map(function(uid){
+    var p=leute[uid], v=vertrag[uid]||{};
+    var tage=zeitenTage(p.stempel, heute, Date.now());
+    var ist=0, offen=0, abzug=0, hinweise=0;
+    tage.forEach(function(t){
+      if(t.offen && !t.laeuft){ offen++; return; }
+      if(t.laeuft) return;
+      ist+=Math.round(t.arbeit/60000); abzug+=Math.round((t.abzug||0)/60000);
+      hinweise+=(t.hinweise||[]).length;
+    });
+    var woche=+v.wocheStd||0, monatMax=+v.maxMonatStd||0;
+    var soll = woche ? Math.round(woche*60*tageBis/7)
+             : (monatMax ? Math.round(monatMax*60*tageBis/tageImMonat) : null);
+    var tagesSoll = woche ? woche*60/((+v.maxTageWoche||0) || 5) : 0;
+    var gut=0;
+    abwesend.forEach(function(a){
+      if(a.uid!==uid || (a.type!=='urlaub' && a.type!=='krank')) return;
+      if(a.type!=='krank' && (a.status||'genehmigt')!=='genehmigt') return;
+      var von=a.from>erst ? a.from : erst, ende=(a.to||a.from)<bis ? (a.to||a.from) : bis;
+      if(von>ende) return;
+      gut+=Math.round(kontoWerktage(von, ende)*tagesSoll);
+    });
+    var saldo = soll===null ? null : ist+gut-soll;
+    var uebertrag = vorKonto.hasOwnProperty(uid) ? vorKonto[uid] : null;
+    return { uid:uid, name:p.name || v.name || '—', ist:ist, soll:soll, gutschrift:gut, saldo:saldo,
+             uebertrag:uebertrag, konto: saldo===null ? null : (uebertrag||0)+saldo,
+             tage:tage.filter(function(t){ return !(t.offen && !t.laeuft); }).length, offen:offen,
+             abzug:abzug, hinweise:hinweise, tageListe:tage };
+  }).sort(function(a,b){ return String(a.name).localeCompare(String(b.name),'de'); });
+  return { monat:m, laufend:laufend, bis:bis, zeilen:zeilen, abschluss:abschluss,
+           vorAbgeschlossen: !!(vorAbschluss && vorAbschluss.abgeschlossen===true) };
+}
+function zkKontoZeichnen(){
+  var box=$('zkKonto'); if(!box || !_zkKonto) return;
+  var k=_zkKonto, ab=k.abschluss, zu=!!(ab && ab.abgeschlossen===true);
+  var monatName=new Date(k.monat+'-15T12:00:00').toLocaleDateString('de-DE',{month:'long',year:'numeric'});
+  var offenSumme=k.zeilen.reduce(function(n,z){ return n+z.offen; },0);
+  var kopf='<div class="zk-konto-kopf"><div><h3>'+esc(monatName)+'</h3><p class="hint">'+
+      (zu ? 'Abgeschlossen: '+esc(fmtDateTime(ab.am))+', '+esc(ab.vonName||'—')+'. Nachtragen, Stornieren und Anträge sind für diesen Monat gesperrt.'
+          : k.laufend ? 'Läuft noch — Soll bis heute ('+esc(new Date(k.bis+'T12:00:00').toLocaleDateString('de-DE'))+').'
+          : 'Noch nicht abgeschlossen.')+
+      (k.vorAbgeschlossen ? '' : ' Übertrag: der Vormonat ist nicht abgeschlossen, gerechnet wird mit 0.')+
+    '</p></div>'+
+    '<div class="zk-konto-knoepfe">'+
+      '<button type="button" class="btn btn-ghost" data-zkexport="xls">Excel</button>'+
+      '<button type="button" class="btn btn-ghost" data-zkexport="csv">CSV</button>'+
+      (zu ? '<button type="button" class="btn btn-ghost" data-zkoeffnen>Wieder öffnen …</button>'
+          : (!k.laufend ? '<button type="button" class="btn btn-primary" data-zkabschluss>Monat abschliessen</button>' : ''))+
+    '</div></div>';
+  if(!zu && !k.laufend && offenSumme){
+    kopf+='<p class="zk-konto-warn" role="status">'+offenSumme+'× fehlt noch ein Feierabend. Diese Tage zählen nicht mit — erst nachtragen, dann abschliessen.</p>';
+  }
+  if(!k.zeilen.length){ box.innerHTML=kopf+'<p class="hint">In diesem Monat gibt es keine Stempel und keine Vertragsstunden.</p>'; return; }
+  var th=['Person','Ist','Soll','Urlaub/Krank','Saldo','Übertrag','Konto'];
+  box.innerHTML=kopf+'<div class="zk-konto-tab-wrap"><table class="zk-konto-tab"><thead><tr>'+
+      th.map(function(h,i){ return '<th'+(i?' class="zahl"':'')+'>'+esc(h)+'</th>'; }).join('')+'</tr></thead><tbody>'+
+    k.zeilen.map(function(z){
+      return '<tr><td><b>'+esc(z.name)+'</b><span class="zk-konto-neben">'+z.tage+(z.tage===1?' Tag':' Tage')+
+          (z.offen ? ' · '+z.offen+'× Feierabend fehlt' : '')+
+          (z.abzug ? ' · Pause +'+esc(kontoText(z.abzug)) : '')+
+          (z.hinweise ? ' · '+z.hinweise+' Hinweis'+(z.hinweise===1?'':'e')+' ArbZG' : '')+'</span></td>'+
+        '<td class="zahl">'+kontoText(z.ist)+'</td>'+
+        '<td class="zahl">'+kontoText(z.soll)+'</td>'+
+        '<td class="zahl">'+(z.gutschrift ? kontoText(z.gutschrift) : '–')+'</td>'+
+        '<td class="zahl">'+kontoText(z.saldo)+'</td>'+
+        '<td class="zahl">'+kontoText(z.uebertrag)+'</td>'+
+        '<td class="zahl"><b>'+kontoText(z.konto)+'</b></td></tr>';
+    }).join('')+'</tbody></table></div>'+
+    (zu ? '' : '<p class="hint zk-regel">Soll aus den Wochenstunden im Schichtplaner (Verwaltung → Schichtplaner → Team). Ohne Wochenstunden kein Soll und kein Konto.</p>');
+}
+function kontoDateiName(endung){ return 'Stunden-'+_zkKonto.monat+'.'+endung; }
+function zkKontoExport(art){
+  if(!_zkKonto) return;
+  var k=_zkKonto;
+  var kopf=['Person','Tage','Ist (h)','Soll (h)','Urlaub/Krank (h)','Saldo (h)','Übertrag (h)','Konto (h)','Feierabend fehlt','Pause ergänzt (h)'];
+  /* Dezimalstunden mit Komma — so liest sie ein deutsches Excel und jedes
+     Lohnbüro. Stunden:Minuten wären für Menschen schöner und für eine
+     Tabelle falsch (Excel macht daraus eine Uhrzeit). */
+  var dez=function(min){ return min===null || min===undefined ? '' : (Math.round(min/60*100)/100).toFixed(2).replace('.',','); };
+  var zeilen=k.zeilen.map(function(z){
+    return [z.name, z.tage, dez(z.ist), dez(z.soll), dez(z.gutschrift), dez(z.saldo), dez(z.uebertrag), dez(z.konto), z.offen, dez(z.abzug)];
+  });
+  if(art==='csv'){
+    var zelle=function(c){ c=String(c==null?'':c); return /[;"\n]/.test(c) ? '"'+c.replace(/"/g,'""')+'"' : c; };
+    var text=[kopf].concat(zeilen).map(function(r){ return r.map(zelle).join(';'); }).join('\r\n');
+    var blob=new Blob(['\ufeff'+text],{type:'text/csv;charset=utf-8'});
+    var url=URL.createObjectURL(blob), a=document.createElement('a');
+    a.href=url; a.download=kontoDateiName('csv'); document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); },1500);
+    return;
+  }
+  var tage=[];
+  k.zeilen.forEach(function(z){
+    (z.tageListe||[]).slice().reverse().forEach(function(t){
+      var l=t.stempel.filter(function(x){ return !x.storno; });
+      tage.push([z.name, t.tag, l.length ? zeitUhr(l[0].ts) : '', (t.offen && !t.laeuft) ? '' : (l.length ? zeitUhr(l[l.length-1].ts) : ''),
+        dez(Math.round(t.pause/60000)), dez(Math.round((t.abzug||0)/60000)), (t.offen && !t.laeuft) ? 'Feierabend fehlt' : dez(Math.round(t.arbeit/60000)),
+        (t.hinweise||[]).map(function(h){ return h.text; }).join(', ')]);
+    });
+  });
+  downloadXls(kontoDateiName('xls'),
+    '<h2>StudioChat – Stunden '+esc(k.monat)+'</h2><p>Stand '+esc(fmtStand())+
+      (k.abschluss && k.abschluss.abgeschlossen ? ' · abgeschlossen' : ' · nicht abgeschlossen')+'</p>'+
+    xlsTable('Übersicht je Person', kopf, zeilen)+
+    xlsTable('Tage', ['Person','Tag','Kommen','Gehen','Pause (h)','Pause ergänzt (h)','Arbeit (h)','Hinweise'], tage));
+}
+function zkKontoAbschliessen(btn){
+  if(!_zkKonto) return;
+  var k=_zkKonto;
+  var zeilen=k.zeilen.filter(function(z){ return z.soll!==null || z.ist; }).map(function(z){
+    return { uid:z.uid, name:z.name, ist:z.ist, soll:z.soll||0, gutschrift:z.gutschrift, saldo:z.saldo||0,
+             uebertrag:z.uebertrag||0, konto:z.konto||0, tage:z.tage, offen:z.offen };
+  });
+  if(!confirm('„'+k.monat+'" abschliessen?\n\nDanach lässt sich in diesem Monat nichts mehr nachtragen, stornieren oder beantragen, bis jemand aus der Geschäftsführung ihn mit Grund wieder öffnet.')) return;
+  withBusy(btn, function(){
+    return pinFunktion('monatAbschliessen')({ monat:k.monat, zeilen:zeilen })
+      .then(function(){ toast('Monat abgeschlossen ✓'); tick(12); zkKontoLaden(); })
+      .catch(function(e){ toast(fnFehler(e), true); });
+  });
+}
+function zkKontoOeffnen(btn){
+  if(!_zkKonto) return;
+  var grund=prompt('Warum wird '+_zkKonto.monat+' wieder geöffnet?','');
+  if(grund===null) return;
+  withBusy(btn, function(){
+    return pinFunktion('monatOeffnen')({ monat:_zkKonto.monat, grund:String(grund).trim() })
+      .then(function(){ toast('Wieder geöffnet ✓'); zkKontoLaden(); })
       .catch(function(e){ toast(fnFehler(e), true); });
   });
 }
@@ -44132,7 +44409,7 @@ function emptyHTML(h,s,iko,tat){
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">'+
     '<path d="M9 11l3 3L22 4"/>'+
     '<path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>';
-  /* Runde 208: wo eine Liste leer ist, sitzt Formi mit einem Angebot. Der
+  /* Runde 209: wo eine Liste leer ist, sitzt Formi mit einem Angebot. Der
      Platz ist ohnehin leer — es wird nichts voller. */
   var formi = (typeof gehirnVerfuegbar==='function' && gehirnVerfuegbar())
     ? '<button type="button" class="leer-formi" data-leerformi><span class="formi-figur mini" aria-hidden="true">'+formiFigurInnen()+'</span><span>Frag Formi</span></button>' : '';
@@ -50625,8 +50902,20 @@ function bindActions(){
   var zks=$('zkStudio');
   if(zks) zks.addEventListener('change', function(){ _zkStudio=zks.value; _zkWahl=null; _zkStorno=null; zkLaden(); zkJetztLaden(); });
   var zkp=$('zkPrev'), zkn=$('zkNext');
-  if(zkp) zkp.addEventListener('click', function(){ _zkMonat=new Date(_zkMonat.getFullYear(), _zkMonat.getMonth()-1, 1); _zkWahl=null; zkLaden(); });
-  if(zkn) zkn.addEventListener('click', function(){ _zkMonat=new Date(_zkMonat.getFullYear(), _zkMonat.getMonth()+1, 1); _zkWahl=null; zkLaden(); });
+  if(zkp) zkp.addEventListener('click', function(){ _zkMonat=new Date(_zkMonat.getFullYear(), _zkMonat.getMonth()-1, 1); _zkWahl=null; zkLaden(); if(_zkAnsicht==='konto') zkKontoLaden(); });
+  if(zkn) zkn.addEventListener('click', function(){ _zkMonat=new Date(_zkMonat.getFullYear(), _zkMonat.getMonth()+1, 1); _zkWahl=null; zkLaden(); if(_zkAnsicht==='konto') zkKontoLaden(); });
+  // ── Monat & Konto (Runde 208) ──
+  var zkAns=$('zkAnsicht');
+  if(zkAns) zkAns.addEventListener('click', function(e){
+    var b=e.target.closest('[data-zkansicht]'); if(b){ zkAnsichtSetzen(b.getAttribute('data-zkansicht')); tick(6); }
+  });
+  var zkK=$('zkKonto');
+  if(zkK) zkK.addEventListener('click', function(e){
+    var x=e.target.closest('[data-zkexport]'), a=e.target.closest('[data-zkabschluss]'), o=e.target.closest('[data-zkoeffnen]');
+    if(x) zkKontoExport(x.getAttribute('data-zkexport'));
+    else if(a) zkKontoAbschliessen(a);
+    else if(o) zkKontoOeffnen(o);
+  });
   var zkv=$('zkVormonat');
   if(zkv) zkv.addEventListener('click', function(){ _zkMonat=new Date(_zkMonat.getFullYear(), _zkMonat.getMonth()-1, 1); _zkWahl=null; zkLaden(); tick(6); });
 
