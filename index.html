@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-UqV0qsdKVIMLSXIVrAxqhIfnDzSzMDLlJhrLNYyXzRs='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-CKJDQVHDNun5JDfMFdRrYjx+vBLro5QtK27Ln4vAAn8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -6536,6 +6536,36 @@ body.jv-offen{overflow:hidden}
 .sch-video .sym{width:34px;height:34px;color:var(--text-3);margin-bottom:var(--s8)}
 .sch-video b{display:block;font-family:var(--font-head);font-size:var(--t-md)}
 .sch-video span{display:block;font-size:var(--t-xs);color:var(--text-3);margin-top:var(--s4)}
+/* Die Animation (Runde 188): Farbe geht von einer Kante aus und läuft
+   aus; bewegt wird nur opacity und transform, einmal je Bild. */
+.sch-anim{margin-bottom:var(--s16)}
+/* Höhe über clamp, nicht über aspect-ratio: zusammen mit einer
+   Mindesthöhe zog aspect-ratio am 390er Telefon die Breite auf 427 px —
+   die Fläche ragte rechts aus der Karte. */
+.sch-anim-buehne{position:relative;height:clamp(240px,30vw,400px);border-radius:var(--r-md);overflow:hidden;
+  display:grid;place-items:center;padding:var(--s20);border:1px solid var(--line);
+  background:radial-gradient(120% 90% at 0% 0%,var(--tipp-1),transparent 65%),var(--bg-3)}
+.sch-anim-szene{display:flex;flex-direction:column;align-items:center;gap:var(--s10);max-width:560px;text-align:center;
+  animation:schAnimEin .5s var(--ease-ios) backwards}
+.sch-anim-ico{width:64px;height:64px;border-radius:var(--r-rund);display:grid;place-items:center;
+  background:var(--tipp-1);color:var(--accent-d);border:1px solid var(--tipp-kante);
+  animation:schAnimIco .6s var(--ease-ios) .08s backwards}
+.sch-anim-ico .sym{width:30px;height:30px}
+.sch-anim-nr{font-size:var(--t-2xs);font-weight:700;color:var(--text-3);font-variant-numeric:tabular-nums}
+.sch-anim .sch-anim-text{margin:0;font-family:var(--font-head);font-weight:700;font-size:var(--t-lg);
+  line-height:var(--lh-eng);color:var(--text);text-wrap:balance}
+.sch-anim-quelle{font-size:var(--t-2xs);color:var(--text-3)}
+@media (min-width:1100px){ .sch-anim .sch-anim-text{font-size:var(--t-xl)} .sch-anim-ico{width:76px;height:76px} }
+.sch-anim-leiste{display:flex;align-items:center;gap:var(--s8);margin-top:var(--s10)}
+.sch-anim-leiste .btn{min-height:44px;min-width:44px}
+.sch-anim-punkte{flex:1;display:flex;flex-wrap:wrap;justify-content:center;gap:var(--s6)}
+.sch-anim-punkte i{width:8px;height:8px;border-radius:var(--r-rund);background:var(--line-2)}
+.sch-anim-punkte i.war{background:var(--accent-d)}
+.sch-anim-punkte i.an{background:var(--accent);transform:scale(1.35)}
+.sch-anim .sch-anim-art{margin:var(--s6) 0 0;font-size:var(--t-2xs);color:var(--text-3)}
+@keyframes schAnimEin{from{opacity:0;transform:translateY(12px) scale(.98)}}
+@keyframes schAnimIco{from{opacity:0;transform:scale(.6)}}
+@media (prefers-reduced-motion:reduce){ .sch-anim-szene,.sch-anim-ico{animation:none} }
 /* Der Lesetext (Runde 104). Am Rechner auf Lesebreite begrenzt —
    eine Zeile über 1.200 px liest niemand bis zum Ende. Die Abschnitte
    trennt eine Haarlinie, keine Kachel: es ist ein Text, keine Liste. */
@@ -20422,6 +20452,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-22-schulung-animation', datum:'22.10.2026', titel:'Schulung: Animationen statt „Video folgt"', wo:'schulung', punkte:[
+    'In den drei Pflichtschulungen („Dein erster Tag im Studio", „Hygiene nach jedem Training", „Wenn einem Kunden schlecht wird") stand bei fünf Schritten noch „Video folgt". Dort läuft jetzt eine kurze Animation: Bild für Bild ein Zeichen und ein Satz.',
+    'Die Sätze kommen aus dem Mitarbeiter-Handbuch – unter jedem Bild steht, aus welchem Eintrag von „Hilfe im Studio".',
+    'Mit „Pause" anhalten, mit ‹ und › selbst blättern. Weiter geht es, wenn jedes Bild einmal zu sehen war. Kommt später ein echtes Video, steht es an derselben Stelle.'
+  ]},
   { id:'2026-10-22-schulung-lernen', datum:'22.10.2026', titel:'Schulung: kurz auffrischen in Runden, Fristen und Weitermachen', wo:'schulung', punkte:[
     'Unter Wissen → Schulung steht „Kurz auffrischen" jetzt als kleine Runde: bis zu drei Fragen aus dem, was du schon bestanden hast, nach jeder Antwort gleich die Lösung. Was danebenging, kommt nach zwei Tagen wieder, was sitzt, erst nach einer Woche, einem Monat, drei Monaten.',
     'Ohne eigenen Zugang geht das am Studio-Tablet mit deinem Schulungs-Code – „Mit Code auffrischen". Mit Zugang steht auf der Startseite eine Zeile, wenn Fragen warten.',
@@ -20429,6 +20464,7 @@ var NEUIGKEITEN = [
     'Lange Schulungen wie „Das Beratungsgespräch" musst du nicht am Stück machen: „Später weiter" drücken, beim nächsten Mal mit deinem Code geht es dort weiter, wo du warst.',
     'Am Rechner stehen die Module jetzt rechts neben dem, was für dich ansteht, und in einer Schulung links das Inhaltsverzeichnis. Tasten: 1–4 antworten, Pfeil nach rechts weiter.',
     'Für die Leitung: unter Verwalten → Auswertung „Fragen, die im Team nicht sitzen" – ohne Namen, erst ab drei Antworten. Und je Teilnehmer, welche Pflichtschulung noch offen oder überfällig ist.'
+  ]},
   { id:'2026-10-22-formi-lebt', datum:'22.10.2026', titel:'Formi lebt: es schaut, freut sich und meldet sich oben', wo:'home', punkte:[
     'Wo oben auf der Startseite bisher bunte Hinweis-Balken standen, steht jetzt eine Zeile von Formi: links der bunte Ring, daneben z. B. „1 Aufgabe ist überfällig" oder „5 Artikel fehlen". Antippen führt direkt hin, der Ring öffnet Formi.',
     'Die Kugel unten rechts hat jetzt ein Auge: Sie schaut der Maus nach, blinzelt, freut sich bei jedem Haken, staunt, wenn du schnell hintereinander abhakst, feiert, wenn der Putzplan für heute fertig ist, und erschrickt bei einer Fehlermeldung. Lässt du die App eine Weile liegen, schläft sie ein.',
@@ -29661,6 +29697,8 @@ function schSchrittMarkup(){
   if(s.art==='video'){
     inhalt = s.quelle
       ? schVideoMarkup(s.quelle)
+      /* Runde 188: ohne Video, aber mit Szenen — die Animation. */
+      : (s.szenen && s.szenen.length) ? schAnimMarkup(s)
       /* Ehrlich statt hübsch: der Kasten sagt, dass das Video fehlt.
          Ein leerer Rahmen liesse jeden glauben, sein Gerät sei schuld. */
       : '<div class="sch-video">'+
@@ -29876,6 +29914,119 @@ function schVideosAufloesen(box){
   });
 }
 
+/* ══ ANIMATION STATT „VIDEO FOLGT" (Runde 188) ═══════════════════════
+   Aus dem Betrieb, 22.10.2026: „bis jetzt gibts nur für die
+   verkaufsschulung videos den rest können wir sonst auch selber
+   erstellen mit animationen".
+
+   Ein Video-Schritt ohne Video, aber mit `szenen`, zeigt eine kurze
+   Animation: Bild für Bild ein Zeichen und ein Satz, der von selbst
+   weiterläuft. Die Sätze stehen in schulungen-basis.js und kommen aus
+   dem Mitarbeiter-Handbuch (die Nummer aus „Hilfe im Studio" steht
+   dabei) oder aus dem Modul selbst — erfunden ist keiner.
+
+   Warum in der App gezeichnet und nicht als Videodatei:
+   - kein Hochladen, kein Speicher, auch ohne Netz da;
+   - ändert jemand das Handbuch, ändert sich der Satz mit einer Zeile;
+   - kommt später ein echtes Video (`quelle`), steht es an derselben
+     Stelle und die Animation tritt zurück.
+   Bewegt wird nur `opacity` und `transform` (CLAUDE.md, „Flüssig heisst
+   konkret"), einmal je Bild, mit fill-mode backwards. Wer am Gerät
+   „Bewegung reduzieren" eingestellt hat, sieht die Bilder ohne Bewegung.
+
+   „Weiter" gibt es wie beim Video erst, wenn jedes Bild einmal zu sehen
+   war — dieselbe Ausnahme für die Geschäftsführung. Ein Häkchen
+   „gesehen" ist das nicht: es heisst nur, dass jedes Bild auf dem
+   Schirm stand. */
+var SCH_ANIM_MS=5200;
+var _schAnim={ pos:-1, idx:0, laeuft:false, gesehen:{}, uhr:null };
+function schAnimSzenen(){
+  var s=(_schModul && (_schModul.schritte||[])[_schPos])||{};
+  return (s.art==='video' && !s.quelle && Array.isArray(s.szenen) && s.szenen.length) ? s.szenen : null;
+}
+function schAnimStand(){
+  var sz=schAnimSzenen(); if(!sz) return null;
+  if(_schAnim.pos!==_schPos){
+    if(_schAnim.uhr){ clearTimeout(_schAnim.uhr); _schAnim.uhr=null; }
+    _schAnim={ pos:_schPos, idx:0, laeuft:true, gesehen:{ 0:true }, uhr:null };
+  }
+  return _schAnim;
+}
+function schAnimAlleGesehen(){
+  var sz=schAnimSzenen(); if(!sz) return true;
+  if(_schGesehen.indexOf(_schPos)>=0) return true;
+  var st=schAnimStand();
+  return sz.every(function(x, i){ return !!st.gesehen[i]; });
+}
+function schAnimMarkup(s){
+  var st=schAnimStand(), sz=s.szenen, x=sz[st.idx]||{};
+  return '<div class="sch-anim" id="schAnim" data-szene="'+st.idx+'">'+
+    '<div class="sch-anim-buehne" aria-live="polite">'+schAnimSzeneMarkup(x, st.idx, sz.length)+'</div>'+
+    '<div class="sch-anim-leiste">'+
+      '<button type="button" class="btn btn-ghost btn-sm" id="schAnimZurueck" aria-label="Bild zurück"'+(st.idx>0?'':' disabled')+'>‹</button>'+
+      '<span class="sch-anim-punkte" aria-hidden="true">'+sz.map(function(_, i){
+        return '<i class="'+(i===st.idx?'an':(st.gesehen[i]?'war':''))+'"></i>'; }).join('')+'</span>'+
+      '<button type="button" class="btn btn-ghost btn-sm" id="schAnimSpiel">'+
+        (st.laeuft ? 'Pause' : (st.idx===sz.length-1 && st.gesehen[sz.length-1] ? 'Nochmal' : 'Abspielen'))+'</button>'+
+      '<button type="button" class="btn btn-ghost btn-sm" id="schAnimVor" aria-label="Bild vor"'+(st.idx<sz.length-1?'':' disabled')+'>›</button>'+
+    '</div>'+
+    '<p class="sch-anim-art">Animation · '+sz.length+' Bilder</p>'+
+  '</div>';
+}
+function schAnimSzeneMarkup(x, i, n){
+  return '<div class="sch-anim-szene">'+
+    '<span class="sch-anim-ico">'+ikon(x.ico||'blatt')+'</span>'+
+    '<span class="sch-anim-nr">'+(i+1)+' / '+n+'</span>'+
+    '<p class="sch-anim-text">'+esc(x.text||'')+'</p>'+
+    (x.quelle ? '<span class="sch-anim-quelle">'+esc(schAnimQuelle(x.quelle))+'</span>' : '')+
+  '</div>';
+}
+/* „b36" → „Hilfe im Studio · Nr. 36", „modul" → „aus diesem Modul". */
+function schAnimQuelle(q){
+  var m=/^b(\d+)$/.exec(q||'');
+  return m ? 'Aus „Hilfe im Studio" · Nr. '+m[1] : (q==='modul' ? 'Aus diesem Modul' : String(q));
+}
+function schAnimBinden(box){
+  var sz=schAnimSzenen(); if(!sz) return;
+  var st=schAnimStand();
+  function zeigen(i){
+    st.idx=Math.max(0, Math.min(sz.length-1, i)); st.gesehen[st.idx]=true;
+    var a=$('schAnim'); if(!a) return;
+    /* Nur Bühne, Punkte und Knöpfe neu — nicht der ganze Schritt. */
+    var neu=document.createElement('div'); neu.innerHTML=schAnimMarkup(_schModul.schritte[_schPos]);
+    a.replaceWith(neu.firstChild);
+    schAnimBinden(box);
+    var w=$('schWeiter'), t=$('schVideoStand');
+    var zu=schVideoGesperrt();
+    if(w) w.disabled=zu || (_schPhase==='schritte' && !schLesenFertig());
+    if(t){ if(zu) t.textContent=schVideoStandText(); else t.remove(); }
+  }
+  function takt(){
+    if(st.uhr){ clearTimeout(st.uhr); st.uhr=null; }
+    if(!st.laeuft) return;
+    st.uhr=setTimeout(function(){
+      st.uhr=null;
+      if(_schAnim!==st || _schAnsicht!=='lauf' || currentView!=='schulung') return;
+      /* Im Hintergrund läuft nichts weiter: wer das Tablet weglegt,
+         hat die Bilder nicht gesehen. */
+      if(document.visibilityState!=='visible'){ takt(); return; }
+      if(st.idx>=sz.length-1){ st.laeuft=false; zeigen(st.idx); return; }
+      zeigen(st.idx+1);
+    }, SCH_ANIM_MS);
+  }
+  var sp=$('schAnimSpiel');
+  if(sp) sp.addEventListener('click', function(){
+    if(st.laeuft){ st.laeuft=false; zeigen(st.idx); return; }
+    st.laeuft=true;
+    zeigen(st.idx===sz.length-1 ? 0 : st.idx);
+  });
+  var zr=$('schAnimZurueck');
+  if(zr) zr.addEventListener('click', function(){ st.laeuft=false; zeigen(st.idx-1); });
+  var vr=$('schAnimVor');
+  if(vr) vr.addEventListener('click', function(){ st.laeuft=false; zeigen(st.idx+1); });
+  takt();
+}
+
 /* ── „Weiter" erst nach dem Video ─────────────────────────────────
    Gesperrt, solange weniger als 90 % der Länge wirklich gelaufen sind.
    Gezählt wird der Fortschritt zwischen zwei Zeitmeldungen des Players
@@ -29894,11 +30045,13 @@ function schVideoSchritt(){
 }
 function schVideoGesperrt(){
   if(_schPhase!=='schritte' || !_schLauf || _schLauf.ohneVideoSperre) return false;
+  if(schAnimSzenen()) return !schAnimAlleGesehen();
   if(!schVideoSchritt() || _schGesehen.indexOf(_schPos)>=0) return false;
   var st=_schVideoStand[_schPos];
   return !(st && (st.fertig || st.fehler));
 }
 function schVideoStandText(){
+  if(schAnimSzenen()) return 'Weiter geht es, wenn jedes Bild der Animation einmal zu sehen war.';
   var st=_schVideoStand[_schPos]||{}, s=schVideoSchritt()||{};
   var dauer=st.dauer || s.dauer || 0;
   if(!dauer) return 'Weiter geht es, wenn du das Video angesehen hast.';
@@ -29947,6 +30100,7 @@ function schVideoBeobachten(box){
 
 function schLaufBinden(box){
   schLesenBeobachten();
+  schAnimBinden(box);
   schVideoBeobachten(box);
   schVideosAufloesen(box);
   var h=$('schHaken');
@@ -30503,7 +30657,10 @@ function schEntwurfAus(m){
       return { art:String(s.art||'text'), titel:String(s.titel||''),
                text:String(s.text||''), quelle:s.quelle||null,
                dauer:Number(s.dauer||0), hinweis:String(s.hinweis||''),
-               ems:(s.ems||[]).slice() };
+               ems:(s.ems||[]).slice(),
+               /* Runde 188: die Animation bleibt erhalten, wenn die Leitung
+                  eine eigene Fassung des Moduls speichert. */
+               szenen:Array.isArray(s.szenen) ? s.szenen.map(function(x){ return Object.assign({}, x); }) : null };
     }),
     fragen:(m.fragen||[]).map(function(f){
       return { frage:String(f.frage||''),
@@ -31110,7 +31267,9 @@ function schModulSpeichern(){
       /* Ein Lesetext aus dem EMS-Wissen behält seine Verweise, auch wenn
          die Leitung eine Kopie des Moduls im Editor speichert. */
       if(s.art==='lesen' && s.ems && s.ems.length) raus.ems=s.ems.slice(0,12).map(String);
-      if(s.art==='video'){ raus.dauer=s.dauer||0; raus.hinweis=String(s.hinweis||''); }
+      if(s.art==='video'){ raus.dauer=s.dauer||0; raus.hinweis=String(s.hinweis||'');
+        if(s.szenen && s.szenen.length) raus.szenen=s.szenen.slice(0,12).map(function(x){
+          return { ico:String(x.ico||''), text:String(x.text||'').slice(0,240), quelle:String(x.quelle||'') }; }); }
       return raus;
     }),
     fragen:fragen.map(function(f){
