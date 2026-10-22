@@ -85,7 +85,7 @@ const reiterMessen = (page, listeId) => page.evaluate(id => {
     if (plan.tage !== 7) errs.push('Der Plan zeigt ' + plan.tage + ' statt 7 Tage');
     if (plan.daueErklaerung) errs.push('Die Dauererklaerung ueber dem Plan ist zurueck');
 
-    /* Runde 185: das Schwarze Brett hängt nicht mehr unter „Plan", sondern
+    /* Runde 187: das Schwarze Brett hängt nicht mehr unter „Plan", sondern
        in der Pinnwand (Umschalter „Aushänge"). Aus dem Betrieb: „das
        problem mit dem zu viel bleibt immer noch bestehen" – „deine 2
        fragen können wir so umsetzten". Gemessen wird dort mit denselben

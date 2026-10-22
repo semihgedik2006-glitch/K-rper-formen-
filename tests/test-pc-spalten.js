@@ -63,7 +63,7 @@ async function zu(p, v) {
      den Filter traf querySelector am Handy die verborgene Seitenleiste. */
   await p.evaluate((g) => { const k = [...document.querySelectorAll('.mobnav [data-group="' + g + '"], #side [data-group="' + g + '"]')].find(e => e.offsetParent); if (k) k.click(); }, GRUPPE[v]);
   await p.waitForTimeout(700);
-  /* Runde 185: Material und Geräte sind EIN Reiter „Bestand“; Geräte
+  /* Runde 187: Material und Geräte sind EIN Reiter „Bestand“; Geräte
      erreicht man über den Umschalter in der Materialansicht. Aus dem
      Betrieb: „das problem mit dem zu viel bleibt immer noch bestehen“ –
      „deine 2 fragen können wir so umsetzten“. Der Weg ändert sich, die

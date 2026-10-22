@@ -82,7 +82,7 @@ const ansicht = page => page.evaluate(() => {
     /* Runde 184: fünf — Aufgaben, Putzplan, Material, Geräte,
        Probetraining. Die Dokumente sind der sechste von früher, jetzt
        unter „Wissen" (siehe oben). */
-    /* Runde 185 (aus dem Betrieb: „das problem mit dem zu viel bleibt
+    /* Runde 187 (aus dem Betrieb: „das problem mit dem zu viel bleibt
        immer noch bestehen" — und „deine 2 fragen können wir so
        umsetzten"): vier — Aufgaben, Putzplan, Bestand, Probetraining.
        Material und Geräte sind EIN Reiter „Bestand"; Geräte stehen

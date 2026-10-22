@@ -166,7 +166,7 @@ const setzeLesestaende = (p, fn) => p.evaluate((SRC) => {
        Unterhaltung, für „ungelesen"). Neu ist nur, dass die schreibende
        Seite ihn als Häkchen sieht. */
     const p = await oeffne(b, 1440, 900);
-    /* Runde 185 (aus dem Betrieb: „das problem mit dem zu viel bleibt
+    /* Runde 187 (aus dem Betrieb: „das problem mit dem zu viel bleibt
        immer noch bestehen"): Chat und Direkt sind EIN Reiter „Chats".
        Direktnachrichten öffnet man über „Direkt" vorn in der Kanalzeile
        (#kanalDirekt) bzw. am Rechner mit Kanalspalte über „Alle

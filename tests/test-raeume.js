@@ -120,7 +120,7 @@ const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel
         await p.waitForTimeout(300);
         const jetzt = await p.evaluate(() => (document.querySelector('.view.show') || {}).id);
         if (jetzt === 'view-' + r) besucht[r] = besucht[r] || g;
-        /* Runde 185: Material und Geräte sind EIN Reiter „Bestand", Chat
+        /* Runde 187: Material und Geräte sind EIN Reiter „Bestand", Chat
            und Direkt EIN Reiter „Chats". Der zweite Teil steht als
            Umschalter bzw. als „Direkt" vorn in der Kanalzeile – direkt
            unter dem Reiter, ohne Suchen. Aus dem Betrieb: „das problem
@@ -143,7 +143,7 @@ const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel
     const fehlt = alle.filter(v => !besucht[v]);
     pruefe('alle ' + alle.length + ' Ansichten erreichbar über Raum + Reiter', !fehlt.length, 'fehlt: ' + fehlt.join(', ') + ' — gefunden: ' + JSON.stringify(besucht));
     console.log('  (über den Umschalter, ein Tipp nach dem Reiter: ' + (dreiTipps.join(', ') || '–') + ')');
-    pruefe('nur Geräte und Direkt liegen hinter einem Umschalter (Runde 185), alles andere in zwei Tipps',
+    pruefe('nur Geräte und Direkt liegen hinter einem Umschalter (Runde 187), alles andere in zwei Tipps',
       dreiTipps.every(v => v === 'geraete' || v === 'dm'), dreiTipps.join(', '));
     pruefe('Putzplan liegt im Raum Studio', besucht.putzplan === 'g-arbeit', besucht.putzplan);
     pruefe('Ich und Persönlich liegen unter Heute', besucht.ich === 'g-start' && besucht.persoenlich === 'g-start');

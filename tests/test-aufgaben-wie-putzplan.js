@@ -409,7 +409,7 @@ const GRUPPEN = () => [...document.querySelectorAll('#todoArea .pp-gruppe')].map
             const sa = document.querySelector('#view-todos .scroll-area');
             const els = [...document.querySelectorAll('#tdLeiste button, #tdLeiste select, #tdWerkzeuge button, #tdWerkzeuge select, #tdWerkzeuge input, #tdWerZeile input, ' +
               '#todoArea .todo .check, #todoArea .todo .t-edit, #todoArea .todo .t-del, #todoArea .todo .t-mehr, #todoArea .todo .t-nimm')]
-              /* Runde 185: Erledigtes steht eingeklappt in <details>. Was dort
+              /* Runde 187: Erledigtes steht eingeklappt in <details>. Was dort
                  drin ist, hat Rechtecke, ist aber nicht zu sehen und nicht zu
                  treffen – gemessen wird, was im Bild ist (checkVisibility). */
               .filter(e => e.getClientRects().length && e.checkVisibility());

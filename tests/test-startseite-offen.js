@@ -115,7 +115,7 @@ async function startseite(p) {
         const l = b && b.querySelector('[data-heute]');
         return l ? { ziel: l.dataset.heute, filter: l.dataset.hf || '' } : null;
       })(),
-      /* Runde 185: am Raum „Studio" steht ein Punkt statt der Zahl; die
+      /* Runde 187: am Raum „Studio" steht ein Punkt statt der Zahl; die
          Zahl steht im Vorlesetext (aria-label „N offen"). Aus dem
          Betrieb: „das problem mit dem zu viel bleibt immer noch
          bestehen" – „deine 2 fragen können wir so umsetzten". Geprüft
@@ -220,7 +220,7 @@ async function startseite(p) {
       st.abzeichen && (st.abzeichen.text === String(liste.offen) ||
         (liste.offen > 99 && st.abzeichen.text === '99+')),
       (st.abzeichen || {}).text + ' vs ' + liste.offen);
-    pruefe(rolle + ': am Raum steht ein Punkt, keine Zahl (Runde 185)',
+    pruefe(rolle + ': am Raum steht ein Punkt, keine Zahl (Runde 187)',
       st.abzeichen && st.abzeichen.punkt, JSON.stringify(st.abzeichen));
 
     if (fehler.length) pruefe(rolle + ': keine Skriptfehler', false, fehler[0]);

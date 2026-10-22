@@ -223,7 +223,7 @@ async function seite(b, stub, such, breite) {
       let reiterOk = true;
       let zielUm = null;
       if (tt) reiterOk = !!document.querySelector('[data-teamtab="' + tt + '"].on');
-      /* Runde 185 (aus dem Betrieb: „das problem mit dem zu viel bleibt
+      /* Runde 187 (aus dem Betrieb: „das problem mit dem zu viel bleibt
          immer noch bestehen"): das Schwarze Brett ist vom Team in die
          Pinnwand gezogen. Der alte Team-Reiter ist ausgeblendet
          (pin-umgezogen) und leitet um. Richtig ist dann: Seite

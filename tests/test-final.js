@@ -25,7 +25,7 @@ const SP = process.env.SP || __dirname;
   async function go(view) {
     await page.evaluate(g => document.querySelector('.mobnav [data-group="' + g + '"]').click(), GROUP[view]);
     await page.waitForTimeout(450);
-    /* Runde 185 (aus dem Betrieb: „das problem mit dem zu viel bleibt
+    /* Runde 187 (aus dem Betrieb: „das problem mit dem zu viel bleibt
        immer noch bestehen"): Chat und Direkt sind EIN Reiter „Chats".
        Direktnachrichten öffnet man über „Direkt" vorn in der
        Kanalzeile (#kanalDirekt), nicht mehr über einen eigenen Reiter. */

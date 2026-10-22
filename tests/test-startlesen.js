@@ -138,7 +138,7 @@ async function start(errs, brett) {
        Übergabe stand vorher nur im Team-Bereich hinter zwei Klicks und
        einer Studio-Auswahl — also da, wo sie niemand liest, der gerade
        zur Schicht kommt. */
-    /* Runde 185 (aus dem Betrieb: „das problem mit dem zu viel bleibt
+    /* Runde 187 (aus dem Betrieb: „das problem mit dem zu viel bleibt
        immer noch bestehen"): das Schwarze Brett hängt jetzt in der
        Pinnwand (Ansicht 'ann', Teil „Aushänge"), nicht mehr im Team.
        Die Brett-Karte zeigt daher auf 'ann' mit data-pin="brett" —
@@ -160,7 +160,7 @@ async function start(errs, brett) {
     console.log('Nach Klick auf „Alle ›":', wo);
     if (wo !== 'view-ann') errs.push('FEHLT: „Alle ›" führt nicht zu den Aushängen (steht auf ' + wo + ')');
 
-    // Runde 185: „Alle ›" am Brett führt zur Pinnwand, Teil Aushänge (Brett)
+    // Runde 187: „Alle ›" am Brett führt zur Pinnwand, Teil Aushänge (Brett)
     await page.evaluate(() => document.querySelector('.mobnav [data-group="g-start"]').click());
     await page.waitForTimeout(700);
     await page.evaluate(() => document.querySelector('#homeBoardCard .mini-link').click());

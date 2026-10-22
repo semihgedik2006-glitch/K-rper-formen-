@@ -22,7 +22,7 @@ async function start(stub, errs) {
   await page.waitForTimeout(2700);
   await page.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
   await page.waitForTimeout(600);
-  /* Runde 185 (aus dem Betrieb: „das problem mit dem zu viel bleibt
+  /* Runde 187 (aus dem Betrieb: „das problem mit dem zu viel bleibt
      immer noch bestehen"): Material und Geräte sind EIN Reiter
      „Bestand"; Geräte über den Umschalter oben in der Seite. */
   const s = await page.$('#subnav [data-paar="bestand"]');
