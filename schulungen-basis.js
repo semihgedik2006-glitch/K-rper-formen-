@@ -42,7 +42,7 @@
    den Geräten eine Woche lang die alte Fassung.
    ══════════════════════════════════════════════════════════════════ */
 window.SCHULUNGEN_BASIS = {
-  stand: '2026-09-30',
+  stand: '2026-10-22',
   quelle: 'Körper Formen — Mitarbeiter-Handbuch',
 
   /* Die Kategorien. Umbenennen ist eine Zeile; die `id` bleibt, sonst
@@ -77,7 +77,23 @@ window.SCHULUNGEN_BASIS = {
                 'scheitern kannst: falsch beantwortet heisst, dass du es noch einmal ' +
                 'versuchst, bis es sitzt.' },
         { art: 'video', titel: 'Ein Tag im Studio', dauer: 240, quelle: null,
-          hinweis: 'Rundgang: Empfang, Trainingsfläche, Umkleide, Lager.' },
+          hinweis: 'Rundgang: Empfang, Trainingsfläche, Umkleide, Lager.',
+          /* Runde 202: bis das Video da ist, eine Animation. Jeder Satz
+             aus diesem Modul oder aus „Hilfe im Studio" (Nummer dabei). */
+          szenen: [
+            { ico: 'schloss', quelle: 'modul',
+              text: 'Öffnen: Was zu tun ist, steht als Liste in der App unter Aufgaben.' },
+            { ico: 'person', quelle: 'b16',
+              text: 'Empfang: Termin prüfen und persönlich begrüßen.' },
+            { ico: 'hantel', quelle: 'b36',
+              text: 'Trainingsfläche: nach jedem Training für den nächsten Kunden vorbereiten.' },
+            { ico: 'leute', quelle: 'b42',
+              text: 'Umkleide: sauber, trocken und ordentlich. Vergessene Gegenstände sichern.' },
+            { ico: 'paket', quelle: 'b47',
+              text: 'Lager: Bestand prüfen. Was fehlt, zur Nachbestellung melden.' },
+            { ico: 'schloss', quelle: 'modul',
+              text: 'Schliessen: wieder die Liste unter Aufgaben — du musst sie nicht auswendig können.' }
+          ] },
         { art: 'text', titel: 'Die drei festen Punkte',
           text: 'Öffnen, der laufende Betrieb, Schliessen. Alles andere hängt ' +
                 'dazwischen.\n\nWas beim Öffnen und Schliessen zu tun ist, steht als ' +
@@ -86,7 +102,19 @@ window.SCHULUNGEN_BASIS = {
         { art: 'bestaetigen', titel: 'Kurz bestätigen',
           text: 'Ich weiss, wo die Öffnungs- und Schliessliste in der App steht.' },
         { art: 'video', titel: 'Wen frage ich wann?', dauer: 180, quelle: null,
-          hinweis: 'Studioleitung, Teamchat, Hilfe im Studio — und was wohin gehört.' }
+          hinweis: 'Studioleitung, Teamchat, Hilfe im Studio — und was wohin gehört.',
+          szenen: [
+            { ico: 'rettung', quelle: 'modul',
+              text: 'Etwas klemmt, ein Gerät piept: zuerst „Hilfe im Studio“ — der Rettungsring oben.' },
+            { ico: 'leute', quelle: 'b78',
+              text: 'Was das Team wissen muss, gehört ins offizielle System — nicht nur in einen privaten Chat.' },
+            { ico: 'paket', quelle: 'modul',
+              text: 'Etwas ist aufgebraucht: im Material-Bereich als fehlend melden.' },
+            { ico: 'krone', quelle: 'b77',
+              text: 'Eine Kundenbeschwerde: sachlich festhalten und die zuständige Person informieren.' },
+            { ico: 'warnung', quelle: 'b95',
+              text: 'Bei medizinischem Notfall Rettungsdienst über 112 alarmieren.' }
+          ] }
       ],
       fragen: [
         { frage: 'Ein Gerät piept beim Einschalten dreimal und geht wieder aus. Was ist der erste Schritt?',
@@ -127,9 +155,25 @@ window.SCHULUNGEN_BASIS = {
                 'schmutzig — es riecht, und es überträgt.\n\n' +
                 'Deshalb gilt: erst reinigen, dann alles andere.' },
         { art: 'video', titel: 'Trainingsplatz reinigen', dauer: 210, quelle: null,
-          hinweis: 'Reihenfolge, Mittel, Einwirkzeit.' },
+          hinweis: 'Reihenfolge, Mittel, Einwirkzeit.',
+          /* Wortgleich mit „Hilfe im Studio" Nr. 36. */
+          szenen: [
+            { ico: 'paket', quelle: 'b36', text: 'Kundenmaterial entfernen.' },
+            { ico: 'tropfen', quelle: 'b36', text: 'Oberflächen nach Studio-/Herstellerangaben reinigen.' },
+            { ico: 'hantel', quelle: 'b36', text: 'Gerät und Kontaktflächen reinigen.' },
+            { ico: 'hakenKreis', quelle: 'b36', text: 'Fläche trocken und ordentlich hinterlassen.' },
+            { ico: 'blatt', quelle: 'b36', text: 'Reinigung bei Bedarf dokumentieren.' }
+          ] },
         { art: 'video', titel: 'Elektroden und Weste desinfizieren', dauer: 260, quelle: null,
-          hinweis: 'Besonders die Kontaktflächen — dort sitzt der Schweiss.' },
+          hinweis: 'Besonders die Kontaktflächen — dort sitzt der Schweiss.',
+          /* Wortgleich mit „Hilfe im Studio" Nr. 37. */
+          szenen: [
+            { ico: 'blatt', quelle: 'b37', text: 'Herstellerangaben desinfektionsverträglicher Materialien beachten.' },
+            { ico: 'tropfen', quelle: 'b37', text: 'Geeignetes Mittel verwenden.' },
+            { ico: 'hantel', quelle: 'b37', text: 'Kontaktflächen vollständig bearbeiten.' },
+            { ico: 'uhr', quelle: 'b37', text: 'Einwirkzeit beachten.' },
+            { ico: 'sonne', quelle: 'b37', text: 'Vor Wiederverwendung vollständig trocknen lassen.' }
+          ] },
         { art: 'bestaetigen', titel: 'Kurz bestätigen',
           text: 'Ich weiss, wo Desinfektionsmittel und Tücher stehen und wen ich ' +
                 'informiere, wenn etwas leer ist.' }
@@ -178,7 +222,18 @@ window.SCHULUNGEN_BASIS = {
                 'am Anfang zu erkennen, und genau deshalb gibt es einen festen ' +
                 'Ablauf statt eines Bauchgefühls.' },
         { art: 'video', titel: 'Der Ablauf, Schritt für Schritt', dauer: 300, quelle: null,
-          hinweis: 'Training stoppen, hinlegen, Beine hoch, ansprechbar halten.' },
+          hinweis: 'Training stoppen, hinlegen, Beine hoch, ansprechbar halten.',
+          /* Wortgleich mit „Hilfe im Studio" Nr. 95. Mehr nicht: was über
+             das Handbuch hinausgeht, ist Sache der Ersten Hilfe und gehört
+             nicht in eine selbstgemachte Animation. */
+          szenen: [
+            { ico: 'warnung', quelle: 'b95', text: 'Training sofort pausieren.' },
+            { ico: 'person', quelle: 'b95', text: 'Kunden sicher hinsetzen/lagern nach Situation.' },
+            { ico: 'herz', quelle: 'b95', text: 'Zustand beobachten und nach interner Notfallvorgabe handeln.' },
+            { ico: 'glocke', quelle: 'b95', text: 'Bei medizinischem Notfall Rettungsdienst über 112 alarmieren.' },
+            { ico: 'blatt', quelle: 'b95', text: 'Vorfall dokumentieren.' },
+            { ico: 'krone', quelle: 'b95', text: 'Leitung informieren.' }
+          ] },
         { art: 'bestaetigen', titel: 'Kurz bestätigen',
           text: 'Ich weiss, wo der Erste-Hilfe-Kasten hängt und wo die Notrufnummern stehen.' },
         { art: 'text', titel: 'Danach',

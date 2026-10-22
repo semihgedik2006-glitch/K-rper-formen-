@@ -1234,6 +1234,19 @@ service cloud.firestore {
     /* Die Bremse gegen Durchprobieren. Ebenfalls zu: wer den eigenen
        Zaehler zuruecksetzen koennte, haette keine Bremse. */
     match /schulungVersuche/{uid} { allow read, write: if false; }
+    /* Auffrischen (Runde 201): der Lernplan je Teilnehmer — welche Frage
+       auf welcher Stufe steht. Schreibt und liest nur die Cloud Function
+       `schulungAuffrischen`. Im Browser niemand, auch nicht die Leitung:
+       „Wird es als Kontrolle empfunden, schadet es.“ (Runde 134). */
+    match /schulungLernplan/{tId} { allow read, write: if false; }
+    /* Die Summe je Frage, OHNE Namen: wie oft richtig, wie oft daneben.
+       Daran sieht die Leitung, welche Frage im Team nicht sitzt — und
+       welches Modul nachgebessert werden muss. Schreiben nur die
+       Funktion; sonst schriebe sich jeder seine Zahlen zurecht. */
+    match /schulungFragenStat/{modul} {
+      allow read: if aufFlachenPfaden() && (istAktiv() && (isChef() || isLeiter()));
+      allow write: if false;
+    }
     /* Die Durchlaeufe. `create` fehlt hier mit Absicht — siehe oben.
        Schreiben darf nur das GERAET, auf dem der Durchlauf laeuft, und
        nur solange er laeuft: ein abgeschlossener Durchlauf ist ein
@@ -2210,6 +2223,12 @@ service cloud.firestore {
         }
         match /schulungCodes/{kennung} { allow read, write: if false; }
         match /schulungVersuche/{uid} { allow read, write: if false; }
+        // Auffrischen (Runde 201) — Begründung bei der flachen Fassung.
+        match /schulungLernplan/{tId} { allow read, write: if false; }
+        match /schulungFragenStat/{modul} {
+          allow read: if inFirma(f) && (istAktiv() && (isChef() || isLeiter()));
+          allow write: if false;
+        }
         match /schulungLaeufe/{lId} {
           allow read: if inFirma(f)
             && (istAktiv()
