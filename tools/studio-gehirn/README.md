@@ -51,6 +51,7 @@ Workers AI, **nicht** über GitHub Actions.
   oder nicht: Suchwörter, Volltext-Treffer und die Ähnlichkeit nach
   Bedeutung ohne Schwelle. Danach wird `VEKTOR_MIN` eingestellt.
 - Die neuen Spalten der Tabelle `vorschlag` legt der Worker selbst an.
+- Ab 2.16: **Sammelfreigabe** — alle offenen Vorschläge einer Quelle (z. B. einer Schulung) auf einmal, im Leitstand oben unter „Vorschläge“ und in der App in der Karte. Je Aufruf 20; eigene Vorschläge bleiben für die vier Augen stehen.
 
 ## Variablen
 

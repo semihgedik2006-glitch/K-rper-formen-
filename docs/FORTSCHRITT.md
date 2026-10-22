@@ -18090,3 +18090,33 @@ geben soll, falls die Gefühle der Kugel jemandem im Team zu viel sind:
   - Der Punkt bleibt, und nach dem Neuladen ist es weiter aus.
   - Mit „Zeigen“ freut Formi sich wieder.
 - Gegenprobe mit dem `index.html` von `main`: schlägt an.
+
+## Runde 189 — Alle aus einer Schulung auf einmal (Worker 2.16, 22.10.2026)
+
+Aus dem Betrieb, auf die Frage nach 124 einzelnen Freigaben: „ja sind zu
+viele klicks".
+
+**Gebaut**
+- Worker 2.16: `/api/vorschlag/entscheiden` nimmt statt einer Nummer eine
+  `quelle` und entscheidet alle offenen Import-Vorschläge dieser Quelle,
+  20 je Aufruf (jeder neue Eintrag rechnet seinen Fingerabdruck gleich
+  mit). Die Liste liefert dazu `gruppen` (Quelle + Anzahl, ab zwei).
+- Leitstand: oben unter „Vorschläge“ je Quelle ein Knopf, mit Rückfrage.
+- App: unter einem Schulungs-Vorschlag „Alle N aus Schulung „…“
+  übernehmen“. Erster Tipp fragt nach (6 s), zweiter übernimmt; die App
+  ruft so lange, bis nichts übrig ist, und zeigt den Stand.
+
+**Warum so**
+- *Zweimal tippen statt Dialog.* Ein Browser-Dialog blockiert die Seite
+  und taugt in der App nicht; die Rückfrage steht im Knopf selbst, mit
+  dem Hinweis, dass die Texte ungelesen Wissen werden.
+- *Vier Augen bleiben.* Eigene Vorschläge werden übersprungen, nicht
+  freigegeben — sonst wäre die Sammelfreigabe der Umweg um die Regel.
+- *Nur „Neues Wissen“.* Selbsttests, Korrekturen und Antwort-Entwürfe
+  brauchen einen Blick; die gibt es weiter nur einzeln.
+
+**Gemessen:** Sammelknopf mit dem längsten echten Quellnamen bei 320 px
+46 px hoch, umbricht sauber; alle Knöpfe der Karte ≥ 44 × 44 bei 7
+Breiten × 2 Dichten (`test-formi-lernt` 48/48). Worker-Durchlauf 106/106
+(u. a. 25 Vorschläge → 20 + 5, eigener bleibt offen, andere Quelle
+unberührt).

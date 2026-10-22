@@ -1,5 +1,5 @@
 /**
- * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.15)
+ * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.16)
  * Cloudflare Worker: WhatsApp (Text + Sprachnachrichten), Studio-Chat-Schnittstelle,
  * Leitstand-Webseite, Speicher in D1, Antworten über Workers AI.
  *
@@ -1175,6 +1175,28 @@ export async function vorschlagUrteil(env, { id, gut, inhalt, von, vonId, studio
   return { ok: false, fehler: "Unbekannte Art." };
 }
 
+/* 2.16 (22.10.2026, aus dem Betrieb: „ja sind zu viele klicks" — 124
+   Vorschläge aus den Schulungen einzeln freigeben): alle offenen
+   Import-Vorschläge EINER Quelle auf einmal. Je Aufruf höchstens 20,
+   weil jeder neue Eintrag seinen Fingerabdruck gleich mitrechnet; die
+   App ruft so lange, bis „uebrig" 0 ist. Vier Augen gelten weiter:
+   eigene Vorschläge werden übersprungen, nicht freigegeben. */
+export const SAMMEL_JE_AUFRUF = 20;
+export async function vorschlagSammelUrteil(env, { quelle, gut, von, vonId, studio }) {
+  await vorschlagTabelle(env);
+  const q = String(quelle || "").trim();
+  if (q.length < 3) return { ok: false, fehler: "Quelle fehlt." };
+  const offen = rows(await env.DB.prepare("SELECT id, von_id FROM vorschlag WHERE status = 'neu' AND art = 'import' AND quelle = ? ORDER BY id").bind(q).all());
+  const fremd = offen.filter(x => !(gut && studio && vonId && x.von_id && String(x.von_id) === String(vonId)));
+  const ergebnis = { ok: true, erledigt: 0, fehler: 0, uebersprungen: offen.length - fremd.length, uebrig: 0 };
+  for (const x of fremd.slice(0, SAMMEL_JE_AUFRUF)) {
+    const u = await vorschlagUrteil(env, { id: x.id, gut: !!gut, inhalt: null, von, vonId, studio });
+    if (u.ok) ergebnis.erledigt++; else ergebnis.fehler++;
+  }
+  ergebnis.uebrig = Math.max(0, fremd.length - ergebnis.erledigt - ergebnis.fehler);
+  return ergebnis;
+}
+
 /* Rein rechnerisch, damit es sich ohne Datenbank prüfen lässt.
    Ziel: 500 Paare, davon mindestens 100 von Semih beantwortet — die
    sind das Gold, weil sie Wissen enthalten, das vorher fehlte. Die
@@ -1522,9 +1544,12 @@ async function api(request, env, url) {
       const arten = VORSCHLAG_ARTEN_STUDIO;
       const liste = rows(await env.DB.prepare("SELECT id, art, wissen_id, thema, inhalt, alt, begruendung, kategorie, quelle, von, von_id, erstellt FROM vorschlag WHERE status = 'neu' AND art IN (" + arten.map(() => "?").join(",") + ") ORDER BY id DESC LIMIT 40").bind(...arten).all());
       const n = await env.DB.prepare("SELECT COUNT(*) AS n FROM vorschlag WHERE status = 'neu' AND art IN (" + arten.map(() => "?").join(",") + ")").bind(...arten).first();
-      return json({ anzahl: (n && n.n) || 0, liste: liste.map(x => ({ id: x.id, art: x.art, wissenId: x.wissen_id, thema: x.thema, inhalt: x.inhalt, alt: x.alt, begruendung: x.begruendung, kategorie: x.kategorie, von: x.von, eigen: !!(vonId && x.von_id && x.von_id === vonId), erstellt: x.erstellt })) });
+      /* 2.16: Gruppen für die Sammelfreigabe — ab zwei offenen je Quelle. */
+      const gruppen = rows(await env.DB.prepare("SELECT quelle, COUNT(*) AS anzahl FROM vorschlag WHERE status = 'neu' AND art = 'import' AND quelle IS NOT NULL GROUP BY quelle HAVING COUNT(*) >= 2 ORDER BY quelle").all());
+      return json({ anzahl: (n && n.n) || 0, gruppen, liste: liste.map(x => ({ id: x.id, art: x.art, wissenId: x.wissen_id, thema: x.thema, inhalt: x.inhalt, alt: x.alt, begruendung: x.begruendung, kategorie: x.kategorie, quelle: x.quelle, von: x.von, eigen: !!(vonId && x.von_id && x.von_id === vonId), erstellt: x.erstellt })) });
     }
     if (pfad === "/api/vorschlag/import") return json(await vorschlagImport(env, b.eintraege, { von, vonId, quelle: b.quelle ? String(b.quelle) : null }));
+    if (b.quelle != null && b.id == null) return json(await vorschlagSammelUrteil(env, { quelle: String(b.quelle), gut: !!b.gut, von, vonId, studio: !adminOk || !!b.studio }));
     return json(await vorschlagUrteil(env, { id: b.id, gut: !!b.gut, inhalt: b.inhalt == null ? null : String(b.inhalt), von, vonId, studio: !adminOk || !!b.studio }));
   }
 
@@ -2011,6 +2036,25 @@ var VS_NAME = { frage: "Selbsttest", luecke: "Antwort-Entwurf", veraltet: "Noch 
 function vorschlaege(v) {
   api("/api/vorschlaege").then(function (liste) {
     v.replaceChildren(el("div", { class: "s", style: "margin-bottom:10px", text: "Formi schlägt vor, du entscheidest. Text bei Bedarf ändern, dann übernehmen. Nichts davon ist Wissen, bevor du es freigibst." }));
+    /* 2.16: alle einer Quelle auf einmal (z. B. eine Schulung). */
+    var sammel = el("div", { class: "row", style: "margin:0 0 10px;flex-wrap:wrap" });
+    v.append(sammel);
+    api("/api/vorschlag/liste", {}).then(function (d) {
+      (d.gruppen || []).forEach(function (g) {
+        var name = /„/.test(g.quelle) ? g.quelle : "„" + g.quelle + "“";
+        sammel.append(el("button", { class: "btn", text: "Alle " + g.anzahl + " aus " + name + " übernehmen", onclick: function (e) {
+          if (!confirm("Alle " + g.anzahl + " Vorschläge aus " + name + " ungelesen als Wissen übernehmen?")) return;
+          var knopf = e.target; knopf.disabled = true;
+          (function runde(gesamt) {
+            api("/api/vorschlag/entscheiden", { quelle: g.quelle, gut: true }).then(function (r) {
+              gesamt += r.erledigt || 0;
+              knopf.textContent = "Übernimmt … " + gesamt + " von " + g.anzahl;
+              if (r.ok && r.uebrig > 0 && r.erledigt > 0) runde(gesamt); else { toast(gesamt + " übernommen" + (r.fehler ? ", " + r.fehler + " mit Fehler" : "")); zeige(); }
+            });
+          })(0);
+        } }));
+      });
+    });
     if (!liste.length) { v.append(el("div", { class: "empty", text: "Keine Vorschläge. Formi lernt nachts weiter — oder unter Übersicht „Jetzt lernen“." })); return; }
     liste.forEach(function (x) {
       var ta = null;
