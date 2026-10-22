@@ -17423,3 +17423,40 @@ echte Daten.
 **Was noch fehlt** (Ausbau nach dem Grundgerüst): Die Formulare und Fenster
 (Dialoge, Aktionsblätter) tragen noch den dunklen Stil ohne Lichtkante. Die
 Anmeldeseite ist noch nicht im Formi-Look.
+
+## Runde 179 — Stil „Formi“, Teil 2: Fenster, Suche und Anmeldung (22.10.2026)
+
+**Aus dem Betrieb:** „ja mach weiter damit“. Gemeint ist der offene Rest aus
+Runde 178: Fenster, Menüs und die Anmeldeseite.
+
+**Was gebaut ist**
+- **Gemeinsamer Fensterstil:**
+  - Gilt für `.pm-box` (Einstellungen, „Aufgabe bearbeiten“ und die
+    übrigen Fenster dieser Bauart), `.ms-card` (die Blätter hinter „…“),
+    `.search-box` und `.auth-card`.
+  - Die Fläche ist fast deckendes Glas (`#0C1426`). In einem Formular
+    gehört die Schrift vor den Inhalt dahinter, nicht daneben.
+  - Oben läuft eine leuchtende Kante im Akzent, als Hintergrundbild mit
+    1 px Höhe. So braucht es kein Pseudo-Element, und die mobilen Fenster
+    behalten ihren Greifer in `::before`.
+  - Der Schein ist das neue Token `--hud-fenster`. Dafür gibt es keinen
+    festen Schatten; test-gestaltung achtet darauf.
+  - Der Schleier dahinter ist dunkler (`--scrim`).
+- **Anmeldung im Raum:** `.auth-wrap::before` trägt denselben Sternenraum,
+  solange „Raum“ gewählt ist.
+- Alles steht unter `body.formi:not(.light)`, wie in Runde 178: Hell
+  gewinnt.
+
+**Geprüft** (`tests/test-stil-formi.js`, jetzt 48 Zusicherungen)
+- Einstellungen und Suche haben Lichtkante und Schein, bei 1440 und 390 px.
+  Die Beschriftung im Fenster misst 17,3 : 1.
+- Anmeldeseite (stub-ohne-login): Stil Formi mit Raum, Karte mit Kante und
+  Schein, kein Querlauf. Unterzeile 12,8 : 1, Beschriftung 17,3 : 1.
+- **Gegenprobe:** Mit dem `index.html` von vorher schlagen 9 Zusicherungen
+  im neuen Abschnitt an.
+- Grün: test-gestaltung, test-aussehen, test-knoepfe, test-abgeschnitten,
+  test-quer, test-anmelde-mail, test-anmeldung-anbieter,
+  test-konto-ohne-firma, test-uebersicht.
+
+**Nicht geprüft:** jedes einzelne der rund 20 Fenster. Gemessen sind
+Einstellungen, Suche und Anmeldung; die übrigen teilen dieselbe Klasse.
