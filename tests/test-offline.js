@@ -153,6 +153,11 @@ const leiste = (p) => p.evaluate(() => { const l = document.getElementById('offl
       k.click(); await w(250);
       for (const t of ['1', '2', '3', '4']) document.querySelector('#tmTasten [data-tmt="' + t + '"]').click();
       document.querySelector('#tmTasten [data-tmt="ok"]').click(); await w(500);
+      /* Runde 189: nach der PIN wählt man, WAS gestempelt wird. Ohne Netz
+         ist der Stand unbekannt — dann stehen alle vier Knöpfe da. */
+      window.__knoepfeOhneNetz = [...document.querySelectorAll('#tmWahlKnoepfe [data-tmart]')].map(k => k.getAttribute('data-tmart'));
+      const k2 = document.querySelector('#tmWahlKnoepfe [data-tmart="kommen"]');
+      if (k2) { k2.click(); await w(500); }
     }, wer);
     await p.evaluate(() => { window.__aufrufe = []; window.__netzAus(); });
     const t0 = Date.now();
@@ -167,6 +172,9 @@ const leiste = (p) => p.evaluate(() => { const l = document.getElementById('offl
       toast: document.getElementById('toast').textContent
     }));
     pruefe('ohne Netz: kein Aufruf, der Stempel ist gemerkt', a.aufrufe === 0 && a.ws.length === 1 && a.ws[0].pin === '1234', JSON.stringify(a.ws));
+    pruefe('… ohne Netz und unbekanntem Stand stehen alle vier Schritte zur Wahl, auch Feierabend',
+      (await p.evaluate(() => (window.__knoepfeOhneNetz || []).join(','))) === 'kommen,pause,zurueck,gehen');
+    pruefe('… und der gewählte Schritt ist mit gemerkt', a.ws[0] && a.ws[0].art === 'kommen', JSON.stringify(a.ws[0]));
     pruefe('… mit der Zeit des Tippens', a.ws[0] && Math.abs(a.ws[0].ts - t0) < 3000);
     pruefe('… die PIN liegt NICHT im localStorage', !a.lokal.length, JSON.stringify(a.lokal));
     pruefe('… das Tastenfeld ist zu, die Meldung sagt „Seite bitte offen lassen"', a.pinZu && /Ohne Netz gemerkt: Anna Meier.*offen lassen/.test(a.toast), a.toast);
@@ -182,7 +190,7 @@ const leiste = (p) => p.evaluate(() => { const l = document.getElementById('offl
     });
     const d = (t1.c[0] || {}).data || {};
     pruefe('wieder Netz: nachgeschickt mit offlineTs = Zeit des Merkens und offlineId', t1.c.length === 1 &&
-      d.offlineTs === a.ws[0].ts && d.offlineId === a.ws[0].id && d.pin === '1234' && d.uid, JSON.stringify(d));
+      d.offlineTs === a.ws[0].ts && d.offlineId === a.ws[0].id && d.pin === '1234' && d.uid && d.art === 'kommen', JSON.stringify(d));
     pruefe('… danach ist nichts mehr offen, „Nachgereicht … ✓"', !t1.ws.length && !t1.hinweis && /Nachgereicht: Kommen um .* ✓ — Anna Meier/.test(t1.toast), t1.toast);
 
     // Ablehnung beim Nachreichen
@@ -223,6 +231,8 @@ const leiste = (p) => p.evaluate(() => { const l = document.getElementById('offl
       k.click(); await new Promise(r => setTimeout(r, 250));
       for (const t of ['1', '2', '3', '4']) document.querySelector('#tmTasten [data-tmt="' + t + '"]').click();
       document.querySelector('#tmTasten [data-tmt="ok"]').click(); await new Promise(r => setTimeout(r, 600));
+      const k2 = document.querySelector('#tmWahlKnoepfe [data-tmart="kommen"]');
+      if (k2) { k2.click(); await new Promise(r => setTimeout(r, 600)); }
       return { ws: JSON.parse(sessionStorage.getItem('kf_stempelOhneNetz') || '[]').length, toast: document.getElementById('toast').textContent };
     });
     pruefe('Netz da, aber keine Antwort („Failed to fetch"): ebenfalls gemerkt', t3.ws === 1 && /Ohne Netz gemerkt/.test(t3.toast), JSON.stringify(t3));
@@ -254,8 +264,9 @@ const leiste = (p) => p.evaluate(() => { const l = document.getElementById('offl
       await firebase.firestore().collection('firmen/koerperformen/zeiten').add({ uid: 'demo-ich', name: 'Ich', studioKey: 'studio-0',
         art: 'kommen', ts: jetzt - 3 * 3600000, tag: tag, monat: tag.slice(0, 7), quelle: 'terminal', terminalName: 'Empfang',
         ohneNetz: true, empfangen: jetzt - 600000, offlineId: 'o-test' });
-      const g = document.querySelector('.mobnav [data-group="g-ich"]'); if (g) { g.click(); await w(600); }
-      const t = document.querySelector('[data-ichtab="daten"]'); if (t) { t.click(); await w(1200); }
+      const g = document.querySelector('.mobnav [data-group="g-start"]'); if (g) { g.click(); await w(600); }
+      const s = document.querySelector('#subnav [data-subview="ich"]'); if (s) { s.click(); await w(600); }
+      const t = document.querySelector('[data-ichtab="zeiten"]'); if (t) { t.click(); await w(1200); }
       const z = document.querySelector('#ichZeitenListe [data-ztag="' + tag + '"]');
       if (!z) return { fehlt: true };
       if (z.getAttribute('aria-expanded') !== 'true') z.click();
