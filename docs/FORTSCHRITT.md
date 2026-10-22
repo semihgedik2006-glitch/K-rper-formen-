@@ -19718,3 +19718,10 @@ Welten). `test-stempelseite` 201: das Soll mit Mo–Fr 8 h, Sa 4 h gegen eine
 im Test unabhängig gerechnete Summe mit denselben Feiertagen (Oktober bis
 zum 22.: 136:00 h, der 3.10. zählt 0), Felder ≥ 44 bei 1440 und 320, die
 Studioleitung ohne Nachtragen und Ungültig.
+
+**Ein Test aufgeteilt, nicht gelockert.** `test-stempelseite` wuchs auf
+vier Minuten und lief im Gesamtdurchlauf in die 240-Sekunden-Grenze von
+`tests/alle.sh`. Statt die Grenze anzuheben, stehen die Teile der
+Verwaltung (Anträge, Konto, Abschluss, DATEV, Soll je Wochentag) jetzt in
+`tests/test-zeiten-verwaltung.js`: 127 + 74 = dieselben 201 Prüfungen,
+2:07 und 1:59 Minuten.
