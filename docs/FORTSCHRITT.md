@@ -17164,3 +17164,70 @@ hatte zwei Ursachen:
 den echten Themen nachgestellt, dazu eine Gegenprobe mit einer Frage zur
 Kündigung. **Nicht geprüft:** die Rangfolge auf der echten D1 mit 275
 Einträgen. Das zeigt sich nach dem Einspielen.
+
+## Runde 176 — Übersichtlicher, Teil 3: Verwaltung in Gruppen, ruhigere Zeilen am Rechner (22.10.2026)
+
+**Aus dem Betrieb:** Auf den Vorschlag „die Verwaltung aufräumen und die
+Aufgabenkarten ruhiger machen“ kam: „ja“.
+
+**Was gebaut ist**
+- **Verwaltung in vier Gruppen.** `CHEFTABS` trägt eine `gruppe`, dazu kommt
+  `CHEF_GRUPPEN`: Jeden Tag (Überblick, Erstellen, Anliegen, Zeiten), Team &
+  Studios (Team, Studios, Nachweise), Zahlen (Kennzahlen, Auswertung) und
+  Einstellungen (System, Firmen).
+  - Die Startseite setzt Überschriften zwischen die Kacheln. Das
+    geschieht nur, wenn es mehr als eine Gruppe gibt, denn die
+    Studioleitung sieht weniger.
+  - Die Reihenfolge der Reiter folgt jetzt den Gruppen. Anliegen und
+    Zeiten rücken dadurch vor Team.
+- **Am breiten Rechner (ab 1360 px) eine Liste links.** In einem Reiter
+  stehen die Reiter untereinander, mit Gruppenmarken, und rechts steht der
+  Inhalt. Die Bauart entspricht der Kanalspalte im Chat (Runde 172).
+  - **Warum erst ab 1360:** Die Formulare rechts stehen selbst in zwei
+    Spalten (rechts 360–440 px). Bei 1280 px blieben der linken davon
+    336 px, also weniger als am Handy. Darunter bleibt die Leiste
+    waagerecht.
+  - **Warum nicht sticky:** Die Liste ist rund 620 px hoch. Bei
+    1360 × 800 lag „System“ unter dem Rand und war durch kein Scrollen zu
+    erreichen. Der Hit-Test hat das gemeldet (System 76 × 39).
+  - **Der Marker bleibt ein Strich unter dem Wort** (test-reiter). Die
+    Reiter sind so breit wie ihr Wort und nicht wie die Spalte.
+- **Ruhigere Zeilen am Rechner.** In Aufgaben *und* Putzplan sind Griff,
+  Stift und Papierkorb bei `(hover:hover) and (pointer:fine)` durchsichtig.
+  Sichtbar werden sie beim Überfahren, mit Tastaturfokus oder wenn die Zeile
+  mit den Pfeilen gewählt ist.
+  - Sie bleiben in der Zeile, wie am 9.10. beschlossen („Stift und
+    Papierkorb in der Zeile“). Sie werden nur durchsichtig: Kein Springen
+    des Titels, und der Klick trifft dort, wo der Knopf schon steht.
+  - **Am Handy ändert sich nichts.** „Nur Haken und …“ hätte dort dem
+    Beschluss vom 9.10. widersprochen. Die Frage steht im Bericht an den
+    Betrieb und wird nicht still entschieden.
+- **Zwei Funde beim Messen:**
+  - „‹ Übersicht“ war 31 px hoch, und test-knoepfe hatte ihn nie gemessen,
+    weil er auf der Startseite verborgen ist. Jetzt sind es 44 px. Dazu kommen
+    6 px Abstand nach oben, weil die Gruppenleiste darüber 5 px seiner
+    Trefferfläche abdeckte.
+  - Bei den Chef-Zugängen liefen Name und Mail ohne Stil ineinander
+    („Ohne Namentest2@example.com“). `.emp-main`/`.emp-sub` haben jetzt
+    dieselbe Form wie `.emp-info`.
+
+**Geprüft** (`tests/test-verwaltung-gruppen.js`, 69 Zusicherungen)
+- Gruppen und Reihenfolge der Kacheln bei 390 und 1440 px. Die Studioleitung
+  sieht nur Gruppen mit Inhalt.
+- Liste untereinander mit Marken bei 1360 / 1440 / 1920 px, Inhalt rechts
+  daneben, Strich unter dem Wort.
+- Alle Griffe der Liste ≥ 44 × 44, normal und kompakt.
+- Waagerechte Leiste ohne Marken bei 1280 / 820 / 390 / 320 px.
+- Kein Querlauf, Reiterwechsel.
+- Name und Mail stehen untereinander.
+- Aufgaben und Putzplan am Rechner: durchsichtig, beim Überfahren und mit
+  Tastaturfokus sichtbar und an derselben Stelle treffbar. Am Handy mit
+  Touch sichtbar.
+- **Gegenprobe:** Mit dem `index.html` von vorher schlagen 23 Zusicherungen
+  an.
+
+**Nicht geprüft:** echte Maus auf echtem Gerät, Anmeldeweg, echte Daten.
+
+**Offen für den Betrieb:** Sollen Stift und Papierkorb am Handy aus der
+Aufgabenzeile ins „…“ wandern? Dort stehen sie schon. Das hiesse, den
+Beschluss vom 9.10. für das Handy zu ändern.

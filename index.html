@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-iTEiphNKBBBcUVbyVSUXQ7k1+GkSnG+LRK6rXdRpnw0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Z6VdovEKdc3v99NstKza6OUCXnraCeLHi/aeUIIYrCw='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1441,6 +1441,31 @@ html.demo #terminalSchirm{top:44px}
 .t-knoepfe{display:flex;flex-shrink:0;margin:calc(-1 * var(--s8)) calc(-1 * var(--s6)) 0 0}
 .t-knoepfe .t-edit,.t-knoepfe .t-del,.t-knoepfe .t-mehr{width:44px;min-height:44px;padding:0;
   display:inline-grid;place-items:center}
+/* Ruhigere Zeilen am Rechner (Runde 176). Aus dem Betrieb, 21.10.2026:
+   „grade sieht alles aus wie ein komplettes durcheinander". In jeder
+   Zeile standen für die Leitung Griff, Stift und Papierkorb, bei 30
+   Aufgaben also 90 Zeichen, die keiner gerade braucht.
+
+   Mit Maus erscheinen sie, sobald die Zeile unter dem Zeiger liegt, den
+   Fokus hat (Tab) oder mit den Pfeilen gewählt ist. Sie bleiben IN der
+   Zeile, denn so ist es seit 9.10. beschlossen („Stift und Papierkorb
+   in der Zeile"). Sie werden nur durchsichtig und nicht entfernt. Kein
+   display:none: Sonst springt der Titel beim Überfahren, und der Klick
+   ginge ins Leere, weil der Knopf erst unter dem Zeiger entsteht.
+
+   Nur bei (hover:hover) und (pointer:fine). Am Handy gibt es kein
+   Überfahren; dort bliebe ein Knopf, den man nicht sieht, aber trifft.
+   Putzplan und Aufgaben gleich: „GENAU so wie der Putzplan" (9.10.). */
+@media (hover:hover) and (pointer:fine){
+  .todo .griff,.todo .t-edit,.todo .t-del,
+  .pp-item .griff,.pp-item .pp-edit,.pp-item .pp-del{opacity:0;transition:opacity .15s}
+  .todo:hover .griff,.todo:hover .t-edit,.todo:hover .t-del,
+  .todo:focus-within .griff,.todo:focus-within .t-edit,.todo:focus-within .t-del,
+  .todo.gewaehlt .griff,.todo.gewaehlt .t-edit,.todo.gewaehlt .t-del,
+  .pp-item:hover .griff,.pp-item:hover .pp-edit,.pp-item:hover .pp-del,
+  .pp-item:focus-within .griff,.pp-item:focus-within .pp-edit,.pp-item:focus-within .pp-del,
+  .zieht .griff{opacity:1}
+}
 /* Am PC höchstens so viele Spalten, dass eine Zeile Platz für Titel,
    Stand und die drei Knöpfe hat (gemessen: bei 300 px brach „Ich
    übernehme das" in die dritte Zeile). */
@@ -4616,12 +4641,19 @@ html{font-size:var(--fs,100%)}
   transform:rotate(45deg);transition:transform .25s var(--ease-out),border-color .25s}
 .chef-card:hover::after{border-color:var(--accent);transform:rotate(45deg) translate(2px,-2px)}
 
-.chef-bar{display:flex;align-items:center;gap:var(--s10);margin-bottom:var(--s16);min-width:0}
+/* margin-top: Die Reiter der Gruppe darüber (Chef · Schichtplaner ·
+   Archiv) reichen mit ihrer Trefferfläche 5 px nach unten und deckten
+   die Oberkante von „‹ Übersicht" ab (Hit-Test 39 statt 44, Runde 176). */
+.chef-bar{display:flex;align-items:center;gap:var(--s10);margin-top:var(--s6);margin-bottom:var(--s16);min-width:0}
 .chef-back{flex:0 0 auto;display:inline-flex;align-items:center;gap:var(--s4);
   background:none;border:1.5px solid var(--line-2);border-radius:var(--r-pille);
   padding:var(--s8) var(--s12) var(--s8) var(--s10);font-family:var(--font-body);font-weight:600;
   font-size:var(--t-sm);color:var(--text-2);cursor:pointer;white-space:nowrap;
-  transition:border-color .2s,color .2s,transform .25s var(--spring)}
+  transition:border-color .2s,color .2s,transform .25s var(--spring);
+  /* 44 statt 31 px hoch. Gefunden in Runde 176 vom Hit-Test der neuen
+     Liste. test-knoepfe hatte den Knopf nie gemessen, weil er auf der
+     Startseite der Verwaltung verborgen ist. */
+  min-height:44px;box-sizing:border-box}
 .chef-back:hover{border-color:var(--accent);color:var(--accent-d)}
 .chef-back:active{transform:scale(.95)}
 .chef-back svg{width:15px;height:15px}
@@ -4644,6 +4676,43 @@ html{font-size:var(--fs,100%)}
 .chef-tab:active{transform:scale(.93)}
 .chef-tab.on{color:var(--accent-d);font-weight:700}
 .chef-pane{animation:cardUp .4s var(--ease-ios) both}
+
+/* ── Verwaltung in Gruppen (Runde 176) ── */
+.ch-gruppe{grid-column:1 / -1;margin:var(--s12) 0 0;font-family:var(--font-body);
+  font-size:var(--t-2xs);font-weight:700;letter-spacing:var(--ls-l);text-transform:uppercase;
+  color:var(--text-3)}
+.ch-gruppe:first-child{margin-top:var(--s8)}
+.chef-tab-gruppe{display:none}
+/* Am breiten Rechner stehen die Reiter als Liste links, der Inhalt
+   rechts, wie die Kanäle im Chat (Runde 172). Zwei Zeilen Reiter
+   übereinander (Chef · Schichtplaner · Archiv, darunter elf) waren dort
+   die unruhigste Stelle der App.
+
+   Erst ab 1360 px: Die Formulare rechts stehen selbst in zwei Spalten
+   (Liste und „anlegen", rechts 360–440 px). Bei 1280 px blieben der
+   linken davon nach Seitenleiste und Reiterliste gemessen 336 px. Das
+   ist schmaler als am Handy. Darunter bleibt die Leiste waagerecht.
+
+   Der Marker bleibt ein Strich unter dem Wort (test-reiter): Die Reiter
+   sind so breit wie ihr Wort, nicht wie die Spalte. Sonst wäre der
+   Strich eine Trennlinie über die ganze Breite. */
+@media (min-width:1360px){
+  #view-chef .scroll-area.chef-liste{display:grid;grid-template-columns:200px minmax(0,1fr);
+    column-gap:var(--s24);align-content:start;align-items:start}
+  #view-chef .chef-liste > *{grid-column:2;min-width:0}
+  /* Nicht sticky: Die Liste ist mit elf Reitern und vier Marken rund
+     620 px hoch. Bei 1360 × 800 läge „System" dann unter dem Rand und
+     wäre durch kein Scrollen zu erreichen (gemessen, Runde 176). */
+  #view-chef .chef-liste > .chef-bar{grid-column:1;grid-row:1 / span 40;
+    flex-direction:column;align-items:flex-start;gap:var(--s4);margin-bottom:0}
+  #view-chef .chef-liste .chef-tabs{flex-direction:column;align-items:flex-start;
+    overflow:visible;gap:0;padding-bottom:0}
+  #view-chef .chef-liste .chef-tab{min-height:44px;padding:0 var(--s12)}
+  #view-chef .chef-liste .chef-tab-gruppe{display:block;margin:var(--s12) var(--s12) var(--s2);
+    font-size:var(--t-2xs);font-weight:700;letter-spacing:var(--ls-l);text-transform:uppercase;
+    color:var(--text-3)}
+  #view-chef .chef-liste .chef-back{margin-bottom:var(--s4)}
+}
 
 /* ── Verwaltung am Rechner: Liste links, Formulare rechts (Runde 112) ──
    CLAUDE.md: „Eine Ansicht, die am Rechner eine Spalte über 1.200 px
@@ -6775,6 +6844,12 @@ body.neu .heute-ruhe.lade-ruhe{padding:var(--s12) var(--s16);margin-bottom:var(-
 .emp{display:flex;align-items:flex-start;gap:var(--s10);padding:var(--s12) 0;border-top:1px solid var(--line)}
 .emp:first-child{border-top:none}
 .emp-info{flex:1;min-width:0}
+/* Chef-Zugänge (Runde 176): Name und Mail liefen ohne Stil als zwei
+   <span> ineinander („Ohne Namentest2@example.com"). Dieselbe Form wie
+   .emp-info darüber. */
+.emp-main{flex:1;min-width:0}
+.emp-main b{display:block}
+.emp-sub{display:block;color:var(--text-3);font-size:var(--t-xs);word-break:break-all}
 .emp-info b{font-family:var(--font-head);font-size:var(--t-lg);display:block}
 .emp-info .em-mail{color:var(--text-3);font-size:var(--t-xs);word-break:break-all}
 .emp-info .em-studios{color:var(--accent-d);font-size:var(--t-xs);margin-top:var(--s2)}
@@ -19955,6 +20030,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-22-verwaltung-gruppen', datum:'22.10.2026', titel:'Verwaltung geordnet, ruhigere Listen am Rechner', wo:'chef', punkte:[
+    'Die Startseite der Verwaltung ist in vier Gruppen geordnet: Jeden Tag, Team & Studios, Zahlen, Einstellungen. Man liest die Überschriften statt elf Kacheln.',
+    'Am grossen Bildschirm stehen die Bereiche der Verwaltung links als Liste – mit denselben Gruppen –, rechts der Inhalt. Vorher lagen zwei Reiterzeilen übereinander.',
+    'In Aufgaben und Putzplan erscheinen Griff, Stift und Papierkorb am Rechner erst, wenn du mit der Maus über die Zeile fährst (oder sie mit der Tastatur wählst). Am Handy bleibt alles wie gewohnt.',
+    'Kleinigkeiten: „‹ Übersicht" in der Verwaltung ist jetzt gut zu treffen, und bei den Chef-Zugängen stehen Name und Mail sauber untereinander.' ] },
   { id:'2026-10-22-formi-antwortet-besser', datum:'22.10.2026', titel:'Formi: stellt sich richtig vor und erfindet nichts mehr', wo:'gehirn', punkte:[
     'Formi stellt sich nicht mehr mit deinem Namen vor („Hallo, ich bin Semih").',
     'Weiß Formi etwas über unser Studio nicht, sagt es das ehrlich, statt etwas zu erfinden – und gibt die Frage an Semih weiter.',
@@ -37156,38 +37236,50 @@ function renderDashboard(){
    Seite. Ein Klick mehr, dafür findet man alles sofort.
    ============================================================ */
 var CHEFTABS=[
-  {id:'ueberblick', label:'Überblick',  ico:ikon('umfrage'),
+  {id:'ueberblick', label:'Überblick',  ico:ikon('umfrage'), gruppe:'tag',
    was:'Zahlen aller Studios, was gerade hakt, Geburtstage'},
-  {id:'erstellen',  label:'Erstellen',  ico:ikon('plus'),
+  {id:'erstellen',  label:'Erstellen',  ico:ikon('plus'), gruppe:'tag',
    was:'Aufgabe anlegen, Ankündigung senden, Vorlagen'},
-  {id:'team',       label:'Team',       ico:ikon('leute'), chefOnly:true,
-   was:'Zugänge anlegen, Rollen ändern, Onboarding'},
-  {id:'standorte',  label:'Studios',    ico:ikon('gebaeude'), chefOnly:true,
-   was:'Studios anlegen, umbenennen, schließen'},
-  {id:'firmen',     label:'Firmen',     ico:ikon('krone'), adminOnly:true,
-   was:'Firmen anlegen, sperren, Zahlen — nur für den Betreiber'},
-  {id:'nachweise',  label:'Nachweise',  ico:ikon('blatt'), chefOnly:true,
-   was:'Erste Hilfe, Lizenzen, Einweisungen – was demnächst abläuft'},
   /* Anliegen stehen VOR der Auswertung: etwas, worauf jemand wartet,
      gehoert weiter nach vorn als eine Zahl, die man sich holt, wenn man
      sie braucht. */
-  {id:'anliegen',   label:'Anliegen',   ico:ikon('mail'),
+  {id:'anliegen',   label:'Anliegen',   ico:ikon('mail'), gruppe:'tag',
    was:'Wünsche und Ziele, die jemand abgeschickt hat'},
   /* Runde 106 (P-09): Stempelzeiten des Teams ansehen und einen
      vergessenen Feierabend nachtragen. Für die ganze Leitung, nicht nur
      den Chef — sie steht morgens im Studio und sieht, wer gestern nicht
      ausgestempelt hat. */
-  {id:'zeiten',     label:'Zeiten',     ico:ikon('uhr'),
+  {id:'zeiten',     label:'Zeiten',     ico:ikon('uhr'), gruppe:'tag',
    was:'Stempelzeiten des Teams, vergessenen Feierabend nachtragen'},
+  {id:'team',       label:'Team',       ico:ikon('leute'), chefOnly:true, gruppe:'leute',
+   was:'Zugänge anlegen, Rollen ändern, Onboarding'},
+  {id:'standorte',  label:'Studios',    ico:ikon('gebaeude'), chefOnly:true, gruppe:'leute',
+   was:'Studios anlegen, umbenennen, schließen'},
+  {id:'nachweise',  label:'Nachweise',  ico:ikon('blatt'), chefOnly:true, gruppe:'leute',
+   was:'Erste Hilfe, Lizenzen, Einweisungen – was demnächst abläuft'},
   /* Runde 138: Mitglieder, Kündigungen, Probetrainings je Studio und
      Monat. Für die ganze Leitung — die Studioleitung trägt ein und
      sieht ihre Studios. */
-  {id:'kennzahlen', label:'Kennzahlen', ico:ikon('raster'),
+  {id:'kennzahlen', label:'Kennzahlen', ico:ikon('raster'), gruppe:'zahlen',
    was:'Mitglieder, Kündigungen, Probetrainings je Studio und Monat'},
-  {id:'report',     label:'Auswertung', ico:ikon('trendAuf'),
+  {id:'report',     label:'Auswertung', ico:ikon('trendAuf'), gruppe:'zahlen',
    was:'Bericht über einen Zeitraum, drucken, Excel, Monatsbericht'},
-  {id:'system',     label:'System',     ico:ikon('regler'),
-   was:'Funktionen an- und abschalten, Tabellen, Papierkorb, Sicherung'}
+  {id:'system',     label:'System',     ico:ikon('regler'), gruppe:'einst',
+   was:'Funktionen an- und abschalten, Tabellen, Papierkorb, Sicherung'},
+  {id:'firmen',     label:'Firmen',     ico:ikon('krone'), adminOnly:true, gruppe:'einst',
+   was:'Firmen anlegen, sperren, Zahlen — nur für den Betreiber'}
+];
+/* Vier Gruppen statt elf gleichrangiger Reiter (Runde 176). Aus dem
+   Betrieb, 21.10.2026: „grade sieht alles aus wie ein komplettes
+   durcheinander". Elf Kacheln ohne Ordnung muss man alle lesen, um eine
+   zu finden. In vier Gruppen liest man die Überschriften. Die Gruppen
+   folgen der Frage „wie oft brauche ich das": täglich zuerst, die
+   Einstellungen zuletzt. */
+var CHEF_GRUPPEN=[
+  {id:'tag',    label:'Jeden Tag'},
+  {id:'leute',  label:'Team & Studios'},
+  {id:'zahlen', label:'Zahlen'},
+  {id:'einst',  label:'Einstellungen'}
 ];
 /* 'uebersicht' ist kein Reiter, sondern die Startseite des Bereichs. */
 var CHEF_START='uebersicht';
@@ -37207,13 +37299,22 @@ function buildChefTabs(){
   if(_chefTab!==CHEF_START && !tabs.some(function(t){ return t.id===_chefTab; })){
     _chefTab=CHEF_START;
   }
+  /* Die Gruppenmarken stehen im Markup immer, sichtbar sind sie nur in
+     der Liste am breiten Rechner. In der waagerechten Leiste wären sie
+     Lärm zwischen den Reitern. */
+  var mehrere=chefGruppenFuerMich().length>1, letzte='';
   bar.innerHTML=tabs.map(function(t){
     /* Gesperrte Reiter werden GEZEIGT, nicht versteckt. Wer nicht weiss,
        dass es etwas gibt, fragt auch nicht danach — und der Kunde soll
        den Unterschied sehen, für den er zahlen würde. Verstecken wäre
        ausserdem unehrlich: die Ansicht ist ja da. */
     var zu = PREMIUM_TABS.indexOf(t.id)>=0 && !hatPremium();
-    return '<button class="chef-tab'+(t.id===_chefTab?' on':'')+(zu?' abo-zu':'')+
+    var marke='';
+    if(mehrere && t.gruppe!==letzte){
+      letzte=t.gruppe;
+      marke='<span class="chef-tab-gruppe" aria-hidden="true">'+esc(chefGruppenName(t.gruppe))+'</span>';
+    }
+    return marke+'<button class="chef-tab'+(t.id===_chefTab?' on':'')+(zu?' abo-zu':'')+
       '" data-ctab="'+t.id+'">'+esc(t.label)+(zu?' '+ikon('schloss'):'')+'</button>';
   }).join('');
   bar.querySelectorAll('[data-ctab]').forEach(function(b){
@@ -37232,10 +37333,29 @@ function buildChefTabs(){
    die Stelle, an der er aufgibt.
 
    Jetzt: erst sehen was es gibt, dann hineingehen, mit Zurück heraus. */
+function chefGruppenName(id){
+  var g=CHEF_GRUPPEN.filter(function(x){ return x.id===id; })[0];
+  return g ? g.label : '';
+}
+function chefGruppenFuerMich(){
+  var tabs=chefTabsFuerMich();
+  return CHEF_GRUPPEN.filter(function(g){
+    return tabs.some(function(t){ return t.gruppe===g.id; });
+  });
+}
 function renderChefHome(){
   var box=$('chefHome'); if(!box) return;
+  /* Überschriften nur, wenn es mehr als eine Gruppe gibt. Die
+     Studioleitung sieht weniger Reiter; eine einzelne Überschrift über
+     allem sagt nichts. */
+  var mehrere=chefGruppenFuerMich().length>1, letzte='';
   box.innerHTML=chefTabsFuerMich().map(function(t){
-    return '<button class="chef-card" data-cgo="'+esc(t.id)+'">'+
+    var kopf='';
+    if(mehrere && t.gruppe!==letzte){
+      letzte=t.gruppe;
+      kopf='<h3 class="ch-gruppe">'+esc(chefGruppenName(t.gruppe))+'</h3>';
+    }
+    return kopf+'<button class="chef-card" data-cgo="'+esc(t.id)+'">'+
       '<span class="cc-ico">'+t.ico+'</span>'+
       '<span class="cc-body"><span class="cc-title">'+esc(t.label)+
         (PREMIUM_TABS.indexOf(t.id)>=0 && !hatPremium() ? ' <span class="abo-schloss">Premium</span>' : '')+'</span>'+
@@ -37299,6 +37419,11 @@ function showChefTab(id, keep){
   // Übersicht oder ein Reiter – nie beides
   var home=$('chefHome'); if(home) home.style.display = uebersicht ? 'grid' : 'none';
   var bar=$('chefBar');   if(bar)  bar.style.display  = uebersicht ? 'none' : 'flex';
+  /* Ob die Reiter am Rechner als Liste links stehen, entscheidet das
+     Stylesheet nach der Breite. Hier nur: in einem Reiter, nicht auf der
+     Startseite. Dort sind die Kacheln selbst die Liste. */
+  var saL=document.querySelector('#view-chef .scroll-area');
+  if(saL) saL.classList.toggle('chef-liste', !uebersicht);
   var t=$('chefTitle'), sub=$('chefSub');
   if(uebersicht){
     if(t) t.textContent = isChef() ? 'Verwaltung' : 'Studio-Verwaltung';
