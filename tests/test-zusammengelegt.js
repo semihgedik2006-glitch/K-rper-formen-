@@ -237,6 +237,21 @@ const TREFFER = (el) => {
     await zu(p);
   }
 
+  console.log('\n── 7b Jedes Ziel in zwei Tipps über „Alles" ──');
+  /* Hauswunsch „Jedes Ziel in zwei Tipps über Alles": Geräte und Direkt
+     liegen jetzt hinter einem Umschalter (Raum, Reiter, Umschalter = drei),
+     über ☰ „Alles" bleiben es zwei. */
+  for (const [w, h] of [[390, 844], [1440, 900]]) {
+    for (const v of ['geraete', 'dm', 'material', 'ann']) {
+      const p = await oeffne(b, w, h);
+      await tippe(p, '#bereichKopf');
+      await tippe(p, '#allesLade [data-alles="' + v + '"]');
+      const an = await p.evaluate(() => (document.querySelector('.view.show') || {}).id);
+      pruefe(w + ' px: „Alles" → ' + v + ' in zwei Tipps', an === 'view-' + v, an);
+      await zu(p);
+    }
+  }
+
   console.log('\n── 8 Trefferflächen der Umschalter ──');
   for (const [w, h] of [[320, 568], [390, 844], [430, 932], [820, 1180], [1280, 800], [1440, 900], [1920, 1080]]) {
     const p = await oeffne(b, w, h);
