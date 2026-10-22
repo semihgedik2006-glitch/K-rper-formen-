@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════════
-   SCHULUNG: PFLICHT — WER HAT WAS, ERINNERN, FRAGE NACHBESSERN (Runde 205)
+   SCHULUNG: PFLICHT — WER HAT WAS, ERINNERN, FRAGE NACHBESSERN (Runde 207)
 
    Aus dem Betrieb, 22.10.2026: „aight mach die nächste runde" — auf den
    Vorschlag: der Leitung den Stand der Pflichtschulungen auf einen Blick

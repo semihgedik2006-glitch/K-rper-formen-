@@ -528,7 +528,7 @@ async function codeHolen(p, name) {
      etwas steht, BEVOR man drei Reiter durchtippt. */
   const reiterZahlen = await p.evaluate(() =>
     [...document.querySelectorAll('[data-schvwtab]')].map(x => x.textContent.trim()));
-  /* Runde 205, aus dem Betrieb („aight mach die nächste runde" auf den
+  /* Runde 207, aus dem Betrieb („aight mach die nächste runde" auf den
      Vorschlag „Pflichtschulungen auf einen Blick"): dazu kam der Reiter
      „Pflicht". Geprüft wird weiter, dass es Reiter sind und welche. */
   pruefe('die Verwaltung hat vier Reiter: Teilnehmer, Pflicht, Module, Auswertung',

@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-N/LyNyVcgBm6SaE109NQrOAyRRQJHqZamteuKAEsZPY='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-xwVcaRyhbYc6zo2B1FpicbAyrrmhVU4fBKGykLniWJU='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -7036,7 +7036,7 @@ body.jv-offen{overflow:hidden}
 /* Eine verstrichene Frist ist ein Status — nur sie bekommt die Farbe. */
 .sch-frist.ueber{color:var(--warm-tx);font-weight:700}
 .sch-faellig-zeile .sch-frist{display:inline}
-/* Pflicht: wer hat was (Runde 205). Am Handy je Person eine Karte, am
+/* Pflicht: wer hat was (Runde 207). Am Handy je Person eine Karte, am
    Rechner eine Tabelle. Statusfarbe nur für ✓ und überfällig. */
 .sch-stand-summe{margin:0 0 var(--s8);font-size:var(--t-sm);color:var(--text-2)}
 .sch-stand-summe b{font-family:var(--font-head);font-size:var(--t-md);color:var(--text)}
@@ -31491,7 +31491,7 @@ function schVerwaltenZeichnen(){
   var fertig=_schAlleLaeufe.filter(function(l){ return l.status==='fertig' && !l.test; });
   var reiter=[
     { id:'tn',   name:'Teilnehmer', zahl:_schTeilnehmer.length },
-    /* Runde 205: die Zahl am Reiter ist, was noch überfällig ist — sie
+    /* Runde 207: die Zahl am Reiter ist, was noch überfällig ist — sie
        soll auffallen, wenn etwas zu tun ist, und sonst 0 sagen. */
     { id:'stand', name:'Pflicht',   zahl:schStandDaten().zeilen.reduce(function(n,z){ return n+z.ueber; },0) },
     { id:'mod',  name:'Module',     zahl:schModule().length },
@@ -31654,7 +31654,7 @@ function schSchwerZeichnen(){
            soll sie nicht einzeln sehen. */
         (e.an>=SCH_SCHWER_MIN ? ' · Auffrischen: '+e.ax+' von '+e.an+' daneben' : '')+'</span></span>'+
       '<span class="sch-lauf-zahl">'+Math.round(e.quote*100)+'%</span>'+
-      /* Runde 205: von der Zahl direkt zur Frage — wer sieht, dass sie
+      /* Runde 207: von der Zahl direkt zur Frage — wer sieht, dass sie
          nicht sitzt, will sie meist umformulieren oder den Hinweis
          schärfen. */
       '<button type="button" class="btn btn-ghost btn-sm" data-schschwerbearb="'+esc(e.modul+'#'+e.idx)+'">Bearbeiten</button></div>';
@@ -31671,7 +31671,7 @@ function schSchwerZeichnen(){
     });
   });
 }
-/* ── Pflicht: wer hat was (Runde 205) ────────────────────────────────
+/* ── Pflicht: wer hat was (Runde 207) ────────────────────────────────
    Aus dem Betrieb, 22.10.2026: „aight mach die nächste runde“ — auf den
    Vorschlag, der Leitung den Stand der Pflichtschulungen auf einen Blick
    zu geben, mit einem Tipp zum Erinnern.

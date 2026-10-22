@@ -19146,7 +19146,7 @@ Auskunft nach Art. 15 kommen sie von selbst (Feld `uid`).
   Annehmen/Ablehnen (≥ 44 × 44 bei 1440 und 320), Ablehnen ohne Antwort
   entscheidet nichts; die Studioleitung sieht keine Anträge.
 
-## Runde 205 — Schulung für die Leitung: Pflicht auf einen Blick, Erinnern, Frage nachbessern (22.10.2026)
+## Runde 207 — Schulung für die Leitung: Pflicht auf einen Blick, Erinnern, Frage nachbessern (22.10.2026)
 
 **Aus dem Betrieb:** „aight mach die nächste runde“ — nach den Runden 201
 und 202. Empfohlen und gebaut: die Seite der Leitung, denn das
