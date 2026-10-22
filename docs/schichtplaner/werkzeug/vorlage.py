@@ -92,19 +92,22 @@ for text, art in texte:
 
 # ── Blatt 2: Fragen ────────────────────────────────────────────────
 ws = wb.create_sheet("Fragen")
-kopfzeile(ws, 1, [("Nr.", 6), ("Thema", 24), ("Frage", 70), ("Antwort", 60)])
+# Runde 206: eigene Spalte „Heute in der App" — passt die Vorgabe,
+# genügt als Antwort „passt".
+kopfzeile(ws, 1, [("Nr.", 6), ("Thema", 22), ("Frage", 62), ("Heute in der App", 40), ("Antwort", 50)])
 z, nr = 2, 1
 for thema, fragen in FRAGEN:
     for frage, zusatz in fragen:
         ws.cell(row=z, column=1, value=nr).alignment = MITTE
         ws.cell(row=z, column=2, value=thema)
-        ws.cell(row=z, column=3, value=frage + ((" " + zusatz) if zusatz else ""))
-        a = ws.cell(row=z, column=4)
+        ws.cell(row=z, column=3, value=frage)
+        ws.cell(row=z, column=4, value=zusatz).font = GRAU
+        a = ws.cell(row=z, column=5)
         a.fill = HELL
         ws.row_dimensions[z].height = 48
         z += 1
         nr += 1
-rahmen(ws, 2, z - 1, 4)
+rahmen(ws, 2, z - 1, 5)
 for zz in range(2, z):
     ws.cell(row=zz, column=1).alignment = MITTE
 ws.freeze_panes = "A2"
