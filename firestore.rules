@@ -1589,9 +1589,17 @@ service cloud.firestore {
         && request.resource.data.get('personalNr', {}) is map
         && request.resource.data.get('personalNr', {}).size() <= 500;
     }
+    /* Runde 215: Soll je Person und Wochentag („ja", 22.10.2026) im
+       Dokument 'zeitregeln' — dieselbe Sammlung, dieselben Leser. */
+    function zeitregelnOk() {
+      return request.resource.data.keys().hasOnly(['regeln', 'geaendert', 'geaendertVon'])
+        && request.resource.data.get('regeln', {}) is map
+        && request.resource.data.get('regeln', {}).size() <= 500;
+    }
     match /lohnEinstellungen/{doc} {
       allow read: if aufFlachenPfaden() && isChef();
-      allow write: if aufFlachenPfaden() && isChef() && doc == 'datev' && lohnEinstellungOk();
+      allow write: if aufFlachenPfaden() && isChef()
+        && ((doc == 'datev' && lohnEinstellungOk()) || (doc == 'zeitregeln' && zeitregelnOk()));
     }
 
 
@@ -2503,7 +2511,8 @@ service cloud.firestore {
         // DATEV-Einstellungen (Runde 210) — dieselbe Regel wie flach, siehe dort.
         match /lohnEinstellungen/{doc} {
           allow read: if inFirma(f) && isChef();
-          allow write: if schreibtIn(f) && isChef() && doc == 'datev' && lohnEinstellungOk();
+          allow write: if schreibtIn(f) && isChef()
+            && ((doc == 'datev' && lohnEinstellungOk()) || (doc == 'zeitregeln' && zeitregelnOk()));
         }
 
 
