@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-LreYpcwvYcT5hNEJ+ORSQrPcmL+ah34u03s/T5KZ2kc='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-mBIj4ZjKT3fp+Vt7HxkeTK1guwnFjwOdDpPQZhMZyHQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -4245,7 +4245,7 @@ body.formi:not(.light).neu .heute-zeile{background:linear-gradient(100deg,var(--
   body.formi:not(.light) .card:hover,body.formi:not(.light) .chef-card:hover,body.formi:not(.light).neu .heute-zeile:hover,
   body.formi:not(.light) .todo:hover,body.formi:not(.light) .pp-item:hover{outline-color:rgba(var(--akz-rgb),.5)}
 }
-body.formi:not(.light) .icon-btn,body.formi:not(.light) .jv-kachel,body.formi:not(.light) .neu-pille,body.formi:not(.light) .kopf-plus{
+body.formi:not(.light) .icon-btn,body.formi:not(.light) .neu-pille,body.formi:not(.light) .kopf-plus{
   box-shadow:inset 0 1px 0 var(--kante), var(--hud-schein)}
 /* Die kleinen Überschriften wie die Anzeigen im Formi-Fenster. */
 body.formi:not(.light) .heute-kopf,body.formi:not(.light) .ch-gruppe,body.formi:not(.light) .kn-gruppe,body.formi:not(.light) .ks-gruppe{
@@ -5611,42 +5611,11 @@ html{font-size:var(--fs,100%)}
 .gs-schritte li.jetzt span{color:var(--accent)}
 .gs-schritte.still{font-size:var(--t-xs);opacity:.8}
 .gs-schritte.still li{animation:none}
-.jv-kachel{flex-shrink:0;display:inline-flex;align-items:center;gap:var(--s8);min-height:44px;min-width:44px;margin-top:var(--s2);
-  padding:0 var(--s12) 0 var(--s6);border-radius:var(--r-pille);cursor:pointer;font:inherit;font-weight:700;font-size:var(--t-sm);
-  border:1px solid color-mix(in srgb, var(--accent) 55%, var(--line-2));color:var(--text);
-  background:linear-gradient(100deg, color-mix(in srgb, var(--accent) 24%, var(--bg-2)), var(--bg-2));
-  box-shadow:0 1px 0 var(--line) inset,0 6px 16px -10px color-mix(in srgb, var(--accent) 80%, transparent);
-  transition:transform .25s var(--spring)}
-.jv-kachel:active{transform:scale(.94)}
-.jv-kachel[hidden]{display:none}
-#jarvisStart{margin-left:auto;margin-bottom:var(--s8)}
-.neu-pille:not([hidden]) + #jarvisStart{margin-left:0}
-/* Damit die Zeile einreihig bleibt: der Bereichskopf gibt Platz ab
-   (er kürzt seine Unterzeile mit „…"), statt die Pille in eine zweite
-   Reihe zu schieben — gemessen bei 360 und 430 px. */
-body.neu .bereich-zeile:has(#jarvisStart:not([hidden])) .bereich-kopf{flex-basis:140px}
-/* Unter 380 px reicht der Platz nicht für „Neu" UND „Gehirn": das Datum
-   im Kopf bräche um (gemessen 360 px: +18 px). „Neu" ist vorübergehend —
-   solange es dasteht, wartet „Gehirn" (es bleibt unter Ich → Gehirn). */
-@media(max-width:379px){ .neu-pille:not([hidden]) + #jarvisStart{display:none} }
-.jv-pc{margin-top:0;margin-right:var(--s8);
-  /* Die Pille steht im Rahmen und ist aus der Bereichsfarbe gebaut —
-     sie gleitet beim Bereichswechsel mit wie „Bericht" (siehe oben,
-     test-gleiten-rahmen). */
-  transition:--accent .35s var(--ease-ios),--accent-2 .35s var(--ease-ios),transform .25s var(--spring)}
-@media (prefers-reduced-motion:reduce){ .jv-pc{transition:none} }
-/* Handy-Zeile nur bis 820 px (darüber gibt es die Zeile nicht), die
-   Kopfleisten-Pille nur darüber. Auf sehr kurzen Bildschirmen (568 px)
-   nicht — wie die „Neu"-Pille: die Zeile bräche um, und die Startseite
-   passte nicht mehr. Erreichbar bleibt das Gehirn unter Ich → Gehirn. */
-@media(min-width:821px){ #jarvisStart,#jarvisStartAlt{display:none} }
-@media(max-width:820px){ .jv-pc{display:none} }
-@media(max-height:640px){ #jarvisStart{display:none} }
-.jv-kachel-kern{flex:0 0 auto;width:32px;height:32px;border-radius:var(--r-rund);display:grid;place-items:center;
-  background:radial-gradient(circle at 35% 30%, #fff 0, var(--accent) 35%, var(--accent-2) 100%);
-  box-shadow:0 0 12px 1px color-mix(in srgb, var(--accent) 50%, transparent)}
-.jv-kachel-kern i{width:10px;height:10px;border-radius:var(--r-rund);background:#fff;opacity:.85}
-@media (max-width:399px){ #jarvisStart,#jarvisStartAlt{padding:0 var(--s6)} #jarvisStart .jv-kachel-wort,#jarvisStartAlt .jv-kachel-wort{display:none} }
+/* Die alten Formi-Knöpfe auf der Startseite und oben am Rechner
+   (#jarvisStart, #jarvisStartAlt, #jarvisStartPc) sind seit Runde 182
+   weg — aus dem Betrieb (22.10.2026): „der alte formi knopf oben kann
+   weg". Formi öffnet die Kugel (#formiKugel), die Taste J und
+   „Alles" → Formi. */
 /* ── Das Fenster als HUD (20.10.2026) ─────────────────────────────────
    Aus dem Betrieb: „richtig abgespacet … das man sich wirklich wie in
    einer jarvis umgebung fühlt … mit geilen animationen und viel motion"
@@ -5726,6 +5695,19 @@ body.neu .bereich-zeile:has(#jarvisStart:not([hidden])) .bereich-kopf{flex-basis
    so viel Luft unten, wie die Kugel braucht. */
 body.formi-kugel-an .main{padding-bottom:calc(var(--s16) + 58px + var(--s16))}
 @media(max-width:820px){ body.formi-kugel-an .main{padding-bottom:calc(80px + 58px + var(--s8))} }
+/* Runde 182 (aus dem Betrieb: „achte aber bitte darauf das der neue formi
+   knopf nichts verdeckt"): am Handy scrollen die Ansichten in einem
+   eigenen Bereich (.scroll-area), und dort lag der letzte Eintrag unter
+   der Kugel — Dokumente, Schulung, Verwaltung (test-formi-verdeckt, alle
+   Breiten bis 820 px). Die Startseite nicht: sie soll auf einen
+   Bildschirm passen, und dort lag nichts darunter. */
+@media(max-width:820px){ body.formi-kugel-an .view:not(#view-home) .scroll-area{padding-bottom:calc(var(--s24) + 58px + var(--s16))} }
+/* Rückgängig-Leiste und Hinweis sitzen unten mittig — am Handy reichen
+   sie bis unter die Kugel. Solange eins davon steht, weicht die Kugel
+   nach oben aus (gemessen: Leiste 51 px hoch, 72 px Abstand reichen). */
+@media(max-width:820px){
+  body:has(.undobar.show) .formi-kugel,body:has(.toast.show) .formi-kugel{transform:translateY(-72px)}
+}
 /* Kleines Gesicht im Kopf des kompakten Fensters — dieselbe Kugel. */
 .formi-gesicht{flex:0 0 auto;width:22px;height:22px;border-radius:var(--r-rund);
   background:radial-gradient(circle, #02040A 0 36%, rgba(2,4,10,0) 40%),
@@ -8500,8 +8482,6 @@ body.neu .kn-zeile{min-height:var(--zeile)}
            um das Studio. Das Wort daneben verschwindet auf schmalen
            Bildschirmen, wie beim Suchknopf — derselbe Weg, dieselbe
            Klasse-Bauform. -->
-      <button type="button" class="jv-kachel jv-pc" id="jarvisStartPc" hidden aria-haspopup="dialog" aria-label="Formi öffnen">
-        <span class="jv-kachel-kern" aria-hidden="true"><i></i></span><span class="jv-kachel-wort">Formi</span></button>
       <button class="icon-btn hilfeknopf" id="hilfeBtn"
               title="Hilfe im Studio — was ist das Problem?"
               aria-label="Hilfe im Studio">
@@ -8564,15 +8544,6 @@ body.neu .kn-zeile{min-height:var(--zeile)}
         <button type="button" class="neu-pille" id="neuPille" hidden
                 aria-haspopup="dialog" title="Was ist neu in der App">
           <span class="np-punkt" aria-hidden="true"></span>Neu</button>
-        <!-- Studio-Gehirn auf der Startseite (19.10.2026, aus dem Betrieb:
-             „das die ki am startbildschirm präsentiert wird und ein eigenes
-             Fenster … wird wenn man drauf klickt"). Hier in der Zeile kostet
-             es keine Höhe: als eigene Kachel über der Liste waren es 68 px,
-             und auf 320 × 568 passte die Startseite nicht mehr auf den
-             Bildschirm (test-neu-design), auf 390 × 844 rutschte der Putzplan
-             nach „Ausserdem" (test-startseite-putz). -->
-        <button type="button" class="jv-kachel" id="jarvisStart" hidden aria-haspopup="dialog" aria-label="Formi öffnen">
-          <span class="jv-kachel-kern" aria-hidden="true"><i></i></span><span class="jv-kachel-wort">Formi</span></button>
       </div>
 
       <!-- Die Schublade. Derselbe Inhalt wie die Seite „Alles", nur
@@ -8606,11 +8577,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
       <!-- START -->
       <section class="view" id="view-home">
         <div class="view-head shrink"><div class="vh-line"><div class="vh-text"><h2 id="homeGreet">Start</h2><p id="homeSub">Dein Überblick für heute.</p></div>
-          <!-- Im bisherigen Aussehen rechts neben der Begrüssung (dort ist
-               der Seitenkopf sichtbar); im neuen Aussehen steht derselbe
-               Knopf in der Bereichszeile (#jarvisStart). -->
-          <button type="button" class="jv-kachel" id="jarvisStartAlt" hidden aria-haspopup="dialog" aria-label="Formi öffnen">
-            <span class="jv-kachel-kern" aria-hidden="true"><i></i></span><span class="jv-kachel-wort">Formi</span></button></div></div>
+</div></div>
         <div class="scroll-area" data-shrinks="1">
 
           <!-- ══ WAS HEUTE DRAN IST (nur im neuen Design) ═══════════
@@ -27629,13 +27596,7 @@ function jvThema(name){
 }
 function jvFeldStop(){ _jvZ.liste=[]; clearInterval(_jvZ.uhr); _jvZ.uhr=0; if(_jvZ.ctx){ _jvZ.ctx.setTransform(1,0,0,1,0,0); _jvZ.ctx.clearRect(0,0,_jvZ.ctx.canvas.width,_jvZ.ctx.canvas.height); _jvZ.leer=true; } _jvF.an=false; if(_jvF.raf) cancelAnimationFrame(_jvF.raf); _jvF.raf=0; var j=$('jarvis'); if(j) j.classList.remove('jv-loch-an'); }
 function jarvisKachel(ansicht){
-  var an=gehirnVerfuegbar();
-  var heim=(ansicht||currentView)==='home';
-  [['jarvisStart', an && layoutNeu() && heim], ['jarvisStartAlt', an && !layoutNeu() && heim], ['jarvisStartPc', an]].forEach(function(x){
-    var k=$(x[0]); if(!k) return;
-    k.hidden=!x[1];
-    if(!k._gebunden){ k._gebunden=true; k.addEventListener('click', jarvisAuf); }
-  });
+  /* Runde 182: nur noch die Kugel (die alten Knöpfe sind weg). */
   formiKugelZeigen();
 }
 
