@@ -132,7 +132,7 @@ const ERST = '[data-cpane="erstellen"] ';
     const k = [];
     for (const s of KARTEN) { const x = await kasten(p, s); if (x) k.push(x); }
     const breit = k.filter(x => x.w > 1000);
-    /* Runde 199: Die persönlichen Karten stehen jetzt als Spalte LINKS,
+    /* Runde 201: Die persönlichen Karten stehen jetzt als Spalte LINKS,
        die Module rechts daneben — vorher standen die drei Karten
        nebeneinander, und die Modulliste begann bei 1280 × 800 erst bei
        Pixel 1.059, unter dem Rand. Aus dem Betrieb (22.10.2026) zum Plan

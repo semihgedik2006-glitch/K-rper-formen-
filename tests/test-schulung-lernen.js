@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════════
-   SCHULUNG: WEITERMACHEN, AM RECHNER, FÜR DIE LEITUNG (Runde 199)
+   SCHULUNG: WEITERMACHEN, AM RECHNER, FÜR DIE LEITUNG (Runde 201)
 
    Aus dem Betrieb, 22.10.2026: „plan klingt gut" — auf diesen Plan:
    - „Das Beratungsgespräch" (17 Schritte, 67 Fragen, etwa 150 Minuten)
