@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-NTSr9vcROssVKG/Jen48+0G96nHsFXkKKE7GKWlCu0o='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-sSdCoBpoGmWVuBQhTNdd86qQG0GJ0UlWX0zpdAwh6kg='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -21170,6 +21170,9 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-22-schichtplaner-fragen', datum:'22.10.2026', titel:'Schichtplaner: neue Vorlage mit allen Fragen', wo:'planer', punkte:[
+    'Die Excel-Vorlage im Schichtplaner (Verwaltung → Schichtplaner → „Vorlage herunterladen") hat ein neues Blatt „Fragen": 24 Fragen, nach denen der erste Plan ohne Nacharbeit läuft.',
+    'Bei jeder Frage steht, was die App heute annimmt. Passt das, reicht als Antwort „passt".' ] },
   { id:'2026-10-22-formi-augen', datum:'22.10.2026', titel:'Formis Augen leben: Pupillen, Brauen, Umsehen', wo:'home', punkte:[
     'Formis Augen haben jetzt Pupillen mit Lichtpunkt und Brauen. Die Pupillen folgen der Maus, kommst du nah heran, werden die Augen gross. Steht alles still, schaut Formi sich um und blinzelt manchmal zweimal.',
     'Formi schaut hin, wo etwas passiert – zu einem Hinweis unten oder zur Glocke, wenn eine neue Meldung kommt. Nach einer Minute ohne Bedienung wird es müde, später schläft es ein.',

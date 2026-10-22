@@ -19232,3 +19232,31 @@ Ladeanzeige, Paket 3 Suche und Formi in einem Feld.
 
 **Nicht geprüft:** Wie lebendig die Augen auf einem echten Bildschirm
 wirken. Die Pupillen sind bei der Kugel etwa 3,5 px gross.
+
+## Runde 206 — Schichtplaner: alle Fragen auf einmal, und was von LogX gebraucht wird (22.10.2026)
+
+**Aus dem Betrieb:** „kanst du … uns alle fragen stellen welche wir
+beantworten müssen damit der schichtplan danach direkt klappt“, „gib mir
+die liste als pdf und auch die excel vorlage nochmal“ und „sag mir was
+du von logx brauchst“.
+
+**Was entstanden ist**
+- `docs/schichtplaner/Schichtplaner-Fragen.pdf` neu, jetzt aus
+  `werkzeug/fragen.py` erzeugt (vorher gab es keinen Erzeuger dafür):
+  24 Fragen in fünf Gruppen (Pflicht · Besetzung · Arbeitszeit · Wünsche
+  und Fairness · Ablauf), je Frage **was die App heute annimmt** — passt
+  das, reicht „passt“. Die letzte Seite: was ich von LogX brauche (Export
+  eines alten Plans, Importvorlage, Bildschirmfotos, Mitarbeiterliste mit
+  Personalnummer, Programm und Version, heutiger Ablauf) und der Hinweis,
+  **keine Zugangsdaten** zu schicken.
+- Dieselbe Liste steht in `werkzeug/inhalt.py` und füllt das Blatt
+  „Fragen“ der Excel-Vorlage, jetzt mit eigener Spalte „Heute in der App“.
+  Das Blatt liest der Planer nicht ein (geprüft: `ausVorlage` kennt es
+  nicht); die anderen Blätter sind unverändert.
+
+**Warum je Frage die heutige Annahme dabeisteht:** Die meisten Antworten
+sind „so wie es ist“. Wer nur Abweichungen schreiben muss, ist in zehn
+Minuten fertig statt in einer Stunde.
+
+**Geprüft:** test-schichtplaner-rechnung (82, liest die Vorlage): grün.
+Das PDF ist angesehen (4 Seiten), die Vorlage mit openpyxl geöffnet.
