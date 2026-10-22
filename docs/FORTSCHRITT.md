@@ -18507,3 +18507,23 @@ ist das hier gebaut.
 **Nicht geprüft:** echte Bildschirme und Studio-Rechner. Wie es sich
 anfühlt, wenn die Seite beim Öffnen zur Seite springt, lässt sich hier
 nicht beurteilen.
+
+## Runde 194 — Sammelknopf im Leitstand ohne confirm() (Worker 2.17, 22.10.2026)
+
+Aus dem Betrieb: „der knopf im leitstand funktioniert irgendwie nicht das
+ich alles freigeben kann".
+
+**Gefunden:** Die Knöpfe waren da und die Schnittstelle antwortete (live
+geprüft: 9 Gruppen). Der Knopf fragte aber mit `confirm()` nach.
+Eingebettete Browser — vermutlich auch das Browser-Fenster der Claude-App —
+zeigen diesen Dialog nicht und geben still „nein" zurück; dann passiert
+nichts. Nachgestellt im Test: Playwright schliesst Dialoge ebenso, und mit
+2.16 bleibt der Knopf wirkungslos (Gegenprobe: 3 rot).
+
+**Geändert:** Die Rückfrage steht im Knopf („Wirklich alle … übernehmen?
+Nochmal klicken"), wie in der App. Der Worker-Durchlauf bedient den
+Leitstand jetzt im echten Browser gegen den Worker (109/109).
+
+**Im Test selbst gefunden:** Ein Locator nach Text („Knopftest") wartet,
+bis der Text wieder passt — nach dem ersten Klick also bis zum Zurück-
+setzen nach 6 s. Deshalb ein fester Griff auf das Element.
