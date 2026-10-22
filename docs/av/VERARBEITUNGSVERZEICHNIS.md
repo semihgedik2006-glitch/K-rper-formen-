@@ -156,6 +156,23 @@ Frage, Ergebnis, Durchgang. Wie weit ein Video angesehen wurde, wird
 **nicht** gespeichert. Testläufe der Leitung mit dem Testcode
 0000-0000-0000 tragen `test: true` und hängen an keiner Person.
 
+**Auffrischen (seit Runde 201, 22.10.2026):** je Teilnehmer ein
+Lernplan (`schulungLernplan`): welche Frage aus einem bestandenen Modul
+auf welcher Stufe steht und wann sie wieder dran ist. Die gewählte
+Antwort selbst wird nicht gespeichert. Lesen kann den Plan im Browser
+niemand, auch die Leitung nicht; ihn liest und schreibt nur die Cloud
+Function `schulungAuffrischen`. Dazu eine Summe je Frage
+(`schulungFragenStat`): wie oft richtig, wie oft daneben — **ohne Namen
+und ohne Zeitpunkt**; die Leitung sieht sie erst ab drei Antworten je
+Frage. In einem sehr kleinen Team kann man aus einer Summe trotzdem auf
+Einzelne schliessen; das ist der Grund für die Schwelle, und sie ist
+keine Garantie.
+
+**Auf dem Gerät:** für die Startseite ein Zwischenstand (`kf_schulstand`):
+wie viele Fragen warten, ab wann die nächsten dran sind, Titel und Frist
+der offenen Pflichtmodule. Nur für das angemeldete Konto, keine
+Antworten, kein Code.
+
 **Empfänger:** Studioleitung und Geschäftsführung; jede Person sieht ihre
 eigenen Durchläufe. Im Export erscheint je Frage nur die Zahl der
 Fehlversuche.
@@ -233,6 +250,7 @@ Vollständig in `LOESCHKONZEPT.md`. Kurzfassung:
 | Arbeitsinhalte einer ausgeschiedenen Person | **bleiben** — siehe Löschkonzept 2.2 |
 | Stempelzeiten | **drei Jahre** ab dem Tag des Stempels, jede Nacht 3:50 Uhr (`stempelzeitenAblaufen`), vom Betrieb festgelegt am 27.9.2026; § 16 Abs. 2 ArbZG verlangt mindestens zwei |
 | Schulungs-Durchläufe | keine automatische Frist; bleiben als Nachweis, bis die Geschäftsführung sie löscht |
+| Lernplan zum Auffrischen | keine automatische Frist; wird beim Löschen eines Teilnehmers **nicht** von selbst mitgelöscht (offen, siehe FORTSCHRITT Runde 201) |
 | Alle Daten eines Kunden | bei Vertragsende auf Weisung; Sicherungen laufen binnen 7 Tagen aus |
 
 ---

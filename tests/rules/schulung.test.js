@@ -118,6 +118,12 @@ const WELTEN = [
       await db.doc(w.pfad('schulungCodes/M4K7')).set({
         hash: 'xxx', salz: 'yyy', teilnehmer: 't-anna', ts: 1 });
       await db.doc(w.pfad('schulungVersuche/tablet')).set({ zahl: 3, seit: 1 });
+      /* Auffrischen (Runde 201): der Lernplan je Teilnehmer und die
+         Summe je Frage. Beide schreibt nur die Cloud Function. */
+      await db.doc(w.pfad('schulungLernplan/t-anna')).set({
+        teilnehmer: 't-anna', uid: 'anna', karten: { 'm-hygiene#0': { s: 1, f: 9 } }, ts: 1 });
+      await db.doc(w.pfad('schulungFragenStat/m-hygiene')).set({
+        modul: 'm-hygiene', f: { '0': { r: 4, x: 2 } }, ts: 1 });
       /* Ein laufender Durchlauf auf dem Tablet, für Anna. */
       await db.doc(w.pfad('schulungLaeufe/l-laeuft')).set({
         modul: 'm-hygiene', modulTitel: 'Hygiene im Studio', kategorie: 'hygiene',
@@ -216,6 +222,30 @@ const WELTEN = [
       alsTablet.doc(P('schulungVersuche/tablet')).set({ zahl: 0, seit: 9 }));
     await darfNicht('… und niemand liest sie aus',
       alsMax.doc(P('schulungVersuche/tablet')).get());
+
+    // ══ Auffrischen (Runde 201) ══
+    /* Aus dem Betrieb, Runde 134: „Wird es als Kontrolle empfunden,
+       schadet es." Den Lernplan liest deshalb im Browser NIEMAND —
+       nicht die Person (sie bekommt ihre Runde von der Funktion), und
+       nicht die Leitung (sie sähe sonst, wer welche Frage vergisst). */
+    await darfNicht('AUFFRISCHEN · die Person liest ihren Lernplan nicht direkt',
+      alsAnna.doc(P('schulungLernplan/t-anna')).get());
+    await darfNicht('AUFFRISCHEN · der Chef liest keinen Lernplan',
+      alsMax.doc(P('schulungLernplan/t-anna')).get());
+    await darfNicht('AUFFRISCHEN · … und fragt auch nicht alle ab',
+      alsLisa.collection(P('schulungLernplan')).get());
+    await darfNicht('AUFFRISCHEN · niemand schreibt sich seinen Plan zurecht',
+      alsAnna.doc(P('schulungLernplan/t-anna')).set({ karten: {}, uid: 'anna' }));
+    await darfNicht('AUFFRISCHEN · ein Mitarbeiter liest die Summe je Frage nicht',
+      alsAnna.doc(P('schulungFragenStat/m-hygiene')).get());
+    await darfNicht('AUFFRISCHEN · niemand schreibt die Summe — auch der Chef nicht',
+      alsMax.doc(P('schulungFragenStat/m-hygiene')).set({ f: { '0': { r: 99, x: 0 } } }));
+    await darfNicht('AUFFRISCHEN · die fremde Firma liest die Summe nicht',
+      alsZoe.doc(P('schulungFragenStat/m-hygiene')).get());
+    await darf('GEGENPROBE die Studioleitung liest die Summe je Frage',
+      alsLisa.doc(P('schulungFragenStat/m-hygiene')).get());
+    await darf('GEGENPROBE … und der Chef auch, als Liste',
+      alsMax.collection(P('schulungFragenStat')).get());
 
     // ══ Wer sieht wen ══
     await darfNicht('ein Kollege liest den Durchlauf eines anderen',

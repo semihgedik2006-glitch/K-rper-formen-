@@ -18792,3 +18792,259 @@ am Tageskopf (Hit-Test 44 × 40). Das ＋ liegt jetzt darüber.
 **Nicht gelöst:** Bei 1280 × 800 mit „Wartet auf deine Entscheidung“
 steht die Woche im Raster jetzt nicht mehr ganz im Bild — die neue Zeile
 „Besetzt“ kostet ~57 px. Bei 1440 × 900 passt sie (Ende 796, Rand 810).
+
+## Runde 201 — Schulung: auffrischen in Runden, Fristen, weitermachen, am Rechner zwei Spalten (22.10.2026)
+
+**Aus dem Betrieb:** „bei der anderen auf die schulungen“ eingehen. Erst
+Ist-Stand, Vergleich und Plan mit Rückfragen, dann bauen. Auf den Plan:
+„plan klingt gut“. Die Antworten auf die Rückfragen:
+
+1. Wo liegen die Auffrisch-Antworten? „das was leichter ist für leute ohne
+   zugang“
+2. Soll die Leitung sehen, welche Fragen im Team oft danebengehen? „Ja“
+3. Eine Zeile auf „Heute“? „was du empfiehlst einfach“
+4. Fristen für Pflichtmodule jetzt oder später? „ja jetzt“
+5. Videos: „bis jetzt gibts nur für die verkaufsschulung videos den rest
+   können wir sonst auch selber erstellen mit animationen“ — das ist
+   Runde 202.
+
+**Ist-Stand, gemessen** (Demo, vor dem Umbau):
+- Handy 390 px: die Modulliste begann bei Pixel 1.540, nach zwei
+  Bildschirmen. Davor „Kurz auffrischen“ mit 543 px für EINE Frage.
+- Rechner 1280 × 800: die Modulliste begann bei Pixel 1.059, unter dem
+  Rand. Die Code-Seite eines Moduls zog sich über 1.174 px, der Durchlauf
+  einspaltig über die ganze Breite.
+- „‹ Zurück“ in der Schulung traf am Handy nur 39 px hoch: die Reiter
+  „Dokumente / Schulung / Formi“ lagen mit ihrer Trefferfläche auf den
+  oberen 5 px.
+- „Das Beratungsgespräch“: 150 Minuten, 17 Schritte, 67 Fragen, ohne
+  die Möglichkeit, aufzuhören und später weiterzumachen. Daneben acht
+  Module mit 8 bis 35 Minuten.
+- Die 5 Videos der drei Pflichtmodule sind Platzhalter („Video folgt“).
+
+**Recherche, kurz** (Websuche; die Seiten selbst liessen sich hier nicht
+öffnen, der Proxy lehnte sie ab — alles aus Suchauszügen, kein Abstract
+selbst gelesen):
+- Belegt: Abfragen hält länger als Wiederlesen (Roediger & Karpicke 2006,
+  nach 2 Tagen und 1 Woche). Verteilt hält länger als am Stück, der beste
+  Abstand wächst mit der Behaltenszeit (Cepeda u. a. 2006, 2008). Nach
+  einer Antwort die Lösung zeigen (Butler & Roediger 2008). Dunlosky u. a.
+  2013: nur Abfragen und Verteilen „high utility“.
+- Schwach belegt: dass kurze Einheiten („Mikrolernen“) an sich besser
+  lehren. Kürze hilft vor allem beim Wiederkommen.
+- Vorbilder (Herstellerangaben): SC Training/EdApp „Brain Boost“ (falsche
+  Fragen öfter), Axonify (wenige Fragen am Tag), Trainual (Frist ab
+  Zuweisung, Erinnerungen), Duolingo (eine Lektion hält die Serie).
+  Ranglisten bewusst NICHT — sie belohnen Tempo statt Verständnis.
+
+**Was gebaut ist**
+
+1. **Auffrischen als kleine Runde.** Höchstens drei Fragen, gemischt aus
+   den bestandenen Modulen. Abstände 2 · 7 · 30 · 90 · 180 Tage; falsch →
+   wieder nach 2 Tagen. Je Modul höchstens sechs Fragen im Plan, die beim
+   Durchlauf danebengegangenen zuerst. Nach jeder Antwort sofort die
+   Lösung mit Erklärung.
+   - Die Karte ist eine Zeile und ein Knopf, bis man „Los geht’s“ drückt
+     (gemessen 218 statt 543 px am 390er Telefon; die Modulliste beginnt
+     dort bei 1.251 statt 1.540).
+   - **Der Plan hängt am Teilnehmer**, nicht am Gerät und nicht am Konto
+     (Antwort 1). Mit verknüpftem Konto ohne Code; am Studio-Tablet mit
+     demselben Code wie beim Anfangen. Der Code lebt nur für diese Runde
+     im Speicher der Seite; nach „Fertig“ ist auch der Name wieder weg.
+   - Neue Cloud Function `schulungAuffrischen` (holen und antworten in
+     einem Aufruf). Die Code-Prüfung ist dieselbe wie beim Anfangen und
+     steht jetzt genau einmal da (`schulungTeilnehmerAusCode`) — samt
+     Bremse gegen Durchprobieren.
+   - Zwei neue Sammlungen, in **beiden** Regelbäumen:
+     `schulungLernplan` (niemand im Browser) und `schulungFragenStat`
+     (lesen nur die Leitung, schreiben niemand).
+2. **Fristen für Pflichtmodule** (Antwort 4): 14 Tage ab Anlage des
+   Teilnehmers, je Modul im Editor einstellbar (`fristTage`, das Feld
+   erscheint nur bei „Pflicht“). „bis 5.11.“ neutral, erst eine
+   verstrichene Frist in der Statusfarbe.
+   - **Übergang:** Wer schon vorher Teilnehmer war, hätte über Nacht
+     lauter überfällige Module gehabt. Die Frist beginnt deshalb für alle
+     frühestens am 22.10.2026.
+   - Die Leitung sieht je Teilnehmer „überfällig: …“ bzw. „Pflicht offen:
+     … (bis …)“.
+3. **„Heute“: eine Zeile, wenn etwas wartet** (Antwort 3, empfohlen):
+   „Kurz auffrischen: 3 Fragen warten“ bzw. „Pflichtschulung „…“ bis …“
+   (ab drei Tagen vorher, überfällig in der Statusfarbe). Gelesen aus
+   einem Zwischenstand auf dem Gerät (`kf_schulstand`), beim Start ohne
+   Abfrage. Höchstens alle 20 Stunden holt die App ihn im Hintergrund nach
+   (eine Funktion, eine Abfrage der eigenen Durchläufe), damit er auch bei
+   Leuten stimmt, die nie unter „Schulung“ schauen.
+4. **„Fragen, die im Team nicht sitzen“** (Antwort 2) unter Verwaltung →
+   Auswertung: je Frage die Quote „beim ersten Versuch daneben“ aus den
+   Durchläufen und dem Auffrischen. Ohne Namen. Erst ab drei Antworten;
+   die Zahl aus dem Auffrischen steht nur, wenn sie selbst mindestens drei
+   Antworten hat.
+5. **Weitermachen statt von vorn.** `schulungStart` setzt einen
+   angefangenen, nicht leeren Durchlauf derselben Person (unter 30 Tagen)
+   fort: gesehene Schritte, beantwortete Fragen, aktive Zeit. Das Gerät
+   wird dabei auf das neue umgeschrieben, sonst liessen die Regeln es
+   nicht hineinschreiben. Im Durchlauf ein Knopf „Später weiter“; in der
+   Übersicht „angefangen · 2 von 17 Schritten“.
+6. **Am Rechner** (ab 1.100 px):
+   - Übersicht in zwei Spalten: links „Das steht für dich an“, „Kurz
+     auffrischen“, „Was du schon gemacht hast“; rechts Fortschritt, Filter
+     und Module. Die Module stehen bei 1280 × 800 jetzt im ersten Bild.
+   - Code-Seite höchstens 640 px breit.
+   - Durchlauf mit Inhaltsverzeichnis links (gesehene Schritte mit Haken
+     und antippbar, kommende gesperrt — kein Weg an Video und Lesezeit
+     vorbei) und Tasten: 1–8 antworten, → weiter, ← zurück.
+7. **„‹ Zurück“ und „Später weiter“** liegen 8 px tiefer und treffen jetzt
+   44 px hoch.
+
+**Was die Tests gefunden haben**
+- **Eine Ziffer rutschte aus dem Durchlauf zu den Tastenkürzeln der App
+  durch.** Nach einer beantworteten Frage (Bestehensgrenze: die Antworten
+  sind gesperrt) sprang die „3“ mitten aus der Schulung zu den Aufgaben.
+  Im Durchlauf gehören Ziffern und Pfeile jetzt immer der Schulung.
+- **Die Demo hatte keinen verknüpften Teilnehmer.** Die eigenen
+  Durchläufe hingen an „Nora Haas“, deren Eintrag auf ein anderes Konto
+  zeigte. Neu: „Du (Demo-Konto)“, verknüpft mit dem Demo-Konto.
+- **Datum mit zwei Punkten** („ab 24.10..“). Jetzt ein Satz, ein Punkt;
+  die Probe prüft es.
+- `test-gestaltung`: fester Buchstabenabstand am neuen Codefeld (jetzt
+  `--ls-l`) und `#schListe` zweimal mit `grid-template-columns`.
+- **Der Hintergrund-Abruf für die Startseite** (höchstens alle 20 Stunden)
+  hatte drei Nebenwirkungen, alle von bestehenden Proben gefunden:
+  - Er lief auch am **Stempel-Terminal** und überschrieb dort den letzten
+    Funktionsaufruf (`test-terminal`). Am Terminal läuft er jetzt nicht.
+  - Konnte die Funktion gar nicht aufgerufen werden, landete das als
+    Fehler auf der Seite (`test-zugang-rolle`). Jetzt abgefangen.
+  - Er zeichnete die Startseite nach vier Sekunden neu, auch wenn sich
+    nichts geändert hatte (`test-scrollkopf`). Jetzt nur, wenn sich die
+    Schulungszeile wirklich ändert.
+- **Zwei Modulspalten am Rechner** (`test-pc-spalten`, Wunsch aus Runde
+  143): Neben der linken Spalte blieb bei 1280 px nur Platz für eine.
+  Jetzt `minmax(max(300px, 30%), 1fr)`: zwei bei 1280, drei bei 1920.
+- **Beim Zusammenführen mit `main`** verlor der NEUIGKEITEN-Eintrag seine
+  schliessende Klammer. Die Demo merkte es nicht sofort, die Attrappen
+  schon (`Unexpected token '{'`). Behoben vor dem ersten Push.
+
+**Entschieden, und warum**
+- **Plan am Teilnehmer statt auf dem Gerät.** Auf dem Gerät allein wüsste
+  das Tablet nicht, wer davor sitzt, und am Rechner wäre es eine andere
+  Runde. Der Preis: der Plan liegt jetzt in der Datenbank. Lesen kann ihn
+  im Browser niemand; er enthält Stufe und Fälligkeit, nicht die Antwort.
+- **Die Leitung sieht keinen Lernplan einzelner.** „Wird es als Kontrolle
+  empfunden, schadet es.“ (Runde 134) gilt weiter. Sie sieht nur die
+  Summe je Frage — die Frage soll besser werden, nicht die Person.
+- **Kein Algorithmus, eine Liste von Tagen.** SM-2 und Ähnliches rechnen
+  aus dem Gefühl der Lernenden; bei drei Fragen am Tag bringt das nichts,
+  was man nachprüfen könnte. Die Tage sind abgeleitet, nicht gemessen.
+- **Ziffern statt Buchstaben** als Tasten: Buchstaben sind bei den
+  Tastenkürzeln der App belegt.
+
+**Nicht geprüft — bevor „alles grün“ jemanden beruhigt**
+- Der echte Aufruf der Funktion aus dem Browser: Das Firebase-SDK lädt
+  im Test-Browser dieser Umgebung nicht (Proxy-Zertifikat). Geprüft ist
+  die Funktion im Emulator (`tests/rules/funktionen.test.js`) und die App
+  gegen die Demo-Attrappe, die dieselbe Rechnung nachbaut.
+- Ob 2 · 7 · 30 · 90 · 180 Tage im Studio gut passen, zeigt erst der
+  Betrieb.
+- **Offen:** Wird ein Teilnehmer gelöscht, bleibt sein Lernplan liegen
+  (kein Auslöser räumt ihn weg). Er kommt nicht mehr dran, weil es keine
+  Durchläufe mehr gibt, belegt aber Platz.
+
+**Gesamtdurchlauf** (alle 203 Browser-Durchläufe, Regeln und Funktionen
+im Emulator): Regeln und Funktionen grün. Von den Browser-Durchläufen
+waren nach einer Wiederholung acht rot, und alle acht sind auf dem
+unveränderten `main` genauso rot (gegengeprüft auf einer zweiten Kopie):
+`test-block-d`, `test-formi-verdeckt`, `test-gehirn`, `test-neu-design`,
+`test-p1-aufgaben`, `test-p4-seitenleiste`, `test-startseite-putz`,
+`test-team-woche`. Sie gehören nicht zu dieser Runde und sind nicht
+angefasst. Rund 30 weitere fielen nur unter der Last von zwei parallelen
+Strängen und waren einzeln grün.
+
+**Tests**
+- `tests/rules/funktionen.test.js` (+36, jetzt 248): die Rechnung ohne
+  Datenbank und die echte Funktion im Emulator: Code am Tablet, Konto
+  ohne Code, falscher Code und Bremse, gezählt wird nur, was dran war (ein
+  erfundenes Modul nicht, dieselbe Antwort zweimal nicht), Summe ohne
+  Namen, Testcode zählt nicht, Weitermachen und neuer Durchgang danach.
+- `tests/rules/schulung.test.js` (+18, jetzt 92): Lernplan liest und
+  schreibt im Browser niemand, die Summe nur die Leitung; beide Bäume.
+  Gegenprobe: mit einer offenen Leseregel fallen 6 Zeilen.
+- `tests/test-auffrischen.js` neu geschrieben (50): Karte klein, Runde,
+  Ergebnis, Startseite, Fristen über die Uhr, Code-Weg mit Gegenproben,
+  Fingerziele bei sieben Breiten normal und kompakt. Die alten Prüfungen
+  („eine Frage“, „nur auf dem Gerät“) verlangten das Gegenteil des neuen
+  Wunsches und sind ersetzt, nicht gelockert. Gegenprobe: ohne die
+  Konto-Prüfung am Zwischenstand fällt die Zeile.
+- `tests/test-schulung-lernen.js` neu (66): zwei Spalten bei 1280/1440/
+  1920, eine bei 320/390/430/820; Weitermachen, Inhaltsverzeichnis,
+  Tasten (mit der Ziffer auf gesperrten Antworten als Gegenprobe), „Später
+  weiter“, „‹ Zurück“ per Hit-Test (Gegenprobe ohne den Abstand: 39 px,
+  7 Zeilen rot), Leitung: Fristen je Teilnehmer, Fragen ohne Namen, die
+  Schwelle von drei Antworten, das Fristfeld im Editor.
+
+## Runde 202 — Schulung: Animationen statt „Video folgt“ (22.10.2026)
+
+**Aus dem Betrieb:** „bis jetzt gibts nur für die verkaufsschulung videos
+den rest können wir sonst auch selber erstellen mit animationen lade
+dafür dann passende skills oder plugins runter“.
+
+**Was gebaut ist**
+- Die fünf Video-Schritte der drei Pflichtmodule („Ein Tag im Studio“,
+  „Wen frage ich wann?“, „Trainingsplatz reinigen“, „Elektroden und Weste
+  desinfizieren“, „Der Ablauf, Schritt für Schritt“) zeigen eine
+  Animation: Bild für Bild ein Zeichen und ein Satz, alle gut fünf
+  Sekunden weiter, mit Pause, ‹ und ›.
+- Neues Feld `szenen` an einem Video-Schritt in `schulungen-basis.js`
+  (`ico`, `text`, `quelle`). Kommt später ein echtes Video (`quelle`),
+  steht es an derselben Stelle und die Animation tritt zurück. Ohne
+  Szenen steht wie bisher „Video folgt“.
+- „Weiter“ erst, wenn jedes Bild einmal zu sehen war — dieselbe Regel und
+  dieselbe Ausnahme für die Geschäftsführung wie beim Video. Im
+  Hintergrund (Tab nicht sichtbar) läuft die Animation nicht weiter.
+- Speichert die Leitung eine eigene Fassung des Moduls, bleiben die
+  Szenen erhalten.
+- `sw.js` VERSION v31 → v32 (die Moduldatei hat sich geändert).
+
+**Woher die Sätze kommen** — erfunden ist keiner:
+- Die drei Abläufe stehen wortgleich in „Hilfe im Studio“: Nr. 36
+  (Trainingsplatz), Nr. 37 (EMS-Equipment desinfizieren), Nr. 95 (Kunde
+  fühlt sich plötzlich unwohl). Die Probe vergleicht Satz für Satz.
+- Der Rundgang und „Wen frage ich wann?“ fassen mehrere Einträge und
+  Sätze aus dem Modul selbst zusammen; jede Szene nennt ihre Quelle.
+- Beim Notfall bewusst NUR das Handbuch: Was darüber hinausgeht
+  (Lagerung, Erste Hilfe), gehört nicht in eine selbstgemachte
+  Animation. Der alte Hinweis „Beine hoch“ stand nirgends im Handbuch
+  und ist deshalb nicht in die Animation gewandert.
+
+**Entschieden, und warum: in der App gezeichnet statt als Videodatei**
+- Gewünscht war, „passende skills oder plugins“ zu laden. Im Verzeichnis
+  gibt es dafür z. B. „Remotion“ (Videos aus React-Code). Nicht genommen,
+  weil:
+  - ein gerendertes Video in den Speicher-Eimer hochgeladen werden muss.
+    Das geht nur mit Zugangsdaten zum Betrieb, die diese Umgebung nicht
+    hat und nicht anfasst (CLAUDE.md, Sicherheit);
+  - Remotion für Firmen ab einer gewissen Grösse eine kostenpflichtige
+    Lizenz verlangt (laut Remotion-Lizenz, hier nicht nachgeprüft);
+  - eine Änderung im Handbuch so eine Zeile ist, kein neues Video.
+- Der Preis: Es ist eine Bildfolge, kein Film mit Ton und Bewegung im
+  Raum. Für echte Handgriffe (Weste anlegen, Elektroden befeuchten) bleibt
+  ein gefilmtes Video besser. Der Platz dafür ist da.
+- Bewegt wird nur `opacity` und `transform`, einmal je Bild, mit
+  fill-mode backwards; „Bewegung reduzieren“ am Gerät schaltet sie ab.
+
+**Im Durchlauf gefunden**
+- Am 390er Telefon ragte die Fläche 37 px aus der Karte: `aspect-ratio`
+  zusammen mit `min-height` zog die Breite auf. Jetzt Höhe über `clamp`.
+  Die Probe misst, dass die Fläche in der Karte bleibt (Gegenprobe mit
+  dem alten CSS: 4 Zeilen rot).
+
+**Tests**
+- `tests/test-schulung-animation.js` neu (31): Quellen und Wortgleichheit
+  aus den Dateien, Animation statt „Video folgt“, läuft von selbst,
+  Pause hält (Gegenprobe über die Zeit), „Weiter“ erst nach allen
+  Bildern, nur opacity/transform, Fingerziele bei sieben Breiten normal
+  und kompakt; Gegenproben: ohne Szenen „Video folgt“, die
+  Geschäftsführung ist ausgenommen.
+- `tests/test-schulung.js`: Der Gang durch „Dein erster Tag“ blättert die
+  Animation mit „›“ durch. Die Prüfung „ein fehlendes Video wird als
+  fehlend benannt“ heisst jetzt „nie leer: Animation oder ‚Video folgt‘“,
+  mit dem Zitat aus dem Betrieb; dazu neu: die Animation sperrt „Weiter“.
