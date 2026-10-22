@@ -304,7 +304,7 @@ Teams. Ein Durchlauf prüft das bei jedem Lauf mit.
 | IP-Adresse | **NICHT ERFASST** | |
 | Gerätefingerabdruck | **NICHT ERFASST** | nur welches registrierte Terminal |
 | Nachträglich ändern | **NICHT MÖGLICH** | `zeiten` steht auf `allow write: if false` — für **jeden**; überschrieben wird auch bei einer Korrektur nichts |
-| Korrekturweg | **VERIFIZIERT** (24.9.2026) | Verwaltung → Zeiten: die Leitung trägt einen Stempel nach oder markiert einen als ungültig, **nur mit Grund**; beides bleibt sichtbar, auch für die Person selbst |
+| Korrekturweg | **VERIFIZIERT** (24.9.2026, seit Runde 211 nur die Geschäftsführung) | Verwaltung → Zeiten: die Geschäftsführung trägt einen Stempel nach oder markiert einen als ungültig, **nur mit Grund**; beides bleibt sichtbar, auch für die Person selbst. Mitarbeiter beantragen fehlende Stempel selbst (Runde 204) |
 | Eigene Zeiten einsehen | **VERIFIZIERT** | vollständig |
 | Automatische Löschfrist | **NICHT GEFUNDEN** | Stempelzeiten bleiben unbegrenzt liegen — offen, siehe `docs/RECHT.md` |
 | PIN zurücksetzen durch die Leitung | **NICHT MÖGLICH** | der Hash liegt an einem Ort, den die Regeln für **alle** sperren |

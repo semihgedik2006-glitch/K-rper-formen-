@@ -461,6 +461,60 @@ async function zuVerwaltungZeiten(p) {
     await p.close();
   }
 
+  console.log('\n── 11. Soll je Wochentag, Feiertage; nur die Geschäftsführung korrigiert (Runde 211) ──');
+  {
+    /* Das erwartete Soll unabhängig von der App: Mo–Fr 8 h, Sa 4 h, So 0,
+       vom Monatsersten bis heute, Feiertage aus schichtplaner.js. */
+    const SP = require(require('path').join(__dirname, '..', 'schichtplaner.js'));
+    const heute = new Date(), j = heute.getFullYear(), mo = heute.getMonth();
+    const ft = SP.feiertageNRW(j);
+    let erwartet = 0;
+    for (let d = new Date(j, mo, 1, 12); d.getDate() <= heute.getDate() && d.getMonth() === mo; d.setDate(d.getDate() + 1)) {
+      const key = d.toLocaleDateString('sv-SE'), w = d.getDay();
+      if (ft[key]) continue;
+      erwartet += (w >= 1 && w <= 5) ? 480 : (w === 6 ? 240 : 0);
+    }
+    const soll = Math.floor(erwartet / 60) + ':' + ('0' + (erwartet % 60)).slice(-2);
+    for (const [w, h] of [[1440, 900], [320, 568]]) {
+      const p = await oeffne(b, 'chef', w, h);
+      await zuVerwaltungZeiten(p);
+      const r = await p.evaluate(async (SRC) => {
+        const T = eval('(' + SRC + ')');
+        const ws = (ms) => new Promise(r => setTimeout(r, ms));
+        document.querySelector('[data-zkansicht="konto"]').click(); await ws(2500);
+        const box = document.getElementById('zkRegeln'); box.open = true; await ws(200);
+        const uid = document.querySelector('[data-rguid]').getAttribute('data-rguid');
+        const masse = [];
+        for (const el of [...box.querySelectorAll('[data-rguid="' + uid + '"], summary, [data-zkregelnsichern]')]) {
+          el.scrollIntoView({ block: 'center' }); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+          const m = T(el); if (m.w < 44 || m.h < 44) masse.push((el.dataset.rgtag || el.textContent.trim()).slice(0, 14) + ' ' + m.w + '×' + m.h);
+        }
+        for (let t = 1; t <= 7; t++) document.querySelector('[data-rguid="' + uid + '"][data-rgtag="' + t + '"]').value = t <= 5 ? '8' : (t === 6 ? '4' : '');
+        document.querySelector('[data-zkregelnsichern]').click(); await ws(2500);
+        const zeile = [...document.querySelectorAll('#zkKonto tbody tr')][0];
+        return { zu: masse, soll: zeile.children[2].textContent, markiert: /Soll je Wochentag/.test(zeile.children[0].textContent),
+                 quer: document.documentElement.scrollWidth - innerWidth };
+      }, TREFFER.toString());
+      pruefe(w + ' px: Soll je Wochentag (Mo–Fr 8, Sa 4) ergibt ' + soll + ' bis heute, Feiertage 0', r.soll === soll && r.markiert, JSON.stringify(r));
+      pruefe(w + ' px: die sieben Felder, die Klappzeile und „Soll speichern" treffen ≥ 44', !r.zu.length, r.zu.join(', '));
+      pruefe(w + ' px: nichts ragt hinaus', r.quer <= 0, r.quer);
+      pruefe(w + ' px: ohne Skriptfehler (Soll)', !p._fehler.length, p._fehler.join(' | '));
+      await p.close();
+    }
+    const p = await oeffne(b, 'leiter', 1280, 800);
+    await zuVerwaltungZeiten(p);
+    const l = await p.evaluate(async () => {
+      const ws = (ms) => new Promise(r => setTimeout(r, ms));
+      const z = document.querySelector('#zkListe [data-zk]'); if (!z) return { keineZeile: true };
+      z.click(); await ws(600);
+      return { nachtragen: !!document.querySelector('[data-zknach]'), ungueltig: !!document.querySelector('[data-zkweg]'),
+               hinweis: [...document.querySelectorAll('#zkDetail .hint, .zk-inline .hint')].map(x => x.textContent).join(' | ') };
+    });
+    pruefe('Studioleitung: kein „Nachtragen", kein „Ungültig …" mehr („nur führung")', !l.nachtragen && !l.ungueltig && /Geschäftsführung/.test(l.hinweis), JSON.stringify(l));
+    pruefe('ohne Skriptfehler (Leitung)', !p._fehler.length, p._fehler.join(' | '));
+    await p.close();
+  }
+
   await b.close();
   console.log(schlecht
     ? '\n✗ Stempelseite: ' + schlecht + ' von ' + (gut + schlecht) + ' Zusicherungen falsch'

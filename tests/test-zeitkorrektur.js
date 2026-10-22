@@ -16,9 +16,9 @@
       sagt „nachgetragen von … · Grund".
    4. Ungültig markieren: der Stempel bleibt sichtbar, durchgestrichen,
       mit Grund.
-   5. Die Studioleitung sieht nur ihre Studios und bekommt an den
-      eigenen Zeiten kein Formular, sondern den Hinweis, dass das die
-      Geschäftsführung macht.
+   5. Die Studioleitung sieht nur ihre Studios und bekommt kein
+      Formular — weder an den eigenen Zeiten noch (seit Runde 211) an
+      denen ihres Teams —, sondern den Hinweis auf die Geschäftsführung.
    6. Am Rechner steht der Tag rechts neben der Liste; jedes
       Bedienelement ≥ 44 × 44 bei 320 bis 1920 px, normal und kompakt.
    ══════════════════════════════════════════════════════════════════ */
@@ -252,13 +252,17 @@ function stand(p) {
       return { form: !!d.querySelector('[data-zknach]'), weg: !!d.querySelector('[data-zkweg]'), text: d.textContent };
     });
     pruefe('an den EIGENEN Zeiten kein Formular, sondern der Hinweis auf die Geschäftsführung',
-      !!eigen && !eigen.form && !eigen.weg && /korrigiert die Geschäftsführung/.test(eigen.text), JSON.stringify(eigen).slice(0, 160));
+      !!eigen && !eigen.form && !eigen.weg && /Geschäftsführung/.test(eigen.text), JSON.stringify(eigen).slice(0, 160));
     const fremd = await p.evaluate(async () => {
       const z = [...document.querySelectorAll('#zkListe [data-zk]')].find(x => !/Demo-Studioleitung/.test(x.textContent));
       z.click(); await new Promise(r => setTimeout(r, 400));
       return !!document.querySelector('#zkDetail [data-zknach]');
     });
-    pruefe('(Gegenprobe) an den Zeiten ihres Teams schon', fremd);
+    /* Runde 211, umgekehrt zu vorher. Aus dem Betrieb, 22.10.2026, auf
+       die Frage, ob die Studioleitung fremde Stempel weiter direkt
+       nachtragen darf: „nur führung". Die Gegenprobe (die
+       Geschäftsführung trägt nach) steht oben in Abschnitt 2. */
+    pruefe('auch an den Zeiten ihres Teams KEIN Formular mehr („nur führung")', !fremd);
     pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await p.close();
   }

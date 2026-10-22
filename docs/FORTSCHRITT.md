@@ -19505,3 +19505,44 @@ druckbarer Nachweis der Hygiene- und Notfallunterweisung für Kontrollen“.
   freiwilliges Modul hat keine „Noch offen“-Liste, eine stillgelegte Person
   fehlt dort; im Druckbild (media print) nur der Nachweis, keine Knöpfe;
   Fingerziele bei sieben Breiten, normal und kompakt.
+
+## Runde 211 — Zeiten korrigiert nur die Geschäftsführung; Soll je Wochentag mit Feiertagen (22.10.2026)
+
+Zwei Antworten aus dem Betrieb auf die Rückfragen nach Runde 210:
+„1. nur führung 2. ja".
+
+**1. Nachtragen und Stornieren nur noch durch die Geschäftsführung.** Bis
+Runde 210 durfte die Studioleitung das in ihren Studios (P-09, 24.9.).
+`leitungFuerStudio` lässt jetzt nur `role === 'chef'` durch; die
+Oberfläche zeigt der Studioleitung statt der Knöpfe den Hinweis auf die
+Geschäftsführung und auf den Antrag unter „Zeiten". Die Studioleitung
+sieht die Zeiten ihres Studios weiter (Regel unverändert).
+- Wen es trifft: jedes Konto mit `role: 'leiter'`, ab dem nächsten Klick.
+  Es gibt keinen Übergang, weil nichts kaputtgeht — wer bisher nachtrug,
+  bekommt eine klare Meldung, und der Weg für die Person selbst (Antrag)
+  besteht seit Runde 204.
+- Angepasst, mit dem Zitat im Test: `tests/rules/zeitkorrektur.test.js`
+  (die Leitung im eigenen Studio wird jetzt abgewiesen, Gegenprobe mit
+  der alten Regel → 3 rot), `tests/test-zeitkorrektur.js` (die
+  Studioleitung bekommt auch am Team kein Formular), `monatsabschluss`.
+
+**2. Soll je Wochentag.** Verwaltung → Zeiten → Monat & Konto → „Soll je
+Wochentag": je Person sieben Werte (Stunden), gespeichert in
+`lohnEinstellungen/zeitregeln` (nur die Geschäftsführung, beide Teile der
+Regeln, eigene Feldprüfung). Wer eine Regel hat:
+- Soll = Summe der Tage bis heute, **Feiertage (NRW) mit 0** — die Liste
+  kommt aus `schichtplaner.js` (`feiertageNRW`), nicht als zweite Abschrift.
+  Lädt das Modul nicht, steht es über der Tabelle.
+- Urlaub/Krank schreibt den Wert **dieses** Wochentags gut; Urlaubstage für
+  DATEV zählen nur Tage mit Soll > 0.
+- Wer keine Regel hat, für den bleibt es bei Wochenstunden × Tage / 7 und
+  Gutschrift Mo–Fr. Dort zählen Feiertage weiterhin nicht gesondert — das
+  ist die alte Rechnung, unverändert.
+- Am Handy (≤ 520 px) stehen die sieben Felder in zwei Reihen; sieben
+  nebeneinander wären 37 px breit gewesen.
+
+**Geprüft:** `lohn-einstellungen` 34 (zwölf neue: `zeitregeln` in beiden
+Welten). `test-stempelseite` 201: das Soll mit Mo–Fr 8 h, Sa 4 h gegen eine
+im Test unabhängig gerechnete Summe mit denselben Feiertagen (Oktober bis
+zum 22.: 136:00 h, der 3.10. zählt 0), Felder ≥ 44 bei 1440 und 320, die
+Studioleitung ohne Nachtragen und Ungültig.

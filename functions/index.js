@@ -5555,12 +5555,15 @@ function berlinZeitpunkt(tag, uhr) {
   return ts;
 }
 
-function leitungFuerStudio(profil, studioKey) {
-  const darf = profil.role === 'chef' ||
-    (profil.role === 'leiter' && (profil.studioKeys || []).includes(studioKey));
-  if (!darf) {
+/* Runde 211: NUR die Geschäftsführung. Aus dem Betrieb, 22.10.2026, auf
+   die Frage, ob die Studioleitung fremde Stempel weiter direkt nachtragen
+   darf: „nur führung". Bis Runde 210 durfte es die Leitung in ihren
+   Studios (P-09). Der Name bleibt, damit die Aufrufer unverändert lesen;
+   `studioKey` wird nicht mehr gebraucht. */
+function leitungFuerStudio(profil, studioKey) { // eslint-disable-line no-unused-vars
+  if (profil.role !== 'chef') {
     throw new functions.https.HttpsError('permission-denied',
-      'Korrigieren darf nur die Leitung dieses Studios.');
+      'Korrigieren darf nur die Geschäftsführung.');
   }
 }
 

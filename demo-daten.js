@@ -1880,8 +1880,8 @@
     },
     zeitNachtragen: function (d) {
       var studioKey = String(d.studioKey || '');
-      var leitung = ICH.role === 'chef' || (ICH.role === 'leiter' && (ICH.studioKeys || []).indexOf(studioKey) >= 0);
-      if (!leitung) throw new Error('Korrigieren darf nur die Leitung dieses Studios.');
+      /* Runde 211: nur die Geschäftsführung, wie der Server. */
+      if (ICH.role !== 'chef') throw new Error('Korrigieren darf nur die Geschäftsführung.');
       if (String(d.grund || '').trim().length < 5) throw new Error('Bitte kurz den Grund angeben.');
       if (d.uid === ICH.id && ICH.role !== 'chef') throw new Error('Die eigenen Zeiten korrigiert die Geschäftsführung.');
       var person = USERS.filter(function (u) { return u.id === d.uid; })[0];
@@ -1971,8 +1971,7 @@
     zeitStornieren: function (d) {
       var z = holen(P('zeiten')).filter(function (x) { return x.id === String(d.id || ''); })[0];
       if (!z) throw new Error('Diesen Stempel gibt es nicht.');
-      var leitung = ICH.role === 'chef' || (ICH.role === 'leiter' && (ICH.studioKeys || []).indexOf(z.studioKey) >= 0);
-      if (!leitung) throw new Error('Korrigieren darf nur die Leitung dieses Studios.');
+      if (ICH.role !== 'chef') throw new Error('Korrigieren darf nur die Geschäftsführung.');
       if (String(d.grund || '').trim().length < 5) throw new Error('Bitte kurz den Grund angeben.');
       if (z.uid === ICH.id && ICH.role !== 'chef') throw new Error('Die eigenen Zeiten korrigiert die Geschäftsführung.');
       if (z.storno) throw new Error('Dieser Stempel ist schon als ungültig markiert.');

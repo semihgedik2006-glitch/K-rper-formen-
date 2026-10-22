@@ -120,7 +120,7 @@ const LEUTE = {
   await scheitert('zweimal abschliessen → abgewiesen', fns.monatAbschliessen.run({ monat, zeilen: [zeile] }, lauf('mia')), /schon abgeschlossen/);
 
   await scheitert('GESPERRT: Nachtragen im abgeschlossenen Monat', fns.zeitNachtragen.run({ uid: 'anna', tag, uhr: '17:00', art: 'gehen',
-    studioKey: 'studio-1', grund: 'Ausstempeln vergessen' }, lauf('lisa')), /abgeschlossen/);
+    studioKey: 'studio-1', grund: 'Ausstempeln vergessen' }, lauf('max')), /abgeschlossen/);
   await scheitert('GESPERRT: Stornieren im abgeschlossenen Monat', fns.zeitStornieren.run({ id: 'anna-k', grund: 'Doppelt gestempelt' }, lauf('max')), /abgeschlossen/);
   await scheitert('GESPERRT: Antrag für den abgeschlossenen Monat', fns.zeitAntragStellen.run({ tag, uhr: '17:00', art: 'gehen',
     grund: 'Feierabend vergessen' }, lauf('anna')), /abgeschlossen/);
@@ -137,7 +137,7 @@ const LEUTE = {
   const ab2 = (await db.doc(F + 'zeitAbschluesse/' + monat).get()).data();
   pruefe('geöffnet: abgeschlossen=false, die alten Zahlen bleiben, der Verlauf hält beides', ab2.abgeschlossen === false && ab2.zeilen.length === 1 &&
     ab2.verlauf.length === 2 && ab2.verlauf[1].art === 'geoeffnet' && /Anna/.test(ab2.verlauf[1].grund), JSON.stringify(ab2.verlauf));
-  const n = await fns.zeitNachtragen.run({ uid: 'anna', tag, uhr: '17:00', art: 'gehen', studioKey: 'studio-1', grund: 'Ausstempeln vergessen' }, lauf('lisa'));
+  const n = await fns.zeitNachtragen.run({ uid: 'anna', tag, uhr: '17:00', art: 'gehen', studioKey: 'studio-1', grund: 'Ausstempeln vergessen' }, lauf('max'));
   pruefe('(Gegenprobe) nach dem Öffnen geht Nachtragen wieder', !!(n && n.ok));
   const r2 = await fns.monatAbschliessen.run({ monat, zeilen: [Object.assign({}, zeile, { ist: 960, saldo: 360, konto: 360, offen: 0 })] }, lauf('mia'));
   const ab3 = (await db.doc(F + 'zeitAbschluesse/' + monat).get()).data();
