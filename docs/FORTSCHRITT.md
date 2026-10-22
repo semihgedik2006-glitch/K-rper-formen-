@@ -17920,7 +17920,41 @@ gut!“. Die Antworten auf die Rückfragen:
   (Bernstein), Abwesenheit nicht.
 
 **Geprüft**
-- ERGEBNISSE_FOLGEN
+- **Neu: `tests/test-schichtplan-raster.js`**, 72 Prüfungen: Ansicht je
+  Rolle und gemerkt; Wochenzahl = Schichten der Woche (auch nächste Woche);
+  Stunden = Summe der Schichten, Soll nur wo lesbar, Markierung genau bei
+  > 15 % Abweichung; Eintragen per Zelle mit Vorlagen nach Wochentag;
+  Blatt mit „Ich kann nicht“ zuerst, „Entfernen“ nur Leitung, Kugel
+  verdeckt nichts; Abwesenheit schraffiert; Tasten ← → H V und „?“;
+  Trefferflächen per Hit-Test bei 320/390/430/820/1280/1440/1920 px,
+  normal und kompakt, in beiden Ansichten und im Blatt, nichts ragt
+  hinaus; Planer mit
+  Wochen-Reitern, einer Woche, „Ganzer Monat“, festen Spalten,
+  „Zu klären“ springt in die Woche.
+- **Gegenprobe** (alter Zustand kurz zurückgebaut): Wochenzahl wieder
+  `_shifts.length` → 6 rot („14 Schichten“ statt 8, „17“ statt 11);
+  ohne feste Spalten → rot (Früh bei 722/692/699/700 px); Schwelle 60 statt
+  40 in `heuteInsBild` → test-team-woche rot (rollt 78 px).
+- **Angepasst, mit Zitat im Test** (nicht gelockert — jede Prüfung prüft
+  dasselbe am neuen Ort): test-team-woche (sieben Spalten in „Tage“; heute
+  im Raster als Spaltenkopf), test-tausch („Ich kann nicht“ im Blatt),
+  test-schichtplaner (zuerst eine Woche, „Ganzer Monat“ 28–31 Zeilen;
+  Wochen als Reiter; Schichtname im Raster).
+- **Grün:** test-team-woche (**vorher rot**: Leitung 390 px rollte 101 px),
+  test-schichtplan-raster, test-tausch, test-block-b, test-mitarbeiter,
+  test-schichtplaner, test-team-bereich7, test-funktionen-schalter,
+  test-doppelte-namen, test-gestaltung, test-knoepfe, test-abgeschnitten,
+  test-tagesband, test-alltag, test-pc-durchsicht, test-video-hochladen.
+- **Gesamtlauf** (`tests/alle.sh`, alle 200 Durchläufe): rot sind nur
+  - dieselben wie auf main, gegen einen unveränderten main-Stand
+    nachgemessen mit gleicher Zahl Fehler: test-neu-design (3),
+    test-p4-seitenleiste (2), test-startseite-putz (4), test-p1-aufgaben (2),
+    test-block-d, test-navigation (2,28 Bildschirme wie in Runde 184);
+  - fehlende Module in dieser Umgebung: test-abo-leiter, test-gehirn-aktion,
+    test-mail-versand, test-stripe-felder, test-regelumgebung;
+  - Zeitüberschreitung im vollen Lauf, einzeln grün: test-pc-durchsicht,
+    test-video-hochladen, test-formi-verdeckt (19/19); test-gehirn (Last,
+    wie Runde 184, einzeln nicht nachgemessen).
 
 **Nicht geprüft / hier nicht prüfbar**
 - Echte Datenbank und Anmeldeweg (Firebase-SDK lädt hier nicht) — alles in
