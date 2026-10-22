@@ -17787,3 +17787,178 @@ nachgemessen, nicht gelockert):
 - Chat und Direkt in eine Liste.
 - „Erledigt“ eingeklappt.
 - Punkte statt Zahlen an den Räumen.
+## Runde 185 — Suche nach Bedeutung nachgemessen (Worker 2.15, 22.10.2026)
+
+Nach dem Einspielen von 2.14 mit `/api/suche` an zehn echten Fragen gegen
+275 Einträge gemessen, statt die Schwelle zu schätzen.
+
+**Gemessen**
+- Fragen ohne Bezug zum Studio: höchstens 0,48 („pizza bestellen" → 0,479,
+  „wie wird das wetter morgen" → 0,393).
+- Der richtige Eintrag: 0,52 bis 0,73 („Kunde sagt kurzfristig ab" 0,73,
+  „Kunde will kündigen" 0,64, „Gerät macht ungewöhnliche Geräusche" 0,52).
+- „darf eine schwangere trainieren": nach Bedeutung Platz 1 („Warum kein
+  EMS in der Schwangerschaft", 0,62), im Volltext gar nicht — und nach
+  dem Mischen mit gleichem Gewicht nicht unter den ersten drei.
+
+**Geändert**
+- `VEKTOR_MIN` 0,42 → 0,50 (zwischen Rauschen und echten Treffern).
+- Beim Mischen zählt die Bedeutung doppelt (`GEWICHT_BEDEUTUNG = 2`). Der
+  beste Volltext-Treffer bleibt unter den sechs, die die KI sieht.
+
+**Warum nicht höher:** „Gerät piept dreimal" fand den passenden Eintrag
+mit 0,52. Eine Schwelle von 0,55 hätte ihn verloren.
+
+**Eingespielt:** 124 Vorschläge aus den Schulungen (Texte und
+Quizfragen mit richtiger Antwort), Quelle „Schulung „…“". Sie sind noch
+kein Wissen; die Leitung gibt sie in der Karte „Formi lernt" frei. Einige
+Quizfragen beziehen sich auf Szenen aus den Schulungsvideos und taugen
+allein wenig — verwerfen ist dort richtig.
+
+## Runde 186 — Formi lebt: Formi-Zeile, Gefühle, Glitch, Spur (22.10.2026)
+
+**Aus dem Betrieb:** Zuerst kam die Bitte um „reine ideen wie wir formi
+mehr ins design integrieren können“. Daraus entstand das Ideenpapier
+`docs/ideen/formi-im-design.md` mit 14 Ideen. Antworten darauf:
+- Top 3 alle „ja“, Formi-Zeile „mega find ich auch gut“.
+- Persönlichkeit: „ja viele emotionen und so am besten auch reaktionen
+  falls das geht auf kleinigkeiten“.
+- Stilname und Andocken am Rechner: „was sinnvoller ist“.
+- Dazu: „Formi soll einfach ganz integriert sein wie ein kleiner glitch
+  im system mässig welcher die app übernimmt“.
+
+**Gebaut**
+- **Formi-Zeile statt Hinweisbalken** (Startseite, bisheriges Design).
+  - Oben steht EINE Zeile: links Formis Ring (öffnet Formi), daneben die
+    Meldungen als Knöpfe.
+  - Die Statusfarbe bleibt als Punkt vor jeder Meldung: rot für
+    überfällig, bernstein für fehlendes Material.
+  - Am Handy steht die kurze Form („1 überfällig“, „5 Artikel fehlen“).
+  - Einmal je Sitzung springen die Meldungen glitchend herein.
+  - Gemessen (Attrappe Chef): Am Rechner 1440 px ist die Zeile 54 px
+    hoch statt drei Balken (~162 px). Am Handy 390 px sind es 102 px, bei
+    320 px 150 px.
+  - Im neuen Design gab es die Balken schon nicht mehr; dort ändert sich
+    an der Startseite nichts.
+- **Die Kugel lebt.**
+  - Das Loch ist ein Auge: Pupille mit Lichtpunkt. Es schaut dem
+    Mauszeiger nach (nur mit Maus) und beim Tippen auf das Feld.
+  - Es blinzelt alle 4–11 s und nickt beim Tippen.
+  - Beim Abhaken freut es sich, beim dritten Haken binnen 20 s staunt es.
+  - Beim letzten Putzpunkt eines Studios feiert es (dreht sich, Glitch,
+    Hinweis „Putzplan … für heute fertig“).
+  - Bei Fehlermeldungen erschrickt es.
+  - Nach 90 s ohne Bedienung schläft es ein und wacht mit einem Glitch
+    auf. Wer nach über einer Minute in die App zurückkommt, wird mit
+    einer Freude begrüsst.
+  - Ein violetter Punkt zeigt „hat etwas für dich“, bei Überfälligem
+    oder fehlendem Material. Er geht weg, sobald man Formi öffnet.
+- **Glitch statt Lichtkante.**
+  - Öffnet Formi eine Seite, springen zwei Balken in Cyan und Magenta
+    über das Ziel und danach über den Seitenkopf.
+  - Das kleine Fenster springt beim Öffnen glitchend auf.
+- **Der Ring gehört nur Formi** (`--formi-ring`): Kugel, Formi-Zeile und
+  Spur. Der Durchlauf sucht den Verlauf an jeder anderen Stelle.
+- **Formi-Spur.**
+  - Hakt Formi ab, steht `formiAt` (= `doneAt`) am Eintrag, und Aufgaben
+    und Putzplan zeigen „über Formi“ mit dem kleinen Ring.
+  - Legt Formi eine Aufgabe an, trägt sie `vonFormi` und zeigt „über
+    Formi angelegt“.
+
+**Warum so**
+- *Gefühle als Web Animations, nicht als Klassen.*
+  - Sie sind endlich, lassen sich ohne `offsetWidth`-Neustart wiederholen
+    und bewegen nur `transform`/`opacity`.
+  - Sie laufen an den Kindern der Kugel. Der Knopf selbst behält sein
+    `transform` für Hover und das Ausweichen vor „Rückgängig“ (Runde 182).
+  - Blinzeln und Schlafen hängen an Zeitgebern, nicht an `infinite`.
+- *Messen nur im Bild.* Die Lage der Kugel wird einmal je Sekunde im
+  Bild gelesen, die Zeigerbewegung schreibt höchstens einmal je Bild, das
+  Feld beim Tippen wird ebenfalls im Bild vermessen.
+- *Glitch ohne Blitzen.* Die Fläche blendet einmal ab, die Balken
+  springen nur seitlich. Das sind keine drei Helligkeitswechsel je
+  Sekunde (WCAG 2.3.1). Bei „weniger Bewegung“ gibt es nichts davon,
+  auch nicht das Hereinspringen der Zeile.
+- *Der Punkt ist violett, nicht rot.* Formi ist kein Alarm, und Rot
+  heisst in der App „überfällig“.
+- *Die Spur erkennt man an `formiAt === doneAt`.*
+  - Hakt danach ein Mensch neu ab, ändert sich `doneAt`, und die Spur ist
+    von selbst weg. Kein anderer Haken-Weg muss davon wissen.
+  - `formiAt` steht in `todoMitarbeiterFelder()` und
+    `putzMitarbeiterFelder()`. Beide gelten flach und unter
+    `firmen/<f>/`, es sind dieselben Funktionen.
+  - **Übergang:** App und Regeln werden getrennt ausgeliefert. Lehnt eine
+    noch alte Regel das Feld ab, geht der Haken ohne Spur noch einmal
+    raus, wie beim Kürzel in Runde 147.
+- *Der Name der Kugel bleibt „Formi öffnen“.* Der Punkt kommt für
+  Vorleser als Beschreibung dazu (`aria-describedby`).
+  `test-uebersicht` verlangt genau diesen Namen. Die Prüfung wurde nicht
+  angepasst; die App hält sich an sie.
+- *Stilname bleibt „Formi“.* „Raum“ ist schon der Name des
+  App-Hintergrunds, und zum Wunsch „Formi übernimmt die App“ passt der
+  Name. Unterscheidbar bleibt Formi über den Ring.
+- *Andocken am Rechner ab 1440 px: ja, aber eigene Runde.* Es macht jede
+  Ansicht schmaler (Liste + Detail ab 1100 px). Das muss vorher gemessen
+  werden.
+
+**Gefunden beim Messen** (CPU ÷4, 1440 px, Maus bewegt sich 3 s lang)
+- Die erste Fassung schrieb die Blickrichtung in `style.transform`. Jede
+  Änderung am `style`-Attribut liess die `:has()`-Regeln am `<body>`
+  (Kugel über „+ Aufgabe“, Rückgängig-Leiste) den ganzen Baum neu
+  berechnen, und der Browser malte die ganze Seite neu.
+- Gemessen über der leeren Seitenleiste: 12,9 ms je Bild statt 1,9 ms.
+  Die Spur zeigte „StyleInvalidator … BODY … invalidates subtree“ und
+  50 Mal `Paint #document` in 2 s.
+- `will-change` am Auge half nicht. Geholfen hat, das Auge über eine
+  Web Animation zu bewegen, die kein Attribut ändert.
+- Danach über der leeren Fläche 3,7 ms je Bild (alt 2,0), über dem
+  Inhalt samt Formi-Zeile 6,7 ms (alt 2,8). Beides liegt unter der
+  Grenze von 8,3 ms, ist aber mehr als vorher.
+- Für alle, die an Formi weiterbauen: **nichts im Takt der Maus über
+  `style` oder Attribute schreiben**, solange es `body:has(…)`-Regeln
+  gibt. `aria-describedby` an der Kugel wird deshalb auch nur
+  geschrieben, wenn es sich ändert.
+
+**Geprüft**
+- `tests/test-formi-lebt.js` (neu, 77 Zusicherungen):
+  - Formi-Zeile an Rechner und Handy; Tipp auf „überfällig“ öffnet die
+    Aufgaben mit Filter; der Ring öffnet Formi.
+  - Alle Gefühle: endlich, nur `transform`/`opacity`, danach Ruhe.
+  - Staunen beim dritten Haken, Glitch endlich und nicht klickbar,
+    Schauen (≤ 4,5 px), Einschlafen und Aufwachen.
+  - Punkt und Beschreibung, weg nach dem Öffnen.
+  - „Weniger Bewegung“: nichts bewegt sich.
+  - Spur in der Anzeige (auch Gegenprobe „danach von Hand“) und beim
+    Schreiben: Formi hakt im Putzplan ab → `formiAt = doneAt`; „Jetzt
+    anlegen“ → `vonFormi`; von Hand → ohne `formiAt`.
+  - Ring nur an Formi-Teilen.
+  - Trefferflächen von Ring und Meldungen ≥ 44 × 44 per Hit-Test bei
+    320 / 390 / 430 / 820 / 1280 / 1440 / 1920, normal und kompakt; kein
+    Querlauf.
+- `tests/rules/formi-spur.test.js` (neu, 18 Zusicherungen, beide Welten)
+  lief hier im Emulator grün. Gegenprobe mit den Regeln von `main`:
+  8 rot.
+- Bestehende Durchläufe grün: test-knoepfe, test-gestaltung,
+  test-abgeschnitten, test-quer, test-formi-kugel, test-formi-verdeckt
+  (826 Ansichten/Reiter, 20 954 Bedienelemente), test-uebersicht,
+  test-stil-formi, test-csp, test-final, test-startlesen, test-raeume.
+- **Gefunden von test-gestaltung:**
+  - Ein Emoji stand im Text „… Formi feiert mit“; es ist entfernt.
+  - `border-radius:inherit` steht jetzt auf der Leiter (`--r-rund`).
+- **Gefunden von test-uebersicht:** Die Kugel muss „Formi öffnen“
+  heissen. Der Punkt ist deshalb Beschreibung statt Name.
+- **Rot, aber auch auf `main` rot** (gegen den alten Stand gemessen):
+  - test-gehirn: die drei Leistungsprüfungen unter CPU ÷4, 329 von 332
+    grün, auf `main` dieselben drei rot.
+  - test-navigation: Die Handy-Startseite ist zu lang. Auf `main` sind
+    es 2,28 Bildschirme, jetzt 2,18 (die Formi-Zeile ist niedriger);
+    erlaubt sind 1,9.
+
+**Nicht geprüft**
+- Echtes Handy und echte 120 Hz.
+- Anmeldeweg und echte Daten.
+- Wie die Gefühle auf einem Studio-Tablet wirken.
+- Die Arbeit je Bild beim Feiern und beim Glitch über einer Seite;
+  gemessen ist nur das Folgen der Maus.
+- Die Regel `formiAt` ist noch nicht ausgerollt. Bis dahin greift der
+  Übergang: Der Haken geht ohne Spur raus.

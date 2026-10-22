@@ -115,7 +115,7 @@ function antwortWaehlen(p, richtig) {
   }, richtig);
 }
 async function startZeilen(p) {
-  return p.evaluate(() => [...document.querySelectorAll('#homeAlerts .alert-bar')].map(x => x.textContent.replace(/\s+/g, ' ')));
+  return p.evaluate(() => [...document.querySelectorAll('#homeAlerts .fz-teil')].map(x => (x.querySelector('.fz-lang') || x).textContent.replace(/\s+/g, ' ')));
 }
 
 (async () => {
@@ -243,9 +243,9 @@ async function startZeilen(p) {
       fristen: [{ titel: 'Hygiene nach jedem Training', bis: Date.now() - 2 * 86400000 }] }) });
   zeilen = await startZeilen(eigen);
   pruefe('… der eigene zeigt sie (ohne Abfrage beim Start)', zeilen.some(z => /Kurz auffrischen: 3 Fragen warten/.test(z)), zeilen.join(' | '));
-  const warn = await eigen.evaluate(() => [...document.querySelectorAll('#homeAlerts .alert-bar')]
-    .filter(x => /Pflichtschulung/.test(x.textContent)).map(x => ({ t: x.textContent.replace(/\s+/g, ' '), warn: x.classList.contains('warn') })));
-  pruefe('FRIST · eine verstrichene Pflicht-Frist steht als Hinweis in der Statusfarbe',
+  const warn = await eigen.evaluate(() => [...document.querySelectorAll('#homeAlerts .fz-teil')]
+    .filter(x => /Pflichtschulung/.test(x.textContent)).map(x => ({ t: (x.querySelector('.fz-lang') || x).textContent.replace(/\s+/g, ' '), warn: x.classList.contains('bad') })));
+  pruefe('FRIST · eine verstrichene Pflicht-Frist steht als Hinweis in der Statusfarbe (wie eine überfällige Aufgabe)',
     warn.length === 1 && warn[0].warn && /überfällig/.test(warn[0].t), JSON.stringify(warn));
   await fremd.close(); await eigen.close();
 

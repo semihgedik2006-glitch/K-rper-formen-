@@ -843,7 +843,9 @@ service cloud.firestore {
     // NICHT dabei: title, due, recurring, createdByUid — alles vier
     // ist in der App Sache der Leitung.
     function todoMitarbeiterFelder() {
-      return ['done','doneBy','doneByUid','doneKuerzel','doneAt','steps',
+      // formiAt (Runde 185): die Formi-Spur — „über Formi abgehakt".
+      // Nur ein Zeitstempel neben doneAt, sagt nichts über eine Person.
+      return ['done','doneBy','doneByUid','doneKuerzel','doneAt','formiAt','steps',
               'assignedTo','assignedName','grund','grundVon','grundAm',
               'photo','photoBy','photoAt'];
     }
@@ -851,7 +853,7 @@ service cloud.firestore {
     // Putzplan: anlegen ist Chefsache, abhaken darf jeder.
     //   Pausieren steht in der App hinter chef — deshalb hier auch.
     function putzMitarbeiterFelder() {
-      return ['done','doneBy','doneByUid','doneKuerzel','doneAt'];
+      return ['done','doneBy','doneByUid','doneKuerzel','doneAt','formiAt'];
     }
 
     // ── „Danke" an einer erledigten Aufgabe (Runde 103, Idee D1) ─────
