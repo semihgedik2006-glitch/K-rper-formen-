@@ -390,8 +390,19 @@ async function messen(p, wer, liste) {
     const r = l.getBoundingClientRect(); document.elementFromPoint(r.right - 10, r.top + r.height / 2).click();
     const nach = document.getElementById('spFeiertageZu').checked; document.getElementById('spFeiertageZu').checked = vor; return vor !== nach; });
   pruefe('ein Tipp auf den Rand der Schalter-Zeile schaltet um', schalter);
-  await messen(p, 'Chef (Regeln)', ['#spFrist', '.spl-schalter', '#spEinstSpeichern', '#spFestPerson', '[data-spfesttag="1"]', '#spFestDazu',
-    '#spSonderDatum', '#spSonderDazu', '#spNotizSpeichern', '#spFestListe [data-spfestweg]']);
+  /* Runde 197: die Regeln stehen in vier Reitern, je einer sichtbar.
+     Aus dem Betrieb, 22.10.2026: „mach weiter mit dem design und aufbau"
+     (auf ein Foto mit den vier Formularen auf einmal). Gemessen werden
+     dieselben zehn Bedienelemente wie vorher — je Reiter, plus die Reiter
+     selbst. */
+  for (const [reiter, liste] of [
+    ['einst', ['[data-spregeltab="einst"]', '#spFrist', '.spl-schalter', '#spEinstSpeichern']],
+    ['fest', ['[data-spregeltab="fest"]', '#spFestPerson', '[data-spfesttag="1"]', '#spFestDazu', '#spFestListe [data-spfestweg]']],
+    ['sonder', ['[data-spregeltab="sonder"]', '#spSonderDatum', '#spSonderDazu']],
+    ['notiz', ['[data-spregeltab="notiz"]', '#spNotizSpeichern']]]) {
+    await p.evaluate((t) => document.querySelector('[data-spregeltab="' + t + '"]').click(), reiter);
+    await messen(p, 'Chef (Regeln · ' + reiter + ')', liste);
+  }
   await p.context().close();
 
   console.log('\n── Studioleitung ──');
