@@ -18414,3 +18414,43 @@ gut!“. Die Antworten auf die Rückfragen:
 - 1280 × 800 mit „Wartet auf deine Entscheidung“: die letzte Zeile des
   Rasters (Demo, Brühl, drei Personen mit Doppelschichten) liegt 31 px
   unter dem Rand. Ohne den Block passt die Woche.
+## Runde 192 — Alte rote Tests: eine gemeinsame Ursache gefunden (22.10.2026)
+
+**Auftrag:** „mach weiter dann“, nach Runde 187.
+
+**Gebaut:** nichts am Code. Eine Korrektur für das Springen der
+Team-Seite (P-12) war fertig, aber Runde 191 (Schichtplan) hatte dasselbe
+parallel anders gelöst: Sie misst die Lage per offsetTop statt mitten in
+der Einblende-Bewegung. Deren Fassung gilt.
+
+**Gefunden – die gemeinsame Ursache von fünf alten roten Tests:**
+Seit Runde 177 hält `.main` unten Platz für die Formi-Kugel frei, und zwar
+über die ganze Breite. Am Rechner sind das 90 px. Am Handy sind es 146 px:
+72 für die Leiste plus 74 für die Kugel. Ausserhalb der Startseite hält
+der Scrollbereich zusätzlich noch einmal Platz frei (Runde 182), am Handy
+doppelt also.
+- test-p4-seitenleiste: Liste 612 statt ≥ 690 px. Mit Platz nur im
+  Scrollbereich wäre sie grün.
+- test-p1-aufgaben und test-bestellung: Die unterste Zeile liegt im
+  Streifen (Hit-Test 0×0).
+- test-navigation: Die Startseite ist 2,28 Bildschirme lang, ohne den
+  Streifen 1,96. test-neu-design hätte 1 statt 2 Fehler.
+
+Nicht umgebaut, weil es eine Entscheidung des Betriebs ist:
+- Liegt der Platz nur im Scrollbereich (übliches Muster für schwebende
+  Knöpfe), liegt die Kugel beim Lesen über dem „…“ der untersten Zeile.
+  Das widerspricht „achte aber bitte darauf das der neue formi knopf
+  nichts verdeckt“.
+- Die Alternative, am Rechner die Kugel in den Fuss der Seitenleiste zu
+  setzen, ändert, wo Formi „wohnt“.
+- Gefragt am 22.10.2026.
+
+**Startseite am Handy, „Putzplan“ gegen „Zum Übernehmen“:**
+- Bei 430 × 950 (Mitarbeiter) passt nach „Heute“ nur ein Block.
+  „Zum Übernehmen“ steht darüber, deshalb rutscht der Putzplan unter
+  „Ausserdem“ (test-startseite-putz).
+- Vertauscht wird test-startseite-putz grün und test-block-b rot.
+  Selbst ohne Kugel-Streifen passen bei 390 × 844 nicht beide.
+- Gelassen, wie es ist: „Zum Übernehmen“ erscheint nur, wenn jemand eine
+  Schicht abgibt, und ist eilig. An den anderen Tagen steht der Putzplan.
+  Gefragt.
