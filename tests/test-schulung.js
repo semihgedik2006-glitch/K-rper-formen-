@@ -528,8 +528,12 @@ async function codeHolen(p, name) {
      etwas steht, BEVOR man drei Reiter durchtippt. */
   const reiterZahlen = await p.evaluate(() =>
     [...document.querySelectorAll('[data-schvwtab]')].map(x => x.textContent.trim()));
-  pruefe('die Verwaltung hat drei Reiter', reiterZahlen.length === 3,
-    reiterZahlen.join(' | '));
+  /* Runde 205, aus dem Betrieb („aight mach die nächste runde" auf den
+     Vorschlag „Pflichtschulungen auf einen Blick"): dazu kam der Reiter
+     „Pflicht". Geprüft wird weiter, dass es Reiter sind und welche. */
+  pruefe('die Verwaltung hat vier Reiter: Teilnehmer, Pflicht, Module, Auswertung',
+    reiterZahlen.length === 4 && /^Teilnehmer/.test(reiterZahlen[0]) && /^Pflicht/.test(reiterZahlen[1]) &&
+    /^Module/.test(reiterZahlen[2]) && /^Auswertung/.test(reiterZahlen[3]), reiterZahlen.join(' | '));
   pruefe('und jeder sagt, wieviel dahintersteht',
     reiterZahlen.every(x => /\d/.test(x)), reiterZahlen.join(' | '));
   await vwReiter(p, 'aus');
