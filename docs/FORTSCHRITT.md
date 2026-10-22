@@ -19008,3 +19008,90 @@ dafür dann passende skills oder plugins runter“.
   Animation mit „›“ durch. Die Prüfung „ein fehlendes Video wird als
   fehlend benannt“ heisst jetzt „nie leer: Animation oder ‚Video folgt‘“,
   mit dem Zitat aus dem Betrieb; dazu neu: die Animation sperrt „Weiter“.
+
+## Runde 203 — Formis Augen leben, ein Gesicht überall (22.10.2026)
+
+**Aus dem Betrieb:** Auf die Ideenliste (11 Ideen, wie Formi mehr ins
+Design kommt) kam „mach alles davon, gib dem gesicht mehr leben auch und
+den augen vorallem“. Gebaut wird in drei Paketen; das ist Paket 1. Paket
+2 bringt das aufgeräumte Formi-Fenster, leere Listen und die
+Ladeanzeige, Paket 3 Suche und Formi in einem Feld.
+
+**Gebaut**
+- **Augen.**
+  - Weiss, mit Pupille und Lichtpunkt, dazu Brauen.
+  - Die Pupillen folgen der Maus (bis 1,8 px), das ganze Loch nur noch
+    ein wenig (bis 2,5 px): So schauen Augen, nicht ein Ball.
+  - Kommt die Maus näher als 150 px, werden die Augen gross.
+  - Steht die Maus still (oder es gibt keine, am Handy), sieht Formi sich
+    alle 1,5–4 s um, mit kleinen schnellen Sprüngen; manchmal blinzelt es
+    zweimal.
+  - Nach 60 s ohne Bedienung wird Formi müde (halb zu, die Brauen
+    sinken), nach 90 s schläft es.
+  - Die Brauen tragen den Ausdruck: hoch beim Staunen, schräg beim
+    Schreck, gehoben bei Freude.
+- **Neue Ausdrücke:** Gähnen (morgens einmal je Gerät), „Aha“ (wenn Formi
+  mit dem Denken fertig ist), zweimal blinzeln.
+- **Hinschauen:** Bei einem Hinweis unten und bei einer neuen Meldung an
+  der Glocke schaut Formi kurz dorthin.
+- **Ein Gesicht überall.**
+  - Die Figur ist in Anteilen gebaut (`--fg`). Dieselbe Figur steht im
+    Kopf des Formi-Fensters (28 px), in der Formi-Zeile (30 px) und als
+    fliegender Zeiger (28 px), wenn Formi eine Seite öffnet.
+  - Unter 32 px fallen Brauen und Lichtpunkt weg; sie wären nur noch
+    Krümel.
+- **Denken und Sprechen im Fensterkopf.**
+  - Beim Denken dreht sich nur der Ring (vorher die ganze Figur), und die
+    Augen schauen nach oben zur Seite.
+  - Beim Sprechen geht der Mund auf und zu. Mit menschlicher Stimme folgt
+    er der Lautstärke: eine angehaltene Animation, deren Zeit je Bild
+    gesetzt wird, ohne ins style-Attribut zu schreiben.
+- **Ring:**
+  - Ein Schimmer in der Farbe des Bereichs, von einer Kante: Heute blau,
+    Wissen violett, Nachrichten türkis, Studio orange, Plan pink. Die
+    Verwaltung bekommt keinen.
+  - Ab 19 Uhr wird der Ring wärmer.
+- **Anlass:** An Silvester und Neujahr feiert Formi beim ersten Öffnen,
+  im Dezember fallen beim Atmen Schneeflocken.
+
+**Warum so**
+- *Blick als Web Animation mit `fill:forwards`*, die vorige wird
+  abgelöst. Wieder kein Schreiben ins style-Attribut, wegen der
+  `:has()`-Regeln am `<body>` (Runde 186).
+- *Umsehen, Müde, Atmen sind Zeitgeber, keine `infinite`-Animation.*
+  Zwischen zwei Momenten kostet die Kugel nichts.
+- *Kein Rot, Grün, Bernstein im Ring*: Die Bereichsfarben sind blau,
+  violett, türkis, orange und pink. Ein fest gewählter Akzent ändert am
+  Ring nichts, weil der Schimmer an `data-bereich` hängt, nicht an
+  `--accent`.
+
+**Gemessen** (Arbeit je Bild, CPU ÷4, die Maus bewegt sich 3 s)
+- Über der leeren Seitenleiste: 3,8 ms (vorher 3,4–3,8).
+- Über dem Inhalt samt Formi-Zeile: 7,3 ms (vorher 6,7).
+- Die Grenze ist 8,3 ms. Die Pupillen kosten also etwas, es bleibt aber
+  unter der Grenze. Weitere Augen-Effekte im Takt der Maus wären hier
+  zu viel.
+
+**Geprüft** (`tests/test-formi-lebt.js`, jetzt 112 Zusicherungen)
+- Das Gesicht hat Pupillen und Brauen; dasselbe Gesicht steht in der
+  Formi-Zeile und im Fensterkopf.
+- Neue Ausdrücke sind endlich und bewegen nur `transform`/`opacity`.
+- Die Pupillen schauen der Maus nach (≤ 1,9 px). Kommt die Maus nah,
+  werden die Augen gross, und danach wieder normal.
+- Formi schaut zum Hinweis oben links; müde und wieder wach.
+- „Läuft nichts mehr“ zählt jetzt nur laufende Animationen. Ein
+  gehaltener Blick (`fill:forwards`, abgeschlossen) ist Stillstand. Das
+  ist eine Anpassung an den gehaltenen Blick, keine gelockerte Grenze.
+- Weitere grüne Durchläufe: test-formi-platz und test-formi-kumpel (die
+  Runden 196/198/199 der anderen Sitzung, mit dieser zusammengeführt),
+  test-formi-kugel, test-formi-angedockt, test-knoepfe, test-gestaltung
+  (meldete zuerst einen festen Schatten an der kleinen Figur, jetzt
+  `--e1` plus Schein), test-csp, test-quer, test-uebersicht.
+- test-gehirn: Rot sind nur die bekannten Leistungsprüfungen unter
+  CPU ÷4 (zwei von drei in diesem Lauf).
+- „Schaut hin“ rechnet die erwartete Richtung aus der Lage von Kugel und
+  Ziel. Seit Runde 198 sitzt die Kugel am Rechner unten links.
+- Gegenprobe mit dem `index.html` von vorher: schlägt an.
+
+**Nicht geprüft:** Wie lebendig die Augen auf einem echten Bildschirm
+wirken. Die Pupillen sind bei der Kugel etwa 3,5 px gross.
