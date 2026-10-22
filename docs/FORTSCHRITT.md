@@ -18234,3 +18234,47 @@ Keiner davon berührt Stempeln oder Zeiten.
 **Nicht testbar hier:** der Anmeldeweg und das echte Firebase-SDK (Proxy).
 Ob ein Terminal in der Produktion bisher wirklich „noch nicht da" zeigte,
 ist nicht gemessen.
+
+## Runde 190 — Die Stempelseite, Schritt 2: Pausenregel wie Crewmeister, Hinweise nach dem Arbeitszeitgesetz (22.10.2026)
+
+Antwort aus dem Betrieb auf „nur warnen oder wie Crewmeister auffüllen?":
+„genau wie bei crewmeister".
+
+**Auffüllen.** § 4 ArbZG verlangt über 6 Stunden Arbeit 30 Minuten
+Pause, über 9 Stunden 45. Die gestempelte Pause zählt; fehlt etwas, wird
+nur die Differenz von der Arbeitszeit abgezogen (`pauseAbzugMin`).
+
+- **Mit Kappung, und das ist eine eigene Entscheidung:** nie so viel, dass
+  der Tag unter die Grenze fällt, die die Pause erst auslöst. 6:10 h ohne
+  Pause werden 6:00 h, nicht 5:40 h; 9:20 h werden 8:50 h (dann gilt nur
+  die 30-Minuten-Regel). Ohne Kappung kostete eine Minute länger bleiben
+  zwanzig. Ob Crewmeister genauso kappt, habe ich nicht belegt gefunden
+  (die Hilfeseiten waren aus dieser Umgebung gesperrt).
+- **Nichts wird gespeichert oder geändert.** Die Stempel bleiben, wie sie
+  sind; abgezogen wird in der Rechnung, und jede Tageszeile mit Abzug trägt
+  „Pause +0:30". Im Monat steht „… Pause ergänzt".
+- Ein laufender Tag wird noch nicht aufgefüllt — erst am Feierabend steht
+  fest, wie lang er war.
+
+**Hinweise** (Bernstein, denn sie melden etwas) an der Tageszeile in
+„Meine Zeiten", in der Woche und bei der Leitung:
+- „über 10 h" (§ 3),
+- „über 6 h am Stück" (§ 4 Satz 3) — eine Pause unter 15 Minuten
+  unterbricht nicht, das sagt § 4 selbst,
+- „Ruhezeit 9:30 h" (§ 5), wenn zwischen Feierabend und nächstem Kommen
+  weniger als 11 Stunden liegen. Nur wenn beide Tage vorliegen; am
+  Monatsersten fehlt der Vortag, und dann steht nichts da statt einer
+  Vermutung.
+
+Die App weist hin; ob der Betrieb damit gesetzeskonform ist, sagt sie
+nicht (dieselbe Grenze wie in `ZEITERFASSUNG-PLAN.md`).
+
+**Solange es noch hilft:** In „Jetzt" steht ab 5:30 h am Stück „Nach 6
+Stunden ist eine Pause Pflicht", über 6 h in Bernstein. Bei der Leitung
+unter „Jetzt im Studio" steht an der Person „6:12 h ohne Pause".
+
+**Geprüft** (`tests/test-stempelseite.js`, jetzt 127): acht Fälle der
+Pausenregel, zwei Tage mit allen drei Hinweisen, ein laufender Tag ohne
+Abzug. Meine erste Erwartung für 11:20 h Arbeit mit 10 Minuten Pause war
+„20 Minuten ergänzt" — falsch: über 9 h gilt die 45-Minuten-Pause, richtig
+sind 35. Der Fehler lag in der Erwartung, nicht im Code.

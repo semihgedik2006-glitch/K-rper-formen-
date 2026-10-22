@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-OkslWNMOyGEl2e1NATAt1cemTnp5wf3Ke+6//sVaFfc='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-dn+1OHAMdi/m6k17Qbq/C+iBShb4EtUgAsFN7xhEUZE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3504,6 +3504,11 @@ button.ich-zeile:active{opacity:.7}
 .zk-j-gruppe ul{list-style:none;margin:0;padding:0}
 .zk-j-p{display:flex;flex-direction:column;padding:var(--s4) 0;font-size:var(--t-sm)}
 .zk-j-p span{font-size:var(--t-2xs);color:var(--text-2);font-variant-numeric:tabular-nums}
+.zk-j-p .ich-quelle{align-self:flex-start;margin-top:var(--s2)}
+.st-pause-hinweis{margin:0 0 var(--s12);padding:var(--s8) var(--s12);border-radius:var(--r-md);
+  font-size:var(--t-sm);background:var(--auf-1);color:var(--text-2);border:1px solid var(--line)}
+.st-pause-hinweis.ueber{background:var(--f-warn);color:var(--warm-tx);border-color:transparent}
+.st-pause-hinweis[hidden]{display:none}
 .st-plan{color:var(--text-2)}
 /* Abweichung vom Plan: keine Statusfarbe. Minus heisst nicht „Fehler" —
    eine kürzere Schicht ist oft abgesprochen. */
@@ -9076,6 +9081,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                   <div class="st-zahl"><span>Laut Plan</span><b id="stHeuteSoll">–</b></div>
                 </div>
                 <p class="hint st-schicht" id="stSchicht"></p>
+                <p class="st-pause-hinweis" id="stPauseHinweis" role="status" hidden></p>
                 <!-- Stempeln mit dem eigenen Handy. Steht nur da, wenn der
                      Chef dieses Konto freigeschaltet hat — und braucht
                      zusätzlich den Code vom Bildschirm im Studio. Das ist
@@ -36226,36 +36232,106 @@ function stundenText(ms){
   return Math.floor(min/60)+':'+('0'+(min%60)).slice(-2)+' h';
 }
 
+/* ── Pausenregel wie Crewmeister: auffüllen (Runde 190) ──
+   Aus dem Betrieb, 22.10.2026, auf die Frage „nur warnen oder wie
+   Crewmeister auffüllen?": „genau wie bei crewmeister".
+
+   § 4 ArbZG: über 6 Stunden Arbeit 30 Minuten Pause, über 9 Stunden 45.
+   Die GESTEMPELTE Pause zählt. Fehlt etwas, wird nur die Differenz von
+   der Arbeitszeit abgezogen — und nie so viel, dass der Tag dadurch
+   unter die Grenze fällt, die die Pause erst ausgelöst hat: 6:10 h ohne
+   Pause werden 6:00 h, nicht 5:40 h. Ohne diese Kappung würde eine
+   Minute länger bleiben 20 Minuten kosten.
+
+   ES WIRD NICHTS GESPEICHERT UND NICHTS GEÄNDERT. Die Stempel bleiben,
+   wie sie sind; abgezogen wird in der Rechnung, und jeder Tag mit Abzug
+   sagt es („Pause ergänzt"). Ein laufender Tag wird noch nicht
+   aufgefüllt — erst wenn er zu Ende ist, steht fest, wie lang er war. */
+function pauseAbzugMin(rohMin, pauseMin){
+  var a30=Math.min(30-pauseMin, rohMin-6*60);
+  var a45=Math.min(45-pauseMin, rohMin-9*60);
+  return Math.max(0, a30, a45);
+}
+
 /* Aus einer Liste Stempel Tage machen. Gerechnet wird über die
    Strecken zwischen zwei Stempeln: nach „kommen" und „zurueck" läuft
-   Arbeit, nach „pause" läuft Pause, nach „gehen" läuft nichts. */
+   Arbeit, nach „pause" läuft Pause, nach „gehen" läuft nichts.
+
+   Runde 190: dazu die Hinweise nach dem Arbeitszeitgesetz — über 10
+   Stunden (§ 3), mehr als 6 Stunden am Stück (§ 4), weniger als 11
+   Stunden Ruhe seit dem letzten Feierabend (§ 5). Die App weist hin;
+   ob der Betrieb damit gesetzeskonform ist, sagt sie nicht. */
 function zeitenTage(rows, heute, jetzt){
   var nachTag={};
   rows.forEach(function(z){ (nachTag[z.tag]=nachTag[z.tag]||[]).push(z); });
-  return Object.keys(nachTag).sort().reverse().map(function(tag){
+  var tage=Object.keys(nachTag).sort().reverse().map(function(tag){
     var alle=nachTag[tag].slice().sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
     /* Ein als ungültig markierter Stempel (P-09) bleibt in der Liste —
        man soll sehen, dass es ihn gab —, gerechnet wird ohne ihn. */
     var l=alle.filter(function(z){ return !z.storno; });
     if(!l.length) return { tag:tag, von:alle[0].ts, bis:alle[alle.length-1].ts, arbeit:0, pause:0,
-             offen:false, laeuft:false, stempel:alle };
-    var arbeit=0, pause=0, seit=0, vorher=null;
+             roh:0, abzug:0, amStueck:0, hinweise:[], offen:false, laeuft:false, stempel:alle };
+    var arbeit=0, pause=0, seit=0, vorher=null, stueck=0, amStueck=0;
     l.forEach(function(z){
       if(vorher){
         var d=(z.ts||0)-seit;
-        if(vorher==='kommen'||vorher==='zurueck') arbeit+=d;
+        if(vorher==='kommen'||vorher==='zurueck'){ arbeit+=d; stueck+=d; }
         else if(vorher==='pause') pause+=d;
       }
+      /* Ein Stück Arbeit endet mit einer Pause oder dem Feierabend. Eine
+         Pause unter 15 Minuten zählt nach § 4 nicht als Ruhepause — nach
+         ihr läuft dasselbe Stück weiter. */
+      if(z.art==='pause' || z.art==='gehen') amStueck=Math.max(amStueck, stueck);
+      if(z.art==='kommen') stueck=0;
+      if(z.art==='zurueck' && vorher==='pause' && (z.ts||0)-seit>=15*60000) stueck=0;
       seit=z.ts||0; vorher=z.art;
     });
     var offen = !!vorher && vorher!=='gehen';
     var laeuft = offen && tag===heute;
-    if(laeuft && (vorher==='kommen'||vorher==='zurueck')) arbeit += jetzt-seit;
+    if(laeuft && (vorher==='kommen'||vorher==='zurueck')){ arbeit += jetzt-seit; stueck += jetzt-seit; }
     if(laeuft && vorher==='pause') pause += jetzt-seit;
+    amStueck=Math.max(amStueck, stueck);
+    var roh=arbeit, abzug=0;
+    if(!offen){
+      abzug=pauseAbzugMin(Math.round(roh/60000), Math.round(pause/60000))*60000;
+      arbeit=roh-abzug;
+    }
+    var hinweise=[];
+    if(arbeit>10*3600000) hinweise.push({ art:'zehn', text:'über 10 h' });
+    if(amStueck>6*3600000) hinweise.push({ art:'stueck', text:'über 6 h am Stück' });
     return { tag:tag, von:l[0].ts, bis:l[l.length-1].ts, arbeit:arbeit, pause:pause,
+             roh:roh, abzug:abzug, amStueck:amStueck, hinweise:hinweise,
              offen:offen, laeuft:laeuft, stempel:alle,
              korrigiert: alle.some(function(z){ return z.storno || z.quelle==='korrektur'; }) };
   });
+  /* § 5: Ruhe zwischen dem Feierabend des Vortags und dem Kommen. Nur
+     wenn beide Tage hier vorliegen — am Monatsersten fehlt der Vortag,
+     und dann steht nichts da statt einer Vermutung. */
+  var nachKey={}; tage.forEach(function(t){ nachKey[t.tag]=t; });
+  tage.forEach(function(t){
+    var d=new Date(t.tag+'T12:00:00'); d.setDate(d.getDate()-1);
+    var vt=nachKey[d.toLocaleDateString('sv-SE')];
+    if(!vt || vt.offen || !t.von || !vt.bis) return;
+    var ruhe=t.von-vt.bis;
+    if(ruhe>=0 && ruhe<11*3600000){
+      t.ruhe=ruhe;
+      t.hinweise.push({ art:'ruhe', text:'Ruhezeit '+stundenText(ruhe) });
+    }
+  });
+  return tage;
+}
+
+/* Die Marken an einer Tageszeile: ergänzte Pause (neutral, denn sie ist
+   kein Fehler, sondern die Regel) und die Hinweise (Bernstein: sie
+   melden etwas). */
+function zeitMarkenHTML(t){
+  var h='';
+  if(t.abzug) h+='<span class="ich-quelle" title="Pause nach § 4 ArbZG ergänzt">Pause +'+
+    esc(stundenText(t.abzug).replace(' h',''))+'</span>';
+  (t.hinweise||[]).forEach(function(x){
+    h+='<span class="ich-quelle warn" data-arbzg="'+esc(x.art)+'">'+esc(x.text)+'</span>';
+  });
+  return h;
 }
 
 function ichZeitenLaden(){
@@ -36300,6 +36376,7 @@ function renderIchZeiten(rows){
   /* Plan bis heute (Runde 189): die Schichten des Monats, die schon
      vorbei sind oder heute laufen. Ein geplanter Tag nächste Woche ist
      noch kein Minus. */
+  var abzugMs=0; gezaehlt.forEach(function(t){ abzugMs+=t.abzug||0; });
   var sollMs=0, mitPlan=false;
   if(_zeitMonat){
     var mk=zeitMonatKey(_zeitMonat);
@@ -36313,6 +36390,7 @@ function renderIchZeiten(rows){
   if(summe) summe.textContent = tage.length ? stundenText(summeMs) : '–';
   if(neben) neben.textContent = tage.length
     ? (tage.length+' Tag'+(tage.length===1?'':'e')+' · '+stundenText(pauseMs)+' Pause'+
+       (abzugMs ? ' · '+stundenText(abzugMs)+' Pause ergänzt' : '')+
        (mitPlan && sollMs ? ' · laut Plan bis heute '+stundenText(sollMs) : '')+
        (luecken ? ' · '+luecken+'× Feierabend fehlt' : ''))
     : '';
@@ -36333,6 +36411,7 @@ function renderIchZeiten(rows){
         '<span class="ich-was">'+esc(spanne)+'</span>'+
         (luecke ? '<span class="ich-quelle warn">Feierabend fehlt</span>' : '')+
         (t.korrigiert ? '<span class="ich-quelle">korrigiert</span>' : '')+
+        zeitMarkenHTML(t)+
         '<span class="ich-zeit">'+(luecke ? '–' : stundenText(t.arbeit))+'</span>'+
         (function(){
           var pl=stPlanFuer(t.tag);
@@ -36441,7 +36520,8 @@ function zkJetztZeichnen(proPerson, schichten){
   Object.keys(proPerson).forEach(function(uid){
     var p=proPerson[uid], st=stStandVon(p.stempel);
     var tag=zeitenTage(p.stempel, heute, jetzt)[0];
-    var e={ name:p.name, st:st, arbeit:tag ? tag.arbeit : 0 };
+    var e={ name:p.name, st:st, arbeit:tag ? tag.arbeit : 0,
+            ohnePause: (tag && tag.laeuft && st.art!=='pause' && tag.amStueck>6*3600000) ? tag.amStueck : 0 };
     if(st.art==='pause') gruppen.pause.push(e);
     else if(st.art==='gehen') gruppen.fertig.push(e);
     else if(st.art) gruppen.dienst.push(e);
@@ -36453,7 +36533,9 @@ function zkJetztZeichnen(proPerson, schichten){
     gruppen.erwartet.push({ uid:x.uid, name:x.name||'', schicht:(x.from||'?')+'–'+(x.to||'?') });
   });
   function zeile(e, was){
-    return '<li class="zk-j-p"><b>'+esc(e.name||'—')+'</b><span>'+esc(was)+'</span></li>';
+    return '<li class="zk-j-p"><b>'+esc(e.name||'—')+'</b><span>'+esc(was)+'</span>'+
+      (e.ohnePause ? '<span class="ich-quelle warn" data-arbzg="stueck">'+esc(stundenText(e.ohnePause))+' ohne Pause</span>' : '')+
+      '</li>';
   }
   function block(titel, liste, fn){
     if(!liste.length) return '';
@@ -36570,6 +36652,7 @@ function zkZeichnen(){
         '<span class="ich-was"><b>'+esc(t.name||'—')+'</b> · '+esc(spanne)+'</span>'+
         (t.fehlt ? '<span class="ich-quelle warn">Feierabend fehlt</span>' : '')+
         (t.korrigiert ? '<span class="ich-quelle">korrigiert</span>' : '')+
+        zeitMarkenHTML(t)+
         (t.fehlt ? '' : '<span class="ich-zeit">'+stundenText(t.arbeit)+'</span>')+
       '</button>'+
       (an && !breit ? '<div class="zk-inline">'+zkDetailHTML(t)+'</div>' : '');
@@ -36840,6 +36923,18 @@ function stJetztZeichnen(){
     : st.art==='pause' ? 'In der Pause seit <b>'+esc(zeitUhr(st.seit))+'</b>'
     : 'Im Dienst seit <b>'+esc(zeitUhr(st.beginn||st.seit))+'</b>';
   var ist=$('stHeuteIst'); if(ist) ist.textContent = tag ? stundenText(tag.arbeit) : '0:00 h';
+  /* § 4 ArbZG, solange es noch hilft: ab 5:30 h am Stück ein Hinweis,
+     über 6 h steht er in Bernstein. Nach dem Feierabend sagen es die
+     Marken an der Tageszeile. */
+  var hp=$('stPauseHinweis');
+  if(hp){
+    var amSt = (tag && tag.laeuft && st.art!=='pause') ? tag.amStueck : 0;
+    hp.hidden = amSt < 5.5*3600000;
+    hp.className = 'st-pause-hinweis'+(amSt>6*3600000 ? ' ueber' : '');
+    hp.textContent = amSt>6*3600000
+      ? 'Seit '+stundenText(amSt)+' ohne Pause – nach 6 Stunden ist eine Pause Pflicht.'
+      : 'Seit '+stundenText(amSt)+' am Stück. Nach 6 Stunden ist eine Pause Pflicht.';
+  }
   var plan=stPlanFuer(heute), soll=$('stHeuteSoll'), sch=$('stSchicht');
   if(soll) soll.textContent = plan===null ? '–' : (plan.length ? stundenText(stSollMin(plan)*60000) : 'frei');
   if(sch){
@@ -36891,6 +36986,7 @@ function stWocheZeichnen(){
     html+='<div class="ich-zeile st-tag'+(key===heute?' heute':'')+'" data-sttag="'+esc(key)+'">'+
       '<span class="ich-tag">'+esc(kopf)+'</span>'+
       '<span class="ich-was st-plan">'+(planText ? 'Plan '+esc(planText) : 'ohne Plan')+'</span>'+
+      (t ? zeitMarkenHTML(t) : '')+
       (luecke ? '<span class="ich-quelle warn">Feierabend fehlt</span>'
               : '<span class="ich-zeit">'+esc(istText||'–')+'</span>')+
       (diff ? '<span class="st-diff">'+esc(diff)+'</span>' : '')+

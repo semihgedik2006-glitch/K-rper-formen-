@@ -160,6 +160,38 @@ async function zuVerwaltungZeiten(p) {
     pruefe('zwei Schichten am Tag zählen zusammen (8 h → 450 min)', r.zwei === 450, r.zwei);
     pruefe('eine Schicht mit Ende vor Beginn zählt nicht', r.kaputt === 0, r.kaputt);
     pruefe('Abweichung „+0:12", „−1:30", „±0:00"', r.diff.join(' ') === '+0:12 −1:30 ±0:00', r.diff.join(' '));
+
+    /* Runde 190: Pausenregel wie Crewmeister — auffüllen, mit Kappung —
+       und die Hinweise nach §§ 3–5 ArbZG. */
+    const Z = new Function(['pauseAbzugMin', 'stundenText', 'zeitenTage'].map(hole).join('\n') +
+      '; return { pauseAbzugMin, zeitenTage };')();
+    const A = Z.pauseAbzugMin;
+    pruefe('Pause: 6:00 h ohne Pause → nichts abgezogen', A(360, 0) === 0, A(360, 0));
+    pruefe('Pause: 6:10 h ohne Pause → 10 min (nie unter die 6-h-Grenze)', A(370, 0) === 10, A(370, 0));
+    pruefe('Pause: 8:00 h ohne Pause → 30 min', A(480, 0) === 30, A(480, 0));
+    pruefe('Pause: 8:00 h mit 20 min gestempelt → 10 min ergänzt', A(480, 20) === 10, A(480, 20));
+    pruefe('Pause: 8:00 h mit 40 min gestempelt → nichts (die gestempelte zählt)', A(480, 40) === 0, A(480, 40));
+    pruefe('Pause: 9:20 h ohne Pause → 30 min (danach unter 9 h)', A(560, 0) === 30, A(560, 0));
+    pruefe('Pause: 9:50 h ohne Pause → 45 min', A(590, 0) === 45, A(590, 0));
+    pruefe('Pause: 9:50 h mit 30 min → 15 min ergänzt', A(590, 30) === 15, A(590, 30));
+    const T = (h, m) => new Date(2026, 9, 20, h, m).getTime();
+    const T2 = (h, m) => new Date(2026, 9, 21, h, m).getTime();
+    const z = (tag, art, ts) => ({ tag, art, ts });
+    const tage = Z.zeitenTage([
+      z('2026-10-20', 'kommen', T(7, 0)), z('2026-10-20', 'pause', T(12, 0)), z('2026-10-20', 'zurueck', T(12, 10)),
+      z('2026-10-20', 'gehen', T(18, 30)),
+      z('2026-10-21', 'kommen', T2(4, 0)), z('2026-10-21', 'gehen', T2(12, 0))
+    ], '2026-10-22', T2(23, 0));
+    const t20 = tage.find(t => t.tag === '2026-10-20'), t21 = tage.find(t => t.tag === '2026-10-21');
+    const arten = (t) => (t.hinweise || []).map(x => x.art).sort().join(',');
+    /* Meine erste Erwartung war „20 min" — falsch: über 9 h gilt die
+       45-Minuten-Pause, gestempelt sind 10, also 35 ergänzt. */
+    pruefe('Tag 1: 11:20 h Arbeit, 10 min Pause → 35 min ergänzt (45 über 9 h), 10:45 h', t20.abzug === 35 * 60000 && t20.arbeit === 10.75 * 3600000, JSON.stringify({ a: t20.abzug, w: t20.arbeit }));
+    pruefe('Tag 1: „über 10 h" UND „über 6 h am Stück" (10-min-Pause unterbricht nicht)', arten(t20) === 'stueck,zehn', arten(t20));
+    pruefe('Tag 2: Kommen 4:00 nach Feierabend 18:30 → „Ruhezeit 9:30 h"', /Ruhezeit 9:30 h/.test((t21.hinweise || []).map(x => x.text).join()), JSON.stringify(t21.hinweise));
+    pruefe('Tag 2: 8 h ohne Pause → 30 min ergänzt, 7:30 h', t21.abzug === 30 * 60000 && t21.arbeit === 7.5 * 3600000);
+    const offen = Z.zeitenTage([z('2026-10-22', 'kommen', T2(0, 0) + 86400000 - 8 * 3600000)], '2026-10-22', T2(0, 0) + 86400000);
+    pruefe('ein laufender Tag wird noch nicht aufgefüllt', offen[0].laeuft && offen[0].abzug === 0, JSON.stringify(offen[0].abzug));
     pruefe('ohne Skriptfehler (1)', !p._fehler.length, p._fehler.join(' | '));
     await p.close();
   }
