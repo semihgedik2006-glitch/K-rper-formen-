@@ -37,7 +37,10 @@ function pruefe(was, bedingung, hinweis) {
 
 async function oeffne(b, w, h, opt) {
   opt = opt || {};
-  const ctx = await b.newContext(Object.assign({ viewport: { width: w, height: h } },
+  /* serviceWorkers:'block' (Runde 182): sonst lädt der Service-Worker das
+     echte Firebase an page.route vorbei und die App steht in der
+     Anmeldemaske — in dieser Umgebung schon auf main nachgestellt. */
+  const ctx = await b.newContext(Object.assign({ serviceWorkers: 'block', viewport: { width: w, height: h } },
     opt.ruhe ? { reducedMotion: 'reduce' } : {}));
   const p = await ctx.newPage();
   p._fehler = [];

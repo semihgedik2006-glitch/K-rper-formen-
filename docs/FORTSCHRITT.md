@@ -17561,3 +17561,55 @@ Verlauf.
 **Noch nicht gebaut** (aus dem Plan): Inhalte aus der App (Ankündigungen,
 Dokumente, „Hilfe im Studio“) als Vorschläge, und Freigabe durch
 Studioleitungen in der App.
+
+## Runde 182 — Alter Formi-Knopf weg, die Kugel verdeckt nichts (22.10.2026)
+
+**Aus dem Betrieb:** „der alte formi knopf oben kann weg, achte aber bitte
+darauf das der neue formi knopf nichts verdeckt in der app also teste jeden
+knopf etc.“
+
+**Gebaut:**
+- `#jarvisStart` (Bereichszeile), `#jarvisStartAlt` (neben der Begrüssung)
+  und `#jarvisStartPc` (oben am Rechner) sind mit ihrem CSS entfernt. Formi
+  öffnet jetzt über die Kugel, die Taste J und „Alles“ → Formi.
+- Am Handy hat die Rückgängig-Leiste unten mittig (und genauso der
+  Hinweis) bis unter die Kugel gereicht. Solange eine davon steht, weicht
+  die Kugel 72 px nach oben aus (`body:has(.undobar.show)`).
+- Am Handy bekommt jede Ansicht ausser der Startseite unten so viel Luft
+  im eigenen Scrollbereich, dass der letzte Eintrag über der Kugel liegt.
+  Ohne das lagen Dokumente, Schulung und die Verwaltung (Mitarbeiter)
+  darunter. Die Startseite ist ausgenommen: Sie soll auf einen Bildschirm
+  passen, und dort lag nichts darunter.
+
+**Wie geprüft — `tests/test-formi-verdeckt.js` (neu):**
+- Geprüft wird je Rolle (Chef, Leitung, Mitarbeiter), je Breite (320 / 390
+  / 430 / 820 / 1280 / 1440 / 1920) und je Dichte (normal, kompakt).
+- Geprüft wird jede Ansicht, jeder Reiter darin und jedes sichtbare
+  Bedienelement, auch in zugeklappten Bereichen (`<details>` wird dafür
+  aufgemacht). Seitenleiste, Leiste unten und Kopfzeile sind dabei.
+- Regel 1: Was `fixed` ist, darf die Kugel nie berühren.
+- Regel 2: Alles andere muss sich so hinscrollen lassen, senkrecht wie
+  seitlich, dass die Kugel es nicht berührt (4 px Rand).
+- Dazu kommen Rückgängig-Leiste und Hinweis mit der ausgewichenen Kugel.
+- Ergebnis: 826 Ansichten und Reiter (140 davon ohne Kugel: Chat, Formi)
+  und 20 990 gemessene Bedienelemente.
+- Gegenprobe: Mit dem `index.html` von vorher meldet der Durchlauf die
+  Leiste und den Hinweis am Handy. Ohne die Luft unten meldet er
+  Dokumente, Schulung und Verwaltung.
+- Gemessen wird ohne gerade eingeblendeten Hinweis. Der hebt die Kugel nur
+  für ein paar Sekunden an, und dieser Fall ist eigens geprüft.
+
+**Fund für alle Oberflächen-Durchläufe:** Ohne
+`serviceWorkers: 'block'` laden sie in dieser Umgebung das echte Firebase
+und landen in der Anmeldemaske (Runde 177). `test-gehirn` und
+`test-uebersicht` haben es jetzt. `test-gehirn` läuft dadurch zum ersten
+Mal hier ganz durch: 327 von 332 grün.
+- Rot sind die drei bekannten Leistungsprüfungen (CPU ÷4, hier auch auf
+  `main` rot).
+- Rot ist ausserdem bei 1440 px: Die Studio-Rückfrage „Übergabe: Test in …“
+  im Vollbild-Fenster trifft nur 42 statt 44 px hoch. Das ist nicht von
+  dieser Runde. Ob es auf `main` genauso ist, liess sich nicht prüfen, weil
+  der `main`-Durchlauf dort schon vorher abbricht. Offen.
+
+**Nicht geprüft:** echtes Handy, Darstellung im Stil „Formi“ (Runde 178/179)
+im Zusammenspiel mit der Kugel ausser über die Durchläufe.
