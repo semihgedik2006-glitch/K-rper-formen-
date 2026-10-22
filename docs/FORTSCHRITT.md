@@ -19676,3 +19676,45 @@ test-formi-lebt (Runde 209).
 **Nicht geprüft:** echte Geräte und echte 120 Hz. Wie sich die ständig
 drehende Scheibe auf den Akku eines Studio-Tablets auswirkt, lässt sich
 hier nicht messen; „Gefühle der Kugel: Aus“ stellt sie ab.
+## Runde 214 — Das große HUD ist weg: Formi ist immer das ruhige Fenster (22.10.2026)
+
+Aus dem Betrieb: „eventuell auch das grosse hud entfernen oder
+überarbeiten das es besser aussieht" — auf die Rückfrage gewählt: „Ruhig
+neu bauen".
+
+**Geändert**
+- Kein Vollbild-Dialog mehr. Formi ist immer das ruhige Fenster: am
+  Rechner ab 1440 px die Spalte rechts (Runde 193), darunter schwebend,
+  am Handy ein Blatt von unten. Kein Partikelfeld, kein Raster, keine
+  Ecken, kein Kern mit Ringen und Equalizer, keine Sekunden-Uhr, keine
+  Buchstaben, die ins Loch wirbeln. Das Lebendige ist allein die Kugel
+  mit ihrem Auge (Runde 186/195) und die Sprechblase (Runde 196).
+- Der frühere Knopf „Groß" heisst „Mehr Platz": am Handy die ganze
+  Höhe, am Rechner ein grosses Fenster bzw. eine breitere Spalte (560 px
+  statt 380/420) — nie ein Dialog, die App bleibt daneben bedienbar.
+  Wer früher „Groß" gewählt hatte, bekommt „Mehr Platz".
+- Mit „Mehr Platz" bleibt aus dem HUD „Heute im Studio": die fünf
+  Kacheln als ruhige Zeile über dem Gespräch. Und wie früher im
+  Vollbild holt Formi Seiten als Mini-Fenster ins Gespräch; klein öffnet
+  es die echte Seite mit dem Zeiger (Runde 177).
+- Gedrückt halten und sprechen ging nur am Kern. Jetzt am Knopf
+  „Sprechen" (Tippen: hört bis zur Pause; Halten: Loslassen schickt ab).
+
+**Gemessen**
+- `test-gehirn`: die drei Messungen „Arbeit je Bild, CPU ÷4", die seit
+  Runde 178 rot waren (12,9 / 20 ms bei 1440 / 1920 px), sind grün — sie
+  massen das HUD.
+- Knöpfe im Fenster (Kleiner, Schließen, Senden) bei 7 Breiten × 2
+  Dichten, klein und mit „Mehr Platz", ≥ 44 × 44 und im Bild
+  (`test-formi-kugel`).
+
+**Tests angepasst — mit dem Zitat im Test**
+- „Groß macht Vollbild als Dialog" → „Mehr Platz macht grösser, kein
+  Dialog". „Partikelfeld zeichnet", „Uhr läuft", „Buchstaben wirbeln"
+  → geprüft wird jetzt, dass sie NICHT laufen. „Kern ist ein Knopf zum
+  Gedrückthalten" → „Sprechen ist ein Knopf zum Gedrückthalten".
+
+**Bewusst noch nicht:** Das Markup, CSS und JS des alten HUD (Leinwände,
+Ringe, Protokoll) stehen noch in `index.html`, laufen aber nie. Weg-
+geräumt wird es in einem eigenen Schritt — es hängen viele Stellen
+daran, und parallel arbeitet eine zweite Sitzung an Formis Aussehen.
