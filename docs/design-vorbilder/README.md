@@ -46,6 +46,7 @@ eigenen Bildschirmfotos). Was dort schon steht, wird hier nur verlinkt.
 | [`dienstplan-und-schichten.md`](dienstplan-und-schichten.md) | Wochen-/Tagesansicht, offene Schichten, Tauschen, Besetzung | 6 |
 | [`farbe-tiefe-bewegung.md`](farbe-tiefe-bewegung.md) | Dunkelmodus, Tiefe/Schatten, Farbleitern, Bewegung nur per `transform` | 7 |
 | [`formulare-und-eingabe.md`](formulare-und-eingabe.md) | kurze Formulare, Prüfen vor dem Speichern, Blätter am Handy, zwei Spalten am PC | 6 |
+| [`studien-psychologie.md`](studien-psychologie.md) | Studienlage (PubMed, Scholar, ACM) zu Navigation, Menütiefe, Zusammenlegen, Erledigt-Bereich, Abzeichen und Stress, Zielgrössen – mit ehrlicher Kennzeichnung, was selbst geprüft ist (Runde 185) | ca. 25 Quellen |
 
 Zusammen **43 Vorbilder** (einige Quellen wie Android „Canonical
 layouts“ tauchen in zwei Dateien mit verschiedenem Bezug auf).
@@ -57,6 +58,7 @@ layouts“ tauchen in zwei Dateien mit verschiedenem Bezug auf).
 | etwas an Formi (Kugel, Fenster, Antworten, Aktionen, Vorschläge) | `ki-assistent.md` |
 | etwas, das Formi **für jemanden erledigt** (abhaken, anlegen, senden) | `ki-assistent.md` + `listen-aufgaben-abhaken.md` (Rückgängig) |
 | die untere Leiste, die Seitenleiste, „Alles“, „Ausserdem“ | `navigation-und-startseite.md` |
+| Abzeichen, Zahlen, Punkte, Benachrichtigungen, das Zusammenlegen von Bereichen | `studien-psychologie.md` |
 | die Startseite oder Schnellzugriffe | `navigation-und-startseite.md` |
 | eine Ansicht am Rechner (ab 1100 px) | `navigation-und-startseite.md` (Liste + Detail) + `formulare-und-eingabe.md` (zwei Spalten) |
 | eine Liste mit Haken (Aufgaben, Putzplan, Material) | `listen-aufgaben-abhaken.md` |
