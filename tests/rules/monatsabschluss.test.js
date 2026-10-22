@@ -1,4 +1,4 @@
-/* ── Monatsabschluss (Runde 205) ───────────────────────────────────────
+/* ── Monatsabschluss (Runde 206) ───────────────────────────────────────
    Aus dem Betrieb, 22.10.2026: Export und Abschluss — „mach beides".
 
    Teil A — Regeln, beide Welten: `zeitAbschluesse` liest NUR die

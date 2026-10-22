@@ -343,7 +343,7 @@ async function zuVerwaltungZeiten(p) {
     await p.close();
   }
 
-  console.log('\n── 9. Monat & Konto, Abschluss, Export (Runde 205) ──');
+  console.log('\n── 9. Monat & Konto, Abschluss, Export (Runde 206) ──');
   for (const [rolle, w, h] of [['chef', 1440, 900], ['chef', 1920, 1080], ['chef', 390, 844], ['chef', 320, 568], ['leiter', 1280, 800]]) {
     const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h }, acceptDownloads: true });
     p._fehler = []; p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));

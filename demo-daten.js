@@ -1944,7 +1944,7 @@
       melden(P('zeitAntraege')); melden(P('zeiten'));
       return { ok: true, status: 'angenommen', zeitId: id };
     },
-    /* Runde 205: Monatsabschluss — wie der Server: nur die
+    /* Runde 206: Monatsabschluss — wie der Server: nur die
        Geschäftsführung, nur vergangene Monate, danach gesperrt. */
     monatAbschliessen: function (d) {
       if (ICH.role !== 'chef') throw new Error('Den Monat schliesst die Geschäftsführung ab.');

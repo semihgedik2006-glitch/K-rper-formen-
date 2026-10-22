@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-ssA9G+KFFMdnuPuu79U2tc35RyUjR6vXU2ZdWaYn3Wk='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-CR2QaBp6xhJXWE2maDnYx/VPTO87u1NrNfSyEN9dSNs='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3518,7 +3518,7 @@ button.ich-zeile:active{opacity:.7}
 .st-antrag .ich-dazu{padding-left:0}
 .st-zurueckziehen{min-height:44px}
 .st-antrag-hier{margin:var(--s6) 0 0;min-height:44px}
-/* Monat & Konto (Runde 205). Am Rechner die ganze Tabelle; am Handy
+/* Monat & Konto (Runde 206). Am Rechner die ganze Tabelle; am Handy
    rollt nur die Tabelle seitlich, die Seite nicht. */
 .zk-ansicht{display:inline-flex;gap:var(--s2);background:var(--auf-1);border-radius:var(--r-pille);
   padding:var(--s2);margin:var(--s4) 0 var(--s12)}
@@ -4808,9 +4808,7 @@ html{font-size:var(--fs,100%)}
   background:linear-gradient(90deg, rgba(182,156,255,.16), rgba(95,225,255,.05) 38%, rgba(95,225,255,0) 70%), var(--bg-2)}
 .fz-gesicht{flex:0 0 auto;width:44px;height:44px;padding:0;border:0;border-radius:var(--r-rund);background:none;
   display:grid;place-items:center;cursor:pointer;color:inherit}
-.fz-ring{display:block;width:28px;height:28px;border-radius:var(--r-rund);
-  background:radial-gradient(circle, #02040A 0 34%, rgba(2,4,10,0) 38%), var(--formi-ring);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.2), 0 0 10px rgba(95,225,255,.35);transition:transform .16s ease}
+.fz-ring.formi-figur{--fg:30px;display:block;transition:transform .16s ease}
 @media (hover:hover){ .fz-gesicht:hover .fz-ring{transform:scale(1.08)} }
 .fz-gesicht:active .fz-ring{transform:scale(.92)}
 .fz-teile{flex:1 1 auto;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:var(--s4) var(--s6)}
@@ -6108,7 +6106,7 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
    (test-formi-lebt prüft es) — sonst heisst er nichts mehr, wie eine
    Statusfarbe, die nichts meldet. */
 :root{--formi-ring:conic-gradient(from 210deg, #5FE1FF, #B69CFF, #FF8FC8, #FFA85C, #5FE1FF)}
-.formi-kugel{--jv-rgb:95,225,255;position:fixed;z-index:150;right:max(var(--s16), var(--sar, 0px));
+.formi-kugel{--fg:58px;--jv-rgb:95,225,255;position:fixed;z-index:150;right:max(var(--s16), var(--sar, 0px));
   bottom:calc(var(--s16) + var(--sab));width:58px;height:58px;padding:0;border:0;border-radius:var(--r-rund);cursor:pointer;
   background:none;color:inherit;
   transition:transform .16s ease}
@@ -6131,8 +6129,11 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
    kann (das „Atmen" des Lochs), ohne dass Gesicht und Schatten mitdrehen. */
 .fk-wirbel{position:absolute;inset:0;border-radius:var(--r-rund);background:var(--formi-ring);
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.22), inset 0 0 10px 3px rgba(2,4,10,.55)}
-/* Das Loch: 30 px wie vorher der schwarze Kern (37 % des Verlaufs). */
-.fk-loch{position:absolute;left:50%;top:50%;width:30px;height:30px;margin:-15px 0 0 -15px}
+/* Das Loch: 52 % der Figur (bei der Kugel 30 von 58 px, wie vorher der
+   schwarze Kern). Runde 205: alles im Gesicht ist in Anteilen gemessen,
+   damit dieselbe Figur auch 26 px klein im Fensterkopf, in der
+   Formi-Zeile und als fliegender Zeiger stehen kann (formiFigurHTML). */
+.fk-loch{position:absolute;left:24%;top:24%;width:52%;height:52%}
 .fk-pupille{position:absolute;inset:0;border-radius:var(--r-rund);background:#02040A;overflow:hidden;
   box-shadow:0 0 0 1px rgba(2,4,10,.65), 0 0 7px 2px rgba(2,4,10,.55);transition:transform .3s ease}
 /* ── Das Gesicht im Loch (Runde 195) ─────────────────────────────────
@@ -6143,12 +6144,51 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
    Die Ausdrücke sind Web Animations auf transform (formiGefuehl). */
 .fk-weiss{position:absolute;inset:-2px;border-radius:var(--r-rund);opacity:0;
   background:radial-gradient(circle, #FFFFFF 0 46%, #F3EEFF 62%, rgba(255,255,255,0) 74%)}
-.fk-gesicht{position:absolute;inset:0;mix-blend-mode:difference}
-.fk-auge{position:absolute;top:9px;width:5px;height:7px;border-radius:var(--r-rund);background:#FFFFFF;transition:transform .3s ease}
-.fk-auge.l{left:8px}
-.fk-auge.r{right:8px}
-.fk-mund{position:absolute;left:10px;top:18px;width:10px;height:5px;border:2px solid #FFFFFF;border-top:0;
+.fk-gesicht{position:absolute;inset:0;mix-blend-mode:difference;transition:transform .35s ease}
+/* Runde 205 — aus dem Betrieb: „gib dem gesicht mehr leben auch und den
+   augen vorallem". Die Augen sind jetzt weiss mit einer Pupille und einem
+   Lichtpunkt darin; die Pupille wandert im Auge (schauen, umsehen), das
+   Auge selbst blinzelt, wird gross oder schmal. Dazu Brauen, die den
+   Ausdruck tragen (hoch = staunen, schräg = Sorge). */
+.fk-auge{position:absolute;top:24%;width:23%;height:31%;border-radius:var(--r-rund);background:#FFFFFF;overflow:hidden;
+  transition:transform .3s ease}
+.fk-auge.l{left:19%}
+.fk-auge.r{right:19%}
+.fk-auge b{position:absolute;left:21%;top:30%;width:58%;height:43%;border-radius:var(--r-rund);background:#02040A}
+.fk-auge b::after{content:"";position:absolute;left:16%;top:12%;width:38%;height:38%;border-radius:var(--r-rund);background:rgba(255,255,255,.95)}
+.fk-braue{position:absolute;top:12%;width:24%;height:max(1px, 5.5%);border-radius:var(--r-rund);background:#FFFFFF;opacity:.85;
+  transition:transform .35s ease}
+.fk-braue.l{left:19%}
+.fk-braue.r{right:19%}
+.fk-mund{position:absolute;left:33%;top:62%;width:34%;height:16%;border:max(1px, calc(var(--fg, 58px) * .034)) solid #FFFFFF;border-top:0;
   border-radius:0 0 var(--r-rund) var(--r-rund);transition:transform .3s ease}
+/* Müde (nach 60 s ohne Bedienung): halb zu, bevor es einschläft. */
+.formi-kugel.fk-muede .fk-auge{transform:scaleY(.55)}
+.formi-kugel.fk-muede .fk-braue{transform:translateY(25%)}
+/* Die kleine Figur — Fensterkopf, Formi-Zeile, Zeiger. Unter 32 px ohne
+   Brauen und Lichtpunkt: die wären nur noch Krümel. */
+.formi-figur{--fg:26px;position:relative;display:inline-block;flex:0 0 auto;width:var(--fg);height:var(--fg);border-radius:var(--r-rund)}
+.formi-figur .fk-koerper{box-shadow:var(--e1), 0 0 10px rgba(95,225,255,.45)}
+.formi-figur .fk-wirbel{box-shadow:inset 0 0 0 1px rgba(255,255,255,.2), inset 0 0 4px 1px rgba(2,4,10,.5)}
+.formi-figur .fk-pupille{box-shadow:0 0 0 1px rgba(2,4,10,.6)}
+.formi-figur.mini .fk-braue,.formi-figur.mini .fk-auge b::after{display:none}
+.formi-figur.mini .fk-auge b{left:15%;top:25%;width:70%;height:52%}
+/* Ring in der Farbe des Bereichs (Runde 205): ein Schimmer von einer
+   Kante, nicht eine Fläche — und nie in Rot, Grün oder Bernstein. Die
+   Verwaltung (Schiefer) bekommt keinen. */
+.fk-wirbel::before{content:"";position:absolute;inset:0;border-radius:var(--r-rund);opacity:0;transition:opacity .4s ease;
+  background:radial-gradient(circle at 28% 18%, var(--fk-ber, transparent), rgba(0,0,0,0) 62%)}
+body[data-bereich="g-start"]  {--fk-ber:#7DB8FF}
+body[data-bereich="g-wissen"] {--fk-ber:#BBA4FF}
+body[data-bereich="g-komm"]   {--fk-ber:#4EE6D2}
+body[data-bereich="g-arbeit"] {--fk-ber:#FFA85C}
+body[data-bereich="g-team"]   {--fk-ber:#FF8FC8}
+body[data-bereich="g-start"] .fk-wirbel::before,body[data-bereich="g-wissen"] .fk-wirbel::before,body[data-bereich="g-komm"] .fk-wirbel::before,
+body[data-bereich="g-arbeit"] .fk-wirbel::before,body[data-bereich="g-team"] .fk-wirbel::before{opacity:.7}
+/* Abends (ab 19 Uhr) wird der Ring wärmer. */
+.fk-wirbel::after{content:"";position:absolute;inset:0;border-radius:var(--r-rund);opacity:0;transition:opacity 1s ease;
+  background:radial-gradient(circle at 72% 86%, rgba(255,160,90,.5), rgba(255,160,90,0) 64%)}
+.formi-kugel.fk-abend .fk-wirbel::after{opacity:1}
 /* Die Teilchen: was das weisse Loch ausspuckt und das schwarze wieder
    einsaugt (formiAusbruch), und was beim „Atmen" hineinfällt. Sie liegen
    in der Kugel, bewegen sich nur per transform/opacity und lassen jeden
@@ -6168,11 +6208,12 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
   transition:opacity .2s ease, transform .3s cubic-bezier(.3,1.6,.5,1)}
 .formi-kugel.fk-hat .fk-punkt{opacity:1;transform:none}
 /* Schläft: das Auge geht zu, der Ring wird leiser. Aufwachen = Glitch. */
-.formi-kugel.fk-schlaeft .fk-auge{transform:scaleY(.15)}
+.formi-kugel.fk-schlaeft .fk-auge{transform:scaleY(.12)}
+.formi-kugel.fk-schlaeft .fk-braue{transform:translateY(40%)}
 .formi-kugel.fk-schlaeft .fk-mund{transform:scale(.5)}
 .formi-kugel.fk-schlaeft .fk-koerper{opacity:.7}
 /* Neugierig, wenn die Maus darüber steht: die Pupille wird gross. */
-@media (hover:hover){ .formi-kugel:not(.fk-schlaeft):hover .fk-auge{transform:scale(1.25)} }
+@media (hover:hover){ .formi-kugel:not(.fk-schlaeft):hover .fk-auge{transform:scale(1.25)} .formi-kugel:not(.fk-schlaeft):hover .fk-braue{transform:translateY(-40%)} }
 /* Der Glitch über einem Ziel in der App (formiGlitch): zwei Balken, die
    springen, dann ist es vorbei. Kein Flackern der ganzen Fläche: eine
    einzige Abblendung, die Balken bewegen sich nur seitlich (WCAG 2.3.1,
@@ -6246,14 +6287,19 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
   body:has(.undobar.show) .formi-kugel,body:has(.toast.show) .formi-kugel{transform:translateY(-72px)}
 }
 /* Kleines Gesicht im Kopf des kompakten Fensters — dieselbe Kugel. */
-.formi-gesicht{flex:0 0 auto;width:22px;height:22px;border-radius:var(--r-rund);
-  /* Formis Ring, in den Farben des Themas (Runde 186: nur Formi trägt ihn). */
-  background:radial-gradient(circle, #02040A 0 36%, rgba(2,4,10,0) 40%),
-    conic-gradient(from 210deg, rgb(var(--jv-t1)), rgb(var(--jv-t2)), rgb(var(--jv-t3)), rgb(var(--jv-t1)));
-  box-shadow:0 0 10px rgba(var(--jv-rgb),.5)}
+/* Runde 205: im Kopf steht dieselbe Figur wie die Kugel, mit Gesicht
+   (formiFigurHTML) — 28 px. */
+.formi-gesicht.formi-figur{--fg:28px}
 .jarvis:not(.jv-kompakt) .formi-gesicht{display:none}
-/* Dreht sich nur, solange Formi arbeitet — keine Endlos-Animation ohne Grund. */
-.jarvis.jv-kompakt.jv-z-denkt .formi-gesicht{animation:jvDreh 1.1s linear infinite}
+/* Denken: nur der Ring dreht sich (solange Formi arbeitet — keine
+   Endlos-Animation ohne Grund), die Augen schauen nach oben zur Seite. */
+.jarvis.jv-kompakt.jv-z-denkt .formi-gesicht .fk-wirbel{animation:jvDreh 1.1s linear infinite}
+.jarvis.jv-z-denkt .formi-gesicht .fk-gesicht{transform:translate(9%,-11%)}
+/* Sprechen: der Mund geht auf und zu, solange Formi spricht. Mit
+   Pegel (menschliche Stimme) folgt er stattdessen der Lautstärke
+   (jvPegelStart). */
+.jarvis.jv-z-spricht:not(.jv-pegel) .formi-gesicht .fk-mund{animation:fgSprechen .22s ease-in-out infinite alternate}
+@keyframes fgSprechen{from{transform:scaleY(.45)}to{transform:scale(1.15,1.8)}}
 .jarvis.jv-kompakt{inset:auto;right:max(var(--s16), var(--sar, 0px));bottom:calc(var(--s16) + var(--sab));
   width:min(420px, calc(100vw - 2 * var(--s16)));height:min(640px, calc(100dvh - 2 * var(--s16)));
   z-index:190;border-radius:var(--radius);border:1px solid rgba(var(--jv-rgb),.35);
@@ -6287,16 +6333,18 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
   padding:var(--s8) var(--s12) max(var(--s12), env(safe-area-inset-bottom))}
 .jarvis.jv-kompakt .jv-rechts{flex:1 1 auto;min-height:0}
 /* Der Zeiger: Formi zeigt, wo es hintippt. Bewegt wird nur transform. */
-.formi-zeiger{--jv-rgb:95,225,255;position:fixed;left:0;top:0;z-index:1200;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:var(--r-rund);
-  pointer-events:none;will-change:transform;
-  background:radial-gradient(circle, #fff 0 22%, rgba(var(--jv-rgb),.95) 24% 46%, rgba(var(--jv-rgb),0) 70%);
-  box-shadow:0 0 16px 4px rgba(var(--jv-rgb),.6)}
+/* Runde 205: der Zeiger ist ein Mini-Formi (formiFigurHTML) — man sieht,
+   dass Formi selbst hinfliegt und antippt. */
+.formi-zeiger{--jv-rgb:95,225,255;position:fixed;left:0;top:0;z-index:1200;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:var(--r-rund);
+  pointer-events:none;will-change:transform;box-shadow:0 0 16px 4px rgba(var(--jv-rgb),.55)}
+.formi-zeiger .formi-figur{--fg:28px;display:block}
 .formi-zeiger::after{content:"";position:absolute;inset:-6px;border-radius:var(--r-rund);border:2px solid rgba(var(--jv-rgb),.95);opacity:0}
 .formi-zeiger.tippt::after{animation:formiTipp .45s ease-out backwards}
 @keyframes formiTipp{from{transform:scale(.4);opacity:1}to{transform:scale(2.6);opacity:0}}
 /* Das Ziel leuchtet kurz auf. outline statt Rahmen: verschiebt nichts. */
 .formi-markiert{outline:2px solid #5FE1FF !important;outline-offset:2px}
-@media (prefers-reduced-motion:reduce){ .formi-kugel{transition:none} .jarvis.jv-kompakt.jv-z-denkt .formi-gesicht{animation:none} }
+@media (prefers-reduced-motion:reduce){ .formi-kugel{transition:none} .jarvis.jv-kompakt.jv-z-denkt .formi-gesicht .fk-wirbel,
+  .jarvis.jv-z-spricht .formi-gesicht .fk-mund{animation:none} }
 /* Die Themen. Farbe folgt dem Bereich wie in den Mini-Fenstern; Rot,
    Bernstein und Grün bleiben dem Status vorbehalten. */
 .jarvis[data-thema="putzplan"]{--jv-t1:78,230,210;--jv-t2:95,225,255;--jv-t3:150,140,255}
@@ -11363,7 +11411,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                   <button type="button" class="ich-pfeil zk-pfeil" id="zkNext" aria-label="Nächster Monat">›</button>
                 </div>
               </div>
-              <!-- Monat & Konto (Runde 205): nur die Geschäftsführung — darin
+              <!-- Monat & Konto (Runde 206): nur die Geschäftsführung — darin
                    stehen alle Konten nebeneinander, und die Vertragsstunden
                    (planerTeam) liest ohnehin nur sie. -->
               <div class="zk-ansicht" id="zkAnsicht" role="group" aria-label="Ansicht" hidden>
@@ -12997,7 +13045,7 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
     <span class="jv-ecke ul" aria-hidden="true"></span><span class="jv-ecke ur" aria-hidden="true"></span>
     <ol class="jv-log" aria-hidden="true"><li>&gt; Systeme starten</li><li>&gt; Studio-Wissen verbunden</li><li>&gt; App-Steuerung bereit</li><li>&gt; Online</li></ol>
     <div class="jv-kopf">
-      <span class="jv-titel"><span class="formi-gesicht" aria-hidden="true"></span><span class="jv-punkt" aria-hidden="true"></span><span id="jarvisTitel">Formi</span><span class="jv-weck" id="jarvisWeck" hidden>hört auf dich</span><span class="jv-offline" id="jarvisOffline" hidden>offline · Schnellbefehle gehen</span></span>
+      <span class="jv-titel"><span class="formi-gesicht formi-figur mini" aria-hidden="true"><span class="fk-koerper"><span class="fk-wirbel"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i></span></span></span></span></span><span class="jv-punkt" aria-hidden="true"></span><span id="jarvisTitel">Formi</span><span class="jv-weck" id="jarvisWeck" hidden>hört auf dich</span><span class="jv-offline" id="jarvisOffline" hidden>offline · Schnellbefehle gehen</span></span>
       <span class="jv-kopf-knoepfe">
         <button type="button" class="icon-btn" id="jarvisPersonaBtn" data-ikon="regler" aria-expanded="false" aria-controls="jarvisPersona" aria-label="Persönlichkeit und Stimme" title="Persönlichkeit und Stimme"></button>
         <button type="button" class="icon-btn" id="jarvisGespraecheBtn" data-ikon="uhr" aria-expanded="false" aria-controls="jarvisGespraeche" aria-label="Gespeicherte Gespräche" title="Gespeicherte Gespräche"></button>
@@ -13050,7 +13098,7 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
      als Auge (Pupille mit Lichtpunkt) und ein Punkt „hat etwas für dich".
      Alles Schmuck: aria-hidden, keine Trefferfläche (pointer-events:none). -->
 <button type="button" class="formi-kugel" id="formiKugel" hidden aria-haspopup="dialog" aria-controls="jarvis"
-  aria-label="Formi öffnen" title="Formi — frag mich oder sag, was ich tun soll"><span class="fk-koerper" aria-hidden="true"><span class="fk-wirbel"></span><span class="fk-geist a"></span><span class="fk-geist b"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-auge l"></i><i class="fk-auge r"></i><i class="fk-mund"></i></span></span></span></span><span class="fk-punkt" aria-hidden="true"></span></button>
+  aria-label="Formi öffnen" title="Formi — frag mich oder sag, was ich tun soll"><span class="fk-koerper" aria-hidden="true"><span class="fk-wirbel"></span><span class="fk-geist a"></span><span class="fk-geist b"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-braue l"></i><i class="fk-braue r"></i><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i></span></span></span></span><span class="fk-punkt" aria-hidden="true"></span></button>
 <span id="formiKugelHat" hidden>Formi hat etwas für dich</span>
 <!-- Formis Sprechblase (Runde 196): ein kurzer Satz, 4,5 s, dann weg.
      Keine Trefferfläche — sie verdeckt nie einen Knopf. -->
@@ -14510,7 +14558,7 @@ function renderRecht(){
         'Fenster des Terminals. Sehen können '+
         'die Zeiten du, die Leitung deines Studios und die Geschäftsführung.</p>'+
       /* Runde 204: Korrekturanträge sind eine neue Sorte Daten. */
-      /* Runde 205: der Monatsabschluss hält Summen je Person fest. */
+      /* Runde 206: der Monatsabschluss hält Summen je Person fest. */
       '<p><b>Monatsabschluss:</b> Schliesst die Geschäftsführung einen Monat ab, '+
         'werden je Person die Summen festgehalten (Stunden, Soll, Urlaub/Krank, '+
         'Saldo, Konto) und wer wann abgeschlossen hat. Sehen kann das nur die '+
@@ -17600,6 +17648,7 @@ var _toastTimer;
 function toast(msg, isErr){
   var t=$('toast'); t.textContent=msg;
   if(isErr && typeof formiFuehlt==='function') formiFuehlt('erschrickt');
+  if(typeof formiSchauHin==='function') formiSchauHin(t);
   t.style.borderColor = isErr ? 'var(--danger)' : 'var(--accent-d)';
   t.classList.add('show');
   clearTimeout(_toastTimer);
@@ -20555,6 +20604,9 @@ function meldMarker(){
   var k=$('tbGlocke'); if(!k) return;
   k.style.display = canManage() ? '' : 'none';
   var n=meldNeu();
+  /* Runde 205: kommt eine neue Meldung dazu, schaut Formi zur Glocke. */
+  if(n>(meldMarker._n||0) && typeof formiSchauHin==='function') formiSchauHin(k);
+  meldMarker._n=n;
   var z=k.querySelector('.gl-zahl');
   if(z){
     z.textContent = n>99 ? '99+' : String(n);
@@ -21159,6 +21211,11 @@ var NEUIGKEITEN = [
     '„Excel" und „CSV" laden den Monat für das Lohnbüro herunter – Stunden als Dezimalzahlen mit Komma, in Excel zusätzlich jeder Tag einzeln.',
     'Ist ein Monat vorbei, schliesst „Monat abschliessen" ihn ab. Danach lässt sich darin nichts mehr nachtragen, stornieren oder beantragen; sein Konto ist der Übertrag für den nächsten Monat. „Wieder öffnen …" geht nur mit Grund.'
   ]},
+  { id:'2026-10-22-formi-augen', datum:'22.10.2026', titel:'Formis Augen leben: Pupillen, Brauen, Umsehen', wo:'home', punkte:[
+    'Formis Augen haben jetzt Pupillen mit Lichtpunkt und Brauen. Die Pupillen folgen der Maus, kommst du nah heran, werden die Augen gross. Steht alles still, schaut Formi sich um und blinzelt manchmal zweimal.',
+    'Formi schaut hin, wo etwas passiert – zu einem Hinweis unten oder zur Glocke, wenn eine neue Meldung kommt. Nach einer Minute ohne Bedienung wird es müde, später schläft es ein.',
+    'Dasselbe Gesicht steht jetzt auch oben im Formi-Fenster, links in der Formi-Zeile und fliegt als kleiner Formi los, wenn es eine Seite für dich öffnet. Denkt Formi nach, schauen die Augen nach oben; spricht es, bewegt sich der Mund.',
+    'Der Ring schimmert in der Farbe des Bereichs, in dem du bist, und wird abends wärmer. Morgens gähnt Formi einmal.' ] },
   { id:'2026-10-22-korrekturantrag', datum:'22.10.2026', titel:'Fehlenden Stempel selbst beantragen', wo:'ich:zeiten', punkte:[
     'Feierabend vergessen? Unter Heute → Ich → Zeiten gibt es „Korrektur beantragen": Tag, was fehlt, Uhrzeit und ein kurzer Grund. Bei einem Tag mit „Feierabend fehlt" reicht ein Tipp auf den Tag und dann auf „Feierabend beantragen" – Tag und Art sind schon eingetragen.',
     'Beantragen geht bis 31 Tage zurück. Darunter siehst du, ob dein Antrag noch wartet, angenommen oder abgelehnt wurde – mit Antwort. Solange er wartet, kannst du ihn zurückziehen.',
@@ -27092,9 +27149,9 @@ function formiLebtAn(){
 function formiGefuehleAnwenden(an){
   _fl.gefuehleAus=!an;
   if(an) return;
-  _fl.schlaeft=false;
+  _fl.schlaeft=false; _fl.muede=false; _fl.nah=false; _fl.pup=null; _fl.pupZiel='';
   var t=formiTeile(); if(!t) return;
-  t.k.classList.remove('fk-schlaeft');
+  t.k.classList.remove('fk-schlaeft', 'fk-muede');
   t.k.getAnimations({ subtree:true }).forEach(function(a){ try{ a.cancel(); }catch(e){} });
   _fl.blick=null; _fl.blickZiel='';
 }
@@ -27103,7 +27160,8 @@ function formiTeile(){
   return { k:k, koerper:k.querySelector('.fk-koerper'), loch:k.querySelector('.fk-loch'),
            pupille:k.querySelector('.fk-pupille'), geister:k.querySelectorAll('.fk-geist'),
            wirbel:k.querySelector('.fk-wirbel'), weiss:k.querySelector('.fk-weiss'), gesicht:k.querySelector('.fk-gesicht'),
-           augen:k.querySelectorAll('.fk-auge'), mund:k.querySelector('.fk-mund') };
+           augen:k.querySelectorAll('.fk-auge'), mund:k.querySelector('.fk-mund'),
+           pupillen:k.querySelectorAll('.fk-auge b'), brauen:k.querySelectorAll('.fk-braue') };
 }
 /* Die Gefühle als Bewegung. Jede Zeile: [Teil, Bildfolge, Dauer]. */
 /* Die Gefühle als Bewegung. Jede Zeile: [Teil, Bildfolge, Dauer].
@@ -27126,15 +27184,36 @@ function formiGefuehl(art){
                 ['augen', [{transform:'none'},{transform:'scale(.6)',offset:.12},{transform:'scale(.6)',offset:.8},{transform:'none'}], 700],
                 ['mund', [{transform:'none'},{transform:'translateY(2px) scaleY(-1)',offset:.12},{transform:'translateY(2px) scaleY(-1)',offset:.8},{transform:'none'}], 700]],
     nickt:     [['gesicht', [{transform:'none'},{transform:'translateY(2px)',offset:.4},{transform:'none'}], 220]],
-    blinzelt:  [['augen', [{transform:'none'},{transform:'scaleY(.1)',offset:.5},{transform:'none'}], 170]]
+    blinzelt:  [['augen', [{transform:'none'},{transform:'scaleY(.1)',offset:.5},{transform:'none'}], 170]],
+    /* Runde 205: zweimal kurz hintereinander, wie man es eben tut. */
+    zwinkert2: [['augen', [{transform:'none'},{transform:'scaleY(.1)',offset:.2},{transform:'none',offset:.4},{transform:'scaleY(.1)',offset:.6},{transform:'none'}], 420]],
+    /* Morgens einmal (formiLebtStart): Mund weit auf, Augen klein. */
+    gaehnt:    [['mund', [{transform:'none'},{transform:'scale(.85,2.6)',offset:.35},{transform:'scale(.85,2.6)',offset:.7},{transform:'none'}], 1600],
+                ['augen', [{transform:'none'},{transform:'scaleY(.25)',offset:.3},{transform:'scaleY(.25)',offset:.75},{transform:'none'}], 1600],
+                ['brauen', [{transform:'none'},{transform:'translateY(-60%)',offset:.35},{transform:'translateY(-60%)',offset:.7},{transform:'none'}], 1600]],
+    /* „Aha" — wenn Formi mit dem Denken fertig ist. */
+    aha:       [['augen', [{transform:'none'},{transform:'scale(1.3)',offset:.25},{transform:'none'}], 520],
+                ['brauen', [{transform:'none'},{transform:'translateY(-70%)',offset:.25},{transform:'none'}], 520]]
   }[art] || [];
 }
+/* Die Brauen tragen den Ausdruck mit (Runde 205). Je Gefühl links und
+   rechts — schräg ist Sorge, hoch ist Staunen. */
+var FK_BRAUEN={
+  freut:      ['translateY(-45%)', 'translateY(-45%)', 900],
+  staunt:     ['translateY(-110%)', 'translateY(-110%)', 900],
+  feiert:     ['translateY(-60%)', 'translateY(-60%)', 1400],
+  erschrickt: ['translateY(-50%) rotate(-22deg)', 'translateY(-50%) rotate(22deg)', 700]
+};
 function formiFuehlt(art){
   if(!formiLebtAn()) return;
   var t=formiTeile(); if(!t) return;
   if(art!=='blinzelt') formiWach(true);
+  var b=FK_BRAUEN[art];
+  if(b) [].forEach.call(t.brauen, function(el, i){
+    try{ el.animate([{transform:'none'},{transform:b[i]||b[0],offset:.2},{transform:b[i]||b[0],offset:.8},{transform:'none'}], { duration:b[2], easing:'cubic-bezier(.3,.7,.2,1)' }); }catch(e){}
+  });
   formiGefuehl(art).forEach(function(z){
-    var els = z[0]==='augen' ? [].slice.call(t.augen) : [t[z[0]]];
+    var els = z[0]==='augen' ? [].slice.call(t.augen) : z[0]==='brauen' ? [].slice.call(t.brauen) : [t[z[0]]];
     els.forEach(function(el){
       if(!el) return;
       try{ el.animate(z[1], { duration:z[2], easing:'cubic-bezier(.3,.7,.2,1)' }); }catch(e){}
@@ -27202,6 +27281,7 @@ function formiAtmen(){
     t.pupille.animate([{ transform:'none' }, { transform:'scale(1.07)', offset:.5 }, { transform:'none' }], { duration:3600, easing:'ease-in-out' });
   }catch(e){ return; }
   var box=formiTeilchen(t, 3, true);
+  if(new Date().getMonth()===11) [].forEach.call(box.children, function(i){ i.style.setProperty('--c', '#FFFFFF'); });
   t.koerper.insertBefore(box, t.loch);
   [].forEach.call(box.children, function(el, i){
     var w=Math.random()*Math.PI*2, r=26;
@@ -27221,6 +27301,13 @@ function formiAtmenPlanen(){
   clearTimeout(_fl.atemUhr);
   if(_fl.uhrenAus) return;
   _fl.atemUhr=setTimeout(function(){ formiAtmen(); formiAtmenPlanen(); }, 7000+Math.random()*5000);
+}
+/* Die kleine Figur (Runde 205): dieselbe wie die Kugel, ohne Geister und
+   Punkt — für Fensterkopf, Formi-Zeile und den fliegenden Zeiger. */
+function formiFigurKlasse(){ return 'formi-figur mini'; }
+function formiFigurInnen(){
+  return '<span class="fk-koerper"><span class="fk-wirbel"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span>'+
+    '<span class="fk-gesicht"><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i></span></span></span></span>';
 }
 /* Der Glitch an der Kugel: zwei Geister springen neben den Körper. */
 function formiKugelGlitch(){
@@ -27273,7 +27360,12 @@ function formiSchauen(){
     _fl.mitte={ x:r.left+r.width/2, y:r.top+r.height/2 }; _fl.mitteBis=jetzt+1000;
   }
   var dx=_fl.x-_fl.mitte.x, dy=_fl.y-_fl.mitte.y, d=Math.sqrt(dx*dx+dy*dy)||1;
-  var weit=Math.min(4.5, d/60);
+  /* Runde 205: Pupillen in den Augen wandern (bis 1,8 px), das ganze
+     Loch nur noch ein wenig (bis 2,5 px) — so schauen Augen, nicht ein
+     Ball. Kommt die Maus näher als 150 px, werden die Augen gross. */
+  formiPupillen(t, dx/d*Math.min(1.8, d/70), dy/d*Math.min(1.8, d/70));
+  formiNah(t, d<150);
+  var weit=Math.min(2.5, d/80);
   var ziel='translate('+(dx/d*weit).toFixed(1)+'px,'+(dy/d*weit).toFixed(1)+'px)';
   if(ziel===_fl.blickZiel) return;
   /* Als Web Animation, NICHT über style.transform: jede Änderung am
@@ -27293,11 +27385,61 @@ function formiSchauNach(x, y){
   _fl.x=x; _fl.y=y;
   if(!_fl.raf) _fl.raf=requestAnimationFrame(formiSchauen);
 }
+/* Pupillen als Web Animation, wie das Loch: kein Schreiben ins style-
+   Attribut (siehe formiSchauen). Die vorige wird abgelöst. */
+function formiPupillen(t, x, y){
+  var ziel='translate('+x.toFixed(1)+'px,'+y.toFixed(1)+'px)';
+  if(ziel===_fl.pupZiel || !t.pupillen.length) return;
+  var alt=_fl.pup||[];
+  _fl.pup=[].map.call(t.pupillen, function(p){
+    try{ return p.animate([{ transform:_fl.pupZiel||'none' }, { transform:ziel }], { duration:110, easing:'ease-out', fill:'forwards' }); }catch(e){ return null; }
+  });
+  _fl.pupZiel=ziel;
+  alt.forEach(function(a){ if(a) try{ a.cancel(); }catch(e){} });
+}
+function formiNah(t, nah){
+  if(nah===!!_fl.nah) return;
+  _fl.nah=nah;
+  var alt=_fl.nahAnim||[];
+  _fl.nahAnim = nah ? [].map.call(t.augen, function(a){
+    try{ return a.animate([{ transform:'none' }, { transform:'scale(1.16)' }], { duration:220, easing:'ease-out', fill:'forwards' }); }catch(e){ return null; }
+  }) : [];
+  alt.forEach(function(a){ if(a) try{ a.cancel(); }catch(e){} });
+}
+/* Hinschauen (Runde 205): wo etwas passiert — ein Hinweis unten, eine
+   neue Meldung an der Glocke —, schaut Formi kurz hin. Gelesen wird im
+   Bild, nicht im Ereignis. */
+function formiSchauHin(el){
+  if(!el || !formiLebtAn()) return;
+  requestAnimationFrame(function(){
+    if(!el.getClientRects().length) return;
+    var r=el.getBoundingClientRect();
+    _fl.hinBis=Date.now()+1600;
+    formiSchauNach(r.left+r.width/2, r.top+r.height/2);
+  });
+}
+/* Umsehen (Runde 205): steht die Maus still (oder gibt es keine, am
+   Handy), schauen die Augen alle 1,5–4 s woanders hin — kleine, schnelle
+   Sprünge wie bei echten Augen. Manchmal zweimal blinzeln. Zeitgeber,
+   keine Dauer-Animation; aus mit uhrenAus() und „Gefühle: Aus". */
+function formiUmsehenPlanen(){
+  clearTimeout(_fl.umsehUhr);
+  if(_fl.uhrenAus) return;
+  _fl.umsehUhr=setTimeout(function(){
+    var jetzt=Date.now();
+    if(formiLebtAn() && !_fl.schlaeft && jetzt-(_fl.mausZuletzt||0)>2500 && jetzt>(_fl.hinBis||0)){
+      formiSchauNach(Math.random()*innerWidth, Math.random()*innerHeight*.9);
+      if(Math.random()<.18) setTimeout(function(){ formiFuehlt('zwinkert2'); }, 300);
+    }
+    formiUmsehenPlanen();
+  }, 1500+Math.random()*2500);
+}
 function formiWach(stumm){
   _fl.zuletzt=Date.now();
+  if(_fl.muede && !_fl.schlaeft){ _fl.muede=false; var km=$('formiKugel'); if(km) km.classList.remove('fk-muede'); return; }
   if(!_fl.schlaeft) return;
-  _fl.schlaeft=false;
-  var k=$('formiKugel'); if(k) k.classList.remove('fk-schlaeft');
+  _fl.schlaeft=false; _fl.muede=false;
+  var k=$('formiKugel'); if(k) k.classList.remove('fk-schlaeft', 'fk-muede');
   if(!stumm){ formiKugelGlitch(); setTimeout(function(){ formiFuehlt('blinzelt'); }, 320); }
 }
 function formiBlinzelnPlanen(){
@@ -27429,7 +27571,7 @@ function formiLebtStart(){
   _fl.gefuehleAus = jvPersona().gefuehle==='aus';
   var maus=!!(window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches);
   function tun(){ formiWach(); }
-  document.addEventListener('pointermove', function(e){ _fl.zuletzt=Date.now(); if(_fl.schlaeft) formiWach(); if(maus) formiSchauNach(e.clientX, e.clientY); }, { passive:true });
+  document.addEventListener('pointermove', function(e){ _fl.zuletzt=_fl.mausZuletzt=Date.now(); if(_fl.schlaeft || _fl.muede) formiWach(); if(maus) formiSchauNach(e.clientX, e.clientY); }, { passive:true });
   ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(function(n){ document.addEventListener(n, tun, { passive:true, capture:true }); });
   /* Tippen in ein Feld: hinschauen und nicken. Die Lage des Feldes wird
      im Bild gelesen, nicht im Ereignis. */
@@ -27455,6 +27597,9 @@ function formiLebtStart(){
   /* Runde 196: Tagesgruss, wenn die App steht. */
   setTimeout(formiTagesgruss, 2500);
   formiAtmenPlanen();
+  formiUmsehenPlanen();
+  formiTageszeit();
+  formiAnlass();
   /* Kleinigkeit (Runde 195): wer mit dem Mausrad scrollt, dem schaut
      Formi kurz in die Richtung nach. */
   if(maus) document.addEventListener('wheel', function(e){
@@ -27463,8 +27608,33 @@ function formiLebtStart(){
   }, { passive:true });
 }
 function formiSchlafPruefen(){
+  formiTageszeit();
   if(_fl.schlaeft || !formiLebtAn()) return;
-  if(Date.now()-_fl.zuletzt>90000){ _fl.schlaeft=true; var k=$('formiKugel'); if(k) k.classList.add('fk-schlaeft'); }
+  var still=Date.now()-_fl.zuletzt, k=$('formiKugel');
+  if(still>90000){ _fl.schlaeft=true; if(k) k.classList.add('fk-schlaeft'); }
+  /* Runde 205: vorher eine Weile müde — halb zu, die Brauen sinken. */
+  else if(still>60000 && !_fl.muede){ _fl.muede=true; if(k) k.classList.add('fk-muede'); }
+}
+/* Tageszeit und Anlass (Runde 205). Abends wird der Ring wärmer; die
+   Klasse wird nur gesetzt, wenn sich die Stunde ändert. */
+function formiTageszeit(){
+  var h=new Date().getHours();
+  if(h===_fl.stunde) return; _fl.stunde=h;
+  var k=$('formiKugel'); if(!k) return;
+  var abend = h>=19 || h<5;
+  if(abend!==k.classList.contains('fk-abend')) k.classList.toggle('fk-abend', abend);
+}
+/* Einmal am Tag je Gerät: morgens ein Gähnen, an Silvester und Neujahr
+   ein Feuerwerk. Im Dezember fallen beim Atmen Schneeflocken statt bunter
+   Krümel (formiAtmen). */
+function formiAnlass(){
+  var d=new Date(), tag=ymd(d), h=d.getHours(), md=(d.getMonth()+1)*100+d.getDate();
+  var gemerkt=''; try{ gemerkt=localStorage.getItem('kf_formi_anlass')||''; }catch(e){}
+  if(gemerkt===tag) return;
+  var art = (md===1231 || md===101) ? 'feiert' : (h>=5 && h<11 ? 'gaehnt' : '');
+  if(!art) return;
+  try{ localStorage.setItem('kf_formi_anlass', tag); }catch(e){}
+  setTimeout(function(){ formiFuehlt(art); }, 2500);
 }
 /* Für die Durchläufe (test-formi-lebt): Gefühle auslösen und die Uhr
    vorstellen, statt 90 Sekunden zu warten. Liest und schreibt nichts
@@ -27480,7 +27650,9 @@ window.__formiLebt = {
   atmen: function(){ formiAtmen(); },
   /* Blinzeln und Atmen kommen zu zufälligen Zeiten — ein Durchlauf, der
      „danach läuft nichts mehr" prüft, schaltet sie dafür ab. */
-  uhrenAus: function(){ _fl.uhrenAus=true; clearTimeout(_fl.blinzelUhr); clearTimeout(_fl.atemUhr); }
+  uhrenAus: function(){ _fl.uhrenAus=true; clearTimeout(_fl.blinzelUhr); clearTimeout(_fl.atemUhr); clearTimeout(_fl.umsehUhr); },
+  muede: function(){ _fl.zuletzt=Date.now()-61000; formiSchlafPruefen(); return _fl.muede; },
+  schauHin: function(sel){ formiSchauHin(document.querySelector(sel)); }
 };
 /* Wohin der Zeiger fährt: der Knopf des Bereichs in der Seitenleiste
    (Rechner) oder unten in der Leiste (Handy), sonst der Bereichskopf. */
@@ -27511,6 +27683,8 @@ function formiZeiger(ziel){
       var x1=b.left+b.width/2, y1=b.top+b.height/2;
       var z=document.createElement('div');
       z.className='formi-zeiger'; z.setAttribute('aria-hidden', 'true');
+      /* Runde 205: ein Mini-Formi fliegt hin, nicht ein Lichtpunkt. */
+      z.innerHTML='<span class="'+formiFigurKlasse()+'">'+formiFigurInnen()+'</span>';
       z.style.transform='translate('+x0+'px,'+y0+'px)';
       document.body.appendChild(z);
       var ok=false;
@@ -28819,6 +28993,7 @@ function jvZustand(){
   if(jarvisOffen()){
     if(_gLaeuft && !war.laeuft){ jvTon('senden'); jvStill(); jvZeichenStart(letzte && letzte.text); }
     else if(_gLaeuft && schr>war.schritte) jvTon('schritt');
+    if(!_gLaeuft && war.laeuft && letzte) formiKopfAha();
     if(!_gLaeuft && war.laeuft && letzte){
       jvZeichenRaus(letzte.fehler ? '' : (letzte.art==='frage' ? letzte.antwort : (letzte.spruch || letzte.angelegt || letzte.hinweis || '')));
       if(letzte.fehler){ jvTon('fehler'); gehirnStimmung('fehler'); jvVibrieren([40,60,40]); }
@@ -28836,6 +29011,15 @@ function jvZustand(){
   if(_gLaeuft && _jvWeck) jvWeckStop();
   jvWerte();
   if(jarvisOffen() && !_gLaeuft && _jvWar.kachelnBei!==_gVerlauf.length){ _jvWar.kachelnBei=_gVerlauf.length; jvKachelnZeichnen(); }
+}
+/* Runde 205: wenn Formi mit dem Denken fertig ist, macht das Gesicht im
+   Fensterkopf kurz „Aha" — grosse Augen. */
+function formiKopfAha(){
+  if(gehirnWenigBewegung() || _fl.gefuehleAus) return;
+  var g=document.querySelector('#jarvis .formi-gesicht'); if(!g || !g.animate) return;
+  [].forEach.call(g.querySelectorAll('.fk-auge'), function(a){
+    try{ a.animate([{transform:'none'},{transform:'scale(1.35)',offset:.3},{transform:'none'}], { duration:560, easing:'cubic-bezier(.3,.7,.2,1)' }); }catch(e){}
+  });
 }
 function jvWerte(){
   if(!jarvisOffen()) return;
@@ -28858,6 +29042,12 @@ function jvPegelStart(analyser){
   var balken=[].slice.call(document.querySelectorAll('#jarvis .jv-eq u')), kugel=document.querySelector('#jarvisKern b');
   var daten=new Uint8Array(analyser.frequencyBinCount);
   j.classList.add('jv-pegel');
+  /* Runde 205: der Mund im Fensterkopf folgt der Lautstärke. Eine
+     angehaltene Animation, deren Zeit je Bild gesetzt wird — kein
+     Schreiben ins style-Attribut. */
+  var mund=j.querySelector('.formi-gesicht .fk-mund'), mundA=null;
+  if(mund && mund.animate){ try{ mundA=mund.animate([{transform:'scaleY(.4)'},{transform:'scale(1.15,1.9)'}], { duration:1000, fill:'both' }); mundA.pause(); }catch(e){ mundA=null; } }
+  _jvPegel.mund=mundA;
   function bild(){
     if(!_jvPegel.analyser) return;
     analyser.getByteFrequencyData(daten);
@@ -28867,6 +29057,7 @@ function jvPegelStart(analyser){
       balken[i].style.transform='scaleY('+(0.12+w*0.88).toFixed(3)+')';
     }
     if(kugel) kugel.style.transform='scale('+(1+Math.min(0.35, summe/balken.length*0.5)).toFixed(3)+')';
+    if(mundA) mundA.currentTime=Math.min(999, summe/Math.max(1, balken.length)*1600);
     _jvPegel.raf=requestAnimationFrame(bild);
   }
   _jvPegel.raf=requestAnimationFrame(bild);
@@ -28874,6 +29065,7 @@ function jvPegelStart(analyser){
 function jvPegelStop(nurAnzeige){
   if(_jvPegel.raf) cancelAnimationFrame(_jvPegel.raf);
   _jvPegel.raf=0; _jvPegel.analyser=null;
+  if(_jvPegel.mund){ try{ _jvPegel.mund.cancel(); }catch(e){} _jvPegel.mund=null; }
   var j=$('jarvis'); if(j) j.classList.remove('jv-pegel');
   [].forEach.call(document.querySelectorAll('#jarvis .jv-eq u, #jarvisKern b'), function(x){ x.style.transform=''; });
   if(nurAnzeige) return;
@@ -35727,7 +35919,7 @@ function renderHome(){
     if(alerts.length) _fl.zeileGezeigt=true;
     al.innerHTML = !alerts.length ? '' :
       '<div class="formi-zeile'+(ersteZeile?' fz-ein':'')+'" role="group" aria-label="'+(mitFormi?'Formi meldet':'Hinweise')+'">'+
-      (mitFormi ? '<button type="button" class="fz-gesicht" data-fzformi aria-label="Formi fragen" title="Formi fragen"><span class="fz-ring" aria-hidden="true"></span></button>' : '')+
+      (mitFormi ? '<button type="button" class="fz-gesicht" data-fzformi aria-label="Formi fragen" title="Formi fragen"><span class="fz-ring '+formiFigurKlasse()+'" aria-hidden="true">'+formiFigurInnen()+'</span></button>' : '')+
       '<div class="fz-teile">'+alerts.map(function(a, i){
         return '<button type="button" class="fz-teil'+a.k+'" style="--i:'+i+'" data-go="'+a.v+'"'+(a.f?' data-f="'+a.f+'"':'')+
           ' title="'+esc(a.t)+' — ansehen"><i class="fz-punkt" aria-hidden="true"></i><span class="fz-t">'+
@@ -38439,7 +38631,7 @@ function zkAntragEntscheiden(btn, id, annehmen){
   });
 }
 
-/* ══ MONAT & KONTO (Runde 205) ══════════════════════════════════════
+/* ══ MONAT & KONTO (Runde 206) ══════════════════════════════════════
    Aus dem Betrieb, 22.10.2026: das Soll fürs Konto aus den
    Vertragsstunden („JA"), Export für das Lohnbüro und Abschluss („mach
    beides").
@@ -50430,7 +50622,7 @@ function bindActions(){
   var zkp=$('zkPrev'), zkn=$('zkNext');
   if(zkp) zkp.addEventListener('click', function(){ _zkMonat=new Date(_zkMonat.getFullYear(), _zkMonat.getMonth()-1, 1); _zkWahl=null; zkLaden(); if(_zkAnsicht==='konto') zkKontoLaden(); });
   if(zkn) zkn.addEventListener('click', function(){ _zkMonat=new Date(_zkMonat.getFullYear(), _zkMonat.getMonth()+1, 1); _zkWahl=null; zkLaden(); if(_zkAnsicht==='konto') zkKontoLaden(); });
-  // ── Monat & Konto (Runde 205) ──
+  // ── Monat & Konto (Runde 206) ──
   var zkAns=$('zkAnsicht');
   if(zkAns) zkAns.addEventListener('click', function(e){
     var b=e.target.closest('[data-zkansicht]'); if(b){ zkAnsichtSetzen(b.getAttribute('data-zkansicht')); tick(6); }

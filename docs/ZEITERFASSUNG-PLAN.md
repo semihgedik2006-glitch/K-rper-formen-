@@ -417,11 +417,11 @@ Rückfragen vorgelegt, Antworten:
    der vorhandene Weg `zeitNachtragen`. Neue Sammlung → in BEIDE Teile von
    `firestore.rules`, in den Regeltest und in beide Einstiege der
    Attrappen.
-4. ✅ **Stundenkonto und Monatsabschluss** (Runde 205): Ist gegen Vertragssoll je Monat,
+4. ✅ **Stundenkonto und Monatsabschluss** (Runde 206): Ist gegen Vertragssoll je Monat,
    Übertrag, Korrekturbuchung mit Grund; die Geschäftsführung schliesst
    einen Monat ab, danach ändert sich darin nichts mehr ohne neuen
    Eintrag.
-5. **Export**: ✅ Excel/CSV je Person und Tag (Runde 205), dazu DATEV. **Offen und vor
+5. **Export**: ✅ Excel/CSV je Person und Tag (Runde 206), dazu DATEV. **Offen und vor
    dem Bau zu klären:** DATEV hat mehrere Formate (u. a. ASCII für
    Lohn und Gehalt, LODAS); welches das Lohnbüro einliest, entscheidet
    das Lohnbüro. Der Export enthält nie `zeitPins` oder `terminalCodes`.
