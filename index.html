@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-UV0KDo0n+uRQiztphlsEvZ5m3Ua3kG1KgX9vyGfVVIo='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-JhpVmT5ms8oEBsT71FcPkbfLA8mMHkQyUSNRH97hlDA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3509,6 +3509,21 @@ button.ich-zeile:active{opacity:.7}
   font-size:var(--t-sm);background:var(--auf-1);color:var(--text-2);border:1px solid var(--line)}
 .st-pause-hinweis.ueber{background:var(--f-warn);color:var(--warm-tx);border-color:transparent}
 .st-pause-hinweis[hidden]{display:none}
+/* Korrekturantrag: drei Felder nebeneinander, am Handy untereinander. */
+.st-antrag-reihe{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:var(--s10)}
+.st-antrag-los{width:100%;margin:var(--s4) 0 var(--s12)}
+.st-antrag .ich-dazu{padding-left:0}
+.st-zurueckziehen{min-height:44px}
+.st-antrag-hier{margin:var(--s6) 0 0;min-height:44px}
+.zk-antraege{margin:var(--s12) 0 var(--s4);padding:var(--s12) var(--s16);border-radius:var(--r-md);
+  background:var(--auf-1);border:1px solid var(--line)}
+.zk-antraege[hidden]{display:none}
+.zk-antrag{padding:var(--s10) 0;border-top:1px solid var(--line)}
+.zk-antrag:first-of-type{border-top:none}
+.zk-antrag-text{font-size:var(--t-sm);margin:0 0 var(--s8)}
+.zk-antrag-text span{display:block;color:var(--text-2);font-size:var(--t-xs);margin-top:var(--s2)}
+.zk-antrag .zk-knoepfe{display:flex;flex-wrap:wrap;gap:var(--s8)}
+.zk-antrag .zk-knoepfe .btn{min-height:44px}
 .st-plan{color:var(--text-2)}
 /* Abweichung vom Plan: keine Statusfarbe. Minus heisst nicht „Fehler" —
    eine kürzere Schicht ist oft abgesprochen. */
@@ -9254,6 +9269,34 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                 </div>
                 <div id="stWoche"></div>
               </div>
+              <!-- Korrekturantrag (Runde 193): die Person trägt ein, was fehlt;
+                   ein Stempel wird erst daraus, wenn die Geschäftsführung
+                   annimmt („nur geschäftsführung", 22.10.2026). -->
+              <div class="ich-blatt" id="stAntragKarte">
+                <div class="ich-kopf">
+                  <h3>Korrektur beantragen</h3>
+                  <span class="ich-zahl-klein" id="stAntragZahl"></span>
+                </div>
+                <p class="hint mz-neben">Fehlt ein Stempel? Die Geschäftsführung bestätigt ihn.</p>
+                <div class="st-antrag-reihe">
+                  <div class="field"><label for="stAntragTag">Tag</label>
+                    <input class="inp" id="stAntragTag" type="date" /></div>
+                  <div class="field"><label for="stAntragArt">Was fehlt</label>
+                    <select class="inp" id="stAntragArt">
+                      <option value="gehen">Feierabend</option>
+                      <option value="kommen">Kommen</option>
+                      <option value="pause">Pause</option>
+                      <option value="zurueck">Zurück</option>
+                    </select></div>
+                  <div class="field"><label for="stAntragUhr">Uhrzeit</label>
+                    <input class="inp" id="stAntragUhr" type="time" /></div>
+                </div>
+                <div class="field"><label for="stAntragGrund">Grund</label>
+                  <input class="inp" id="stAntragGrund" maxlength="200"
+                         placeholder="z. B. Feierabend vergessen, Schicht bis 17:30" /></div>
+                <button type="button" class="btn btn-primary st-antrag-los" id="stAntragBtn">Antrag stellen</button>
+                <div id="stAntraege"></div>
+              </div>
                 <!-- PIN für das Stempeln am Tablet. Steht hier und nicht in
                      der Verwaltung: setzen darf sie nur die Person selbst.
                      Es gibt bewusst keinen Weg, über den die Leitung eine
@@ -11062,6 +11105,8 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                    wer laut Plan erwartet wird und noch nicht gestempelt hat.
                    Wie die „Live-Übersicht" bei Crewmeister — aber nur hier,
                    bei der Leitung, und nicht mehr am Terminal am Tresen. -->
+              <!-- Korrekturanträge (Runde 193): nur bei der Geschäftsführung. -->
+              <section class="zk-antraege" id="zkAntraege" aria-label="Korrekturanträge" hidden></section>
               <section class="zk-jetzt" id="zkJetzt" aria-label="Jetzt im Studio"></section>
               <button type="button" class="zk-vormonat" id="zkVormonat" hidden></button>
               <p class="hint" id="zkStand"></p>
@@ -36988,6 +37033,9 @@ function renderIchZeiten(rows){
       '</button>'+
       '<div class="mz-stempel" id="mzs-'+esc(t.tag)+'"'+(auf?'':' hidden')+'>'+
         t.stempel.map(zkStempelZeile).join('')+
+        /* Runde 193: der direkte Weg vom Fehler zum Antrag. */
+        '<button type="button" class="btn btn-ghost btn-sm st-antrag-hier" data-antragtag="'+esc(t.tag)+'" data-antragart="'+(luecke?'gehen':'kommen')+'">'+
+          (luecke ? 'Feierabend beantragen' : 'Korrektur beantragen')+'</button>'+
       '</div>';
   }).join('');
 }
@@ -37044,6 +37092,7 @@ function zkOeffnen(){
   if(!_zkMonat){ var t=new Date(); _zkMonat=new Date(t.getFullYear(), t.getMonth(), 1); }
   zkLaden();
   zkJetztLaden();
+  zkAntraegeLaden();
 }
 
 /* ── Jetzt im Studio (Runde 189) ──
@@ -37055,6 +37104,64 @@ function zkOeffnen(){
    „Erwartet": eine Schicht hat begonnen, und es gibt heute keinen
    Stempel. Nicht rot — die Person kann im Stau stehen oder in einem
    anderen Studio gestempelt haben; das steht hier nicht fest. */
+/* ── Korrekturanträge bei der Geschäftsführung (Runde 193) ──
+   Alle offenen des Betriebs (status ==, ein Gleichheitsfilter). Lesen
+   darf das nur die Geschäftsführung (firestore.rules), und nur sie sieht
+   diesen Block. Den eigenen Antrag entscheidet jemand anderes — der
+   Knopf fehlt dort, und der Server weist es ohnehin ab. */
+var _zkAntraege=[], _zkAblehnen=null;
+function zkAntraegeLaden(){
+  var box=$('zkAntraege'); if(!box) return;
+  if(!isChef()){ box.hidden=true; box.innerHTML=''; return; }
+  S('zeitAntraege').where('status','==','offen').get().then(function(sn){
+    _zkAntraege=sn.docs.map(function(d){ return Object.assign({ id:d.id }, d.data()||{}); })
+      .sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
+    zkAntraegeZeichnen();
+  }).catch(function(e){
+    box.hidden=false;
+    box.innerHTML='<p class="hint">Anträge lassen sich gerade nicht laden: '+esc(errMsg(e))+'</p>';
+  });
+}
+function zkAntraegeZeichnen(){
+  var box=$('zkAntraege'); if(!box) return;
+  box.hidden = !_zkAntraege.length;
+  if(!_zkAntraege.length){ box.innerHTML=''; return; }
+  box.innerHTML='<div class="zk-j-kopf"><h3>Korrekturanträge</h3><span class="ich-zahl-klein">'+
+      _zkAntraege.length+' offen</span></div>'+
+    _zkAntraege.map(function(a){
+      var kopf=new Date(a.tag+'T12:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'numeric'});
+      var eigen = a.uid===session.uid;
+      var ab = _zkAblehnen===a.id;
+      return '<div class="zk-antrag" data-zkantrag="'+esc(a.id)+'">'+
+        '<div class="zk-antrag-text"><b>'+esc(a.name||'—')+'</b> · '+esc(kopf)+' · '+
+          esc(TM_WORT[a.art]||a.art)+' '+esc(a.uhr||'')+
+          (studioName(a.studioKey) ? ' · '+esc(studioName(a.studioKey)) : '')+
+          '<span>„'+esc(a.grund||'')+'“</span></div>'+
+        (eigen ? '<p class="hint">Dein eigener Antrag — den entscheidet jemand anderes aus der Geschäftsführung.</p>'
+          : ab ? '<div class="zk-antrag-ab"><div class="field"><label for="zkAbAntwort">Warum nicht?</label>'+
+                 '<input class="inp" id="zkAbAntwort" maxlength="200" placeholder="z. B. laut Plan frei an dem Tag" /></div>'+
+                 '<div class="zk-knoepfe"><button type="button" class="btn btn-primary" data-zkantragnein="'+esc(a.id)+'">Ablehnen</button>'+
+                 '<button type="button" class="btn btn-ghost" data-zkantragzurueck>Abbrechen</button></div></div>'
+          : '<div class="zk-knoepfe"><button type="button" class="btn btn-primary" data-zkantragja="'+esc(a.id)+'">Annehmen</button>'+
+            '<button type="button" class="btn btn-ghost" data-zkantragab="'+esc(a.id)+'">Ablehnen …</button></div>')+
+      '</div>';
+    }).join('');
+}
+function zkAntragEntscheiden(btn, id, annehmen){
+  var antwort = annehmen ? '' : String(($('zkAbAntwort')||{}).value||'').trim();
+  if(!annehmen && antwort.length<5){ toast('Bitte kurz sagen, warum nicht.', true); return; }
+  withBusy(btn, function(){
+    return pinFunktion('zeitAntragEntscheiden')({ id:id, annehmen:annehmen, antwort:antwort })
+      .then(function(){
+        _zkAblehnen=null;
+        toast(annehmen ? 'Angenommen ✓ Der Stempel ist eingetragen.' : 'Abgelehnt ✓');
+        tick(10);
+        zkAntraegeLaden(); zkLaden(); zkJetztLaden();
+      })
+      .catch(function(e){ toast(fnFehler(e), true); });
+  });
+}
+
 var _zkJetztNr=0;
 function zkJetztLaden(){
   var box=$('zkJetzt'); if(!box) return;
@@ -37453,6 +37560,76 @@ function stLaden(neu){
   });
   ichPinLaden();
   ichZeitenLaden();
+  stAntraegeLaden();
+}
+
+/* ── Korrekturantrag (Runde 193) ──
+   Wie bei Crewmeister trägt die Person ein, was fehlt — bis 31 Tage
+   zurück. Daraus wird ein Stempel erst, wenn die Geschäftsführung
+   annimmt; der Server legt ihn dann an (zeitAntragEntscheiden). Gelesen
+   werden nur die eigenen Anträge (uid ==, ein Gleichheitsfilter). */
+var ANTRAG_WORT = { offen:'wartet', angenommen:'angenommen', abgelehnt:'abgelehnt', zurueckgezogen:'zurückgezogen' };
+var _stAntraege=[];
+function stAntragFormGrenzen(){
+  var t=$('stAntragTag'); if(!t) return;
+  var heute=new Date(), vor=new Date(); vor.setDate(heute.getDate()-31);
+  t.max=ymd(heute); t.min=ymd(vor);
+  if(!t.value) t.value=ymd(heute);
+}
+function stAntraegeLaden(){
+  var box=$('stAntraege'); if(!box || !session) return;
+  stAntragFormGrenzen();
+  S('zeitAntraege').where('uid','==',session.uid).get().then(function(sn){
+    _stAntraege=sn.docs.map(function(d){ return Object.assign({ id:d.id }, d.data()||{}); })
+      .sort(function(a,b){ return (b.erstellt||0)-(a.erstellt||0); });
+    stAntraegeZeichnen();
+  }).catch(function(){ box.innerHTML=''; });
+}
+function stAntraegeZeichnen(){
+  var box=$('stAntraege'); if(!box) return;
+  var zahl=$('stAntragZahl');
+  var offen=_stAntraege.filter(function(a){ return a.status==='offen'; }).length;
+  if(zahl) zahl.textContent = offen ? offen+' offen' : '';
+  var liste=_stAntraege.slice(0, 8);
+  box.innerHTML = liste.length ? '<div class="st-antraege">'+liste.map(function(a){
+    var kopf=new Date(a.tag+'T12:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'numeric'});
+    var chip = a.status==='angenommen' ? 'privat' : (a.status==='abgelehnt' ? 'bad' : '');
+    return '<div class="ich-zeile st-antrag" data-antrag="'+esc(a.id)+'">'+
+      '<span class="ich-tag">'+esc(kopf)+'</span>'+
+      '<span class="ich-was">'+esc(TM_WORT[a.art]||a.art)+' '+esc(a.uhr||'')+'</span>'+
+      '<span class="ich-quelle '+chip+'">'+esc(ANTRAG_WORT[a.status]||a.status)+'</span>'+
+      (a.status==='offen' ? '<button type="button" class="ich-pfeil st-zurueckziehen" data-antragweg="'+esc(a.id)+'">Zurückziehen</button>' : '')+
+      '<span class="ich-dazu">„'+esc(a.grund||'')+'“'+
+        (a.antwort ? ' · Antwort: „'+esc(a.antwort)+'“' : '')+
+        (a.entschiedenVonName && a.status!=='zurueckgezogen' ? ' · '+esc(a.entschiedenVonName) : '')+'</span>'+
+    '</div>';
+  }).join('')+'</div>' : '';
+}
+function stAntragStellen(btn){
+  var tag=($('stAntragTag')||{}).value||'', art=($('stAntragArt')||{}).value||'',
+      uhr=($('stAntragUhr')||{}).value||'', grund=String(($('stAntragGrund')||{}).value||'').trim();
+  if(!tag || !uhr){ toast('Bitte Tag und Uhrzeit angeben.', true); return; }
+  if(grund.length<5){ toast('Bitte kurz den Grund angeben.', true); return; }
+  withBusy(btn, function(){
+    return pinFunktion('zeitAntragStellen')({ tag:tag, art:art, uhr:uhr, grund:grund })
+      .then(function(r){
+        var d=(r&&r.data)||{};
+        toast(d.schonDa ? 'Diesen Antrag gibt es schon.' : 'Antrag gestellt ✓ Die Geschäftsführung entscheidet.');
+        $('stAntragGrund').value=''; $('stAntragUhr').value='';
+        tick(10);
+        stAntraegeLaden();
+      })
+      .catch(function(e){ toast(fnFehler(e), true); });
+  });
+}
+/* „Feierabend fehlt" in der Monatsliste: ein Tipp füllt das Formular. */
+function stAntragVorbereiten(tag, art){
+  var t=$('stAntragTag'), a=$('stAntragArt'), u=$('stAntragUhr'), k=$('stAntragKarte');
+  if(!t || !k) return;
+  stAntragFormGrenzen();
+  t.value=tag; if(a) a.value=art||'gehen';
+  k.scrollIntoView({ block:'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  if(u) setTimeout(function(){ u.focus(); }, 350);
 }
 
 /* Die laufende Zeit. Alle 30 Sekunden ein neuer Text — keine Animation,
@@ -48217,6 +48394,29 @@ function bindActions(){
     if(e.key==='Enter'){ e.preventDefault(); ichHandyStempeln($('ichHandyBtn')); }
   });
 
+  // ── Korrekturanträge (Runde 193) ──
+  var saBtn=$('stAntragBtn');
+  if(saBtn) saBtn.addEventListener('click', function(){ stAntragStellen(saBtn); });
+  var saListe=$('stAntraege');
+  if(saListe) saListe.addEventListener('click', function(e){
+    var b=e.target.closest('[data-antragweg]'); if(!b) return;
+    withBusy(b, function(){
+      return pinFunktion('zeitAntragZurueckziehen')({ id:b.getAttribute('data-antragweg') })
+        .then(function(){ toast('Zurückgezogen ✓'); stAntraegeLaden(); })
+        .catch(function(err){ toast(fnFehler(err), true); });
+    });
+  });
+  var zkA=$('zkAntraege');
+  if(zkA) zkA.addEventListener('click', function(e){
+    var ja=e.target.closest('[data-zkantragja]'), ab=e.target.closest('[data-zkantragab]'),
+        nein=e.target.closest('[data-zkantragnein]'), zur=e.target.closest('[data-zkantragzurueck]');
+    if(ja) zkAntragEntscheiden(ja, ja.getAttribute('data-zkantragja'), true);
+    else if(nein) zkAntragEntscheiden(nein, nein.getAttribute('data-zkantragnein'), false);
+    else if(ab){ _zkAblehnen=ab.getAttribute('data-zkantragab'); zkAntraegeZeichnen();
+      var f=$('zkAbAntwort'); if(f) f.focus(); }
+    else if(zur){ _zkAblehnen=null; zkAntraegeZeichnen(); }
+  });
+
   // ── Meine Zeiten: Monat blättern, Tag aufklappen ──
   var zp=$('ichZeitPrev'), zh=$('ichZeitHeute'), zn=$('ichZeitNext');
   if(zp) zp.addEventListener('click',function(){ zeitMonatWechseln(-1); });
@@ -48224,6 +48424,8 @@ function bindActions(){
   if(zn) zn.addEventListener('click',function(){ zeitMonatWechseln(1); });
   var zl=$('ichZeitenListe');
   if(zl) zl.addEventListener('click',function(e){
+    var ah=e.target.closest('[data-antragtag]');
+    if(ah){ stAntragVorbereiten(ah.getAttribute('data-antragtag'), ah.getAttribute('data-antragart')); return; }
     var b=e.target.closest('[data-ztag]'); if(!b) return;
     var tag=b.getAttribute('data-ztag');
     _zeitOffen[tag]=!_zeitOffen[tag];

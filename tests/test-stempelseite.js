@@ -282,6 +282,67 @@ async function zuVerwaltungZeiten(p) {
     await p.close();
   }
 
+  console.log('\n── 8. Korrekturanträge (Runde 193) ──');
+  {
+    const p = await oeffne(b, 'mitarbeiter', 390, 844);
+    await zurSeite(p);
+    const m = await p.evaluate(async () => {
+      const w = (ms) => new Promise(r => setTimeout(r, ms));
+      const luecke = [...document.querySelectorAll('#ichZeitenListe [data-ztag]')].find(z => /Feierabend fehlt/.test(z.textContent));
+      if (!luecke) return { fehlt: 'kein Tag mit fehlendem Feierabend' };
+      luecke.click(); await w(300);
+      const hier = document.querySelector('#mzs-' + luecke.dataset.ztag + ' [data-antragtag]');
+      hier.click(); await w(600);
+      const form = { tag: stAntragTag.value, art: stAntragArt.value, soll: luecke.dataset.ztag };
+      stAntragUhr.value = '17:30'; stAntragGrund.value = 'ok';
+      stAntragBtn.click(); await w(800);
+      const kurz = document.querySelectorAll('#stAntraege [data-antrag]').length;
+      stAntragGrund.value = 'Feierabend vergessen, Schicht bis 17:30';
+      stAntragBtn.click(); await w(1200);
+      const zeilen = [...document.querySelectorAll('#stAntraege [data-antrag]')].map(z => z.innerText.replace(/\s+/g, ' '));
+      const zieh = document.querySelector('#stAntraege [data-antragweg]');
+      zieh.click(); await w(1000);
+      return { form, kurz, zeilen, danach: document.querySelector('#stAntraege [data-antrag]').innerText };
+    });
+    pruefe('„Feierabend beantragen" am fehlenden Tag füllt Tag und Art', m.form && m.form.tag === m.form.soll && m.form.art === 'gehen', JSON.stringify(m.form || m));
+    pruefe('ohne Grund geht kein Antrag raus', m.kurz === 1, m.kurz);
+    pruefe('der Antrag steht oben mit „wartet"', m.zeilen && /Feierabend 17:30 wartet/.test(m.zeilen[0]), JSON.stringify(m.zeilen));
+    pruefe('Zurückziehen → „zurückgezogen", nicht weg', /zurückgezogen/.test(m.danach || ''), m.danach);
+    pruefe('ohne Skriptfehler (Antrag)', !p._fehler.length, p._fehler.join(' | '));
+    await p.close();
+  }
+  for (const [rolle, w, h] of [['chef', 1440, 900], ['chef', 320, 568], ['leiter', 1280, 800]]) {
+    const p = await oeffne(b, rolle, w, h);
+    await zuVerwaltungZeiten(p);
+    const g = await p.evaluate(async (SRC) => {
+      const T = eval('(' + SRC + ')');
+      const ws = (ms) => new Promise(r => setTimeout(r, ms));
+      const box = document.getElementById('zkAntraege');
+      const sichtbar = !box.hidden && !!box.offsetParent;
+      if (!sichtbar) return { sichtbar };
+      const knoepfe = [...box.querySelectorAll('button')];
+      const masse = [];
+      for (const k of knoepfe) { k.scrollIntoView({ block: 'center' }); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); const m = T(k); masse.push(k.textContent.trim() + ' ' + m.w + '×' + m.h); }
+      box.querySelector('[data-zkantragab]').click(); await ws(300);
+      box.querySelector('[data-zkantragnein]').click(); await ws(600);
+      const nochDa = box.querySelectorAll('[data-zkantrag]').length;
+      const zeilenVor = document.querySelectorAll('#zkListe [data-zk]').length;
+      box.querySelector('[data-zkantragzurueck]').click(); await ws(200);
+      box.querySelector('[data-zkantragja]').click(); await ws(1500);
+      return { sichtbar, masse, nochDa, weg: box.hidden, quer: document.documentElement.scrollWidth - innerWidth };
+    }, TREFFER.toString());
+    if (rolle === 'leiter') { pruefe('Studioleitung ' + w + ' px: sieht KEINE Anträge (nur die Geschäftsführung entscheidet)', !g.sichtbar); }
+    else {
+      pruefe('Geschäftsführung ' + w + ' px: der offene Antrag steht oben', g.sichtbar);
+      pruefe('… Annehmen / Ablehnen treffen ≥ 44 (' + (g.masse || []).join(', ') + ')', (g.masse || []).length >= 2 && g.masse.every(x => { const m = /(\d+)×(\d+)/.exec(x); return +m[1] >= 44 && +m[2] >= 44; }));
+      pruefe('… Ablehnen ohne Antwort entscheidet nichts', g.nochDa === 1, g.nochDa);
+      pruefe('… Annehmen räumt ihn weg', g.weg === true);
+      pruefe('… nichts ragt hinaus', g.quer <= 0, g.quer);
+    }
+    pruefe(rolle + ' ' + w + ' px: ohne Skriptfehler (Anträge)', !p._fehler.length, p._fehler.join(' | '));
+    await p.close();
+  }
+
   await b.close();
   console.log(schlecht
     ? '\n✗ Stempelseite: ' + schlecht + ' von ' + (gut + schlecht) + ' Zusicherungen falsch'

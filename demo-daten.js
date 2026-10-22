@@ -1298,6 +1298,29 @@
   })();
   legen(P('zeiten'), STEMPEL);
 
+  /* Runde 193: Korrekturanträge. Einer aus dem Team wartet auf die
+     Geschäftsführung; einer der eigenen ist schon entschieden — damit die
+     Vorführung beide Seiten zeigt. */
+  (function () {
+    var gestern = new Date(); gestern.setDate(gestern.getDate() - 1);
+    if (gestern.getDay() === 0) gestern.setDate(gestern.getDate() - 1);
+    var tg = gestern.toLocaleDateString('sv-SE');
+    var andere = leuteIn(sk(6)).filter(function (u) { return u.id !== (ICH && ICH.id); });
+    var liste = [];
+    if (andere[0]) liste.push({ id: 'demo-antrag-1', uid: andere[0].id, name: andere[0].name, studioKey: sk(6),
+      tag: tg, monat: tg.slice(0, 7), art: 'gehen', uhr: '17:30', ts: new Date(tg + 'T17:30:00').getTime(),
+      grund: 'Feierabend vergessen zu stempeln, Schicht ging bis 17:30', status: 'offen', erstellt: Date.now() - 3 * STD });
+    if (ICH && ICH.role !== 'chef') {
+      var vor = new Date(); vor.setDate(vor.getDate() - 6);
+      var tv = vor.toLocaleDateString('sv-SE');
+      liste.push({ id: 'demo-antrag-2', uid: ICH.id, name: ICH.name, studioKey: (ICH.studioKeys || [])[0] || sk(6),
+        tag: tv, monat: tv.slice(0, 7), art: 'kommen', uhr: '08:00', ts: new Date(tv + 'T08:00:00').getTime(),
+        grund: 'Terminal war aus, kam um 8 Uhr', status: 'angenommen', erstellt: Date.now() - 5 * 24 * STD,
+        entschiedenVonName: 'Demo-Geschäftsführung', entschiedenAm: Date.now() - 4 * 24 * STD });
+    }
+    legen(P('zeitAntraege'), liste);
+  })();
+
   legen('firmen', [{ id: KENNUNG, name: 'Körperformen', aktiv: true, kennung: KENNUNG }]);
   /* ── Das Abo in der Demo ──
      Hier stand `stufe: 'A'` — ein Wert, den es im Abo-Modell gar nicht
@@ -1737,6 +1760,50 @@
       });
       melden(P('zeiten'));
       return { ok: true, id: id, ts: ts };
+    },
+    /* Runde 193: wie der Server — die Person beantragt, nur die
+       Geschäftsführung entscheidet, nie den eigenen Antrag. */
+    zeitAntragStellen: function (d) {
+      if (String(d.grund || '').trim().length < 5) throw new Error('Bitte kurz den Grund angeben.');
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(String(d.tag || '')) || !/^\d{2}:\d{2}$/.test(String(d.uhr || ''))) throw new Error('Tag oder Uhrzeit fehlt oder stimmt nicht.');
+      var ts = new Date(d.tag + 'T' + d.uhr + ':00').getTime();
+      if (ts > Date.now()) throw new Error('Ein Stempel in der Zukunft lässt sich nicht beantragen.');
+      if (Date.now() - ts > 31 * 24 * STD) throw new Error('Beantragen geht bis 31 Tage zurück. Für Älteres bitte die Geschäftsführung ansprechen.');
+      var eigene = ICH.studioKeys || [];
+      var studioKey = eigene.indexOf(d.studioKey) >= 0 ? d.studioKey : (eigene[0] || sk(6));
+      var id = neueId();
+      holen(P('zeitAntraege')).push({ id: id, uid: ICH.id, name: ICH.name || '', studioKey: studioKey,
+        tag: d.tag, monat: String(d.tag).slice(0, 7), art: d.art, uhr: d.uhr, ts: ts,
+        grund: String(d.grund).trim(), status: 'offen', erstellt: Date.now() });
+      melden(P('zeitAntraege'));
+      return { ok: true, id: id };
+    },
+    zeitAntragZurueckziehen: function (d) {
+      var a = holen(P('zeitAntraege')).filter(function (x) { return x.id === String(d.id || '') && x.uid === ICH.id; })[0];
+      if (!a) throw new Error('Diesen Antrag gibt es nicht.');
+      if (a.status !== 'offen') throw new Error('Dieser Antrag ist schon entschieden.');
+      a.status = 'zurueckgezogen'; a.entschiedenAm = Date.now();
+      melden(P('zeitAntraege'));
+      return { ok: true };
+    },
+    zeitAntragEntscheiden: function (d) {
+      if (ICH.role !== 'chef') throw new Error('Korrekturanträge entscheidet die Geschäftsführung.');
+      var a = holen(P('zeitAntraege')).filter(function (x) { return x.id === String(d.id || ''); })[0];
+      if (!a) throw new Error('Diesen Antrag gibt es nicht.');
+      if (a.status !== 'offen') throw new Error('Dieser Antrag ist schon entschieden.');
+      if (a.uid === ICH.id) throw new Error('Den eigenen Antrag entscheidet jemand anderes aus der Geschäftsführung.');
+      var antwort = String(d.antwort || '').trim();
+      if (d.annehmen !== true && antwort.length < 5) throw new Error('Bitte kurz sagen, warum der Antrag abgelehnt wird.');
+      a.entschiedenVon = ICH.id; a.entschiedenVonName = ICH.name || ''; a.entschiedenAm = Date.now();
+      if (antwort) a.antwort = antwort;
+      if (d.annehmen !== true) { a.status = 'abgelehnt'; melden(P('zeitAntraege')); return { ok: true, status: 'abgelehnt' }; }
+      var id = neueId();
+      holen(P('zeiten')).push({ id: id, uid: a.uid, name: a.name || '', studioKey: a.studioKey,
+        art: a.art, ts: a.ts, tag: a.tag, monat: a.monat, fremd: false, quelle: 'korrektur', antragId: a.id,
+        grund: 'Antrag: ' + a.grund, korrigiertVon: ICH.id, korrigiertVonName: ICH.name || '', korrigiertAm: Date.now() });
+      a.status = 'angenommen'; a.zeitId = id;
+      melden(P('zeitAntraege')); melden(P('zeiten'));
+      return { ok: true, status: 'angenommen', zeitId: id };
     },
     zeitStornieren: function (d) {
       var z = holen(P('zeiten')).filter(function (x) { return x.id === String(d.id || ''); })[0];
