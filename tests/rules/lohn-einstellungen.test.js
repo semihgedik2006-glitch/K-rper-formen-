@@ -61,6 +61,14 @@ const gut = { beraterNr: '28547', mandantenNr: '90909', lohnartStunden: '200', u
     await darfNicht('Ein fremdes Feld',                 als('max').doc(P('lohnEinstellungen/datev')).set(Object.assign({}, gut, { pin: '1234' })));
     await darfNicht('Beraternummer zu lang',            als('max').doc(P('lohnEinstellungen/datev')).set(Object.assign({}, gut, { beraterNr: '12345678' })));
     await darfNicht('Personalnummern keine Liste',      als('max').doc(P('lohnEinstellungen/datev')).set(Object.assign({}, gut, { personalNr: 'alle' })));
+    /* Runde 215: Soll je Wochentag im Dokument 'zeitregeln'. */
+    const regeln = { regeln: { anna: { 1: 480, 2: 480, 6: 240 } }, geaendert: 1, geaendertVon: 'max' };
+    await darf('Die Geschäftsführung speichert das Soll je Wochentag', als('max').doc(P('lohnEinstellungen/zeitregeln')).set(regeln));
+    await darf('… und liest es',                         als('max').doc(P('lohnEinstellungen/zeitregeln')).get());
+    await darfNicht('Die Studioleitung speichert es',    als('lisa').doc(P('lohnEinstellungen/zeitregeln')).set(regeln));
+    await darfNicht('Anna liest es',                     als('anna').doc(P('lohnEinstellungen/zeitregeln')).get());
+    await darfNicht('zeitregeln mit DATEV-Feldern',      als('max').doc(P('lohnEinstellungen/zeitregeln')).set(Object.assign({}, regeln, { beraterNr: '1' })));
+    await darfNicht('regeln keine Zuordnung',            als('max').doc(P('lohnEinstellungen/zeitregeln')).set(Object.assign({}, regeln, { regeln: 'alle' })));
   }
   await env.cleanup();
   console.log('\n══ DATEV-Einstellungen ══');
