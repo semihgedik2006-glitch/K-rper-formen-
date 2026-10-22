@@ -390,7 +390,7 @@ async function messen(p, wer, liste) {
     const r = l.getBoundingClientRect(); document.elementFromPoint(r.right - 10, r.top + r.height / 2).click();
     const nach = document.getElementById('spFeiertageZu').checked; document.getElementById('spFeiertageZu').checked = vor; return vor !== nach; });
   pruefe('ein Tipp auf den Rand der Schalter-Zeile schaltet um', schalter);
-  /* Runde 196: die Regeln stehen in vier Reitern, je einer sichtbar.
+  /* Runde 197: die Regeln stehen in vier Reitern, je einer sichtbar.
      Aus dem Betrieb, 22.10.2026: „mach weiter mit dem design und aufbau"
      (auf ein Foto mit den vier Formularen auf einmal). Gemessen werden
      dieselben zehn Bedienelemente wie vorher — je Reiter, plus die Reiter

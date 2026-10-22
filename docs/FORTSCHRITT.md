@@ -18610,7 +18610,44 @@ Die Grenze ist 8,3 ms.
 wirkt (es ist 30 px gross) und ob es im Team als „zu viel“ empfunden wird.
 Dafür gibt es den Schalter aus Runde 188.
 
-## Runde 196 — Schichtplaner: klarer Anfang, Regeln in Reitern (22.10.2026)
+## Runde 196 — Formi als Kumpel aus dem Studio (Worker 2.18, 22.10.2026)
+
+Aus dem Betrieb: „lass uns formi wirklich richtig persönlichkeit geben" —
+auf die Rückfrage gewählt: „Kumpel aus dem Studio".
+
+**Gebaut**
+- Worker 2.18: Charakterblock im Systemtext (nur im lockeren Ton): locker,
+  direkt, feiert Erledigtes kurz mit, eigene Running Gags (frisch
+  gewaschene Westen, leere Handtuchregale, der Montagskaffee), geht auf
+  Tageszeit und Wochentag ein. **Ernstes zuerst**: Notfall, Gesundheit,
+  Beschwerde, Stress → sofort sachlich, kein Witz, kein Emoji. Der Witz
+  kommt nach der Antwort, nie statt ihr; Formi tut nicht so, als wäre es
+  ein Mensch.
+- App: Formis Sprechblase neben der Kugel — Tagesgruss mit Namen und
+  einem Satz zur Lage (einmal am Tag je Gerät), Lob beim ersten Haken des
+  Tages, Spruch bei einer Haken-Serie, „Wieder da!" nach über 30 Minuten.
+  Im leeren Formi-Fenster steht der Satz zur Lage statt „Ich bin Formi".
+
+**Warum so**
+- *Die Gefühle der Kugel (Runde 186/195) zeigen, wie es Formi geht; der
+  Charakter ist, was Formi sagt.* Beides zusammen, getrennt gebaut.
+- *Höchstens eine Blase je 45 s, nie bei offenem Formi.* Persönlichkeit
+  durch wenige, gute Momente — nicht durch Dauerbeschallung (Vorbild
+  Duolingo, `docs/design-vorbilder/ki-assistent.md`).
+- *Still auf Wunsch.* „Gefühle der Kugel: Aus" oder Ton „sachlich"
+  schalten die Blase ab; „sachlich" auch den Charakter im Worker.
+- *Keine KI für die Blase.* Die Sätze stehen in der App: sofort da, kein
+  Kontingent, offline möglich.
+- *Die Blase hat keine Trefferfläche* und steht über der Kugel: gemessen
+  bei 320 / 390 / 430 / 820 / 1280 / 1440 / 1920 ganz im Bild
+  (`tests/test-formi-kumpel.js`, 21 Prüfungen). Die Lage wird im Bild
+  gelesen, die eigene Grösse nie gemessen (rechte untere Ecke an der
+  Kugel, max-width hält sie im Bild).
+
+**Nicht geprüft:** wie die KI den Charakter tatsächlich umsetzt — das
+zeigt sich erst live nach dem Einspielen von 2.18.
+
+## Runde 197 — Schichtplaner: klarer Anfang, Regeln in Reitern (22.10.2026)
 
 **Aus dem Betrieb:** ein Bildschirmfoto vom echten Konto (Verwaltung →
 Schichtplaner) mit „mach weiter mit dem design und aufbau, ausserdem sieht
