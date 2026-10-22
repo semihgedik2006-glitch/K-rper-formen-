@@ -5168,9 +5168,9 @@ exports.handyStempeln = region.https.onCall(async (data, context) => {
   let letzteArt = null, letzteZeit = -1;
   heute.forEach((d) => {
     const z = d.data() || {};
-    if ((z.ts || 0) > letzteZeit) { letzteZeit = z.ts || 0; letzteArt = z.art || null; }
+    if (!z.storno && (z.ts || 0) > letzteZeit) { letzteZeit = z.ts || 0; letzteArt = z.art || null; }
   });
-  const art = naechsterSchritt(letzteArt);
+  const art = schrittWaehlen(letzteArt, data && data.art);
   const studioKey = treffer.daten.studioKey || '';
 
   await W(firma).collection('zeiten').add({
@@ -5238,11 +5238,11 @@ function offlineZeitPruefen(roh, jetzt) {
   return Math.round(o);
 }
 
-exports.stempeln = region.https.onCall(async (data, context) => {
-  const { firma } = await anruferProfil(context);
-  const ohneNetz = !!(data && data.offlineTs !== undefined && data.offlineTs !== null);
-  const wann = ohneNetz ? offlineZeitPruefen(data.offlineTs, Date.now()) : Date.now();
-  const offlineId = ohneNetz ? String((data && data.offlineId) || '').trim().slice(0, 40) : '';
+/* ── Gerät, Person, PIN (Runde 186) ──
+   Dieselben drei Prüfungen für stempeln und stempelStand. Sie standen
+   bis Runde 185 nur in stempeln; eine zweite Abschrift wäre die Stelle,
+   an der eine künftige Verschärfung nur auf einer Seite ankommt. */
+async function terminalUndPinPruefen(firma, data) {
   const terminalId = String((data && data.terminalId) || '').trim();
   const geheim = String((data && data.geheim) || '').trim();
   const uid = String((data && data.uid) || '').trim();
@@ -5322,6 +5322,63 @@ exports.stempeln = region.https.onCall(async (data, context) => {
     await pinRef.update({ fehlversuche: 0, gesperrtBis: 0 });
   }
 
+  return { tSnap, term, person, fremd, terminalId, uid };
+}
+
+/* ── Welcher Schritt darf jetzt kommen? (Runde 186) ──
+   Aus dem Betrieb, 22.10.2026: „so wie crewmeister funktioniert am
+   besten". Dort stehen nach dem Kommen ZWEI Knöpfe: Pause und
+   Feierabend.
+
+   Hier stand bis Runde 185 nur naechsterSchritt(), und der kennt den
+   Feierabend nicht: kommen → pause → zurueck → pause → … Am Terminal und
+   am Handy liess sich „gehen" gar nicht stempeln; jeder Tag endete mit
+   „Feierabend fehlt", bis die Leitung ihn nachtrug.
+
+   Jetzt sagt der Aufruf, was er will (`art`), und der Server prüft, ob
+   das gerade passt. Ohne `art` bleibt es beim alten Verhalten — ein
+   Tablet mit der alten Seite im Speicher stempelt weiter wie bisher. */
+function erlaubteSchritte(letzteArt) {
+  if (!letzteArt || letzteArt === 'gehen') return ['kommen'];
+  if (letzteArt === 'kommen' || letzteArt === 'zurueck') return ['pause', 'gehen'];
+  if (letzteArt === 'pause') return ['zurueck', 'gehen'];
+  return ['kommen'];
+}
+const SCHRITT_WORT = { kommen: 'Kommen', pause: 'Pause', zurueck: 'Zurück', gehen: 'Feierabend' };
+function schrittWaehlen(letzteArt, wunsch) {
+  if (wunsch === undefined || wunsch === null || wunsch === '') return naechsterSchritt(letzteArt);
+  const w = String(wunsch);
+  const erlaubt = erlaubteSchritte(letzteArt);
+  if (!erlaubt.includes(w)) {
+    throw new functions.https.HttpsError('failed-precondition',
+      (SCHRITT_WORT[w] ? '„' + SCHRITT_WORT[w] + '" passt gerade nicht' : 'Diesen Schritt gibt es nicht') +
+      ' — dran ist: ' + erlaubt.map((a) => SCHRITT_WORT[a]).join(' oder ') + '.');
+  }
+  return w;
+}
+
+/* Der Stand eines Tages aus seinen Stempeln: letzter Schritt, seit wann,
+   und die Arbeitszeit bis `bis`. Ungültig markierte zählen nicht. */
+function tagesStand(stempel, bis) {
+  const l = stempel.filter((z) => !z.storno && (z.ts || 0) <= bis)
+    .sort((a, b) => (a.ts || 0) - (b.ts || 0));
+  let arbeit = 0, seit = 0, vorher = null, beginn = 0;
+  for (const z of l) {
+    if (vorher === 'kommen' || vorher === 'zurueck') arbeit += (z.ts || 0) - seit;
+    if (!beginn && z.art === 'kommen') beginn = z.ts || 0;
+    seit = z.ts || 0; vorher = z.art || null;
+  }
+  if (vorher === 'kommen' || vorher === 'zurueck') arbeit += bis - seit;
+  return { letzteArt: vorher, seit: vorher ? seit : 0, beginn, arbeitMs: Math.max(0, arbeit) };
+}
+
+exports.stempeln = region.https.onCall(async (data, context) => {
+  const { firma } = await anruferProfil(context);
+  const ohneNetz = !!(data && data.offlineTs !== undefined && data.offlineTs !== null);
+  const wann = ohneNetz ? offlineZeitPruefen(data.offlineTs, Date.now()) : Date.now();
+  const offlineId = ohneNetz ? String((data && data.offlineId) || '').trim().slice(0, 40) : '';
+  const { tSnap, term, person, fremd, terminalId, uid } = await terminalUndPinPruefen(firma, data);
+
   /* 4. Schreiben.
 
      OHNE orderBy, und das ist keine Stilfrage. Hier stand
@@ -5370,9 +5427,9 @@ exports.stempeln = region.https.onCall(async (data, context) => {
   let letzteArt = null, letzteZeit = -1;
   heute.forEach((d) => {
     const z = d.data() || {};
-    if ((z.ts || 0) <= wann && (z.ts || 0) > letzteZeit) { letzteZeit = z.ts || 0; letzteArt = z.art || null; }
+    if (!z.storno && (z.ts || 0) <= wann && (z.ts || 0) > letzteZeit) { letzteZeit = z.ts || 0; letzteArt = z.art || null; }
   });
-  const art = naechsterSchritt(letzteArt);
+  const art = schrittWaehlen(letzteArt, data && data.art);
 
   const jetzt = Date.now();
   await W(firma).collection('zeiten').add(Object.assign({
@@ -5392,6 +5449,37 @@ exports.stempeln = region.https.onCall(async (data, context) => {
   await tSnap.ref.update({ letzterStempel: jetzt });
 
   return { ok: true, art, ts: wann, name: person.name || '', fremd, ohneNetz };
+});
+
+/* ── Wo stehe ich gerade? (Runde 186) ──
+   Am Terminal: Name antippen, PIN, und DANN erst sieht man den eigenen
+   Stand und die passenden Knöpfe — so wie bei Crewmeister. Vorher stand
+   „im Dienst / noch nicht da" an jeder Kachel, für jeden am Tresen
+   lesbar. Aus dem Betrieb, 22.10.2026, auf die Frage, ob das weg soll:
+   „ja".
+
+   Dazu kam ein zweiter Grund, der beim Nachlesen auffiel: das Tablet
+   ist ein ganz normales Mitarbeiter-Konto, und `zeiten` darf es nur für
+   sich selbst lesen (firestore.rules). Die Kacheln zeigten in der
+   Produktion deshalb vermutlich bei allen „noch nicht da". Nachweisen
+   lässt sich das hier nicht; die Regel ist der Beleg.
+
+   Dieselben drei Schlösser wie beim Stempeln: Gerät, Person, PIN — mit
+   derselben Bremse. Ohne sie wäre das hier ein Weg, PINs durchzuprobieren,
+   ohne je einen Stempel zu hinterlassen. */
+exports.stempelStand = region.https.onCall(async (data, context) => {
+  const { firma } = await anruferProfil(context);
+  const { person, uid } = await terminalUndPinPruefen(firma, data);
+  const jetzt = Date.now();
+  const tag = berlinDatum(new Date(jetzt));
+  const heute = await W(firma).collection('zeiten')
+    .where('uid', '==', uid).where('tag', '==', tag).get();
+  const st = tagesStand(heute.docs.map((d) => d.data() || {}), jetzt);
+  return {
+    ok: true, name: person.name || '',
+    letzteArt: st.letzteArt, seit: st.seit, beginn: st.beginn, arbeitMs: st.arbeitMs,
+    erlaubt: erlaubteSchritte(st.letzteArt), jetzt
+  };
 });
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -8168,7 +8256,7 @@ exports.gehirnWissen = region
     return json;
   });
 
-exports.__intern = { gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnStimmePruefen, GEHIRN_STIMMEN, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
+exports.__intern = { erlaubteSchritte, schrittWaehlen, tagesStand, gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnStimmePruefen, GEHIRN_STIMMEN, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
                      gehirnVorschlagPruefen, gehirnBefehlPruefen, gehirnWeg, gehirnKontextText, lageberichtOhneKi,
                      geminiSperreAufheben: () => { _geminiAusBis = 0; }, geminiGesperrt: () => Date.now() < _geminiAusBis, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,
                      authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,

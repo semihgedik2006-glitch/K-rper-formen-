@@ -177,13 +177,17 @@ async function reiterOeffnen(p, tab) {
     pruefe(ankunft.stelle === 0,
       'STELLE: „Heute" (mit dem Reiter „Ich") steht an Position ' + ankunft.stelle +
       ' statt an erster');
-    // In der Uebersicht liegen jetzt drei Reiter, nicht mehr fuenf
-    ['woche', 'kalender', 'daten'].forEach(t => {
+    /* In der Uebersicht liegen vier Reiter: Woche, Kalender, Zeiten, Ich.
+       „Zeiten" kam in Runde 186 dazu — aus dem Betrieb, 22.10.2026:
+       „erstelle bitte noch eine session nur für die stempel seite … das
+       sie so wie crewmeister funktioniert". Die Stempelseite ist damit
+       ein eigener Reiter statt drei Karten unter „Ich". */
+    ['woche', 'kalender', 'zeiten', 'daten'].forEach(t => {
       pruefe(ankunft.reiter.indexOf(t) >= 0, 'FEHLT: der Reiter „' + t + '"');
     });
-    /* Und zwar GENAU diese drei. Ohne die Zahl waere „todo steht noch
+    /* Und zwar GENAU diese vier. Ohne die Zahl waere „todo steht noch
        zusaetzlich drin" gruen — also der halbe Umzug. */
-    pruefe(ankunft.reiter.length === 3,
+    pruefe(ankunft.reiter.length === 4,
       'ZU VIELE REITER in der Übersicht: ' + ankunft.reiter.join(', ') +
       ' — To-do und Notizen gehören auf den zweiten Schreibtisch');
     console.log('Unternavigation:', ankunft.unter.join(', '));
@@ -871,7 +875,7 @@ async function reiterOeffnen(p, tab) {
     });
     await p.waitForTimeout(400);
     await p.evaluate(() => {
-      const t = document.querySelector('[data-ichtab="daten"]');
+      const t = document.querySelector('[data-ichtab="zeiten"]');
       if (t) t.click();
     });
     await p.waitForTimeout(900);

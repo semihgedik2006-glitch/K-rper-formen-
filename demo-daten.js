@@ -1758,6 +1758,29 @@
         abFenster: Math.floor(Date.now() / 30000), fensterMs: 30000
       };
     },
+    stempelStand: function (d) {
+      var term = holen(P('terminals'))
+        .filter(function (t) { return t.id === String(d.terminalId || ''); })[0];
+      if (!term) throw new Error('Dieses Gerät ist nicht (mehr) als Terminal eingerichtet.');
+      if (String(d.pin || '') !== DEMO_PIN) {
+        throw new Error('Falsche PIN. In dieser Demo ist sie ' + DEMO_PIN + '.');
+      }
+      var person = USERS.filter(function (u) { return u.id === String(d.uid || ''); })[0];
+      if (!person) throw new Error('Diese Person gibt es nicht.');
+      var jetzt = Date.now(), tag = new Date().toLocaleDateString('sv-SE');
+      var meine = holen(P('zeiten'))
+        .filter(function (z) { return z.uid === person.id && z.tag === tag && !z.storno; })
+        .sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); });
+      var arbeit = 0, seit = 0, vorher = null, beginn = 0;
+      meine.forEach(function (z) {
+        if (vorher === 'kommen' || vorher === 'zurueck') arbeit += (z.ts || 0) - seit;
+        if (!beginn && z.art === 'kommen') beginn = z.ts || 0;
+        seit = z.ts || 0; vorher = z.art;
+      });
+      if (vorher === 'kommen' || vorher === 'zurueck') arbeit += jetzt - seit;
+      return { ok: true, name: person.name || '', letzteArt: vorher, seit: vorher ? seit : 0,
+               beginn: beginn, arbeitMs: arbeit, erlaubt: demoErlaubt(vorher), jetzt: jetzt };
+    },
     handyStempeln: function (d) {
       if (ICH.handyStempeln !== true) {
         throw new Error('Für dieses Konto ist das Stempeln mit dem Handy nicht freigeschaltet.');
@@ -1771,10 +1794,8 @@
       var meine = holen(P('zeiten'))
         .filter(function (z) { return z.uid === ICH.id && z.tag === tag; })
         .sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); });
-      var letzte = meine.length ? meine[meine.length - 1].art : null;
-      var art = (!letzte || letzte === 'gehen') ? 'kommen'
-              : (letzte === 'kommen' || letzte === 'zurueck') ? 'pause'
-              : (letzte === 'pause') ? 'zurueck' : 'kommen';
+      var letzte = demoLetzte(meine);
+      var art = demoSchritt(letzte, d.art);
       var jetzt = Date.now();
       holen(P('zeiten')).push({
         id: neueId(), uid: ICH.id, name: ICH.name || '', studioKey: studioKey,
@@ -1812,10 +1833,8 @@
         if (da) return { ok: true, art: da.art, ts: da.ts, name: person.name || '', fremd: !!da.fremd, ohneNetz: true, schonDa: true };
       }
       meine = meine.filter(function (z) { return (z.ts || 0) <= wann; });
-      var letzte = meine.length ? meine[meine.length - 1].art : null;
-      var art = (!letzte || letzte === 'gehen') ? 'kommen'
-              : (letzte === 'kommen' || letzte === 'zurueck') ? 'pause'
-              : (letzte === 'pause') ? 'zurueck' : 'kommen';
+      var letzte = demoLetzte(meine);
+      var art = demoSchritt(letzte, d.art);
 
       var jetzt = Date.now();
       var fremd = (person.studioKeys || []).indexOf(term.studioKey) < 0;
@@ -1835,6 +1854,33 @@
       return { ok: true, art: art, ts: wann, name: person.name || '', fremd: fremd, ohneNetz: ohneNetz };
     }
   };
+
+  /* Runde 186: wie der echte Server — mit `art` sagt der Aufruf, was er
+     will (Pause ODER Feierabend), ohne bleibt es beim alten Ablauf. */
+  function demoLetzte(liste) {
+    var l = liste.filter(function (z) { return !z.storno; });
+    return l.length ? l[l.length - 1].art : null;
+  }
+  function demoErlaubt(letzte) {
+    if (!letzte || letzte === 'gehen') return ['kommen'];
+    if (letzte === 'kommen' || letzte === 'zurueck') return ['pause', 'gehen'];
+    if (letzte === 'pause') return ['zurueck', 'gehen'];
+    return ['kommen'];
+  }
+  var DEMO_WORT = { kommen: 'Kommen', pause: 'Pause', zurueck: 'Zurück', gehen: 'Feierabend' };
+  function demoSchritt(letzte, wunsch) {
+    var erlaubt = demoErlaubt(letzte);
+    if (!wunsch) {
+      return (!letzte || letzte === 'gehen') ? 'kommen'
+           : (letzte === 'kommen' || letzte === 'zurueck') ? 'pause'
+           : (letzte === 'pause') ? 'zurueck' : 'kommen';
+    }
+    if (erlaubt.indexOf(wunsch) < 0) {
+      throw new Error('„' + (DEMO_WORT[wunsch] || wunsch) + '" passt gerade nicht — dran ist: ' +
+        erlaubt.map(function (a) { return DEMO_WORT[a]; }).join(' oder ') + '.');
+    }
+    return wunsch;
+  }
 
   function demoAufruf(name, daten) {
     var f = DEMO_FUNKTIONEN[name];
