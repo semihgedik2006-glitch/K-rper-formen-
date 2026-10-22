@@ -1,4 +1,4 @@
-/* ══ FORMI-WELT, STUFE 2: DIE APP IM FORMI-LOOK (Runde 210) ══════════
+/* ══ FORMI-WELT, STUFE 2: DIE APP IM FORMI-LOOK (Runde 212) ══════════
    Aus dem Betrieb, 22.10.2026: „können wir noch mehr am design anpassen
    und auch mehr auf den formi look eingehen also das die app so ein
    ähnliches verhalten und design hat" – und auf die Rückfragen „1. b

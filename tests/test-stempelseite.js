@@ -361,7 +361,11 @@ async function zuVerwaltungZeiten(p) {
       document.querySelector('[data-zkansicht="konto"]').click(); await ws(2200);
       const box = document.getElementById('zkKonto');
       const masse = [];
-      for (const el of [...document.querySelectorAll('[data-zkansicht], #zkKonto button')]) {
+      /* Nur SICHTBARE: der Speichern-Knopf in der zugeklappten
+         DATEV-Box hat keine Fläche und soll keine haben. Dafür zählt
+         die Klappzeile selbst mit. */
+      for (const el of [...document.querySelectorAll('[data-zkansicht], #zkKonto button, #zkKonto summary')].filter(e => e.getClientRects().length &&
+          !(e.tagName !== 'SUMMARY' && e.closest('details:not([open])')))) {
         el.scrollIntoView({ block: 'center' }); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
         const m = T(el); masse.push(el.textContent.trim() + ' ' + m.w + '×' + m.h);
       }
@@ -408,6 +412,52 @@ async function zuVerwaltungZeiten(p) {
       pruefe('… danach ist Nachtragen in diesem Monat gesperrt („abgeschlossen")', /abgeschlossen/.test(nach.meldung || ''), JSON.stringify(nach));
     }
     pruefe(rolle + ' ' + w + ' px: ohne Skriptfehler (Konto)', !p._fehler.length, p._fehler.join(' | '));
+    await p.close();
+  }
+
+  console.log('\n── 10. DATEV (LODAS) (Runde 210) ──');
+  {
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 }, acceptDownloads: true });
+    p._fehler = []; p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
+    await p.route('**://www.gstatic.com/**', r => r.abort());
+    await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
+    await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
+    await p.waitForTimeout(3200);
+    await zuVerwaltungZeiten(p);
+    const vor = await p.evaluate(async (SRC) => {
+      const T = eval('(' + SRC + ')');
+      const ws = (ms) => new Promise(r => setTimeout(r, ms));
+      window.confirm = () => true;
+      document.querySelector('[data-zkansicht="konto"]').click(); await ws(2000);
+      document.getElementById('zkPrev').click(); await ws(2000);
+      document.querySelector('[data-zkexport="datev"]').click(); await ws(500);
+      const f = document.getElementById('zkDatev');
+      const offen = !!f && f.open;
+      const sum = f.querySelector('summary'); sum.scrollIntoView({ block: 'center' });
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+      const sm = T(sum);
+      dvBerater.value = '28547'; dvMandant.value = '90909'; dvLohnart.value = '200'; dvUrlaub.checked = true;
+      const felder = [...document.querySelectorAll('[data-dvpnr]')];
+      felder.forEach((x, i) => { x.value = String(10 + i); });
+      document.querySelector('[data-zkdatevsichern]').click(); await ws(800);
+      return { offen, sm, personen: felder.length };
+    }, TREFFER.toString());
+    pruefe('ohne Nummern: DATEV öffnet die Einstellungen statt einer leeren Datei', vor.offen);
+    pruefe('„DATEV-Einstellungen" trifft ≥ 44 hoch', vor.sm.h >= 44, JSON.stringify(vor.sm));
+    const [dl] = await Promise.all([p.waitForEvent('download'), p.evaluate(() => document.querySelector('[data-zkexport="datev"]').click())]);
+    const roh = require('fs').readFileSync(await dl.path());
+    const txt = roh.toString('latin1');
+    const zeilen = txt.split('\r\n');
+    pruefe('Dateiname DATEV-LODAS-JJJJ-MM.txt', /^DATEV-LODAS-\d{4}-\d{2}\.txt$/.test(dl.suggestedFilename()), dl.suggestedFilename());
+    pruefe('nur ASCII (ANSI ohne Kodierungsfrage)', [...roh].every(c => c >= 0x20 && c < 0x7f || c === 0x0d || c === 0x0a));
+    pruefe('Zeilenende nur CR/LF (kein einzelnes LF)', !/[^\r]\n/.test(txt) && txt.endsWith('\r\n'));
+    pruefe('Kopf: [Allgemein], Ziel=LODAS, Berater- und Mandantennummer', zeilen[0] === '[Allgemein]' && zeilen.includes('Ziel=LODAS') && zeilen.includes('BeraterNr=28547') && zeilen.includes('MandantenNr=90909'));
+    pruefe('Satzbeschreibung u_lod_bwd_buchung_standard', zeilen.includes('1;u_lod_bwd_buchung_standard;abrechnung_zeitraum#bwd;bs_wert_butab#bwd;bs_nr#bwd;la_eigene#bwd;pnr#bwd;'));
+    const bew = zeilen.slice(zeilen.indexOf('[Bewegungsdaten]') + 1).filter(Boolean);
+    pruefe('Bewegungsdaten: Stunden je Person, Schlüssel 01, Lohnart 200', bew.length > 0 && bew.every(z => /^1;01\.\d{2}\.\d{4};\d+,\d{2};(01;200|71;);\d+;$/.test(z)), bew.slice(0, 3).join(' | '));
+    pruefe('ein Monat je Datei (alle Zeilen derselbe Zeitraum)', new Set(bew.map(z => z.split(';')[1])).size === 1);
+    pruefe('keine Namen in der Datei', !/[A-Za-z]{3,}/.test(bew.join('')));
+    pruefe('ohne Skriptfehler (DATEV)', !p._fehler.length, p._fehler.join(' | '));
     await p.close();
   }
 

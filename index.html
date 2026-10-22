@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-5ONWLM8GA4lRw2wSZwlaGj0XtE4wSzjxSqpZoxaux/4='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-b0U9M6rP6n3GjVRFkwgD7HVGY5Swp36QHcA2mhcej7g='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3554,6 +3554,9 @@ button.ich-zeile:active{opacity:.7}
   letter-spacing:var(--ls-l);text-align:left;padding:var(--s6) var(--s8);border-bottom:1px solid var(--line);white-space:nowrap}
 .zk-konto-tab td{padding:var(--s8);border-bottom:1px solid var(--line);vertical-align:top}
 .zk-konto-tab .zahl{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.zk-datev{margin-top:var(--s16)}
+.zk-datev .btn{min-height:44px;margin-top:var(--s8)}
+.zk-datev-leute{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0 var(--s12);margin-top:var(--s8)}
 .zk-konto-neben{display:block;font-size:var(--t-2xs);color:var(--text-3);margin-top:var(--s2)}
 .zk-antraege{margin:var(--s12) 0 var(--s4);padding:var(--s12) var(--s16);border-radius:var(--r-md);
   background:var(--auf-1);border:1px solid var(--line)}
@@ -4414,7 +4417,7 @@ body.formi:not(.light){
   --line:rgba(120,200,255,.13);--line-2:rgba(120,200,255,.34);
   --kante:rgba(160,220,255,.10);
   --hud-glas:rgba(13,21,38,.86);
-  /* Runde 210: Formis Kern als Fläche, Formis Violett als Schein. */
+  /* Runde 212: Formis Kern als Fläche, Formis Violett als Schein. */
   --formi-kern:#05070E;
   --formi-schein:0 0 0 1px rgba(182,156,255,.30), 0 0 20px -4px rgba(182,156,255,.55);
   --hud-licht:rgba(var(--akz-rgb),.55);
@@ -4452,7 +4455,7 @@ body.formi:not(.light) .main,body.formi:not(.light) .shell{background:transparen
 body.formi:not(.light) .topbar{overflow-x:clip;background:var(--hud-glas);border-bottom:1px solid var(--line);
   box-shadow:var(--e1)}
 body.formi:not(.light) .side{background:rgba(7,10,20,.55);border-right:1px solid var(--line)}
-/* Runde 210: der aktive Raum trägt Formis Farben (Leiste links im
+/* Runde 212: der aktive Raum trägt Formis Farben (Leiste links im
    Verlauf, Schein in Violett) – „wo bin ich" ist überall dieselbe Farbe. */
 body.formi:not(.light) .side .tab.active{background:linear-gradient(90deg,rgba(182,156,255,.20),rgba(95,225,255,.05) 70%,transparent);
   color:var(--text);box-shadow:var(--formi-schein)}
@@ -4468,7 +4471,7 @@ body.formi:not(.light) .bereich-zeile::after{right:var(--s8);border-left:none;bo
 body.formi:not(.light) #bkTitel{background:var(--formi-lin);-webkit-background-clip:text;background-clip:text;
   color:transparent;filter:drop-shadow(0 0 14px rgba(182,156,255,.35))}
 /* Flächen: Glas, eine helle Oberkante, beim Zeigen leuchtet der Rand. */
-/* Runde 210 (aus dem Betrieb, 22.10.2026: „b" – die App im Formi-Look,
+/* Runde 212 (aus dem Betrieb, 22.10.2026: „b" – die App im Formi-Look,
    auch die Flächen): ein fast schwarzer Kern wie in Formis Loch, und
    statt der grauen Haarlinie eine schillernde Kante in Formis Farben.
    Die Farbe der ART (rot überfällig, orange heute …) bleibt links am
@@ -6152,7 +6155,7 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
    (test-formi-lebt prüft es) — sonst heisst er nichts mehr, wie eine
    Statusfarbe, die nichts meldet. */
 :root{--formi-ring:conic-gradient(from 210deg, #5FE1FF, #B69CFF, #FF8FC8, #FFA85C, #5FE1FF);
-  /* Runde 210: dieselben vier Farben als Verlauf für die App, und der
+  /* Runde 212: dieselben vier Farben als Verlauf für die App, und der
      Kern aus Formis Loch als Flächenfarbe. */
   --formi-lin:linear-gradient(100deg, #5FE1FF, #B69CFF 35%, #FF8FC8 68%, #FFA85C)}
 .formi-kugel{--fg:58px;--jv-rgb:95,225,255;position:fixed;z-index:150;right:max(var(--s16), var(--sar, 0px));
@@ -17551,7 +17554,7 @@ function burstAt(el){
   setTimeout(function(){ b.remove(); }, 600);
   hakenTeilchen(r.left+r.width/2, r.top+r.height/2);
 }
-/* ── Formi-Teilchen (Runde 210) ──
+/* ── Formi-Teilchen (Runde 212) ──
    Aus dem Betrieb, 22.10.2026, auf „welche Momente?": „alle vier". Beim
    Abhaken stieben zehn kleine Teilchen in Formis vier Farben aus dem
    Haken – dieselben Teilchen, die um Formis Loch kreisen. Nur im Stil
@@ -21341,6 +21344,16 @@ var NEUIGKEITEN = [
     'Wo du bist, steht in Formis Farben: der Raum links, der Strich unter dem offenen Reiter, der Seitentitel. Die grossen Knöpfe wie „Senden" auch.',
     'Beim Abhaken stieben kleine Teilchen aus dem Haken. Ist der Putzplan eines Studios oder sind alle Aufgaben geschafft, feiert Formi mit.',
     'Der bunte Ring bleibt Formi vorbehalten – so erkennst du Formi weiter auf einen Blick. Hell oder Dunkel wie bisher: Profil → Aussehen.' ] },
+  { id:'2026-10-22-schulung-nachweis', datum:'22.10.2026', titel:'Für die Leitung: Nachweis der Unterweisung zum Drucken', wo:'schulung', punkte:[
+    'Unter Wissen → Schulung → Verwalten → „Pflicht" gibt es „Nachweis drucken": Modul wählen, dann kommt ein Blatt zum Abheften – was in der Schulung drin war, wer sie wann bestanden hat (mit Ergebnis und Dauer) und eine Spalte zum Unterschreiben.',
+    'Bei Pflichtschulungen steht darunter, wer sie noch nicht hat. Testläufe mit dem Testcode stehen nicht darauf.',
+    'Ob das Blatt eine bestimmte Vorschrift erfüllt, prüft die App nicht – das steht auch unten auf dem Blatt.'
+  ]},
+  { id:'2026-10-22-datev', datum:'22.10.2026', titel:'Stunden als DATEV-Datei fürs Lohnbüro', wo:'chef:zeiten', punkte:[
+    'Für die Geschäftsführung: Verwaltung → Zeiten → Monat & Konto → „DATEV". Die Datei (LODAS) enthält je Person die Stunden des Monats und auf Wunsch die Urlaubstage – nur Nummern, keine Namen.',
+    'Beim ersten Mal öffnen sich die DATEV-Einstellungen: Beraternummer, Mandantennummer, Lohnart für Stunden und die Personalnummern. Diese Nummern gibt euch das Lohnbüro. Sehen kann sie nur die Geschäftsführung.',
+    'Bitte die erste Datei vom Lohnbüro prüfen lassen: Sie ist nach dem DATEV-Handbuch gebaut, aber noch nie in ein echtes DATEV eingespielt worden. Wer keine Personalnummer hat, steht nicht in der Datei – die App sagt, wer fehlt.'
+  ]},
   { id:'2026-10-22-formi-fenster-ruhiger', datum:'22.10.2026', titel:'Formi-Fenster aufgeräumt, Formi in leeren Listen', wo:'home', punkte:[
     'Öffnest du Formi, begrüsst dich oben ein grosses Formi-Gesicht, das dir mit den Augen folgt. Die drei Zeilen „Aufgaben offen / Putzplan / Material" stehen dort nicht mehr – das zeigt schon die Formi-Zeile auf der Startseite.',
     'Oben im kleinen Formi-Fenster sind nur noch drei Knöpfe: „…", Gross und Schliessen. Hinter „…" findest du Einstellungen, gespeicherte Gespräche und den Ton.',
@@ -27740,7 +27753,7 @@ function formiFeiert(text){
   formiFuehlt('feiert');
   if(text) toast(text);
 }
-/* ── Der Tagesabschluss (Runde 210) ──
+/* ── Der Tagesabschluss (Runde 212) ──
    Ist etwas für heute ganz geschafft (alle Aufgaben, der Putzplan eines
    Studios), feiert die App mit Formi: ein kurzer Glitch über dem
    Seitenkopf, Teilchen in Formis Farben von oben, Formi freut sich, und
@@ -31949,6 +31962,17 @@ function schVerwaltenZeichnen(){
       '<p class="hint">Je Person und Pflichtmodul: erledigt, offen mit Frist, angefangen oder überfällig. '+
         '„Erinnern" gibt eine fertige Nachricht mit dem Code weiter.</p>'+
       '<div id="schStand2"></div>'+
+    '</div>'+
+    /* Runde 211: der Nachweis zum Ausdrucken. */
+    '<div class="card">'+
+      '<h3 data-ikon="drucken">Nachweis drucken</h3>'+
+      '<p class="hint">Ein Blatt je Modul: was drin war, wer es wann bestanden hat — mit einer Spalte zum '+
+        'Unterschreiben. Zum Abheften, etwa für eine Kontrolle.</p>'+
+      '<div class="field"><label for="schNwModul">Modul</label>'+
+        '<select class="inp" id="schNwModul">'+schModule().map(function(m){
+          return '<option value="'+esc(m.id)+'">'+esc((m.pflicht ? 'Pflicht · ' : '')+(m.titel||''))+'</option>';
+        }).join('')+'</select></div>'+
+      '<button type="button" class="btn btn-primary btn-sm" id="schNwDruck">Nachweis drucken</button>'+
     '</div>';
   } else if(_schVwTab==='mod'){
     inhalt=
@@ -31993,6 +32017,8 @@ function schVerwaltenZeichnen(){
     if(b) b.addEventListener('click', schTnAnlegen);
   } else if(_schVwTab==='stand'){
     schStandZeichnen();
+    var nw=$('schNwDruck');
+    if(nw) nw.addEventListener('click', function(){ schNachweisDrucken((($('schNwModul')||{}).value)||''); });
   } else if(_schVwTab==='mod'){
     schModulListeZeichnen();
     var mn=$('schModulNeu');
@@ -32177,6 +32203,59 @@ function schStandZeichnen(){
    Leute ohne Zugang erreicht sie gar nicht, und wer erinnert wird, soll
    wissen, von wem. Der Code steht dabei — die Person braucht ihn zum
    Anfangen, und lesen darf ihn die Leitung ohnehin. */
+/* ── Nachweis der Unterweisung (Runde 211) ──────────────────────────
+   Aus dem Betrieb, 22.10.2026: „jo mach weitert" — auf den Vorschlag
+   „ein druckbarer Nachweis der Hygiene- und Notfallunterweisung für
+   Kontrollen".
+
+   Ein Blatt je Modul, in der Druckvorlage der App (#printArea, schwarz
+   auf weiss, wie Putzplan und Aufgaben):
+   - was drin war: die Schritte und die Zahl der Fragen;
+   - wer es bestanden hat, mit Datum, Ergebnis, aktiver Dauer und
+     Durchgang — der JÜNGSTE bestandene Durchlauf je Person, Testläufe nie;
+   - eine leere Spalte für die Unterschrift auf Papier;
+   - darunter, wer es noch nicht hat (nur bei Pflicht, ohne Stillgelegte).
+   Was es NICHT ist: eine Prüfung, ob das Blatt einer bestimmten Vorschrift
+   genügt. Das steht unten auf dem Blatt, damit es niemand dafür hält. */
+function schNachweisDrucken(modulId){
+  var pa=$('printArea'); var m=schModulVon(modulId);
+  if(!pa || !m) return;
+  var juengst={};
+  _schAlleLaeufe.forEach(function(l){
+    if(l.modul!==m.id || l.test || l.status!=='fertig' || !l.bestanden) return;
+    var j=juengst[l.teilnehmer];
+    if(!j || (l.ende||0)>(j.ende||0)) juengst[l.teilnehmer]=l;
+  });
+  var zeilen=Object.keys(juengst).map(function(k){ return juengst[k]; })
+    .sort(function(a,b){ return String(a.teilnehmerName||'').localeCompare(String(b.teilnehmerName||'')); });
+  var fehlt = m.pflicht ? _schTeilnehmer.filter(function(t){ return !t.gesperrt && !juengst[t.id]; })
+    .map(function(t){ return t.name||''; }).sort() : [];
+  var heute=new Date().toLocaleDateString('de-DE',{ day:'2-digit', month:'2-digit', year:'numeric' });
+  var schritte=(m.schritte||[]).map(function(x, i){
+    /* Bei einer Bestätigung zählt, WAS bestätigt wurde — „Kurz
+       bestätigen" allein sagt auf einem Nachweis nichts. */
+    return esc((i+1)+'. '+(x.art==='bestaetigen' ? 'Bestätigt: „'+(x.text||'')+'“' : (x.titel||'')));
+  }).join('<br/>');
+  pa.innerHTML='<h1>Nachweis der Unterweisung: '+esc(m.titel||'')+'</h1>'+
+    '<p class="p-sub">'+esc(firmaAnzeige())+' · Stand '+esc(heute)+
+      (m.pflicht ? ' · Pflichtmodul' : '')+(m.gueltigMonate ? ' · zu wiederholen alle '+m.gueltigMonate+' Monate' : '')+'</p>'+
+    '<p class="p-note"><b>Inhalt</b><br/>'+schritte+
+      ((m.fragen||[]).length ? '<br/>Danach '+(m.fragen||[]).length+' Fragen zum Verständnis.' : '')+'</p>'+
+    (zeilen.length
+      ? '<table><tr><th>Name</th><th>Bestanden am</th><th>Ergebnis</th><th>Dauer</th><th>Durchgang</th><th>Unterschrift</th></tr>'+
+        zeilen.map(function(l){
+          /* Mit Jahr: ein Nachweis wird oft erst Monate später gelesen. */
+          return '<tr><td>'+esc(l.teilnehmerName||'')+'</td><td>'+
+            esc(new Date(l.ende).toLocaleDateString('de-DE',{ day:'2-digit', month:'2-digit', year:'numeric' }))+'</td>'+
+            '<td>'+(l.punkte||0)+' %</td><td>'+esc(schDauerText(l.aktivMs))+'</td>'+
+            '<td>'+(l.durchgang||1)+'.</td><td class="p-sign"></td></tr>';
+        }).join('')+'</table>'
+      : '<p class="p-note">Noch niemand hat dieses Modul bestanden.</p>')+
+    (fehlt.length ? '<p class="p-note"><b>Noch offen:</b> '+esc(fehlt.join(', '))+'</p>' : '')+
+    '<p class="p-foot">'+esc(KONFIG.appName||'StudioChat')+' — erstellt aus den Schulungs-Durchläufen. '+
+      'Ob dieses Blatt eine bestimmte Vorschrift erfüllt, prüft die App nicht.</p>';
+  window.print();
+}
 function schErinnernText(t){
   var offen=schModule().filter(function(m){ return m.pflicht; }).map(function(m){
     var z=schStandZelle(t, m);
@@ -39071,7 +39150,7 @@ function zkKontoLaden(){
       [].concat.apply([], r[2]),
       r[3] && r[3].exists ? r[3].data() : null,
       r[4] && r[4].exists ? r[4].data() : null);
-    zkKontoZeichnen();
+    return datevLaden().then(function(){ if(nr===_zkKontoNr) zkKontoZeichnen(); });
   }).catch(function(e){
     if(nr!==_zkKontoNr) return;
     box.innerHTML='<p class="hint">Das Konto lässt sich gerade nicht rechnen: '+esc(errMsg(e))+'</p>';
@@ -39109,19 +39188,21 @@ function kontoRechnen(m, erst, letzt, zeiten, team, abwesend, abschluss, vorAbsc
     var soll = woche ? Math.round(woche*60*tageBis/7)
              : (monatMax ? Math.round(monatMax*60*tageBis/tageImMonat) : null);
     var tagesSoll = woche ? woche*60/((+v.maxTageWoche||0) || 5) : 0;
-    var gut=0;
+    var gut=0, urlaubTage=0;
     abwesend.forEach(function(a){
       if(a.uid!==uid || (a.type!=='urlaub' && a.type!=='krank')) return;
       if(a.type!=='krank' && (a.status||'genehmigt')!=='genehmigt') return;
       var von=a.from>erst ? a.from : erst, ende=(a.to||a.from)<bis ? (a.to||a.from) : bis;
       if(von>ende) return;
-      gut+=Math.round(kontoWerktage(von, ende)*tagesSoll);
+      var wt=kontoWerktage(von, ende);
+      gut+=Math.round(wt*tagesSoll);
+      if(a.type==='urlaub') urlaubTage+=wt;
     });
     var saldo = soll===null ? null : ist+gut-soll;
     var uebertrag = vorKonto.hasOwnProperty(uid) ? vorKonto[uid] : null;
     return { uid:uid, name:p.name || v.name || '—', ist:ist, soll:soll, gutschrift:gut, saldo:saldo,
              uebertrag:uebertrag, konto: saldo===null ? null : (uebertrag||0)+saldo,
-             tage:tage.filter(function(t){ return !(t.offen && !t.laeuft); }).length, offen:offen,
+             tage:tage.filter(function(t){ return !(t.offen && !t.laeuft); }).length, offen:offen, urlaubTage:urlaubTage,
              abzug:abzug, hinweise:hinweise, tageListe:tage };
   }).sort(function(a,b){ return String(a.name).localeCompare(String(b.name),'de'); });
   return { monat:m, laufend:laufend, bis:bis, zeilen:zeilen, abschluss:abschluss,
@@ -39141,6 +39222,7 @@ function zkKontoZeichnen(){
     '<div class="zk-konto-knoepfe">'+
       '<button type="button" class="btn btn-ghost" data-zkexport="xls">Excel</button>'+
       '<button type="button" class="btn btn-ghost" data-zkexport="csv">CSV</button>'+
+      '<button type="button" class="btn btn-ghost" data-zkexport="datev">DATEV</button>'+
       (zu ? '<button type="button" class="btn btn-ghost" data-zkoeffnen>Wieder öffnen …</button>'
           : (!k.laufend ? '<button type="button" class="btn btn-primary" data-zkabschluss>Monat abschliessen</button>' : ''))+
     '</div></div>';
@@ -39163,7 +39245,116 @@ function zkKontoZeichnen(){
         '<td class="zahl">'+kontoText(z.uebertrag)+'</td>'+
         '<td class="zahl"><b>'+kontoText(z.konto)+'</b></td></tr>';
     }).join('')+'</tbody></table></div>'+
-    (zu ? '' : '<p class="hint zk-regel">Soll aus den Wochenstunden im Schichtplaner (Verwaltung → Schichtplaner → Team). Ohne Wochenstunden kein Soll und kein Konto.</p>');
+    (zu ? '' : '<p class="hint zk-regel">Soll aus den Wochenstunden im Schichtplaner (Verwaltung → Schichtplaner → Team). Ohne Wochenstunden kein Soll und kein Konto.</p>')+
+    datevFormHTML();
+}
+
+/* ══ DATEV (LODAS) (Runde 210) ═══════════════════════════════════════
+   Aus dem Betrieb: Lohnbüro „mach beides" — Excel/CSV und DATEV.
+
+   Gebaut nach dem DATEV-Schnittstellenhandbuch LODAS (ASCII-Import,
+   Bewegungsdaten, Tabelle u_lod_bwd_buchung_standard): Bearbeitungs-
+   schlüssel 01 = Stunden je Lohnart, 71 = genommene Urlaubstage. ANSI,
+   Zeilenende CR/LF, ein Mandant und ein Monat je Datei.
+
+   WAS NICHT GEPRÜFT IST, UND DAS STEHT AUCH IN DER APP: Das Handbuch lag
+   nur als Kopie einer Auflage von 2016 vor; gegen ein echtes LODAS
+   eingespielt wurde die Datei nie. Deshalb liefert die App sie mit dem
+   Satz aus, dass das Lohnbüro sie einmal mit einer Probe bestätigen
+   muss. Lohn und Gehalt (LuG) braucht eine eigene Formatbeschreibung
+   (INI) und ist nicht gebaut.
+
+   Die Nummern (Berater, Mandant, Lohnart, Personalnummern) kommen vom
+   Lohnbüro. Sie liegen in lohnEinstellungen/datev — lesen und schreiben
+   nur die Geschäftsführung (firestore.rules). In der Datei stehen nur
+   Nummern, keine Namen. */
+var _datev=null, _datevOffen=false;
+function datevLaden(){
+  if(!isChef()) return Promise.resolve(null);
+  if(_datev) return Promise.resolve(_datev);
+  return S('lohnEinstellungen').doc('datev').get().then(function(d){
+    _datev = d && d.exists ? (d.data()||{}) : {};
+    return _datev;
+  }).catch(function(){ _datev={}; return _datev; });
+}
+function datevFormHTML(){
+  if(!_zkKonto) return '';
+  var d=_datev||{}, pn=d.personalNr||{};
+  var leute=_zkKonto.zeilen;
+  return '<details class="nachfrage zk-datev"'+(_datevOffen?' open':'')+' id="zkDatev">'+
+    '<summary class="nachfrage-text">DATEV-Einstellungen</summary>'+
+    '<p class="hint">Alle Nummern bekommst du vom Lohnbüro. Die Datei ist nach dem DATEV-Handbuch (LODAS) gebaut, '+
+      'aber nicht gegen LODAS getestet – bitte einmal vom Lohnbüro mit einer Probedatei bestätigen lassen.</p>'+
+    '<div class="st-antrag-reihe">'+
+      '<div class="field"><label for="dvBerater">Beraternummer</label><input class="inp" id="dvBerater" inputmode="numeric" maxlength="7" value="'+esc(d.beraterNr||'')+'" /></div>'+
+      '<div class="field"><label for="dvMandant">Mandantennummer</label><input class="inp" id="dvMandant" inputmode="numeric" maxlength="5" value="'+esc(d.mandantenNr||'')+'" /></div>'+
+      '<div class="field"><label for="dvLohnart">Lohnart Stunden</label><input class="inp" id="dvLohnart" inputmode="numeric" maxlength="4" value="'+esc(d.lohnartStunden||'')+'" /></div>'+
+    '</div>'+
+    '<label class="ich-schalter"><input type="checkbox" id="dvUrlaub"'+(d.urlaubstage?' checked':'')+' /><span>Urlaubstage mitschicken (Schlüssel 71)</span></label>'+
+    '<div class="zk-datev-leute">'+leute.map(function(z){
+      return '<div class="field"><label for="dvp-'+esc(z.uid)+'">'+esc(z.name)+'</label>'+
+        '<input class="inp" id="dvp-'+esc(z.uid)+'" data-dvpnr="'+esc(z.uid)+'" inputmode="numeric" maxlength="10" placeholder="Personalnr." value="'+esc(pn[z.uid]||'')+'" /></div>';
+    }).join('')+'</div>'+
+    '<button type="button" class="btn btn-primary" data-zkdatevsichern>Einstellungen speichern</button>'+
+  '</details>';
+}
+function datevSichern(btn){
+  var nur=function(id, n){ return String(($(id)||{}).value||'').replace(/\D/g,'').slice(0,n); };
+  var pn={};
+  document.querySelectorAll('[data-dvpnr]').forEach(function(f){
+    var v=String(f.value||'').replace(/\D/g,'').slice(0,10);
+    if(v) pn[f.getAttribute('data-dvpnr')]=v;
+  });
+  /* Personalnummern von Leuten, die in diesem Monat nicht in der Liste
+     stehen, bleiben erhalten — sonst löschte ein Blick auf einen Monat
+     mit wenig Leuten die Nummern der anderen. */
+  var alt=(_datev && _datev.personalNr)||{};
+  Object.keys(alt).forEach(function(uid){ if(!document.querySelector('[data-dvpnr="'+uid+'"]')) pn[uid]=alt[uid]; });
+  var neu={ beraterNr:nur('dvBerater',7), mandantenNr:nur('dvMandant',5), lohnartStunden:nur('dvLohnart',4),
+            urlaubstage:!!($('dvUrlaub')||{}).checked, personalNr:pn, geaendert:Date.now(), geaendertVon:session.uid };
+  withBusy(btn, function(){
+    return S('lohnEinstellungen').doc('datev').set(neu)
+      .then(function(){ _datev=neu; _datevOffen=false; toast('DATEV-Einstellungen gespeichert ✓'); zkKontoZeichnen(); })
+      .catch(function(e){ toast(errMsg(e), true); });
+  });
+}
+/* Die Datei selbst. Nur Ziffern, Semikolons und Kopfzeilen — reines
+   ASCII, damit „ANSI" keine Frage der Kodierung ist. */
+function datevText(k, d){
+  var monatsErster='01.'+k.monat.slice(5,7)+'.'+k.monat.slice(0,4);
+  var dez=function(min){ return (Math.round(min/60*100)/100).toFixed(2).replace('.',','); };
+  var zeilen=['[Allgemein]','Ziel=LODAS','BeraterNr='+d.beraterNr,'MandantenNr='+d.mandantenNr,
+    'Feldtrennzeichen=;','Zahlenkomma=,','Datumsformat=TT.MM.JJJJ','',
+    '[Satzbeschreibung]',
+    '1;u_lod_bwd_buchung_standard;abrechnung_zeitraum#bwd;bs_wert_butab#bwd;bs_nr#bwd;la_eigene#bwd;pnr#bwd;','',
+    '[Bewegungsdaten]'];
+  var ohne=[];
+  k.zeilen.forEach(function(z){
+    var pnr=(d.personalNr||{})[z.uid];
+    if(!pnr){ if(z.ist || z.urlaubTage) ohne.push(z.name); return; }
+    if(z.ist) zeilen.push('1;'+monatsErster+';'+dez(z.ist)+';01;'+d.lohnartStunden+';'+pnr+';');
+    if(d.urlaubstage && z.urlaubTage) zeilen.push('1;'+monatsErster+';'+z.urlaubTage.toFixed(2).replace('.',',')+';71;;'+pnr+';');
+  });
+  return { text: zeilen.join('\r\n')+'\r\n', ohne: ohne };
+}
+function zkDatevExport(){
+  var k=_zkKonto, d=_datev||{};
+  if(!d.beraterNr || !d.mandantenNr || !d.lohnartStunden){
+    _datevOffen=true; zkKontoZeichnen();
+    var f=$('zkDatev'); if(f) f.scrollIntoView({ block:'start' });
+    toast('Erst Berater-, Mandantennummer und Lohnart eintragen – die gibt das Lohnbüro.', true); return;
+  }
+  if(!(k.abschluss && k.abschluss.abgeschlossen) &&
+     !confirm('Der Monat ist noch nicht abgeschlossen. Die Zahlen können sich noch ändern.\n\nTrotzdem eine DATEV-Datei erzeugen?')) return;
+  var r=datevText(k, d);
+  /* ANSI: der Text ist reines ASCII (geprüft im Test), also sind die Bytes
+     dieselben wie in Windows-1252. */
+  var blob=new Blob([r.text],{type:'text/plain'});
+  var url=URL.createObjectURL(blob), a=document.createElement('a');
+  a.href=url; a.download='DATEV-LODAS-'+k.monat+'.txt'; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); },1500);
+  toast(r.ohne.length ? 'DATEV-Datei erstellt. Ohne Personalnummer und deshalb NICHT drin: '+r.ohne.join(', ')
+                      : 'DATEV-Datei erstellt ✓ Bitte beim ersten Mal vom Lohnbüro prüfen lassen.', !!r.ohne.length);
 }
 function kontoDateiName(endung){ return 'Stunden-'+_zkKonto.monat+'.'+endung; }
 function zkKontoExport(art){
@@ -50995,7 +51186,10 @@ function bindActions(){
   var zkK=$('zkKonto');
   if(zkK) zkK.addEventListener('click', function(e){
     var x=e.target.closest('[data-zkexport]'), a=e.target.closest('[data-zkabschluss]'), o=e.target.closest('[data-zkoeffnen]');
-    if(x) zkKontoExport(x.getAttribute('data-zkexport'));
+    var ds=e.target.closest('[data-zkdatevsichern]');
+    if(ds){ datevSichern(ds); return; }
+    if(x && x.getAttribute('data-zkexport')==='datev') zkDatevExport();
+    else if(x) zkKontoExport(x.getAttribute('data-zkexport'));
     else if(a) zkKontoAbschliessen(a);
     else if(o) zkKontoOeffnen(o);
   });
