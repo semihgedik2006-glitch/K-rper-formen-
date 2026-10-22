@@ -98,6 +98,19 @@ function ki(antworten) {
   pruefe(/\d{1,2}:\d{2} Uhr$/.test(w.jetztText(Date.UTC(2026, 9, 22, 12, 5))), 'Uhrzeit in Köln: ' + w.jetztText(Date.UTC(2026, 9, 22, 12, 5)));
   pruefe(/14:05/.test(w.jetztText(Date.UTC(2026, 9, 22, 12, 5))), 'Sommerzeit: 12:05 UTC ist 14:05 in Köln');
 
+  /* 2.12, live am 22.10.2026: „was tun wenn kunde lws hat" fand den
+     Eintrag mit genau diesem Thema nicht — und die KI verweigerte bei
+     Gesundheit selbst gefundenes Vorgehen. */
+  const roh = [
+    { thema: 'ein kunde will kündigen was soll ich machen', inhalt: 'Kunde fragen' },
+    { thema: 'Was darf ich ins Studio-Gehirn schreiben?', inhalt: 'Keine Kundennamen' },
+    { thema: 'was tun wenn kunde lws hat', inhalt: 'So gehst du vor' },
+  ];
+  pruefe(w.wissenRangieren(roh, w.suchbegriffe('was tun wenn kunde lws hat'))[0].thema === 'was tun wenn kunde lws hat', 'seltenes Wort im Thema (LWS) kommt nach vorn');
+  pruefe(w.wissenRangieren(roh, w.suchbegriffe('kunde will kündigen'))[0].thema.startsWith('ein kunde will'), 'Gegenprobe: Kündigung bleibt vorn');
+  pruefe(/geprüftes internes Vorgehen/.test(sys), 'Systemtext: Gesundheits-Vorgehen aus dem Wissen wird wiedergegeben');
+  pruefe(!/oder sag "Das weiß ich noch nicht sicher"/.test(sys), 'Systemtext: „weiß ich nicht sicher" nur ohne Wissen');
+
   pruefe(!w.whatsappAktiv({}), 'WhatsApp ohne WA_AKTIV aus');
   pruefe(w.whatsappAktiv({ WA_AKTIV: '1' }), 'WhatsApp mit WA_AKTIV=1 an');
 
