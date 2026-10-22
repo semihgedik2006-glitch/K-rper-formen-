@@ -82,7 +82,22 @@ const ansicht = page => page.evaluate(() => {
     /* Runde 184: fünf — Aufgaben, Putzplan, Material, Geräte,
        Probetraining. Die Dokumente sind der sechste von früher, jetzt
        unter „Wissen" (siehe oben). */
-    if (unter.length !== 5) errs.push('Studio hat ' + unter.length + ' statt 5 Unterseiten');
+    /* Runde 185 (aus dem Betrieb: „das problem mit dem zu viel bleibt
+       immer noch bestehen" — und „deine 2 fragen können wir so
+       umsetzten"): vier — Aufgaben, Putzplan, Bestand, Probetraining.
+       Material und Geräte sind EIN Reiter „Bestand"; Geräte stehen
+       im Umschalter oben in der Seite. Dass dieser Weg da ist, wird
+       gleich mitgeprüft — sonst wäre „vier" nur eine kleinere Zahl. */
+    if (unter.length !== 4) errs.push('Studio hat ' + unter.length + ' statt 4 Unterseiten');
+    if (!unter.some(u => /Bestand/.test(u))) errs.push('„Bestand" fehlt unter Studio');
+    await page.evaluate(() => { const r = document.querySelector('#subnav [data-paar="bestand"]'); if (r) r.click(); });
+    await page.waitForTimeout(600);
+    const bestand = await page.evaluate(() => [...document.querySelectorAll('#view-material .umschalter [data-umschalt]')]
+      .filter(x => x.checkVisibility()).map(x => x.textContent.trim()));
+    console.log('BESTAND:', JSON.stringify(bestand));
+    if (JSON.stringify(bestand) !== JSON.stringify(['Material', 'Geräte'])) {
+      errs.push('Im Bestand fehlt der Umschalter Material | Geräte: ' + JSON.stringify(bestand));
+    }
 
     await page.evaluate(() => document.querySelector('.mobnav [data-group="g-wissen"]').click());
     await page.waitForTimeout(600);

@@ -90,6 +90,8 @@ async function start(errs, brett) {
          dazukommt. */
       linkZiele: [...document.querySelectorAll('#view-home .karten-kopf .mini-link')]
         .map(x => x.dataset.go),
+      linkPins: [...document.querySelectorAll('#view-home .karten-kopf .mini-link')]
+        .map(x => x.dataset.pin || ''),
     }));
     console.log('Aushänge:', JSON.stringify(stand.annTexte));
     console.log('Brett:', JSON.stringify(stand.brettTexte));
@@ -136,9 +138,16 @@ async function start(errs, brett) {
        Übergabe stand vorher nur im Team-Bereich hinter zwei Klicks und
        einer Studio-Auswahl — also da, wo sie niemand liest, der gerade
        zur Schicht kommt. */
-    if (JSON.stringify(stand.linkZiele) !== JSON.stringify(['ann', 'team', 'team'])) {
-      errs.push('FEHLT: die Links zeigen nicht auf Aushänge, Übergabe und Team (' +
-        JSON.stringify(stand.linkZiele) + ')');
+    /* Runde 185 (aus dem Betrieb: „das problem mit dem zu viel bleibt
+       immer noch bestehen"): das Schwarze Brett hängt jetzt in der
+       Pinnwand (Ansicht 'ann', Teil „Aushänge"), nicht mehr im Team.
+       Die Brett-Karte zeigt daher auf 'ann' mit data-pin="brett" —
+       geprüft wird unten auch, dass der Klick dort wirklich das Brett
+       aufschlägt, nicht nur die Infos. */
+    if (JSON.stringify(stand.linkZiele) !== JSON.stringify(['ann', 'team', 'ann']) ||
+        stand.linkPins[2] !== 'brett') {
+      errs.push('FEHLT: die Links zeigen nicht auf Aushänge, Übergabe und Pinnwand/Brett (' +
+        JSON.stringify(stand.linkZiele) + ' · pin ' + JSON.stringify(stand.linkPins) + ')');
     }
 
     // Der Link darf die Karte nicht zuklappen, sondern muss umschalten
@@ -150,6 +159,23 @@ async function start(errs, brett) {
     });
     console.log('Nach Klick auf „Alle ›":', wo);
     if (wo !== 'view-ann') errs.push('FEHLT: „Alle ›" führt nicht zu den Aushängen (steht auf ' + wo + ')');
+
+    // Runde 185: „Alle ›" am Brett führt zur Pinnwand, Teil Aushänge (Brett)
+    await page.evaluate(() => document.querySelector('.mobnav [data-group="g-start"]').click());
+    await page.waitForTimeout(700);
+    await page.evaluate(() => document.querySelector('#homeBoardCard .mini-link').click());
+    await page.waitForTimeout(900);
+    const woBrett = await page.evaluate(() => {
+      const v = document.querySelector('.view.show');
+      const brett = document.getElementById('bbList');
+      return { view: v ? v.id : null,
+               brettSichtbar: !!(brett && brett.checkVisibility && brett.checkVisibility()),
+               imAnn: !!(brett && brett.closest('#view-ann')) };
+    });
+    console.log('Nach Klick auf Brett „Alle ›":', JSON.stringify(woBrett));
+    if (woBrett.view !== 'view-ann' || !woBrett.brettSichtbar || !woBrett.imAnn) {
+      errs.push('FEHLT: Brett „Alle ›" schlägt die Aushänge in der Pinnwand nicht auf (' + JSON.stringify(woBrett) + ')');
+    }
 
     await page.screenshot({ path: SP + '/startlesen.png' });
     await b.close();

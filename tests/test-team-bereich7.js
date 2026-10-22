@@ -85,10 +85,35 @@ const reiterMessen = (page, listeId) => page.evaluate(id => {
     if (plan.tage !== 7) errs.push('Der Plan zeigt ' + plan.tage + ' statt 7 Tage');
     if (plan.daueErklaerung) errs.push('Die Dauererklaerung ueber dem Plan ist zurueck');
 
+    /* Runde 185: das Schwarze Brett hängt nicht mehr unter „Plan", sondern
+       in der Pinnwand (Umschalter „Aushänge"). Aus dem Betrieb: „das
+       problem mit dem zu viel bleibt immer noch bestehen" – „deine 2
+       fragen können wir so umsetzten". Gemessen wird dort mit denselben
+       Grenzen (Liste ≤ 260 px, Feld nicht vor der Liste); danach geht
+       es über den Raum zurück ins Team. */
     for (const [tab, liste] of [['abwesend', 'absList'], ['uebergabe', 'hoList'], ['brett', 'bbList']]) {
       await page.evaluate(x => document.querySelector('[data-teamtab="' + x + '"]').click(), tab);
       await page.waitForTimeout(600);
-      const m = await reiterMessen(page, liste);
+      if (tab === 'brett') {
+        await page.evaluate(() => { const u = document.querySelector('#view-ann .umschalter [data-pinteil="brett"]'); if (u && !u.classList.contains('active')) u.click(); });
+        await page.waitForTimeout(600);
+      }
+      const m = tab === 'brett' ? await page.evaluate(() => {
+        const sa = document.querySelector('#view-ann .scroll-area');
+        const liste = document.getElementById('bbList');
+        const pane = document.getElementById('teamPaneBrett');
+        const feld = pane.querySelector('input,textarea');
+        const karte = feld ? feld.closest('.card') : null;
+        const y = (e) => Math.round(e.getBoundingClientRect().top - sa.getBoundingClientRect().top) + sa.scrollTop;
+        return { ansicht: (document.querySelector('.view.show') || {}).id, imBild: !!liste.checkVisibility && liste.checkVisibility(),
+          listeY: y(liste), eintraege: liste.children.length,
+          feldY: feld && feld.checkVisibility() ? y(feld) : -1, karteZu: karte ? karte.classList.contains('zu') : false };
+      }) : await reiterMessen(page, liste);
+      if (tab === 'brett') {
+        if (m.ansicht !== 'view-ann' || !m.imBild) errs.push('brett: der Reiter führt nicht zur Pinnwand/Aushänge (' + m.ansicht + ')');
+        await page.evaluate(() => document.querySelector('.mobnav [data-group="g-team"]').click());
+        await page.waitForTimeout(900);
+      }
       console.log('REITER ' + tab + ':', JSON.stringify(m));
       if (!m.eintraege) errs.push(tab + ': keine Eintraege in der Liste');
       if (m.listeY > 260) errs.push(tab + ': die Liste beginnt erst bei y=' + m.listeY);

@@ -221,7 +221,19 @@ async function seite(b, stub, such, breite) {
       const it = z.getAttribute('data-al-ichtab');
       const cg = z.getAttribute('data-al-cgo');
       let reiterOk = true;
+      let zielUm = null;
       if (tt) reiterOk = !!document.querySelector('[data-teamtab="' + tt + '"].on');
+      /* Runde 185 (aus dem Betrieb: „das problem mit dem zu viel bleibt
+         immer noch bestehen"): das Schwarze Brett ist vom Team in die
+         Pinnwand gezogen. Der alte Team-Reiter ist ausgeblendet
+         (pin-umgezogen) und leitet um. Richtig ist dann: Seite
+         „Pinnwand" (view-ann), Teil „Aushänge" aktiv, Brett sichtbar. */
+      if (tt === 'brett' && document.querySelector('[data-teamtab="brett"].pin-umgezogen')) {
+        zielUm = 'view-ann';
+        const bb = document.getElementById('bbList');
+        reiterOk = !!document.querySelector('#view-ann .umschalter [data-pinteil="brett"].active') &&
+          !!(bb && bb.closest('#view-ann') && bb.checkVisibility());
+      }
       if (it) reiterOk = !!document.querySelector('[data-ichtab="' + it + '"].on');
       if (cg) {
         const pane = [...document.querySelectorAll('.chef-pane')].find(x => x.offsetParent !== null);
@@ -269,7 +281,7 @@ async function seite(b, stub, such, breite) {
       return {
         name, tipps, reiterOk,
         view: (document.querySelector('.view.show') || {}).id,
-        ziel: 'view-' + z.getAttribute('data-alles'),
+        ziel: zielUm || ('view-' + z.getAttribute('data-alles')),
         ladeZu: document.getElementById('allesLade').hidden,
       };
     }, i));

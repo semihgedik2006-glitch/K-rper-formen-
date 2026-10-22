@@ -108,6 +108,7 @@ const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel
       return raeume;
     });
     const besucht = {};
+    const dreiTipps = [];
     for (const g of plan) {
       await p.evaluate((g) => document.querySelector('#side [data-group="' + g + '"]').click(), g);
       await p.waitForTimeout(500);
@@ -119,11 +120,31 @@ const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel
         await p.waitForTimeout(300);
         const jetzt = await p.evaluate(() => (document.querySelector('.view.show') || {}).id);
         if (jetzt === 'view-' + r) besucht[r] = besucht[r] || g;
+        /* Runde 185: Material und Geräte sind EIN Reiter „Bestand", Chat
+           und Direkt EIN Reiter „Chats". Der zweite Teil steht als
+           Umschalter bzw. als „Direkt" vorn in der Kanalzeile – direkt
+           unter dem Reiter, ohne Suchen. Aus dem Betrieb: „das problem
+           mit dem zu viel bleibt immer noch bestehen" – „deine 2 fragen
+           können wir so umsetzten". Offen gezählt: diese Teile sind
+           EINEN Tipp weiter (Raum, Reiter, Umschalter); unten steht,
+           welche das sind. */
+        const teile = await p.evaluate(() => [...document.querySelectorAll('.view.show .umschalter [data-umschalt], #kanalDirekt, #kanalSpalte [data-dmalle]')]
+          .filter(e => e.getClientRects().length).map(e => (e.id === 'kanalDirekt' || e.dataset.dmalle) ? 'dm' : e.dataset.umschalt));
+        for (const t of teile) {
+          if (besucht[t]) continue;
+          await p.evaluate((t) => { const e = t === 'dm' ? [...document.querySelectorAll('#kanalDirekt, #kanalSpalte [data-dmalle]')].find(x => x.getClientRects().length) : document.querySelector('.view.show .umschalter [data-umschalt="' + t + '"]'); if (e) e.click(); }, t);
+          await p.waitForTimeout(300);
+          const da = await p.evaluate(() => (document.querySelector('.view.show') || {}).id);
+          if (da === 'view-' + t) { besucht[t] = g; dreiTipps.push(t); }
+        }
       }
     }
     const alle = ['home', 'ich', 'persoenlich', 'todos', 'putzplan', 'material', 'geraete', 'probe', 'team', 'chat', 'dm', 'ann', 'docs', 'schulung', 'gehirn', 'chef', 'planer', 'archive'];
     const fehlt = alle.filter(v => !besucht[v]);
     pruefe('alle ' + alle.length + ' Ansichten erreichbar über Raum + Reiter', !fehlt.length, 'fehlt: ' + fehlt.join(', ') + ' — gefunden: ' + JSON.stringify(besucht));
+    console.log('  (über den Umschalter, ein Tipp nach dem Reiter: ' + (dreiTipps.join(', ') || '–') + ')');
+    pruefe('nur Geräte und Direkt liegen hinter einem Umschalter (Runde 185), alles andere in zwei Tipps',
+      dreiTipps.every(v => v === 'geraete' || v === 'dm'), dreiTipps.join(', '));
     pruefe('Putzplan liegt im Raum Studio', besucht.putzplan === 'g-arbeit', besucht.putzplan);
     pruefe('Ich und Persönlich liegen unter Heute', besucht.ich === 'g-start' && besucht.persoenlich === 'g-start');
     pruefe('Schulung, Dokumente und Formi liegen unter Wissen', besucht.schulung === 'g-wissen' && besucht.docs === 'g-wissen' && besucht.gehirn === 'g-wissen', JSON.stringify(besucht));
@@ -219,6 +240,6 @@ const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel
   await b.close();
   console.log(schlecht
     ? '\n✗ Fünf Räume: ' + schlecht + ' von ' + (gut + schlecht) + ' Zusicherungen falsch'
-    : '\n✓ Fünf Räume: eine Navigation auf allen Geräten, jedes Ziel in zwei Tipps — ' + gut + ' Zusicherungen');
+    : '\n✓ Fünf Räume: eine Navigation auf allen Geräten, jedes Ziel in zwei Tipps (Geräte und Direkt über den Umschalter in drei) — ' + gut + ' Zusicherungen');
   process.exit(schlecht ? 1 : 0);
 })().catch(e => { console.error('Fehler: ' + e.message); process.exit(1); });

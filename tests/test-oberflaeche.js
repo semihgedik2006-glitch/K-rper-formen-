@@ -23,8 +23,16 @@ async function start(breite, hoehe, stub, errs) {
 async function zuArbeit(page, unterseite) {
   await page.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
   await page.waitForTimeout(450);
-  const s = await page.$('[data-subview="' + unterseite + '"]');
+  /* Runde 185 (aus dem Betrieb: „das problem mit dem zu viel bleibt
+     immer noch bestehen"): Material und Geräte sind EIN Reiter
+     „Bestand"; Geräte über den Umschalter oben in der Seite. */
+  const ziel = unterseite === 'geraete' ? 'material' : unterseite;
+  const s = await page.$('#subnav [data-subview="' + ziel + '"]');
   if (s) { await s.click(); await page.waitForTimeout(1100); }
+  if (unterseite === 'geraete') {
+    const um = await page.$('#view-material .umschalter [data-umschalt="geraete"]');
+    if (um) { await um.click(); await page.waitForTimeout(1100); }
+  }
 }
 
 (async () => {

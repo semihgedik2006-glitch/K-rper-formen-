@@ -166,7 +166,20 @@ const setzeLesestaende = (p, fn) => p.evaluate((SRC) => {
        Unterhaltung, für „ungelesen"). Neu ist nur, dass die schreibende
        Seite ihn als Häkchen sieht. */
     const p = await oeffne(b, 1440, 900);
-    await p.evaluate(() => { const z = document.querySelector('[data-subview="dm"]'); if (z) z.click(); });
+    /* Runde 185 (aus dem Betrieb: „das problem mit dem zu viel bleibt
+       immer noch bestehen"): Chat und Direkt sind EIN Reiter „Chats".
+       Direktnachrichten öffnet man über „Direkt" vorn in der Kanalzeile
+       (#kanalDirekt) bzw. am Rechner mit Kanalspalte über „Alle
+       Direktnachrichten" (#kanalSpalte [data-dmalle]). */
+    const dmWeg = await p.evaluate(() => {
+      const sicht = e => e && e.checkVisibility && e.checkVisibility();
+      const k = document.getElementById('kanalDirekt');
+      if (sicht(k)) { k.click(); return 'kanalDirekt'; }
+      const a = document.querySelector('#kanalSpalte [data-dmalle]');
+      if (sicht(a)) { a.click(); return 'kanalSpalte'; }
+      return null;
+    });
+    pruefe('Direktnachrichten sind aus dem Chat erreichbar', !!dmWeg, String(dmWeg));
     await p.waitForTimeout(700);
     await p.fill('#dmSearch', 'a');
     await p.waitForTimeout(400);
