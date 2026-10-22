@@ -32,8 +32,14 @@ const SP = process.env.SP || __dirname;
   async function go(view) {
     await page.evaluate(g => document.querySelector('.mobnav [data-group="' + g + '"]').click(), GROUP[view]);
     await page.waitForTimeout(420);
-    const sub = await page.$('[data-subview="' + view + '"]');
+    /* Runde 185 (aus dem Betrieb: „das problem mit dem zu viel bleibt
+       immer noch bestehen"): Chat und Direkt sind EIN Reiter „Chats".
+       Direktnachrichten öffnet man über „Direkt" vorn in der
+       Kanalzeile (#kanalDirekt), nicht mehr über einen eigenen Reiter. */
+    const ziel = view === 'dm' ? 'chat' : view;
+    const sub = await page.$('#subnav [data-subview="' + ziel + '"]');
     if (sub) { await sub.click(); await page.waitForTimeout(620); }
+    if (view === 'dm') { await page.click('#kanalDirekt'); await page.waitForTimeout(620); }
   }
 
   // 2) Jede erreichbare Seite öffnen und prüfen, dass sie wirklich Inhalt hat

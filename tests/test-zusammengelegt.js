@@ -225,13 +225,13 @@ const TREFFER = (el) => {
     const oben = await p.evaluate(() => { const k = document.getElementById('logoutBtn'); return !!k.getClientRects().length && getComputedStyle(k).display !== 'none'; });
     pruefe(w + ' px: oben kein Abmelden mehr', !oben);
     await tippe(p, '#uAvatar');
-    const k = await p.evaluate(() => { const k = document.getElementById('pmLogout'); k.scrollIntoView({ block: 'center' }); return !!k.getClientRects().length; });
+    const k = await p.evaluate(() => { const k = document.getElementById('pmLogout'); if (!k) return false; k.scrollIntoView({ block: 'center' }); return !!k.getClientRects().length; });
     await p.waitForTimeout(200);
-    const t = await p.evaluate((f) => eval(f)(document.getElementById('pmLogout')), TREFFER.toString());
+    const t = k ? await p.evaluate((f) => eval(f)(document.getElementById('pmLogout')), TREFFER.toString()) : { w: 0, h: 0 };
     pruefe(w + ' px: im Profil steht „Abmelden", Trefferfläche ' + t.w + '×' + t.h, k && t.w >= 44 && t.h >= 44);
     let gefragt = '';
     p.once('dialog', d => { gefragt = d.message(); d.dismiss(); });
-    await p.evaluate(() => document.getElementById('pmLogout').click());
+    await p.evaluate(() => { const k = document.getElementById('pmLogout'); if (k) k.click(); });
     await p.waitForTimeout(300);
     pruefe(w + ' px: „Abmelden" im Profil fragt wie bisher nach', /^Abmelden\?/.test(gefragt), gefragt);
     await zu(p);
