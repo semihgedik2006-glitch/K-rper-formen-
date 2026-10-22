@@ -17962,3 +17962,93 @@ mehr ins design integrieren können“. Daraus entstand das Ideenpapier
   gemessen ist nur das Folgen der Maus.
 - Die Regel `formiAt` ist noch nicht ausgerollt. Bis dahin greift der
   Übergang: Der Haken geht ohne Spur raus.
+
+## Runde 187 — Zusammengelegt: Bestand, Chats, Pinnwand; Erledigt eingeklappt (22.10.2026)
+
+**Aus dem Betrieb:** „mach die nächste runde mit deinen vorschlägen und
+vergleiche alles mit psychologischen studien auf pubmed oder google
+scholar … deine 2 fragen können wir so umsetzten“.
+
+**Studienlage:** steht jetzt als eigene Vorbild-Datei unter
+`docs/design-vorbilder/studien-psychologie.md`, mit rund 25 Quellen.
+Ehrlich vermerkt: Die Websuche lief, das Öffnen von Volltexten nicht
+(Proxy). Die Angaben stammen aus Abstract-Auszügen und Sekundärquellen.
+Was daraus folgt, ist dort je Massnahme aufgeschrieben.
+
+**Was gebaut ist**
+
+1. **Zusammengelegte Reiter** (`REITER_PAARE`, `reiterPaar`,
+   `umschalterZeichnen`):
+   - **Bestand** = Material + Geräte.
+   - **Chats** = Chat + Direkt.
+   - Ein Reiter trägt die Marke für beide Ansichten und je einen Punkt.
+     Innen schaltet ein Umschalter in derselben Bauform wie „Studios |
+     Gruppen“.
+   - Warum: Weniger gleichrangige Wahlen verkürzen die Wahlzeit
+     (Hick-Hyman). Breite, flache Ebenen schlagen tiefe (Larson &
+     Czerwinski 1998, Zaphiris).
+   - Pirolli & Card (Information Scent) warnen, dass ein Sammelbegriff
+     schwächer „riecht“. Deshalb nennt der Umschalter die alten Namen
+     sichtbar, und „Alles“ und die Suche führen weiter einzeln zu Material
+     und Geräten.
+   - Studio hat jetzt 4 statt 5 Reiter, Nachrichten 2 statt 3.
+2. **Pinnwand = Infos + Aushänge.**
+   - Das Schwarze Brett zieht aus „Plan“ in die Seite der Infos. Das
+     Element wird umgehängt, nicht kopiert (`pinnwandZeichnen`).
+   - Der alte Team-Reiter bleibt als Umleitung (Fangphase am Ziel). Damit
+     landen alle bisherigen Wege (Startseite, Wünsche, „Alles“) auf den
+     Aushängen.
+   - Die Aushänge sind Tausch, Lob und Mitfahrgelegenheiten, also Mitteilungen
+     und kein Schichtplan.
+3. **Direkt in derselben Liste:**
+   - Am Rechner stehen die fünf letzten Direktnachrichten in der
+     Kanalspalte unter „Direkt“.
+   - Am Handy steht „Direkt“ fest vorn in der Kanalzeile.
+   - Ein erster Anlauf mit einer eigenen Zeile kostete bei 320 × 640 den
+     Verlauf die Höhe, die Runde 127 ihm gegeben hatte (test-chat-klein).
+4. **Erledigt eingeklappt** (`tdMitErledigt`):
+   - Erledigtes steht unter „N erledigt“ am Ende seiner Gruppe, eine
+     Ebene tief.
+   - Belege: progressive disclosure (Carroll & Carrithers 1984). Nur eine
+     Ebene, weil verschachteltes Aufklappen schlechter abschneidet
+     (Zaphiris 2002).
+   - Frisch Abgehaktes bleibt 60 s stehen, sonst verschwände die
+     Rückmeldung mitten im Tippen.
+5. **Punkt statt Zahl am Raum „Studio“:**
+   - Die Zahl zählte alle offenen Aufgaben aller Studios und sagte nie
+     „du bist gemeint“.
+   - Abzeichen lenken nachweislich den ersten Tipp (Bartoli & Benedetto
+     2022). Unterbrechungen und Mengen von Benachrichtigungen gehen mit
+     Stress einher (Kushlev 2016, Mark 2008).
+   - Zahlen bleiben dort, wo jemand persönlich gemeint ist: Glocke,
+     Direktnachrichten.
+   - Ein direkter Vergleich Zahl gegen Punkt wurde nicht gefunden. Das ist
+     eine Ableitung und auch so benannt.
+6. **Am Handy Bearbeiten/Löschen hinter „…“**, in Aufgaben UND Putzplan
+   (Hauswunsch vom 9.10.: „GENAU so wie der Putzplan“).
+   - Das Putzplan-„…“ drückt die vorhandenen Knöpfe der Zeile. Es gibt
+     also einen Weg, nicht zwei.
+   - Am Rechner bleiben Stift und Papierkorb beim Überfahren in der Zeile.
+7. **Abmelden im Profil**, direkt über „Speichern“.
+   - Darunter ging nicht: Das klebende „Speichern“ deckte den Knopf 12 px
+     zu (Hit-Test 33 statt 44).
+
+**Gemessen**
+- Handy, bisheriges Design: Die erste Materialzeile steht bei 577 px statt
+  602 auf main (Attrappe Chef). Am Handy ersetzt der Umschalter die
+  Seitenüberschrift.
+- Handy, neues Design: Bestand kostet den Umschalter, die erste
+  Materialzeile steht bei 720 statt 668 px. Bewusst so: Der Umschalter ist
+  der Weg zu den Geräten.
+- Trefferflächen: Alle Umschalter treffen ≥ 44 × 44 bei 320/390/430/820 und
+  1280/1440/1920, normal und kompakt (test-zusammengelegt).
+- test-zusammengelegt hat 52 Zusicherungen. Die Gegenprobe gegen main
+  ergibt 39 falsch.
+
+**Offen**
+- Archiv bleibt unter Verwaltung. Es enthält Sicherungen und erledigte
+  Aufgaben, keinen Bestand.
+- Push-Meldungen nur für persönlich Gemeintes, mit Ruhezeit ausserhalb der
+  Schicht: Das ist Folgerung 9 der Studienlage und noch nicht gebaut.
+- Findezeiten vorher/nachher messen (Folgerung 14): Ein schönerer Eindruck
+  beweist keine bessere Findbarkeit.
