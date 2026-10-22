@@ -19409,7 +19409,7 @@ Format muss das Lohnbüro einmal mit einer Probedatei bestätigen.
 - test-gehirn (Vollbild): Rot sind nur die drei bekannten
   Leistungsprüfungen unter CPU ÷4.
 
-## Runde 210 — Schulung: Nachweis der Unterweisung zum Drucken (22.10.2026)
+## Runde 211 — Schulung: Nachweis der Unterweisung zum Drucken (22.10.2026)
 
 **Aus dem Betrieb:** „jo mach weitert“ — auf den Vorschlag „ein
 druckbarer Nachweis der Hygiene- und Notfallunterweisung für Kontrollen“.
