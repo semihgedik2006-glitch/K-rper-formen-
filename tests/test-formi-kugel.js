@@ -149,6 +149,10 @@ const sichtbar = (p, sel) => p.evaluate((s) => { const el = document.querySelect
         const k = await p.evaluate(TREFFER, '#formiKugel');
         pruefe(`${w} px ${dichte}: Kugel ${k.w}×${k.h}, im Bild, nicht auf der Leiste`, k.w >= 44 && k.h >= 44 && k.imBild && k.ueberLeiste, JSON.stringify(k));
         await p.click('#formiKugel'); await p.waitForTimeout(400);
+        /* Erst messen, wenn das Fenster steht: beim Öffnen fährt die rechte
+           Seite noch hoch (jvRechtsAuf), „Senden" steht dann ein paar Pixel
+           tiefer — gemessen 1079 statt 1068 bei 1080 px Höhe. */
+        await p.waitForFunction(() => !document.getElementById('jarvis').getAnimations({ subtree: true }).some(a => a.playState === 'running' && isFinite(a.effect.getComputedTiming().endTime)), null, { timeout: 4000 }).catch(() => {});
         const g = await p.evaluate(TREFFER, '#jarvisGroesse');
         const s = await p.evaluate(TREFFER, '#jarvisSenden');
         const zu = await p.evaluate(TREFFER, '#jarvisZu');
