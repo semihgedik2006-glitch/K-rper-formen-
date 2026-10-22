@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-W5Ki5T43Oa5pE5qkpetSWBko7x9guhr8zQXHaxjD3nc='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-aTKMGW9kdMyA6EWpuP3e62CqQlrcQZF+vsxhZY0nqT4='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1078,6 +1078,7 @@ html.demo #terminalSchirm{top:44px}
 .tab .badge{margin-left:auto;background:var(--accent);color:var(--on-accent);font-family:var(--font-body);
   font-weight:700;font-size:var(--t-2xs);min-width:19px;height:19px;border-radius:var(--r-pille);display:none;
   place-items:center;padding:0 var(--s4)}
+.tab .badge.punkt,.mobnav .badge.punkt,.mn-reihe .badge.punkt{min-width:0;width:9px;height:9px;padding:0}
 
 .main{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column}
 .view{display:none;flex:1;min-height:0;flex-direction:column}
@@ -1147,6 +1148,19 @@ html.demo #terminalSchirm{top:44px}
   padding:var(--s2);background:var(--auf-1);border-radius:var(--r-pille);
   align-self:flex-start;flex-shrink:0}
 .chat-arten[hidden]{display:none}
+/* Runde 187: derselbe Umschalter in Bestand, Pinnwand und Direkt. */
+.umschalter{margin-bottom:var(--s8)}
+/* Am Handy nennt der Umschalter die Seite schon („Material | Geräte").
+   Die Überschrift darüber wäre die zweite Antwort auf dieselbe Frage und
+   kostete 77 px: die erste Materialzeile rutschte von 570 auf 626 px
+   (test-rahmen). Am Rechner bleibt die Überschrift. */
+@media(max-width:820px){
+  .view:has(> .umschalter:not([hidden])) > .view-head{display:none}
+  .umschalter{margin-top:var(--s4)}
+}
+[data-teamtab="brett"].pin-umgezogen,#obCard.pin-weg,#annArea[hidden]{display:none !important}
+.ks-punkt{flex:0 0 auto;width:8px;height:8px;border-radius:var(--r-rund);background:var(--accent)}
+.ks-alle .ks-txt b{color:var(--text-2);font-weight:600}
 .chat-art{border:none;background:none;cursor:pointer;font-family:var(--font-head);
   font-weight:700;font-size:var(--t-xs);letter-spacing:var(--ls-s);
   text-transform:uppercase;color:var(--text-3);padding:var(--s6) var(--s16);
@@ -1459,6 +1473,16 @@ html.demo #terminalSchirm{top:44px}
    Nur bei (hover:hover) und (pointer:fine). Am Handy gibt es kein
    Überfahren; dort bliebe ein Knopf, den man nicht sieht, aber trifft.
    Putzplan und Aufgaben gleich: „GENAU so wie der Putzplan" (9.10.). */
+/* Am Handy (Runde 187, aus dem Betrieb „deine 2 fragen können wir so
+   umsetzen"): Stift und Papierkorb wandern hinter „…". Jede Zeile hat
+   damit EIN Zeichen statt drei; Bearbeiten und Löschen sind seltene
+   Handlungen und stehen zwei Tipps entfernt, immer an derselben Stelle
+   (rechts, „…"). Am Rechner bleiben sie beim Überfahren in der Zeile. */
+.pp-mehr{display:none}
+@media(max-width:820px){
+  .t-knoepfe .t-edit,.t-knoepfe .t-del,.pp-item .pp-edit,.pp-item .pp-del{display:none}
+  .pp-item .pp-mehr{display:inline-grid;place-items:center;width:44px;min-height:44px;padding:0;flex-shrink:0}
+}
 @media (hover:hover) and (pointer:fine){
   .todo .griff,.todo .t-edit,.todo .t-del,
   .pp-item .griff,.pp-item .pp-edit,.pp-item .pp-del{opacity:0;transition:opacity .15s}
@@ -2768,6 +2792,13 @@ body.nurlesen .kopf-plus{display:none !important}
    (Profil → Aussehen, mit „wie das Gerät" sogar mit mehr). Abmelden
    bleibt: am geteilten Gerät beim Schichtwechsel der häufigste Griff. */
 #themeBtn{display:none}
+/* Runde 187: Abmelden zieht ins Profil (Bild oben rechts → ganz unten).
+   Oben bleiben Glocke, Profil, Hilfe und Suche. Der Knopf bleibt im
+   Markup, das Profil drückt ihn – eine Rückfrage, ein Ablauf. */
+#logoutBtn{display:none !important}
+.pm-abmelden{display:flex;align-items:center;justify-content:center;gap:var(--s8);
+  width:100%;min-height:44px;margin-top:var(--s12);color:var(--text-2)}
+.pm-abmelden svg{width:18px;height:18px}
 /* Und bei 320px reicht auch das nicht — für die Leitung. Sie trägt
    zwei Knoepfe mehr in der Zeile (Bericht und Glocke), gemessen 24
    Pixel über dem Rand. Der Bericht geht: denselben Knopf gibt es in
@@ -3007,6 +3038,17 @@ body.nurlesen .kopf-plus{display:none !important}
    solchen Zeilen nicht die Zeile, sondern jedes Teil AUSSER dem Danke
    zurückgenommen. */
 .todo.done:has(.t-danke-zeile){opacity:1}
+/* Erledigt eingeklappt (Runde 187): eine leise Zeile, voll antippbar. */
+.td-erledigt > summary{display:flex;align-items:center;gap:var(--s6);min-height:44px;
+  padding:0 var(--s8);cursor:pointer;list-style:none;color:var(--text-2);
+  font-size:var(--t-sm);font-weight:600;border-radius:var(--r-md)}
+.td-erledigt > summary::-webkit-details-marker{display:none}
+.td-erledigt > summary::before{content:'';width:7px;height:7px;flex:0 0 auto;
+  border-right:2px solid currentColor;border-bottom:2px solid currentColor;
+  transform:rotate(-45deg);transition:transform .2s var(--ease-ios)}
+.td-erledigt[open] > summary::before{transform:rotate(45deg)}
+.td-erledigt > summary:hover{color:var(--text)}
+.td-erledigt > summary:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
 .todo.done:has(.t-danke-zeile) .swipe-body > :not(.t-body),
 .todo.done:has(.t-danke-zeile) .t-body > :not(.t-danke-zeile){opacity:.58}
 
@@ -3206,7 +3248,6 @@ body.nurlesen .kopf-plus{display:none !important}
   overflow:hidden;text-overflow:ellipsis}
 .tm-person .tm-zst{display:block;font-size:var(--t-2xs);color:var(--text-3);
   font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tm-person.da{border-color:var(--accent);background:rgba(var(--akz-rgb),.08)}
 .tm-suche{flex-shrink:0;margin:0 0 var(--s10)}
 .tm-suche-inp{width:100%;min-height:56px;box-sizing:border-box;
   border-radius:var(--r-md);border:1px solid var(--line-2);
@@ -3244,6 +3285,19 @@ body.nurlesen .kopf-plus{display:none !important}
 .tm-taste.weg{font-size:var(--t-md);font-weight:700;color:var(--text-3)}
 .tm-taste.ok{font-size:var(--t-md);font-weight:800;border-color:var(--accent);
   background:var(--accent-glow);color:var(--accent-d)}
+/* Nach der PIN: der eigene Stand und ein bis zwei grosse Knöpfe. Gross,
+   weil im Vorbeigehen gestempelt wird — dieselben 64px wie die Tasten. */
+.tm-wahl{display:flex;flex-direction:column;align-items:center;gap:var(--s12);
+  width:min(420px,100%)}
+.tm-wahl[hidden]{display:none}
+.tm-stand{margin:0;text-align:center;font-size:var(--t-md);color:var(--text-2);
+  font-weight:600;line-height:var(--lh-eng)}
+.tm-stand b{display:block;font-family:var(--font-head);font-size:var(--t-xl);
+  color:var(--text);font-variant-numeric:tabular-nums}
+.tm-wahl-knoepfe{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:var(--s10);width:100%}
+.tm-wahl-knoepfe .tm-aktion{min-height:72px;width:100%;border-radius:var(--r-md);
+  font-size:var(--t-lg);font-weight:800}
 
 .tm-fuss{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
   gap:var(--s12);margin-top:var(--s12);font-size:var(--t-2xs);color:var(--text-3)}
@@ -3391,7 +3445,9 @@ button.ich-zeile:active{opacity:.7}
    breiten Bildschirm wuchs das Raster sonst in die Breite und blieb
    44 Pixel hoch — sieben Briefkastenschlitze. */
 .ich-monat-nav{display:flex;gap:var(--s4)}
-.ich-pfeil{min-width:38px;min-height:38px;padding:0 var(--s10);border:none;
+/* 44 statt 38 (Runde 189): per elementFromPoint nachgemessen trafen
+   ‹ und › nur 38 × 38 — in „Meine Zeiten" und im Kalender. */
+.ich-pfeil{min-width:44px;min-height:44px;padding:0 var(--s10);border:none;
   background:none;color:var(--text-2);font-family:var(--font-body);
   font-size:var(--t-sm);font-weight:600;border-radius:var(--r-xs);cursor:pointer;
   transition:background .2s var(--ease-ios),color .2s var(--ease-ios)}
@@ -3406,6 +3462,56 @@ button.ich-zeile:active{opacity:.7}
   font-variant-numeric:tabular-nums}
 .mz-summe span{font-size:var(--t-xs);color:var(--text-2)}
 .mz-neben{margin:0 0 var(--s10)}
+/* ── Zeiten (Runde 189) ──
+   Am Rechner zwei Spalten: links Jetzt und Woche, rechts der Monat. Eine
+   Liste über 1.174 px (gemessen bei 1440, vorher) ist dort genauso
+   ungestaltet wie ein abgeschnittener Knopf am Handy. */
+.st-raster{display:block}
+@media(min-width:1100px){
+  .st-raster{display:grid;grid-template-columns:minmax(340px,420px) minmax(0,1fr);
+    gap:var(--s32);align-items:start}
+}
+.st-spalte{min-width:0}
+.st-stand{margin:0 0 var(--s10);font-size:var(--t-lg);font-weight:650;color:var(--text-2);
+  line-height:var(--lh-eng)}
+.st-stand b{font-family:var(--font-head);font-weight:800;color:var(--text);
+  font-variant-numeric:tabular-nums}
+.st-stand.an{color:var(--text)}
+.st-zahlen{display:grid;grid-template-columns:1fr 1fr;gap:var(--s10);margin:0 0 var(--s6)}
+.st-zahl{display:flex;flex-direction:column;gap:var(--s2);padding:var(--s10) var(--s12);
+  border-radius:var(--r-md);background:var(--auf-1);border:1px solid var(--line)}
+.st-zahl span{font-size:var(--t-2xs);color:var(--text-3)}
+.st-zahl b{font-family:var(--font-head);font-weight:800;font-size:var(--t-xl);
+  font-variant-numeric:tabular-nums}
+.st-schicht{margin:0 0 var(--s12)}
+.st-schicht:empty{display:none}
+.st-handy{margin-top:var(--s6)}
+.st-knoepfe{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+  gap:var(--s10);margin:0 0 var(--s6)}
+.st-knoepfe .btn{width:100%;min-height:52px}
+.st-tag.leer .ich-was{color:var(--text-3)}
+/* Jetzt im Studio, bei der Leitung. Am Rechner nebeneinander, am Handy
+   untereinander — vier Gruppen, keine davon in einer Statusfarbe. */
+.zk-jetzt{margin:var(--s12) 0 var(--s16);padding:var(--s12) var(--s16);
+  border-radius:var(--r-md);background:var(--auf-1);border:1px solid var(--line)}
+.zk-jetzt:empty{display:none}
+.zk-j-kopf{display:flex;align-items:center;justify-content:space-between;gap:var(--s10);
+  margin:0 0 var(--s6)}
+.zk-j-kopf h3{margin:0;font-size:var(--t-md);font-weight:650}
+.zk-j-neu{min-height:44px}
+.zk-j-raster{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+  gap:var(--s6) var(--s16)}
+.zk-j-titel{margin:var(--s6) 0 var(--s2);font-size:var(--t-2xs);font-weight:700;
+  color:var(--text-3);letter-spacing:var(--ls-l);text-transform:uppercase}
+.zk-j-titel span{font-variant-numeric:tabular-nums}
+.zk-j-gruppe ul{list-style:none;margin:0;padding:0}
+.zk-j-p{display:flex;flex-direction:column;padding:var(--s4) 0;font-size:var(--t-sm)}
+.zk-j-p span{font-size:var(--t-2xs);color:var(--text-2);font-variant-numeric:tabular-nums}
+.st-plan{color:var(--text-2)}
+/* Abweichung vom Plan: keine Statusfarbe. Minus heisst nicht „Fehler" —
+   eine kürzere Schicht ist oft abgesprochen. */
+.st-diff{flex:0 0 auto;min-width:4.2em;text-align:right;font-size:var(--t-2xs);
+  font-variant-numeric:tabular-nums;color:var(--text-3)}
 .mz-stempel{margin:0 0 var(--s4) var(--s8);padding:var(--s6) 0 var(--s10) var(--s12);
   border-left:2px solid var(--line)}
 .mz-s{display:flex;align-items:baseline;gap:var(--s8);padding:var(--s2) 0;
@@ -3481,7 +3587,9 @@ button.ich-zeile:active{opacity:.7}
 .spl-stand.fehler{color:var(--danger-tx)}
 @media (min-width:820px){
   .spl-kopf{flex-direction:row;align-items:center;justify-content:space-between}
-  .spl-monat{flex:0 1 360px}
+  .spl-monat{flex:0 1 auto}
+  /* Die Pfeile stehen am Monat, nicht 270 px auseinander. */
+  .spl-monat-text{flex:0 1 auto;min-width:190px}
   .spl-los{width:auto;min-width:260px}
   .spl-schritte{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
@@ -3567,7 +3675,23 @@ button.ich-zeile:active{opacity:.7}
 .spl-woche h4{margin:0 0 var(--s6);font-size:var(--t-xs);font-weight:800;letter-spacing:var(--ls-m);
   text-transform:uppercase;color:var(--text-3)}
 .spl-woche-huelle{overflow-x:auto;border-radius:var(--r-md);background:var(--auf-1)}
+/* Feste Spalten (Runde 191): jede Woche hat Früh/Spät an derselben Stelle. */
 .spl-tab{width:100%;border-collapse:collapse;font-size:var(--t-sm)}
+@media (min-width:820px){ .spl-tab{table-layout:fixed} .spl-tab th:first-child{width:86px} }
+/* Wochen als Reiter, jeder mit seinen offenen Punkten. */
+.spl-kw-reiter{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:var(--s6);margin-bottom:var(--s12)}
+.spl-kw{display:flex;flex-direction:column;align-items:flex-start;gap:0;min-height:56px;padding:var(--s6) var(--s10);
+  border-radius:var(--r-md);background:var(--tipp-1);border:1px solid var(--tipp-kante);box-shadow:var(--e1);
+  color:var(--text);font:inherit;text-align:left;cursor:pointer;line-height:var(--lh-eng);transition:transform .2s var(--spring),background .2s}
+.spl-kw:active{transform:scale(.97)}
+@media (hover:hover){ .spl-kw:hover{background:var(--tipp-2)} }
+.spl-kw b{font-size:var(--t-sm);font-weight:800}
+.spl-kw span{font-size:var(--t-2xs);color:var(--text-3);font-variant-numeric:tabular-nums}
+.spl-kw small{font-size:var(--t-2xs);font-weight:700;color:var(--text-3)}
+.spl-kw small.bad{color:var(--danger-tx)}
+.spl-kw small.warn{color:var(--warm-tx)}
+.spl-kw.an{border-color:var(--accent);background:rgba(var(--akz-rgb),.16);box-shadow:var(--e2)}
+.spl-kw.alle{justify-content:center}
 .spl-tab th{font-size:var(--t-2xs);font-weight:700;color:var(--text-3);text-align:left;padding:var(--s8);
   border-bottom:1px solid var(--line)}
 .spl-tab th span{font-weight:500;display:block}
@@ -4565,6 +4689,7 @@ html{font-size:var(--fs,100%)}
   font-weight:600;font-size:var(--t-sm);white-space:nowrap;cursor:pointer;
   transition:background .2s,color .2s}
 .chan-alle:hover{background:var(--auf-2);color:var(--text)}
+.chan-zeile > .chan-direkt{margin-left:var(--rand)}
 .kn-gruppe{margin:var(--s12) 0 var(--s4);font-size:var(--t-2xs);color:var(--text-3);
   font-weight:700;letter-spacing:var(--ls-l);text-transform:uppercase}
 .kn-gruppe:first-child{margin-top:0}
@@ -5320,6 +5445,11 @@ html{font-size:var(--fs,100%)}
 .shift-day-h{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s8);margin-bottom:var(--s6)}
 .shift-day-h b{font-family:var(--font-head);font-size:var(--t-md)}
 .shift-day-h span{font-size:var(--t-xs);color:var(--text-3)}
+/* „＋" am Tag: nur für die Leitung, 44 × 44, sichtbar klein. */
+.wp-tag-plus{flex:0 0 auto;width:44px;height:44px;margin:-10px -8px -10px auto;display:grid;place-items:center;
+  background:none;border:none;border-radius:var(--r-sm);color:var(--text-3);font-size:var(--t-lg);cursor:pointer}
+.wp-tag-plus:hover{color:var(--accent-d);background:var(--auf-1)}
+.shift-day-h span + .wp-tag-plus{margin-left:0}
 .cert-item{display:flex;gap:var(--s10);align-items:center;padding:var(--s10) var(--s12);background:var(--bg-soft);
   border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:var(--s8)}
 .cert-ico{font-size:var(--t-lg);flex-shrink:0}
@@ -5351,19 +5481,21 @@ html{font-size:var(--fs,100%)}
 .tausch-btn:hover{border-color:var(--accent);color:var(--accent-d)}
 .tausch-btn.ok{border-color:var(--accent);color:var(--accent-d)}
 .tausch-btn.ok:hover{background:var(--accent-glow)}
-.shift-entry{display:flex;align-items:center;gap:var(--s8);padding:var(--s6) var(--s8);border-radius:var(--r-sm);
-  background:var(--bg-2);margin-bottom:var(--s4);font-size:var(--t-sm)}
-.shift-time{font-weight:800;color:var(--accent);white-space:nowrap;font-size:var(--t-sm)}
+/* Eine Schicht ist ein Knopf (Runde 191): ein Tipp öffnet das Schicht-Blatt
+   mit Abgeben, Übernehmen, Entfernen. Das ✕ und der Kasten „Ich kann
+   nicht" an jeder Zeile sind dorthin gewandert. */
+.shift-entry{display:flex;align-items:center;gap:var(--s8);width:100%;min-height:44px;padding:var(--s6) var(--s10);
+  border-radius:var(--r-sm);background:var(--bg-2);border:1px solid transparent;margin-bottom:var(--s4);
+  color:var(--text);font:inherit;font-size:var(--t-sm);text-align:left;cursor:pointer;
+  transition:border-color .2s,transform .2s var(--spring)}
+.shift-entry:active{transform:scale(.98)}
+@media (hover:hover){ .shift-entry:hover{border-color:var(--tipp-kante)} }
+.shift-entry.mein{box-shadow:inset 3px 0 0 var(--accent)}
+.shift-time{font-weight:800;color:var(--accent);white-space:nowrap;font-size:var(--t-sm);font-variant-numeric:tabular-nums}
 .shift-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .shift-note{font-size:var(--t-xs);color:var(--text-3)}
-/* 44 × 44 statt gut 28 × 20 (nachgemessen 24.9.2026, P-12). Die Zeile
-   wird dadurch kaum höher: ihr Innenabstand oben und unten fällt weg,
-   wenn ein ✕ darin steht. */
-.shift-x{background:none;border:none;color:var(--text-3);cursor:pointer;padding:0;border-radius:var(--r-xs);
-  flex:0 0 auto;min-width:44px;min-height:44px;display:grid;place-items:center;margin-right:calc(-1 * var(--s6))}
-.shift-x svg{width:16px;height:16px}
-.shift-entry:has(.shift-x){padding-top:0;padding-bottom:0}
-.shift-x:hover{color:var(--danger-tx)}
+/* Tausch läuft: ein Wort, kein Kasten — die Knöpfe stehen darunter. */
+.wp-marke{flex:0 0 auto;font-size:var(--t-2xs);font-weight:700;color:var(--warm-tx);white-space:nowrap}
 .shift-empty{font-size:var(--t-sm);color:var(--text-3);padding:var(--s2) var(--s2)}
 /* Ein Tag ohne Einteilung braucht keine volle Karte — sonst scrollt man
    an fünf gleich grossen leeren Kästen vorbei, bevor heute kommt. */
@@ -5372,7 +5504,7 @@ html{font-size:var(--fs,100%)}
 .shift-day.leer .shift-day-h b{font-size:var(--t-sm);font-weight:600}
 .shift-day.leer .shift-empty{display:none}
 .shift-day.leer .shift-day-h::after{content:'—';color:var(--text-3);font-size:var(--t-xs)}
-.shift-sum{display:flex;flex-wrap:wrap;gap:var(--s6);margin:0 0 var(--s10)}
+.shift-day.leer .shift-day-h:has(.wp-tag-plus)::after{content:none}
 /* ‹ und › neben „Heute" waren 38 breit (kompakt 30) — btn-sm
    schrumpft den Innenabstand, und ein einzelnes Zeichen füllt nichts. */
 .wochen-pfeil{min-width:44px;justify-content:center}
@@ -5387,27 +5519,150 @@ html{font-size:var(--fs,100%)}
 #shiftGrid.vergangen-auf .shift-day.vergangen{display:block}
 /* Am Rechner: die Woche in sieben Spalten. Eine Spalte über 1.100 px
    mit sieben Zeilen untereinander war genau das „ungestaltet", das am
-   PC nicht fertig ist. */
+   PC nicht fertig ist. Nur in der Ansicht „Tage" — „Personen" ist das
+   Raster weiter unten. */
 @media (min-width:1100px){
-  #shiftGrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:var(--s8);align-items:start}
-  #shiftGrid .shift-sum{grid-column:1/-1;margin-bottom:var(--s2)}
+  #shiftGrid:not(.wp-raster-an){display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:var(--s8);align-items:start}
+  #shiftGrid:not(.wp-raster-an) > .lese-leer{grid-column:1/-1;margin:0}
   #shiftGrid .shift-vergangen{display:none}
   #shiftGrid .shift-day,#shiftGrid .shift-day.vergangen{display:block;margin-bottom:0;min-width:0}
   #shiftGrid .shift-day.vergangen{opacity:.72}
   #shiftGrid .shift-day-h{flex-wrap:wrap;gap:var(--s2) var(--s6)}
-  /* Zeit und ✕ in der ersten Zeile, der Name darunter — sonst stand
-     das ✕ in einer Spalte von 150 px allein in einer dritten Zeile. */
-  #shiftGrid .shift-entry{flex-wrap:wrap;gap:var(--s2) var(--s6)}
-  #shiftGrid .shift-x{order:2;margin-left:auto}
-  #shiftGrid .shift-name{order:3;white-space:normal;overflow-wrap:anywhere;flex:1 1 100%}
+  /* Zeit oben, Name darunter — umgebrochen wird an Bindestrich und
+     Leerzeichen, nicht mitten im Wort (vorher „Geschäftsführun|g"). */
+  #shiftGrid .shift-entry{flex-wrap:wrap;gap:var(--s2) var(--s6);padding:var(--s6) var(--s8)}
+  #shiftGrid .shift-name{white-space:normal;overflow-wrap:break-word;flex:1 1 100%}
+  #shiftGrid .wp-marke{flex:1 1 100%}
 }
+.shift-sum{display:flex;flex-wrap:wrap;gap:var(--s6);margin:0 0 var(--s10)}
+.shift-sum:empty{display:none}
 .shift-sum span{font-size:var(--t-xs);font-weight:700;padding:var(--s4) var(--s10);border-radius:var(--r-pille);
   background:var(--bg-soft);border:1px solid var(--line);color:var(--text-2)}
 .shift-sum span.tausch{background:var(--f-warn);border-color:var(--k-warn);color:var(--warm-tx)}
-.abs-chip{display:inline-flex;align-items:center;gap:var(--s4);padding:var(--s4) var(--s10);border-radius:var(--r-pille);
-  font-size:var(--t-xs);font-weight:700;background:var(--f-warn);color:var(--warm-tx);
-  border:1px solid var(--k-warn);margin:var(--s2) var(--s4) var(--s2) 0}
-.abs-chip.krank{background:var(--f-bad);color:var(--danger-tx);border-color:var(--k-bad)}
+/* Abwesend im Plan: neutrale Schraffur statt Bernstein/Rot (Runde 191).
+   Abwesenheit meldet keinen Fehler; Statusfarben nur für Status. */
+.wp-abw-zeile{display:flex;flex-wrap:wrap;gap:var(--s4);margin-top:var(--s6)}
+.wp-abw{display:inline-flex;align-items:center;padding:var(--s4) var(--s10);border-radius:var(--r-pille);
+  font-size:var(--t-xs);font-weight:600;color:var(--text-2);border:1px solid var(--line-2);
+  background:repeating-linear-gradient(135deg,var(--auf-2) 0 5px,transparent 5px 11px)}
+
+/* ── Schichtplan: Kopf in einer Zeile (Runde 191) ──
+   Links „wann" (‹ KW ›, Heute), rechts „wie ansehen / was tun" — die
+   Ordnung aus Planday. Am Handy bricht der rechte Teil in eine zweite
+   Zeile. */
+.wp-kopf{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--s8) var(--s12);margin-bottom:var(--s10)}
+.wp-wann{display:flex;align-items:center;gap:var(--s6);min-width:0}
+.wp-titel{min-width:0;padding:0 var(--s4);text-align:center}
+.wp-titel small{display:block;font-size:var(--t-2xs);font-weight:700;letter-spacing:var(--ls-m);text-transform:uppercase;color:var(--text-3)}
+.wp-titel h3{margin:0;white-space:nowrap;font-variant-numeric:tabular-nums}
+.wp-tun{display:flex;align-items:center;gap:var(--s8);flex-wrap:wrap}
+/* Die Zahlen der Woche stehen IM Kopf: am Rechner zwischen „wann" und
+   „was tun", am Handy in der zweiten Zeile links neben „Nur meine". */
+.wp-kopf > .shift-sum{flex:1 1 0;min-width:0;margin:0;justify-content:flex-start}
+.wp-kopf > .wp-tun{flex:0 0 auto;flex-wrap:nowrap;align-self:flex-start}
+@media (max-width:1099px){
+  .wp-wann{flex:1 1 100%}
+  /* „＋ Schicht" nur am Rechner — am Handy hat jeder Tag sein ＋, und
+     ohne den Knopf passen die Zahlen und „Nur meine" in eine Zeile
+     (gemessen bei 390 px: sonst rutschte heute unter den Rand, und die
+     Seite rollte nach dem Öffnen 135 px; das war P-12). */
+  #shiftNeu{display:none}
+  /* Der Satz unter „Wartet auf deine Entscheidung" kostet am Handy eine
+     Zeile; die Knöpfe nennen Studio und Zahl selbst. */
+  #teamWartet > .hint{display:none}
+}
+@media (min-width:1100px){ .wp-kopf{flex-wrap:nowrap} .wp-kopf > .wp-tun{align-self:center} }
+.wp-tun .chip-row{flex-wrap:nowrap;gap:var(--s4)}
+.wp-tun [hidden]{display:none}
+#shiftNeu{min-height:44px}
+@media (max-width:359px){
+  /* 320 px: ‹ Titel › und Heute passen nicht nebeneinander. Heute zieht
+     in die zweite Zeile, zu „Nur meine". */
+  .wp-kopf{display:grid;grid-template-columns:minmax(0,1fr) auto}
+  .wp-wann{display:contents}
+  .wp-wann > #shiftPrev{grid-column:1;grid-row:1;justify-self:start}
+  .wp-wann > .wp-titel{grid-column:1 / -1;grid-row:1;justify-self:center}
+  .wp-wann > #shiftNext{grid-column:2;grid-row:1;justify-self:end}
+  .wp-wann > #shiftToday{grid-column:1;grid-row:2;justify-self:start}
+  .wp-tun{grid-column:2;grid-row:2;justify-self:end}
+  .wp-kopf > .shift-sum{grid-column:1 / -1;grid-row:3}
+}
+/* Das Raster nach Person (ab 1.100 px). */
+.wp-raster{display:flex;flex-direction:column;border-radius:var(--r-md);background:var(--auf-1);border:1px solid var(--line)}
+.wp-z{display:grid;grid-template-columns:minmax(150px,1.5fr) repeat(7,minmax(0,1fr)) 78px;align-items:stretch;border-top:1px solid var(--line)}
+.wp-kopfz{border-top:none;font-size:var(--t-2xs);color:var(--text-3);font-weight:600;background:var(--bg-2);
+  border-radius:var(--r-md) var(--r-md) 0 0}
+.wp-kopfz > span{display:flex;align-items:center;gap:var(--s4);padding:var(--s8) var(--s8);white-space:nowrap}
+.wp-kopfz .wp-t{justify-content:center}
+.wp-kopfz .wp-t b{color:var(--text-2);font-size:var(--t-xs)}
+.wp-kopfz .wp-t.heute,.wp-kopfz .wp-t.heute b{color:var(--accent-d)}
+.wp-kopfz .wp-t.heute{box-shadow:inset 0 -2px 0 var(--accent)}
+.wp-p{display:flex;align-items:center;gap:var(--s8);padding:var(--s4) var(--s10);min-width:0;font-size:var(--t-sm);font-weight:600}
+.wp-p > span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wp-p small{font-weight:500;color:var(--text-3)}
+.wp-z.ich .wp-p{box-shadow:inset 3px 0 0 var(--accent)}
+.wp-c{display:flex;flex-direction:column;justify-content:center;gap:var(--s2);padding:var(--s2);min-width:0;min-height:50px;
+  border-left:1px solid var(--line)}
+.wp-c.heute{background:rgba(var(--akz-rgb),.07)}
+.wp-c.vorbei > *{opacity:.62}
+.wp-c.abw{background:repeating-linear-gradient(135deg,var(--auf-2) 0 5px,transparent 5px 11px)}
+.wp-abw-txt{font-size:var(--t-2xs);font-weight:700;color:var(--text-2);text-align:center}
+.wp-schicht{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;min-height:44px;
+  padding:var(--s2) var(--s4);border-radius:var(--r-sm);background:var(--tipp-1);border:1px solid var(--tipp-kante);box-shadow:var(--e1);
+  color:var(--text);font:inherit;font-weight:700;font-size:var(--t-sm);font-variant-numeric:tabular-nums;line-height:var(--lh-eng);
+  cursor:pointer;transition:transform .2s var(--spring),background .2s}
+.wp-schicht small{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--t-2xs);font-weight:500;color:var(--text-3)}
+.wp-schicht:active{transform:scale(.96)}
+@media (hover:hover){ .wp-schicht:hover{background:var(--tipp-2)} }
+.wp-z.ich .wp-schicht{border-color:rgba(var(--akz-rgb),.55)}
+.wp-schicht.tausch{border-style:dashed;border-color:var(--k-warn)}
+/* Leere Zelle: am Rechner erscheint „＋" beim Darüberfahren und mit der
+   Tastatur; die Fläche ist immer die ganze Zelle. */
+.wp-leer{flex:1;width:100%;min-height:44px;background:none;border:1px dashed transparent;border-radius:var(--r-sm);
+  color:transparent;font-size:var(--t-lg);cursor:pointer;transition:color .15s,border-color .15s}
+.wp-leer:hover,.wp-leer:focus-visible{border-color:var(--line-2);color:var(--text-3)}
+@media (hover:none){ .wp-leer{color:var(--text-3)} }
+.wp-std{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;padding:var(--s4) var(--s10);
+  border-left:1px solid var(--line);font-variant-numeric:tabular-nums;line-height:var(--lh-eng)}
+.wp-std b{font-size:var(--t-sm)}
+.wp-std small{font-size:var(--t-2xs);color:var(--text-3)}
+/* Unter 85 % oder über 115 % des Solls: das IST ein Status. */
+.wp-std.warn{box-shadow:inset -3px 0 0 var(--warm)}
+.wp-std.warn b{color:var(--warm-tx)}
+.wp-mehr{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;margin-top:var(--s8);
+  padding:var(--s6) var(--s12);background:none;border:1px dashed var(--line-2);border-radius:var(--r-md);
+  color:var(--text-2);font:inherit;font-size:var(--t-sm);cursor:pointer}
+@media (hover:hover){ .wp-mehr:hover{border-color:var(--accent);color:var(--text)} }
+.wp-tausche{display:flex;flex-direction:column;gap:var(--s4);margin-bottom:var(--s12)}
+.wp-tausche-titel{margin:0;font-size:var(--t-2xs);font-weight:800;letter-spacing:var(--ls-m);text-transform:uppercase;color:var(--text-3)}
+.wp-tausch-eintrag > b{display:block;font-size:var(--t-sm);margin-bottom:var(--s4)}
+.wp-tausch-eintrag .tausch-row{margin-left:0}
+/* Das Schicht-Blatt */
+.wp-blatt-info{margin:var(--s10) var(--s4) 0;font-size:var(--t-sm);color:var(--text-2)}
+.wp-blatt-form{padding:var(--s12) 0 var(--s4)}
+.wp-blatt-form #shVorlagen{margin-bottom:var(--s12)}
+.wp-blatt-form [hidden]{display:none}
+/* Am Rechner steht das Blatt in der Mitte statt am unteren Rand. */
+@media (min-width:1100px){
+  #shiftSheet{align-items:center}
+  #shiftSheet .ms-card{border-radius:var(--radius);padding-bottom:var(--s16)}
+}
+/* Ein offenes Blatt ist oben — die Formi-Kugel (z-index 150) lag am
+   Handy über seinem ersten Knopf (gemessen am Schicht-Blatt bei 390 px;
+   dasselbe galt für jedes .msg-sheet). */
+body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
+/* Am Rechner: Studio-Auswahl und Reiter in EINER Zeile — vorher zwei
+   Zeilen (gemessen: die Woche begann bei 1440 × 900 erst bei y = 547). */
+@media (min-width:1100px){
+  #view-team .scroll-area{display:grid;grid-template-columns:minmax(220px,300px) minmax(0,1fr);column-gap:var(--s12);align-content:start}
+  #view-team .scroll-area > *{grid-column:1 / -1;min-width:0}
+  #view-team .scroll-area > .mat-bar{grid-column:1;margin-bottom:var(--s12)}
+  #view-team .scroll-area > .mat-bar ~ #teamTabs{grid-column:2}
+  /* „Wartet auf deine Entscheidung": Satz und Studios in einer Zeile. */
+  #teamWartet[style*="block"]{display:grid !important;grid-template-columns:auto minmax(0,1fr);align-items:center;column-gap:var(--s16);margin-bottom:var(--s12)}
+  #teamWartet > .sec-head{grid-column:1 / -1}
+  #teamWartet > .hint{margin:0 !important}
+}
 
 /* ── Abwesenheiten & Brett ── */
 .abs-row,.bb-item,.ho-item{padding:var(--s10) var(--s12);background:var(--bg-soft);border:1px solid var(--line);
@@ -5771,15 +6026,39 @@ html{font-size:var(--fs,100%)}
    behält sein transform für Hover und das Ausweichen vor „Rückgängig".
    Die Gefühle laufen als Web Animations (endlich, ohne Klassen-Neustart),
    siehe formiFuehlt(). Bei „weniger Bewegung" steht alles still. */
-.fk-koerper{position:absolute;inset:0;border-radius:var(--r-rund);pointer-events:none;background:var(--formi-ring);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.22), inset 0 0 10px 3px rgba(2,4,10,.55),
-    var(--e2), 0 0 22px rgba(var(--jv-rgb),.35);
+.fk-koerper{position:absolute;inset:0;border-radius:var(--r-rund);pointer-events:none;
+  box-shadow:var(--e2), 0 0 22px rgba(var(--jv-rgb),.35);
   transition:opacity .6s ease}
+/* Runde 195: der Ring liegt auf einer eigenen Ebene, damit er sich drehen
+   kann (das „Atmen" des Lochs), ohne dass Gesicht und Schatten mitdrehen. */
+.fk-wirbel{position:absolute;inset:0;border-radius:var(--r-rund);background:var(--formi-ring);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.22), inset 0 0 10px 3px rgba(2,4,10,.55)}
 /* Das Loch: 30 px wie vorher der schwarze Kern (37 % des Verlaufs). */
 .fk-loch{position:absolute;left:50%;top:50%;width:30px;height:30px;margin:-15px 0 0 -15px}
-.fk-pupille{position:absolute;inset:0;border-radius:var(--r-rund);background:#02040A;
+.fk-pupille{position:absolute;inset:0;border-radius:var(--r-rund);background:#02040A;overflow:hidden;
   box-shadow:0 0 0 1px rgba(2,4,10,.65), 0 0 7px 2px rgba(2,4,10,.55);transition:transform .3s ease}
-.fk-pupille i{position:absolute;left:7px;top:6px;width:5px;height:5px;border-radius:var(--r-rund);background:rgba(255,255,255,.85)}
+/* ── Das Gesicht im Loch (Runde 195) ─────────────────────────────────
+   Aus dem Betrieb: „vlt ein kleines gesicht was der maus folgt und
+   reagiert und so im schwarzen loch drinen". Zwei Augen, ein Mund — in
+   Weiss auf dem schwarzen Loch. mix-blend-mode:difference: wird das Loch
+   weiss (Freude, siehe .fk-weiss), wird das Gesicht von selbst schwarz.
+   Die Ausdrücke sind Web Animations auf transform (formiGefuehl). */
+.fk-weiss{position:absolute;inset:-2px;border-radius:var(--r-rund);opacity:0;
+  background:radial-gradient(circle, #FFFFFF 0 46%, #F3EEFF 62%, rgba(255,255,255,0) 74%)}
+.fk-gesicht{position:absolute;inset:0;mix-blend-mode:difference}
+.fk-auge{position:absolute;top:9px;width:5px;height:7px;border-radius:var(--r-rund);background:#FFFFFF;transition:transform .3s ease}
+.fk-auge.l{left:8px}
+.fk-auge.r{right:8px}
+.fk-mund{position:absolute;left:10px;top:18px;width:10px;height:5px;border:2px solid #FFFFFF;border-top:0;
+  border-radius:0 0 var(--r-rund) var(--r-rund);transition:transform .3s ease}
+/* Die Teilchen: was das weisse Loch ausspuckt und das schwarze wieder
+   einsaugt (formiAusbruch), und was beim „Atmen" hineinfällt. Sie liegen
+   in der Kugel, bewegen sich nur per transform/opacity und lassen jeden
+   Tipp durch. */
+.fk-teilchen{position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none}
+.fk-teilchen i{position:absolute;left:-3px;top:-3px;width:6px;height:6px;border-radius:var(--r-rund);
+  background:var(--c, #FFFFFF);box-shadow:0 0 6px var(--c, #FFFFFF);opacity:0}
+.fk-teilchen.klein i{left:-1.5px;top:-1.5px;width:3px;height:3px}
 /* Die Geister für den Glitch: zwei Ringe in Cyan und Magenta, die für
    einen Wimpernschlag neben dem Körper stehen. Ruhend unsichtbar. */
 .fk-geist{position:absolute;inset:0;border-radius:var(--r-rund);border:3px solid rgba(95,225,255,.9);opacity:0}
@@ -5791,10 +6070,11 @@ html{font-size:var(--fs,100%)}
   transition:opacity .2s ease, transform .3s cubic-bezier(.3,1.6,.5,1)}
 .formi-kugel.fk-hat .fk-punkt{opacity:1;transform:none}
 /* Schläft: das Auge geht zu, der Ring wird leiser. Aufwachen = Glitch. */
-.formi-kugel.fk-schlaeft .fk-pupille{transform:scaleY(.12)}
+.formi-kugel.fk-schlaeft .fk-auge{transform:scaleY(.15)}
+.formi-kugel.fk-schlaeft .fk-mund{transform:scale(.5)}
 .formi-kugel.fk-schlaeft .fk-koerper{opacity:.7}
 /* Neugierig, wenn die Maus darüber steht: die Pupille wird gross. */
-@media (hover:hover){ .formi-kugel:not(.fk-schlaeft):hover .fk-pupille{transform:scale(1.18)} }
+@media (hover:hover){ .formi-kugel:not(.fk-schlaeft):hover .fk-auge{transform:scale(1.25)} }
 /* Der Glitch über einem Ziel in der App (formiGlitch): zwei Balken, die
    springen, dann ist es vorbei. Kein Flackern der ganzen Fläche: eine
    einzige Abblendung, die Balken bewegen sich nur seitlich (WCAG 2.3.1,
@@ -5805,7 +6085,7 @@ html{font-size:var(--fs,100%)}
   background:linear-gradient(90deg, rgba(95,225,255,0), rgba(95,225,255,.5) 18%, rgba(95,225,255,.5) 72%, rgba(95,225,255,0))}
 .formi-glitch i + i{top:62%;height:min(11%, 8px);
   background:linear-gradient(90deg, rgba(255,90,205,0), rgba(255,90,205,.5) 30%, rgba(255,90,205,.5) 86%, rgba(255,90,205,0))}
-@media (prefers-reduced-motion:reduce){ .fk-loch,.fk-pupille,.fk-koerper,.fk-punkt{transition:none} .formi-glitch{display:none} }
+@media (prefers-reduced-motion:reduce){ .fk-loch,.fk-pupille,.fk-koerper,.fk-punkt,.fk-auge,.fk-mund{transition:none} .formi-glitch,.fk-teilchen{display:none} }
 .formi-kugel::after{content:"";position:absolute;inset:-4px;border-radius:var(--r-rund);border:1px solid rgba(var(--jv-rgb),.35);pointer-events:none}
 .formi-kugel:hover{transform:scale(1.05)}
 .formi-kugel:active{transform:scale(.94)}
@@ -5814,6 +6094,19 @@ html{font-size:var(--fs,100%)}
    in BEIDEN Dichten — --s72 schrumpft in „kompakt" auf 50 und hätte die
    Kugel auf die Leiste gesetzt (test-formi-kugel). */
 @media(max-width:820px){ .formi-kugel{bottom:calc(80px + var(--sab))} }
+/* Formis Sprechblase (Runde 196, „wirklich richtig persönlichkeit"):
+   steht links über der Kugel, Lage im Bild gemessen (formiSagt). Keine
+   Trefferfläche, damit sie nie einen Knopf verdeckt. Bewegt wird nur
+   transform/opacity, einmal. */
+.formi-blase{position:fixed;z-index:151;max-width:min(240px, calc(100vw - 96px));pointer-events:none;
+  padding:var(--s8) var(--s12);border-radius:var(--radius) var(--radius) var(--r-xs) var(--radius);
+  background:rgba(8,26,44,.94);color:#E8F8FF;border:1px solid rgba(95,225,255,.4);
+  box-shadow:var(--e2);
+  font-size:var(--t-sm);line-height:var(--lh);overflow-wrap:anywhere}
+.formi-blase[hidden]{display:none}
+.formi-blase.rein{animation:formiBlaseRein .28s cubic-bezier(.2,.8,.2,1) backwards}
+@keyframes formiBlaseRein{from{opacity:0;transform:translateY(6px) scale(.96)}}
+@media (prefers-reduced-motion:reduce){ .formi-blase.rein{animation:none} }
 /* Runde 184: Am Handy steht unten rechts auch „+ Aufgabe" (Daumen-Dock,
    Runde 103). Die Kugel lag genau darauf und deckte das Wort ab. Wo es
    den Knopf gibt, rückt sie eine Knopfhöhe nach oben. :has statt
@@ -5855,6 +6148,26 @@ body.formi-kugel-an .main{padding-bottom:calc(var(--s16) + 58px + var(--s16))}
 @media(max-width:820px){
   .jarvis.jv-kompakt{left:0;right:0;bottom:0;width:auto;height:min(74dvh, 640px);border-radius:var(--radius) var(--radius) 0 0;border-bottom:0}
 }
+/* ── Formi angedockt (Runde 193) ─────────────────────────────────────
+   Aus dem Betrieb, auf „am Rechner als feste Spalte andocken oder
+   schwebend?": „was sinnvoller ist". Entschieden in Runde 186: ab
+   1440 px andocken, darunter schwebt es weiter (bei 1280 bliebe neben
+   Seitenleiste und Spalte zu wenig für Liste + Detail).
+
+   Vorher lag das kleine Fenster ÜBER der Seite und deckte bei 1440 px
+   die Hinweise und halb „Mein Dienst" zu — während links über 1.100 px
+   Inhalt breiter stand als nötig. Jetzt macht die Spalte die App
+   schmaler: .app bekommt rechts genau so viel Platz, wie die Spalte
+   breit ist. Kein Übergang auf die Breite (Hausregel: keine Bewegung
+   auf width/padding) — es springt, einmal. Die Spalte selbst glitcht
+   beim Öffnen herein (jarvisAuf). */
+@media(min-width:1440px){
+  :root{--formi-spalte:380px}
+  body.formi-angedockt .app{padding-right:var(--formi-spalte)}
+  body.formi-angedockt .jarvis.jv-kompakt{top:0;right:0;bottom:0;width:var(--formi-spalte);height:auto;
+    border-radius:0;border:0;border-left:1px solid rgba(var(--jv-rgb),.35);box-shadow:var(--e3)}
+}
+@media(min-width:1680px){ :root{--formi-spalte:420px} }
 .jarvis.jv-kompakt .jv-feld,.jarvis.jv-kompakt .jv-raster,.jarvis.jv-kompakt .jv-scan,.jarvis.jv-kompakt .jv-ecke,
 .jarvis.jv-kompakt .jv-log,.jarvis.jv-kompakt .jv-links,.jarvis.jv-kompakt .jv-strom-rahmen{display:none}
 .jarvis.jv-kompakt .jv-rahmen{max-width:none;height:100%;display:flex;flex-direction:column;gap:var(--s8);
@@ -6408,7 +6721,7 @@ body.jv-offen{overflow:hidden}
 .gehirn-lernt details>summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-size:var(--t-xs);color:var(--text-2)}
 .gehirn-lernt .gl-knoepfe{display:grid;grid-template-columns:1fr 1fr;gap:var(--s8);margin-top:var(--s8)}
 .gehirn-lernt .gl-knoepfe .btn,.gehirn-lernt .gl-breit{min-height:44px;width:100%}
-.gehirn-lernt .gl-breit{margin-top:var(--s8)}
+.gehirn-lernt .gl-breit{margin-top:var(--s8);white-space:normal;height:auto;overflow-wrap:anywhere}
 .gehirn-lernt .gl-form{display:flex;flex-direction:column;gap:var(--s8);margin-top:var(--s8)}
 .gehirn-lernt .gl-form .inp{min-height:44px}
 .gehirn-chip-tun svg{width:16px;height:16px;flex:0 0 auto}
@@ -8874,7 +9187,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
           <div class="card still" id="homeBoardCard" data-fold="startbrett" data-fold-offen="1" style="display:none">
             <div class="karten-kopf">
               <h3 data-ikon="anheften">Schwarzes Brett</h3>
-              <button class="mini-link" data-go="team">Alle ›</button>
+              <button class="mini-link" data-go="ann" data-pin="brett">Alle ›</button>
             </div>
             <div id="homeBoardList"></div>
           </div>
@@ -8924,9 +9237,10 @@ body.neu .kn-zeile{min-height:var(--zeile)}
         <div class="view-head shrink"><h2 id="ichGreet">Mein Bereich</h2>
           <p id="ichSub">Was dich betrifft.</p></div>
         <div class="scroll-area" data-shrinks="1">
-          <div class="pm-tabs" id="ichTabs" style="margin:0 0 14px">
+          <div class="pm-tabs" id="ichTabs" style="margin:6px 0 14px">
             <button class="pm-tab on" data-ichtab="woche">Woche</button>
             <button class="pm-tab" data-ichtab="kalender">Kalender</button>
+            <button class="pm-tab" data-ichtab="zeiten">Zeiten</button>
             <button class="pm-tab" data-ichtab="daten">Ich</button>
           </div>
 
@@ -9027,6 +9341,99 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             </div>
           </div>
 
+          <!-- ── ZEITEN (Runde 189) ──
+               Aus dem Betrieb, 22.10.2026: „so wie crewmeister funktioniert
+               am besten". Oben der Stand JETZT und — mit Freigabe — die
+               Knöpfe, die gerade passen (Pause ODER Feierabend). Darunter
+               die Woche mit Plan neben Ist, rechts daneben der Monat.
+               Am Rechner zwei Spalten: „passt aufs Handy" ist nicht fertig. -->
+          <div id="ichPaneZeiten" class="st-raster" style="display:none">
+            <div class="st-spalte">
+              <div class="ich-blatt st-jetzt" id="stJetzt">
+                <div class="ich-kopf">
+                  <h3>Jetzt</h3>
+                  <span class="ich-zahl-klein" id="stJetztTag"></span>
+                </div>
+                <p class="st-stand" id="stStand" role="status">Wird geladen …</p>
+                <div class="st-zahlen">
+                  <div class="st-zahl"><span>Heute gearbeitet</span><b id="stHeuteIst">–</b></div>
+                  <div class="st-zahl"><span>Laut Plan</span><b id="stHeuteSoll">–</b></div>
+                </div>
+                <p class="hint st-schicht" id="stSchicht"></p>
+                <!-- Stempeln mit dem eigenen Handy. Steht nur da, wenn der
+                     Chef dieses Konto freigeschaltet hat — und braucht
+                     zusätzlich den Code vom Bildschirm im Studio. Das ist
+                     die Ortsbindung, ohne ein einziges Standortdatum. -->
+                <div class="st-handy" id="ichHandyKarte" style="display:none">
+                  <span class="ich-zahl-klein" id="ichHandyStand" hidden></span>
+                  <div class="field">
+                    <label for="ichHandyCode">Code vom Bildschirm im Studio</label>
+                    <input class="inp" id="ichHandyCode" type="text" inputmode="numeric"
+                           autocomplete="off" maxlength="7" placeholder="000 000" /></div>
+                  <div class="st-knoepfe" id="ichHandyKnoepfe">
+                    <button class="btn btn-primary" id="ichHandyBtn" data-handyart="kommen">Kommen</button>
+                  </div>
+                  <p class="hint mz-neben">Der Code wechselt alle 30 Sekunden.</p>
+                </div>
+                <p class="hint" id="stTerminalHinweis" hidden>Gestempelt wird am Terminal im Studio: Name, PIN, fertig.</p>
+              </div>
+              <div class="ich-blatt" id="stWocheKarte">
+                <div class="ich-kopf">
+                  <h3>Diese Woche</h3>
+                  <span class="ich-zahl-klein" id="stWocheSumme"></span>
+                </div>
+                <div id="stWoche"></div>
+              </div>
+                <!-- PIN für das Stempeln am Tablet. Steht hier und nicht in
+                     der Verwaltung: setzen darf sie nur die Person selbst.
+                     Es gibt bewusst keinen Weg, über den die Leitung eine
+                     PIN vergibt oder zurücksetzt — wer das kann, kann auch
+                     für jemanden stempeln. -->
+                <div class="ich-blatt" id="ichPinKarte">
+                  <div class="ich-kopf">
+                    <h3>Meine Stempel-PIN</h3>
+                    <span class="ich-zahl-klein" id="ichPinStand"></span>
+                  </div>
+                  <p class="hint" id="ichPinText" style="margin:0 0 10px">
+                    Mit dieser PIN stempelst du am Tablet im Studio.</p>
+                  <div class="field" id="ichPinAltWrap" style="display:none">
+                    <label for="ichPinAlt">Bisherige PIN</label>
+                    <input class="inp" id="ichPinAlt" type="password" inputmode="numeric"
+                           autocomplete="off" maxlength="6" placeholder="••••" /></div>
+                  <div class="field"><label for="ichPinNeu">Neue PIN (4 bis 6 Ziffern)</label>
+                    <input class="inp" id="ichPinNeu" type="password" inputmode="numeric"
+                           autocomplete="new-password" maxlength="6" placeholder="••••" /></div>
+                  <button class="btn btn-primary btn-sm" id="ichPinBtn"
+                          style="width:100%">PIN speichern</button>
+                </div>
+            </div>
+            <div class="st-spalte">
+                <!-- Die eigenen Stempelzeiten. NUR LESEN: aus dem Browser
+                     führt kein Schreibweg in `zeiten`, die Regeln sagen
+                     write:false für alle. Wer seine Zeit für falsch hält,
+                     bekommt hier deshalb keinen Stift — eine Korrektur mit
+                     Grund kommt später, und der ursprüngliche Eintrag bleibt
+                     dabei stehen. Eine Aufzeichnung, die sich nachträglich
+                     überschreiben lässt, ist als Nachweis nichts wert. -->
+                <div class="ich-blatt" id="ichZeitenKarte">
+                  <div class="ich-kopf">
+                    <h3>Meine Zeiten</h3>
+                    <div class="ich-monat-nav">
+                      <button class="ich-pfeil" id="ichZeitPrev" aria-label="Voriger Monat">‹</button>
+                      <button class="ich-pfeil" id="ichZeitHeute">Heute</button>
+                      <button class="ich-pfeil" id="ichZeitNext" aria-label="Nächster Monat">›</button>
+                    </div>
+                  </div>
+                  <div class="mz-summe">
+                    <b id="ichZeitSumme">–</b>
+                    <span id="ichZeitMonat"></span>
+                  </div>
+                  <p class="hint mz-neben" id="ichZeitNeben"></p>
+                  <div id="ichZeitenListe"></div>
+                </div>
+            </div>
+          </div>
+
 
           <!-- ── ICH: Nachweise, Stammdaten, eigene Zahlen ── -->
           <div id="ichPaneDaten" style="display:none">
@@ -9054,69 +9461,6 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               </div>
               <div id="ichCerts"></div>
               <button class="mini-link ich-cert-neu" id="ichCertNeu">Nachweis eintragen</button>
-            </div>
-            <!-- PIN für das Stempeln am Tablet. Steht hier und nicht in
-                 der Verwaltung: setzen darf sie nur die Person selbst.
-                 Es gibt bewusst keinen Weg, über den die Leitung eine
-                 PIN vergibt oder zurücksetzt — wer das kann, kann auch
-                 für jemanden stempeln. -->
-            <div class="ich-blatt" id="ichPinKarte">
-              <div class="ich-kopf">
-                <h3>Meine Stempel-PIN</h3>
-                <span class="ich-zahl-klein" id="ichPinStand"></span>
-              </div>
-              <p class="hint" id="ichPinText" style="margin:0 0 10px">
-                Mit dieser PIN stempelst du am Tablet im Studio.</p>
-              <div class="field" id="ichPinAltWrap" style="display:none">
-                <label for="ichPinAlt">Bisherige PIN</label>
-                <input class="inp" id="ichPinAlt" type="password" inputmode="numeric"
-                       autocomplete="off" maxlength="6" placeholder="••••" /></div>
-              <div class="field"><label for="ichPinNeu">Neue PIN (4 bis 6 Ziffern)</label>
-                <input class="inp" id="ichPinNeu" type="password" inputmode="numeric"
-                       autocomplete="new-password" maxlength="6" placeholder="••••" /></div>
-              <button class="btn btn-primary btn-sm" id="ichPinBtn"
-                      style="width:100%">PIN speichern</button>
-            </div>
-            <!-- Die eigenen Stempelzeiten. NUR LESEN: aus dem Browser
-                 führt kein Schreibweg in `zeiten`, die Regeln sagen
-                 write:false für alle. Wer seine Zeit für falsch hält,
-                 bekommt hier deshalb keinen Stift — eine Korrektur mit
-                 Grund kommt später, und der ursprüngliche Eintrag bleibt
-                 dabei stehen. Eine Aufzeichnung, die sich nachträglich
-                 überschreiben lässt, ist als Nachweis nichts wert. -->
-            <!-- Stempeln mit dem eigenen Handy. Steht nur da, wenn der
-                 Chef dieses Konto freigeschaltet hat — und braucht
-                 zusätzlich den Code vom Bildschirm im Studio. Das ist
-                 die Ortsbindung, ohne ein einziges Standortdatum. -->
-            <div class="ich-blatt" id="ichHandyKarte" style="display:none">
-              <div class="ich-kopf">
-                <h3>Mit dem Handy stempeln</h3>
-                <span class="ich-zahl-klein" id="ichHandyStand"></span>
-              </div>
-              <p class="hint mz-neben">Den sechsstelligen Code vom
-                Bildschirm im Studio eingeben. Er wechselt alle 30 Sekunden.</p>
-              <div class="field">
-                <label for="ichHandyCode">Code vom Bildschirm</label>
-                <input class="inp" id="ichHandyCode" type="text" inputmode="numeric"
-                       autocomplete="off" maxlength="7" placeholder="000 000" /></div>
-              <button class="btn btn-primary btn-sm" id="ichHandyBtn"
-                      style="width:100%">Stempeln</button>
-            </div>
-            <div class="ich-blatt" id="ichZeitenKarte">
-              <div class="ich-kopf">
-                <h3>Meine Zeiten</h3>
-                <div class="ich-monat-nav">
-                  <button class="ich-pfeil" id="ichZeitPrev" aria-label="Voriger Monat">‹</button>
-                  <button class="ich-pfeil" id="ichZeitHeute">Heute</button>
-                  <button class="ich-pfeil" id="ichZeitNext" aria-label="Nächster Monat">›</button>
-                </div>
-              </div>
-              <div class="mz-summe">
-                <b id="ichZeitSumme">–</b>
-                <span id="ichZeitMonat"></span>
-              </div>
-              <p class="hint mz-neben" id="ichZeitNeben"></p>
-              <div id="ichZeitenListe"></div>
             </div>
             <div class="ich-blatt" id="ichZahlenKarte">
               <div class="ich-kopf">
@@ -9382,6 +9726,12 @@ body.neu .kn-zeile{min-height:var(--zeile)}
              Zahl. Ein Mitarbeiter mit zwei Studios braucht es nicht; der
              Chef hat fünfzehn Kanäle, von denen drei zu sehen waren. -->
         <div class="chan-zeile">
+          <!-- „Direkt" (Runde 187): Chat und Direktnachrichten unter einem
+               Reiter. Fest vorn in der Kanalzeile statt in einer eigenen
+               Zeile – eine eigene Zeile kostete bei 320 × 640 den Verlauf
+               die Höhe, die Runde 127 ihm gerade gegeben hatte
+               (test-chat-klein). -->
+          <button type="button" class="chan-alle chan-direkt" id="kanalDirekt">Direkt</button>
           <button type="button" class="chan-alle" id="kanalAlle" hidden
                   aria-haspopup="dialog">Alle Kanäle</button>
           <div class="chat-channels" id="chatChannels"></div>
@@ -9572,7 +9922,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
 
       <!-- ANNOUNCEMENTS -->
       <section class="view" id="view-ann">
-        <div class="view-head shrink"><h2>Ankündigungen</h2><p>Neuigkeiten von der Leitung. Gelesenes wird automatisch bestätigt.</p></div>
+        <div class="view-head shrink"><h2>Pinnwand</h2><p>Infos von der Leitung und Aushänge vom Team. Gelesene Infos werden automatisch bestätigt.</p></div>
         <div class="scroll-area" data-shrinks="1">
           <div class="card" id="obCard" style="display:none"></div>
           <div id="annArea"></div>
@@ -9822,16 +10172,28 @@ body.neu .kn-zeile{min-height:var(--zeile)}
 
           <!-- Schichtplan -->
           <div id="teamPaneSchicht">
-            <div class="card">
-              <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-                <h3 id="shiftWeekLabel">Diese Woche</h3>
-                <div style="display:flex;gap:7px">
+            <!-- Kopf in einer Zeile (Runde 191, nach Planday): links „wann",
+                 rechts „wie ansehen / was tun". Am Handy bricht er in
+                 zwei Zeilen um. -->
+            <div class="card wp">
+              <div class="wp-kopf">
+                <div class="wp-wann">
                   <button class="btn btn-ghost btn-sm wochen-pfeil" id="shiftPrev" aria-label="Vorige Woche">‹</button>
-                  <button class="btn btn-ghost btn-sm" id="shiftToday">Heute</button>
+                  <div class="wp-titel"><small id="shiftKw">Woche</small><h3 id="shiftWeekLabel">Diese Woche</h3></div>
                   <button class="btn btn-ghost btn-sm wochen-pfeil" id="shiftNext" aria-label="Nächste Woche">›</button>
+                  <button class="btn btn-ghost btn-sm" id="shiftToday">Heute</button>
+                </div>
+                <div class="shift-sum" id="shiftSum"></div>
+                <div class="wp-tun">
+                  <div class="chip-row wp-ansicht" id="wpAnsicht" role="group" aria-label="Ansicht">
+                    <button type="button" class="chip" data-wpansicht="tag">Tage</button>
+                    <button type="button" class="chip" data-wpansicht="person">Personen</button>
+                  </div>
+                  <button type="button" class="chip" id="wpMeine" aria-pressed="false">Nur meine</button>
+                  <button type="button" class="btn btn-primary btn-sm" id="shiftNeu" hidden>＋ Schicht</button>
                 </div>
               </div>
-              <div id="shiftGrid" style="margin-top:10px"></div>
+              <div id="shiftGrid"></div>
             </div>
             <!-- Wünsche für den nächsten Plan (Runde 156). Aus dem
                  Betrieb: „die mitarbeiter selber am besten wenn sie
@@ -9852,20 +10214,6 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               <div class="field" style="margin-top:var(--s12)"><label for="spWunschNotiz">Bemerkung (optional)</label>
                 <input class="inp" id="spWunschNotiz" type="text" maxlength="140" placeholder="z. B. am 14. erst ab 12 Uhr" /></div>
               <button type="button" class="btn btn-primary btn-sm" id="spWunschSpeichern">Wünsche speichern</button>
-            </div>
-            <div class="card" id="shiftAddCard" style="display:none">
-              <h3 data-ikon="plus">Schicht eintragen</h3>
-              <div class="row">
-                <div class="field"><label for="shDate">Tag</label><input class="inp" id="shDate" type="date" /></div>
-                <div class="field"><label for="shPerson">Person</label><select class="inp" id="shPerson"></select></div>
-              </div>
-              <div class="row">
-                <div class="field"><label for="shFrom">Von</label><input class="inp" id="shFrom" type="time" value="09:00" /></div>
-                <div class="field"><label for="shTo">Bis</label><input class="inp" id="shTo" type="time" value="17:00" /></div>
-              </div>
-              <div class="field"><label for="shNote">Notiz (optional)</label>
-                <input class="inp" id="shNote" type="text" maxlength="80" placeholder="z. B. Einweisung" /></div>
-              <button class="btn btn-primary btn-sm" id="shAdd">Schicht speichern</button>
             </div>
           </div>
 
@@ -10845,6 +11193,11 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                   <button type="button" class="ich-pfeil zk-pfeil" id="zkNext" aria-label="Nächster Monat">›</button>
                 </div>
               </div>
+              <!-- Jetzt im Studio (Runde 189): wer ist da, wer in der Pause,
+                   wer laut Plan erwartet wird und noch nicht gestempelt hat.
+                   Wie die „Live-Übersicht" bei Crewmeister — aber nur hier,
+                   bei der Leitung, und nicht mehr am Terminal am Tresen. -->
+              <section class="zk-jetzt" id="zkJetzt" aria-label="Jetzt im Studio"></section>
               <button type="button" class="zk-vormonat" id="zkVormonat" hidden></button>
               <p class="hint" id="zkStand"></p>
               <div class="zk-wrap">
@@ -11372,6 +11725,12 @@ body.neu .kn-zeile{min-height:var(--zeile)}
     <div class="tm-was" id="tmWas">—</div>
     <div class="tm-punkte" id="tmPunkte"></div>
     <div class="tm-tasten" id="tmTasten"></div>
+    <!-- Runde 189: erst nach der PIN steht hier der eigene Stand und
+         die passenden Knöpfe — Pause ODER Feierabend, wie bei Crewmeister. -->
+    <div class="tm-wahl" id="tmWahl" hidden>
+      <p class="tm-stand" id="tmStand" role="status"></p>
+      <div class="tm-wahl-knoepfe" id="tmWahlKnoepfe"></div>
+    </div>
   </div>
 
   <div class="tm-fuss">
@@ -11941,6 +12300,16 @@ body.neu .kn-zeile{min-height:var(--zeile)}
       <p class="hint" id="mailState" style="margin:12px 0 0"></p>
     </div>
 
+    <!-- Abmelden steht seit Runde 187 hier und nicht mehr oben in der
+         Kopfzeile (aus dem Betrieb: „deine 2 fragen können wir so
+         umsetzen"). Auf jedem Reiter dieses Fensters an derselben Stelle,
+         direkt über „Speichern" – am geteilten Gerät sind es zwei Tipps:
+         Bild oben rechts, dann Abmelden. Nicht darunter: „Speichern"
+         klebt unten und deckte mit seiner Fläche den Knopf 12 px weit zu
+         (Hit-Test 33 statt 44 px hoch). -->
+    <button type="button" class="btn btn-ghost pm-abmelden" id="pmLogout">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      <span>Abmelden</span></button>
     <p class="auth-err" id="pmErr"></p>
     <button class="btn btn-primary" id="pmSave" style="width:100%">Speichern</button>
     <p class="hint" id="pmAppearanceNote" style="display:none;text-align:center;margin-top:10px">
@@ -12156,6 +12525,39 @@ body.neu .kn-zeile{min-height:var(--zeile)}
 </div>
 
 <!-- Aktionen an einer Aufgabe – gleiches Muster wie im Chat -->
+<!-- ── Schicht-Blatt (Runde 191) ──
+     Ein Tipp auf eine Schicht öffnet sie: zuerst, was man mit ihr tun
+     kann (abgeben, übernehmen, bestätigen, entfernen), wie bei Teams
+     Shifts. Aus dem Betrieb, 22.10.2026, auf die Frage, ob Löschen und
+     „Ich kann nicht" ins Detail wandern dürfen: „JA". Dasselbe Blatt
+     trägt das Formular „Schicht eintragen" — am Rechner öffnet es ein
+     Klick in eine leere Zelle, mit Tag und Person schon gesetzt. -->
+<div class="msg-sheet" id="shiftSheet">
+  <div class="ms-card">
+    <div class="ms-head">
+      <b id="shSheetTitel"></b>
+      <p id="shSheetUnter"></p>
+    </div>
+    <p class="wp-blatt-info" id="shSheetInfo" hidden></p>
+    <div class="ms-acts" id="shSheetActs"></div>
+    <div class="wp-blatt-form" id="shSheetForm" hidden>
+      <div class="chip-row" id="shVorlagen" role="group" aria-label="Schichtzeiten aus dem Schichtplaner"></div>
+      <div class="row">
+        <div class="field"><label for="shDate">Tag</label><input class="inp" id="shDate" type="date" /></div>
+        <div class="field"><label for="shPerson">Person</label><select class="inp" id="shPerson"></select></div>
+      </div>
+      <div class="row">
+        <div class="field"><label for="shFrom">Von</label><input class="inp" id="shFrom" type="time" value="09:00" /></div>
+        <div class="field"><label for="shTo">Bis</label><input class="inp" id="shTo" type="time" value="17:00" /></div>
+      </div>
+      <div class="field"><label for="shNote">Notiz (optional)</label>
+        <input class="inp" id="shNote" type="text" maxlength="80" placeholder="z. B. Einweisung" /></div>
+      <button class="btn btn-primary" id="shAdd" style="width:100%">Schicht speichern</button>
+    </div>
+    <button class="btn btn-ghost" id="shSheetZu" style="width:100%">Abbrechen</button>
+  </div>
+</div>
+
 <div class="msg-sheet" id="todoSheet">
   <div class="ms-card">
     <div class="ms-head">
@@ -12465,8 +12867,11 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
      als Auge (Pupille mit Lichtpunkt) und ein Punkt „hat etwas für dich".
      Alles Schmuck: aria-hidden, keine Trefferfläche (pointer-events:none). -->
 <button type="button" class="formi-kugel" id="formiKugel" hidden aria-haspopup="dialog" aria-controls="jarvis"
-  aria-label="Formi öffnen" title="Formi — frag mich oder sag, was ich tun soll"><span class="fk-koerper" aria-hidden="true"><span class="fk-geist a"></span><span class="fk-geist b"></span><span class="fk-loch"><span class="fk-pupille"><i></i></span></span></span><span class="fk-punkt" aria-hidden="true"></span></button>
+  aria-label="Formi öffnen" title="Formi — frag mich oder sag, was ich tun soll"><span class="fk-koerper" aria-hidden="true"><span class="fk-wirbel"></span><span class="fk-geist a"></span><span class="fk-geist b"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-auge l"></i><i class="fk-auge r"></i><i class="fk-mund"></i></span></span></span></span><span class="fk-punkt" aria-hidden="true"></span></button>
 <span id="formiKugelHat" hidden>Formi hat etwas für dich</span>
+<!-- Formis Sprechblase (Runde 196): ein kurzer Satz, 4,5 s, dann weg.
+     Keine Trefferfläche — sie verdeckt nie einen Knopf. -->
+<div class="formi-blase" id="formiBlase" role="status" aria-live="polite" hidden></div>
 <script>
 (function(){
 'use strict';
@@ -15159,23 +15564,16 @@ function terminalLeuteLaden(){
     .catch(function(e){ $('tmHinweis').textContent = errMsg(e); });
 }
 
-/* Wer ist gerade da? Das Terminal zeigt es an den Kacheln — sonst
-   stempelt jemand zweimal „kommen" und merkt es erst am Monatsende. */
+/* Bis Runde 188 fragte das Terminal hier die Stempel des Studios ab, um
+   „im Dienst" an die Kacheln zu schreiben. Das ist weg (siehe tmKachel),
+   und die Abfrage war für ein normales Mitarbeiter-Konto ohnehin
+   verboten: `zeiten` liest man nur für sich selbst (firestore.rules).
+   _tmStaende merkt sich jetzt nur, was stempelStand und stempeln in
+   DIESER Sitzung gesagt haben — für den Fall ohne Netz. */
 function terminalStaendeLaden(){
-  var tag = new Date().toLocaleDateString('sv-SE');   // YYYY-MM-DD, Ortszeit
-  S('zeiten').where('studioKey','==',_tmStudio).where('tag','==',tag)
-    .get()
-    .then(function(snap){
-      var letzte={};
-      snap.docs.map(function(d){ return d.data()||{}; })
-        .sort(function(a,b){ return (a.ts||0)-(b.ts||0); })
-        .forEach(function(z){ letzte[z.uid]=z.art; });
-      _tmStaende = letzte;
-      renderTerminalListe();
-      /* Nach einem Neuladen im selben Tab: Gemerktes weiter nachreichen. */
-      if(tmWsLesen(TM_WS_SCHLUESSEL).length){ tmWsPlanen(); tmWarteschlangeSenden(); }
-    })
-    .catch(function(){ _tmStaende={}; renderTerminalListe(); });
+  renderTerminalListe();
+  /* Nach einem Neuladen im selben Tab: Gemerktes weiter nachreichen. */
+  if(tmWsLesen(TM_WS_SCHLUESSEL).length){ tmWsPlanen(); tmWarteschlangeSenden(); }
 }
 
 var TM_WORT = { kommen:'Kommen', pause:'Pause', zurueck:'Zurück', gehen:'Feierabend' };
@@ -15232,12 +15630,12 @@ function tmGehoert(u){
   return (u.studioKeys||[]).indexOf(_tmStudio)>=0;
 }
 
+/* Runde 189: KEIN Stand mehr an der Kachel. Vorher stand „im Dienst /
+   noch nicht da" an jedem Namen, für jeden am Tresen lesbar. Aus dem
+   Betrieb, 22.10.2026, auf die Frage, ob das weg soll: „ja". Den eigenen
+   Stand sieht man jetzt nach der PIN (stempelStand). */
 function tmKachel(u){
-  var stand=_tmStaende[u.id]||null;
-  var da = stand && stand!=='gehen';
-  var zst = !stand ? 'noch nicht da'
-          : stand==='pause' ? 'in der Pause'
-          : stand==='gehen' ? 'Feierabend' : 'im Dienst';
+  var zst='';
   /* Ein gemerkter Stempel ohne Netz: der Stand ist noch offen. */
   if(tmWsLesen(TM_WS_SCHLUESSEL).some(function(x){ return x.uid===u.id; })) zst='Stempel wartet auf Netz';
   /* Bei jemandem aus einem anderen Studio steht dessen Studio davor.
@@ -15249,9 +15647,9 @@ function tmKachel(u){
        abgeschnitten („Niederkassel Mondorf"), und abgeschnitten werden
        darf nur die Auskunft, die weniger zählt: ob jemand im Dienst
        ist, entscheidet über den nächsten Knopf — woher er kommt, nicht. */
-    if(heim) zst = zst+' · '+heim;
+    if(heim) zst = zst ? zst+' · '+heim : heim;
   }
-  return '<button class="tm-person'+(da?' da':'')+'" data-tmwer="'+esc(u.id)+'">'+
+  return '<button class="tm-person" data-tmwer="'+esc(u.id)+'">'+
     /* avatarMarkup statt eines eigenen Kästchens: sie kann Foto,
        Farbe und Initialen und hält sich an Hell/Dunkel. Hier stand
        zuerst ein fest eingebautes Emoji — test-gestaltung hat es
@@ -15260,7 +15658,7 @@ function tmKachel(u){
     avatarMarkup(u)+
     '<span style="min-width:0">'+
       '<span class="tm-nam" style="display:block">'+esc(u.name||'?')+'</span>'+
-      '<span class="tm-zst">'+esc(zst)+'</span>'+
+      (zst ? '<span class="tm-zst">'+esc(zst)+'</span>' : '')+
     '</span></button>';
 }
 
@@ -15276,8 +15674,8 @@ function terminalPinOeffnen(uid){
   var u=_tmLeute.filter(function(x){ return x.id===uid; })[0]; if(!u) return;
   _tmWer=u; _tmPin='';
   $('tmWer').textContent = u.name || '';
-  var art = tmNaechster(_tmStaende[uid]||null);
-  $('tmWas').textContent = TM_WORT[art] || art;
+  $('tmWas').textContent = 'PIN eingeben';
+  tmWahlVerbergen();
   renderTerminalTasten();
   renderTerminalPunkte();
   $('tmPin').style.display='flex';
@@ -15286,6 +15684,7 @@ function terminalPinOeffnen(uid){
 function terminalPinSchliessen(){
   $('tmPin').style.display='none';
   _tmWer=null; _tmPin='';
+  tmWahlVerbergen();
   /* Die Suche zurücksetzen. Sonst steht der Nächste vor einer Liste,
      die auf den Namen des Vorigen gefiltert ist, und findet sich nicht
      — am Empfang tippt niemand zweimal, der sucht das Weite. */
@@ -15313,7 +15712,7 @@ function renderTerminalTasten(){
        damit gleich aus — der bestätigende Knopf wie der abräumende, in
        derselben Reihe nebeneinander. Am Empfang, im Vorbeigehen, ist
        das genau die Verwechslung, die man nicht einbauen darf. */
-    if(t==='ok')  return '<button class="tm-taste ok" data-tmt="ok">Stempeln</button>';
+    if(t==='ok')  return '<button class="tm-taste ok" data-tmt="ok">Weiter</button>';
     return '<button class="tm-taste" data-tmt="'+t+'">'+t+'</button>';
   }).join('');
   box.dataset.fertig='1';
@@ -15321,7 +15720,7 @@ function renderTerminalTasten(){
     var b=e.target.closest('[data-tmt]'); if(!b) return;
     var t=b.getAttribute('data-tmt');
     if(t==='weg'){ _tmPin=_tmPin.slice(0,-1); renderTerminalPunkte(); return; }
-    if(t==='ok'){ terminalStempeln(b); return; }
+    if(t==='ok'){ terminalWeiter(b); return; }
     if(_tmPin.length>=6) return;
     _tmPin+=t; renderTerminalPunkte();
     tick(4);
@@ -15363,9 +15762,11 @@ function tmOhneNetzFehler(e){
   var c=String((e && e.code)||'');
   return /unavailable|deadline-exceeded/.test(c) || /network|failed to fetch|netzwerk/i.test(String((e && e.message)||''));
 }
-function tmMerken(wer, pin){
+function tmMerken(wer, pin, art){
   var l=tmWsLesen(TM_WS_SCHLUESSEL);
   var e={ id:'o'+Date.now().toString(36)+Math.random().toString(36).slice(2,6), uid:wer.id, name:wer.name||'', pin:pin, ts:Date.now() };
+  if(art) e.art=art;
+  if(art) _tmStaende[wer.id]=art;
   l.push(e); tmWsSchreiben(TM_WS_SCHLUESSEL, l);
   var zeit=new Date(e.ts).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
   toast('Ohne Netz gemerkt: '+(wer.name||'')+' um '+zeit+'. Geht raus, sobald wieder Netz da ist – Seite bitte offen lassen.');
@@ -15385,8 +15786,10 @@ function tmWarteschlangeSenden(){
   if(_tmWsSendet || !_tmAktiv || !navigator.onLine) return;
   var l=tmWsLesen(TM_WS_SCHLUESSEL); if(!l.length) return;
   var e=l[0]; _tmWsSendet=true;
-  pinFunktion('stempeln')({ terminalId:_tmAktiv.id, geheim:_tmAktiv.geheim, uid:e.uid, pin:e.pin,
-                            offlineTs:e.ts, offlineId:e.id })
+  var auftrag={ terminalId:_tmAktiv.id, geheim:_tmAktiv.geheim, uid:e.uid, pin:e.pin,
+                offlineTs:e.ts, offlineId:e.id };
+  if(e.art) auftrag.art=e.art;
+  pinFunktion('stempeln')(auftrag)
     .then(function(r){
       var d=(r&&r.data)||{};
       tmWsSchreiben(TM_WS_SCHLUESSEL, tmWsLesen(TM_WS_SCHLUESSEL).filter(function(x){ return x.id!==e.id; }));
@@ -15419,15 +15822,95 @@ function tmWsHinweisHTML(){
   return h;
 }
 
-function terminalStempeln(btn){
+/* ── Nach der PIN: der eigene Stand (Runde 189) ──
+   „Weiter" fragt stempelStand — dieselben drei Schlösser wie beim
+   Stempeln (Gerät, Person, PIN, mit Bremse). Erst die Antwort zeigt den
+   Stand und die Knöpfe, die gerade passen: Kommen; oder Pause und
+   Feierabend; oder Zurück und Feierabend.
+
+   OHNE NETZ gibt es keine Antwort. Dann stehen die Knöpfe da, die zum
+   zuletzt in dieser Sitzung bekannten Stand passen — und wenn keiner
+   bekannt ist, alle vier. Der Server prüft beim Nachreichen trotzdem;
+   was nicht passt, steht danach als „nicht gespeichert" oben. */
+var _tmWahlTimer=null;
+function tmWahlVerbergen(){
+  var w=$('tmWahl'); if(w) w.hidden=true;
+  var p=$('tmPunkte'), t=$('tmTasten');
+  if(p) p.style.display=''; if(t) t.style.display='';
+  if(_tmWahlTimer){ clearTimeout(_tmWahlTimer); _tmWahlTimer=null; }
+}
+function tmErlaubt(art){
+  if(!art || art==='gehen') return ['kommen'];
+  if(art==='kommen' || art==='zurueck') return ['pause','gehen'];
+  if(art==='pause') return ['zurueck','gehen'];
+  return ['kommen'];
+}
+function tmStandText(d){
+  var uhr=function(ts){ return new Date(ts).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}); };
+  if(!d) return '<b>Ohne Netz</b>Der Stempel wird nachgereicht.';
+  var heute = d.arbeitMs ? ' · heute '+stundenText(d.arbeitMs) : '';
+  if(!d.letzteArt) return '<b>Noch nicht eingestempelt</b>Schön, dass du da bist.';
+  if(d.letzteArt==='gehen') return '<b>Feierabend seit '+esc(uhr(d.seit))+'</b>'+esc(heute.replace(' · ',''));
+  if(d.letzteArt==='pause') return '<b>In der Pause seit '+esc(uhr(d.seit))+'</b>'+esc(heute.replace(' · ',''));
+  return '<b>Im Dienst seit '+esc(uhr(d.beginn||d.seit))+'</b>'+esc(heute.replace(' · ',''));
+}
+function tmWahlZeigen(d, erlaubt){
+  var w=$('tmWahl'), k=$('tmWahlKnoepfe'), st=$('tmStand'); if(!w || !k) return;
+  $('tmPunkte').style.display='none'; $('tmTasten').style.display='none';
+  $('tmWas').textContent = d ? 'Was möchtest du stempeln?' : 'Ohne Netz';
+  st.innerHTML = tmStandText(d);
+  k.innerHTML = erlaubt.map(function(a){
+    /* Feierabend als zweiter Knopf (btn-ghost), nicht rot: Rot hiesse
+       „Fehler" — Statusfarben nur für Status. */
+    return '<button type="button" class="btn '+(a==='gehen'?'btn-ghost':'btn-primary')+' tm-aktion" data-tmart="'+a+'">'+esc(TM_WORT[a]||a)+'</button>';
+  }).join('');
+  w.hidden=false;
+  if(!k._gebunden){
+    k._gebunden=true;
+    k.addEventListener('click', function(e){
+      var b=e.target.closest('[data-tmart]'); if(!b) return;
+      terminalStempeln(b, b.getAttribute('data-tmart'));
+    });
+  }
+  /* Wer weggeht, ohne zu tippen, lässt nicht seinen Stand am Tresen
+     stehen. 30 Sekunden reichen für jeden, der stempeln will. */
+  if(_tmWahlTimer) clearTimeout(_tmWahlTimer);
+  _tmWahlTimer=setTimeout(function(){ _tmWahlTimer=null; terminalPinSchliessen(); }, 30000);
+}
+function terminalWeiter(btn){
   if(!_tmWer || !_tmAktiv) return;
   if(_tmPin.length<4){ toast('Bitte die PIN eingeben.',true); return; }
-  if(!navigator.onLine){ tmMerken(_tmWer, _tmPin); return; }
-  var wer=_tmWer, pin=_tmPin;
+  var wer=_tmWer;
+  var ohne=function(){
+    var bekannt=_tmStaende.hasOwnProperty(wer.id);
+    tmWahlZeigen(null, bekannt ? tmErlaubt(_tmStaende[wer.id]) : ['kommen','pause','zurueck','gehen']);
+  };
+  if(!navigator.onLine){ ohne(); return; }
   withBusy(btn, function(){
-    return pinFunktion('stempeln')({
-      terminalId:_tmAktiv.id, geheim:_tmAktiv.geheim, uid:_tmWer.id, pin:_tmPin
+    return pinFunktion('stempelStand')({
+      terminalId:_tmAktiv.id, geheim:_tmAktiv.geheim, uid:wer.id, pin:_tmPin
     }).then(function(r){
+      if(_tmWer!==wer) return;
+      var d=(r&&r.data)||{};
+      _tmStaende[wer.id]=d.letzteArt||null;
+      tmWahlZeigen(d, (d.erlaubt && d.erlaubt.length) ? d.erlaubt : tmErlaubt(d.letzteArt));
+    }).catch(function(e){
+      if(tmOhneNetzFehler(e)){ ohne(); return; }
+      _tmPin=''; renderTerminalPunkte();
+      toast(fnFehler(e), true);
+    });
+  });
+}
+
+function terminalStempeln(btn, art){
+  if(!_tmWer || !_tmAktiv) return;
+  if(_tmPin.length<4){ toast('Bitte die PIN eingeben.',true); return; }
+  if(!navigator.onLine){ tmMerken(_tmWer, _tmPin, art); return; }
+  var wer=_tmWer, pin=_tmPin;
+  var auftrag={ terminalId:_tmAktiv.id, geheim:_tmAktiv.geheim, uid:_tmWer.id, pin:_tmPin };
+  if(art) auftrag.art=art;
+  withBusy(btn, function(){
+    return pinFunktion('stempeln')(auftrag).then(function(r){
       var d=(r&&r.data)||{};
       _tmStaende[_tmWer.id]=d.art;
       var wort=TM_WORT[d.art]||d.art;
@@ -15437,8 +15920,10 @@ function terminalStempeln(btn){
       terminalPinSchliessen();
       renderTerminalListe();
     }).catch(function(e){
-      if(tmOhneNetzFehler(e)){ tmMerken(wer, pin); return; }
-      _tmPin=''; renderTerminalPunkte();
+      if(tmOhneNetzFehler(e)){ tmMerken(wer, pin, art); return; }
+      /* Passt der Schritt nicht mehr (jemand hat inzwischen anders
+         gestempelt), steht die Meldung da, und es geht zurück zur PIN. */
+      _tmPin=''; tmWahlVerbergen(); renderTerminalPunkte();
       toast(fnFehler(e), true);
     });
   });
@@ -17088,8 +17573,15 @@ function renderKeysHelp(){
         '<button class="key-set" data-keyset="'+esc(a.id)+'">'+
           (aufnahme?'Taste drücken':'ändern')+'</button></div>';
     }).join('');
+  /* Nur im Schichtplan (Plan → Schichten), Runde 191. Fest, weil sie
+     nur dort gelten und mit keiner frei belegbaren Taste kollidieren —
+     belegt jemand H oder V selbst, gilt seine Belegung. */
+  var plan=[{k:'← / →', t:'Woche zurück / vor'},{k:'H', t:'Diese Woche'},{k:'V', t:'Tage ↔ Personen (am Rechner)'}]
+    .filter(function(x){ return x.k.length>1 || !keyBelegtVon(x.k); })
+    .map(function(x){ return '<div class="key-row"><kbd>'+esc(x.k)+'</kbd><span>'+esc(x.t)+'</span></div>'; }).join('');
   box.innerHTML=
     '<p class="hint" style="margin:0 0 10px">Fest eingebaut:</p>'+fest+
+    '<p class="hint" style="margin:16px 0 10px">Im Schichtplan (Plan → Schichten):</p>'+plan+
     '<p class="hint" style="margin:16px 0 10px">Frei belegbar – auf „ändern" tippen und die neue Taste drücken. '+
       'Die Belegung gilt nur auf diesem Gerät.</p>'+frei+
     '<button class="btn btn-ghost btn-sm" id="keysReset" style="width:100%;margin-top:14px">Auf Standard zurücksetzen</button>';
@@ -17167,7 +17659,7 @@ var DIALOGE = ['profileModal','personModal','devModal','pollModal','todoEditModa
                'fwdModal','keysModal','rechtModal','searchOverlay',
                'msgSheet','todoSheet','docSheet','werkbankModal','glockeModal',
                'putzModal','schnellModal','neuModal','vorfallModal','zfModal',
-               'bestellModal'];
+               'bestellModal','shiftSheet'];
 
 function closeAllModals(){
   DIALOGE.forEach(function(id){
@@ -20106,7 +20598,7 @@ var NAV = [
   {id:'persoenlich', label:'Persönlich', icon:'<path d="M12 21s-7-4.35-7-10a4 4 0 0 1 7-2.65A4 4 0 0 1 19 11c0 5.65-7 10-7 10z"/>'},
   {id:'chat',  label:'Chat',     icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>'},
   {id:'todos', label:'Aufgaben', icon:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'},
-  {id:'ann',   label:'Infos',    icon:'<path d="M3 11l18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>'},
+  {id:'ann',   label:'Pinnwand',    icon:'<path d="M3 11l18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>'},
   {id:'material', label:'Material', icon:'<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12.01l8.73-5.05"/><path d="M12 22.08V12"/>'},
   {id:'putzplan', label:'Putzplan', icon:'<path d="M3 21h18"/><path d="M9 21V9l6-4v16"/><path d="M15 9l4-2v14"/><path d="M9 13h.01M9 17h.01"/>'},
   {id:'geraete', label:'Geräte', icon:'<rect x="2" y="7" width="20" height="12" rx="2"/><path d="M6 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/><path d="M12 11v4M10 13h4"/>'},
@@ -20351,8 +20843,13 @@ function allesGruppen(){
      was:'Schichten und Aufgaben, die dich betreffen'},
     {label:'Mein Kalender', view:'ich', ichtab:'kalender', ikon:'kalender',
      was:'Eigene Termine und Notizen'},
-    {label:'Meine Zeiten',  view:'ich', ichtab:'daten',    ikon:'uhr',
-     was:'Gestempelte Stunden, Nachweise, Daten'},
+    {label:'Meine Zeiten',  view:'ich', ichtab:'zeiten',   ikon:'uhr',
+     was:'Stempeln, Woche und Monat, Plan neben Ist'},
+    /* Bis Runde 188 hiess dieser Schlüssel (ich:daten) „Meine Zeiten".
+       Die Zeiten haben jetzt einen eigenen Reiter; was unter „Ich"
+       bleibt, sind Nachweise, Stammdaten und die Auskunft. */
+    {label:'Meine Daten',   view:'ich', ichtab:'daten',    ikon:'ich',
+     was:'Nachweise, Stammdaten, alles über mich als Datei'},
     {label:'Persönlich',    view:'persoenlich', ikon:'persoenlich',
      was:'Nur für dich, niemand sonst sieht es'},
   ]);
@@ -20466,6 +20963,45 @@ var NEUIGKEITEN = [
     'Am Rechner stehen die Module jetzt rechts neben dem, was für dich ansteht, und in einer Schulung links das Inhaltsverzeichnis. Tasten: 1–4 antworten, Pfeil nach rechts weiter.',
     'Für die Leitung: unter Verwalten → Auswertung „Fragen, die im Team nicht sitzen" – ohne Namen, erst ab drei Antworten. Und je Teilnehmer, welche Pflichtschulung noch offen oder überfällig ist.'
   ]},
+  { id:'2026-10-22-formi-kumpel', datum:'22.10.2026', titel:'Formi hat jetzt Charakter: der Kumpel aus dem Studio', wo:'gehirn', punkte:[
+    'Formi antwortet jetzt wie ein Kollege, mit dem man gern Schicht hat: locker, direkt, mit einem Spruch, wenn er passt – und sofort ernst, wenn es um einen Notfall, Gesundheit oder Ärger geht.',
+    'Neben der Kugel erscheint ab und zu eine kleine Sprechblase: morgens ein Gruß, beim ersten Haken des Tages ein Lob, bei einer Haken-Serie ein Spruch. Höchstens eine alle 45 Sekunden.',
+    'Zu viel? Formi öffnen → Regler oben → „Gefühle der Kugel" auf „Aus" oder Ton „sachlich" – dann bleibt Formi still.'
+  ]},
+  { id:'2026-10-22-formi-gesicht', datum:'22.10.2026', titel:'Formi hat jetzt ein Gesicht – und wird bei Freude zum weissen Loch', wo:'home', punkte:[
+    'Im schwarzen Loch der Kugel unten rechts wohnt jetzt ein kleines Gesicht. Es schaut der Maus nach, blinzelt, lacht, staunt, erschrickt und schläft ein, wenn du die App eine Weile liegen lässt.',
+    'Hakst du etwas ab, freut sich Formi: das Loch wird kurz weiss und spuckt bunte Teilchen aus, dann wird es wieder schwarz und saugt sie ein. Ist der Putzplan für heute fertig, wird daraus ein grosses Feuerwerk.',
+    'Ab und zu dreht sich der Ring einmal langsam und ein paar Krümel fallen ins Loch, so lebt es ein bisschen.',
+    'Zu viel? Formi öffnen → Regler oben → „Gefühle der Kugel" auf „Aus".' ] },
+  { id:'2026-10-22-formi-angedockt', datum:'22.10.2026', titel:'Am Rechner: Formi sitzt jetzt rechts neben der Seite', wo:'home', punkte:[
+    'Auf einem breiten Bildschirm (ab 1440 Pixel) öffnet sich Formi als Spalte am rechten Rand. Die Seite rückt zur Seite und bleibt ganz sichtbar, statt unter dem Fenster zu verschwinden.',
+    'Formi bleibt dort offen, während du in der App weiterklickst. Auf kleineren Bildschirmen und am Handy bleibt alles wie bisher.' ] },
+  { id:'2026-10-22-schichtplan-raster', datum:'22.10.2026', titel:'Schichtplan: die Woche nach Personen, Schicht antippen', wo:'team', punkte:[
+    'Unter Plan → Schichten gibt es am Rechner zwei Ansichten: „Tage" wie bisher und neu „Personen" – links stehen die Leute, daneben ihre sieben Tage, rechts die Stunden der Woche. Steht im Schichtplaner ein Wochen-Soll, sieht die Geschäftsführung es bei allen und jede Person bei sich selbst; weichen die Stunden deutlich ab, ist die Zahl farbig. Die gewählte Ansicht merkt sich dein Gerät.',
+    'Eine Schicht antippen öffnet sie: „Ich kann nicht" zum Tauschen, „Ich übernehme", und für die Leitung Bestätigen und Entfernen. Das Kreuz und der Knopf an jeder Zeile sind dafür weg.',
+    'Für die Leitung: In der Ansicht „Personen" in ein leeres Feld klicken – Tag und Person sind schon gesetzt, die Schichtzeiten aus dem Schichtplaner stehen zum Antippen bereit. Am Handy gibt es dafür das ＋ am Tag oder „＋ Schicht" oben.',
+    'Oben steht die Kalenderwoche, die Zahl der Schichten gilt jetzt für diese Woche (vorher zählte sie alle). Urlaub und Krankheit stehen grau schraffiert statt rot und orange. Am Rechner: Pfeiltasten blättern, H springt zu heute, V wechselt die Ansicht.',
+    'Im Schichtplaner (Verwaltung) steht der Monat jetzt Woche für Woche: oben die Kalenderwochen mit ihren offenen Lücken, „Ganzer Monat" zeigt alles wie bisher.' ] },
+  { id:'2026-10-22-formi-alle-uebernehmen', datum:'22.10.2026', titel:'Formi lernt: alle aus einer Schulung auf einmal', wo:'gehirn', punkte:[
+    'In der Karte „Formi lernt" steht unter einem Vorschlag aus einer Schulung jetzt „Alle … übernehmen". Zweimal tippen, und alle Vorschläge aus dieser Schulung werden Wissen – statt jeden einzeln freizugeben.',
+    'Was nicht passt, vorher einzeln verwerfen. Eigene Vorschläge bleiben stehen, bis jemand anderes aus der Leitung sie freigibt.'
+  ]},
+  { id:'2026-10-22-stempelseite', datum:'22.10.2026', titel:'Stempeln wie bei Crewmeister: Pause oder Feierabend', wo:'ich:zeiten', punkte:[
+    'Feierabend lässt sich jetzt direkt stempeln – am Terminal und am Handy. Nach dem Kommen stehen zwei Knöpfe da: „Pause" und „Feierabend". Bisher ging am Terminal immer nur Pause und Zurück, der Feierabend musste von der Leitung nachgetragen werden.',
+    'Am Terminal steht an den Namen nicht mehr, wer im Dienst ist. Name antippen, PIN, „Weiter" – dann siehst du deinen eigenen Stand („Im Dienst seit 08:26") und tippst, was du stempeln willst.',
+    'Neu unter Heute → Ich → „Zeiten": oben dein Stand jetzt, wie lange du heute gearbeitet hast und was laut Schichtplan geplant ist. Darunter deine Woche mit Plan neben den gestempelten Stunden, daneben der Monat. Am Rechner steht beides nebeneinander.',
+    'Für Leitung und Geschäftsführung: Verwaltung → Zeiten zeigt oben „Jetzt im Studio" – wer im Dienst ist, wer Pause macht, und wer laut Plan schon da sein müsste und noch nicht gestempelt hat.'
+  ]},
+  { id:'2026-10-22-formi-gefuehle-schalter', datum:'22.10.2026', titel:'Formis Gefühle lassen sich abstellen', wo:'gehirn', punkte:[
+    'Ist dir die Kugel zu lebendig? Öffne Formi, tippe oben auf den Regler (Persönlichkeit und Stimme) und stelle „Gefühle der Kugel" auf „Aus". Dann schaut, blinzelt und freut sie sich nicht mehr und schläft nicht ein.',
+    'Der Punkt „Formi hat etwas für dich" und der Hinweis „über Formi" bleiben. Die Wahl gilt nur für dein Gerät.' ] },
+  { id:'2026-10-22-zusammengelegt', datum:'22.10.2026', titel:'Noch weniger Knöpfe: Bestand, Chats und Pinnwand', wo:'todos', punkte:[
+    'Unter „Studio" heisst es jetzt „Bestand": Material und Geräte liegen dort zusammen, oben schaltest du zwischen beiden um.',
+    'Unter „Nachrichten" gibt es nur noch „Chats" und „Pinnwand". In den Chats steht „Direkt" in derselben Zeile wie Studios und Gruppen; am Rechner stehen deine letzten Direktnachrichten links in der Liste mit drin.',
+    'Die Pinnwand vereint die Infos der Leitung und die Aushänge vom Team (das frühere Schwarze Brett unter „Plan").',
+    'Erledigte Aufgaben stehen eingeklappt unter „3 erledigt" am Ende ihrer Gruppe – ein Tipp klappt sie auf. Was du gerade abgehakt hast, bleibt noch eine Minute stehen.',
+    'Am Raum „Studio" steht ein Punkt statt einer Zahl. Wie viel offen ist, steht direkt oben auf der Seite.',
+    'Am Handy stehen Bearbeiten und Löschen bei Aufgaben und im Putzplan hinter „…". Abmelden findest du jetzt über dein Bild oben rechts, ganz unten.' ] },
   { id:'2026-10-22-formi-lebt', datum:'22.10.2026', titel:'Formi lebt: es schaut, freut sich und meldet sich oben', wo:'home', punkte:[
     'Wo oben auf der Startseite bisher bunte Hinweis-Balken standen, steht jetzt eine Zeile von Formi: links der bunte Ring, daneben z. B. „1 Aufgabe ist überfällig" oder „5 Artikel fehlen". Antippen führt direkt hin, der Ring öffnet Formi.',
     'Die Kugel unten rechts hat jetzt ein Auge: Sie schaut der Maus nach, blinzelt, freut sich bei jedem Haken, staunt, wenn du schnell hintereinander abhakst, feiert, wenn der Putzplan für heute fertig ist, und erschrickt bei einer Fehlermeldung. Lässt du die App eine Weile liegen, schläft sie ein.',
@@ -21146,7 +21682,7 @@ function schnellTaste(key){
    dieselbe Stelle; an seinen Platz rückt die Woche mit den eigenen
    Schichten. Wer selbst gewählt hat, behält seine Wahl. */
 var SCHNELL_VORSCHLAG = {
-  mitarbeiter: ['ich:woche', 'ich:daten', 'geraete'],
+  mitarbeiter: ['ich:woche', 'ich:zeiten', 'geraete'],
   leiter:      ['team:schicht', 'chef:anliegen', 'ich:woche'],
   chef:        ['chef:ueberblick', 'team:schicht', 'chef:anliegen']
 };
@@ -21171,7 +21707,12 @@ function schnellKatalog(){
 function schnellRolle(){ return isChef() ? 'chef' : (canManage() ? 'leiter' : 'mitarbeiter'); }
 function schnellEigen(){
   var alle=PREFS.schnell||{};
-  return (session && Array.isArray(alle[session.uid])) ? alle[session.uid] : null;
+  if(!(session && Array.isArray(alle[session.uid]))) return null;
+  /* Runde 189: wer „Meine Zeiten" gewählt hatte, hat es unter dem
+     Schlüssel ich:daten gespeichert — der heisst jetzt „Meine Daten".
+     Gemeint war die Zeit, also führt der Schnellzugriff dorthin. */
+  return alle[session.uid].map(function(k){ return k==='ich:daten' ? 'ich:zeiten' : k; })
+    .filter(function(k, i, l){ return l.indexOf(k)===i; });
 }
 /* Nur, was es für diese Person gerade gibt — in der gewählten Reihenfolge. */
 function schnellGewaehlt(kat){
@@ -21912,6 +22453,135 @@ function bereichKopfSetzen(){
 }
 
 /* Reiter innerhalb der aktuellen Gruppe (oben unter der Kopfzeile) */
+/* ══ ZUSAMMENGELEGT (Runde 187) ═══════════════════════════════════════
+   Aus dem Betrieb, 22.10.2026: „das problem mit dem zu viel bleibt
+   immer noch bestehen" und „jede funktion hat ja ihren sinn". Also
+   nichts streichen, sondern verwandte Dinge unter EINEN Reiter:
+     · Bestand  = Material + Geräte (beides: „was steht im Studio")
+     · Chats    = Studio-/Gruppenchats + Direktnachrichten
+     · Pinnwand = Infos der Leitung + Aushänge vom Team (das frühere
+                  Schwarze Brett unter „Plan")
+   Weniger gleichrangige Wahlmöglichkeiten heisst kürzere Wahlzeit
+   (Hick-Hyman) und weniger, was man im Kopf halten muss; der zweite
+   Schritt steht sichtbar in der Seite (Umschalter), nicht versteckt.
+   Der Umschalter ist dieselbe Bauform wie „Studios | Gruppen" im Chat —
+   eine Form für dieselbe Sache, kein neues Bedienelement. */
+var REITER_PAARE = [
+  { id:'bestand', label:'Bestand', views:['material','geraete'],
+    teile:[{ view:'material', label:'Material' }, { view:'geraete', label:'Geräte' }] },
+  { id:'chats', label:'Chats', views:['chat','dm'] }
+];
+function reiterPaar(v){
+  for(var i=0;i<REITER_PAARE.length;i++) if(REITER_PAARE[i].views.indexOf(v)>=0) return REITER_PAARE[i];
+  return null;
+}
+/* Der Umschalter steht direkt unter der Überschrift der Ansicht. Nur
+   wenn es wirklich zwei gibt: ein Umschalter mit einem Knopf ist Zierrat. */
+function umschalterZeichnen(views){
+  REITER_PAARE.forEach(function(paar){
+    if(!paar.teile) return;
+    var teile=paar.teile.filter(function(t){ return views.indexOf(t.view)>=0; });
+    paar.views.forEach(function(v){
+      var sec=$('view-'+v); if(!sec) return;
+      var box=sec.querySelector('.umschalter[data-umschalter="'+paar.id+'"]');
+      if(teile.length<2){ if(box) box.hidden=true; return; }
+      if(!box){
+        box=document.createElement('div');
+        box.className='chat-arten umschalter'; box.setAttribute('data-umschalter', paar.id);
+        box.setAttribute('role','tablist'); box.setAttribute('aria-label', paar.label);
+        var kopf=sec.querySelector('.view-head');
+        if(kopf) kopf.insertAdjacentElement('afterend', box); else sec.insertBefore(box, sec.firstChild);
+        box.addEventListener('click', function(e){
+          var t=e.target.closest('[data-umschalt]'); if(!t || t.classList.contains('active')) return;
+          showView(t.getAttribute('data-umschalt')); tick(8);
+        });
+      }
+      box.hidden=false;
+      box.innerHTML=teile.map(function(t){
+        var an=t.view===v;
+        return '<button type="button" role="tab" aria-selected="'+an+'" class="chat-art'+(an?' active':'')+
+          '" data-umschalt="'+t.view+'">'+esc(t.label)+'</button>';
+      }).join('');
+    });
+  });
+  pinnwandZeichnen();
+  chatArtenDirekt();
+}
+
+/* ── Pinnwand: Infos + Aushänge ──
+   Die Aushänge (bis Runde 184 „Brett" unter Plan) ziehen in die Seite
+   der Infos. Das Element wird umgehängt, nicht kopiert: alle Wege, die
+   bisher den Reiter „Brett" antippen (Startseite, Wünsche, „Alles"),
+   landen über pinnwandUmleiten hier. */
+var _pinTeil='infos';
+function pinnwandZeichnen(){
+  var sec=$('view-ann'), brett=$('teamPaneBrett'); if(!sec || !brett) return;
+  var flaeche=sec.querySelector('.scroll-area');
+  if(brett.parentNode!==flaeche){ flaeche.appendChild(brett); pinnwandUmleiten(); }
+  var mitBrett=featureAn('brett');
+  if(!mitBrett) _pinTeil='infos';
+  var box=sec.querySelector('.umschalter[data-umschalter="pinnwand"]');
+  if(!box){
+    box=document.createElement('div');
+    box.className='chat-arten umschalter'; box.setAttribute('data-umschalter','pinnwand');
+    box.setAttribute('role','tablist'); box.setAttribute('aria-label','Pinnwand');
+    sec.querySelector('.view-head').insertAdjacentElement('afterend', box);
+    box.addEventListener('click', function(e){
+      var t=e.target.closest('[data-pinteil]'); if(!t || t.classList.contains('active')) return;
+      _pinTeil=t.getAttribute('data-pinteil'); pinnwandZeichnen(); tick(8);
+    });
+  }
+  box.hidden=!mitBrett;
+  box.innerHTML=[['infos','Infos'],['brett','Aushänge']].map(function(x){
+    var an=x[0]===_pinTeil;
+    return '<button type="button" role="tab" aria-selected="'+an+'" class="chat-art'+(an?' active':'')+
+      '" data-pinteil="'+x[0]+'">'+x[1]+'</button>';
+  }).join('');
+  var infos=_pinTeil==='infos';
+  var ann=$('annArea'); if(ann) ann.hidden=!infos;
+  var ob=$('obCard'); if(ob) ob.classList.toggle('pin-weg', !infos);
+  brett.style.display = infos ? 'none' : '';
+  if(!infos) foldAufbauen();
+}
+function pinnwandUmleiten(){
+  var tab=document.querySelector('[data-teamtab="brett"]'); if(!tab || tab._umgeleitet) return;
+  tab._umgeleitet=true;
+  tab.classList.add('pin-umgezogen');
+  /* Vor dem eigenen Hörer des Reiters (Fangphase am Ziel läuft zuerst). */
+  tab.addEventListener('click', function(e){
+    e.stopImmediatePropagation(); e.preventDefault();
+    _pinTeil='brett'; showView('ann');
+  }, true);
+}
+/* „Alle ›" auf der Startseite und andere Verweise mit data-pin. */
+document.addEventListener('click', function(e){
+  var t=e.target.closest && e.target.closest('[data-pin]'); if(t) _pinTeil=t.getAttribute('data-pin');
+}, true);
+
+/* ── Chats: Direkt in derselben Zeile wie Studios | Gruppen ── */
+function chatArtenDirekt(){
+  var dm=$('view-dm'), pille=$('kanalDirekt'); if(!dm) return;
+  if(pille && !pille._gebunden){
+    pille._gebunden=true;
+    pille.addEventListener('click', function(){ showView('dm'); tick(8); });
+  }
+  var box=dm.querySelector('.umschalter[data-umschalter="chats"]');
+  if(!box){
+    box=document.createElement('div');
+    box.className='chat-arten umschalter'; box.setAttribute('data-umschalter','chats');
+    box.setAttribute('role','tablist'); box.setAttribute('aria-label','Chats');
+    dm.querySelector('.view-head').insertAdjacentElement('afterend', box);
+    box.addEventListener('click', function(e){
+      var t=e.target.closest('[data-chatart]'); if(!t || t.classList.contains('active')) return;
+      _chatArt=t.getAttribute('data-chatart'); showView('chat'); tick(8);
+    });
+  }
+  var gruppen=gruppenKanaele().length>0;
+  box.innerHTML='<button type="button" role="tab" aria-selected="false" class="chat-art" data-chatart="studios">Studios</button>'+
+    (gruppen ? '<button type="button" role="tab" aria-selected="false" class="chat-art" data-chatart="gruppen">Gruppen</button>' : '')+
+    '<button type="button" role="tab" aria-selected="true" class="chat-art active">Direkt</button>';
+}
+
 /* Am Rechner stehen die Reiter IN der Kopfzeile, rechts neben dem
    Titel (Runde 184). Gemessen: der Kopf ist 85 px hoch und rechts vom
    Titel 700 px leer; die eigene Reiterzeile darunter kostete jede
@@ -21941,6 +22611,7 @@ function buildSubNav(){
      Durchläufe (test-handy-stempeln, test-kalender, test-notizen …)
      fielen darüber. Ein Tipp für das tägliche Ziel geht vor 40 px. */
   if(views.length<2){
+    umschalterZeichnen(views);
     bar.innerHTML=''; bar.style.display='none';
     /* Die ganze Zeile weg, nicht nur die Leiste — sonst bliebe „Alle"
        allein in einer sonst leeren Zeile stehen. */
@@ -21950,13 +22621,27 @@ function buildSubNav(){
   }
   var zeile=$('subnavZeile'); if(zeile) zeile.style.display='flex';
   bar.style.display='flex';
+  /* Zusammengelegte Reiter (Runde 187): zwei Ansichten, EIN Reiter. Er
+     führt zur ersten sichtbaren, trägt die Marke für beide und hat für
+     jede seinen Punkt. Innen schaltet der Umschalter (umschalterZeichnen). */
+  var gesehen={};
   bar.innerHTML=views.map(function(v){
-    var it=navItem(v); if(!it) return '';
-    return '<button class="subtab'+(v===currentView?' on':'')+'" data-subview="'+v+'">'+
+    var paar=reiterPaar(v), ziel=v, teile=[v], it=navItem(v); if(!it) return '';
+    if(paar){
+      if(gesehen[paar.id]) return '';
+      gesehen[paar.id]=true;
+      teile=paar.views.filter(function(x){ return views.indexOf(x)>=0; });
+      ziel=teile.indexOf(currentView)>=0 ? currentView : teile[0];
+      if(teile.length>1) it={ label:paar.label, icon:navItem(teile[0]).icon };
+    }
+    var an=teile.indexOf(currentView)>=0;
+    return '<button class="subtab'+(an?' on':'')+'" data-subview="'+ziel+'"'+
+      (paar && teile.length>1 ? ' data-paar="'+paar.id+'"' : '')+'>'+
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'+it.icon+'</svg>'+
       '<span>'+esc(it.label)+'</span>'+
-      '<span class="sub-dot" data-ndot="'+v+'"></span></button>';
+      teile.map(function(t){ return '<span class="sub-dot" data-ndot="'+t+'"></span>'; }).join('')+'</button>';
   }).join('');
+  umschalterZeichnen(views);
   requestAnimationFrame(subnavMehrPruefen);
   bar.querySelectorAll('[data-subview]').forEach(function(b){
     b.addEventListener('click',function(){ showView(b.getAttribute('data-subview')); tick(8); });
@@ -22398,9 +23083,10 @@ function buildChannels(){
   var arten=$('chatArten');
   /* Ohne Gruppe keine Umschaltung. Ein Reiter, hinter dem nichts liegt,
      ist schlimmer als keiner. */
+  chatArtenDirekt();
   if(arten){
     arten.hidden = !gruppen.length;
-    if(!gruppen.length) _chatArt='studios';
+    if(!gruppen.length || _chatArt==='direkt') _chatArt=(_chatArt==='gruppen' && gruppen.length) ? 'gruppen' : 'studios';
     arten.querySelectorAll('[data-chatart]').forEach(function(t){
       t.classList.toggle('active', t.dataset.chatart===_chatArt);
     });
@@ -22597,16 +23283,41 @@ function kanalSpalteZeichnen(){
       '</button>';
   }
   var html='';
-  if(studios.length && gruppen.length) html+='<p class="ks-gruppe">Studios</p>';
+  html+='<p class="ks-gruppe">Studios</p>';
   html+=studios.map(zeile).join('');
-  if(studios.length && gruppen.length) html+='<p class="ks-gruppe">Gruppen</p>';
+  if(gruppen.length) html+='<p class="ks-gruppe">Gruppen</p>';
   html+=gruppen.map(zeile).join('');
+  /* Direktnachrichten in derselben Liste (Runde 187, „Chat und Direkt
+     in eine Liste"): die fünf letzten Unterhaltungen, darunter der Weg
+     zu allen und zu einer neuen. */
+  var faeden=(_dmThreads||[]).filter(function(t){
+    var peer=(t.participants||[]).filter(function(u){ return u!==session.uid; })[0];
+    return peer && !(_allUsers.length && !_userById(peer));
+  }).slice(0,5);
+  html+='<p class="ks-gruppe">Direkt</p>';
+  html+=faeden.map(function(t){
+    var peer=(t.participants||[]).filter(function(u){ return u!==session.uid; })[0];
+    var nm=(t.names&&t.names[peer])||'?';
+    var neu=(t.lastTs||0) > ((t.readTs&&t.readTs[session.uid])||0) && t.lastSender!==session.uid;
+    var vorschau=(t.lastSender===session.uid?'Du: ':'')+(t.last||'');
+    return '<button type="button" class="ks-zeile'+(neu?' neu':'')+'" data-dmuid="'+esc(peer)+'" data-dmname="'+esc(nm)+'">'+
+      '<span class="ks-txt"><b>'+esc(nm)+'</b><i>'+esc(vorschau)+'</i></span>'+
+      (neu ? '<span class="ks-punkt" aria-label="ungelesen"></span>' : '')+'</button>';
+  }).join('');
+  html+='<button type="button" class="ks-zeile ks-alle" data-dmalle="1"><span class="ks-txt"><b>'+
+    (faeden.length ? 'Alle Direktnachrichten ›' : 'Jemandem direkt schreiben ›')+'</b></span></button>';
   /* Kein scrollTop lesen und zurückschreiben: das erzwänge mitten im
      Zeichnen ein Layout, und der Browser behält die Lage ohnehin. */
   box.innerHTML=html;
   if(!box._gebunden){
     box._gebunden=true;
     box.addEventListener('click', function(e){
+      var d=e.target.closest('[data-dmuid],[data-dmalle]');
+      if(d){
+        showView('dm');
+        if(d.dataset.dmuid) openDm(d.dataset.dmuid, d.dataset.dmname);
+        tick(8); return;
+      }
       var z=e.target.closest('[data-kanalwahl]'); if(!z) return;
       if(z.dataset.kanalwahl===currentChannel) return;
       kanalWaehlen(z.dataset.kanalwahl, z.dataset.kanalart);
@@ -25395,7 +26106,7 @@ function jvLeerHTML(){
     return '<li style="--gm:'+c.farbe+';--gm-rgb:'+c.rgb+'">'+ikon(c.ikon)+'<span>'+esc(x[1])+'</span></li>';
   }).join('') : '<li style="--gm:#5FE1FF;--gm-rgb:95,225,255">'+ikon('hakenKreis')+'<span>Alles ruhig — nichts offen.</span></li>')+'</ul>';
   return '<div class="jv-leer"><p class="jv-gruss">'+esc(jvGruss()+(vorname ? ', '+vorname : ''))+'.</p>'+brief+
-    '<p class="jv-unter">Ich bin '+esc(jvPersona().name)+'. Frag mich etwas oder gib mir einen Auftrag — ich erledige es in der App und zeige dir jeden Schritt.</p>'+
+    '<p class="jv-unter">'+(jvPersona().ton==='sachlich' ? 'Ich bin '+esc(jvPersona().name)+'. ' : esc(formiLageSatz())+' ')+'Frag mich etwas oder gib mir einen Auftrag — ich erledige es in der App und zeige dir jeden Schritt.</p>'+
     '<div class="jv-chips">'+JV_VORSCHLAEGE.map(function(t){ return '<button type="button" class="jv-chip" data-jvbefehl="'+esc(t)+'">'+esc(t)+'</button>'; }).join('')+'</div></div>';
 }
 function gehirnZeichnenIn(box, tippen){
@@ -25674,7 +26385,7 @@ function gehirnTonfall(){ return jvPersona().ton==='sachlich' ? 'sachlich' : 'lo
    Je Gerät: Name, Tonfall, Stimme (menschlich über Google oder die des
    Geräts), Weckwort. Aus dem Betrieb: „wie ein echter mensch als
    assistent" — und auf die Ideenliste „mach alles davon". */
-var JV_PERSONA_STD={ name:'Formi', ton:'locker', stimme:'profi', profiStimme:'de-DE-Chirp3-HD-Aoede', geraetStimme:'', weckwort:false, studio:'', effekte:'auto' };
+var JV_PERSONA_STD={ name:'Formi', ton:'locker', stimme:'profi', profiStimme:'de-DE-Chirp3-HD-Aoede', geraetStimme:'', weckwort:false, studio:'', effekte:'auto', gefuehle:'an' };
 var JV_PROFI_STIMMEN=[['de-DE-Chirp3-HD-Aoede','Aoede (weiblich)'],['de-DE-Chirp3-HD-Kore','Kore (weiblich)'],['de-DE-Chirp3-HD-Charon','Charon (männlich)'],['de-DE-Chirp3-HD-Puck','Puck (männlich)']];
 function jvPersona(){
   var p={}; try{ p=JSON.parse(localStorage.getItem('kf_jv_persona')||'{}')||{}; }catch(e){}
@@ -25688,6 +26399,7 @@ function jvPersona(){
 function jvPersonaSetzen(aenderung){
   var p=Object.assign(jvPersona(), aenderung);
   try{ localStorage.setItem('kf_jv_persona', JSON.stringify(p)); }catch(e){}
+  if('gefuehle' in aenderung) formiGefuehleAnwenden(p.gefuehle!=='aus');
   jvPersonaAnwenden();
   return p;
 }
@@ -25712,6 +26424,11 @@ function jvPersonaAuf(auf){
       '</div><p class="jv-phinweis">Hier nehme ich an, dass du bist, wenn du kein Studio nennst.</p></div>' : '')+
     '<div class="jv-pz">Effekte<div class="jv-pw" role="group" aria-label="Effekte">'+wahl('effekte','auto','Automatisch')+wahl('effekte','voll','Voll')+wahl('effekte','sparsam','Sparsam')+'</div>'+
       '<p class="jv-phinweis">Automatisch: weniger Teilchen, sobald dein Gerät ins Stocken kommt.</p></div>'+
+    /* Runde 188 — aus dem Betrieb auf „ein Schalter für Formis Gefühle?":
+       „Ja aber versteckter". Deshalb hier in Formis eigenen Einstellungen
+       und nicht unter Profil → Aussehen. */
+    '<div class="jv-pz">Gefühle der Kugel<div class="jv-pw" role="group" aria-label="Gefühle der Kugel">'+wahl('gefuehle','an','Zeigen')+wahl('gefuehle','aus','Aus')+'</div>'+
+      '<p class="jv-phinweis">Aus: Die Kugel schaut nicht mit, blinzelt nicht, freut sich nicht und schläft nicht ein. Der Punkt „hat etwas für dich" und „über Formi" bleiben.</p></div>'+
     '<div class="jv-pz">Tonfall<div class="jv-pw" role="group" aria-label="Tonfall">'+wahl('ton','locker','Locker')+wahl('ton','sachlich','Sachlich')+'</div></div>'+
     '<div class="jv-pz">Stimme<div class="jv-pw" role="group" aria-label="Stimme">'+wahl('stimme','profi','Menschlich')+wahl('stimme','geraet','Vom Gerät')+'</div>'+
     (_jvProfiAus && p.stimme==='profi' ? '<p class="jv-phinweis">Die menschliche Stimme ist gerade nicht eingerichtet — ich spreche mit der Stimme des Geräts.</p>' : '')+'</div>'+
@@ -26063,6 +26780,10 @@ function jvKompaktAnwenden(){
   j.classList.toggle('jv-kompakt', _jvKompakt);
   j.setAttribute('aria-modal', _jvKompakt ? 'false' : 'true');
   document.body.classList.toggle('jv-offen', !j.hidden && !_jvKompakt);
+  /* Runde 193: kompakt und offen = angedockt. Ob die Breite reicht,
+     entscheidet allein das CSS (ab 1440 px) — kein Messen, kein
+     Horchen auf die Fenstergrösse. */
+  document.body.classList.toggle('formi-angedockt', !j.hidden && _jvKompakt);
   var b=$('jarvisGroesse');
   if(b){
     var t=_jvKompakt ? 'Groß machen (Vollbild)' : 'Klein machen — die App bleibt sichtbar';
@@ -26127,28 +26848,50 @@ var _fl={ gestartet:false, x:0, y:0, raf:0, mitte:null, mitteBis:0, zuletzt:Date
 var FK_SCHRITT={ easing:'steps(1, end)' };
 function formiLebtAn(){
   var k=$('formiKugel');
-  return !!(k && !k.hidden && !gehirnWenigBewegung() && document.visibilityState!=='hidden' && document.body.animate);
+  return !!(k && !k.hidden && !_fl.gefuehleAus && !gehirnWenigBewegung() && document.visibilityState!=='hidden' && document.body.animate);
+}
+/* Der versteckte Schalter (Runde 188, Formis Einstellungen → „Gefühle
+   der Kugel"). Gemerkt in der Persönlichkeit je Gerät; hier nur als
+   Zahl im Speicher, damit formiLebtAn() nicht in jedem Bild JSON liest.
+   Beim Abschalten: wach, Auge geradeaus, nichts läuft weiter. */
+function formiGefuehleAnwenden(an){
+  _fl.gefuehleAus=!an;
+  if(an) return;
+  _fl.schlaeft=false;
+  var t=formiTeile(); if(!t) return;
+  t.k.classList.remove('fk-schlaeft');
+  t.k.getAnimations({ subtree:true }).forEach(function(a){ try{ a.cancel(); }catch(e){} });
+  _fl.blick=null; _fl.blickZiel='';
 }
 function formiTeile(){
   var k=$('formiKugel'); if(!k) return null;
   return { k:k, koerper:k.querySelector('.fk-koerper'), loch:k.querySelector('.fk-loch'),
-           pupille:k.querySelector('.fk-pupille'), geister:k.querySelectorAll('.fk-geist') };
+           pupille:k.querySelector('.fk-pupille'), geister:k.querySelectorAll('.fk-geist'),
+           wirbel:k.querySelector('.fk-wirbel'), weiss:k.querySelector('.fk-weiss'), gesicht:k.querySelector('.fk-gesicht'),
+           augen:k.querySelectorAll('.fk-auge'), mund:k.querySelector('.fk-mund') };
 }
 /* Die Gefühle als Bewegung. Jede Zeile: [Teil, Bildfolge, Dauer]. */
+/* Die Gefühle als Bewegung. Jede Zeile: [Teil, Bildfolge, Dauer].
+   Runde 195: Augen und Mund tragen den Ausdruck („augen" bewegt beide). */
 function formiGefuehl(art){
   var hops=[{transform:'none'},{transform:'translateY(-8px) scale(1.07)',offset:.35},{transform:'translateY(1px) scale(.97)',offset:.7},{transform:'none'}];
-  var grins=[{transform:'none'},{transform:'scale(1.12,.42)',offset:.22},{transform:'scale(1.12,.42)',offset:.8},{transform:'none'}];
+  /* Freude: Augen zu Halbmonden, der Mund wird breit. */
+  var froh=[{transform:'none'},{transform:'scale(1.15,.4)',offset:.2},{transform:'scale(1.15,.4)',offset:.8},{transform:'none'}];
+  var lachen=[{transform:'none'},{transform:'scale(1.35,1.6)',offset:.2},{transform:'scale(1.35,1.6)',offset:.8},{transform:'none'}];
   return {
-    freut:     [['koerper', hops, 460], ['pupille', grins, 700]],
+    freut:     [['koerper', hops, 460], ['augen', froh, 900], ['mund', lachen, 900]],
     staunt:    [['koerper', [{transform:'none'},{transform:'scale(1.12)',offset:.3},{transform:'none'}], 520],
-                ['pupille', [{transform:'none'},{transform:'scale(1.35)',offset:.25},{transform:'scale(1.35)',offset:.75},{transform:'none'}], 900]],
+                ['augen', [{transform:'none'},{transform:'scale(1.3)',offset:.25},{transform:'scale(1.3)',offset:.75},{transform:'none'}], 900],
+                ['mund', [{transform:'none'},{transform:'scale(.6,1.9)',offset:.25},{transform:'scale(.6,1.9)',offset:.75},{transform:'none'}], 900]],
     feiert:    [['koerper', [{transform:'none'},{transform:'rotate(200deg) scale(1.16)',offset:.45},{transform:'rotate(360deg) scale(1)'}], 820],
-                ['pupille', grins, 1100]],
+                ['augen', froh, 1400], ['mund', lachen, 1400]],
+    /* Schreck: Augen klein, der Mund kippt nach unten. */
     erschrickt:[['koerper', [{transform:'none'},{transform:'translateX(-5px)',offset:.15},{transform:'translateX(5px)',offset:.35},
                   {transform:'translateX(-4px)',offset:.55},{transform:'translateX(3px)',offset:.75},{transform:'none'}], 380],
-                ['pupille', [{transform:'none'},{transform:'scale(.6)',offset:.12},{transform:'scale(.6)',offset:.8},{transform:'none'}], 600]],
-    nickt:     [['koerper', [{transform:'none'},{transform:'scale(.94)',offset:.4},{transform:'none'}], 200]],
-    blinzelt:  [['pupille', [{transform:'none'},{transform:'scaleY(.1)',offset:.5},{transform:'none'}], 170]]
+                ['augen', [{transform:'none'},{transform:'scale(.6)',offset:.12},{transform:'scale(.6)',offset:.8},{transform:'none'}], 700],
+                ['mund', [{transform:'none'},{transform:'translateY(2px) scaleY(-1)',offset:.12},{transform:'translateY(2px) scaleY(-1)',offset:.8},{transform:'none'}], 700]],
+    nickt:     [['gesicht', [{transform:'none'},{transform:'translateY(2px)',offset:.4},{transform:'none'}], 220]],
+    blinzelt:  [['augen', [{transform:'none'},{transform:'scaleY(.1)',offset:.5},{transform:'none'}], 170]]
   }[art] || [];
 }
 function formiFuehlt(art){
@@ -26156,10 +26899,93 @@ function formiFuehlt(art){
   var t=formiTeile(); if(!t) return;
   if(art!=='blinzelt') formiWach(true);
   formiGefuehl(art).forEach(function(z){
-    var el=t[z[0]]; if(!el) return;
-    try{ el.animate(z[1], { duration:z[2], easing:'cubic-bezier(.3,.7,.2,1)' }); }catch(e){}
+    var els = z[0]==='augen' ? [].slice.call(t.augen) : [t[z[0]]];
+    els.forEach(function(el){
+      if(!el) return;
+      try{ el.animate(z[1], { duration:z[2], easing:'cubic-bezier(.3,.7,.2,1)' }); }catch(e){}
+    });
   });
   if(art==='feiert' || art==='erschrickt' || art==='staunt') formiKugelGlitch();
+  if(art==='freut') formiAusbruch(false);
+  if(art==='feiert') formiAusbruch(true);
+}
+/* ── Weisses Loch (Runde 195) ─────────────────────────────────────────
+   Aus dem Betrieb: „wenn er sich freut weil eine aufgabe erledigt wurde
+   … spuckt er partikel aus und wird zu einem weissen loch und danach zu
+   einem schwarzen was die partikel wieder einsaugt".
+
+   1,5 s: das Loch wird weiss und bläht sich auf, die Teilchen fliegen in
+   den Farben des Rings heraus, halten kurz, dann wird es wieder schwarz
+   und saugt sie ein (schneller werdend), zuletzt schluckt der Körper.
+   Alles Web Animations auf transform/opacity; die Teilchen sind ein paar
+   <i> in der Kugel und verschwinden danach wieder. */
+var FK_FARBEN=['#5FE1FF','#B69CFF','#FF8FC8','#FFA85C','#FFFFFF'];
+function formiTeilchen(t, n, klein){
+  var box=document.createElement('span');
+  box.className='fk-teilchen'+(klein ? ' klein' : '');
+  var html='';
+  for(var i=0;i<n;i++) html+='<i style="--c:'+FK_FARBEN[i%FK_FARBEN.length]+'"></i>';
+  box.innerHTML=html;
+  return box;
+}
+function formiAusbruch(stark){
+  if(!formiLebtAn()) return;
+  var t=formiTeile(); if(!t || !t.weiss) return;
+  var dauer=stark ? 1900 : 1500;
+  try{
+    t.weiss.animate([{opacity:0},{opacity:1,offset:.12},{opacity:1,offset:.5},{opacity:0,offset:.75},{opacity:0}], { duration:dauer, easing:'ease-in-out' });
+    t.pupille.animate([{transform:'none'},{transform:'scale(1.18)',offset:.15},{transform:'scale(1.08)',offset:.5},{transform:'scale(.86)',offset:.88},{transform:'none'}], { duration:dauer });
+  }catch(e){}
+  var n=stark ? 22 : 12, box=formiTeilchen(t, n, false);
+  t.k.appendChild(box);
+  [].forEach.call(box.children, function(el, i){
+    var w=(i/n)*Math.PI*2 + Math.random()*0.5, d=(stark ? 70 : 42) + Math.random()*(stark ? 50 : 30);
+    var x=Math.cos(w)*d, y=Math.sin(w)*d, g=.7+Math.random()*.7;
+    try{
+      el.animate([
+        { transform:'translate(0,0) scale(.3)', opacity:0, easing:'cubic-bezier(.15,.8,.3,1)' },
+        { transform:'translate('+x.toFixed(1)+'px,'+y.toFixed(1)+'px) scale('+g.toFixed(2)+')', opacity:1, offset:.38 },
+        { transform:'translate('+(x*1.12).toFixed(1)+'px,'+(y*1.12).toFixed(1)+'px) scale('+(g*.85).toFixed(2)+')', opacity:.9, offset:.55, easing:'cubic-bezier(.7,0,.9,.5)' },
+        { transform:'translate(0,0) scale(.1)', opacity:0 }
+      ], { duration:dauer+Math.round(Math.random()*200), delay:Math.round(Math.random()*60) });
+    }catch(e){}
+  });
+  setTimeout(function(){ if(box.parentNode) box.parentNode.removeChild(box); }, dauer+400);
+}
+/* ── Atmen (Runde 195) ───────────────────────────────────────────────
+   „vlt auch mehr das gefühl das es ein lebendes schwarzes/weisses loch
+   ist". Alle 7–12 s dreht sich der Ring einmal ganz um sich selbst
+   (3,6 s, langsam an, langsam aus), das Loch weitet sich kaum merklich,
+   und drei Krümel fallen spiralig hinein. Kein `infinite`: ein Zeitgeber
+   wie beim Blinzeln, und eine volle Drehung endet genau, wo sie anfing —
+   es bleibt nichts stehen. */
+function formiAtmen(){
+  if(!formiLebtAn() || _fl.schlaeft) return;
+  var t=formiTeile(); if(!t || !t.wirbel) return;
+  try{
+    t.wirbel.animate([{ transform:'rotate(0deg)' }, { transform:'rotate(360deg)' }], { duration:3600, easing:'ease-in-out' });
+    t.pupille.animate([{ transform:'none' }, { transform:'scale(1.07)', offset:.5 }, { transform:'none' }], { duration:3600, easing:'ease-in-out' });
+  }catch(e){ return; }
+  var box=formiTeilchen(t, 3, true);
+  t.koerper.insertBefore(box, t.loch);
+  [].forEach.call(box.children, function(el, i){
+    var w=Math.random()*Math.PI*2, r=26;
+    var x=Math.cos(w)*r, y=Math.sin(w)*r, x2=Math.cos(w+1.4)*r*.55, y2=Math.sin(w+1.4)*r*.55;
+    try{
+      el.animate([
+        { transform:'translate('+x.toFixed(1)+'px,'+y.toFixed(1)+'px)', opacity:0 },
+        { transform:'translate('+x.toFixed(1)+'px,'+y.toFixed(1)+'px)', opacity:.9, offset:.2 },
+        { transform:'translate('+x2.toFixed(1)+'px,'+y2.toFixed(1)+'px) scale(.8)', opacity:.8, offset:.65 },
+        { transform:'translate(0,0) scale(.2)', opacity:0 }
+      ], { duration:1600, delay:400+i*500, easing:'ease-in' });
+    }catch(e){}
+  });
+  setTimeout(function(){ if(box.parentNode) box.parentNode.removeChild(box); }, 3400);
+}
+function formiAtmenPlanen(){
+  clearTimeout(_fl.atemUhr);
+  if(_fl.uhrenAus) return;
+  _fl.atemUhr=setTimeout(function(){ formiAtmen(); formiAtmenPlanen(); }, 7000+Math.random()*5000);
 }
 /* Der Glitch an der Kugel: zwei Geister springen neben den Körper. */
 function formiKugelGlitch(){
@@ -26241,16 +27067,87 @@ function formiWach(stumm){
 }
 function formiBlinzelnPlanen(){
   clearTimeout(_fl.blinzelUhr);
+  if(_fl.uhrenAus) return;
   _fl.blinzelUhr=setTimeout(function(){
     if(formiLebtAn() && !_fl.schlaeft) formiFuehlt('blinzelt');
     formiBlinzelnPlanen();
   }, 4000+Math.random()*7000);
+}
+/* ── Formis Persönlichkeit (Runde 196, 22.10.2026) ──────────────────
+   Aus dem Betrieb: „lass uns formi wirklich richtig persönlichkeit
+   geben" — gewählt: „Kumpel aus dem Studio". Die Gefühle der Kugel
+   (Runde 186) zeigen, WIE es Formi geht; hier kommt dazu, was Formi
+   SAGT: ein kurzer Satz in einer Blase neben der Kugel.
+   Regeln: höchstens eine Blase je 45 s (der Tagesgruss ausgenommen),
+   nie während Formi offen ist, nicht bei „Gefühle der Kugel: Aus" und
+   nicht im sachlichen Ton. Keine KI, kein Netz — die Sätze stehen hier. */
+var FORMI_SAGT={
+  ersterHaken:['Erster Haken heute. Stark!','Und los geht’s — der erste ist geschafft.','Haken Nummer eins. Ich hab’s gesehen.'],
+  serie:['Läuft bei dir! Drei Haken in 20 Sekunden.','Turbo-Modus an. Respekt.','Langsam, sonst hab ich nichts mehr zu tun.'],
+  zurueck:['Wieder da! Ich hab die Stellung gehalten.','Na, Pause vorbei? Weiter geht’s.','Schön, dass du zurück bist.'],
+  morgenMo:['Montagmorgen. Ich bräuchte erst mal einen Kaffee — kann ich aber nicht trinken.'],
+  morgenFrueh:['Früh dran! Die Westen sind hoffentlich schon trocken.','Der frühe Vogel fängt das erste Probetraining.'],
+  freitag:['Freitag! Feierabend ist in Sicht.','Freitag — lass uns das Offene noch wegräumen.'],
+  abend:['Endspurt für heute.','Gleich geschafft für heute.'],
+  tag:['Schön, dass du da bist.','Auf geht’s.','Lass uns was wegschaffen.']
+};
+var _fs={ zuletzt:0, uhr:0 };
+function formiSprichtAn(){
+  var p=jvPersona();
+  return p.gefuehle!=='aus' && p.ton!=='sachlich';
+}
+/* Ein Satz zur Lage: Wochentag und Uhrzeit. Fester Tageszufall, damit er
+   beim Neuzeichnen nicht springt. */
+function formiLageSatz(d){
+  d=d||new Date();
+  var h=d.getHours(), w=d.getDay(), art=(w===1 && h<11) ? 'morgenMo' : (h<9 ? 'morgenFrueh' : (w===5 && h>=13) ? 'freitag' : h>=19 ? 'abend' : 'tag');
+  var l=FORMI_SAGT[art], i=(d.getDate()+d.getMonth()*31)%l.length;
+  return l[i];
+}
+function formiZufall(art){ var l=FORMI_SAGT[art]||[]; return l[Math.floor(Math.random()*l.length)]||''; }
+function formiSagt(text, immer){
+  var b=$('formiBlase'), k=$('formiKugel');
+  if(!b || !k || !text || !formiSprichtAn()) return false;
+  if(k.hidden || jarvisOffen()) return false;
+  var jetzt=Date.now();
+  if(!immer && jetzt-_fs.zuletzt<45000) return false;
+  _fs.zuletzt=jetzt;
+  b.textContent=text;
+  /* Lage im nächsten Bild lesen, dann schreiben (Hausregel). Die Blase
+     hängt mit ihrer rechten unteren Ecke über der Kugel — ihre eigene
+     Grösse muss dafür niemand messen; max-width hält sie im Bild. */
+  requestAnimationFrame(function(){
+    if(k.hidden) return;
+    var r=k.getBoundingClientRect(), w=innerWidth, h=innerHeight;
+    b.style.right=Math.max(8, Math.round(w-r.right))+'px';
+    b.style.bottom=Math.max(8, Math.round(h-r.top+8))+'px';
+    b.classList.remove('rein'); b.hidden=false;
+    requestAnimationFrame(function(){ b.classList.add('rein'); });
+  });
+  clearTimeout(_fs.uhr);
+  _fs.uhr=setTimeout(function(){ b.hidden=true; b.classList.remove('rein'); }, 4500);
+  return true;
+}
+/* Einmal am Tag je Gerät, kurz nach dem Start: Gruss mit Namen und Lage. */
+function formiTagesgruss(){
+  var tag=ymd(new Date());
+  try{ if(localStorage.getItem('kf_formi_gruss')===tag) return; }catch(e){ return; }
+  var n=gehirnVorname();
+  if(formiSagt(jvGruss()+(n ? ', '+n : '')+'! '+formiLageSatz(), true)){
+    try{ localStorage.setItem('kf_formi_gruss', tag); }catch(e){}
+  }
 }
 /* Zählt Haken; ab dem dritten binnen 20 s staunt Formi statt sich zu freuen. */
 function formiHaken(){
   var jetzt=Date.now();
   _fl.haken=_fl.haken.filter(function(t){ return jetzt-t<20000; }); _fl.haken.push(jetzt);
   formiFuehlt(_fl.haken.length>=3 ? 'staunt' : 'freut');
+  /* Runde 196: Formi sagt auch etwas — beim ersten Haken des Tages und
+     bei einer Serie. */
+  var tag=ymd(new Date()), erster=false;
+  try{ erster=localStorage.getItem('kf_formi_haken')!==tag; if(erster) localStorage.setItem('kf_formi_haken', tag); }catch(e){}
+  if(_fl.haken.length===3) formiSagt(formiZufall('serie'));
+  else if(erster) formiSagt(formiZufall('ersterHaken'));
 }
 function formiFeiert(text){
   formiFuehlt('feiert');
@@ -26279,6 +27176,7 @@ function formiGesehen(){
 }
 function formiLebtStart(){
   if(_fl.gestartet) return; _fl.gestartet=true;
+  _fl.gefuehleAus = jvPersona().gefuehle==='aus';
   var maus=!!(window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches);
   function tun(){ formiWach(); }
   document.addEventListener('pointermove', function(e){ _fl.zuletzt=Date.now(); if(_fl.schlaeft) formiWach(); if(maus) formiSchauNach(e.clientX, e.clientY); }, { passive:true });
@@ -26297,11 +27195,22 @@ function formiLebtStart(){
   document.addEventListener('visibilitychange', function(){
     if(document.visibilityState==='hidden'){ _fl.weg=Date.now(); return; }
     if(_fl.weg && Date.now()-_fl.weg>60000) setTimeout(function(){ formiFuehlt('freut'); }, 400);
+    /* Runde 196: nach über 30 Minuten weg sagt Formi auch etwas. */
+    if(_fl.weg && Date.now()-_fl.weg>30*60000) setTimeout(function(){ formiSagt(formiZufall('zurueck')); }, 700);
     _fl.weg=0;
   });
   addEventListener('resize', function(){ _fl.mitte=null; }, { passive:true });
   setInterval(formiSchlafPruefen, 10000);
   formiBlinzelnPlanen();
+  /* Runde 196: Tagesgruss, wenn die App steht. */
+  setTimeout(formiTagesgruss, 2500);
+  formiAtmenPlanen();
+  /* Kleinigkeit (Runde 195): wer mit dem Mausrad scrollt, dem schaut
+     Formi kurz in die Richtung nach. */
+  if(maus) document.addEventListener('wheel', function(e){
+    if(!_fl.mitte) return;
+    formiSchauNach(_fl.mitte.x, _fl.mitte.y + (e.deltaY > 0 ? 300 : -300));
+  }, { passive:true });
 }
 function formiSchlafPruefen(){
   if(_fl.schlaeft || !formiLebtAn()) return;
@@ -26314,7 +27223,14 @@ window.__formiLebt = {
   fuehlt: function(a){ formiFuehlt(a); },
   haken: function(){ formiHaken(); },
   glitch: function(sel){ formiGlitch(document.querySelector(sel)); },
-  einschlafen: function(){ _fl.zuletzt=Date.now()-91000; formiSchlafPruefen(); return _fl.schlaeft; }
+  einschlafen: function(){ _fl.zuletzt=Date.now()-91000; formiSchlafPruefen(); return _fl.schlaeft; },
+  sagt: function(t, immer){ return formiSagt(t, immer); },
+  lage: function(ms){ return formiLageSatz(new Date(ms)); },
+  pauseVorbei: function(){ _fs.zuletzt=0; },
+  atmen: function(){ formiAtmen(); },
+  /* Blinzeln und Atmen kommen zu zufälligen Zeiten — ein Durchlauf, der
+     „danach läuft nichts mehr" prüft, schaltet sie dafür ab. */
+  uhrenAus: function(){ _fl.uhrenAus=true; clearTimeout(_fl.blinzelUhr); clearTimeout(_fl.atemUhr); }
 };
 /* Wohin der Zeiger fährt: der Knopf des Bereichs in der Seitenleiste
    (Rechner) oder unten in der Leiste (Handy), sonst der Bereichskopf. */
@@ -27387,6 +28303,7 @@ function jarvisAuf(){
                     Object.assign({ transform:'translateX(-2px)', opacity:.7, offset:.6 }, FK_SCHRITT), { transform:'none', opacity:1 }], { duration:280 }); }catch(e){}
   }
   formiGesehen();
+  var fb=$('formiBlase'); if(fb) fb.hidden=true;
   tick(8);
 }
 function jarvisZu(){
@@ -27395,7 +28312,7 @@ function jarvisZu(){
   jvWeckStop(); gehirnHoerenStop();
   jvUhrStop(); jvFeldStop();
   j.classList.remove('da', 'jv-boot'); j.hidden=true;
-  document.body.classList.remove('jv-offen');
+  document.body.classList.remove('jv-offen', 'formi-angedockt');
   formiKugelZeigen();
   if(_jvVorher && _jvVorher.focus && document.contains(_jvVorher)) try{ _jvVorher.focus(); }catch(e){}
 }
@@ -28409,6 +29326,9 @@ function gehirnFristWoche(key, btn){
    eigenen Vorschlag gibt jemand anderes frei (prüft der Server).
    Einer zur Zeit, damit die Spalte am Rechner kurz bleibt. */
 var _gLernt=null, _gLerntPos=0, _gLerntForm=false, _gLerntLaeuft=false, _gLerntFehler='';
+/* Sammelfreigabe (22.10.2026, „ja sind zu viele klicks"): erster Tipp
+   fragt nach, zweiter Tipp (binnen 6 s) übernimmt alle einer Quelle. */
+var _gLerntSammelFrage='', _gLerntSammelUhr=0, _gLerntSammelStand='';
 var GL_ART={ frage:'Selbsttest', luecke:'Antwort-Entwurf', veraltet:'Noch aktuell?', korrektur:'Korrektur aus dem Team', 'import':'Neues Wissen' };
 function gehirnLernt(art, daten){
   return firebase.app().functions(KONFIG.region).httpsCallable('gehirnWissen')(Object.assign({ art:art }, daten||{}))
@@ -28422,6 +29342,7 @@ function gehirnLerntLaden(){
   gehirnLernt('liste').then(function(d){
     _gLernt=Array.isArray(d.liste) ? d.liste : [];
     _gLernt.anzahl=Number(d.anzahl)||_gLernt.length;
+    _gLernt.gruppen=Array.isArray(d.gruppen) ? d.gruppen : [];
     _gLerntFehler='';
     if(_gLerntPos>=_gLernt.length) _gLerntPos=0;
     gehirnLerntZeichnen();
@@ -28429,6 +29350,42 @@ function gehirnLerntLaden(){
     _gLernt=[]; _gLerntFehler=errMsg(err);
     gehirnLerntZeichnen();
   });
+}
+function gehirnLerntGruppe(quelle){
+  return ((_gLernt && _gLernt.gruppen) || []).filter(function(g){ return g.quelle===quelle; })[0] || null;
+}
+function gehirnLerntSammelKnopf(v){
+  if(!v || v.art!=='import' || !v.quelle) return '';
+  var g=gehirnLerntGruppe(v.quelle); if(!g || g.anzahl<2) return '';
+  var fragt=_gLerntSammelFrage===v.quelle && Date.now()-_gLerntSammelUhr<6000;
+  var text=_gLerntSammelStand || (fragt
+    ? 'Wirklich alle '+g.anzahl+' übernehmen? Nochmal tippen'
+    : 'Alle '+g.anzahl+' aus '+(/„/.test(v.quelle) ? v.quelle : '„'+v.quelle+'“')+' übernehmen');
+  return '<button type="button" class="btn '+(fragt ? 'btn-primary' : 'btn-ghost')+' btn-sm gl-breit" data-glsammel="1"'+(_gLerntLaeuft ? ' disabled' : '')+'>'+esc(text)+'</button>'+
+    (fragt ? '<p class="hint" style="margin:var(--s4) 0 0">Die Texte werden ungelesen Wissen. Was nicht passt, vorher einzeln verwerfen.</p>' : '');
+}
+function gehirnLerntSammeln(quelle){
+  if(!quelle || _gLerntLaeuft) return;
+  var g=gehirnLerntGruppe(quelle); if(!g) return;
+  if(!(_gLerntSammelFrage===quelle && Date.now()-_gLerntSammelUhr<6000)){
+    _gLerntSammelFrage=quelle; _gLerntSammelUhr=Date.now(); gehirnLerntZeichnen();
+    setTimeout(function(){ if(_gLerntSammelFrage===quelle && !_gLerntLaeuft){ _gLerntSammelFrage=''; gehirnLerntZeichnen(); } }, 6100);
+    return;
+  }
+  _gLerntSammelFrage=''; _gLerntLaeuft=true;
+  var gesamt=0, fehler=0;
+  (function runde(){
+    _gLerntSammelStand='Übernimmt … '+gesamt+' von '+g.anzahl; gehirnLerntZeichnen();
+    gehirnLernt('entscheiden', { quelle:quelle, gut:true }).then(function(r){
+      gesamt+=Number(r.erledigt)||0; fehler+=Number(r.fehler)||0;
+      if(r.ok && r.uebrig>0 && r.erledigt>0) return runde();
+      _gLerntLaeuft=false; _gLerntSammelStand='';
+      toast(gesamt+(gesamt===1 ? ' Vorschlag' : ' Vorschläge')+' übernommen'+(fehler ? ', '+fehler+' mit Fehler' : '')+(r.uebersprungen ? ' · '+r.uebersprungen+' eigene bleiben für jemand anderes' : '')+'.');
+      tick(8); _gLerntPos=0; gehirnLerntLaden();
+    }).catch(function(err){
+      _gLerntLaeuft=false; _gLerntSammelStand=''; gehirnLerntZeichnen(); toast(errMsg(err), true);
+    });
+  })();
 }
 function gehirnLerntZeichnen(laedt){
   var karte=$('gehirnLernt'); if(!karte) return;
@@ -28457,7 +29414,8 @@ function gehirnLerntZeichnen(laedt){
         '<button type="button" class="btn btn-primary btn-sm" data-glurteil="1"'+(v.eigen||_gLerntLaeuft ? ' disabled' : '')+'>'+(v.art==='veraltet' ? 'Stimmt noch' : 'Übernehmen')+'</button>'+
         '<button type="button" class="btn btn-ghost btn-sm" data-glurteil="0"'+(_gLerntLaeuft ? ' disabled' : '')+'>Verwerfen</button>'+
       '</div>'+
-      (liste.length>1 ? '<button type="button" class="btn btn-ghost btn-sm gl-breit" data-glweiter="1">Später — nächster Vorschlag ›</button>' : '');
+      (liste.length>1 ? '<button type="button" class="btn btn-ghost btn-sm gl-breit" data-glweiter="1">Später — nächster Vorschlag ›</button>' : '')+
+      gehirnLerntSammelKnopf(v);
   }
   var form = _gLerntForm
     ? '<div class="gl-form"><label class="hint" for="glNeuThema" style="margin:0">Das soll Formi wissen</label>'+
@@ -28492,6 +29450,8 @@ function gehirnLerntZeichnen(laedt){
       }).catch(function(err){ _gLerntLaeuft=false; gehirnLerntZeichnen(); toast(errMsg(err), true); });
     });
   });
+  var sammel=karte.querySelector('[data-glsammel]');
+  if(sammel) sammel.addEventListener('click', function(){ gehirnLerntSammeln(v && v.quelle); });
   var weiter=karte.querySelector('[data-glweiter]');
   if(weiter) weiter.addEventListener('click', function(){
     _gLerntPos=(_gLerntPos+1)%Math.max(1,(_gLernt||[]).length); gehirnLerntZeichnen();
@@ -32715,9 +33675,8 @@ function buildTeamSelect(){
     : (session.studios||[]).slice().sort(function(a,b){ return a.localeCompare(b,'de'); });
   sel.innerHTML=list.map(function(s){ return '<option value="'+esc(studioKey(s))+'">'+esc(s)+'</option>'; }).join('');
   sel.onchange=function(){ loadTeam(sel.value); };
-  // Schichten darf nur die Verwaltung eintragen
-  var addCard=$('shiftAddCard');
-  if(addCard) addCard.style.display = canManage() ? 'block' : 'none';
+  // Schichten darf nur die Verwaltung eintragen (Knopf „＋ Schicht")
+  var nb=$('shiftNeu'); if(nb) nb.hidden=!canManage();
 }
 var _shiftVergangenAuf=false;
 function ensureTeamLoaded(){
@@ -32742,8 +33701,18 @@ function heuteInsBild(){
      seiner Überschrift, nicht weiter. Steht sie im Bild, bleibt die
      Seite stehen; das war P-12. */
   var f=h.closest('.scroll-area'); if(!f) return;
-  var k=h.getBoundingClientRect(), r=f.getBoundingClientRect();
-  if(k.top > r.bottom - 60) sanftScrollen(f,{ top: f.scrollTop + (k.top - r.bottom) + 120, behavior:'smooth' });
+  /* Gemessen wird die LAGE, nicht das Bild: 260 ms nach dem Öffnen
+     schwebt der Tag noch in seiner Einblende-Bewegung (cardUp, translateY)
+     — getBoundingClientRect sah ihn bei 390 px 38 px tiefer, als er
+     stehen bleibt, und die Seite rollte 80 px, obwohl heute im Bild war
+     (P-12, gemessen 22.10.2026). offsetTop kennt keine Verschiebung. */
+  function lage(e){ var y=0; while(e){ y+=e.offsetTop; e=e.offsetParent; } return y; }
+  var oben=lage(h)-lage(f)-f.scrollTop+f.getBoundingClientRect().top;
+  var r=f.getBoundingClientRect();
+  /* Rollen nur, wenn nicht einmal die Überschrift des Tages (40 px) zu
+     sehen ist. Hier stand 60: bei der Leitung am Handy (390 px) standen
+     42 px von heute im Bild, und die Seite rollte trotzdem. */
+  if(oben > r.bottom - 40) sanftScrollen(f,{ top: f.scrollTop + (oben - r.bottom) + 120, behavior:'smooth' });
 }
 
 /* ── Anträge, die auf eine Entscheidung warten ──
@@ -32788,7 +33757,9 @@ function buildTeamTabs(){
     var id=b.getAttribute('data-teamtab');
     var an=featureAn(id);
     b.style.display = an ? '' : 'none';
-    if(an){ sichtbar++; return; }
+    /* „Brett" ist umgezogen (Pinnwand, Runde 187) – der Knopf bleibt als
+       Umleitung, zählt aber nicht als Reiter dieser Leiste. */
+    if(an){ if(id!=='brett') sichtbar++; return; }
     b.classList.remove('on');
     var p=$(TEAMPANES[id]); if(p) p.style.display='none';
   });
@@ -32863,15 +33834,129 @@ function loadTeam(sk){
   buildShiftPersonSelect();
 }
 
-/* Woche als Liste von 7 Tagen zeichnen */
+/* ══ Schichtplan: zwei Ansichten (Runde 191) ═════════════════════════
+   Aus dem Betrieb, 22.10.2026: „plan klingt gut" — auf den Vorschlag,
+   am Rechner ein Raster nach Person zu bauen (Deputy, Planday). Wer
+   schaut hinein? „Beide schauen oft rein": deshalb gibt es beide
+   Ansichten für alle, und die zuletzt gewählte bleibt je Gerät
+   (PREFS.planAnsicht). Ohne Wahl sieht die Leitung „Personen" und das
+   Team „Tage".
+
+   Gemessen vorher bei 1440 × 900: in Spalten von 152 px stand jede
+   Schicht in drei Zeilen (Zeit · ✕ · Name), ein Tag mit drei Schichten
+   war 449 px hoch, die Woche passte nicht ins Bild. Im Raster ist eine
+   Schicht eine Pille in einer Zeile.
+
+   Unter 1.100 px gibt es nur die Tage untereinander; sieben Spalten
+   mit Namen werden dort zu schmal. Dafür steht dort „Nur meine". */
+var _wpMeine=false, _wpAlle=false;
+var _wpSoll=null, _wpSollAt=0;
+var WP_BREIT='(min-width:1100px)';
+function wpBreit(){ return !!(window.matchMedia && window.matchMedia(WP_BREIT).matches); }
+function wpAnsicht(){
+  if(!wpBreit()) return 'tag';
+  var a=PREFS.planAnsicht;
+  if(a==='tag' || a==='person') return a;
+  return canManage() ? 'person' : 'tag';
+}
+function wpAnsichtSetzen(a){
+  PREFS.planAnsicht=a; savePrefs();
+  _wpAlle=false;
+  renderShifts(); tick(6);
+}
+/* Kalenderwoche nach ISO 8601 (Woche mit dem ersten Donnerstag). */
+function kalenderwoche(dt){
+  var t=new Date(Date.UTC(dt.getFullYear(), dt.getMonth(), dt.getDate()));
+  t.setUTCDate(t.getUTCDate()+3-((t.getUTCDay()+6)%7));
+  var j1=new Date(Date.UTC(t.getUTCFullYear(),0,4));
+  return 1+Math.round(((t-j1)/864e5-3+((j1.getUTCDay()+6)%7))/7);
+}
+/* „09:00"–„21:00" → „09–21", sonst bleibt die Minute stehen. */
+function wpZeitKurz(x){
+  var v=x.from||'', b=x.to||'';
+  if(/:00$/.test(v) && /:00$/.test(b)) return v.slice(0,2)+'–'+b.slice(0,2);
+  return v+'–'+b;
+}
+function wpStunden(x){
+  function m(t){ var p=String(t||'').split(':'); return (+p[0]||0)*60+(+p[1]||0); }
+  var d=m(x.to)-m(x.from); if(d<=0) d+=24*60;
+  return d/60;
+}
+function wpStdText(n){ return (Math.round(n*10)/10).toLocaleString('de-DE'); }
+/* Das Soll kommt aus dem Schichtplaner (Spalte „Stunden pro Woche
+   (Soll)" der Excel-Datei). Lesen darf es nur der Chef — und jede
+   Person ihre eigene Zeile (firestore.rules, planerTeam). Wer es nicht
+   lesen darf, sieht nur die Summe; das ist kein Fehler. */
+function wpSollLaden(){
+  if(!session || (_wpSoll && Date.now()-_wpSollAt < 10*60000)) return;
+  _wpSoll={}; _wpSollAt=Date.now();
+  var q = isChef() ? S('planerTeam').get().then(function(sn){ return sn.docs.map(function(d){ return d.data()||{}; }); })
+                   : S('planerTeam').doc(session.uid).get().then(function(d){ return d && d.exists ? [d.data()||{}] : []; });
+  q.then(function(liste){
+    var m={};
+    liste.forEach(function(p){ if(p.uid && +p.wocheStd>0) m[p.uid]=+p.wocheStd; });
+    _wpSoll=m;
+    if(Object.keys(m).length) renderShifts();
+  }).catch(function(){});
+}
+
+/* Woche zeichnen — als Tage untereinander (Handy) bzw. in sieben
+   Spalten, oder als Raster nach Person. */
 function renderShifts(){
   var box=$('shiftGrid'); if(!box || !_shiftWeek) return;
   var lab=$('shiftWeekLabel');
   var ende=new Date(_shiftWeek); ende.setDate(ende.getDate()+6);
   var o={day:'2-digit',month:'2-digit'};
   if(lab) lab.textContent = _shiftWeek.toLocaleDateString('de-DE',o)+' – '+ende.toLocaleDateString('de-DE',o);
+  var kwEl=$('shiftKw'); if(kwEl) kwEl.textContent='KW '+kalenderwoche(_shiftWeek);
   var heute=ymd(new Date());
+  var tage=[];
+  for(var t=0;t<7;t++){ var dt=new Date(_shiftWeek); dt.setDate(dt.getDate()+t); tage.push({ d:dt, key:ymd(dt) }); }
+  var von0=tage[0].key, bis6=tage[6].key;
+  var woche=_shifts.filter(function(x){ return x.date>=von0 && x.date<=bis6; });
+  var ansicht=wpAnsicht();
+  var breit=wpBreit();
+  wpSollLaden();
+
+  /* Kopf: Umschalter nur, wo es beide Ansichten gibt; „Nur meine" nur
+     in der Tagesliste — im Raster steht die eigene Zeile ohnehin oben. */
+  var ua=$('wpAnsicht');
+  if(ua){
+    ua.hidden=!breit;
+    ua.querySelectorAll('[data-wpansicht]').forEach(function(b){
+      var an=b.getAttribute('data-wpansicht')===ansicht;
+      b.classList.toggle('on', an); b.setAttribute('aria-pressed', String(an));
+    });
+  }
+  var mb=$('wpMeine');
+  if(mb){ mb.hidden = ansicht!=='tag'; mb.classList.toggle('on', _wpMeine); mb.setAttribute('aria-pressed', String(_wpMeine)); }
+  var nb=$('shiftNeu'); if(nb) nb.hidden=!canManage();
+
+  /* Die Zahl über der Woche zählt DIESE Woche. Bis Runde 184 stand hier
+     _shifts.length — alle geladenen Schichten des Studios: gemessen 14
+     statt 8 (Leitung) und 17 statt 11 (Mitarbeiter). */
+  var offeneTausche=woche.filter(function(x){ return x.tausch==='offen'; }).length;
+  var wartet=woche.filter(function(x){ return x.tausch==='zugesagt'; }).length;
+  var meineStd=0;
+  woche.forEach(function(x){ if(x.uid===session.uid) meineStd+=wpStunden(x); });
+  var sumEl=$('shiftSum');
+  if(sumEl) sumEl.innerHTML=
+    '<span>'+woche.length+(woche.length===1?' Schicht':' Schichten')+'</span>'+
+    (meineStd ? '<span>deine: '+wpStdText(meineStd)+' Std.</span>' : '')+
+    (offeneTausche?'<span class="tausch">'+offeneTausche+'× wird abgegeben</span>':'')+
+    (wartet?'<span class="tausch">'+wartet+'× wartet auf Bestätigung</span>':'');
+
+  box.classList.toggle('wp-raster-an', ansicht==='person');
+  if(ansicht==='person') box.innerHTML=wpRasterHTML(tage, woche, heute);
+  else box.innerHTML=wpTageHTML(tage, heute, ende);
+  box.classList.toggle('vergangen-auf', !!_shiftVergangenAuf);
+  wpBinden(box);
+}
+
+/* Die Tage untereinander (Handy) bzw. in sieben Spalten (Rechner). */
+function wpTageHTML(tage, heute, ende){
   var namen=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
+  var o={day:'2-digit',month:'2-digit'};
   var html='';
   /* ── Die vergangenen Tage dieser Woche: eine Zeile statt drei Karten ──
      P-12, „Team-Seite springt beim Öffnen nach unten". Der Sprung war
@@ -32887,14 +33972,12 @@ function renderShifts(){
      1.100 px) steht die Woche in sieben Spalten nebeneinander; dort
      passt alles, und es wird nichts zusammengefasst. */
   var vergangen=0, vergangenSchichten=0, ersterVergangen=null, letzterVergangen=null;
-  for(var j=0;j<7;j++){
-    var dj=new Date(_shiftWeek); dj.setDate(dj.getDate()+j);
-    var kj=ymd(dj);
-    if(kj<heute && ymd(ende)>=heute){
-      vergangen++; if(!ersterVergangen) ersterVergangen=dj; letzterVergangen=dj;
-      vergangenSchichten+=_shifts.filter(function(x){ return x.date===kj; }).length;
+  tage.forEach(function(t){
+    if(t.key<heute && ymd(ende)>=heute){
+      vergangen++; if(!ersterVergangen) ersterVergangen=t.d; letzterVergangen=t.d;
+      vergangenSchichten+=_shifts.filter(function(x){ return x.date===t.key && (!_wpMeine || x.uid===session.uid); }).length;
     }
-  }
+  });
   if(vergangen){
     var kurz=['Mo','Di','Mi','Do','Fr','Sa','So'];
     var von=kurz[0]+' '+ersterVergangen.toLocaleDateString('de-DE',o);
@@ -32904,67 +33987,272 @@ function renderShifts(){
         (vergangenSchichten===1?' Schicht':' Schichten')+'</span>'+
       '<i>'+(_shiftVergangenAuf ? 'Ausblenden' : 'Anzeigen ›')+'</i></button>';
   }
-  for(var i=0;i<7;i++){
-    var d=new Date(_shiftWeek); d.setDate(d.getDate()+i);
-    var key=ymd(d);
-    var tages=_shifts.filter(function(x){ return x.date===key; })
+  var darf=canManage();
+  tage.forEach(function(t, i){
+    var key=t.key;
+    var tages=_shifts.filter(function(x){ return x.date===key && (!_wpMeine || x.uid===session.uid); })
       .sort(function(a,b){ return (a.from||'').localeCompare(b.from||''); });
-    // Abwesenheiten, die diesen Tag berühren
-    var abw=_absences.filter(function(a){ return a.from<=key && a.to>=key; });
+    // Abwesenheiten, die diesen Tag berühren (abgelehnte zählen nicht)
+    var abw=_absences.filter(function(a){ return a.from<=key && a.to>=key && absStatus(a)!=='abgelehnt' &&
+      (!_wpMeine || a.uid===session.uid); });
+    var vorbei=key<heute;
     html+='<div class="shift-day'+(key===heute?' today':'')+(tages.length?'':' leer')+
-      (vergangen && key<heute ? ' vergangen' : '')+
+      (vergangen && vorbei ? ' vergangen' : '')+
       '" data-tag="'+key+'">'+
-      '<div class="shift-day-h"><b>'+namen[i]+'</b><span>'+d.toLocaleDateString('de-DE',o)+'</span></div>';
+      '<div class="shift-day-h"><b>'+namen[i]+'</b><span>'+t.d.toLocaleDateString('de-DE',o)+'</span>'+
+      (darf && !vorbei ? '<button type="button" class="wp-tag-plus" data-wpneu="'+key+'|" aria-label="Schicht am '+namen[i]+' eintragen">＋</button>' : '')+
+      '</div>';
     if(tages.length){
       html+=tages.map(function(x){
-        var del = canManage() ? '<button class="shift-x" data-shdel="'+esc(x.id)+'" aria-label="entfernen">'+ikon('schliessen')+'</button>' : '';
-        return '<div class="shift-entry"><span class="shift-time">'+esc(x.from||'')+'–'+esc(x.to||'')+'</span>'+
-          '<span class="shift-name">'+esc(x.name||'')+(x.note?' <span class="shift-note">· '+esc(x.note)+'</span>':'')+'</span>'+del+'</div>'+
+        return '<button type="button" class="shift-entry'+(x.uid===session.uid?' mein':'')+'" data-shift="'+esc(x.id)+'">'+
+          '<span class="shift-time">'+esc(x.from||'')+'–'+esc(x.to||'')+'</span>'+
+          '<span class="shift-name">'+esc(x.name||'')+(x.note?' <span class="shift-note">· '+esc(x.note)+'</span>':'')+'</span>'+
+          wpTauschMarke(x)+'</button>'+
           tauschHTML(x, key);
       }).join('');
     } else {
       html+='<div class="shift-empty">Niemand eingeteilt</div>';
     }
     if(abw.length){
-      html+='<div style="margin-top:5px">'+abw.map(function(a){
-        var ico='';
-        return '<span class="abs-chip'+(a.type==='krank'?' krank':'')+'">'+ico+' '+esc(a.name||'')+'</span>';
+      html+='<div class="wp-abw-zeile">'+abw.map(function(a){
+        return '<span class="wp-abw">'+esc(a.name||'')+' · '+esc(wpAbwText(a))+'</span>';
       }).join('')+'</div>';
     }
     html+='</div>';
+  });
+  if(_wpMeine && !_shifts.some(function(x){ return x.date>=tage[0].key && x.date<=tage[6].key && x.uid===session.uid; })){
+    html='<p class="lese-leer">Du hast in dieser Woche keine Schicht in diesem Studio.</p>'+html;
   }
-  // Kurze Zusammenfassung über der Woche – spart das Durchzählen
-  var wochenSchichten=_shifts.length;
-  var offeneTausche=_shifts.filter(function(x){ return x.tausch==='offen'; }).length;
-  var wartet=_shifts.filter(function(x){ return x.tausch==='zugesagt'; }).length;
-  var sum='<div class="shift-sum">'+
-    '<span>'+wochenSchichten+(wochenSchichten===1?' Schicht':' Schichten')+'</span>'+
-    (offeneTausche?'<span class="tausch">'+offeneTausche+'× wird abgegeben</span>':'')+
-    (wartet?'<span class="tausch">'+wartet+'× wartet auf Bestätigung</span>':'')+
-    '</div>';
-  box.innerHTML=sum+html;
-  box.classList.toggle('vergangen-auf', !!_shiftVergangenAuf);
+  return html;
+}
+/* Abwesenheit ist kein Alarm (W7 in den Design-Vorbildern): neutrale
+   Schraffur, das Wort sagt, was es ist. */
+function wpAbwText(a){
+  var art={ urlaub:'Urlaub', krank:'krank', frei:'frei' }[a.type] || 'abwesend';
+  return absStatus(a)==='offen' ? art+' (beantragt)' : art;
+}
+function wpTauschMarke(x){
+  if(x.tausch==='offen') return '<span class="wp-marke">wird abgegeben</span>';
+  if(x.tausch==='zugesagt') return '<span class="wp-marke">Tausch wartet</span>';
+  return '';
+}
+
+/* Das Raster: Personen links, sieben Tage, rechts die Stunden. */
+function wpRasterHTML(tage, woche, heute){
+  var darf=canManage();
+  var kurz=['Mo','Di','Mi','Do','Fr','Sa','So'];
+  var o={day:'2-digit',month:'2-digit'};
+  /* Wer steht im Raster? Jede Person dieses Studios — dazu, wer hier
+     eine Schicht hat, ohne dem Studio zugeordnet zu sein (Springer). */
+  var leute={}, reihe=[];
+  function dazu(id, name){
+    if(!id || leute[id]) return leute[id];
+    leute[id]={ id:id, name:name||'?', schichten:[], abw:[], std:0 };
+    reihe.push(leute[id]); return leute[id];
+  }
+  _allUsers.forEach(function(u){
+    if(u.system || u.aktiv===false) return;
+    var uk=(u.studioKeys&&u.studioKeys.length)?u.studioKeys:(u.studios||[]).map(studioKey);
+    if(uk.indexOf(_teamStudioKey)>=0) dazu(u.uid, u.name);
+  });
+  woche.forEach(function(x){
+    var p=dazu(x.uid||('name:'+(x.name||'')), x.name);
+    p.schichten.push(x); p.std+=wpStunden(x);
+  });
+  _absences.forEach(function(a){
+    if(a.to<tage[0].key || a.from>tage[6].key || absStatus(a)==='abgelehnt') return;
+    var p=leute[a.uid]; if(p) p.abw.push(a);
+  });
+  var ich=session.uid;
+  reihe.sort(function(a,b){
+    var ia=a.id===ich?0:1, ib=b.id===ich?0:1;
+    var sa=a.schichten.length||a.abw.length?0:1, sb=b.schichten.length||b.abw.length?0:1;
+    return ia-ib || sa-sb || (a.name||'').localeCompare(b.name||'','de');
+  });
+  /* Wer diese Woche weder Schicht noch Abwesenheit hat, steht unter
+     einem Knopf — nicht stumm weg (CLAUDE.md: „Was nicht passt,
+     verschwindet nie stumm"). Die Leitung braucht die Zeilen, um per
+     Klick einzutragen; ein Tipp klappt sie auf. */
+  var mit=reihe.filter(function(p){ return p.id===ich || p.schichten.length || p.abw.length; });
+  var ohne=reihe.filter(function(p){ return mit.indexOf(p)<0; });
+  var zeigen=_wpAlle ? reihe : mit;
+
+  var html='<div class="wp-raster" role="table" aria-label="Schichten nach Person">'+
+    '<div class="wp-z wp-kopfz" role="row"><span class="wp-p" role="columnheader">Person</span>'+
+    tage.map(function(t, i){
+      return '<span class="wp-t'+(t.key===heute?' heute':'')+(t.key<heute?' vorbei':'')+'" role="columnheader"><b>'+kurz[i]+'</b> '+
+        t.d.toLocaleDateString('de-DE',o)+'</span>';
+    }).join('')+
+    '<span class="wp-std" role="columnheader">Std.</span></div>';
+  zeigen.forEach(function(p){
+    var u=_userById(p.id), f=u ? avatarFarbe(u.color) : '';
+    var st=f ? ' style="background:'+f+(avatarSchrift(f)?';color:'+avatarSchrift(f):'')+'"' : '';
+    html+='<div class="wp-z'+(p.id===ich?' ich':'')+'" role="row">'+
+      '<span class="wp-p" role="rowheader"><i class="spl-ini"'+st+' aria-hidden="true">'+esc(initials(p.name))+'</i>'+
+        '<span>'+esc(p.name)+(p.id===ich?' <small>(du)</small>':'')+'</span></span>';
+    tage.forEach(function(t, i){
+      var hier=p.schichten.filter(function(x){ return x.date===t.key; })
+        .sort(function(a,b){ return (a.from||'').localeCompare(b.from||''); });
+      var weg=p.abw.filter(function(a){ return a.from<=t.key && a.to>=t.key; })[0];
+      var kl='wp-c'+(t.key===heute?' heute':'')+(t.key<heute?' vorbei':'')+(weg?' abw':'');
+      html+='<div class="'+kl+'" role="cell">';
+      if(weg) html+='<span class="wp-abw-txt">'+esc(wpAbwText(weg))+'</span>';
+      html+=hier.map(function(x){
+        return '<button type="button" class="wp-schicht'+(x.tausch?' tausch':'')+'" data-shift="'+esc(x.id)+'"'+
+          ' title="'+esc((x.from||'')+'–'+(x.to||'')+(x.note?' · '+x.note:''))+'">'+esc(wpZeitKurz(x))+
+          (x.note?'<small>'+esc(x.note)+'</small>':'')+'</button>';
+      }).join('');
+      if(darf && !hier.length && !weg && t.key>=heute && p.id.indexOf('name:')!==0){
+        html+='<button type="button" class="wp-leer" data-wpneu="'+t.key+'|'+esc(p.id)+'" aria-label="Schicht für '+
+          esc(p.name)+' am '+kurz[i]+' '+t.d.toLocaleDateString('de-DE',o)+' eintragen">＋</button>';
+      }
+      html+='</div>';
+    });
+    var soll=_wpSoll && _wpSoll[p.id];
+    var warn=soll && (p.std<soll*0.85 || p.std>soll*1.15);
+    html+='<span class="wp-std'+(warn?' warn':'')+'" role="cell"'+
+      (soll?' title="Soll laut Schichtplaner: '+wpStdText(soll)+' Std. pro Woche'+(warn?(p.std<soll?' – darunter':' – darüber'):'')+'"':'')+'>'+
+      '<b>'+wpStdText(p.std)+'</b>'+(soll?'<small>/ '+wpStdText(soll)+'</small>':'')+'</span>';
+    html+='</div>';
+  });
+  if(!zeigen.length) html+='<p class="lese-leer">In dieser Woche ist niemand eingeteilt.</p>';
+  html+='</div>';
+  if(ohne.length){
+    html+='<button type="button" class="wp-mehr" data-wpalle aria-expanded="'+(_wpAlle?'true':'false')+'">'+
+      (_wpAlle ? 'Nur Leute mit Schicht zeigen' : '＋ '+ohne.length+(ohne.length===1?' weitere Person':' weitere Personen')+' ohne Schicht diese Woche')+
+      '</button>';
+  }
+  /* Was auf jemanden wartet, steht über dem Raster — mit denselben
+     Knöpfen wie in der Tagesliste. */
+  var offen=woche.filter(function(x){ return x.tausch; })
+    .sort(function(a,b){ return (a.date+a.from).localeCompare(b.date+b.from); });
+  if(offen.length){
+    var kopf='<div class="wp-tausche"><p class="wp-tausche-titel">Tausch</p>'+offen.map(function(x){
+      var d=new Date(x.date+'T12:00:00');
+      return '<div class="wp-tausch-eintrag"><b>'+kurz[(d.getDay()+6)%7]+' '+d.toLocaleDateString('de-DE',o)+' · '+
+        esc(x.from||'')+'–'+esc(x.to||'')+' · '+esc(x.name||'')+'</b>'+tauschHTML(x, x.date)+'</div>';
+    }).join('')+'</div>';
+    html=kopf+html;
+  }
+  return html;
+}
+
+function wpBinden(box){
   var vz=box.querySelector('[data-shvergangen]');
   if(vz) vz.addEventListener('click', function(){
     _shiftVergangenAuf=!_shiftVergangenAuf; renderShifts(); tick(6);
   });
-
-  /* Früher: zur heutigen Karte scrollen, wenn die aktuelle Woche gezeigt wird.
-     Sonst steht man am Samstagabend immer noch bei Montag.
-     „block:nearest" reichte nicht: liegt die Karte nur zur Hälfte im Bild,
-     hält der Browser sie für sichtbar und rührt sich nicht. Deshalb wird
-     hier selbst gerechnet – und nur, wenn die Karte unten heraushängt. */
-  /* Seit dem 24.9.2026 nicht mehr: das Rollen war der Sprung aus P-12.
-     Die vergangenen Tage stehen jetzt zusammengefasst in einer Zeile
-     (siehe oben); heute steht damit von selbst weit oben. */
-  box.querySelectorAll('[data-shdel]').forEach(function(b){
-    b.addEventListener('click',function(){
-      if(!confirm('Schicht entfernen?')) return;
-      S('studios').doc(_teamStudioKey).collection('shifts').doc(b.getAttribute('data-shdel'))
-        .delete().catch(function(e){ toast(errMsg(e),true); });
+  var mehr=box.querySelector('[data-wpalle]');
+  if(mehr) mehr.addEventListener('click', function(){ _wpAlle=!_wpAlle; renderShifts(); tick(6); });
+  box.querySelectorAll('[data-shift]').forEach(function(b){
+    b.addEventListener('click', function(){ schichtBlattOeffnen(b.getAttribute('data-shift')); });
+  });
+  box.querySelectorAll('[data-wpneu]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var t=b.getAttribute('data-wpneu').split('|');
+      schichtNeuBlatt(t[0], t[1]||'');
     });
   });
   bindTauschClicks(box);
+}
+
+/* ── Das Schicht-Blatt ── */
+var _shBlatt=null;
+function schichtBlattOeffnen(id){
+  var x=shiftById(id), blatt=$('shiftSheet'); if(!x || !blatt) return;
+  _shBlatt=x;
+  var d=new Date(x.date+'T12:00:00');
+  var meine=x.uid===session.uid, vorbei=x.date<ymd(new Date());
+  $('shSheetTitel').textContent=d.toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit'})+' · '+(x.from||'')+'–'+(x.to||'');
+  $('shSheetUnter').textContent=(x.name||'')+(meine?' (du)':'')+' · '+studioName(_teamStudioKey)+(x.note?' · '+x.note:'');
+  var info='';
+  if(x.tausch==='offen') info = meine ? 'Von dir zum Tausch angeboten – wartet auf jemanden.' : 'Wird abgegeben – wer übernimmt?';
+  else if(x.tausch==='zugesagt') info=((x.tauschNeu&&x.tauschNeu.name)||'Jemand')+' übernimmt – wartet auf die Leitung.';
+  else if(x.getauschtVon) info='Getauscht: vorher '+x.getauschtVon+'.';
+  var ie=$('shSheetInfo'); ie.textContent=info; ie.hidden=!info;
+  /* Zuerst, was man mit der Schicht tun kann; Entfernen zuletzt. */
+  var a=[];
+  if(!x.tausch && meine && !vorbei) a.push({ attr:'data-tausch-ab', ico:'wiederholen', txt:'Ich kann nicht – zum Tausch anbieten' });
+  if(x.tausch==='offen' && meine) a.push({ attr:'data-tausch-zurueck', ico:'schliessen', txt:'Angebot zurückziehen' });
+  if(x.tausch==='offen' && !meine && !vorbei) a.push({ attr:'data-tausch-nehmen', ico:'hakenKreis', txt:'Ich übernehme' });
+  if(x.tausch==='zugesagt' && canManage()){
+    a.push({ attr:'data-tausch-ja', ico:'hakenKreis', txt:'Tausch bestätigen' });
+    a.push({ attr:'data-tausch-nein', ico:'schliessen', txt:'Tausch ablehnen' });
+  }
+  if(canManage()) a.push({ attr:'data-shdel', ico:'papierkorb', txt:'Schicht entfernen', warn:true });
+  var acts=$('shSheetActs');
+  acts.innerHTML = a.length ? a.map(function(e){
+    return '<button type="button" class="ms-act'+(e.warn?' warn':'')+'" '+e.attr+'="'+esc(x.id)+'">'+
+      '<span class="ms-ico">'+ikon(e.ico)+'</span><span>'+esc(e.txt)+'</span></button>';
+  }).join('') : '<p class="hint" style="margin:var(--s8) var(--s4)">Hier gibt es nichts zu tun. Änderungen macht die Leitung.</p>';
+  acts.hidden=false;
+  $('shSheetForm').hidden=true;
+  $('shSheetZu').textContent='Schliessen';
+  bindTauschClicks(acts);
+  acts.querySelectorAll('[data-shdel]').forEach(function(b){
+    b.addEventListener('click', function(){ schichtEntfernen(b.getAttribute('data-shdel')); });
+  });
+  blatt.classList.add('show');
+  tick(8);
+}
+function schichtBlattSchliessen(){ var b=$('shiftSheet'); if(b) b.classList.remove('show'); _shBlatt=null; }
+function schichtEntfernen(id){
+  if(!confirm('Schicht entfernen?')) return;
+  S('studios').doc(_teamStudioKey).collection('shifts').doc(id)
+    .delete().then(function(){ toast('Schicht entfernt'); })
+    .catch(function(e){ toast(errMsg(e),true); });
+}
+/* Eintragen: Tag und Person sind gesetzt, wenn man aus einer Zelle kommt.
+   Die Schichtzeiten aus dem Schichtplaner stehen als Vorlagen darüber —
+   ein Tipp setzt Von, Bis und den Namen der Schicht. */
+function schichtNeuBlatt(datum, uid){
+  var blatt=$('shiftSheet'); if(!blatt || !canManage()) return;
+  _shBlatt=null;
+  buildShiftPersonSelect();
+  $('shDate').value=datum || ymd(new Date());
+  var ps=$('shPerson'); if(uid && ps && [].some.call(ps.options, function(op){ return op.value===uid; })) ps.value=uid;
+  $('shNote').value='';
+  var d=new Date(($('shDate').value)+'T12:00:00');
+  $('shSheetTitel').textContent='Schicht eintragen';
+  var pn=uid ? ((_userById(uid)||{}).name||'') : '';
+  $('shSheetUnter').textContent=(pn?pn+' · ':'')+d.toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit'})+' · '+studioName(_teamStudioKey);
+  $('shSheetInfo').hidden=true;
+  $('shSheetActs').hidden=true;
+  $('shSheetForm').hidden=false;
+  $('shSheetZu').textContent='Abbrechen';
+  wpVorlagenZeichnen();
+  blatt.classList.add('show');
+  tick(8);
+  setTimeout(function(){ var f=$('shFrom'); if(f && wpBreit()) f.focus(); }, 260);
+}
+function wpVorlagenZeichnen(){
+  var box=$('shVorlagen'); if(!box) return;
+  function zeichnen(){
+    /* Nur die Schichten, die es an diesem Wochentag gibt — am Freitag
+       kein „Samstag 09–14". */
+    var d=new Date(($('shDate').value||ymd(new Date()))+'T12:00:00'), wt=d.getDay()||7;
+    var sch=((typeof spSchichtenFuer==='function' && _sp.conf) ? spSchichtenFuer(_teamStudioKey) : [])
+      .filter(function(x){ return !(x.tage && x.tage.length) || x.tage.indexOf(wt)>=0; });
+    box.hidden=!sch.length;
+    box.innerHTML=sch.map(function(s){
+      return '<button type="button" class="chip" data-shvorlage="'+esc(s.von+'|'+s.bis+'|'+s.name)+'">'+
+        esc(s.name)+' '+esc(s.von)+'–'+esc(s.bis)+'</button>';
+    }).join('');
+    box.querySelectorAll('[data-shvorlage]').forEach(function(b){
+      b.addEventListener('click', function(){
+        var t=b.getAttribute('data-shvorlage').split('|');
+        $('shFrom').value=t[0]; $('shTo').value=t[1]; $('shNote').value=t[2];
+        box.querySelectorAll('.chip').forEach(function(c){ c.classList.toggle('on', c===b); });
+        tick(6);
+      });
+    });
+  }
+  if(_sp.conf){ zeichnen(); return; }
+  box.hidden=true;
+  S('config').doc('schichtplaner').get().then(function(d){
+    _sp.conf=_sp.conf || (d && d.exists ? d.data()||{} : {});
+    zeichnen();
+  }).catch(function(){});
 }
 
 /* ── Schichttausch ──
@@ -32981,14 +34269,10 @@ function renderShifts(){
 function tauschHTML(x, tagKey){
   var meine = x.uid===session.uid;
   var vergangen = tagKey < ymd(new Date());
-  // Kein Tausch läuft: nur die eigene, noch nicht vergangene Schicht anbieten
-  if(!x.tausch){
-    if(meine && !vergangen){
-      return '<div class="tausch-row"><button class="tausch-btn" data-tausch-ab="'+esc(x.id)+'">'+
-        'Ich kann nicht</button></div>';
-    }
-    return '';
-  }
+  /* Kein Tausch läuft: nichts in der Zeile. „Ich kann nicht" steht seit
+     Runde 191 im Schicht-Blatt (ein Tipp auf die Schicht) — vorher hatte
+     jede eigene Schicht einen eigenen Kasten mit diesem Knopf. */
+  if(!x.tausch) return '';
   if(x.tausch==='offen'){
     var wer = meine
       ? '<span class="tausch-txt">Von dir ausgeschrieben – wartet auf jemanden</span>'+
@@ -34744,7 +36028,7 @@ function renderMyShifts(){
    (in der Wochenliste, zum Abhaken), gepflegt wird es unter
    „Persoenlich". Deshalb steht todo/notizen nicht mehr hier. */
 var ICHPANES = { woche:'ichPaneWoche', kalender:'ichPaneKalender',
-                 daten:'ichPaneDaten' };
+                 zeiten:'ichPaneZeiten', daten:'ichPaneDaten' };
 var PERSPANES = { todo:'ichPaneTodo', notizen:'ichPaneNotizen',
                   ziele:'ichPaneZiele', wuensche:'ichPaneWuensche' };
 var _ichTab='woche';
@@ -36298,8 +37582,6 @@ function renderIchDaten(){
   }
   ichCertsLaden();
   ichZahlenLaden();
-  ichPinLaden();
-  ichZeitenLaden();
 }
 
 /* Nachweise: dieselbe Abfrage wie im Einstellungs-Fenster, nur an einer
@@ -36549,8 +37831,16 @@ function ichZeitenLaden(){
   if(mon) mon.textContent='im '+_zeitMonat.toLocaleDateString('de-DE',{month:'long',year:'numeric'});
   var box=$('ichZeitenListe');
   if(box) box.innerHTML=emptyMini('Wird geladen …');
-  S('zeiten').where('uid','==',session.uid).where('monat','==',m).get()
-    .then(function(sn){
+  /* Runde 189: dazu die eigenen Schichten des Monats — für „Plan"
+     neben der gestempelten Zeit. Fehlen sie (Schichtplan aus, kein
+     Studio), steht die Liste wie bisher da. */
+  var mLetzt=ymd(new Date(_zeitMonat.getFullYear(), _zeitMonat.getMonth()+1, 0));
+  Promise.all([
+    S('zeiten').where('uid','==',session.uid).where('monat','==',m).get(),
+    stSchichtenLaden(m+'-01', mLetzt).catch(function(){ return null; })
+  ])
+    .then(function(r){
+      var sn=r[0];
       /* Inzwischen weitergeblättert? Dann gehört diese Antwort zu
          einem Monat, der nicht mehr angezeigt wird. Ohne die Prüfung
          überschreibt eine langsame Antwort die schnellere. */
@@ -36567,17 +37857,27 @@ function renderIchZeiten(rows){
   if(!box) return;
   var heute=new Date().toLocaleDateString('sv-SE');
   var tage=zeitenTage(rows, heute, Date.now());
-  var heuteTag=tage.filter(function(t){ return t.tag===heute; })[0];
-  _zeitHeuteArt = heuteTag ? (heuteTag.stempel[heuteTag.stempel.length-1]||{}).art : null;
-  ichHandyZeigen();
   var gezaehlt=tage.filter(function(t){ return !t.offen || t.laeuft; });
   var summeMs=0, pauseMs=0;
   gezaehlt.forEach(function(t){ summeMs+=t.arbeit; pauseMs+=t.pause; });
   var luecken=tage.filter(function(t){ return t.offen && !t.laeuft; }).length;
+  /* Plan bis heute (Runde 189): die Schichten des Monats, die schon
+     vorbei sind oder heute laufen. Ein geplanter Tag nächste Woche ist
+     noch kein Minus. */
+  var sollMs=0, mitPlan=false;
+  if(_zeitMonat){
+    var mk=zeitMonatKey(_zeitMonat);
+    for(var d=1; d<=31; d++){
+      var key=mk+'-'+('0'+d).slice(-2); if(key>heute) break;
+      var pl=stPlanFuer(key); if(pl===null) break;
+      mitPlan=true; sollMs+=stSollMin(pl)*60000;
+    }
+  }
 
   if(summe) summe.textContent = tage.length ? stundenText(summeMs) : '–';
   if(neben) neben.textContent = tage.length
     ? (tage.length+' Tag'+(tage.length===1?'':'e')+' · '+stundenText(pauseMs)+' Pause'+
+       (mitPlan && sollMs ? ' · laut Plan bis heute '+stundenText(sollMs) : '')+
        (luecken ? ' · '+luecken+'× Feierabend fehlt' : ''))
     : '';
 
@@ -36598,6 +37898,11 @@ function renderIchZeiten(rows){
         (luecke ? '<span class="ich-quelle warn">Feierabend fehlt</span>' : '')+
         (t.korrigiert ? '<span class="ich-quelle">korrigiert</span>' : '')+
         '<span class="ich-zeit">'+(luecke ? '–' : stundenText(t.arbeit))+'</span>'+
+        (function(){
+          var pl=stPlanFuer(t.tag);
+          if(luecke || t.laeuft || !pl || !pl.length) return '';
+          return '<span class="st-diff" title="gegen den Plan">'+esc(stDiffText(t.arbeit-stSollMin(pl)*60000))+'</span>';
+        })()+
       '</button>'+
       '<div class="mz-stempel" id="mzs-'+esc(t.tag)+'"'+(auf?'':' hidden')+'>'+
         t.stempel.map(zkStempelZeile).join('')+
@@ -36656,6 +37961,81 @@ function zkOeffnen(){
   }).join('');
   if(!_zkMonat){ var t=new Date(); _zkMonat=new Date(t.getFullYear(), t.getMonth(), 1); }
   zkLaden();
+  zkJetztLaden();
+}
+
+/* ── Jetzt im Studio (Runde 189) ──
+   Die Stempel von HEUTE in diesem Studio (studioKey und tag — zwei
+   Gleichheitsfilter, kein Index nötig) und die Schichten von heute.
+   Lesen darf das die Leitung des Studios und die Geschäftsführung
+   (manages() in firestore.rules) — dieselben, die es hier sehen.
+
+   „Erwartet": eine Schicht hat begonnen, und es gibt heute keinen
+   Stempel. Nicht rot — die Person kann im Stau stehen oder in einem
+   anderen Studio gestempelt haben; das steht hier nicht fest. */
+var _zkJetztNr=0;
+function zkJetztLaden(){
+  var box=$('zkJetzt'); if(!box) return;
+  if(!_zkStudio){ box.innerHTML=''; return; }
+  var sk=_zkStudio, heute=ymd(new Date()), nr=++_zkJetztNr;
+  Promise.all([
+    S('zeiten').where('studioKey','==',sk).where('tag','==',heute).get(),
+    featureAn('schicht')
+      ? S('studios').doc(sk).collection('shifts').where('date','==',heute).get().catch(function(){ return null; })
+      : Promise.resolve(null)
+  ]).then(function(r){
+    if(nr!==_zkJetztNr) return;
+    var proPerson={};
+    r[0].docs.forEach(function(d){
+      var z=d.data()||{};
+      (proPerson[z.uid]=proPerson[z.uid]||{ uid:z.uid, name:z.name||'', stempel:[] }).stempel.push(z);
+    });
+    var schichten=r[1] ? r[1].docs.map(function(d){ return d.data()||{}; }) : [];
+    zkJetztZeichnen(proPerson, schichten);
+  }).catch(function(e){
+    if(nr!==_zkJetztNr) return;
+    box.innerHTML='<p class="hint">Jetzt im Studio lässt sich gerade nicht laden: '+esc(errMsg(e))+'</p>';
+  });
+}
+function zkJetztZeichnen(proPerson, schichten){
+  var box=$('zkJetzt'); if(!box) return;
+  var jetzt=Date.now(), heute=ymd(new Date());
+  var nunMin=new Date().getHours()*60+new Date().getMinutes();
+  var gruppen={ dienst:[], pause:[], erwartet:[], fertig:[] };
+  Object.keys(proPerson).forEach(function(uid){
+    var p=proPerson[uid], st=stStandVon(p.stempel);
+    var tag=zeitenTage(p.stempel, heute, jetzt)[0];
+    var e={ name:p.name, st:st, arbeit:tag ? tag.arbeit : 0 };
+    if(st.art==='pause') gruppen.pause.push(e);
+    else if(st.art==='gehen') gruppen.fertig.push(e);
+    else if(st.art) gruppen.dienst.push(e);
+  });
+  schichten.forEach(function(x){
+    if(!x.uid || proPerson[x.uid]) return;
+    var ab=stMin(x.from); if(ab===null || ab>nunMin) return;
+    if(gruppen.erwartet.some(function(e){ return e.uid===x.uid; })) return;
+    gruppen.erwartet.push({ uid:x.uid, name:x.name||'', schicht:(x.from||'?')+'–'+(x.to||'?') });
+  });
+  function zeile(e, was){
+    return '<li class="zk-j-p"><b>'+esc(e.name||'—')+'</b><span>'+esc(was)+'</span></li>';
+  }
+  function block(titel, liste, fn){
+    if(!liste.length) return '';
+    liste.sort(function(a,b){ return String(a.name).localeCompare(String(b.name),'de'); });
+    return '<div class="zk-j-gruppe"><p class="zk-j-titel">'+esc(titel)+' <span>'+liste.length+'</span></p>'+
+      '<ul>'+liste.map(fn).join('')+'</ul></div>';
+  }
+  var html=
+    block('Im Dienst', gruppen.dienst, function(e){ return zeile(e, 'seit '+zeitUhr(e.st.beginn||e.st.seit)+' · '+stundenText(e.arbeit)); })+
+    block('In der Pause', gruppen.pause, function(e){ return zeile(e, 'seit '+zeitUhr(e.st.seit)); })+
+    block('Laut Plan erwartet', gruppen.erwartet, function(e){ return zeile(e, 'Schicht '+e.schicht+' · noch kein Stempel'); })+
+    block('Feierabend', gruppen.fertig, function(e){ return zeile(e, zeitUhr(e.st.seit)+' · '+stundenText(e.arbeit)); });
+  box.innerHTML='<div class="zk-j-kopf"><h3>Jetzt im Studio</h3>'+
+      '<button type="button" class="ich-pfeil zk-j-neu" id="zkJetztNeu">Aktualisieren</button></div>'+
+    (html ? '<div class="zk-j-raster">'+html+'</div>'
+          : '<p class="hint">Heute hat in diesem Studio noch niemand gestempelt.</p>');
+  var neu=$('zkJetztNeu');
+  if(neu) neu.addEventListener('click', function(){ zkJetztLaden(); tick(6); });
 }
 function zkLaden(){
   var box=$('zkListe'); if(!box) return;
@@ -36835,7 +38215,7 @@ function zkDetailBinden(box, t){
     withBusy(nach, function(){
       return pinFunktion('zeitNachtragen')({ uid:t.uid, tag:t.tag, uhr:uhr, art:art,
           studioKey:_zkStudio, grund:grund })
-        .then(function(){ toast('Nachgetragen ✓'); zkLaden(); })
+        .then(function(){ toast('Nachgetragen ✓'); zkLaden(); zkJetztLaden(); })
         .catch(function(e){ toast(fnFehler(e),true); });
     });
   });
@@ -36846,7 +38226,7 @@ function zkDetailBinden(box, t){
     var id=_zkStorno;
     withBusy(sto, function(){
       return pinFunktion('zeitStornieren')({ id:id, grund:grund })
-        .then(function(){ _zkStorno=null; toast('Als ungültig markiert ✓'); zkLaden(); })
+        .then(function(){ _zkStorno=null; toast('Als ungültig markiert ✓'); zkLaden(); zkJetztLaden(); })
         .catch(function(e){ toast(fnFehler(e),true); });
     });
   });
@@ -36863,28 +38243,20 @@ function zkDetailBinden(box, t){
    firestore.rules und in der Funktion), sondern Höflichkeit: ein Feld,
    das bei jedem Versuch „nicht freigeschaltet" sagt, ist schlimmer als
    keins. */
-function ichHandyZeigen(){
-  var k=$('ichHandyKarte'); if(!k || !session) return;
-  var an = session.handyStempeln === true;
-  k.style.display = an ? '' : 'none';
-  if(!an) return;
-  var stand=$('ichHandyStand');
-  if(stand) stand.textContent = TM_WORT[tmNaechster(_zeitHeuteArt)] || 'Kommen';
-}
-
-/* Was heute zuletzt gestempelt wurde — damit der Knopf sagen kann, was
-   als Nächstes dran ist. Gesetzt aus derselben Abfrage, die „Meine
-   Zeiten" ohnehin macht; eine zweite wäre dieselbe Auskunft zweimal. */
-var _zeitHeuteArt = null;
-
+/* Runde 189: der Knopf sagt, WAS gestempelt wird (data-handyart), und
+   der Server prüft, ob das gerade passt. Vorher entschied allein der
+   Server, und der kannte keinen Feierabend. */
 function ichHandyStempeln(btn){
   var feld=$('ichHandyCode');
   var code=String((feld&&feld.value)||'').replace(/\D/g,'');
   if(code.length!==6){
     toast('Bitte die sechs Ziffern vom Bildschirm im Studio eingeben.',true); return;
   }
+  var art=(btn && btn.getAttribute('data-handyart')) || '';
   withBusy(btn, function(){
-    return pinFunktion('handyStempeln')({ code:code })
+    var auftrag={ code:code };
+    if(art) auftrag.art=art;
+    return pinFunktion('handyStempeln')(auftrag)
       .then(function(r){
         var d=(r&&r.data)||{};
         if(feld) feld.value='';
@@ -36892,13 +38264,205 @@ function ichHandyStempeln(btn){
           .toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
         toast((TM_WORT[d.art]||d.art)+' um '+zeit+' ✓');
         tick(12);
-        /* Neu laden, damit der Stempel sofort in „Meine Zeiten" steht.
-           Ohne das müsste man den Reiter wechseln, um zu sehen, dass
-           es geklappt hat — und genau das glaubt einem niemand. */
-        ichZeitenLaden();
+        /* Neu laden, damit der Stempel sofort oben und in „Meine Zeiten"
+           steht. Ohne das müsste man den Reiter wechseln, um zu sehen,
+           dass es geklappt hat — und genau das glaubt einem niemand. */
+        stLaden(true);
       })
       .catch(function(e){ toast(fnFehler(e), true); });
   });
+}
+
+/* ══ ZEITEN: Stand jetzt, Woche, Plan neben Ist (Runde 189) ══════════
+   Aus dem Betrieb, 22.10.2026: „so wie crewmeister funktioniert am
+   besten", und auf die Frage, woher das Soll kommt: aus dem
+   Schichtplan („JA").
+
+   WAS „LAUT PLAN" HEISST: die Länge der eigenen Schichten des Tages,
+   abzüglich der Pause, die § 4 ArbZG dafür verlangt (30 Minuten über
+   6 Stunden, 45 über 9). Gestempelte Zeit ist Arbeit OHNE Pause; ein
+   Plan mit Pause daneben hiesse jeden Tag „30 Minuten zu wenig".
+
+   Gelesen wird nur, was ohnehin lesbar ist: die eigenen Stempel (uid
+   und tag bzw. monat — Gleichheitsfilter, kein orderBy, siehe
+   ichZeitenLaden) und die Schichten der eigenen Studios. */
+var _stHeute=null;          // { tag, stempel:[] }
+var _stWoche=null;          // { von, bis, stempel:[] }
+var _stPlan={};             // 'von|bis' -> { tag: [schichten] }
+var _stUhr=null;
+
+function stMin(t){
+  var m=/^(\d{1,2}):(\d{2})/.exec(String(t||'')); return m ? (+m[1])*60+(+m[2]) : null;
+}
+function stPausePflicht(min){ return min>9*60 ? 45 : (min>6*60 ? 30 : 0); }
+/* Soll eines Tages in Minuten, aus seinen Schichten. */
+function stSollMin(liste){
+  var min=0;
+  (liste||[]).forEach(function(x){
+    var a=stMin(x.from), b=stMin(x.to);
+    if(a!==null && b!==null && b>a) min+=b-a;
+  });
+  return Math.max(0, min-stPausePflicht(min));
+}
+function stDiffText(ms){
+  var min=Math.round(ms/60000);
+  if(!min) return '±0:00';
+  var a=Math.abs(min);
+  return (min>0?'+':'−')+Math.floor(a/60)+':'+('0'+(a%60)).slice(-2);
+}
+function stSchichtenLaden(von, bis){
+  var key=von+'|'+bis;
+  if(_stPlan[key]) return Promise.resolve(_stPlan[key]);
+  var keys=(session && session.studioKeys)||[];
+  if(!featureAn('schicht') || !keys.length){ _stPlan[key]={}; return Promise.resolve(_stPlan[key]); }
+  return Promise.all(keys.map(function(sk){
+    return S('studios').doc(sk).collection('shifts')
+      .where('date','>=',von).where('date','<=',bis).get()
+      .then(function(sn){ return sn.docs.map(function(d){ return Object.assign({ sk:sk }, d.data()); }); })
+      .catch(function(){ return []; });
+  })).then(function(res){
+    var m={};
+    res.forEach(function(l){ l.forEach(function(x){
+      if(!session || x.uid!==session.uid || !x.date) return;
+      (m[x.date]=m[x.date]||[]).push(x);
+    }); });
+    _stPlan[key]=m;
+    return m;
+  });
+}
+function stPlanFuer(tag){
+  var m=null;
+  Object.keys(_stPlan).forEach(function(k){
+    var v=k.split('|'); if(tag>=v[0] && tag<=v[1]) m=_stPlan[k];
+  });
+  return m ? (m[tag]||[]) : null;
+}
+
+/* Alles für die Seite auf einmal holen. `neu`: nach einem eigenen
+   Stempel — dann ohne Zwischenstand „Wird geladen". */
+function stLaden(neu){
+  if(!session || !$('ichPaneZeiten')) return;
+  var jetzt=new Date(), heute=ymd(jetzt);
+  var mo=mondayOf(jetzt), so=new Date(mo); so.setDate(mo.getDate()+6);
+  var von=ymd(mo), bis=ymd(so);
+  var monate=[von.slice(0,7)]; if(bis.slice(0,7)!==monate[0]) monate.push(bis.slice(0,7));
+  if(!neu){ var st=$('stStand'); if(st && !_stHeute) st.textContent='Wird geladen …'; }
+  var monat=zeitMonatKey(_zeitMonat || new Date(jetzt.getFullYear(), jetzt.getMonth(), 1));
+  var mErst=monat+'-01', mLetzt=ymd(new Date(+monat.slice(0,4), +monat.slice(5,7), 0));
+  Promise.all([
+    Promise.all(monate.map(function(m){
+      return S('zeiten').where('uid','==',session.uid).where('monat','==',m).get()
+        .then(function(sn){ return sn.docs.map(function(d){ return d.data()||{}; }); });
+    })),
+    stSchichtenLaden(von, bis),
+    stSchichtenLaden(mErst, mLetzt)
+  ]).then(function(r){
+    var alle=[].concat.apply([], r[0]);
+    _stWoche={ von:von, bis:bis, stempel:alle.filter(function(z){ return z.tag>=von && z.tag<=bis; }) };
+    _stHeute={ tag:heute, stempel:alle.filter(function(z){ return z.tag===heute; }) };
+    stJetztZeichnen(); stWocheZeichnen();
+    stUhrAn();
+  }).catch(function(){
+    var st=$('stStand'); if(st) st.textContent='Die Zeiten lassen sich gerade nicht laden.';
+  });
+  ichPinLaden();
+  ichZeitenLaden();
+}
+
+/* Die laufende Zeit. Alle 30 Sekunden ein neuer Text — keine Animation,
+   kein Takt je Bild. Läuft nur, solange der Reiter offen ist. */
+function stUhrAn(){
+  if(_stUhr) return;
+  _stUhr=setInterval(function(){
+    var p=$('ichPaneZeiten');
+    if(!p || p.style.display==='none' || !p.getClientRects().length){ stUhrAus(); return; }
+    if(_stHeute && _stHeute.tag!==ymd(new Date())){ stUhrAus(); stLaden(true); return; }
+    stJetztZeichnen(); stWocheZeichnen();
+  }, 30000);
+}
+function stUhrAus(){ if(_stUhr){ clearInterval(_stUhr); _stUhr=null; } }
+
+function stStandVon(stempel){
+  var l=(stempel||[]).filter(function(z){ return !z.storno; })
+    .sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
+  var letzte=l.length ? l[l.length-1] : null;
+  var beginn=l.filter(function(z){ return z.art==='kommen'; })[0];
+  return { art:letzte ? letzte.art : null, seit:letzte ? letzte.ts : 0, beginn:beginn ? beginn.ts : 0 };
+}
+
+function stJetztZeichnen(){
+  var standEl=$('stStand'); if(!standEl || !session) return;
+  var jetzt=Date.now(), heute=ymd(new Date());
+  var stempel=(_stHeute && _stHeute.tag===heute) ? _stHeute.stempel : [];
+  var tag=zeitenTage(stempel, heute, jetzt)[0];
+  var st=stStandVon(stempel);
+  var tg=$('stJetztTag');
+  if(tg) tg.textContent=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
+  standEl.className='st-stand'+(st.art && st.art!=='gehen' ? ' an' : '');
+  standEl.innerHTML = !st.art ? 'Noch nicht eingestempelt'
+    : st.art==='gehen' ? 'Feierabend seit <b>'+esc(zeitUhr(st.seit))+'</b>'
+    : st.art==='pause' ? 'In der Pause seit <b>'+esc(zeitUhr(st.seit))+'</b>'
+    : 'Im Dienst seit <b>'+esc(zeitUhr(st.beginn||st.seit))+'</b>';
+  var ist=$('stHeuteIst'); if(ist) ist.textContent = tag ? stundenText(tag.arbeit) : '0:00 h';
+  var plan=stPlanFuer(heute), soll=$('stHeuteSoll'), sch=$('stSchicht');
+  if(soll) soll.textContent = plan===null ? '–' : (plan.length ? stundenText(stSollMin(plan)*60000) : 'frei');
+  if(sch){
+    sch.textContent = plan===null ? ''
+      : plan.length ? 'Schicht '+plan.map(function(x){ return (x.from||'?')+'–'+(x.to||'?')+
+          (studioName(x.sk) ? ' · '+studioName(x.sk) : ''); }).join(', ')
+      : (featureAn('schicht') ? 'Heute ist keine Schicht für dich geplant.' : '');
+  }
+  /* Mit Freigabe: die Knöpfe, die gerade passen. Ohne: der Satz, wo
+     gestempelt wird — ein Feld, das bei jedem Versuch „nicht
+     freigeschaltet" sagt, wäre schlimmer als keins. */
+  var handy=session.handyStempeln===true;
+  var k=$('ichHandyKarte'), hw=$('stTerminalHinweis');
+  if(k) k.style.display = handy ? '' : 'none';
+  if(hw) hw.hidden = handy;
+  var hs=$('ichHandyStand'); if(hs) hs.textContent = TM_WORT[tmNaechster(st.art)] || 'Kommen';
+  var box=$('ichHandyKnoepfe');
+  if(handy && box){
+    var erlaubt=tmErlaubt(st.art), marke=erlaubt.join(',');
+    if(box.getAttribute('data-stand')!==marke){
+      box.setAttribute('data-stand', marke);
+      box.innerHTML=erlaubt.map(function(a, i){
+        return '<button type="button" class="btn '+(a==='gehen'?'btn-ghost':'btn-primary')+'" id="'+
+          (i ? 'ichHandyBtn'+(i+1) : 'ichHandyBtn')+'" data-handyart="'+a+'">'+esc(TM_WORT[a]||a)+'</button>';
+      }).join('');
+    }
+  }
+}
+
+function stWocheZeichnen(){
+  var box=$('stWoche'); if(!box || !_stWoche) return;
+  var jetzt=Date.now(), heute=ymd(new Date());
+  var tage={}; zeitenTage(_stWoche.stempel, heute, jetzt).forEach(function(t){ tage[t.tag]=t; });
+  var mo=new Date(_stWoche.von+'T12:00:00'), istSum=0, sollSum=0, html='';
+  for(var i=0;i<7;i++){
+    var d=new Date(mo); d.setDate(mo.getDate()+i);
+    var key=ymd(d), t=tage[key], plan=stPlanFuer(key)||[];
+    var soll=stSollMin(plan)*60000;
+    var luecke = t && t.offen && !t.laeuft;
+    if(t && !luecke) istSum+=t.arbeit;
+    if(key<=heute) sollSum+=soll;
+    var kopf=d.toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'numeric'});
+    var planText = plan.length ? plan.map(function(x){ return (x.from||'?')+'–'+(x.to||'?'); }).join(', ') : '';
+    var istText = !t ? '' : luecke ? 'Feierabend fehlt' : (t.laeuft ? 'läuft · ' : '')+stundenText(t.arbeit);
+    /* Abweichung nur gegen einen Plan. Ohne Schicht wäre jede Stunde
+       ein „Plus" — wahr, aber nicht das, was man hier wissen will. */
+    var diff = (t && !luecke && !t.laeuft && plan.length) ? stDiffText(t.arbeit-soll) : '';
+    if(!plan.length && !t) { html+='<div class="ich-zeile st-tag leer'+(key===heute?' heute':'')+'"><span class="ich-tag">'+esc(kopf)+'</span><span class="ich-was">frei</span></div>'; continue; }
+    html+='<div class="ich-zeile st-tag'+(key===heute?' heute':'')+'" data-sttag="'+esc(key)+'">'+
+      '<span class="ich-tag">'+esc(kopf)+'</span>'+
+      '<span class="ich-was st-plan">'+(planText ? 'Plan '+esc(planText) : 'ohne Plan')+'</span>'+
+      (luecke ? '<span class="ich-quelle warn">Feierabend fehlt</span>'
+              : '<span class="ich-zeit">'+esc(istText||'–')+'</span>')+
+      (diff ? '<span class="st-diff">'+esc(diff)+'</span>' : '')+
+    '</div>';
+  }
+  box.innerHTML=html;
+  var sum=$('stWocheSumme');
+  if(sum) sum.textContent = stundenText(istSum)+(sollSum ? ' · Plan '+stundenText(sollSum) : '');
 }
 
 function zeitMonatWechseln(delta){
@@ -37108,6 +38672,8 @@ function ichReiterZeigen(t){
     renderIchKalender();
   }
   if(t==='daten') renderIchDaten();
+  if(t==='zeiten') stLaden();
+  else stUhrAus();
   foldAufbauen();
 }
 
@@ -37897,6 +39463,28 @@ var _tdGezeichnetFuer=null, _tdStand=null;
 function todoStand(){
   return [_todoStudio, _todoMode, _todoFilter, _todoDring?1:0, _todoSort].join('|');
 }
+/* ══ ERLEDIGT EINGEKLAPPT (Runde 187) ═════════════════════════════════
+   Aus dem Betrieb: „zu viel auf einem Bildschirm". Erledigtes ist
+   erledigt – es stand trotzdem blass in voller Höhe zwischen dem, was
+   noch zu tun ist. Jetzt steht es eingeklappt unter „3 erledigt" am Ende
+   seiner Gruppe (wie Google Tasks, Microsoft To Do, Things). Nichts geht
+   verloren: ein Tipp klappt es auf, und wer gerade abhakt, sieht seine
+   Zeile noch eine Minute lang – sonst verschwände die Rückmeldung mitten
+   im Tippen. Aufgeklappt bleibt aufgeklappt, bis man es wieder zuklappt. */
+var TD_FRISCH_MS = 60000;
+var _tdErledigtOffen = {};
+function tdMitErledigt(rows, zeile, gruppe){
+  var jetzt=Date.now();
+  var offen=[], zu=[];
+  rows.forEach(function(x){
+    var frisch = isDone(x.t) && x.t.doneAt && (jetzt - x.t.doneAt) < TD_FRISCH_MS;
+    (isDone(x.t) && !frisch ? zu : offen).push(x);
+  });
+  var html=offen.map(zeile).join('');
+  if(!zu.length) return html;
+  return html+'<details class="td-erledigt" data-tderledigt="'+esc(gruppe)+'"'+(_tdErledigtOffen[gruppe]?' open':'')+'>'+
+    '<summary><span>'+zu.length+' erledigt</span></summary>'+zu.map(zeile).join('')+'</details>';
+}
 function renderTodos(){
   var area=$('todoArea'); if(!area) return;
   var liste=todoStudioListe();
@@ -37973,10 +39561,10 @@ function renderTodos(){
           '<div class="pg-kopf"><h4>'+esc(g.wort)+'</h4>'+
             '<span class="pg-zahl">'+zahl+'</span>'+
             '<i class="pg-balken" aria-hidden="true"><i style="width:'+pct+'%"></i></i></div>'+
-          drin.map(zeile).join('')+'</section>';
+          tdMitErledigt(drin, zeile, g.id)+'</section>';
       }).join('')+'</div>';
     } else {
-      area.innerHTML=list.map(zeile).join('');
+      area.innerHTML=tdMitErledigt(list, zeile, 'flach');
     }
   }
   /* ── Eingeblendet wird, was man sieht ──
@@ -37984,6 +39572,9 @@ function renderTodos(){
      die Zeilen ohne Bewegung (gemessen am 23.9.2026, siehe dort). */
   var reihen=area.querySelectorAll('.todo');
   for(var ri=12; ri<reihen.length; ri++) reihen[ri].classList.add('ohne-ein');
+  area.querySelectorAll('details.td-erledigt').forEach(function(d){
+    d.addEventListener('toggle', function(){ _tdErledigtOffen[d.getAttribute('data-tderledigt')]=d.open; });
+  });
   bindTodoClicks(area);
   _tdStand=todoStand();
   tdNotizenLaden();
@@ -39142,7 +40733,7 @@ function showChefTab(id, keep){
    offenen Fragen an die Geschäftsführung (Frage 17). Bis zur Antwort
    ist die engere Regel die sichere. */
 var SP_DATEI = 'schichtplaner.js';
-var _sp = { monat:null, conf:null, team:[], wuensche:[], plan:null, studio:'', wahl:null, gebunden:false, laedt:false };
+var _sp = { monat:null, conf:null, team:[], wuensche:[], plan:null, studio:'', wahl:null, kw:null, gebunden:false, laedt:false };
 var _spLibStatus = '', _spLibWarte = [];
 
 function spLib(){
@@ -39222,8 +40813,8 @@ function spOeffnen(){
 }
 function spBinden(){
   if(_sp.gebunden) return; _sp.gebunden=true;
-  $('spMonatZurueck').addEventListener('click', function(){ _sp.monat=spMonatPlus(_sp.monat,-1); _sp.plan=null; spLaden(); tick(8); });
-  $('spMonatVor').addEventListener('click', function(){ _sp.monat=spMonatPlus(_sp.monat,1); _sp.plan=null; spLaden(); tick(8); });
+  $('spMonatZurueck').addEventListener('click', function(){ _sp.monat=spMonatPlus(_sp.monat,-1); _sp.plan=null; _sp.kw=null; spLaden(); tick(8); });
+  $('spMonatVor').addEventListener('click', function(){ _sp.monat=spMonatPlus(_sp.monat,1); _sp.plan=null; _sp.kw=null; spLaden(); tick(8); });
   $('spLos').addEventListener('click', function(){ spErstellen(this); });
   $('spDatei').addEventListener('change', function(){
     var f=this.files && this.files[0]; this.value='';
@@ -39662,9 +41253,40 @@ function spPlanZeichnen(){
   var kopf='<thead><tr><th>Tag</th>'+sch.map(function(s){
     return '<th>'+esc(s.name)+'<span>'+esc(s.von)+'–'+esc(s.bis)+'</span></th>'; }).join('')+'</tr></thead>';
   var html='', woche='', erster=null, d=new Date(start);
-  function kw(dt){ var t=new Date(Date.UTC(dt.getFullYear(), dt.getMonth(), dt.getDate())); var w=(t.getUTCDay()+6)%7;
-    t.setUTCDate(t.getUTCDate()-w+3); var j1=new Date(Date.UTC(t.getUTCFullYear(),0,4));
-    return 1+Math.round(((t-j1)/864e5-3+((j1.getUTCDay()+6)%7))/7); }
+  var kw=kalenderwoche;
+  /* Runde 191 — aus dem Betrieb: „er wirkt für mich noch unfertig …
+     aber das grundgrüst soll stehen erstmal". Gemessen: fünf Wochen-
+     Tabellen untereinander, 3.042 px bei 1440 × 900, und jede Tabelle
+     hatte ihre Spalten woanders (Früh begann mal bei 699, mal bei 731 px).
+     Jetzt: EINE Woche, oben die Wochen als Reiter mit ihren offenen
+     Punkten, „Ganzer Monat" zeigt alle. Spalten fest. */
+  var wochen=[], wd=new Date(start), wAkt=null;
+  while(wd<=ende){
+    var wk=ymd(wd);
+    if(!wAkt){ wAkt={ von:wk, bis:wk, kw:kw(wd), l:0, r:0 }; wochen.push(wAkt); }
+    wAkt.bis=wk;
+    if((wd.getDay()+6)%7===6) wAkt=null;
+    wd.setDate(wd.getDate()+1);
+  }
+  wochen.forEach(function(w){
+    p.luecken.forEach(function(x){ if(x.studio===sk && x.datum>=w.von && x.datum<=w.bis) w.l+=(x.fehlt||1); });
+    p.einsaetze.forEach(function(x){ if(x.rueckfrage && x.studio===sk && x.datum>=w.von && x.datum<=w.bis) w.r++; });
+  });
+  function wocheVon(datum){ return wochen.filter(function(w){ return datum>=w.von && datum<=w.bis; })[0]; }
+  if(_sp.wahl && _sp.wahl.datum && wocheVon(_sp.wahl.datum) && _sp.kw!=='alle') _sp.kw=wocheVon(_sp.wahl.datum).von;
+  if(_sp.kw!=='alle' && !wochen.some(function(w){ return w.von===_sp.kw; })){
+    var hw=wocheVon(heute), offenW=wochen.filter(function(w){ return w.l||w.r; })[0];
+    _sp.kw=(hw||offenW||wochen[0]||{}).von||'alle';
+  }
+  function kurzD(k){ var t=k.split('-'); return (+t[2])+'.'+(+t[1])+'.'; }
+  var reiter='<div class="spl-kw-reiter" role="group" aria-label="Woche">'+wochen.map(function(w){
+    var an=_sp.kw===w.von;
+    var zu=w.l ? '<small class="bad">'+w.l+(w.l===1?' Lücke':' Lücken')+'</small>'
+          : (w.r ? '<small class="warn">'+w.r+(w.r===1?' Rückfrage':' Rückfragen')+'</small>' : '<small>✓ besetzt</small>');
+    return '<button type="button" class="spl-kw'+(an?' an':'')+'" data-spkw="'+w.von+'" aria-pressed="'+an+'">'+
+      '<b>KW '+w.kw+'</b><span>'+kurzD(w.von)+(w.bis!==w.von?'–'+kurzD(w.bis):'')+'</span>'+zu+'</button>';
+  }).join('')+
+    '<button type="button" class="spl-kw alle'+(_sp.kw==='alle'?' an':'')+'" data-spkw="alle" aria-pressed="'+(_sp.kw==='alle')+'"><b>Ganzer Monat</b><span>alle Wochen</span></button></div>';
   while(d<=ende){
     var key=ymd(d), wt=d.getDay(), wtIso=wt===0?7:wt;
     if(!erster) erster=new Date(d);
@@ -39690,13 +41312,25 @@ function spPlanZeichnen(){
     if((d.getDay()+6)%7===6 || key===_sp.monat+'-'+('0'+n).slice(-2)){
       var bis=new Date(d);
       var vonT=erster.getDate()+'.'+(erster.getMonth()+1)+'.', bisT=bis.getDate()+'.'+(bis.getMonth()+1)+'.';
-      html+='<div class="spl-woche"><h4>KW '+kw(erster)+' · '+vonT+(bisT!==vonT?' – '+bisT:'')+'</h4>'+
-        '<div class="spl-woche-huelle"><table class="spl-tab">'+kopf+'<tbody>'+woche+'</tbody></table></div></div>';
+      if(_sp.kw==='alle' || _sp.kw===ymd(erster))
+        html+='<div class="spl-woche"><h4>KW '+kw(erster)+' · '+vonT+(bisT!==vonT?' – '+bisT:'')+'</h4>'+
+          '<div class="spl-woche-huelle"><table class="spl-tab">'+kopf+'<tbody>'+woche+'</tbody></table></div></div>';
       woche=''; erster=null;
     }
     d.setDate(d.getDate()+1);
   }
-  box.innerHTML=html;
+  box.innerHTML=reiter+html;
+  box.querySelectorAll('[data-spkw]').forEach(function(b){
+    b.addEventListener('click', function(){
+      _sp.kw=b.getAttribute('data-spkw');
+      /* Eine Auswahl aus einer anderen Woche bleibt nicht stehen. */
+      if(_sp.wahl && _sp.kw!=='alle' && (_sp.wahl.datum<_sp.kw || !wochen.some(function(w){ return w.von===_sp.kw && _sp.wahl.datum<=w.bis; }))){
+        _sp.wahl=null; spWahlZeichnen();
+        document.querySelectorAll('.spl-punkt.an').forEach(function(z){ z.classList.remove('an'); });
+      }
+      spPlanZeichnen(); tick(6);
+    });
+  });
   box.querySelectorAll('[data-spzelle]').forEach(function(b){
     b.addEventListener('click', function(){
       var t=b.getAttribute('data-spzelle').split('|');
@@ -41523,10 +43157,22 @@ function updateBadges(){
     });
   }
   var text = open>99 ? '99+' : String(open);
-  document.querySelectorAll(
-    '[data-badge="todos"],[data-mbadge="todos"],'+
-    '[data-badge="g-arbeit"],[data-mbadge="g-arbeit"]').forEach(function(b){
+  document.querySelectorAll('[data-badge="todos"],[data-mbadge="todos"]').forEach(function(b){
     b.textContent=text; b.style.display=open?'grid':'none';
+  });
+  /* PUNKT STATT ZAHL am Raum (Runde 187). Die Zahl zählte alle offenen
+     Aufgaben ALLER Studios – sie stand nie still und sagte nie „du bist
+     gemeint". Zahlen-Abzeichen ziehen nachweislich Aufmerksamkeit
+     (Bartoli & Benedetto 2022), und ständige Unterbrechungen erhöhen
+     den Stress (Kushlev 2016; Mark 2008). Also: ein Punkt sagt „hier ist
+     etwas offen"; die Zahl steht eine Ebene tiefer (Kopfzeile „4 offen",
+     Gruppen) und im Vorlesetext. Zahlen bleiben nur, wo jemand
+     persönlich gemeint ist (Glocke der Leitung, Direktnachrichten). */
+  document.querySelectorAll('[data-badge="g-arbeit"],[data-mbadge="g-arbeit"]').forEach(function(b){
+    b.textContent=''; b.classList.add('punkt');
+    b.setAttribute('role','img');
+    b.setAttribute('aria-label', open+' offen'); b.title=open+' offen';
+    b.style.display=open?'grid':'none';
   });
 }
 
@@ -42540,7 +44186,8 @@ function renderPutzplan(){
       '<div class="pp-meta">'+(pause
         ? '<span class="pp-pausetxt">'+esc(ppPauseText(t))+'</span>'
         : (doneInfo||'<span>noch offen</span>'))+pauseKnopf+'</div></div>'+
-      stift+del+'</div></div>';
+      stift+del+(chef ? '<button class="t-mehr pp-mehr" data-ppmehr="'+esc(t.id)+'" title="Mehr: Bearbeiten, Löschen" aria-label="Mehr">⋯</button>' : '')+
+      '</div></div>';
   }
   /* ── Gruppiert nach Rhythmus (Runde 103, P2) ──
      In der Standard-Sortierung steht der Plan in Gruppen: täglich, wöchentlich, in eigenem Abstand, einmalig —
@@ -42963,6 +44610,17 @@ function bindPutzplanClicks(box){
           })
           .catch(function(e){ toast(errMsg(e),true); });
       });
+    });
+  });
+  /* „…" am Handy (Runde 187): dasselbe Blatt wie bei den Aufgaben. Die
+     Einträge drücken die Knöpfe der Zeile – EIN Weg zum Bearbeiten und
+     Löschen, nicht zwei. */
+  box.querySelectorAll('[data-ppmehr]').forEach(function(b){
+    b.addEventListener('click',function(e){
+      e.stopPropagation();
+      var id=b.getAttribute('data-ppmehr'), t=null;
+      _ppTasks.forEach(function(x){ if(x.id===id) t=x; });
+      if(t) ppBlattOeffnen(t, b.closest('.pp-item'));
     });
   });
   box.querySelectorAll('[data-ppedit]').forEach(function(b){
@@ -43837,7 +45495,7 @@ function verlaufStarten(){
   // Fenster melden sich selbst an, ohne dass jede Öffnen-Stelle das wissen
   // muss: wir beobachten einfach, wann eines sichtbar wird.
   var fenster=['profileModal','personModal','devModal','pollModal','todoEditModal',
-               'fwdModal','keysModal','searchOverlay','lightbox','msgSheet','todoSheet','docSheet'];
+               'fwdModal','keysModal','searchOverlay','lightbox','msgSheet','todoSheet','docSheet','shiftSheet'];
   fenster.forEach(function(id){
     var el=$(id); if(!el) return;
     new MutationObserver(function(){
@@ -43909,7 +45567,7 @@ function todoBlattOeffnen(t, sk){
     eintraege.push({ id:'danke', ico:ikon('herz'),
       txt:(bedankt ? 'Danke zurücknehmen' : 'Danke sagen')+(t.doneBy ? ' an '+t.doneBy : '') });
   }
-  if(canManage()){
+  if(canManage() && darfAufgabeIn(sk)){
     eintraege.push({ id:'bearbeiten', ico:ikon('stift'), txt:'Bearbeiten' });
     if(t.due && !done){
       eintraege.push({ id:'plus1', ico:ikon('uhr'), txt:'Frist: einen Tag später' });
@@ -43934,9 +45592,34 @@ function todoBlattOeffnen(t, sk){
   blatt.classList.add('show');
   tick(8);
 }
-function todoBlattSchliessen(){ var b=$('todoSheet'); if(b) b.classList.remove('show'); _tbTodo=null; _tbSk=null; }
+function todoBlattSchliessen(){ var b=$('todoSheet'); if(b) b.classList.remove('show'); _tbTodo=null; _tbSk=null; _tbPpZeile=null; }
+var _tbPpZeile=null;
+function ppBlattOeffnen(t, zeile){
+  var blatt=$('todoSheet'); if(!blatt || !zeile) return;
+  _tbTodo=null; _tbSk=null; _tbPpZeile=zeile;
+  $('tbWho').textContent=t.title||'Putzaufgabe';
+  $('tbWhere').textContent=studioName(_ppStudioKey)+' · Putzplan';
+  var gb=$('tbGrundBox'); if(gb) gb.style.display='none';
+  var pause=ppPausiert(t);
+  $('tbActs').innerHTML=[
+    { id:'ppedit', ico:ikon('stift'), txt:'Bearbeiten' },
+    { id:'pause', ico:ikon('pause'), txt:pause ? 'Fortsetzen' : 'Vier Wochen pausieren' },
+    { id:'del', ico:ikon('papierkorb'), txt:'Löschen', warn:true }
+  ].map(function(e){
+    return '<button class="ms-act'+(e.warn?' warn':'')+'" data-tba="pp-'+e.id+'">'+
+      '<span class="ms-ico">'+e.ico+'</span><span>'+esc(e.txt)+'</span></button>';
+  }).join('');
+  blatt.classList.add('show');
+  tick(8);
+}
 
 function todoBlattAktion(was){
+  if(_tbPpZeile && /^pp-/.test(was)){
+    var zeile=_tbPpZeile, knopf=zeile.querySelector('[data-'+was.slice(3)+']');
+    todoBlattSchliessen();
+    if(knopf) knopf.click();
+    return;
+  }
   var t=_tbTodo, sk=_tbSk;
   if(!t || !sk) return;
   var ref=S('studios').doc(sk).collection('todos').doc(t.id);
@@ -45442,6 +47125,7 @@ function listenDmThreads(){
       _dmThreadsFirst=false;
       if(_dmId) dmHakenAktualisieren();
       updateDmBadge();
+      if(currentView==='chat') kanalSpalteZeichnen();
       if(currentView==='dm' && $('dmConvo').style.display==='none' && (!$('dmSearch')||!$('dmSearch').value)) renderDmPeople('');
     }, function(e){ ladeFehler('dmListe', e); });
 }
@@ -47423,8 +49107,12 @@ function bindActions(){
     if(e.target===km) kanalWaehlerSchliessen();
   });
 
-  var hsBtn=$('ichHandyBtn');
-  if(hsBtn) hsBtn.addEventListener('click',function(){ ichHandyStempeln(this); });
+  /* Die Knöpfe werden je nach Stand neu gezeichnet (Pause ODER
+     Feierabend) — deshalb ein Zuhörer am Behälter. */
+  var hsBox=$('ichHandyKnoepfe');
+  if(hsBox) hsBox.addEventListener('click',function(e){
+    var b=e.target.closest('[data-handyart]'); if(b) ichHandyStempeln(b);
+  });
   var hsFeld=$('ichHandyCode');
   if(hsFeld) hsFeld.addEventListener('keydown',function(e){
     if(e.key==='Enter'){ e.preventDefault(); ichHandyStempeln($('ichHandyBtn')); }
@@ -47475,9 +49163,61 @@ function bindActions(){
         uid:p.value, name:p.options[p.selectedIndex].text,
         note:$('shNote').value.trim()||null,
         createdBy:session.name, createdByUid:session.uid, ts:Date.now()
-      }).then(function(){ $('shNote').value=''; toast('Schicht eingetragen ✓'); })
+      }).then(function(){ $('shNote').value=''; schichtBlattSchliessen(); toast('Schicht eingetragen ✓'); })
         .catch(function(e){ toast(errMsg(e),true); });
     });
+  });
+  /* Schichtplan, Runde 191: Ansicht, „Nur meine", Eintragen, Blatt. */
+  document.querySelectorAll('[data-wpansicht]').forEach(function(b){
+    b.addEventListener('click', function(){ wpAnsichtSetzen(b.getAttribute('data-wpansicht')); });
+  });
+  var wm=$('wpMeine');
+  if(wm) wm.addEventListener('click', function(){ _wpMeine=!_wpMeine; renderShifts(); tick(6); });
+  var wn=$('shiftNeu');
+  if(wn) wn.addEventListener('click', function(){
+    /* In einer anderen Woche als dieser: deren Montag statt heute. */
+    var h=ymd(new Date()), mo=ymd(_shiftWeek), so=new Date(_shiftWeek); so.setDate(so.getDate()+6);
+    schichtNeuBlatt(h>=mo && h<=ymd(so) ? h : mo, '');
+  });
+  var shs=$('shiftSheet');
+  if(shs){
+    shs.addEventListener('click', function(e){ if(e.target===shs) schichtBlattSchliessen(); });
+    $('shSheetZu').addEventListener('click', schichtBlattSchliessen);
+    /* Nach einer Aktion schliesst das Blatt — die Knöpfe selbst tragen
+       dieselben data-tausch-*-Merkmale wie in der Liste und laufen über
+       bindTauschClicks(); dieser Hörer kommt beim Aufsteigen danach. */
+    $('shSheetActs').addEventListener('click', function(e){
+      if(e.target.closest && e.target.closest('.ms-act')) setTimeout(schichtBlattSchliessen, 0);
+    });
+    $('shDate').addEventListener('change', function(){
+      var d=new Date(this.value+'T12:00:00');
+      if(isNaN(d)) return;
+      var pe=$('shPerson'), pn=pe && pe.value ? pe.options[pe.selectedIndex].text+' · ' : '';
+      $('shSheetUnter').textContent=pn+d.toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit'})+' · '+studioName(_teamStudioKey);
+      wpVorlagenZeichnen();
+    });
+  }
+  /* Wechselt das Fenster über 1.100 px, wechselt auch, was es gibt. */
+  if(window.matchMedia){
+    var wq=window.matchMedia(WP_BREIT);
+    var wqNeu=function(){ if(_teamStudioKey) renderShifts(); };
+    if(wq.addEventListener) wq.addEventListener('change', wqNeu); else if(wq.addListener) wq.addListener(wqNeu);
+  }
+  /* Tastenkürzel im Schichtplan (Deputy, Google Kalender): ← → blättern,
+     H heute, V Tage/Personen. Nur, solange der Schichtplan offen ist,
+     und nie über einer eigenen Belegung derselben Taste. */
+  document.addEventListener('keydown', function(e){
+    if(currentView!=='team') return;
+    var pane=$('teamPaneSchicht'); if(!pane || pane.style.display==='none' || !_shiftWeek) return;
+    if(e.ctrlKey||e.metaKey||e.altKey||e.shiftKey) return;
+    if(typingSomewhere() || anyModalOpen()) return;
+    var k=String(e.key||'');
+    if(k.length===1 && keyBelegtVon(k)) return;
+    var low=k.toLowerCase();
+    if(k==='ArrowLeft'){ e.preventDefault(); $('shiftPrev').click(); }
+    else if(k==='ArrowRight'){ e.preventDefault(); $('shiftNext').click(); }
+    else if(low==='h'){ e.preventDefault(); $('shiftToday').click(); }
+    else if(low==='v' && wpBreit()){ e.preventDefault(); wpAnsichtSetzen(wpAnsicht()==='person'?'tag':'person'); }
   });
   var abAdd=$('abAdd');
   if(abAdd) abAdd.addEventListener('click',function(){
@@ -47749,7 +49489,8 @@ function bindActions(){
     });
   });
 
-  // Abmelden
+  // Abmelden – der Knopf im Profil drückt denselben (ein Weg, eine Rückfrage)
+  $('pmLogout').addEventListener('click',function(){ $('logoutBtn').click(); });
   $('logoutBtn').addEventListener('click',function(){
     if(confirm('Abmelden?\n\nDeine Daten bleiben gespeichert – du kannst dich jederzeit wieder anmelden.')){
       stopListeners();
@@ -47831,7 +49572,7 @@ function bindActions(){
      und Monatspfeile deshalb nichts. Gefunden, weil test-zeitkorrektur
      am Monatsersten einen Monat zurückblättern musste. */
   var zks=$('zkStudio');
-  if(zks) zks.addEventListener('change', function(){ _zkStudio=zks.value; _zkWahl=null; _zkStorno=null; zkLaden(); });
+  if(zks) zks.addEventListener('change', function(){ _zkStudio=zks.value; _zkWahl=null; _zkStorno=null; zkLaden(); zkJetztLaden(); });
   var zkp=$('zkPrev'), zkn=$('zkNext');
   if(zkp) zkp.addEventListener('click', function(){ _zkMonat=new Date(_zkMonat.getFullYear(), _zkMonat.getMonth()-1, 1); _zkWahl=null; zkLaden(); });
   if(zkn) zkn.addEventListener('click', function(){ _zkMonat=new Date(_zkMonat.getFullYear(), _zkMonat.getMonth()+1, 1); _zkWahl=null; zkLaden(); });

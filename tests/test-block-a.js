@@ -125,7 +125,7 @@ async function leiste(p) {
       reiter: (document.querySelector('[data-ichtab].on, [data-ichtab].active') || {}).getAttribute
         ? document.querySelector('[data-ichtab].on, [data-ichtab].active').getAttribute('data-ichtab') : null
     }));
-    pruefe('„Meine Zeiten" öffnet „Ich" im Reiter Zeiten', da.ansicht === 'view-ich' && da.reiter === 'daten',
+    pruefe('„Meine Zeiten" öffnet „Ich" im Reiter Zeiten', da.ansicht === 'view-ich' && da.reiter === 'zeiten',
       JSON.stringify(da));
 
     /* Zurück zur Startseite, Anpassen öffnen. Der Knopf heisst seit

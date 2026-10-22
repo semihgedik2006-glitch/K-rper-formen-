@@ -175,7 +175,7 @@ async function zurKarte(page) {
   await page.evaluate(() => document.querySelector('#subnav [data-subview="ich"]').click());
   await page.waitForTimeout(500);
   await page.evaluate(() => {
-    const t = document.querySelector('[data-ichtab="daten"]');
+    const t = document.querySelector('[data-ichtab="zeiten"]');
     if (t) t.click();
   });
   await page.waitForTimeout(1200);

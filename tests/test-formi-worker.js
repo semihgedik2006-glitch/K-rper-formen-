@@ -93,6 +93,11 @@ function ki(antworten) {
   pruefe(/IMMER aus dieser Liste/.test(sys), 'Systemtext: „was kannst du" kommt aus der Liste, nicht aus altem Wissen');
   pruefe(/Leg eine Aufgabe an:/.test(sys), 'Systemtext: zeigt, wie man Formi etwas anlegen lässt');
   pruefe(/Sprich nie vom "Studio-Wissen"/.test(sys), 'Systemtext: kein „Das Studio-Wissen sagt"');
+  /* 2.18: Charakter „Kumpel aus dem Studio" — nur locker, Ernstes zuerst. */
+  const sysSach = w.formiSystem({ ton: 'sachlich', vorname: 'Semih', kanal: 'app' });
+  pruefe(/Kumpel aus dem Studio/.test(sys) && !/Kumpel aus dem Studio/.test(sysSach), 'Charakter nur im lockeren Ton');
+  pruefe(sys.indexOf('ERNST GEHT VOR') >= 0 && sys.indexOf('ERNST GEHT VOR') < sys.indexOf('Running Gags'), 'Charakter: Ernstes (Notfall, Gesundheit) steht vor jedem Spruch');
+  pruefe(/NACH der Antwort, nie statt ihr/.test(sys) && /nicht so, als wärst du ein Mensch/.test(sys), 'Charakter: Antwort zuerst, keine vorgetäuschte Menschlichkeit');
   const sysMail = w.formiSystem({ ton: 'locker', vorname: 'Mail', kanal: 'mail' });
   pruefe(!/heißt Mail/.test(sysMail) && /kennst du nicht/.test(sysMail), 'Mail: kein Vorname „Mail"');
   pruefe(/\d{1,2}:\d{2} Uhr$/.test(w.jetztText(Date.UTC(2026, 9, 22, 12, 5))), 'Uhrzeit in Köln: ' + w.jetztText(Date.UTC(2026, 9, 22, 12, 5)));
@@ -337,6 +342,64 @@ function ki(antworten) {
     pruefe(Array.isArray(such.bedeutung) && such.bedeutung.length > 0 && typeof such.bedeutung[0].wert === 'number' && such.schwelle > 0 && such.ergebnis.some(x => x.id === weste), 'Suche-Diagnose: Wörter, Volltext, Ähnlichkeit ohne Schwelle, Ergebnis (' + JSON.stringify(such).slice(0, 160) + ')');
     const suchOhne = await w.default.fetch(new Request('https://x.test/api/suche?q=x', { headers: { 'x-studio-key': 'k' } }), env2, {});
     pruefe(suchOhne.status === 401, 'Suche-Diagnose nur im Leitstand');
+
+    /* ── 2.16 Sammelfreigabe: „ja sind zu viele klicks" ── */
+    const Q = 'Schulung „Hygiene“';
+    const viele = Array.from({ length: 25 }, (_, i) => ({ thema: 'Sammeltest ' + i, inhalt: 'Ein Eintrag aus der Schulung Nummer ' + i, kategorie: 'Geräte & Hygiene', quelle: Q }));
+    await post('/api/vorschlag/import', { eintraege: viele });
+    await post('/api/vorschlag/import', { eintraege: [{ thema: 'Sammeltest eigen', inhalt: 'Von Lea selbst vorgeschlagen, gleiche Quelle.' }], quelle: Q, von: 'Lea Leitung', vonId: 'uid-lea' });
+    await post('/api/vorschlag/import', { eintraege: [{ thema: 'Andere Quelle A', inhalt: 'Gehört nicht zur Schulung, bleibt offen.' }, { thema: 'Andere Quelle B', inhalt: 'Gehört auch nicht zur Schulung.' }], quelle: 'Etwas anderes' });
+    const gl2 = await (await post('/api/vorschlag/liste', { vonId: 'uid-lea' })).json();
+    const gq = (gl2.gruppen || []).find(g => g.quelle === Q);
+    pruefe(gq && gq.anzahl === 26 && gl2.liste.some(x => x.quelle === Q), 'Liste nennt Gruppen je Quelle (' + JSON.stringify(gl2.gruppen) + ')');
+    const vorW = env2.DB.roh.prepare('SELECT COUNT(*) AS n FROM wissen').get().n;
+    const r1 = await (await post('/api/vorschlag/entscheiden', { quelle: Q, gut: true, von: 'Lea Leitung', vonId: 'uid-lea' })).json();
+    pruefe(r1.ok && r1.erledigt === w.SAMMEL_JE_AUFRUF && r1.uebrig === 5 && r1.uebersprungen === 1, 'Erster Aufruf: 20 übernommen, 5 übrig, der eigene übersprungen (' + JSON.stringify(r1) + ')');
+    const r2 = await (await post('/api/vorschlag/entscheiden', { quelle: Q, gut: true, von: 'Lea Leitung', vonId: 'uid-lea' })).json();
+    pruefe(r2.erledigt === 5 && r2.uebrig === 0, 'Zweiter Aufruf: der Rest (' + JSON.stringify(r2) + ')');
+    pruefe(env2.DB.roh.prepare('SELECT COUNT(*) AS n FROM wissen').get().n === vorW + 25, '25 neue Einträge im Wissen');
+    pruefe(env2.DB.roh.prepare("SELECT status FROM vorschlag WHERE thema = 'Sammeltest eigen'").get().status === 'neu', 'Vier Augen: der eigene Vorschlag bleibt offen');
+    pruefe(env2.DB.roh.prepare("SELECT COUNT(*) AS n FROM vorschlag WHERE status = 'neu' AND quelle = 'Etwas anderes'").get().n === 2, 'Andere Quelle bleibt unberührt');
+    const r3 = await (await post('/api/vorschlag/entscheiden', { quelle: 'Etwas anderes', gut: false, von: 'Max Chef', vonId: 'uid-max' })).json();
+    pruefe(r3.erledigt === 2 && env2.DB.roh.prepare("SELECT COUNT(*) AS n FROM wissen WHERE thema LIKE 'Andere Quelle%'").get().n === 0, 'Alle verwerfen: nichts wird Wissen');
+    const r4 = await (await post('/api/vorschlag/entscheiden', { quelle: '', gut: true })).json();
+    pruefe(!r4.ok, 'Ohne Quelle: nichts');
+    const lsHtml = await (await w.default.fetch(new Request('https://x.test/leitstand'), env2, {})).text();
+    pruefe(/" übernehmen"/.test(lsHtml) && /\/api\/vorschlag\/entscheiden/.test(lsHtml), 'Leitstand hat die Sammelknöpfe');
+    pruefe(!/confirm\(/.test(lsHtml.replace(/\/\*[\s\S]*?\*\//g, '')), 'Leitstand ruft kein confirm() auf (eingebettete Browser zeigen es nicht)');
+
+    /* 2.17: der Knopf im echten Browser — der Leitstand läuft gegen
+       diesen Worker (Anfragen werden in den Test umgeleitet). */
+    let pw = null; try { pw = require('playwright'); } catch (e) { console.log('  (Playwright fehlt — Browser-Teil übersprungen)'); }
+    if (pw) {
+      await post('/api/vorschlag/import', { eintraege: [1, 2, 3].map(i => ({ thema: 'Knopftest ' + i, inhalt: 'Ein Eintrag für den Knopftest Nummer ' + i })), quelle: 'Schulung „Knopftest“' });
+      const br = await pw.chromium.launch({ executablePath: process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox'] });
+      try {
+        const pg = await br.newPage({ serviceWorkers: 'block', viewport: { width: 1280, height: 800 } });
+        let dialog = 0; pg.on('dialog', d => { dialog++; d.dismiss(); });
+        await pg.route('https://leitstand.test/**', async (route) => {
+          const rq = route.request();
+          const antwort = await w.default.fetch(new Request(rq.url(), { method: rq.method(), headers: rq.headers(), body: rq.method() === 'POST' ? rq.postData() : undefined }), env2, { waitUntil() {} });
+          route.fulfill({ status: antwort.status, headers: Object.fromEntries(antwort.headers), body: Buffer.from(await antwort.arrayBuffer()) });
+        });
+        await pg.addInitScript(() => { try { sessionStorage.setItem('sg-key', 'admin'); } catch (e) {} });
+        await pg.goto('https://leitstand.test/leitstand');
+        await pg.waitForTimeout(500);
+        await pg.evaluate(() => { tab = 'vorschlaege'; start(); });
+        await pg.waitForFunction(() => [...document.querySelectorAll('button')].some(b => /Knopftest/.test(b.textContent)), null, { timeout: 5000 });
+        /* Ein fester Griff, kein Locator nach Text: der Text ändert sich beim
+           ersten Klick, ein Locator würde bis zum Zurücksetzen warten. */
+        const knopf = await pg.locator('button', { hasText: 'Knopftest' }).elementHandle();
+        await knopf.click(); await pg.waitForTimeout(150);
+        const frage = await knopf.textContent();
+        const nochOffen = env2.DB.roh.prepare("SELECT COUNT(*) AS n FROM vorschlag WHERE status = 'neu' AND quelle = 'Schulung „Knopftest“'").get().n;
+        pruefe(/Nochmal klicken/.test(frage) && nochOffen === 3 && !dialog, 'Leitstand: erster Klick fragt im Knopf nach, ohne Dialog, nichts passiert (' + frage + ')');
+        await knopf.click();
+        await pg.waitForFunction(() => ![...document.querySelectorAll('button')].some(b => /Knopftest/.test(b.textContent)), null, { timeout: 8000 }).catch(() => {});
+        const danach = env2.DB.roh.prepare("SELECT COUNT(*) AS n FROM vorschlag WHERE status = 'neu' AND quelle = 'Schulung „Knopftest“'").get().n;
+        pruefe(danach === 0 && env2.DB.roh.prepare("SELECT COUNT(*) AS n FROM wissen WHERE thema LIKE 'Knopftest %'").get().n === 3, 'Leitstand: zweiter Klick übernimmt alle drei, der Knopf ist danach weg');
+      } finally { await br.close(); }
+    }
   }
 
   console.log(`\n${ok} bestanden, ${fehler} fehlgeschlagen`);

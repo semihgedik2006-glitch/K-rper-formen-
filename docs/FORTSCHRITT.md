@@ -17963,6 +17963,690 @@ mehr ins design integrieren können“. Daraus entstand das Ideenpapier
 - Die Regel `formiAt` ist noch nicht ausgerollt. Bis dahin greift der
   Übergang: Der Haken geht ohne Spur raus.
 
+## Runde 187 — Zusammengelegt: Bestand, Chats, Pinnwand; Erledigt eingeklappt (22.10.2026)
+
+**Aus dem Betrieb:** „mach die nächste runde mit deinen vorschlägen und
+vergleiche alles mit psychologischen studien auf pubmed oder google
+scholar … deine 2 fragen können wir so umsetzten“.
+
+**Studienlage:** steht jetzt als eigene Vorbild-Datei unter
+`docs/design-vorbilder/studien-psychologie.md`, mit rund 25 Quellen.
+Ehrlich vermerkt: Die Websuche lief, das Öffnen von Volltexten nicht
+(Proxy). Die Angaben stammen aus Abstract-Auszügen und Sekundärquellen.
+Was daraus folgt, ist dort je Massnahme aufgeschrieben.
+
+**Was gebaut ist**
+
+1. **Zusammengelegte Reiter** (`REITER_PAARE`, `reiterPaar`,
+   `umschalterZeichnen`):
+   - **Bestand** = Material + Geräte.
+   - **Chats** = Chat + Direkt.
+   - Ein Reiter trägt die Marke für beide Ansichten und je einen Punkt.
+     Innen schaltet ein Umschalter in derselben Bauform wie „Studios |
+     Gruppen“.
+   - Warum: Weniger gleichrangige Wahlen verkürzen die Wahlzeit
+     (Hick-Hyman). Breite, flache Ebenen schlagen tiefe (Larson &
+     Czerwinski 1998, Zaphiris).
+   - Pirolli & Card (Information Scent) warnen, dass ein Sammelbegriff
+     schwächer „riecht“. Deshalb nennt der Umschalter die alten Namen
+     sichtbar, und „Alles“ und die Suche führen weiter einzeln zu Material
+     und Geräten.
+   - Studio hat jetzt 4 statt 5 Reiter, Nachrichten 2 statt 3.
+2. **Pinnwand = Infos + Aushänge.**
+   - Das Schwarze Brett zieht aus „Plan“ in die Seite der Infos. Das
+     Element wird umgehängt, nicht kopiert (`pinnwandZeichnen`).
+   - Der alte Team-Reiter bleibt als Umleitung (Fangphase am Ziel). Damit
+     landen alle bisherigen Wege (Startseite, Wünsche, „Alles“) auf den
+     Aushängen.
+   - Die Aushänge sind Tausch, Lob und Mitfahrgelegenheiten, also Mitteilungen
+     und kein Schichtplan.
+3. **Direkt in derselben Liste:**
+   - Am Rechner stehen die fünf letzten Direktnachrichten in der
+     Kanalspalte unter „Direkt“.
+   - Am Handy steht „Direkt“ fest vorn in der Kanalzeile.
+   - Ein erster Anlauf mit einer eigenen Zeile kostete bei 320 × 640 den
+     Verlauf die Höhe, die Runde 127 ihm gegeben hatte (test-chat-klein).
+4. **Erledigt eingeklappt** (`tdMitErledigt`):
+   - Erledigtes steht unter „N erledigt“ am Ende seiner Gruppe, eine
+     Ebene tief.
+   - Belege: progressive disclosure (Carroll & Carrithers 1984). Nur eine
+     Ebene, weil verschachteltes Aufklappen schlechter abschneidet
+     (Zaphiris 2002).
+   - Frisch Abgehaktes bleibt 60 s stehen, sonst verschwände die
+     Rückmeldung mitten im Tippen.
+5. **Punkt statt Zahl am Raum „Studio“:**
+   - Die Zahl zählte alle offenen Aufgaben aller Studios und sagte nie
+     „du bist gemeint“.
+   - Abzeichen lenken nachweislich den ersten Tipp (Bartoli & Benedetto
+     2022). Unterbrechungen und Mengen von Benachrichtigungen gehen mit
+     Stress einher (Kushlev 2016, Mark 2008).
+   - Zahlen bleiben dort, wo jemand persönlich gemeint ist: Glocke,
+     Direktnachrichten.
+   - Ein direkter Vergleich Zahl gegen Punkt wurde nicht gefunden. Das ist
+     eine Ableitung und auch so benannt.
+6. **Am Handy Bearbeiten/Löschen hinter „…“**, in Aufgaben UND Putzplan
+   (Hauswunsch vom 9.10.: „GENAU so wie der Putzplan“).
+   - Das Putzplan-„…“ drückt die vorhandenen Knöpfe der Zeile. Es gibt
+     also einen Weg, nicht zwei.
+   - Am Rechner bleiben Stift und Papierkorb beim Überfahren in der Zeile.
+7. **Abmelden im Profil**, direkt über „Speichern“.
+   - Darunter ging nicht: Das klebende „Speichern“ deckte den Knopf 12 px
+     zu (Hit-Test 33 statt 44).
+
+**Gemessen**
+- Handy, bisheriges Design: Die erste Materialzeile steht bei 577 px statt
+  602 auf main (Attrappe Chef). Am Handy ersetzt der Umschalter die
+  Seitenüberschrift.
+- Handy, neues Design: Bestand kostet den Umschalter, die erste
+  Materialzeile steht bei 720 statt 668 px. Bewusst so: Der Umschalter ist
+  der Weg zu den Geräten.
+- Trefferflächen: Alle Umschalter treffen ≥ 44 × 44 bei 320/390/430/820 und
+  1280/1440/1920, normal und kompakt (test-zusammengelegt).
+- test-zusammengelegt hat 52 Zusicherungen. Die Gegenprobe gegen main
+  ergibt 39 falsch.
+
+**Offen**
+- Archiv bleibt unter Verwaltung. Es enthält Sicherungen und erledigte
+  Aufgaben, keinen Bestand.
+- Push-Meldungen nur für persönlich Gemeintes, mit Ruhezeit ausserhalb der
+  Schicht: Das ist Folgerung 9 der Studienlage und noch nicht gebaut.
+- Findezeiten vorher/nachher messen (Folgerung 14): Ein schönerer Eindruck
+  beweist keine bessere Findbarkeit.
+
+## Runde 188 — Versteckter Schalter für Formis Gefühle (22.10.2026)
+
+**Aus dem Betrieb:** Auf die Frage aus Runde 186, ob es einen Schalter
+geben soll, falls die Gefühle der Kugel jemandem im Team zu viel sind:
+„Ja aber versteckter“.
+
+**Gebaut**
+- In Formis eigenen Einstellungen (Regler-Symbol im Formi-Fenster →
+  „Persönlichkeit und Stimme“) steht „Gefühle der Kugel: Zeigen · Aus“.
+  Standard ist „Zeigen“.
+- Bei „Aus“ schaut die Kugel nicht mit, blinzelt nicht, nickt nicht,
+  freut sich nicht, staunt, feiert und erschrickt nicht und schläft nicht
+  ein. Was gerade läuft, wird abgebrochen, das Auge steht geradeaus.
+- Es bleiben: der Punkt „hat etwas für dich“, die Spur „über Formi“ und
+  der Glitch, wenn Formi eine Seite öffnet. Die drei sind keine Gefühle,
+  sie sagen etwas.
+- Gemerkt wird je Gerät in Formis Persönlichkeit (`kf_jv_persona`,
+  `gefuehle`), wie Tonfall und Stimme.
+
+**Warum dort**
+- „Versteckter“ heisst: nicht unter Profil → Aussehen, wo jeder vorbeikommt.
+  Formis Einstellungen öffnet nur, wer Formi schon benutzt und etwas an
+  ihm ändern will. Erreichbar bleibt der Schalter in zwei Tipps (Kugel,
+  Regler).
+- Der Zustand liegt zusätzlich als Zahl im Speicher (`_fl.gefuehleAus`).
+  `formiLebtAn()` läuft in jedem Bild, in dem das Auge folgt, und soll
+  dort kein JSON lesen.
+
+**Geprüft** (`tests/test-formi-lebt.js`, jetzt 95 Zusicherungen)
+- Am Rechner (1440) und am Handy (390):
+  - Der Schalter steht in Formis Einstellungen, Standard „Zeigen“.
+  - „Zeigen“ und „Aus“ treffen 67 × 45 bzw. 50 × 45 px und liegen im Bild.
+  - „Aus“ wird gemerkt; danach bewegt sich nichts, das Auge schaut nicht
+    mit und schläft nicht ein.
+  - Der Punkt bleibt, und nach dem Neuladen ist es weiter aus.
+  - Mit „Zeigen“ freut Formi sich wieder.
+- Gegenprobe mit dem `index.html` von `main`: schlägt an.
+
+## Runde 189 — Die Stempelseite, Schritt 1: Pause oder Feierabend, Stand jetzt, Plan neben Ist (22.10.2026)
+
+Aus dem Betrieb: „erstelle bitte noch eine session nur für die stempel
+seite auch die müssen wir auch sehr viel verbessern das sie so wie
+crewmeister funktioniert am besten". Erst Plan und Rückfragen (neuer
+Bereich), dann gebaut. Die Antworten auf die fünf Rückfragen:
+
+| Frage | Antwort |
+|---|---|
+| Soll aus dem Schichtplan plus Vertragsstunden fürs Konto? | „JA" |
+| Pausen: nur warnen oder wie Crewmeister auffüllen? | „genau wie bei crewmeister" |
+| Korrekturanträge: wer bestätigt? | „nur geschäftsführung" |
+| Stand an den Kacheln am Terminal weg? | „ja" |
+| Lohnbüro: Excel/CSV oder DATEV? | „mach beides" |
+
+Diese Runde ist Schritt 1 von fünf (siehe `docs/ZEITERFASSUNG-PLAN.md`,
+Nachtrag 22.10.). Pausenregel, Korrekturanträge, Stundenkonto mit
+Monatsabschluss und die Exporte folgen.
+
+**Crewmeister: was belegt ist und was nicht.** Die Seiten von
+crewmeister.com, das Hilfe-Center und der Play Store waren aus dieser
+Umgebung gesperrt (Proxy, 403). Was ich über Crewmeister weiss, stammt aus
+Zusammenfassungen der Websuche, nicht aus dem Wortlaut der Seiten oder aus
+Bildschirmfotos. Belegt in diesen Zusammenfassungen: Startseite mit einem
+Stempelknopf, nach dem Kommen „Pause" und Stopp; Pausenregel als
+Auffüllen auf das gesetzliche Mindestmass; Zeitkonto = Ist minus Soll;
+Live-Übersicht; Terminal mit PIN. Nicht gefunden: Warnungen bei 10 h
+und 11 h Ruhezeit, ein Korrekturantrag mit Verlauf, ein gesperrter
+Monatsabschluss.
+
+**Der wichtigste Fund stand im eigenen Server.** `naechsterSchritt()`
+kannte nur kommen → pause → zurueck → pause → … **Einen Feierabend gab es
+am Terminal und am Handy nicht.** Jeder Tag endete mit „Feierabend fehlt",
+bis die Leitung ihn nachtrug. Kein Test hat das gesehen, weil jeder Test
+genau diesen Ablauf als richtig festhielt.
+
+- `stempeln` und `handyStempeln` nehmen jetzt `art`. Der Server prüft, ob
+  der Schritt gerade passt (`erlaubteSchritte`): nach Kommen Pause oder
+  Feierabend, in der Pause Zurück oder Feierabend. Was nicht passt, wird
+  abgewiesen, mit dem Satz, was dran ist — und es entsteht kein Stempel.
+- **Ohne `art` bleibt es beim alten Ablauf.** Ein Tablet, das die alte
+  Seite noch im Speicher hat, stempelt weiter wie bisher, bis es neu lädt.
+- Ein als ungültig markierter Stempel zählt beim „was ist dran" nicht
+  mehr mit. Vorher hätte ein stornierter Feierabend den nächsten Schritt
+  trotzdem auf „Kommen" gesetzt.
+
+**Terminal: der Stand steht erst nach der PIN da.**
+- Neue Funktion `stempelStand`: dieselben drei Schlösser wie `stempeln`
+  (Gerät, Person, PIN — mit derselben Bremse bei Fehlversuchen). Die drei
+  Prüfungen stehen jetzt einmal in `terminalUndPinPruefen`; eine zweite
+  Abschrift wäre die Stelle, an der eine Verschärfung nur auf einer Seite
+  ankommt. `test-zeitpin` liest den Text nur noch MIT dieser Hilfe und nur,
+  wenn `stempeln` sie aufruft.
+- Ablauf: Name antippen → PIN → „Weiter" → „Im Dienst seit 09:45 · heute
+  5:20 h" und die passenden Knöpfe (72 px hoch). Nach 30 Sekunden ohne
+  Tipp schliesst sich die Anzeige von selbst.
+- **Ein zweiter Grund, beim Nachlesen gefunden:** das Terminal fragte
+  `zeiten` des ganzen Studios ab, um „im Dienst" an die Kacheln zu
+  schreiben. Ein Terminal ist ein normales Mitarbeiter-Konto, und
+  `zeiten` darf es nur für sich selbst lesen. Die Kacheln zeigten in der
+  Produktion deshalb vermutlich bei allen „noch nicht da". **Nicht
+  nachgewiesen** — das echte Firebase lädt hier nicht; der Beleg ist die
+  Regel. Die Abfrage ist weg.
+- **Ohne Netz** gibt es keinen Stand. Dann stehen die Knöpfe zum zuletzt
+  in dieser Sitzung bekannten Stand da, sonst alle vier. Der gewählte
+  Schritt wird mit gemerkt und beim Nachreichen vom Server geprüft; was
+  nicht passt, steht oben als „Nicht gespeichert".
+
+**Heute → Ich → „Zeiten" (neuer Reiter).**
+- Oben „Jetzt": Stand, heute gearbeitet, laut Plan, die heutige Schicht.
+  Mit Handy-Freigabe darunter Code-Feld und die Knöpfe, die gerade passen.
+  Ohne Freigabe der Satz, dass am Terminal gestempelt wird.
+- „Diese Woche": sieben Tage, Plan neben Ist, Abweichung gegen den Plan.
+- Daneben „Meine Zeiten" (Monat) wie bisher, jetzt mit „laut Plan bis
+  heute" und der Abweichung je Tag. Die Stempel-PIN liegt mit auf dieser
+  Seite.
+- **Am Rechner zwei Spalten** (420 px + Rest ab 1100 px). Vorher lief die
+  Monatsliste über 1.174 px (1440) bzw. 1.654 px (1920).
+- **„Laut Plan" ist die Schicht abzüglich der Pause nach § 4 ArbZG** (30
+  min über 6 h, 45 über 9 h). Gestempelte Zeit ist Arbeit ohne Pause; ein
+  Plan mit Pause daneben hiesse an jedem langen Tag „30 Minuten zu wenig".
+  Das ist eine Entscheidung, keine Messung — wer Schichten ohne Pause
+  plant, sieht hier 30 Minuten weniger Soll.
+- Abweichungen stehen grau, nicht in Statusfarbe: eine kürzere Schicht
+  ist oft abgesprochen.
+- Die laufende Zeit wird alle 30 Sekunden neu geschrieben, nur solange
+  der Reiter offen ist — keine Animation, kein Takt je Bild.
+
+**Verwaltung → Zeiten: „Jetzt im Studio".** Im Dienst (seit wann, wie
+lange), in der Pause, Feierabend, und „Laut Plan erwartet": die Schicht
+hat begonnen, heute gibt es keinen Stempel. Nicht rot — wer im Stau steht
+oder woanders gestempelt hat, ist kein Fehler. Gelesen wird mit
+`studioKey` und `tag` (zwei Gleichheitsfilter, kein Index), das darf
+genau, wer das Studio leitet.
+
+**Schnellzugriff „Meine Zeiten"** hiess intern `ich:daten`. Er heisst jetzt
+`ich:zeiten`; wer ihn gewählt hatte, wird beim Lesen umgeschrieben, sonst
+wäre er stumm verschwunden. `ich:daten` gibt es weiter als „Meine Daten"
+(Nachweise, Stammdaten, Auskunft) — vier ältere Neuigkeiten zeigen dorthin.
+
+**Zwei Mängel, die der neue Test fand und die vorher schon da waren:**
+- Die Monatspfeile `‹ Heute ›` trafen 38 × 38 (Meine Zeiten und Kalender).
+  Jetzt 44.
+- Die Reiter Woche/Kalender/… trafen am Handy nur 41–43 px hoch: die
+  unsichtbar vergrösserte Trefferfläche der Unternavigation (`::after`,
+  5,5 px) lag über ihrer Oberkante. 6 px Abstand darüber.
+
+**Ein Test, der vorher stumm übersprungen hat:** `test-offline`, Teil 3,
+suchte den Raum `g-ich`, den es seit Runde 184 nicht mehr gibt — `if (g)`
+liess ihn still durch. Jetzt geht er über Heute → Ich → Zeiten.
+
+**Geprüft**
+- `tests/rules/stempel-schritte.test.js` (neu, 28, Emulator, Funktionen
+  ausgeführt). Gegenprobe: `naechsterSchritt` statt `schrittWaehlen` →
+  12 rot.
+- `tests/test-stempelseite.js` (neu, 114): Ablauf am Handy, Rechenkern,
+  Spalten und Trefferflächen bei 320/390/430/820/1280/1440/1920 in
+  „normal" und „kompakt", Terminal nach der PIN, „Jetzt im Studio".
+  Gegenproben, jede einzeln: nur ein Knopf statt zwei → 2 rot (der Lauf
+  bricht danach ab, weil der Feierabend-Knopf fehlt); Zwei-Spalten-Regel
+  aus → 3 rot; Pfeile wieder 38 px → rot (gesehen bei 320–820 px, je
+  „normal" und „kompakt"; zusammen mit der Spalten-Gegenprobe gelaufen).
+- Angepasst, nichts gelockert: `test-terminal` (Stand an der Kachel ist
+  jetzt der Fehler; Fehlschlag-Meldung über MutationObserver, weil eine
+  Aufgaben-Erinnerung sie überschrieb), `test-zeitpin`, `test-offline`,
+  `test-demo`, `test-meine-zeiten`, `test-handy-stempeln` (+ `art`),
+  `test-block-a`. **`test-mein-bereich` erwartet jetzt vier Reiter statt
+  drei** — mit dem Zitat aus dem Betrieb im Test; die Zahl bleibt genau.
+
+**Gesamtdurchlauf** (`tests/alle.sh`): 174 grün, 12 rot. Jeder rote
+gegen `origin/main` nachgemessen (zweite Arbeitskopie, Port 8766):
+- auch auf main rot: test-block-d, test-formi-verdeckt, test-gehirn
+  (Arbeit je Bild 10,3 ms beim Denken), test-navigation (2,28
+  Bildschirme), test-neu-design, test-p1-aufgaben, test-p4-seitenleiste,
+  test-startseite-putz, test-team-woche — dieselben Meldungen wie hier.
+- einzeln grün, im langen Lauf nur über die Zeit: test-pc-durchsicht (auf
+  main grün, hier einzeln 44 Zusicherungen grün), test-zwischenspeicher,
+  test-video-hochladen.
+Keiner davon berührt Stempeln oder Zeiten.
+
+**Nicht testbar hier:** der Anmeldeweg und das echte Firebase-SDK (Proxy).
+Ob ein Terminal in der Produktion bisher wirklich „noch nicht da" zeigte,
+ist nicht gemessen.
+## Runde 190 — Alle aus einer Schulung auf einmal (Worker 2.16, 22.10.2026)
+
+Aus dem Betrieb, auf die Frage nach 124 einzelnen Freigaben: „ja sind zu
+viele klicks".
+
+**Gebaut**
+- Worker 2.16: `/api/vorschlag/entscheiden` nimmt statt einer Nummer eine
+  `quelle` und entscheidet alle offenen Import-Vorschläge dieser Quelle,
+  20 je Aufruf (jeder neue Eintrag rechnet seinen Fingerabdruck gleich
+  mit). Die Liste liefert dazu `gruppen` (Quelle + Anzahl, ab zwei).
+- Leitstand: oben unter „Vorschläge“ je Quelle ein Knopf, mit Rückfrage.
+- App: unter einem Schulungs-Vorschlag „Alle N aus Schulung „…“
+  übernehmen“. Erster Tipp fragt nach (6 s), zweiter übernimmt; die App
+  ruft so lange, bis nichts übrig ist, und zeigt den Stand.
+
+**Warum so**
+- *Zweimal tippen statt Dialog.* Ein Browser-Dialog blockiert die Seite
+  und taugt in der App nicht; die Rückfrage steht im Knopf selbst, mit
+  dem Hinweis, dass die Texte ungelesen Wissen werden.
+- *Vier Augen bleiben.* Eigene Vorschläge werden übersprungen, nicht
+  freigegeben — sonst wäre die Sammelfreigabe der Umweg um die Regel.
+- *Nur „Neues Wissen“.* Selbsttests, Korrekturen und Antwort-Entwürfe
+  brauchen einen Blick; die gibt es weiter nur einzeln.
+
+**Gemessen:** Sammelknopf mit dem längsten echten Quellnamen bei 320 px
+46 px hoch, umbricht sauber; alle Knöpfe der Karte ≥ 44 × 44 bei 7
+Breiten × 2 Dichten (`test-formi-lernt` 48/48). Worker-Durchlauf 106/106
+(u. a. 25 Vorschläge → 20 + 5, eigener bleibt offen, andere Quelle
+unberührt).
+
+
+
+## Runde 191 — Schichtplan: Raster nach Person, Schicht-Blatt, Planer Woche für Woche (22.10.2026)
+
+**Aus dem Betrieb:** „bei der einen nur auf den schichtplan eingehen“.
+Erst Plan und Rückfragen (CLAUDE.md, neuer Bereich), dann: „plan klingt
+gut!“. Die Antworten auf die Rückfragen:
+1. Wer schaut am Rechner in den Plan? „Beide schauen oft rein denk ich“.
+2. Eintragen direkt im Raster statt Formular unten? „Ja“.
+3. Löschen und „Ich kann nicht“ ins Detail? „JA“.
+4. Stunden: Summe oder Soll aus dem Schichtplaner? „Beides am besten“.
+5. Schichtplaner: „er wirkt für mich noch unfertig … aber das grundgrüst
+   soll stehen erstmal“ (die PDFs der Chefin und ihre offenen Fragen
+   kommen später).
+
+**Gemessen vorher** (Demo, Leitung, 1440 × 900):
+- Sieben Tagesspalten à 152 px; jede Schicht stand in drei Zeilen (Zeit ·
+  ✕ allein · Name), eine Schicht ~97 px hoch, ein Tag mit drei Schichten
+  449 px. Namen brachen mitten im Wort („Geschäftsführun|g“).
+- Die Woche begann bei y = 547; „Schicht eintragen“ stand als Formular
+  unter der Woche, ohne Tag.
+- **Fehler:** die Zahl über der Woche zählte alle geladenen Schichten des
+  Studios (`_shifts.length`): 14 statt 8 (Leitung), 17 statt 11 (Team).
+- Abwesenheiten als bernstein-/rote Chips — Statusfarbe ohne Status.
+- Schichtplaner: fünf Wochentabellen untereinander, 3.042 px hoch; jede
+  Tabelle hatte ihre Spalten woanders; die Monatspfeile 270 px
+  auseinander.
+
+**Was gebaut ist — Plan → Schichten**
+- **Kopf in einer Zeile** (Planday): links ‹ KW ›, Heute; in der Mitte
+  die Zahlen der Woche; rechts „Tage | Personen“, „Nur meine“ (Tagesliste)
+  und für die Leitung „＋ Schicht“. Am Handy zwei Zeilen; bei 320 px rutscht
+  Heute in die zweite.
+- **Raster „Personen“** ab 1.100 px (Deputy, Planday): Personen links,
+  sieben Tage, rechts die Wochenstunden. Eine Schicht ist eine Pille in
+  einer Zeile („09–21“, Schichtname klein darunter). Die eigene Zeile
+  steht oben. Wer diese Woche weder Schicht noch Abwesenheit hat, steht
+  unter „＋ n weitere Personen ohne Schicht“ — nicht stumm weg.
+- **Welche Ansicht?** Beide für alle, weil „beide schauen oft rein“.
+  Ohne eigene Wahl: Leitung „Personen“, Team „Tage“. Die Wahl merkt sich
+  das Gerät (`PREFS.planAnsicht`).
+- **Stunden und Soll** („Beides“): die Summe immer; das Soll aus
+  `planerTeam.wocheStd`. Lesen darf es laut Regel nur der Chef (alle) und
+  jede Person ihre eigene Zeile — die Leitung eines Studios sieht deshalb
+  nur Summen. Das ist die bestehende Regel, nicht geändert. Unter 85 % oder
+  über 115 % des Solls ist die Zahl bernstein (dieselben Grenzen wie im
+  Planer).
+- **Schicht-Blatt** (Teams Shifts): ein Tipp auf eine Schicht öffnet sie;
+  zuerst, was man tun kann (Ich kann nicht · Zurückziehen · Ich übernehme
+  · Bestätigen/Ablehnen), „Entfernen“ zuletzt und nur für die Leitung.
+  Die Knöpfe tragen dieselben `data-tausch-*` wie bisher und laufen über
+  `bindTauschClicks()` — kein zweiter Weg. Laufende Tausche („wird
+  abgegeben“, „wartet auf die Leitung“) bleiben in der Liste sichtbar,
+  im Raster als Block „Tausch“ darüber; dort führt auch der Startseiten-
+  Block „Zum Übernehmen“ hin.
+- **Eintragen per Klick:** leere Zelle im Raster (Tag und Person
+  gesetzt), am Handy das ＋ am Tag. Darüber die Schichtzeiten aus dem
+  Schichtplaner als Vorlagen — nur die, die es an diesem Wochentag gibt.
+  Das Formular unter der Woche ist weg; die Felder heissen gleich
+  (`shDate`, `shPerson`, `shAdd` …) und stehen im Blatt.
+- **Abwesenheit** neutral schraffiert, in der Zeile der Person; beantragter
+  Urlaub heisst „Urlaub (beantragt)“, abgelehnter fehlt.
+- **Tastenkürzel** (nur auf der Schichtseite): ← → blättern, H heute,
+  V Tage/Personen; unter „?“ eingetragen. Belegt jemand H oder V selbst,
+  gilt seine Belegung.
+- **Am Rechner** stehen Studio-Auswahl und Reiter in einer Zeile, und
+  „Wartet auf deine Entscheidung“ hat Satz und Studios in einer Zeile.
+
+**Was gebaut ist — Schichtplaner (Grundgerüst)**
+- Der Monat **Woche für Woche**: oben die Kalenderwochen als Reiter, jeder
+  mit seinem Zustand („2 Lücken“, „1 Rückfrage“, „✓ besetzt“), dazu
+  „Ganzer Monat“. Zuerst die Woche von heute, sonst die erste mit offenen
+  Punkten. Ein Punkt unter „Zu klären“ springt in seine Woche.
+- **Feste Spalten** ab 820 px: Früh/Spät/Samstag stehen in jeder Woche an
+  derselben Stelle. Am Handy bleibt die Tabelle wie sie war (Namen lesbar,
+  seitlich rollbar).
+- Die Monatspfeile stehen am Monat.
+- Gemessen: Planerseite 3.042 → 1.956 px (1440 × 900), 4.199 → 2.846 px
+  (390 × 844).
+
+**Gefunden dabei**
+- **P-12 war nicht ganz weg.** `heuteInsBild()` maß 260 ms nach dem
+  Öffnen mit `getBoundingClientRect` — da schwebt der Tag noch in seiner
+  Einblendung (cardUp) und der Kopf ist noch nicht geschrumpft. Bei der
+  Leitung am Handy (390 px) rollte die Seite deshalb 101 px (vor dieser
+  Runde, test-team-woche rot). Jetzt misst sie die Lage (`offsetTop`) und
+  rollt nur, wenn nicht einmal die Überschrift des Tages (40 px) zu sehen
+  ist; dazu ist der Kopf am Handy niedriger („＋ Schicht“ nur am Rechner,
+  der Satz unter „Wartet …“ nur am Rechner).
+- **Die Formi-Kugel (z-index 150) lag über jedem Blatt** (.msg-sheet,
+  z-index 70) — am Schicht-Blatt bei 390 px auf dem ersten Knopf. Solange
+  ein Blatt offen ist, ist sie unsichtbar. Gilt für alle Blätter.
+- Die alten `.abs-chip`- und `.shift-x`-Regeln waren danach ohne Nutzer
+  und sind weg.
+
+**Warum so entschieden**
+- **Kein eigenes Raster am Handy.** Sieben Spalten mit Namen werden unter
+  1.100 px zu schmal (Google-Kalender-Notiz in den Vorbildern); dort
+  bleibt die Tagesliste, mit „Nur meine“ (Planday App).
+- **Offene Tausche bleiben in der Liste**, nur „Ich kann nicht“ und ✕
+  wandern ins Blatt: ein laufender Tausch wartet auf jemanden, der ihn
+  sehen muss; „Ich kann nicht“ stand dagegen an jeder eigenen Schicht.
+- **Rot erst, wenn es etwas meldet**: Abweichung vom Soll ist ein Status
+  (Bernstein), Abwesenheit nicht.
+
+**Geprüft**
+- **Neu: `tests/test-schichtplan-raster.js`**, 72 Prüfungen: Ansicht je
+  Rolle und gemerkt; Wochenzahl = Schichten der Woche (auch nächste Woche);
+  Stunden = Summe der Schichten, Soll nur wo lesbar, Markierung genau bei
+  > 15 % Abweichung; Eintragen per Zelle mit Vorlagen nach Wochentag;
+  Blatt mit „Ich kann nicht“ zuerst, „Entfernen“ nur Leitung, Kugel
+  verdeckt nichts; Abwesenheit schraffiert; Tasten ← → H V und „?“;
+  Trefferflächen per Hit-Test bei 320/390/430/820/1280/1440/1920 px,
+  normal und kompakt, in beiden Ansichten und im Blatt, nichts ragt
+  hinaus; Planer mit
+  Wochen-Reitern, einer Woche, „Ganzer Monat“, festen Spalten,
+  „Zu klären“ springt in die Woche.
+- **Gegenprobe** (alter Zustand kurz zurückgebaut): Wochenzahl wieder
+  `_shifts.length` → 6 rot („14 Schichten“ statt 8, „17“ statt 11);
+  ohne feste Spalten → rot (Früh bei 722/692/699/700 px); Schwelle 60 statt
+  40 in `heuteInsBild` → test-team-woche rot (rollt 78 px).
+- **Angepasst, mit Zitat im Test** (nicht gelockert — jede Prüfung prüft
+  dasselbe am neuen Ort): test-team-woche (sieben Spalten in „Tage“; heute
+  im Raster als Spaltenkopf), test-tausch („Ich kann nicht“ im Blatt),
+  test-schichtplaner (zuerst eine Woche, „Ganzer Monat“ 28–31 Zeilen;
+  Wochen als Reiter; Schichtname im Raster).
+- **Grün:** test-team-woche (**vorher rot**: Leitung 390 px rollte 101 px),
+  test-schichtplan-raster, test-tausch, test-block-b, test-mitarbeiter,
+  test-schichtplaner, test-team-bereich7, test-funktionen-schalter,
+  test-doppelte-namen, test-gestaltung, test-knoepfe, test-abgeschnitten,
+  test-tagesband, test-alltag, test-pc-durchsicht, test-video-hochladen.
+- **Gesamtlauf** (`tests/alle.sh`, alle 200 Durchläufe): rot sind nur
+  - dieselben wie auf main, gegen einen unveränderten main-Stand
+    nachgemessen mit gleicher Zahl Fehler: test-neu-design (3),
+    test-p4-seitenleiste (2), test-startseite-putz (4), test-p1-aufgaben (2),
+    test-block-d, test-navigation (2,28 Bildschirme wie in Runde 184);
+  - fehlende Module in dieser Umgebung: test-abo-leiter, test-gehirn-aktion,
+    test-mail-versand, test-stripe-felder, test-regelumgebung;
+  - Zeitüberschreitung im vollen Lauf, einzeln grün: test-pc-durchsicht,
+    test-video-hochladen, test-formi-verdeckt (19/19); test-gehirn (Last,
+    wie Runde 184, einzeln nicht nachgemessen).
+
+**Nicht geprüft / hier nicht prüfbar**
+- Echte Datenbank und Anmeldeweg (Firebase-SDK lädt hier nicht) — alles in
+  der Demo.
+- Das Soll mit echten `planerTeam`-Zeilen; in der Demo ist es aus der
+  erfundenen Excel-Einlesung.
+- 1280 × 800 mit „Wartet auf deine Entscheidung“: die letzte Zeile des
+  Rasters (Demo, Brühl, drei Personen mit Doppelschichten) liegt 31 px
+  unter dem Rand. Ohne den Block passt die Woche.
+## Runde 192 — Alte rote Tests: eine gemeinsame Ursache gefunden (22.10.2026)
+
+**Auftrag:** „mach weiter dann“, nach Runde 187.
+
+**Gebaut:** nichts am Code. Eine Korrektur für das Springen der
+Team-Seite (P-12) war fertig, aber Runde 191 (Schichtplan) hatte dasselbe
+parallel anders gelöst: Sie misst die Lage per offsetTop statt mitten in
+der Einblende-Bewegung. Deren Fassung gilt.
+
+**Gefunden – die gemeinsame Ursache von fünf alten roten Tests:**
+Seit Runde 177 hält `.main` unten Platz für die Formi-Kugel frei, und zwar
+über die ganze Breite. Am Rechner sind das 90 px. Am Handy sind es 146 px:
+72 für die Leiste plus 74 für die Kugel. Ausserhalb der Startseite hält
+der Scrollbereich zusätzlich noch einmal Platz frei (Runde 182), am Handy
+doppelt also.
+- test-p4-seitenleiste: Liste 612 statt ≥ 690 px. Mit Platz nur im
+  Scrollbereich wäre sie grün.
+- test-p1-aufgaben und test-bestellung: Die unterste Zeile liegt im
+  Streifen (Hit-Test 0×0).
+- test-navigation: Die Startseite ist 2,28 Bildschirme lang, ohne den
+  Streifen 1,96. test-neu-design hätte 1 statt 2 Fehler.
+
+Nicht umgebaut, weil es eine Entscheidung des Betriebs ist:
+- Liegt der Platz nur im Scrollbereich (übliches Muster für schwebende
+  Knöpfe), liegt die Kugel beim Lesen über dem „…“ der untersten Zeile.
+  Das widerspricht „achte aber bitte darauf das der neue formi knopf
+  nichts verdeckt“.
+- Die Alternative, am Rechner die Kugel in den Fuss der Seitenleiste zu
+  setzen, ändert, wo Formi „wohnt“.
+- Gefragt am 22.10.2026.
+
+**Startseite am Handy, „Putzplan“ gegen „Zum Übernehmen“:**
+- Bei 430 × 950 (Mitarbeiter) passt nach „Heute“ nur ein Block.
+  „Zum Übernehmen“ steht darüber, deshalb rutscht der Putzplan unter
+  „Ausserdem“ (test-startseite-putz).
+- Vertauscht wird test-startseite-putz grün und test-block-b rot.
+  Selbst ohne Kugel-Streifen passen bei 390 × 844 nicht beide.
+- Gelassen, wie es ist: „Zum Übernehmen“ erscheint nur, wenn jemand eine
+  Schicht abgibt, und ist eilig. An den anderen Tagen steht der Putzplan.
+  Gefragt.
+
+## Runde 193 — Formi am Rechner angedockt (22.10.2026)
+
+**Aus dem Betrieb:** Auf „am Rechner als feste Spalte andocken oder
+schwebend?“ kam „was sinnvoller ist“. In Runde 186 entschieden: ab
+1440 px andocken, in einer eigenen Runde mit Messung. Auf „mach weiter“
+ist das hier gebaut.
+
+**Gebaut**
+- Ist Formi offen und klein (nicht „Groß“), steht ab 1440 px rechts eine
+  Spalte von oben bis unten: 380 px breit, ab 1680 px 420 px.
+- `.app` bekommt rechts genau diese Breite als Abstand. Kopfzeile,
+  Seitenleiste und Inhalt rücken zusammen, statt unter dem Fenster zu
+  liegen.
+- Gesteuert wird über die Klasse `formi-angedockt` am `<body>`. Ob die
+  Breite reicht, entscheidet allein das CSS; es gibt kein Messen und
+  keinen Resize-Horcher.
+- Unter 1440 px bleibt alles wie bisher: schwebend bei 1280, Blatt von
+  unten am Handy.
+
+**Warum**
+- Bei 1440 px deckte das Fenster vorher die Formi-Zeile und halb „Mein
+  Dienst“ zu, während links über 1.100 px Inhalt breiter stand als nötig.
+- Kein Übergang auf die Breite: Hausregel, nichts auf `width`/`padding`
+  animieren. Es springt einmal; die Spalte glitcht herein wie zuvor das
+  Fenster.
+- Ab 1440 und nicht schon bei 1280: Neben Seitenleiste (210 px) und
+  Spalte (380 px) blieben bei 1280 nur 690 px für Liste + Detail.
+
+**Geprüft — `tests/test-formi-angedockt.js` (neu, 32 Zusicherungen)**
+- Lage bei 1440, 1920, 1280, 820 und 390 px: Spalte an der Kante, der
+  Inhalt endet genau dort; zu → volle Breite. Die Knöpfe im Spaltenkopf
+  sind ≥ 44 × 44, frei und im Bild.
+- Wechselt man selbst die Seite, bleibt Formi angedockt.
+- Je Rolle (Chef, Leitung, Mitarbeiter), bei 1440 × 900 und
+  1920 × 1080, normal und kompakt, auf jeder Ansicht und jedem Reiter:
+  - Jedes Bedienelement, das ohne Formi per Hit-Test trifft, trifft auch
+    mit angedocktem Formi und liegt links der Spalte.
+  - Kein neuer Querlauf.
+  - Gemessen: 308 Ansichten/Reiter, 10 664 Bedienelemente, keins neu
+    verdeckt.
+  - 592 trafen schon ohne Formi nicht (zum Beispiel unter der Kopfzeile
+    oder unter einer klebenden Leiste). Das ist nicht von hier, wird aber
+    mitgezählt.
+- Gegenprobe mit dem `index.html` von vorher: Die Lage-Prüfungen
+  schlagen an.
+- Grün: test-formi-kugel, test-formi-lebt, test-knoepfe, test-gestaltung
+  (meldete zuerst einen festen Schatten an der Spalte, jetzt `--e3`),
+  test-quer, test-csp, test-abgeschnitten.
+
+**Nicht geprüft:** echte Bildschirme und Studio-Rechner. Wie es sich
+anfühlt, wenn die Seite beim Öffnen zur Seite springt, lässt sich hier
+nicht beurteilen.
+
+## Runde 194 — Sammelknopf im Leitstand ohne confirm() (Worker 2.17, 22.10.2026)
+
+Aus dem Betrieb: „der knopf im leitstand funktioniert irgendwie nicht das
+ich alles freigeben kann".
+
+**Gefunden:** Die Knöpfe waren da und die Schnittstelle antwortete (live
+geprüft: 9 Gruppen). Der Knopf fragte aber mit `confirm()` nach.
+Eingebettete Browser — vermutlich auch das Browser-Fenster der Claude-App —
+zeigen diesen Dialog nicht und geben still „nein" zurück; dann passiert
+nichts. Nachgestellt im Test: Playwright schliesst Dialoge ebenso, und mit
+2.16 bleibt der Knopf wirkungslos (Gegenprobe: 3 rot).
+
+**Geändert:** Die Rückfrage steht im Knopf („Wirklich alle … übernehmen?
+Nochmal klicken"), wie in der App. Der Worker-Durchlauf bedient den
+Leitstand jetzt im echten Browser gegen den Worker (109/109).
+
+**Im Test selbst gefunden:** Ein Locator nach Text („Knopftest") wartet,
+bis der Text wieder passt — nach dem ersten Klick also bis zum Zurück-
+setzen nach 6 s. Deshalb ein fester Griff auf das Element.
+
+## Runde 195 — Formi hat ein Gesicht: weisses Loch, Teilchen, Atmen (22.10.2026)
+
+**Aus dem Betrieb:** „können wir formi mehr animationen geben oder vlt
+ein kleines gesicht was der maus folgt und reagiert und so im schwarzen
+loch drinen und wenn er sich freut weil eine aufgabe erledigt wurde oder
+so spuckt er partikel aus und wird zu einem weissen loch und danach zu
+einem schwarzen was die partikel wieder einsaugt und vlt auch mehr das
+gefühl das es ein lebendes schwarzes/weisses loch ist“.
+
+**Gebaut**
+- **Gesicht im Loch.**
+  - Statt Pupille mit Lichtpunkt hat das Loch zwei Augen und einen Mund
+    in Weiss. Das ganze Loch folgt der Maus wie bisher.
+  - Ausdrücke:
+    - freut sich: Augen als Halbmonde, breites Lachen;
+    - staunt: grosse Augen, runder Mund;
+    - erschrickt: kleine Augen, der Mund kippt nach unten;
+    - nickt beim Tippen, blinzelt;
+    - schläft: Augen zu, kleiner Mund;
+    - neugierig unter der Maus: grosse Augen.
+- **Weisses Loch.**
+  - Bei Freude (jeder Haken) wird das Loch für 1,5 s weiss und bläht sich
+    auf. Es spuckt 12 Teilchen in den Ringfarben aus, wird wieder schwarz
+    und saugt sie schneller werdend ein; zuletzt schluckt es.
+  - Beim Feiern (Putzplan fertig) sind es 22 Teilchen, weiter hinaus und
+    1,9 s lang.
+  - Das Gesicht wird dabei von selbst schwarz (`mix-blend-mode:
+    difference`), es bleibt also zu sehen.
+- **Atmen.** Alle 7–12 s dreht sich der Ring einmal ganz und langsam
+  (3,6 s), das Loch weitet sich kaum merklich, und drei Krümel fallen
+  spiralig hinein.
+- **Kleinigkeit:** Wer mit dem Mausrad scrollt, dem schaut Formi kurz in
+  die Richtung nach.
+- Der Ring liegt jetzt auf einer eigenen Ebene (`.fk-wirbel`), damit er
+  sich drehen kann, ohne Gesicht und Schatten mitzudrehen.
+
+**Warum so**
+- *Kein `infinite`, trotz „lebend“.*
+  - Das Atmen hängt an einem Zeitgeber wie das Blinzeln.
+  - Eine volle Drehung endet genau dort, wo sie anfing; es bleibt keine
+    Animation stehen.
+  - So gilt die Hausregel „keine Endlos-Animation ohne Grund“ weiter, und
+    zwischen zwei Atemzügen kostet die Kugel nichts.
+- *Teilchen als ein paar `<i>` in der Kugel, nicht als Leinwand.*
+  - Für 12–22 Punkte, die 1,5 s leben, lohnt sich keine Leinwand mit
+    eigener Bildschleife.
+  - Die Punkte bewegen sich nur per `transform`/`opacity`, lassen jeden
+    Tipp durch und sind danach wieder weg.
+- *Nichts davon bei „weniger Bewegung“ oder „Gefühle der Kugel: Aus“*
+  (Runde 188).
+- *Für Durchläufe* gibt es `__formiLebt.uhrenAus()`. Blinzeln und Atmen
+  kommen zu zufälligen Zeiten und hätten jede Prüfung „danach läuft
+  nichts mehr“ zufällig rot machen können.
+
+**Gemessen** (Arbeit je Bild, CPU ÷4, ohne Mausbewegung)
+
+| | Rechner 1440 | Handy 390 |
+|---|---|---|
+| Freude (weisses Loch, 12 Teilchen) | 3,2 ms | 3,0 ms |
+| Feiern (22 Teilchen) | 3,1 ms | 4,4 ms |
+| Atmen (Drehung, 3 Krümel) | 2,0 ms | 1,9 ms |
+
+Die Grenze ist 8,3 ms.
+
+**Geprüft** (`tests/test-formi-lebt.js`, jetzt 102 Zusicherungen)
+- Das Gesicht ist da: zwei Augen, ein Mund.
+- Alle Gefühle laufen endlich und nur auf `transform`/`opacity`; danach
+  läuft nichts mehr, und es liegen keine Teilchen herum.
+- Freude: Das Loch geht von schwarz über weiss zurück zu schwarz. Zwölf
+  Teilchen landen wieder in der Mitte und lassen Tipps durch.
+- Feiern: 22 Teilchen, danach weg.
+- Atmen: eine volle Drehung, endlich, drei Krümel, danach Ruhe.
+- Staunen beim dritten Haken (grosse Augen).
+- „Weniger Bewegung“: keine Teilchen, kein Atmen.
+- Gegenprobe mit dem `index.html` von vorher: schlägt an.
+- Grün: test-formi-kugel, test-knoepfe, test-gestaltung, test-csp,
+  test-uebersicht, test-stil-formi, test-quer, test-abgeschnitten.
+
+**Nicht geprüft:** Wie das Gesicht auf einem echten Handy-Bildschirm
+wirkt (es ist 30 px gross) und ob es im Team als „zu viel“ empfunden wird.
+Dafür gibt es den Schalter aus Runde 188.
+
+## Runde 196 — Formi als Kumpel aus dem Studio (Worker 2.18, 22.10.2026)
+
+Aus dem Betrieb: „lass uns formi wirklich richtig persönlichkeit geben" —
+auf die Rückfrage gewählt: „Kumpel aus dem Studio".
+
+**Gebaut**
+- Worker 2.18: Charakterblock im Systemtext (nur im lockeren Ton): locker,
+  direkt, feiert Erledigtes kurz mit, eigene Running Gags (frisch
+  gewaschene Westen, leere Handtuchregale, der Montagskaffee), geht auf
+  Tageszeit und Wochentag ein. **Ernstes zuerst**: Notfall, Gesundheit,
+  Beschwerde, Stress → sofort sachlich, kein Witz, kein Emoji. Der Witz
+  kommt nach der Antwort, nie statt ihr; Formi tut nicht so, als wäre es
+  ein Mensch.
+- App: Formis Sprechblase neben der Kugel — Tagesgruss mit Namen und
+  einem Satz zur Lage (einmal am Tag je Gerät), Lob beim ersten Haken des
+  Tages, Spruch bei einer Haken-Serie, „Wieder da!" nach über 30 Minuten.
+  Im leeren Formi-Fenster steht der Satz zur Lage statt „Ich bin Formi".
+
+**Warum so**
+- *Die Gefühle der Kugel (Runde 186/195) zeigen, wie es Formi geht; der
+  Charakter ist, was Formi sagt.* Beides zusammen, getrennt gebaut.
+- *Höchstens eine Blase je 45 s, nie bei offenem Formi.* Persönlichkeit
+  durch wenige, gute Momente — nicht durch Dauerbeschallung (Vorbild
+  Duolingo, `docs/design-vorbilder/ki-assistent.md`).
+- *Still auf Wunsch.* „Gefühle der Kugel: Aus" oder Ton „sachlich"
+  schalten die Blase ab; „sachlich" auch den Charakter im Worker.
+- *Keine KI für die Blase.* Die Sätze stehen in der App: sofort da, kein
+  Kontingent, offline möglich.
+- *Die Blase hat keine Trefferfläche* und steht über der Kugel: gemessen
+  bei 320 / 390 / 430 / 820 / 1280 / 1440 / 1920 ganz im Bild
+  (`tests/test-formi-kumpel.js`, 21 Prüfungen). Die Lage wird im Bild
+  gelesen, die eigene Grösse nie gemessen (rechte untere Ecke an der
+  Kugel, max-width hält sie im Bild).
+
+**Nicht geprüft:** wie die KI den Charakter tatsächlich umsetzt — das
+zeigt sich erst live nach dem Einspielen von 2.18.
+
 ## Runde 197 — Schulung: auffrischen in Runden, Fristen, weitermachen, am Rechner zwei Spalten (22.10.2026)
 
 **Aus dem Betrieb:** „bei der anderen auf die schulungen“ eingehen. Erst

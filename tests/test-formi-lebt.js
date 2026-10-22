@@ -131,15 +131,18 @@ const KUGEL_ANIM = () => {
     console.log('\n── Kugel lebt (1440 × 900) ──');
     {
       const p = await oeffne(b, 1440, 900);
+      /* Blinzeln und Atmen kommen zu zufälligen Zeiten — für „danach läuft
+         nichts mehr" abschalten; das Atmen wird unten eigens ausgelöst. */
+      await p.evaluate(() => window.__formiLebt.uhrenAus());
       const k0 = await p.evaluate(() => {
         const k = document.getElementById('formiKugel');
         const teile = [...k.querySelectorAll('*')];
         const besch = document.getElementById(k.getAttribute('aria-describedby') || '-');
         return { hat: k.classList.contains('fk-hat'), label: k.getAttribute('aria-label'), besch: besch ? besch.textContent : '',
-          auge: !!k.querySelector('.fk-pupille'), schmuckOhneTreffer: teile.every(t => getComputedStyle(t).pointerEvents === 'none' || t.closest('.fk-koerper') || t.classList.contains('fk-punkt')),
+          auge: k.querySelectorAll('.fk-pupille .fk-auge').length === 2 && !!k.querySelector('.fk-pupille .fk-mund'), schmuckOhneTreffer: teile.every(t => getComputedStyle(t).pointerEvents === 'none' || t.closest('.fk-koerper') || t.classList.contains('fk-punkt')),
           ruhig: k.getAnimations({ subtree: true }).length };
       });
-      pruefe('die Kugel hat ein Auge (Pupille im Loch)', k0.auge);
+      pruefe('im Loch ein Gesicht: zwei Augen, ein Mund (Runde 195)', k0.auge);
       pruefe('Punkt „hat etwas für dich" bei Überfälligem, für Vorleser als Beschreibung (Name bleibt „Formi öffnen")', k0.hat && k0.label === 'Formi öffnen' && /hat etwas für dich/.test(k0.besch), JSON.stringify(k0));
 
       for (const art of ['freut', 'staunt', 'feiert', 'erschrickt', 'nickt', 'blinzelt']) {
@@ -147,18 +150,51 @@ const KUGEL_ANIM = () => {
         const a = await p.evaluate(KUGEL_ANIM);
         pruefe(`${art}: ${a.n} Animation(en), endlich, nur transform/opacity (${a.eig.join(', ')})`,
           a.n > 0 && !a.endlos && a.eig.every(e => e === 'transform' || e === 'opacity'), JSON.stringify(a));
-        await p.waitForTimeout(1200);
+        /* 2,2 s statt 1,2: Freude und Feiern dauern seit Runde 195 mit
+           weissem Loch und Teilchen 1,5 bzw. 1,9 s (+ bis 0,26 s Streuung). */
+        await p.waitForTimeout(2200);
       }
-      pruefe('nach den Gefühlen läuft nichts mehr weiter', (await p.evaluate(KUGEL_ANIM)).n === 0);
+      pruefe('nach den Gefühlen läuft nichts mehr weiter, keine Teilchen liegen herum', (await p.evaluate(KUGEL_ANIM)).n === 0 &&
+        await p.evaluate(() => !document.querySelector('#formiKugel .fk-teilchen')));
 
-      // Haken: der dritte binnen 20 s lässt Formi staunen (Pupille gross)
+      /* Runde 195 — aus dem Betrieb: „wenn er sich freut … spuckt er
+         partikel aus und wird zu einem weissen loch und danach zu einem
+         schwarzen was die partikel wieder einsaugt". */
+      const aus = await p.evaluate(async () => {
+        window.__formiLebt.fuehlt('freut');
+        const k = document.getElementById('formiKugel');
+        const weiss = k.querySelector('.fk-weiss').getAnimations().map(a => a.effect.getKeyframes().map(f => f.opacity));
+        const t = [...k.querySelectorAll('.fk-teilchen i')];
+        const klick = t.every(i => getComputedStyle(i).pointerEvents === 'none');
+        const wege = t.map(i => { const f = i.getAnimations()[0].effect.getKeyframes(); return [f[0].transform, f[f.length - 1].transform]; });
+        return { weiss, n: t.length, klick, rein: wege.every(w => /translate\(0(px)?, ?0(px)?\)/.test(w[1])) };
+      });
+      pruefe(`Freude: das Loch wird weiss und wieder schwarz (${JSON.stringify(aus.weiss[0])})`, aus.weiss.length === 1 && aus.weiss[0].includes('1') && String(aus.weiss[0][0]) === '0' && String(aus.weiss[0].slice(-1)[0]) === '0', JSON.stringify(aus.weiss));
+      pruefe(`… ${aus.n} Teilchen fliegen raus und landen wieder in der Mitte, alle lassen Tipps durch`, aus.n === 12 && aus.rein && aus.klick, JSON.stringify(aus));
+      await p.evaluate(() => window.__formiLebt.fuehlt('feiert'));
+      pruefe('Feiern: mehr Teilchen (22)', await p.evaluate(() => document.querySelectorAll('#formiKugel .fk-teilchen i').length) >= 22);
+      await p.waitForTimeout(2600);
+      pruefe('… danach sind die Teilchen wieder weg', await p.evaluate(() => !document.querySelector('#formiKugel .fk-teilchen')));
+      const atem = await p.evaluate(() => {
+        window.__formiLebt.atmen();
+        const k = document.getElementById('formiKugel');
+        const w = k.querySelector('.fk-wirbel').getAnimations();
+        return { dreh: w.map(a => a.effect.getKeyframes().map(f => f.transform).join(' > ')), endlos: w.some(a => a.effect.getTiming().iterations === Infinity),
+          kruemel: k.querySelectorAll('.fk-teilchen.klein i').length };
+      });
+      pruefe(`Atmen: der Ring dreht sich einmal ganz (${atem.dreh[0]}), endlich, drei Krümel fallen hinein`,
+        atem.dreh.length === 1 && /rotate\(360deg\)/.test(atem.dreh[0]) && !atem.endlos && atem.kruemel === 3, JSON.stringify(atem));
+      await p.waitForTimeout(3800);
+      pruefe('… und danach steht wieder alles still', (await p.evaluate(KUGEL_ANIM)).n === 0 && await p.evaluate(() => !document.querySelector('#formiKugel .fk-teilchen')));
+
+      // Haken: der dritte binnen 20 s lässt Formi staunen (grosse Augen)
       const st = await p.evaluate(async () => {
         window.__formiLebt.haken(); window.__formiLebt.haken(); window.__formiLebt.haken();
-        const pu = document.querySelector('#formiKugel .fk-pupille');
-        return pu.getAnimations().map(a => a.effect.getKeyframes().map(f => f.transform).join(' '));
+        const au = document.querySelector('#formiKugel .fk-auge');
+        return au.getAnimations().map(a => a.effect.getKeyframes().map(f => f.transform).join(' '));
       });
-      pruefe('dritter Haken binnen 20 s: Formi staunt (Pupille scale 1.35)', st.some(s => /scale\(1\.35\)/.test(s)), JSON.stringify(st));
-      await p.waitForTimeout(1000);
+      pruefe('dritter Haken binnen 20 s: Formi staunt (Augen scale 1.3)', st.some(s => /scale\(1\.3\)/.test(s)), JSON.stringify(st));
+      await p.waitForTimeout(2200);
 
       // Glitch über einem Ziel in der App
       const g = await p.evaluate(async () => {
@@ -211,6 +247,47 @@ const KUGEL_ANIM = () => {
       await p._ctx.close();
     }
 
+    /* Runde 188 — aus dem Betrieb: „Ja aber versteckter". Der Schalter
+       steht in Formis eigenen Einstellungen (Regler im Formi-Fenster). */
+    console.log('\n── Versteckter Schalter: Gefühle aus ──');
+    for (const [w, h] of [[1440, 900], [390, 844]]) {
+      const p = await oeffne(b, w, h);
+      await p.click('#formiKugel'); await p.waitForTimeout(400);
+      await p.click('#jarvisPersonaBtn'); await p.waitForTimeout(300);
+      const aus = '#jarvisPersona [data-jvp="gefuehle"][data-jvw="aus"]', an = '#jarvisPersona [data-jvp="gefuehle"][data-jvw="an"]';
+      pruefe(`${w} px: der Schalter steht in Formis Einstellungen, Standard „Zeigen"`,
+        await p.evaluate((s) => document.querySelector(s) && document.querySelector(s).getAttribute('aria-pressed') === 'true', an));
+      for (const sel of [an, aus]) {
+        await p.evaluate((s) => document.querySelector(s).scrollIntoView({ block: 'center' }), sel);
+        const m = await p.evaluate(([TR, s]) => (eval(TR))(document.querySelector(s)), [TREFFER.toString(), sel]);
+        pruefe(`${w} px: „${sel.includes('aus') ? 'Aus' : 'Zeigen'}" trifft ${m.w}×${m.h}, im Bild`, m.w >= 44 && m.h >= 44 && m.imBild, JSON.stringify(m));
+      }
+      await p.click(aus); await p.waitForTimeout(200);
+      pruefe(`${w} px: „Aus" ist gewählt und gemerkt`, await p.evaluate(() => JSON.parse(localStorage.getItem('kf_jv_persona') || '{}').gefuehle === 'aus'));
+      await p.click('#jarvisZu'); await p.waitForTimeout(400);
+      await p.evaluate(() => { window.__formiLebt.fuehlt('freut'); window.__formiLebt.fuehlt('feiert'); window.__formiLebt.haken(); });
+      if (w > 820) { await p.mouse.move(10, 10); await p.waitForTimeout(300); }
+      const still = await p.evaluate(() => ({ n: document.getElementById('formiKugel').getAnimations({ subtree: true }).length,
+        schlaf: window.__formiLebt.einschlafen() }));
+      pruefe(`${w} px: Gefühle aus — keine Bewegung, kein Schauen, kein Einschlafen`, still.n === 0 && !still.schlaf, JSON.stringify(still));
+      // Formi war eben offen, also ist der Stand „gesehen". Vergessen lassen:
+      await p.evaluate(() => localStorage.removeItem('kf_formi_gesehen'));
+      await p.reload({ waitUntil: 'domcontentloaded' });
+      await p.waitForFunction(() => !!document.querySelector('#app.show'), null, { timeout: 15000 });
+      await p.waitForTimeout(900);
+      await p.evaluate(() => window.__formiLebt.fuehlt('freut'));
+      pruefe(`${w} px: nach dem Neuladen bleibt es aus`, await p.evaluate(() => document.getElementById('formiKugel').getAnimations({ subtree: true }).length === 0));
+      pruefe(`${w} px: der Punkt „hat etwas für dich" gibt es auch mit Gefühlen aus`, await p.evaluate(() => document.getElementById('formiKugel').classList.contains('fk-hat')));
+      await p.click('#formiKugel'); await p.waitForTimeout(400);
+      await p.click('#jarvisPersonaBtn'); await p.waitForTimeout(300);
+      await p.click(an); await p.waitForTimeout(200);
+      await p.click('#jarvisZu'); await p.waitForTimeout(400);
+      await p.evaluate(() => window.__formiLebt.fuehlt('freut'));
+      pruefe(`${w} px: wieder „Zeigen" — Formi freut sich wieder`, await p.evaluate(() => document.getElementById('formiKugel').getAnimations({ subtree: true }).length > 0));
+      pruefe(`${w} px: keine Fehler auf der Seite`, !p._fehler.length, p._fehler.join(' | '));
+      await p._ctx.close();
+    }
+
     console.log('\n── Weniger Bewegung ──');
     {
       const p = await oeffne(b, 1440, 900, { wenigBewegung: true });
@@ -219,6 +296,8 @@ const KUGEL_ANIM = () => {
       await p.waitForTimeout(100);
       const a = await p.evaluate(KUGEL_ANIM);
       pruefe('keine Bewegung an der Kugel', a.n === 0, JSON.stringify(a));
+      await p.evaluate(() => window.__formiLebt.atmen());
+      pruefe('keine Teilchen, kein Atmen', await p.evaluate(() => !document.querySelector('#formiKugel .fk-teilchen') && document.getElementById('formiKugel').getAnimations({ subtree: true }).length === 0));
       pruefe('kein Glitch', await p.evaluate(() => !document.querySelector('.formi-glitch')));
       pruefe('die Zeile springt nicht herein', await p.evaluate(() => document.querySelector('.formi-zeile').getAnimations({ subtree: true }).length === 0));
       await p._ctx.close();

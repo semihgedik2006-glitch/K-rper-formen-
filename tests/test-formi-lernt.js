@@ -33,7 +33,7 @@ function pruefe(was, bedingung, hinweis) {
 }
 
 const LISTE = [
-  { id: 7, art: 'import', wissenId: 4, thema: 'Westen waschen', inhalt: 'Westen bei 30 Grad im Schonprogramm.', alt: 'Westen bei 40 Grad.', begruendung: 'Ändert Eintrag Nr. 4. Quelle: Schulung', von: 'Lea', eigen: false },
+  { id: 7, art: 'import', wissenId: 4, quelle: 'Schulung „Das Beratungsgespräch — vom Anruf bis zur Empfehlung“', thema: 'Westen waschen', inhalt: 'Westen bei 30 Grad im Schonprogramm.', alt: 'Westen bei 40 Grad.', begruendung: 'Ändert Eintrag Nr. 4. Quelle: Schulung', von: 'Lea', eigen: false },
   { id: 8, art: 'frage', wissenId: 5, thema: 'Kunde sagt kurzfristig ab', inhalt: 'Was mach ich, wenn einer 10 Minuten vorher absagt?', alt: '', begruendung: 'Formi hat diese Frage nicht gefunden.', eigen: false },
   { id: 9, art: 'import', thema: '<img src=x onerror="window.__xss=1">Handtücher', inhalt: 'Handtücher liegen im Schrank links.', begruendung: 'Neues Wissen.', eigen: true }
 ];
@@ -47,12 +47,18 @@ async function oeffne(b, w, h, stub, antwort) {
   await p.addInitScript({ path: SP + '/' + stub });
   await p.addInitScript(({ liste, antwort }) => {
     window.__aufrufe = [];
+    window.__sammelRest = 45;
     window.__antwort = window.__antwort || {};
     let l = JSON.parse(JSON.stringify(liste));
     window.__antwort.gehirnWissen = (d) => {
       window.__aufrufe.push(d);
       if (antwort === 'fehler') return Promise.reject({ code: 'functions/failed-precondition', message: 'Formi braucht dafür noch das Update 2.14 im Leitstand-Server.' });
-      if (d.art === 'liste') return Promise.resolve({ data: { anzahl: l.length, liste: l } });
+      if (d.art === 'liste') return Promise.resolve({ data: { anzahl: l.length, liste: l, gruppen: window.__sammelRest > 0 ? [{ quelle: 'Schulung „Das Beratungsgespräch — vom Anruf bis zur Empfehlung“', anzahl: window.__sammelRest }] : [] } });
+      if (d.art === 'entscheiden' && d.quelle) {
+        const n = Math.min(20, window.__sammelRest); window.__sammelRest -= n;
+        if (!window.__sammelRest) l = l.filter(x => x.quelle !== d.quelle);
+        return new Promise(res => setTimeout(() => res({ data: { ok: true, erledigt: n, fehler: 0, uebersprungen: 0, uebrig: window.__sammelRest } }), 80));
+      }
       if (d.art === 'entscheiden') { l = l.filter(x => x.id !== d.id); return Promise.resolve({ data: { ok: true, text: d.gut ? 'Übernommen.' : 'Verworfen.' } }); }
       return Promise.resolve({ data: { neu: 1, schonDa: 0, ungueltig: 0 } });
     };
@@ -104,6 +110,20 @@ const TREFFER = (el) => {
        Karte. Deshalb: liegt er ganz in der Karte? */
     pruefe('„1 von 3" liegt ganz in der Karte', await p.evaluate(() => { const k = document.getElementById('gehirnLernt').getBoundingClientRect(), z = document.querySelector('#gehirnLernt .gl-stand').getBoundingClientRect(); return z.width > 0 && z.left >= k.left && z.right <= k.right - 8 && z.top >= k.top; }));
     pruefe('bisheriger Text liegt hinter „ansehen"', await p.evaluate(() => { const d = document.querySelector('#gehirnLernt details'); return !!d && !d.open && /40 Grad/.test(d.textContent); }));
+    /* Sammelfreigabe (22.10.2026, „ja sind zu viele klicks") */
+    const sk = () => p.evaluate(() => { const b = document.querySelector('#gehirnLernt [data-glsammel]'); return b ? b.textContent : null; });
+    pruefe('unter einem Schulungs-Vorschlag steht „Alle 45 … übernehmen"', /^Alle 45 aus Schulung „Das Beratungsgespräch — vom Anruf bis zur Empfehlung“ übernehmen$/.test(await sk() || ''), await sk());
+    await p.click('#gehirnLernt [data-glsammel]'); await p.waitForTimeout(150);
+    let kk = await karte(p);
+    pruefe('erster Tipp fragt nur nach, schickt nichts', /Wirklich alle 45/.test(await sk() || '') && !kk.aufrufe.some(x => x.quelle) && /ungelesen/.test(kk.text), await sk());
+    await p.click('#gehirnLernt [data-glsammel]'); await p.waitForTimeout(900);
+    kk = await karte(p);
+    const sa = kk.aufrufe.filter(x => x.art === 'entscheiden' && x.quelle);
+    pruefe('zweiter Tipp: so lange, bis nichts übrig ist (3 Aufrufe, je Quelle und gut=true)', sa.length === 3 && sa.every(x => x.quelle === 'Schulung „Das Beratungsgespräch — vom Anruf bis zur Empfehlung“' && x.gut === true && !('inhalt' in x) && !('id' in x)), JSON.stringify(sa));
+    pruefe('danach: neu geladen, Schulungs-Vorschläge weg, kein Sammelknopf mehr', /Kunde sagt kurzfristig ab/.test(kk.text) && /1 von 2/.test(kk.text) && !(await sk()), kk.text.slice(0, 120));
+    await p._ctx.close();
+    p = await oeffne(b, 1440, 900, 'stub-chef.js');
+    await p.evaluate(() => { window.__sammelRest = 0; });
     await p.fill('#glText', 'Westen bei 30 Grad, danach hängend trocknen.');
     await p.click('#gehirnLernt [data-glurteil="1"]');
     await p.waitForTimeout(400);

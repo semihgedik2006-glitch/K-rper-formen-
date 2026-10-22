@@ -63,7 +63,17 @@ async function zu(p, v) {
      den Filter traf querySelector am Handy die verborgene Seitenleiste. */
   await p.evaluate((g) => { const k = [...document.querySelectorAll('.mobnav [data-group="' + g + '"], #side [data-group="' + g + '"]')].find(e => e.offsetParent); if (k) k.click(); }, GRUPPE[v]);
   await p.waitForTimeout(700);
-  await p.evaluate((v) => { const b = document.querySelector('[data-subview="' + v + '"]'); if (b) b.click(); }, v);
+  /* Runde 187: Material und Geräte sind EIN Reiter „Bestand“; Geräte
+     erreicht man über den Umschalter in der Materialansicht. Aus dem
+     Betrieb: „das problem mit dem zu viel bleibt immer noch bestehen“ –
+     „deine 2 fragen können wir so umsetzten“. Der Weg ändert sich, die
+     Messung nicht. */
+  const reiter = v === 'geraete' ? 'material' : v;
+  await p.evaluate((v) => { const b = document.querySelector('#subnav [data-subview="' + v + '"]') || document.querySelector('[data-subview="' + v + '"]'); if (b) b.click(); }, reiter);
+  if (v === 'geraete') {
+    await p.waitForTimeout(500);
+    await p.evaluate(() => { const u = document.querySelector('#view-material .umschalter [data-umschalt="geraete"]'); if (u) u.click(); });
+  }
   await p.waitForTimeout(1300);
 }
 const kasten = (p, sel) => p.evaluate((sel) => {
