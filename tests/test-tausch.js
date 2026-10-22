@@ -31,6 +31,18 @@ async function lauf(stub, wer) {
   });
   await page.waitForTimeout(900);
 
+  /* Runde 185: „Ich kann nicht" steht nicht mehr an jeder eigenen
+     Schicht, sondern im Schicht-Blatt — ein Tipp auf die Schicht öffnet
+     es. Aus dem Betrieb, 22.10.2026, auf die Frage, ob Löschen und „Ich
+     kann nicht" ins Detail wandern dürfen: „JA". Der Durchlauf tippt
+     deshalb zuerst die eigene Schicht an; alles andere bleibt geprüft
+     wie bisher (Übernehmen und Bestätigen stehen weiter in der Liste). */
+  await page.evaluate(() => {
+    const eigene = [...document.querySelectorAll('#shiftGrid .shift-entry.mein, #shiftGrid .wp-z.ich [data-shift]')]
+      .find(b => b.offsetParent && !b.querySelector('.wp-marke'));
+    if (eigene) eigene.click();
+  });
+  await page.waitForTimeout(400);
   const t = await page.evaluate(() => ({
     zeilen: [...document.querySelectorAll('.tausch-row')].map(r => r.textContent.replace(/\s+/g, ' ').trim()),
     abgeben: document.querySelectorAll('[data-tausch-ab]').length,

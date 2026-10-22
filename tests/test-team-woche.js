@@ -74,7 +74,9 @@ async function oeffne(b, rolle, w, h) {
       const p = await oeffne(b, rolle, w, h);
       const r = await p.evaluate(() => {
         const sa = document.querySelector('#view-team .scroll-area');
-        const heute = document.querySelector('#shiftGrid .shift-day.today');
+        /* Runde 185: am Rechner sieht die Leitung das Raster nach Person;
+           dort ist heute die Spalte mit dem Kopf .wp-t.heute. */
+        const heute = document.querySelector('#shiftGrid .shift-day.today, #shiftGrid .wp-t.heute');
         const wartet = document.getElementById('teamWartet');
         const f = sa.getBoundingClientRect();
         const k = heute ? heute.getBoundingClientRect() : null;
@@ -138,6 +140,12 @@ async function oeffne(b, rolle, w, h) {
   console.log('\n── Am Rechner: sieben Spalten ──');
   for (const [w, h] of [[1280, 800], [1440, 900], [1920, 1080]]) {
     const p = await oeffne(b, 'chef', w, h);
+    /* Runde 185: die Leitung sieht am Rechner zuerst „Personen". Aus dem
+       Betrieb, 22.10.2026: „Beide schauen oft rein" — deshalb gibt es
+       beide Ansichten; die sieben Spalten sind die Ansicht „Tage". Das
+       Raster prüft tests/test-schichtplan-raster.js. */
+    await p.evaluate(() => document.querySelector('[data-wpansicht="tag"]').click());
+    await p.waitForTimeout(300);
     const r = await p.evaluate(() => {
       const tage = [...document.querySelectorAll('#shiftGrid .shift-day')];
       const tops = tage.map(d => Math.round(d.getBoundingClientRect().top));

@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-PhyOkWbumSAH2Qp4MC7L8pwvtQhUV2IFSOU3/A8EE/I='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Az+1HXTnN8TtUbR2c7qcBCu7qXbsIN0W2Ei1AH1CLO8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3478,7 +3478,9 @@ button.ich-zeile:active{opacity:.7}
 .spl-stand.fehler{color:var(--danger-tx)}
 @media (min-width:820px){
   .spl-kopf{flex-direction:row;align-items:center;justify-content:space-between}
-  .spl-monat{flex:0 1 360px}
+  .spl-monat{flex:0 1 auto}
+  /* Die Pfeile stehen am Monat, nicht 270 px auseinander. */
+  .spl-monat-text{flex:0 1 auto;min-width:190px}
   .spl-los{width:auto;min-width:260px}
   .spl-schritte{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
@@ -3564,7 +3566,23 @@ button.ich-zeile:active{opacity:.7}
 .spl-woche h4{margin:0 0 var(--s6);font-size:var(--t-xs);font-weight:800;letter-spacing:var(--ls-m);
   text-transform:uppercase;color:var(--text-3)}
 .spl-woche-huelle{overflow-x:auto;border-radius:var(--r-md);background:var(--auf-1)}
+/* Feste Spalten (Runde 185): jede Woche hat Früh/Spät an derselben Stelle. */
 .spl-tab{width:100%;border-collapse:collapse;font-size:var(--t-sm)}
+@media (min-width:820px){ .spl-tab{table-layout:fixed} .spl-tab th:first-child{width:86px} }
+/* Wochen als Reiter, jeder mit seinen offenen Punkten. */
+.spl-kw-reiter{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:var(--s6);margin-bottom:var(--s12)}
+.spl-kw{display:flex;flex-direction:column;align-items:flex-start;gap:0;min-height:56px;padding:var(--s6) var(--s10);
+  border-radius:var(--r-md);background:var(--tipp-1);border:1px solid var(--tipp-kante);box-shadow:var(--e1);
+  color:var(--text);font:inherit;text-align:left;cursor:pointer;line-height:var(--lh-eng);transition:transform .2s var(--spring),background .2s}
+.spl-kw:active{transform:scale(.97)}
+@media (hover:hover){ .spl-kw:hover{background:var(--tipp-2)} }
+.spl-kw b{font-size:var(--t-sm);font-weight:800}
+.spl-kw span{font-size:var(--t-2xs);color:var(--text-3);font-variant-numeric:tabular-nums}
+.spl-kw small{font-size:var(--t-2xs);font-weight:700;color:var(--text-3)}
+.spl-kw small.bad{color:var(--danger-tx)}
+.spl-kw small.warn{color:var(--warm-tx)}
+.spl-kw.an{border-color:var(--accent);background:rgba(var(--akz-rgb),.16);box-shadow:var(--e2)}
+.spl-kw.alle{justify-content:center}
 .spl-tab th{font-size:var(--t-2xs);font-weight:700;color:var(--text-3);text-align:left;padding:var(--s8);
   border-bottom:1px solid var(--line)}
 .spl-tab th span{font-weight:500;display:block}
@@ -5279,6 +5297,11 @@ html{font-size:var(--fs,100%)}
 .shift-day-h{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s8);margin-bottom:var(--s6)}
 .shift-day-h b{font-family:var(--font-head);font-size:var(--t-md)}
 .shift-day-h span{font-size:var(--t-xs);color:var(--text-3)}
+/* „＋" am Tag: nur für die Leitung, 44 × 44, sichtbar klein. */
+.wp-tag-plus{flex:0 0 auto;width:44px;height:44px;margin:-10px -8px -10px auto;display:grid;place-items:center;
+  background:none;border:none;border-radius:var(--r-sm);color:var(--text-3);font-size:var(--t-lg);cursor:pointer}
+.wp-tag-plus:hover{color:var(--accent-d);background:var(--auf-1)}
+.shift-day-h span + .wp-tag-plus{margin-left:0}
 .cert-item{display:flex;gap:var(--s10);align-items:center;padding:var(--s10) var(--s12);background:var(--bg-soft);
   border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:var(--s8)}
 .cert-ico{font-size:var(--t-lg);flex-shrink:0}
@@ -5310,19 +5333,21 @@ html{font-size:var(--fs,100%)}
 .tausch-btn:hover{border-color:var(--accent);color:var(--accent-d)}
 .tausch-btn.ok{border-color:var(--accent);color:var(--accent-d)}
 .tausch-btn.ok:hover{background:var(--accent-glow)}
-.shift-entry{display:flex;align-items:center;gap:var(--s8);padding:var(--s6) var(--s8);border-radius:var(--r-sm);
-  background:var(--bg-2);margin-bottom:var(--s4);font-size:var(--t-sm)}
-.shift-time{font-weight:800;color:var(--accent);white-space:nowrap;font-size:var(--t-sm)}
+/* Eine Schicht ist ein Knopf (Runde 185): ein Tipp öffnet das Schicht-Blatt
+   mit Abgeben, Übernehmen, Entfernen. Das ✕ und der Kasten „Ich kann
+   nicht" an jeder Zeile sind dorthin gewandert. */
+.shift-entry{display:flex;align-items:center;gap:var(--s8);width:100%;min-height:44px;padding:var(--s6) var(--s10);
+  border-radius:var(--r-sm);background:var(--bg-2);border:1px solid transparent;margin-bottom:var(--s4);
+  color:var(--text);font:inherit;font-size:var(--t-sm);text-align:left;cursor:pointer;
+  transition:border-color .2s,transform .2s var(--spring)}
+.shift-entry:active{transform:scale(.98)}
+@media (hover:hover){ .shift-entry:hover{border-color:var(--tipp-kante)} }
+.shift-entry.mein{box-shadow:inset 3px 0 0 var(--accent)}
+.shift-time{font-weight:800;color:var(--accent);white-space:nowrap;font-size:var(--t-sm);font-variant-numeric:tabular-nums}
 .shift-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .shift-note{font-size:var(--t-xs);color:var(--text-3)}
-/* 44 × 44 statt gut 28 × 20 (nachgemessen 24.9.2026, P-12). Die Zeile
-   wird dadurch kaum höher: ihr Innenabstand oben und unten fällt weg,
-   wenn ein ✕ darin steht. */
-.shift-x{background:none;border:none;color:var(--text-3);cursor:pointer;padding:0;border-radius:var(--r-xs);
-  flex:0 0 auto;min-width:44px;min-height:44px;display:grid;place-items:center;margin-right:calc(-1 * var(--s6))}
-.shift-x svg{width:16px;height:16px}
-.shift-entry:has(.shift-x){padding-top:0;padding-bottom:0}
-.shift-x:hover{color:var(--danger-tx)}
+/* Tausch läuft: ein Wort, kein Kasten — die Knöpfe stehen darunter. */
+.wp-marke{flex:0 0 auto;font-size:var(--t-2xs);font-weight:700;color:var(--warm-tx);white-space:nowrap}
 .shift-empty{font-size:var(--t-sm);color:var(--text-3);padding:var(--s2) var(--s2)}
 /* Ein Tag ohne Einteilung braucht keine volle Karte — sonst scrollt man
    an fünf gleich grossen leeren Kästen vorbei, bevor heute kommt. */
@@ -5331,7 +5356,7 @@ html{font-size:var(--fs,100%)}
 .shift-day.leer .shift-day-h b{font-size:var(--t-sm);font-weight:600}
 .shift-day.leer .shift-empty{display:none}
 .shift-day.leer .shift-day-h::after{content:'—';color:var(--text-3);font-size:var(--t-xs)}
-.shift-sum{display:flex;flex-wrap:wrap;gap:var(--s6);margin:0 0 var(--s10)}
+.shift-day.leer .shift-day-h:has(.wp-tag-plus)::after{content:none}
 /* ‹ und › neben „Heute" waren 38 breit (kompakt 30) — btn-sm
    schrumpft den Innenabstand, und ein einzelnes Zeichen füllt nichts. */
 .wochen-pfeil{min-width:44px;justify-content:center}
@@ -5346,27 +5371,150 @@ html{font-size:var(--fs,100%)}
 #shiftGrid.vergangen-auf .shift-day.vergangen{display:block}
 /* Am Rechner: die Woche in sieben Spalten. Eine Spalte über 1.100 px
    mit sieben Zeilen untereinander war genau das „ungestaltet", das am
-   PC nicht fertig ist. */
+   PC nicht fertig ist. Nur in der Ansicht „Tage" — „Personen" ist das
+   Raster weiter unten. */
 @media (min-width:1100px){
-  #shiftGrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:var(--s8);align-items:start}
-  #shiftGrid .shift-sum{grid-column:1/-1;margin-bottom:var(--s2)}
+  #shiftGrid:not(.wp-raster-an){display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:var(--s8);align-items:start}
+  #shiftGrid:not(.wp-raster-an) > .lese-leer{grid-column:1/-1;margin:0}
   #shiftGrid .shift-vergangen{display:none}
   #shiftGrid .shift-day,#shiftGrid .shift-day.vergangen{display:block;margin-bottom:0;min-width:0}
   #shiftGrid .shift-day.vergangen{opacity:.72}
   #shiftGrid .shift-day-h{flex-wrap:wrap;gap:var(--s2) var(--s6)}
-  /* Zeit und ✕ in der ersten Zeile, der Name darunter — sonst stand
-     das ✕ in einer Spalte von 150 px allein in einer dritten Zeile. */
-  #shiftGrid .shift-entry{flex-wrap:wrap;gap:var(--s2) var(--s6)}
-  #shiftGrid .shift-x{order:2;margin-left:auto}
-  #shiftGrid .shift-name{order:3;white-space:normal;overflow-wrap:anywhere;flex:1 1 100%}
+  /* Zeit oben, Name darunter — umgebrochen wird an Bindestrich und
+     Leerzeichen, nicht mitten im Wort (vorher „Geschäftsführun|g"). */
+  #shiftGrid .shift-entry{flex-wrap:wrap;gap:var(--s2) var(--s6);padding:var(--s6) var(--s8)}
+  #shiftGrid .shift-name{white-space:normal;overflow-wrap:break-word;flex:1 1 100%}
+  #shiftGrid .wp-marke{flex:1 1 100%}
 }
+.shift-sum{display:flex;flex-wrap:wrap;gap:var(--s6);margin:0 0 var(--s10)}
+.shift-sum:empty{display:none}
 .shift-sum span{font-size:var(--t-xs);font-weight:700;padding:var(--s4) var(--s10);border-radius:var(--r-pille);
   background:var(--bg-soft);border:1px solid var(--line);color:var(--text-2)}
 .shift-sum span.tausch{background:var(--f-warn);border-color:var(--k-warn);color:var(--warm-tx)}
-.abs-chip{display:inline-flex;align-items:center;gap:var(--s4);padding:var(--s4) var(--s10);border-radius:var(--r-pille);
-  font-size:var(--t-xs);font-weight:700;background:var(--f-warn);color:var(--warm-tx);
-  border:1px solid var(--k-warn);margin:var(--s2) var(--s4) var(--s2) 0}
-.abs-chip.krank{background:var(--f-bad);color:var(--danger-tx);border-color:var(--k-bad)}
+/* Abwesend im Plan: neutrale Schraffur statt Bernstein/Rot (Runde 185).
+   Abwesenheit meldet keinen Fehler; Statusfarben nur für Status. */
+.wp-abw-zeile{display:flex;flex-wrap:wrap;gap:var(--s4);margin-top:var(--s6)}
+.wp-abw{display:inline-flex;align-items:center;padding:var(--s4) var(--s10);border-radius:var(--r-pille);
+  font-size:var(--t-xs);font-weight:600;color:var(--text-2);border:1px solid var(--line-2);
+  background:repeating-linear-gradient(135deg,var(--auf-2) 0 5px,transparent 5px 11px)}
+
+/* ── Schichtplan: Kopf in einer Zeile (Runde 185) ──
+   Links „wann" (‹ KW ›, Heute), rechts „wie ansehen / was tun" — die
+   Ordnung aus Planday. Am Handy bricht der rechte Teil in eine zweite
+   Zeile. */
+.wp-kopf{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--s8) var(--s12);margin-bottom:var(--s10)}
+.wp-wann{display:flex;align-items:center;gap:var(--s6);min-width:0}
+.wp-titel{min-width:0;padding:0 var(--s4);text-align:center}
+.wp-titel small{display:block;font-size:var(--t-2xs);font-weight:700;letter-spacing:var(--ls-m);text-transform:uppercase;color:var(--text-3)}
+.wp-titel h3{margin:0;white-space:nowrap;font-variant-numeric:tabular-nums}
+.wp-tun{display:flex;align-items:center;gap:var(--s8);flex-wrap:wrap}
+/* Die Zahlen der Woche stehen IM Kopf: am Rechner zwischen „wann" und
+   „was tun", am Handy in der zweiten Zeile links neben „Nur meine". */
+.wp-kopf > .shift-sum{flex:1 1 0;min-width:0;margin:0;justify-content:flex-start}
+.wp-kopf > .wp-tun{flex:0 0 auto;flex-wrap:nowrap;align-self:flex-start}
+@media (max-width:1099px){
+  .wp-wann{flex:1 1 100%}
+  /* „＋ Schicht" nur am Rechner — am Handy hat jeder Tag sein ＋, und
+     ohne den Knopf passen die Zahlen und „Nur meine" in eine Zeile
+     (gemessen bei 390 px: sonst rutschte heute unter den Rand, und die
+     Seite rollte nach dem Öffnen 135 px; das war P-12). */
+  #shiftNeu{display:none}
+  /* Der Satz unter „Wartet auf deine Entscheidung" kostet am Handy eine
+     Zeile; die Knöpfe nennen Studio und Zahl selbst. */
+  #teamWartet > .hint{display:none}
+}
+@media (min-width:1100px){ .wp-kopf{flex-wrap:nowrap} .wp-kopf > .wp-tun{align-self:center} }
+.wp-tun .chip-row{flex-wrap:nowrap;gap:var(--s4)}
+.wp-tun [hidden]{display:none}
+#shiftNeu{min-height:44px}
+@media (max-width:359px){
+  /* 320 px: ‹ Titel › und Heute passen nicht nebeneinander. Heute zieht
+     in die zweite Zeile, zu „Nur meine". */
+  .wp-kopf{display:grid;grid-template-columns:minmax(0,1fr) auto}
+  .wp-wann{display:contents}
+  .wp-wann > #shiftPrev{grid-column:1;grid-row:1;justify-self:start}
+  .wp-wann > .wp-titel{grid-column:1 / -1;grid-row:1;justify-self:center}
+  .wp-wann > #shiftNext{grid-column:2;grid-row:1;justify-self:end}
+  .wp-wann > #shiftToday{grid-column:1;grid-row:2;justify-self:start}
+  .wp-tun{grid-column:2;grid-row:2;justify-self:end}
+  .wp-kopf > .shift-sum{grid-column:1 / -1;grid-row:3}
+}
+/* Das Raster nach Person (ab 1.100 px). */
+.wp-raster{display:flex;flex-direction:column;border-radius:var(--r-md);background:var(--auf-1);border:1px solid var(--line)}
+.wp-z{display:grid;grid-template-columns:minmax(150px,1.5fr) repeat(7,minmax(0,1fr)) 78px;align-items:stretch;border-top:1px solid var(--line)}
+.wp-kopfz{border-top:none;font-size:var(--t-2xs);color:var(--text-3);font-weight:600;background:var(--bg-2);
+  border-radius:var(--r-md) var(--r-md) 0 0}
+.wp-kopfz > span{display:flex;align-items:center;gap:var(--s4);padding:var(--s8) var(--s8);white-space:nowrap}
+.wp-kopfz .wp-t{justify-content:center}
+.wp-kopfz .wp-t b{color:var(--text-2);font-size:var(--t-xs)}
+.wp-kopfz .wp-t.heute,.wp-kopfz .wp-t.heute b{color:var(--accent-d)}
+.wp-kopfz .wp-t.heute{box-shadow:inset 0 -2px 0 var(--accent)}
+.wp-p{display:flex;align-items:center;gap:var(--s8);padding:var(--s4) var(--s10);min-width:0;font-size:var(--t-sm);font-weight:600}
+.wp-p > span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wp-p small{font-weight:500;color:var(--text-3)}
+.wp-z.ich .wp-p{box-shadow:inset 3px 0 0 var(--accent)}
+.wp-c{display:flex;flex-direction:column;justify-content:center;gap:var(--s2);padding:var(--s2);min-width:0;min-height:50px;
+  border-left:1px solid var(--line)}
+.wp-c.heute{background:rgba(var(--akz-rgb),.07)}
+.wp-c.vorbei > *{opacity:.62}
+.wp-c.abw{background:repeating-linear-gradient(135deg,var(--auf-2) 0 5px,transparent 5px 11px)}
+.wp-abw-txt{font-size:var(--t-2xs);font-weight:700;color:var(--text-2);text-align:center}
+.wp-schicht{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;min-height:44px;
+  padding:var(--s2) var(--s4);border-radius:var(--r-sm);background:var(--tipp-1);border:1px solid var(--tipp-kante);box-shadow:var(--e1);
+  color:var(--text);font:inherit;font-weight:700;font-size:var(--t-sm);font-variant-numeric:tabular-nums;line-height:var(--lh-eng);
+  cursor:pointer;transition:transform .2s var(--spring),background .2s}
+.wp-schicht small{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--t-2xs);font-weight:500;color:var(--text-3)}
+.wp-schicht:active{transform:scale(.96)}
+@media (hover:hover){ .wp-schicht:hover{background:var(--tipp-2)} }
+.wp-z.ich .wp-schicht{border-color:rgba(var(--akz-rgb),.55)}
+.wp-schicht.tausch{border-style:dashed;border-color:var(--k-warn)}
+/* Leere Zelle: am Rechner erscheint „＋" beim Darüberfahren und mit der
+   Tastatur; die Fläche ist immer die ganze Zelle. */
+.wp-leer{flex:1;width:100%;min-height:44px;background:none;border:1px dashed transparent;border-radius:var(--r-sm);
+  color:transparent;font-size:var(--t-lg);cursor:pointer;transition:color .15s,border-color .15s}
+.wp-leer:hover,.wp-leer:focus-visible{border-color:var(--line-2);color:var(--text-3)}
+@media (hover:none){ .wp-leer{color:var(--text-3)} }
+.wp-std{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;padding:var(--s4) var(--s10);
+  border-left:1px solid var(--line);font-variant-numeric:tabular-nums;line-height:var(--lh-eng)}
+.wp-std b{font-size:var(--t-sm)}
+.wp-std small{font-size:var(--t-2xs);color:var(--text-3)}
+/* Unter 85 % oder über 115 % des Solls: das IST ein Status. */
+.wp-std.warn{box-shadow:inset -3px 0 0 var(--warm)}
+.wp-std.warn b{color:var(--warm-tx)}
+.wp-mehr{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;margin-top:var(--s8);
+  padding:var(--s6) var(--s12);background:none;border:1px dashed var(--line-2);border-radius:var(--r-md);
+  color:var(--text-2);font:inherit;font-size:var(--t-sm);cursor:pointer}
+@media (hover:hover){ .wp-mehr:hover{border-color:var(--accent);color:var(--text)} }
+.wp-tausche{display:flex;flex-direction:column;gap:var(--s4);margin-bottom:var(--s12)}
+.wp-tausche-titel{margin:0;font-size:var(--t-2xs);font-weight:800;letter-spacing:var(--ls-m);text-transform:uppercase;color:var(--text-3)}
+.wp-tausch-eintrag > b{display:block;font-size:var(--t-sm);margin-bottom:var(--s4)}
+.wp-tausch-eintrag .tausch-row{margin-left:0}
+/* Das Schicht-Blatt */
+.wp-blatt-info{margin:var(--s10) var(--s4) 0;font-size:var(--t-sm);color:var(--text-2)}
+.wp-blatt-form{padding:var(--s12) 0 var(--s4)}
+.wp-blatt-form #shVorlagen{margin-bottom:var(--s12)}
+.wp-blatt-form [hidden]{display:none}
+/* Am Rechner steht das Blatt in der Mitte statt am unteren Rand. */
+@media (min-width:1100px){
+  #shiftSheet{align-items:center}
+  #shiftSheet .ms-card{border-radius:var(--radius);padding-bottom:var(--s16)}
+}
+/* Ein offenes Blatt ist oben — die Formi-Kugel (z-index 150) lag am
+   Handy über seinem ersten Knopf (gemessen am Schicht-Blatt bei 390 px;
+   dasselbe galt für jedes .msg-sheet). */
+body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
+/* Am Rechner: Studio-Auswahl und Reiter in EINER Zeile — vorher zwei
+   Zeilen (gemessen: die Woche begann bei 1440 × 900 erst bei y = 547). */
+@media (min-width:1100px){
+  #view-team .scroll-area{display:grid;grid-template-columns:minmax(220px,300px) minmax(0,1fr);column-gap:var(--s12);align-content:start}
+  #view-team .scroll-area > *{grid-column:1 / -1;min-width:0}
+  #view-team .scroll-area > .mat-bar{grid-column:1;margin-bottom:14px}
+  #view-team .scroll-area > .mat-bar ~ #teamTabs{grid-column:2}
+  /* „Wartet auf deine Entscheidung": Satz und Studios in einer Zeile. */
+  #teamWartet[style*="block"]{display:grid !important;grid-template-columns:auto minmax(0,1fr);align-items:center;column-gap:var(--s16);margin-bottom:var(--s12)}
+  #teamWartet > .sec-head{grid-column:1 / -1}
+  #teamWartet > .hint{margin:0 !important}
+}
 
 /* ── Abwesenheiten & Brett ── */
 .abs-row,.bb-item,.ho-item{padding:var(--s10) var(--s12);background:var(--bg-soft);border:1px solid var(--line);
@@ -9656,16 +9804,28 @@ body.neu .kn-zeile{min-height:var(--zeile)}
 
           <!-- Schichtplan -->
           <div id="teamPaneSchicht">
-            <div class="card">
-              <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-                <h3 id="shiftWeekLabel">Diese Woche</h3>
-                <div style="display:flex;gap:7px">
+            <!-- Kopf in einer Zeile (Runde 185, nach Planday): links „wann",
+                 rechts „wie ansehen / was tun". Am Handy bricht er in
+                 zwei Zeilen um. -->
+            <div class="card wp">
+              <div class="wp-kopf">
+                <div class="wp-wann">
                   <button class="btn btn-ghost btn-sm wochen-pfeil" id="shiftPrev" aria-label="Vorige Woche">‹</button>
-                  <button class="btn btn-ghost btn-sm" id="shiftToday">Heute</button>
+                  <div class="wp-titel"><small id="shiftKw">Woche</small><h3 id="shiftWeekLabel">Diese Woche</h3></div>
                   <button class="btn btn-ghost btn-sm wochen-pfeil" id="shiftNext" aria-label="Nächste Woche">›</button>
+                  <button class="btn btn-ghost btn-sm" id="shiftToday">Heute</button>
+                </div>
+                <div class="shift-sum" id="shiftSum"></div>
+                <div class="wp-tun">
+                  <div class="chip-row wp-ansicht" id="wpAnsicht" role="group" aria-label="Ansicht">
+                    <button type="button" class="chip" data-wpansicht="tag">Tage</button>
+                    <button type="button" class="chip" data-wpansicht="person">Personen</button>
+                  </div>
+                  <button type="button" class="chip" id="wpMeine" aria-pressed="false">Nur meine</button>
+                  <button type="button" class="btn btn-primary btn-sm" id="shiftNeu" hidden>＋ Schicht</button>
                 </div>
               </div>
-              <div id="shiftGrid" style="margin-top:10px"></div>
+              <div id="shiftGrid"></div>
             </div>
             <!-- Wünsche für den nächsten Plan (Runde 156). Aus dem
                  Betrieb: „die mitarbeiter selber am besten wenn sie
@@ -9686,20 +9846,6 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               <div class="field" style="margin-top:var(--s12)"><label for="spWunschNotiz">Bemerkung (optional)</label>
                 <input class="inp" id="spWunschNotiz" type="text" maxlength="140" placeholder="z. B. am 14. erst ab 12 Uhr" /></div>
               <button type="button" class="btn btn-primary btn-sm" id="spWunschSpeichern">Wünsche speichern</button>
-            </div>
-            <div class="card" id="shiftAddCard" style="display:none">
-              <h3 data-ikon="plus">Schicht eintragen</h3>
-              <div class="row">
-                <div class="field"><label for="shDate">Tag</label><input class="inp" id="shDate" type="date" /></div>
-                <div class="field"><label for="shPerson">Person</label><select class="inp" id="shPerson"></select></div>
-              </div>
-              <div class="row">
-                <div class="field"><label for="shFrom">Von</label><input class="inp" id="shFrom" type="time" value="09:00" /></div>
-                <div class="field"><label for="shTo">Bis</label><input class="inp" id="shTo" type="time" value="17:00" /></div>
-              </div>
-              <div class="field"><label for="shNote">Notiz (optional)</label>
-                <input class="inp" id="shNote" type="text" maxlength="80" placeholder="z. B. Einweisung" /></div>
-              <button class="btn btn-primary btn-sm" id="shAdd">Schicht speichern</button>
             </div>
           </div>
 
@@ -11985,6 +12131,39 @@ body.neu .kn-zeile{min-height:var(--zeile)}
 </div>
 
 <!-- Aktionen an einer Aufgabe – gleiches Muster wie im Chat -->
+<!-- ── Schicht-Blatt (Runde 185) ──
+     Ein Tipp auf eine Schicht öffnet sie: zuerst, was man mit ihr tun
+     kann (abgeben, übernehmen, bestätigen, entfernen), wie bei Teams
+     Shifts. Aus dem Betrieb, 22.10.2026, auf die Frage, ob Löschen und
+     „Ich kann nicht" ins Detail wandern dürfen: „JA". Dasselbe Blatt
+     trägt das Formular „Schicht eintragen" — am Rechner öffnet es ein
+     Klick in eine leere Zelle, mit Tag und Person schon gesetzt. -->
+<div class="msg-sheet" id="shiftSheet">
+  <div class="ms-card">
+    <div class="ms-head">
+      <b id="shSheetTitel"></b>
+      <p id="shSheetUnter"></p>
+    </div>
+    <p class="wp-blatt-info" id="shSheetInfo" hidden></p>
+    <div class="ms-acts" id="shSheetActs"></div>
+    <div class="wp-blatt-form" id="shSheetForm" hidden>
+      <div class="chip-row" id="shVorlagen" role="group" aria-label="Schichtzeiten aus dem Schichtplaner"></div>
+      <div class="row">
+        <div class="field"><label for="shDate">Tag</label><input class="inp" id="shDate" type="date" /></div>
+        <div class="field"><label for="shPerson">Person</label><select class="inp" id="shPerson"></select></div>
+      </div>
+      <div class="row">
+        <div class="field"><label for="shFrom">Von</label><input class="inp" id="shFrom" type="time" value="09:00" /></div>
+        <div class="field"><label for="shTo">Bis</label><input class="inp" id="shTo" type="time" value="17:00" /></div>
+      </div>
+      <div class="field"><label for="shNote">Notiz (optional)</label>
+        <input class="inp" id="shNote" type="text" maxlength="80" placeholder="z. B. Einweisung" /></div>
+      <button class="btn btn-primary" id="shAdd" style="width:100%">Schicht speichern</button>
+    </div>
+    <button class="btn btn-ghost" id="shSheetZu" style="width:100%">Abbrechen</button>
+  </div>
+</div>
+
 <div class="msg-sheet" id="todoSheet">
   <div class="ms-card">
     <div class="ms-head">
@@ -16904,8 +17083,15 @@ function renderKeysHelp(){
         '<button class="key-set" data-keyset="'+esc(a.id)+'">'+
           (aufnahme?'Taste drücken':'ändern')+'</button></div>';
     }).join('');
+  /* Nur im Schichtplan (Plan → Schichten), Runde 185. Fest, weil sie
+     nur dort gelten und mit keiner frei belegbaren Taste kollidieren —
+     belegt jemand H oder V selbst, gilt seine Belegung. */
+  var plan=[{k:'← / →', t:'Woche zurück / vor'},{k:'H', t:'Diese Woche'},{k:'V', t:'Tage ↔ Personen (am Rechner)'}]
+    .filter(function(x){ return x.k.length>1 || !keyBelegtVon(x.k); })
+    .map(function(x){ return '<div class="key-row"><kbd>'+esc(x.k)+'</kbd><span>'+esc(x.t)+'</span></div>'; }).join('');
   box.innerHTML=
     '<p class="hint" style="margin:0 0 10px">Fest eingebaut:</p>'+fest+
+    '<p class="hint" style="margin:16px 0 10px">Im Schichtplan (Plan → Schichten):</p>'+plan+
     '<p class="hint" style="margin:16px 0 10px">Frei belegbar – auf „ändern" tippen und die neue Taste drücken. '+
       'Die Belegung gilt nur auf diesem Gerät.</p>'+frei+
     '<button class="btn btn-ghost btn-sm" id="keysReset" style="width:100%;margin-top:14px">Auf Standard zurücksetzen</button>';
@@ -16983,7 +17169,7 @@ var DIALOGE = ['profileModal','personModal','devModal','pollModal','todoEditModa
                'fwdModal','keysModal','rechtModal','searchOverlay',
                'msgSheet','todoSheet','docSheet','werkbankModal','glockeModal',
                'putzModal','schnellModal','neuModal','vorfallModal','zfModal',
-               'bestellModal'];
+               'bestellModal','shiftSheet'];
 
 function closeAllModals(){
   DIALOGE.forEach(function(id){
@@ -20269,6 +20455,12 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-22-schichtplan-raster', datum:'22.10.2026', titel:'Schichtplan: die Woche nach Personen, Schicht antippen', wo:'team', punkte:[
+    'Unter Plan → Schichten gibt es am Rechner zwei Ansichten: „Tage" wie bisher und neu „Personen" – links stehen die Leute, daneben ihre sieben Tage, rechts die Stunden der Woche. Steht im Schichtplaner ein Wochen-Soll, sieht die Geschäftsführung es bei allen und jede Person bei sich selbst; weichen die Stunden deutlich ab, ist die Zahl farbig. Die gewählte Ansicht merkt sich dein Gerät.',
+    'Eine Schicht antippen öffnet sie: „Ich kann nicht" zum Tauschen, „Ich übernehme", und für die Leitung Bestätigen und Entfernen. Das Kreuz und der Knopf an jeder Zeile sind dafür weg.',
+    'Für die Leitung: In der Ansicht „Personen" in ein leeres Feld klicken – Tag und Person sind schon gesetzt, die Schichtzeiten aus dem Schichtplaner stehen zum Antippen bereit. Am Handy gibt es dafür das ＋ am Tag oder „＋ Schicht" oben.',
+    'Oben steht die Kalenderwoche, die Zahl der Schichten gilt jetzt für diese Woche (vorher zählte sie alle). Urlaub und Krankheit stehen grau schraffiert statt rot und orange. Am Rechner: Pfeiltasten blättern, H springt zu heute, V wechselt die Ansicht.',
+    'Im Schichtplaner (Verwaltung) steht der Monat jetzt Woche für Woche: oben die Kalenderwochen mit ihren offenen Lücken, „Ganzer Monat" zeigt alles wie bisher.' ] },
   { id:'2026-10-22-fuenf-raeume', datum:'22.10.2026', titel:'Weniger Knöpfe: fünf Räume statt dreizehn Punkte', wo:'home', punkte:[
     'Links am Rechner und unten am Handy stehen jetzt dieselben fünf Räume: Heute, Studio, Plan, Nachrichten, Wissen. Wer leitet, hat dazu die Verwaltung. Weggefallen ist nichts, es ist nur einsortiert.',
     'Putzplan, Aufgaben, Material, Geräte und Probetraining liegen unter „Studio" als Reiter nebeneinander. „Ich" und „Persönlich" findest du unter „Heute", Dokumente, Schulung und Hilfe unter „Wissen", Chats, Direktnachrichten und Infos unter „Nachrichten".',
@@ -31636,9 +31828,8 @@ function buildTeamSelect(){
     : (session.studios||[]).slice().sort(function(a,b){ return a.localeCompare(b,'de'); });
   sel.innerHTML=list.map(function(s){ return '<option value="'+esc(studioKey(s))+'">'+esc(s)+'</option>'; }).join('');
   sel.onchange=function(){ loadTeam(sel.value); };
-  // Schichten darf nur die Verwaltung eintragen
-  var addCard=$('shiftAddCard');
-  if(addCard) addCard.style.display = canManage() ? 'block' : 'none';
+  // Schichten darf nur die Verwaltung eintragen (Knopf „＋ Schicht")
+  var nb=$('shiftNeu'); if(nb) nb.hidden=!canManage();
 }
 var _shiftVergangenAuf=false;
 function ensureTeamLoaded(){
@@ -31663,8 +31854,18 @@ function heuteInsBild(){
      seiner Überschrift, nicht weiter. Steht sie im Bild, bleibt die
      Seite stehen; das war P-12. */
   var f=h.closest('.scroll-area'); if(!f) return;
-  var k=h.getBoundingClientRect(), r=f.getBoundingClientRect();
-  if(k.top > r.bottom - 60) sanftScrollen(f,{ top: f.scrollTop + (k.top - r.bottom) + 120, behavior:'smooth' });
+  /* Gemessen wird die LAGE, nicht das Bild: 260 ms nach dem Öffnen
+     schwebt der Tag noch in seiner Einblende-Bewegung (cardUp, translateY)
+     — getBoundingClientRect sah ihn bei 390 px 38 px tiefer, als er
+     stehen bleibt, und die Seite rollte 80 px, obwohl heute im Bild war
+     (P-12, gemessen 22.10.2026). offsetTop kennt keine Verschiebung. */
+  function lage(e){ var y=0; while(e){ y+=e.offsetTop; e=e.offsetParent; } return y; }
+  var oben=lage(h)-lage(f)-f.scrollTop+f.getBoundingClientRect().top;
+  var r=f.getBoundingClientRect();
+  /* Rollen nur, wenn nicht einmal die Überschrift des Tages (40 px) zu
+     sehen ist. Hier stand 60: bei der Leitung am Handy (390 px) standen
+     42 px von heute im Bild, und die Seite rollte trotzdem. */
+  if(oben > r.bottom - 40) sanftScrollen(f,{ top: f.scrollTop + (oben - r.bottom) + 120, behavior:'smooth' });
 }
 
 /* ── Anträge, die auf eine Entscheidung warten ──
@@ -31784,15 +31985,129 @@ function loadTeam(sk){
   buildShiftPersonSelect();
 }
 
-/* Woche als Liste von 7 Tagen zeichnen */
+/* ══ Schichtplan: zwei Ansichten (Runde 185) ═════════════════════════
+   Aus dem Betrieb, 22.10.2026: „plan klingt gut" — auf den Vorschlag,
+   am Rechner ein Raster nach Person zu bauen (Deputy, Planday). Wer
+   schaut hinein? „Beide schauen oft rein": deshalb gibt es beide
+   Ansichten für alle, und die zuletzt gewählte bleibt je Gerät
+   (PREFS.planAnsicht). Ohne Wahl sieht die Leitung „Personen" und das
+   Team „Tage".
+
+   Gemessen vorher bei 1440 × 900: in Spalten von 152 px stand jede
+   Schicht in drei Zeilen (Zeit · ✕ · Name), ein Tag mit drei Schichten
+   war 449 px hoch, die Woche passte nicht ins Bild. Im Raster ist eine
+   Schicht eine Pille in einer Zeile.
+
+   Unter 1.100 px gibt es nur die Tage untereinander; sieben Spalten
+   mit Namen werden dort zu schmal. Dafür steht dort „Nur meine". */
+var _wpMeine=false, _wpAlle=false;
+var _wpSoll=null, _wpSollAt=0;
+var WP_BREIT='(min-width:1100px)';
+function wpBreit(){ return !!(window.matchMedia && window.matchMedia(WP_BREIT).matches); }
+function wpAnsicht(){
+  if(!wpBreit()) return 'tag';
+  var a=PREFS.planAnsicht;
+  if(a==='tag' || a==='person') return a;
+  return canManage() ? 'person' : 'tag';
+}
+function wpAnsichtSetzen(a){
+  PREFS.planAnsicht=a; savePrefs();
+  _wpAlle=false;
+  renderShifts(); tick(6);
+}
+/* Kalenderwoche nach ISO 8601 (Woche mit dem ersten Donnerstag). */
+function kalenderwoche(dt){
+  var t=new Date(Date.UTC(dt.getFullYear(), dt.getMonth(), dt.getDate()));
+  t.setUTCDate(t.getUTCDate()+3-((t.getUTCDay()+6)%7));
+  var j1=new Date(Date.UTC(t.getUTCFullYear(),0,4));
+  return 1+Math.round(((t-j1)/864e5-3+((j1.getUTCDay()+6)%7))/7);
+}
+/* „09:00"–„21:00" → „09–21", sonst bleibt die Minute stehen. */
+function wpZeitKurz(x){
+  var v=x.from||'', b=x.to||'';
+  if(/:00$/.test(v) && /:00$/.test(b)) return v.slice(0,2)+'–'+b.slice(0,2);
+  return v+'–'+b;
+}
+function wpStunden(x){
+  function m(t){ var p=String(t||'').split(':'); return (+p[0]||0)*60+(+p[1]||0); }
+  var d=m(x.to)-m(x.from); if(d<=0) d+=24*60;
+  return d/60;
+}
+function wpStdText(n){ return (Math.round(n*10)/10).toLocaleString('de-DE'); }
+/* Das Soll kommt aus dem Schichtplaner (Spalte „Stunden pro Woche
+   (Soll)" der Excel-Datei). Lesen darf es nur der Chef — und jede
+   Person ihre eigene Zeile (firestore.rules, planerTeam). Wer es nicht
+   lesen darf, sieht nur die Summe; das ist kein Fehler. */
+function wpSollLaden(){
+  if(!session || (_wpSoll && Date.now()-_wpSollAt < 10*60000)) return;
+  _wpSoll={}; _wpSollAt=Date.now();
+  var q = isChef() ? S('planerTeam').get().then(function(sn){ return sn.docs.map(function(d){ return d.data()||{}; }); })
+                   : S('planerTeam').doc(session.uid).get().then(function(d){ return d && d.exists ? [d.data()||{}] : []; });
+  q.then(function(liste){
+    var m={};
+    liste.forEach(function(p){ if(p.uid && +p.wocheStd>0) m[p.uid]=+p.wocheStd; });
+    _wpSoll=m;
+    if(Object.keys(m).length) renderShifts();
+  }).catch(function(){});
+}
+
+/* Woche zeichnen — als Tage untereinander (Handy) bzw. in sieben
+   Spalten, oder als Raster nach Person. */
 function renderShifts(){
   var box=$('shiftGrid'); if(!box || !_shiftWeek) return;
   var lab=$('shiftWeekLabel');
   var ende=new Date(_shiftWeek); ende.setDate(ende.getDate()+6);
   var o={day:'2-digit',month:'2-digit'};
   if(lab) lab.textContent = _shiftWeek.toLocaleDateString('de-DE',o)+' – '+ende.toLocaleDateString('de-DE',o);
+  var kwEl=$('shiftKw'); if(kwEl) kwEl.textContent='KW '+kalenderwoche(_shiftWeek);
   var heute=ymd(new Date());
+  var tage=[];
+  for(var t=0;t<7;t++){ var dt=new Date(_shiftWeek); dt.setDate(dt.getDate()+t); tage.push({ d:dt, key:ymd(dt) }); }
+  var von0=tage[0].key, bis6=tage[6].key;
+  var woche=_shifts.filter(function(x){ return x.date>=von0 && x.date<=bis6; });
+  var ansicht=wpAnsicht();
+  var breit=wpBreit();
+  wpSollLaden();
+
+  /* Kopf: Umschalter nur, wo es beide Ansichten gibt; „Nur meine" nur
+     in der Tagesliste — im Raster steht die eigene Zeile ohnehin oben. */
+  var ua=$('wpAnsicht');
+  if(ua){
+    ua.hidden=!breit;
+    ua.querySelectorAll('[data-wpansicht]').forEach(function(b){
+      var an=b.getAttribute('data-wpansicht')===ansicht;
+      b.classList.toggle('on', an); b.setAttribute('aria-pressed', String(an));
+    });
+  }
+  var mb=$('wpMeine');
+  if(mb){ mb.hidden = ansicht!=='tag'; mb.classList.toggle('on', _wpMeine); mb.setAttribute('aria-pressed', String(_wpMeine)); }
+  var nb=$('shiftNeu'); if(nb) nb.hidden=!canManage();
+
+  /* Die Zahl über der Woche zählt DIESE Woche. Bis Runde 184 stand hier
+     _shifts.length — alle geladenen Schichten des Studios: gemessen 14
+     statt 8 (Leitung) und 17 statt 11 (Mitarbeiter). */
+  var offeneTausche=woche.filter(function(x){ return x.tausch==='offen'; }).length;
+  var wartet=woche.filter(function(x){ return x.tausch==='zugesagt'; }).length;
+  var meineStd=0;
+  woche.forEach(function(x){ if(x.uid===session.uid) meineStd+=wpStunden(x); });
+  var sumEl=$('shiftSum');
+  if(sumEl) sumEl.innerHTML=
+    '<span>'+woche.length+(woche.length===1?' Schicht':' Schichten')+'</span>'+
+    (meineStd ? '<span>deine: '+wpStdText(meineStd)+' Std.</span>' : '')+
+    (offeneTausche?'<span class="tausch">'+offeneTausche+'× wird abgegeben</span>':'')+
+    (wartet?'<span class="tausch">'+wartet+'× wartet auf Bestätigung</span>':'');
+
+  box.classList.toggle('wp-raster-an', ansicht==='person');
+  if(ansicht==='person') box.innerHTML=wpRasterHTML(tage, woche, heute);
+  else box.innerHTML=wpTageHTML(tage, heute, ende);
+  box.classList.toggle('vergangen-auf', !!_shiftVergangenAuf);
+  wpBinden(box);
+}
+
+/* Die Tage untereinander (Handy) bzw. in sieben Spalten (Rechner). */
+function wpTageHTML(tage, heute, ende){
   var namen=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
+  var o={day:'2-digit',month:'2-digit'};
   var html='';
   /* ── Die vergangenen Tage dieser Woche: eine Zeile statt drei Karten ──
      P-12, „Team-Seite springt beim Öffnen nach unten". Der Sprung war
@@ -31808,14 +32123,12 @@ function renderShifts(){
      1.100 px) steht die Woche in sieben Spalten nebeneinander; dort
      passt alles, und es wird nichts zusammengefasst. */
   var vergangen=0, vergangenSchichten=0, ersterVergangen=null, letzterVergangen=null;
-  for(var j=0;j<7;j++){
-    var dj=new Date(_shiftWeek); dj.setDate(dj.getDate()+j);
-    var kj=ymd(dj);
-    if(kj<heute && ymd(ende)>=heute){
-      vergangen++; if(!ersterVergangen) ersterVergangen=dj; letzterVergangen=dj;
-      vergangenSchichten+=_shifts.filter(function(x){ return x.date===kj; }).length;
+  tage.forEach(function(t){
+    if(t.key<heute && ymd(ende)>=heute){
+      vergangen++; if(!ersterVergangen) ersterVergangen=t.d; letzterVergangen=t.d;
+      vergangenSchichten+=_shifts.filter(function(x){ return x.date===t.key && (!_wpMeine || x.uid===session.uid); }).length;
     }
-  }
+  });
   if(vergangen){
     var kurz=['Mo','Di','Mi','Do','Fr','Sa','So'];
     var von=kurz[0]+' '+ersterVergangen.toLocaleDateString('de-DE',o);
@@ -31825,67 +32138,272 @@ function renderShifts(){
         (vergangenSchichten===1?' Schicht':' Schichten')+'</span>'+
       '<i>'+(_shiftVergangenAuf ? 'Ausblenden' : 'Anzeigen ›')+'</i></button>';
   }
-  for(var i=0;i<7;i++){
-    var d=new Date(_shiftWeek); d.setDate(d.getDate()+i);
-    var key=ymd(d);
-    var tages=_shifts.filter(function(x){ return x.date===key; })
+  var darf=canManage();
+  tage.forEach(function(t, i){
+    var key=t.key;
+    var tages=_shifts.filter(function(x){ return x.date===key && (!_wpMeine || x.uid===session.uid); })
       .sort(function(a,b){ return (a.from||'').localeCompare(b.from||''); });
-    // Abwesenheiten, die diesen Tag berühren
-    var abw=_absences.filter(function(a){ return a.from<=key && a.to>=key; });
+    // Abwesenheiten, die diesen Tag berühren (abgelehnte zählen nicht)
+    var abw=_absences.filter(function(a){ return a.from<=key && a.to>=key && absStatus(a)!=='abgelehnt' &&
+      (!_wpMeine || a.uid===session.uid); });
+    var vorbei=key<heute;
     html+='<div class="shift-day'+(key===heute?' today':'')+(tages.length?'':' leer')+
-      (vergangen && key<heute ? ' vergangen' : '')+
+      (vergangen && vorbei ? ' vergangen' : '')+
       '" data-tag="'+key+'">'+
-      '<div class="shift-day-h"><b>'+namen[i]+'</b><span>'+d.toLocaleDateString('de-DE',o)+'</span></div>';
+      '<div class="shift-day-h"><b>'+namen[i]+'</b><span>'+t.d.toLocaleDateString('de-DE',o)+'</span>'+
+      (darf && !vorbei ? '<button type="button" class="wp-tag-plus" data-wpneu="'+key+'|" aria-label="Schicht am '+namen[i]+' eintragen">＋</button>' : '')+
+      '</div>';
     if(tages.length){
       html+=tages.map(function(x){
-        var del = canManage() ? '<button class="shift-x" data-shdel="'+esc(x.id)+'" aria-label="entfernen">'+ikon('schliessen')+'</button>' : '';
-        return '<div class="shift-entry"><span class="shift-time">'+esc(x.from||'')+'–'+esc(x.to||'')+'</span>'+
-          '<span class="shift-name">'+esc(x.name||'')+(x.note?' <span class="shift-note">· '+esc(x.note)+'</span>':'')+'</span>'+del+'</div>'+
+        return '<button type="button" class="shift-entry'+(x.uid===session.uid?' mein':'')+'" data-shift="'+esc(x.id)+'">'+
+          '<span class="shift-time">'+esc(x.from||'')+'–'+esc(x.to||'')+'</span>'+
+          '<span class="shift-name">'+esc(x.name||'')+(x.note?' <span class="shift-note">· '+esc(x.note)+'</span>':'')+'</span>'+
+          wpTauschMarke(x)+'</button>'+
           tauschHTML(x, key);
       }).join('');
     } else {
       html+='<div class="shift-empty">Niemand eingeteilt</div>';
     }
     if(abw.length){
-      html+='<div style="margin-top:5px">'+abw.map(function(a){
-        var ico='';
-        return '<span class="abs-chip'+(a.type==='krank'?' krank':'')+'">'+ico+' '+esc(a.name||'')+'</span>';
+      html+='<div class="wp-abw-zeile">'+abw.map(function(a){
+        return '<span class="wp-abw">'+esc(a.name||'')+' · '+esc(wpAbwText(a))+'</span>';
       }).join('')+'</div>';
     }
     html+='</div>';
+  });
+  if(_wpMeine && !_shifts.some(function(x){ return x.date>=tage[0].key && x.date<=tage[6].key && x.uid===session.uid; })){
+    html='<p class="lese-leer">Du hast in dieser Woche keine Schicht in diesem Studio.</p>'+html;
   }
-  // Kurze Zusammenfassung über der Woche – spart das Durchzählen
-  var wochenSchichten=_shifts.length;
-  var offeneTausche=_shifts.filter(function(x){ return x.tausch==='offen'; }).length;
-  var wartet=_shifts.filter(function(x){ return x.tausch==='zugesagt'; }).length;
-  var sum='<div class="shift-sum">'+
-    '<span>'+wochenSchichten+(wochenSchichten===1?' Schicht':' Schichten')+'</span>'+
-    (offeneTausche?'<span class="tausch">'+offeneTausche+'× wird abgegeben</span>':'')+
-    (wartet?'<span class="tausch">'+wartet+'× wartet auf Bestätigung</span>':'')+
-    '</div>';
-  box.innerHTML=sum+html;
-  box.classList.toggle('vergangen-auf', !!_shiftVergangenAuf);
+  return html;
+}
+/* Abwesenheit ist kein Alarm (W7 in den Design-Vorbildern): neutrale
+   Schraffur, das Wort sagt, was es ist. */
+function wpAbwText(a){
+  var art={ urlaub:'Urlaub', krank:'krank', frei:'frei' }[a.type] || 'abwesend';
+  return absStatus(a)==='offen' ? art+' (beantragt)' : art;
+}
+function wpTauschMarke(x){
+  if(x.tausch==='offen') return '<span class="wp-marke">wird abgegeben</span>';
+  if(x.tausch==='zugesagt') return '<span class="wp-marke">Tausch wartet</span>';
+  return '';
+}
+
+/* Das Raster: Personen links, sieben Tage, rechts die Stunden. */
+function wpRasterHTML(tage, woche, heute){
+  var darf=canManage();
+  var kurz=['Mo','Di','Mi','Do','Fr','Sa','So'];
+  var o={day:'2-digit',month:'2-digit'};
+  /* Wer steht im Raster? Jede Person dieses Studios — dazu, wer hier
+     eine Schicht hat, ohne dem Studio zugeordnet zu sein (Springer). */
+  var leute={}, reihe=[];
+  function dazu(id, name){
+    if(!id || leute[id]) return leute[id];
+    leute[id]={ id:id, name:name||'?', schichten:[], abw:[], std:0 };
+    reihe.push(leute[id]); return leute[id];
+  }
+  _allUsers.forEach(function(u){
+    if(u.system || u.aktiv===false) return;
+    var uk=(u.studioKeys&&u.studioKeys.length)?u.studioKeys:(u.studios||[]).map(studioKey);
+    if(uk.indexOf(_teamStudioKey)>=0) dazu(u.uid, u.name);
+  });
+  woche.forEach(function(x){
+    var p=dazu(x.uid||('name:'+(x.name||'')), x.name);
+    p.schichten.push(x); p.std+=wpStunden(x);
+  });
+  _absences.forEach(function(a){
+    if(a.to<tage[0].key || a.from>tage[6].key || absStatus(a)==='abgelehnt') return;
+    var p=leute[a.uid]; if(p) p.abw.push(a);
+  });
+  var ich=session.uid;
+  reihe.sort(function(a,b){
+    var ia=a.id===ich?0:1, ib=b.id===ich?0:1;
+    var sa=a.schichten.length||a.abw.length?0:1, sb=b.schichten.length||b.abw.length?0:1;
+    return ia-ib || sa-sb || (a.name||'').localeCompare(b.name||'','de');
+  });
+  /* Wer diese Woche weder Schicht noch Abwesenheit hat, steht unter
+     einem Knopf — nicht stumm weg (CLAUDE.md: „Was nicht passt,
+     verschwindet nie stumm"). Die Leitung braucht die Zeilen, um per
+     Klick einzutragen; ein Tipp klappt sie auf. */
+  var mit=reihe.filter(function(p){ return p.id===ich || p.schichten.length || p.abw.length; });
+  var ohne=reihe.filter(function(p){ return mit.indexOf(p)<0; });
+  var zeigen=_wpAlle ? reihe : mit;
+
+  var html='<div class="wp-raster" role="table" aria-label="Schichten nach Person">'+
+    '<div class="wp-z wp-kopfz" role="row"><span class="wp-p" role="columnheader">Person</span>'+
+    tage.map(function(t, i){
+      return '<span class="wp-t'+(t.key===heute?' heute':'')+(t.key<heute?' vorbei':'')+'" role="columnheader"><b>'+kurz[i]+'</b> '+
+        t.d.toLocaleDateString('de-DE',o)+'</span>';
+    }).join('')+
+    '<span class="wp-std" role="columnheader">Std.</span></div>';
+  zeigen.forEach(function(p){
+    var u=_userById(p.id), f=u ? avatarFarbe(u.color) : '';
+    var st=f ? ' style="background:'+f+(avatarSchrift(f)?';color:'+avatarSchrift(f):'')+'"' : '';
+    html+='<div class="wp-z'+(p.id===ich?' ich':'')+'" role="row">'+
+      '<span class="wp-p" role="rowheader"><i class="spl-ini"'+st+' aria-hidden="true">'+esc(initials(p.name))+'</i>'+
+        '<span>'+esc(p.name)+(p.id===ich?' <small>(du)</small>':'')+'</span></span>';
+    tage.forEach(function(t, i){
+      var hier=p.schichten.filter(function(x){ return x.date===t.key; })
+        .sort(function(a,b){ return (a.from||'').localeCompare(b.from||''); });
+      var weg=p.abw.filter(function(a){ return a.from<=t.key && a.to>=t.key; })[0];
+      var kl='wp-c'+(t.key===heute?' heute':'')+(t.key<heute?' vorbei':'')+(weg?' abw':'');
+      html+='<div class="'+kl+'" role="cell">';
+      if(weg) html+='<span class="wp-abw-txt">'+esc(wpAbwText(weg))+'</span>';
+      html+=hier.map(function(x){
+        return '<button type="button" class="wp-schicht'+(x.tausch?' tausch':'')+'" data-shift="'+esc(x.id)+'"'+
+          ' title="'+esc((x.from||'')+'–'+(x.to||'')+(x.note?' · '+x.note:''))+'">'+esc(wpZeitKurz(x))+
+          (x.note?'<small>'+esc(x.note)+'</small>':'')+'</button>';
+      }).join('');
+      if(darf && !hier.length && !weg && t.key>=heute && p.id.indexOf('name:')!==0){
+        html+='<button type="button" class="wp-leer" data-wpneu="'+t.key+'|'+esc(p.id)+'" aria-label="Schicht für '+
+          esc(p.name)+' am '+kurz[i]+' '+t.d.toLocaleDateString('de-DE',o)+' eintragen">＋</button>';
+      }
+      html+='</div>';
+    });
+    var soll=_wpSoll && _wpSoll[p.id];
+    var warn=soll && (p.std<soll*0.85 || p.std>soll*1.15);
+    html+='<span class="wp-std'+(warn?' warn':'')+'" role="cell"'+
+      (soll?' title="Soll laut Schichtplaner: '+wpStdText(soll)+' Std. pro Woche'+(warn?(p.std<soll?' – darunter':' – darüber'):'')+'"':'')+'>'+
+      '<b>'+wpStdText(p.std)+'</b>'+(soll?'<small>/ '+wpStdText(soll)+'</small>':'')+'</span>';
+    html+='</div>';
+  });
+  if(!zeigen.length) html+='<p class="lese-leer">In dieser Woche ist niemand eingeteilt.</p>';
+  html+='</div>';
+  if(ohne.length){
+    html+='<button type="button" class="wp-mehr" data-wpalle aria-expanded="'+(_wpAlle?'true':'false')+'">'+
+      (_wpAlle ? 'Nur Leute mit Schicht zeigen' : '＋ '+ohne.length+(ohne.length===1?' weitere Person':' weitere Personen')+' ohne Schicht diese Woche')+
+      '</button>';
+  }
+  /* Was auf jemanden wartet, steht über dem Raster — mit denselben
+     Knöpfen wie in der Tagesliste. */
+  var offen=woche.filter(function(x){ return x.tausch; })
+    .sort(function(a,b){ return (a.date+a.from).localeCompare(b.date+b.from); });
+  if(offen.length){
+    var kopf='<div class="wp-tausche"><p class="wp-tausche-titel">Tausch</p>'+offen.map(function(x){
+      var d=new Date(x.date+'T12:00:00');
+      return '<div class="wp-tausch-eintrag"><b>'+kurz[(d.getDay()+6)%7]+' '+d.toLocaleDateString('de-DE',o)+' · '+
+        esc(x.from||'')+'–'+esc(x.to||'')+' · '+esc(x.name||'')+'</b>'+tauschHTML(x, x.date)+'</div>';
+    }).join('')+'</div>';
+    html=kopf+html;
+  }
+  return html;
+}
+
+function wpBinden(box){
   var vz=box.querySelector('[data-shvergangen]');
   if(vz) vz.addEventListener('click', function(){
     _shiftVergangenAuf=!_shiftVergangenAuf; renderShifts(); tick(6);
   });
-
-  /* Früher: zur heutigen Karte scrollen, wenn die aktuelle Woche gezeigt wird.
-     Sonst steht man am Samstagabend immer noch bei Montag.
-     „block:nearest" reichte nicht: liegt die Karte nur zur Hälfte im Bild,
-     hält der Browser sie für sichtbar und rührt sich nicht. Deshalb wird
-     hier selbst gerechnet – und nur, wenn die Karte unten heraushängt. */
-  /* Seit dem 24.9.2026 nicht mehr: das Rollen war der Sprung aus P-12.
-     Die vergangenen Tage stehen jetzt zusammengefasst in einer Zeile
-     (siehe oben); heute steht damit von selbst weit oben. */
-  box.querySelectorAll('[data-shdel]').forEach(function(b){
-    b.addEventListener('click',function(){
-      if(!confirm('Schicht entfernen?')) return;
-      S('studios').doc(_teamStudioKey).collection('shifts').doc(b.getAttribute('data-shdel'))
-        .delete().catch(function(e){ toast(errMsg(e),true); });
+  var mehr=box.querySelector('[data-wpalle]');
+  if(mehr) mehr.addEventListener('click', function(){ _wpAlle=!_wpAlle; renderShifts(); tick(6); });
+  box.querySelectorAll('[data-shift]').forEach(function(b){
+    b.addEventListener('click', function(){ schichtBlattOeffnen(b.getAttribute('data-shift')); });
+  });
+  box.querySelectorAll('[data-wpneu]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var t=b.getAttribute('data-wpneu').split('|');
+      schichtNeuBlatt(t[0], t[1]||'');
     });
   });
   bindTauschClicks(box);
+}
+
+/* ── Das Schicht-Blatt ── */
+var _shBlatt=null;
+function schichtBlattOeffnen(id){
+  var x=shiftById(id), blatt=$('shiftSheet'); if(!x || !blatt) return;
+  _shBlatt=x;
+  var d=new Date(x.date+'T12:00:00');
+  var meine=x.uid===session.uid, vorbei=x.date<ymd(new Date());
+  $('shSheetTitel').textContent=d.toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit'})+' · '+(x.from||'')+'–'+(x.to||'');
+  $('shSheetUnter').textContent=(x.name||'')+(meine?' (du)':'')+' · '+studioName(_teamStudioKey)+(x.note?' · '+x.note:'');
+  var info='';
+  if(x.tausch==='offen') info = meine ? 'Von dir zum Tausch angeboten – wartet auf jemanden.' : 'Wird abgegeben – wer übernimmt?';
+  else if(x.tausch==='zugesagt') info=((x.tauschNeu&&x.tauschNeu.name)||'Jemand')+' übernimmt – wartet auf die Leitung.';
+  else if(x.getauschtVon) info='Getauscht: vorher '+x.getauschtVon+'.';
+  var ie=$('shSheetInfo'); ie.textContent=info; ie.hidden=!info;
+  /* Zuerst, was man mit der Schicht tun kann; Entfernen zuletzt. */
+  var a=[];
+  if(!x.tausch && meine && !vorbei) a.push({ attr:'data-tausch-ab', ico:'wiederholen', txt:'Ich kann nicht – zum Tausch anbieten' });
+  if(x.tausch==='offen' && meine) a.push({ attr:'data-tausch-zurueck', ico:'schliessen', txt:'Angebot zurückziehen' });
+  if(x.tausch==='offen' && !meine && !vorbei) a.push({ attr:'data-tausch-nehmen', ico:'hakenKreis', txt:'Ich übernehme' });
+  if(x.tausch==='zugesagt' && canManage()){
+    a.push({ attr:'data-tausch-ja', ico:'hakenKreis', txt:'Tausch bestätigen' });
+    a.push({ attr:'data-tausch-nein', ico:'schliessen', txt:'Tausch ablehnen' });
+  }
+  if(canManage()) a.push({ attr:'data-shdel', ico:'papierkorb', txt:'Schicht entfernen', warn:true });
+  var acts=$('shSheetActs');
+  acts.innerHTML = a.length ? a.map(function(e){
+    return '<button type="button" class="ms-act'+(e.warn?' warn':'')+'" '+e.attr+'="'+esc(x.id)+'">'+
+      '<span class="ms-ico">'+ikon(e.ico)+'</span><span>'+esc(e.txt)+'</span></button>';
+  }).join('') : '<p class="hint" style="margin:var(--s8) var(--s4)">Hier gibt es nichts zu tun. Änderungen macht die Leitung.</p>';
+  acts.hidden=false;
+  $('shSheetForm').hidden=true;
+  $('shSheetZu').textContent='Schliessen';
+  bindTauschClicks(acts);
+  acts.querySelectorAll('[data-shdel]').forEach(function(b){
+    b.addEventListener('click', function(){ schichtEntfernen(b.getAttribute('data-shdel')); });
+  });
+  blatt.classList.add('show');
+  tick(8);
+}
+function schichtBlattSchliessen(){ var b=$('shiftSheet'); if(b) b.classList.remove('show'); _shBlatt=null; }
+function schichtEntfernen(id){
+  if(!confirm('Schicht entfernen?')) return;
+  S('studios').doc(_teamStudioKey).collection('shifts').doc(id)
+    .delete().then(function(){ toast('Schicht entfernt'); })
+    .catch(function(e){ toast(errMsg(e),true); });
+}
+/* Eintragen: Tag und Person sind gesetzt, wenn man aus einer Zelle kommt.
+   Die Schichtzeiten aus dem Schichtplaner stehen als Vorlagen darüber —
+   ein Tipp setzt Von, Bis und den Namen der Schicht. */
+function schichtNeuBlatt(datum, uid){
+  var blatt=$('shiftSheet'); if(!blatt || !canManage()) return;
+  _shBlatt=null;
+  buildShiftPersonSelect();
+  $('shDate').value=datum || ymd(new Date());
+  var ps=$('shPerson'); if(uid && ps && [].some.call(ps.options, function(op){ return op.value===uid; })) ps.value=uid;
+  $('shNote').value='';
+  var d=new Date(($('shDate').value)+'T12:00:00');
+  $('shSheetTitel').textContent='Schicht eintragen';
+  var pn=uid ? ((_userById(uid)||{}).name||'') : '';
+  $('shSheetUnter').textContent=(pn?pn+' · ':'')+d.toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit'})+' · '+studioName(_teamStudioKey);
+  $('shSheetInfo').hidden=true;
+  $('shSheetActs').hidden=true;
+  $('shSheetForm').hidden=false;
+  $('shSheetZu').textContent='Abbrechen';
+  wpVorlagenZeichnen();
+  blatt.classList.add('show');
+  tick(8);
+  setTimeout(function(){ var f=$('shFrom'); if(f && wpBreit()) f.focus(); }, 260);
+}
+function wpVorlagenZeichnen(){
+  var box=$('shVorlagen'); if(!box) return;
+  function zeichnen(){
+    /* Nur die Schichten, die es an diesem Wochentag gibt — am Freitag
+       kein „Samstag 09–14". */
+    var d=new Date(($('shDate').value||ymd(new Date()))+'T12:00:00'), wt=d.getDay()||7;
+    var sch=((typeof spSchichtenFuer==='function' && _sp.conf) ? spSchichtenFuer(_teamStudioKey) : [])
+      .filter(function(x){ return !(x.tage && x.tage.length) || x.tage.indexOf(wt)>=0; });
+    box.hidden=!sch.length;
+    box.innerHTML=sch.map(function(s){
+      return '<button type="button" class="chip" data-shvorlage="'+esc(s.von+'|'+s.bis+'|'+s.name)+'">'+
+        esc(s.name)+' '+esc(s.von)+'–'+esc(s.bis)+'</button>';
+    }).join('');
+    box.querySelectorAll('[data-shvorlage]').forEach(function(b){
+      b.addEventListener('click', function(){
+        var t=b.getAttribute('data-shvorlage').split('|');
+        $('shFrom').value=t[0]; $('shTo').value=t[1]; $('shNote').value=t[2];
+        box.querySelectorAll('.chip').forEach(function(c){ c.classList.toggle('on', c===b); });
+        tick(6);
+      });
+    });
+  }
+  if(_sp.conf){ zeichnen(); return; }
+  box.hidden=true;
+  S('config').doc('schichtplaner').get().then(function(d){
+    _sp.conf=_sp.conf || (d && d.exists ? d.data()||{} : {});
+    zeichnen();
+  }).catch(function(){});
 }
 
 /* ── Schichttausch ──
@@ -31902,14 +32420,10 @@ function renderShifts(){
 function tauschHTML(x, tagKey){
   var meine = x.uid===session.uid;
   var vergangen = tagKey < ymd(new Date());
-  // Kein Tausch läuft: nur die eigene, noch nicht vergangene Schicht anbieten
-  if(!x.tausch){
-    if(meine && !vergangen){
-      return '<div class="tausch-row"><button class="tausch-btn" data-tausch-ab="'+esc(x.id)+'">'+
-        'Ich kann nicht</button></div>';
-    }
-    return '';
-  }
+  /* Kein Tausch läuft: nichts in der Zeile. „Ich kann nicht" steht seit
+     Runde 185 im Schicht-Blatt (ein Tipp auf die Schicht) — vorher hatte
+     jede eigene Schicht einen eigenen Kasten mit diesem Knopf. */
+  if(!x.tausch) return '';
   if(x.tausch==='offen'){
     var wer = meine
       ? '<span class="tausch-txt">Von dir ausgeschrieben – wartet auf jemanden</span>'+
@@ -38022,7 +38536,7 @@ function showChefTab(id, keep){
    offenen Fragen an die Geschäftsführung (Frage 17). Bis zur Antwort
    ist die engere Regel die sichere. */
 var SP_DATEI = 'schichtplaner.js';
-var _sp = { monat:null, conf:null, team:[], wuensche:[], plan:null, studio:'', wahl:null, gebunden:false, laedt:false };
+var _sp = { monat:null, conf:null, team:[], wuensche:[], plan:null, studio:'', wahl:null, kw:null, gebunden:false, laedt:false };
 var _spLibStatus = '', _spLibWarte = [];
 
 function spLib(){
@@ -38102,8 +38616,8 @@ function spOeffnen(){
 }
 function spBinden(){
   if(_sp.gebunden) return; _sp.gebunden=true;
-  $('spMonatZurueck').addEventListener('click', function(){ _sp.monat=spMonatPlus(_sp.monat,-1); _sp.plan=null; spLaden(); tick(8); });
-  $('spMonatVor').addEventListener('click', function(){ _sp.monat=spMonatPlus(_sp.monat,1); _sp.plan=null; spLaden(); tick(8); });
+  $('spMonatZurueck').addEventListener('click', function(){ _sp.monat=spMonatPlus(_sp.monat,-1); _sp.plan=null; _sp.kw=null; spLaden(); tick(8); });
+  $('spMonatVor').addEventListener('click', function(){ _sp.monat=spMonatPlus(_sp.monat,1); _sp.plan=null; _sp.kw=null; spLaden(); tick(8); });
   $('spLos').addEventListener('click', function(){ spErstellen(this); });
   $('spDatei').addEventListener('change', function(){
     var f=this.files && this.files[0]; this.value='';
@@ -38542,9 +39056,40 @@ function spPlanZeichnen(){
   var kopf='<thead><tr><th>Tag</th>'+sch.map(function(s){
     return '<th>'+esc(s.name)+'<span>'+esc(s.von)+'–'+esc(s.bis)+'</span></th>'; }).join('')+'</tr></thead>';
   var html='', woche='', erster=null, d=new Date(start);
-  function kw(dt){ var t=new Date(Date.UTC(dt.getFullYear(), dt.getMonth(), dt.getDate())); var w=(t.getUTCDay()+6)%7;
-    t.setUTCDate(t.getUTCDate()-w+3); var j1=new Date(Date.UTC(t.getUTCFullYear(),0,4));
-    return 1+Math.round(((t-j1)/864e5-3+((j1.getUTCDay()+6)%7))/7); }
+  var kw=kalenderwoche;
+  /* Runde 185 — aus dem Betrieb: „er wirkt für mich noch unfertig …
+     aber das grundgrüst soll stehen erstmal". Gemessen: fünf Wochen-
+     Tabellen untereinander, 3.042 px bei 1440 × 900, und jede Tabelle
+     hatte ihre Spalten woanders (Früh begann mal bei 699, mal bei 731 px).
+     Jetzt: EINE Woche, oben die Wochen als Reiter mit ihren offenen
+     Punkten, „Ganzer Monat" zeigt alle. Spalten fest. */
+  var wochen=[], wd=new Date(start), wAkt=null;
+  while(wd<=ende){
+    var wk=ymd(wd);
+    if(!wAkt){ wAkt={ von:wk, bis:wk, kw:kw(wd), l:0, r:0 }; wochen.push(wAkt); }
+    wAkt.bis=wk;
+    if((wd.getDay()+6)%7===6) wAkt=null;
+    wd.setDate(wd.getDate()+1);
+  }
+  wochen.forEach(function(w){
+    p.luecken.forEach(function(x){ if(x.studio===sk && x.datum>=w.von && x.datum<=w.bis) w.l+=(x.fehlt||1); });
+    p.einsaetze.forEach(function(x){ if(x.rueckfrage && x.studio===sk && x.datum>=w.von && x.datum<=w.bis) w.r++; });
+  });
+  function wocheVon(datum){ return wochen.filter(function(w){ return datum>=w.von && datum<=w.bis; })[0]; }
+  if(_sp.wahl && _sp.wahl.datum && wocheVon(_sp.wahl.datum) && _sp.kw!=='alle') _sp.kw=wocheVon(_sp.wahl.datum).von;
+  if(_sp.kw!=='alle' && !wochen.some(function(w){ return w.von===_sp.kw; })){
+    var hw=wocheVon(heute), offenW=wochen.filter(function(w){ return w.l||w.r; })[0];
+    _sp.kw=(hw||offenW||wochen[0]||{}).von||'alle';
+  }
+  function kurzD(k){ var t=k.split('-'); return (+t[2])+'.'+(+t[1])+'.'; }
+  var reiter='<div class="spl-kw-reiter" role="group" aria-label="Woche">'+wochen.map(function(w){
+    var an=_sp.kw===w.von;
+    var zu=w.l ? '<small class="bad">'+w.l+(w.l===1?' Lücke':' Lücken')+'</small>'
+          : (w.r ? '<small class="warn">'+w.r+(w.r===1?' Rückfrage':' Rückfragen')+'</small>' : '<small>✓ besetzt</small>');
+    return '<button type="button" class="spl-kw'+(an?' an':'')+'" data-spkw="'+w.von+'" aria-pressed="'+an+'">'+
+      '<b>KW '+w.kw+'</b><span>'+kurzD(w.von)+(w.bis!==w.von?'–'+kurzD(w.bis):'')+'</span>'+zu+'</button>';
+  }).join('')+
+    '<button type="button" class="spl-kw alle'+(_sp.kw==='alle'?' an':'')+'" data-spkw="alle" aria-pressed="'+(_sp.kw==='alle')+'"><b>Ganzer Monat</b><span>alle Wochen</span></button></div>';
   while(d<=ende){
     var key=ymd(d), wt=d.getDay(), wtIso=wt===0?7:wt;
     if(!erster) erster=new Date(d);
@@ -38570,13 +39115,25 @@ function spPlanZeichnen(){
     if((d.getDay()+6)%7===6 || key===_sp.monat+'-'+('0'+n).slice(-2)){
       var bis=new Date(d);
       var vonT=erster.getDate()+'.'+(erster.getMonth()+1)+'.', bisT=bis.getDate()+'.'+(bis.getMonth()+1)+'.';
-      html+='<div class="spl-woche"><h4>KW '+kw(erster)+' · '+vonT+(bisT!==vonT?' – '+bisT:'')+'</h4>'+
-        '<div class="spl-woche-huelle"><table class="spl-tab">'+kopf+'<tbody>'+woche+'</tbody></table></div></div>';
+      if(_sp.kw==='alle' || _sp.kw===ymd(erster))
+        html+='<div class="spl-woche"><h4>KW '+kw(erster)+' · '+vonT+(bisT!==vonT?' – '+bisT:'')+'</h4>'+
+          '<div class="spl-woche-huelle"><table class="spl-tab">'+kopf+'<tbody>'+woche+'</tbody></table></div></div>';
       woche=''; erster=null;
     }
     d.setDate(d.getDate()+1);
   }
-  box.innerHTML=html;
+  box.innerHTML=reiter+html;
+  box.querySelectorAll('[data-spkw]').forEach(function(b){
+    b.addEventListener('click', function(){
+      _sp.kw=b.getAttribute('data-spkw');
+      /* Eine Auswahl aus einer anderen Woche bleibt nicht stehen. */
+      if(_sp.wahl && _sp.kw!=='alle' && (_sp.wahl.datum<_sp.kw || !wochen.some(function(w){ return w.von===_sp.kw && _sp.wahl.datum<=w.bis; }))){
+        _sp.wahl=null; spWahlZeichnen();
+        document.querySelectorAll('.spl-punkt.an').forEach(function(z){ z.classList.remove('an'); });
+      }
+      spPlanZeichnen(); tick(6);
+    });
+  });
   box.querySelectorAll('[data-spzelle]').forEach(function(b){
     b.addEventListener('click', function(){
       var t=b.getAttribute('data-spzelle').split('|');
@@ -42712,7 +43269,7 @@ function verlaufStarten(){
   // Fenster melden sich selbst an, ohne dass jede Öffnen-Stelle das wissen
   // muss: wir beobachten einfach, wann eines sichtbar wird.
   var fenster=['profileModal','personModal','devModal','pollModal','todoEditModal',
-               'fwdModal','keysModal','searchOverlay','lightbox','msgSheet','todoSheet','docSheet'];
+               'fwdModal','keysModal','searchOverlay','lightbox','msgSheet','todoSheet','docSheet','shiftSheet'];
   fenster.forEach(function(id){
     var el=$(id); if(!el) return;
     new MutationObserver(function(){
@@ -46350,9 +46907,61 @@ function bindActions(){
         uid:p.value, name:p.options[p.selectedIndex].text,
         note:$('shNote').value.trim()||null,
         createdBy:session.name, createdByUid:session.uid, ts:Date.now()
-      }).then(function(){ $('shNote').value=''; toast('Schicht eingetragen ✓'); })
+      }).then(function(){ $('shNote').value=''; schichtBlattSchliessen(); toast('Schicht eingetragen ✓'); })
         .catch(function(e){ toast(errMsg(e),true); });
     });
+  });
+  /* Schichtplan, Runde 185: Ansicht, „Nur meine", Eintragen, Blatt. */
+  document.querySelectorAll('[data-wpansicht]').forEach(function(b){
+    b.addEventListener('click', function(){ wpAnsichtSetzen(b.getAttribute('data-wpansicht')); });
+  });
+  var wm=$('wpMeine');
+  if(wm) wm.addEventListener('click', function(){ _wpMeine=!_wpMeine; renderShifts(); tick(6); });
+  var wn=$('shiftNeu');
+  if(wn) wn.addEventListener('click', function(){
+    /* In einer anderen Woche als dieser: deren Montag statt heute. */
+    var h=ymd(new Date()), mo=ymd(_shiftWeek), so=new Date(_shiftWeek); so.setDate(so.getDate()+6);
+    schichtNeuBlatt(h>=mo && h<=ymd(so) ? h : mo, '');
+  });
+  var shs=$('shiftSheet');
+  if(shs){
+    shs.addEventListener('click', function(e){ if(e.target===shs) schichtBlattSchliessen(); });
+    $('shSheetZu').addEventListener('click', schichtBlattSchliessen);
+    /* Nach einer Aktion schliesst das Blatt — die Knöpfe selbst tragen
+       dieselben data-tausch-*-Merkmale wie in der Liste und laufen über
+       bindTauschClicks(); dieser Hörer kommt beim Aufsteigen danach. */
+    $('shSheetActs').addEventListener('click', function(e){
+      if(e.target.closest && e.target.closest('.ms-act')) setTimeout(schichtBlattSchliessen, 0);
+    });
+    $('shDate').addEventListener('change', function(){
+      var d=new Date(this.value+'T12:00:00');
+      if(isNaN(d)) return;
+      var pe=$('shPerson'), pn=pe && pe.value ? pe.options[pe.selectedIndex].text+' · ' : '';
+      $('shSheetUnter').textContent=pn+d.toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit'})+' · '+studioName(_teamStudioKey);
+      wpVorlagenZeichnen();
+    });
+  }
+  /* Wechselt das Fenster über 1.100 px, wechselt auch, was es gibt. */
+  if(window.matchMedia){
+    var wq=window.matchMedia(WP_BREIT);
+    var wqNeu=function(){ if(_teamStudioKey) renderShifts(); };
+    if(wq.addEventListener) wq.addEventListener('change', wqNeu); else if(wq.addListener) wq.addListener(wqNeu);
+  }
+  /* Tastenkürzel im Schichtplan (Deputy, Google Kalender): ← → blättern,
+     H heute, V Tage/Personen. Nur, solange der Schichtplan offen ist,
+     und nie über einer eigenen Belegung derselben Taste. */
+  document.addEventListener('keydown', function(e){
+    if(currentView!=='team') return;
+    var pane=$('teamPaneSchicht'); if(!pane || pane.style.display==='none' || !_shiftWeek) return;
+    if(e.ctrlKey||e.metaKey||e.altKey||e.shiftKey) return;
+    if(typingSomewhere() || anyModalOpen()) return;
+    var k=String(e.key||'');
+    if(k.length===1 && keyBelegtVon(k)) return;
+    var low=k.toLowerCase();
+    if(k==='ArrowLeft'){ e.preventDefault(); $('shiftPrev').click(); }
+    else if(k==='ArrowRight'){ e.preventDefault(); $('shiftNext').click(); }
+    else if(low==='h'){ e.preventDefault(); $('shiftToday').click(); }
+    else if(low==='v' && wpBreit()){ e.preventDefault(); wpAnsichtSetzen(wpAnsicht()==='person'?'tag':'person'); }
   });
   var abAdd=$('abAdd');
   if(abAdd) abAdd.addEventListener('click',function(){
