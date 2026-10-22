@@ -43,7 +43,7 @@ const TREFFER = (el) => {
 };
 
 async function oeffne(b, w, h, touch) {
-  const ctx = await b.newContext({ viewport: { width: w, height: h }, hasTouch: !!touch, isMobile: !!touch });
+  const ctx = await b.newContext({ serviceWorkers: 'block', viewport: { width: w, height: h }, hasTouch: !!touch, isMobile: !!touch });
   const p = await ctx.newPage();
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));

@@ -34,7 +34,7 @@ function pruefe(was, bedingung, hinweis) {
 }
 
 async function oeffne(b, w, h, rolle, vorher) {
-  const p = await b.newPage({ viewport: { width: w, height: h } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
@@ -54,7 +54,7 @@ async function oeffne(b, w, h, rolle, vorher) {
 
 /* Welche Rahmen-Elemente ändern beim Wechsel Start → Putzplan ihre
    Farbe, und liegen sie nach 60 ms schon zwischen alt und neu?
-   Seit Runde 183 („fünf Räume", aus dem Betrieb 22.10.2026: „das problem
+   Seit Runde 184 („fünf Räume", aus dem Betrieb 22.10.2026: „das problem
    mit dem zu viel bleibt immer noch bestehen") gibt es keinen eigenen
    Putzplan-Knopf mehr; er ist ein Reiter unter „Studio". Derselbe
    Wechsel (Blau nach Orange) geht jetzt über den Knopf „Studio". */
@@ -93,7 +93,7 @@ const GLEITEN = async () => {
     pruefe(w + ' px: ' + r.gleitet.length + ' Elemente gleiten, keines springt',
       r.gleitet.length >= 20 && r.springt.length === 0, 'springt: ' + r.springt.join(', '));
     if (w === 1440) {
-      /* Bis Runde 179 stand hier „Bericht" (#tbBericht). Seit Runde 183
+      /* Bis Runde 179 stand hier „Bericht" (#tbBericht). Seit Runde 184
          ist der Knopf oben überall verborgen — der Bericht steht unter
          Verwaltung → Berichte —, und test-akzent misst an der ersten
          gleitenden Fläche, die im Bild steht: in der Demo die Leiste

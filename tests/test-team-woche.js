@@ -48,14 +48,14 @@ const TREFFER = (el) => {
 const VERGANGEN = (new Date().getDay() + 6) % 7;
 
 async function oeffne(b, rolle, w, h) {
-  const p = await b.newPage({ viewport: { width: w, height: h } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
   await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
   await p.goto(APP + '?demo=' + rolle, { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(3200);
-  /* Runde 183 („fünf Räume“): der Raum heisst „Plan“ („wer arbeitet
+  /* Runde 184 („fünf Räume“): der Raum heisst „Plan“ („wer arbeitet
      wann?“), die Gruppe bleibt g-team. Aus dem Betrieb, 22.10.2026: die
      Raumnamen „passen“. Gesucht wird nach der Gruppe, nicht nach dem Wort,
      und nur unter den sichtbaren Knöpfen. */

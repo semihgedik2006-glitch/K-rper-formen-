@@ -1,5 +1,5 @@
 /**
- * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.13)
+ * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.14)
  * Cloudflare Worker: WhatsApp (Text + Sprachnachrichten), Studio-Chat-Schnittstelle,
  * Leitstand-Webseite, Speicher in D1, Antworten über Workers AI.
  *
@@ -748,12 +748,12 @@ async function vektorenLaden(env) {
   _vektorZeit = Date.now();
   return _vektoren;
 }
-export async function sucheBedeutung(env, frage, k) {
+export async function sucheBedeutung(env, frage, k, ohneSchwelle) {
   const liste = await vektorenLaden(env);
   if (!liste.length) return [];
   const [q] = await einbetten(env, [kuerze(frage, 1000)]);
   const qn = vektorNorm(q);
-  return liste.map(x => ({ id: x.id, wert: aehnlich(qn, x.v) })).filter(x => x.wert >= VEKTOR_MIN)
+  return liste.map(x => ({ id: x.id, wert: aehnlich(qn, x.v) })).filter(x => ohneSchwelle || x.wert >= VEKTOR_MIN)
     .sort((a, b) => b.wert - a.wert).slice(0, k || 8);
 }
 /* Zwei Ranglisten zu einer (Reciprocal Rank Fusion). Rein rechnerisch.
@@ -778,7 +778,7 @@ async function vektorNachziehen(env, id) {
   } catch (e) { console.error("Fingerabdruck " + id + ":", e && e.message); }
 }
 
-export async function findeWissen(env, frage) {
+export async function findeWissen(env, frage, diagnose) {
   let begriffe = suchbegriffe(frage);
   /* 2.13: auch ohne ein einziges Suchwort (z. B. „Rücken tut weh" nach
      Abzug der Füllwörter) kann die Bedeutung etwas finden. */
@@ -798,6 +798,7 @@ export async function findeWissen(env, frage) {
         "SELECT w.id, w.thema, w.inhalt, w.quelle FROM wissen_fts f JOIN wissen w ON w.id = f.rowid WHERE wissen_fts MATCH ? ORDER BY bm25(wissen_fts, 3.0, 1.0) LIMIT 20"
       ).bind(anfrage).all()).results || [];
       treffer = wissenRangieren(treffer, original).slice(0, 6);
+      if (diagnose) { diagnose.begriffe = begriffe; diagnose.volltext = treffer.map(w => ({ id: w.id, thema: w.thema })); }
     } catch (e) {
       console.error("Volltextsuche fehlgeschlagen, nutze einfache Suche:", e && e.message);
       const like = "%" + begriffe[0].slice(0, 5) + "%";
@@ -940,17 +941,66 @@ async function datenLoeschen(env, nummerRoh) {
    bleibt, holt der nächste Lauf. Abgelehntes kommt nicht wieder
    (schluessel). Freigegebene Selbsttest-Fragen zählen als geprüfte
    Beispiele fürs spätere Nachtrainieren. */
-export const VORSCHLAG_ARTEN = ["frage", "luecke", "veraltet", "doppelt", "korrektur"];
+export const VORSCHLAG_ARTEN = ["frage", "luecke", "veraltet", "doppelt", "korrektur", "import"];
+/* 2.14: Was die Studioleitung in der App freigeben darf. „doppelt" löscht
+   einen Eintrag — das bleibt im Leitstand bei Semih. */
+export const VORSCHLAG_ARTEN_STUDIO = ["frage", "luecke", "veraltet", "korrektur", "import"];
+let _vsSpalten = false;
 export async function vorschlagTabelle(env) {
   await env.DB.prepare("CREATE TABLE IF NOT EXISTS vorschlag (id INTEGER PRIMARY KEY AUTOINCREMENT, art TEXT, wissen_id INTEGER, ref INTEGER, thema TEXT, inhalt TEXT, alt TEXT, begruendung TEXT, status TEXT DEFAULT 'neu', schluessel TEXT UNIQUE, erstellt INTEGER, geprueft INTEGER)").run();
   await env.DB.prepare("CREATE TABLE IF NOT EXISTS selbsttest (wissen_id INTEGER PRIMARY KEY, zuletzt INTEGER, gefunden INTEGER, frage TEXT)").run();
+  /* 2.14: Herkunft und wer freigegeben hat. Bestehende Datenbanken
+     bekommen die Spalten nachgereicht; „gibt es schon" ist kein Fehler. */
+  if (!_vsSpalten) {
+    for (const sp of ["kategorie TEXT", "quelle TEXT", "von TEXT", "von_id TEXT", "geprueft_von TEXT"]) {
+      try { await env.DB.prepare("ALTER TABLE vorschlag ADD COLUMN " + sp).run(); } catch (e) { /* schon da */ }
+    }
+    _vsSpalten = true;
+  }
 }
 export async function vorschlagAnlegen(env, v) {
   if (!VORSCHLAG_ARTEN.includes(v.art) || !v.schluessel) return false;
   await vorschlagTabelle(env);
-  const r = await env.DB.prepare("INSERT OR IGNORE INTO vorschlag (art, wissen_id, ref, thema, inhalt, alt, begruendung, schluessel, erstellt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
-    .bind(v.art, v.wissenId || null, v.ref || null, kuerze(v.thema || "", 300), kuerze(v.inhalt || "", 5000), kuerze(v.alt || "", 5000), kuerze(v.begruendung || "", 500), String(v.schluessel).slice(0, 300), Date.now()).run();
+  const r = await env.DB.prepare("INSERT OR IGNORE INTO vorschlag (art, wissen_id, ref, thema, inhalt, alt, begruendung, schluessel, erstellt, kategorie, quelle, von, von_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+    .bind(v.art, v.wissenId || null, v.ref || null, kuerze(v.thema || "", 300), kuerze(v.inhalt || "", 5000), kuerze(v.alt || "", 5000), kuerze(v.begruendung || "", 500), String(v.schluessel).slice(0, 300), Date.now(),
+      v.kategorie || null, v.quelle ? kuerze(v.quelle, 120) : null, v.von ? kuerze(v.von, 60) : null, v.vonId ? String(v.vonId).slice(0, 128) : null).run();
   return r.meta.changes > 0;
+}
+/* Ein kurzer, stabiler Fingerabdruck für Texte (FNV-1a). Rein rechnerisch;
+   dient nur dazu, denselben Vorschlag nicht zweimal anzulegen. */
+export function textSchluessel(t) {
+  let h = 0x811c9dc5;
+  const s = String(t || "");
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+  return h.toString(36);
+}
+/* 2.14 (22.10.2026, aus dem Betrieb: „wie können wir ihm mehr wissen
+   geben"): viele Einträge auf einmal — aber als VORSCHLAG, nie direkt
+   als Wissen. Gibt es das Thema schon, wird der Vorschlag zur Änderung
+   dieses Eintrags (kein Doppel). Steht genau derselbe Text schon da,
+   entsteht gar nichts. Höchstens 50 je Aufruf. */
+export async function vorschlagImport(env, eintraege, opt) {
+  const o = opt || {};
+  const ergebnis = { neu: 0, schonDa: 0, ungueltig: 0 };
+  const liste = Array.isArray(eintraege) ? eintraege.slice(0, 50) : [];
+  await vorschlagTabelle(env);
+  for (const e of liste) {
+    const thema = kuerze(String((e && e.thema) || "").trim(), 300);
+    const inhalt = kuerze(String((e && e.inhalt) || "").trim(), 5000);
+    if (thema.length < 3 || inhalt.length < 10) { ergebnis.ungueltig++; continue; }
+    const kategorie = KATEGORIEN.includes(e.kategorie) ? e.kategorie : "Sonstiges";
+    const quelle = kuerze(String(e.quelle || o.quelle || "Import"), 120);
+    const da = await env.DB.prepare("SELECT id, inhalt FROM wissen WHERE lower(thema) = lower(?) ORDER BY id LIMIT 1").bind(thema).first();
+    if (da && String(da.inhalt).trim() === inhalt) { ergebnis.schonDa++; continue; }
+    const ok = await vorschlagAnlegen(env, {
+      art: "import", wissenId: da ? da.id : null, thema, inhalt, alt: da ? da.inhalt : "",
+      begruendung: (da ? "Ändert Eintrag Nr. " + da.id + ". " : "Neues Wissen. ") + "Quelle: " + quelle + (o.von ? " · vorgeschlagen von " + kuerze(o.von, 60) : ""),
+      schluessel: "import:" + textSchluessel(thema.toLowerCase() + "\n" + inhalt),
+      kategorie, quelle, von: o.von, vonId: o.vonId
+    });
+    if (ok) ergebnis.neu++; else ergebnis.schonDa++;
+  }
+  return ergebnis;
 }
 /* „stimmt nicht, richtig ist: …" → der Teil nach dem Komma/Doppelpunkt.
    Rein rechnerisch. Zu kurz (< 15 Zeichen) heisst: keine Richtigstellung. */
@@ -1063,11 +1113,17 @@ export async function lernlauf(env, opt) {
 }
 /* Ein Vorschlag wird angenommen oder verworfen. „inhalt" ist der Text,
    wie du ihn im Leitstand stehen lassen oder geändert hast. */
-export async function vorschlagUrteil(env, { id, gut, inhalt }) {
+export async function vorschlagUrteil(env, { id, gut, inhalt, von, vonId, studio }) {
   await vorschlagTabelle(env);
   const v = await env.DB.prepare("SELECT * FROM vorschlag WHERE id = ?").bind(Number(id)).first();
   if (!v || v.status !== "neu") return { ok: false, fehler: "Gibt es nicht oder ist schon erledigt." };
-  const fertig = (status, text) => env.DB.prepare("UPDATE vorschlag SET status = ?, geprueft = ? WHERE id = ?").bind(status, Date.now(), v.id).run().then(() => ({ ok: true, text }));
+  /* 2.14: aus der App (studio) nur die erlaubten Arten — und einen
+     eigenen Vorschlag gibt jemand anderes frei (vier Augen). Verwerfen
+     darf man den eigenen. */
+  if (studio && !VORSCHLAG_ARTEN_STUDIO.includes(v.art)) return { ok: false, fehler: "Das entscheidet Semih im Leitstand." };
+  if (studio && gut && v.von_id && vonId && String(v.von_id) === String(vonId)) return { ok: false, fehler: "Deinen eigenen Vorschlag gibt jemand anderes aus der Leitung frei." };
+  const wer = von ? kuerze(String(von), 60) : (studio ? null : "Leitstand");
+  const fertig = (status, text) => env.DB.prepare("UPDATE vorschlag SET status = ?, geprueft = ?, geprueft_von = ? WHERE id = ?").bind(status, Date.now(), wer, v.id).run().then(() => ({ ok: true, text }));
   if (!gut) return fertig("verworfen", "Verworfen.");
   const text = String(inhalt == null ? v.inhalt : inhalt).trim();
   if (v.art === "frage") {
@@ -1089,6 +1145,16 @@ export async function vorschlagUrteil(env, { id, gut, inhalt }) {
   if (v.art === "veraltet") {
     await wissenAendern(env, v.wissen_id, { inhalt: text });
     return fertig("gut", "Eintrag Nr. " + v.wissen_id + " ist bestätigt.");
+  }
+  if (v.art === "import") {
+    if (text.length < 10) return { ok: false, fehler: "Der Text ist zu kurz." };
+    const kat = KATEGORIEN.includes(v.kategorie) ? v.kategorie : "Sonstiges";
+    if (v.wissen_id && await env.DB.prepare("SELECT id FROM wissen WHERE id = ?").bind(v.wissen_id).first()) {
+      await wissenAendern(env, v.wissen_id, { inhalt: text });
+      return fertig("gut", "Eintrag Nr. " + v.wissen_id + " ist aktualisiert.");
+    }
+    const nr = await wissenSpeichern(env, { thema: v.thema, inhalt: text, kategorie: kat, quelle: v.quelle || "Import" });
+    return fertig("gut", "Als Wissen Nr. " + nr + " gespeichert.");
   }
   if (v.art === "doppelt") {
     await wissenAendern(env, v.wissen_id, { inhalt: text });
@@ -1431,6 +1497,26 @@ async function api(request, env, url) {
     return json({ tage, fragen, abgedeckt, offenGesamt, offen, ideen, beispiele, wissen });
   }
 
+  // ---- Vorschläge aus der App (2.14, nur Server zu Server, STUDIO_KEY) ----
+  // Die App prüft vorher, dass Leitung fragt; hier kommen nur Name und
+  // eine Kennung für die vier Augen an. Keine Mailadresse.
+  if ((pfad === "/api/vorschlag/liste" || pfad === "/api/vorschlag/import" || pfad === "/api/vorschlag/entscheiden") && request.method === "POST") {
+    const ok = adminOk || (!!env.STUDIO_KEY && gleich(request.headers.get("x-studio-key") || "", env.STUDIO_KEY));
+    if (!ok) return json({ fehler: "Kein Zugriff" }, 401);
+    const b = await request.json().catch(() => ({}));
+    const von = b.von ? kuerze(String(b.von), 60) : null;
+    const vonId = b.vonId ? String(b.vonId).slice(0, 128) : null;
+    await vorschlagTabelle(env);
+    if (pfad === "/api/vorschlag/liste") {
+      const arten = VORSCHLAG_ARTEN_STUDIO;
+      const liste = rows(await env.DB.prepare("SELECT id, art, wissen_id, thema, inhalt, alt, begruendung, kategorie, quelle, von, von_id, erstellt FROM vorschlag WHERE status = 'neu' AND art IN (" + arten.map(() => "?").join(",") + ") ORDER BY id DESC LIMIT 40").bind(...arten).all());
+      const n = await env.DB.prepare("SELECT COUNT(*) AS n FROM vorschlag WHERE status = 'neu' AND art IN (" + arten.map(() => "?").join(",") + ")").bind(...arten).first();
+      return json({ anzahl: (n && n.n) || 0, liste: liste.map(x => ({ id: x.id, art: x.art, wissenId: x.wissen_id, thema: x.thema, inhalt: x.inhalt, alt: x.alt, begruendung: x.begruendung, kategorie: x.kategorie, von: x.von, eigen: !!(vonId && x.von_id && x.von_id === vonId), erstellt: x.erstellt })) });
+    }
+    if (pfad === "/api/vorschlag/import") return json(await vorschlagImport(env, b.eintraege, { von, vonId, quelle: b.quelle ? String(b.quelle) : null }));
+    return json(await vorschlagUrteil(env, { id: b.id, gut: !!b.gut, inhalt: b.inhalt == null ? null : String(b.inhalt), von, vonId, studio: !adminOk || !!b.studio }));
+  }
+
   // ---- Menschliche Stimme (2.8, nur Server zu Server, STUDIO_KEY) ----
   // Aus dem Betrieb (20.10.2026): „lebendig wirkt von der stimme und wie
   // ein echter mensch". Workers AI hat keine deutsche Stimme; Google
@@ -1561,6 +1647,21 @@ async function api(request, env, url) {
   if (request.method === "GET") {
     if (pfad === "/api/statistik") return json(await statistik(env));
     if (pfad === "/api/wochenbericht") return json(await wochenbericht(env));
+    /* 2.14: Warum findet Formi etwas (nicht)? Zeigt Suchwörter, die
+       Volltext-Treffer und die Ähnlichkeit nach Bedeutung OHNE Schwelle —
+       daran lässt sich VEKTOR_MIN einstellen. Nur Leitstand. */
+    if (pfad === "/api/suche") {
+      const q = kuerze(String(url.searchParams.get("q") || ""), 500);
+      if (!q) return json({ fehler: "q fehlt" }, 400);
+      const d = {};
+      let bedeutung = [];
+      try { bedeutung = await sucheBedeutung(env, q, 12, true); } catch (e) { d.fehlerBedeutung = String(e && e.message || e).slice(0, 120); }
+      const ergebnis = await findeWissen(env, q, d);
+      const themen = new Map(rows(await env.DB.prepare("SELECT id, thema FROM wissen").all()).map(w => [w.id, w.thema]));
+      return json({ frage: q, schwelle: VEKTOR_MIN, begriffe: d.begriffe || [], volltext: d.volltext || [],
+        bedeutung: bedeutung.map(x => ({ id: x.id, wert: Math.round(x.wert * 1000) / 1000, thema: themen.get(x.id) || "" })),
+        ergebnis: ergebnis.map(w => ({ id: w.id, thema: w.thema })), fehler: d.fehlerBedeutung || null });
+    }
     if (pfad === "/api/vorschlaege") { await vorschlagTabelle(env); return json(rows(await env.DB.prepare("SELECT * FROM vorschlag WHERE status = 'neu' ORDER BY id DESC LIMIT ?").bind(limit).all())); }
     if (pfad === "/api/wissen") return json(rows(await env.DB.prepare("SELECT * FROM wissen ORDER BY geaendert DESC LIMIT ?").bind(limit).all()));
     if (pfad === "/api/offen") return json(rows(await env.DB.prepare("SELECT * FROM offen WHERE status = 'offen' ORDER BY id DESC LIMIT ?").bind(limit).all()));
@@ -1895,7 +1996,7 @@ function wochenKarte(v) {
   });
 }
 /* 2.13: Vorschläge von Formi — ✓ macht Wissen daraus, ✗ verwirft. */
-var VS_NAME = { frage: "Selbsttest", luecke: "Antwort-Entwurf", veraltet: "Noch aktuell?", doppelt: "Doppelt", korrektur: "Korrektur aus dem Team" };
+var VS_NAME = { frage: "Selbsttest", luecke: "Antwort-Entwurf", veraltet: "Noch aktuell?", doppelt: "Doppelt", korrektur: "Korrektur aus dem Team", "import": "Neues Wissen" };
 function vorschlaege(v) {
   api("/api/vorschlaege").then(function (liste) {
     v.replaceChildren(el("div", { class: "s", style: "margin-bottom:10px", text: "Formi schlägt vor, du entscheidest. Text bei Bedarf ändern, dann übernehmen. Nichts davon ist Wissen, bevor du es freigibst." }));
@@ -1908,7 +2009,7 @@ function vorschlaege(v) {
       if (x.art === "frage") {
         karte.append(el("div", { class: "s", style: "margin-top:8px", text: "Eintrag Nr. " + x.wissen_id + ": " + (x.alt || "") }), el("div", { class: "pre s", text: x.inhalt }));
       } else {
-        if (x.alt) karte.append(el("div", { class: "s", style: "margin-top:8px", text: x.art === "doppelt" ? "Wird gelöscht (Nr. " + x.ref + "):" : "Bisher:" }), el("div", { class: "pre s", text: x.alt }));
+        if (x.alt) karte.append(el("div", { class: "s", style: "margin-top:8px", text: x.art === "doppelt" ? "Wird gelöscht (Nr. " + x.ref + "):" : "Bisher" + (x.wissen_id ? " (Nr. " + x.wissen_id + ")" : "") + ":" }), el("div", { class: "pre s", text: x.alt }));
         ta = el("textarea"); ta.value = x.inhalt || "";
         karte.append(el("div", { class: "s", style: "margin-top:8px", text: x.art === "doppelt" ? "Bleibt (Nr. " + x.wissen_id + "), gern zusammengefasst:" : "Text, der Wissen wird:" }), ta);
       }

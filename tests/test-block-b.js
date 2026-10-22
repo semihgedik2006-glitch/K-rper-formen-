@@ -28,7 +28,7 @@ function pruefe(was, bedingung, hinweis) {
 }
 
 async function seite(b, rolle, w, h) {
-  const p = await b.newPage({ viewport: { width: w || 390, height: h || 844 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w || 390, height: h || 844 } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
@@ -39,7 +39,7 @@ async function seite(b, rolle, w, h) {
   await p.waitForTimeout(400);
   return p;
 }
-/* Der Weg zu „Meine Woche" über „Alles". Seit Runde 183 steht „Alles"
+/* Der Weg zu „Meine Woche" über „Alles". Seit Runde 184 steht „Alles"
    nicht mehr in der Leiste (aus dem Betrieb, 22.10.2026: „das problem
    mit dem zu viel bleibt immer noch bestehen") — der ☰-Griff
    #bereichKopf öffnet dieselbe Liste als Schublade. */

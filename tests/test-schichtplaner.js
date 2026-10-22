@@ -47,7 +47,7 @@ const TREFFER = (el) => {
 const GROESSEN = [[320, 568], [390, 844], [430, 932], [820, 1180], [1280, 800], [1440, 900], [1920, 1080]];
 
 async function oeffne(b, rolle, w, h) {
-  const ctx = await b.newContext({ viewport: { width: w, height: h }, permissions: ['clipboard-read', 'clipboard-write'] });
+  const ctx = await b.newContext({ serviceWorkers: 'block', viewport: { width: w, height: h }, permissions: ['clipboard-read', 'clipboard-write'] });
   const p = await ctx.newPage();
   p._fehler = [];
   p.on('pageerror', (e) => p._fehler.push(e.message.slice(0, 160)));
@@ -64,7 +64,7 @@ async function oeffne(b, rolle, w, h) {
 }
 /* Seit Runde 169 eine eigene Seite (view-planer) statt eines
    Verwaltungs-Reiters — der Weg bleibt „Alles" → Schichtplaner. */
-/* Runde 183 („fünf Räume“): „Alles“ steht nicht mehr in der Leiste,
+/* Runde 184 („fünf Räume“): „Alles“ steht nicht mehr in der Leiste,
    sondern hinter dem ☰-Griff am Seitenkopf (#bereichKopf), der die
    Schublade öffnet. Aus dem Betrieb, 22.10.2026: „das problem mit dem zu
    viel bleibt immer noch bestehen“ – derselbe Weg, zwei Tipps, nur der
@@ -220,7 +220,7 @@ async function messen(p, wer, liste) {
   // In der Demo sind veröffentlichte Schichten im Team-Schichtplan zu sehen
   const imTeam = await p.evaluate(async () => {
     const w = (ms) => new Promise((r) => setTimeout(r, ms));
-    /* Runde 183: der Raum „Team“ heisst jetzt „Plan“ („wer arbeitet wann?“). */
+    /* Runde 184: der Raum „Team“ heisst jetzt „Plan“ („wer arbeitet wann?“). */
     const team = [...document.querySelectorAll('.mobnav button, #side button, #side a')].find((e) => e.offsetParent && /^\s*Plan\s*$/.test(e.textContent));
     if (!team) return -1;
     team.click(); await w(900);
@@ -382,7 +382,7 @@ async function messen(p, wer, liste) {
   const l = await oeffne(b, 'leiter', 390, 844);
   const lHat = await l.evaluate(async () => {
     const w = (ms) => new Promise((r) => setTimeout(r, ms));
-    /* Runde 183: „Alles“ liegt hinter dem ☰-Griff (#bereichKopf), nicht
+    /* Runde 184: „Alles“ liegt hinter dem ☰-Griff (#bereichKopf), nicht
        mehr in der unteren Leiste. Ohne die Schublade zu öffnen, wäre
        „hat den Reiter nicht“ immer wahr und sagte nichts. */
     const griff = document.getElementById('bereichKopf');
@@ -397,7 +397,7 @@ async function messen(p, wer, liste) {
   const m = await oeffne(b, 'mitarbeiter', 390, 844);
   const mHat = await m.evaluate(async () => {
     const w = (ms) => new Promise((r) => setTimeout(r, ms));
-    /* Runde 183: „Alles“ liegt hinter dem ☰-Griff (#bereichKopf), nicht
+    /* Runde 184: „Alles“ liegt hinter dem ☰-Griff (#bereichKopf), nicht
        mehr in der unteren Leiste. Ohne die Schublade zu öffnen, wäre
        „hat den Reiter nicht“ immer wahr und sagte nichts. */
     const griff = document.getElementById('bereichKopf');

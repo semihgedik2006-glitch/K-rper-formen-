@@ -136,7 +136,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await aufSeite(p);
     pruefe('die Zeile öffnet die eigene Seite', await sichtbar(p, '#view-gehirn.show'));
     const reiter = await p.evaluate(() => [...document.querySelectorAll('#subnav [data-subview]')].map(x => x.getAttribute('data-subview')));
-    /* Bis Runde 179 stand der Reiter unter „Ich". Seit Runde 183 („fünf
+    /* Bis Runde 179 stand der Reiter unter „Ich". Seit Runde 184 („fünf
        Räume", aus dem Betrieb 22.10.2026: „das problem mit dem zu viel
        bleibt immer noch bestehen") gehört Formi zu „Wissen", neben
        Dokumenten und Schulung. */
@@ -1227,14 +1227,26 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
       } });
       if (dichte === 'kompakt') await p.evaluate(() => document.body.setAttribute('data-dichte', 'kompakt'));
       await aufSeite(p);
-      const ids = async (sel) => p.evaluate(({ s, T }) => {
+      /* Gemessen wird erst, wenn nichts mehr scrollt. Nach einer neuen
+         Nachricht rollt Formi den Verlauf sanft nach unten; wer direkt
+         nach scrollIntoView misst, erwischt den Knopf mitten in der
+         Fahrt halb unter der Kante (22.10.2026: 34 bzw. 42 px gemessen,
+         ruhend sind es 44). Die Schwelle bleibt 44. */
+      const ids = async (sel) => p.evaluate(async ({ s, T }) => {
         const F = eval('(' + T + ')'); const zuKlein = [];
-        document.querySelectorAll(s).forEach(el => {
-          if (!el.getClientRects().length) return;
+        const bild = () => new Promise(r => requestAnimationFrame(() => r()));
+        for (const el of document.querySelectorAll(s)) {
+          if (!el.getClientRects().length) continue;
           el.scrollIntoView({ block: 'center' });
+          let vorher = '', ruhig = 0;
+          for (let i = 0; i < 60 && ruhig < 3; i++) {
+            await bild();
+            const r = el.getBoundingClientRect(), jetzt = r.top + '/' + r.left;
+            ruhig = jetzt === vorher ? ruhig + 1 : 0; vorher = jetzt;
+          }
           const m = F(el);
           if (m.w < 44 || m.h < 44) zuKlein.push((el.id || el.textContent.trim()).slice(0, 24) + ' ' + m.w + '×' + m.h);
-        });
+        }
         return zuKlein;
       }, { s: sel, T: TREFFER.toString() });
       let zuKlein = await ids('#gehirnChips .gehirn-chip, #gehirnFragen, #gehirnMic, #gehirnBericht button, #gehirnVorschlaege button');
@@ -1252,7 +1264,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
       await p.fill('#gehirnFeld', 'Wie wasche ich die Westen?'); await p.click('#gehirnFragen'); await fertig(p);
       if (!(await p.$('#gehirnVerlauf [data-gdaumen]'))) zuKlein.push('Daumen fehlt');
       zuKlein = zuKlein.concat(await ids('#gehirnVerlauf [data-gdaumen]'));
-      // Das eigene Fenster: Eingang auf der Startseite (seit Runde 183 die Kugel) und die Knöpfe darin
+      // Das eigene Fenster: Eingang auf der Startseite (seit Runde 184 die Kugel) und die Knöpfe darin
       await p.evaluate(() => { location.hash = '#home'; }); await p.waitForTimeout(400);
       const jk = await jvKnopf(p);
       if (!jk) zuKlein.push('Formi-Kugel fehlt'); else zuKlein = zuKlein.concat(await ids(jk));

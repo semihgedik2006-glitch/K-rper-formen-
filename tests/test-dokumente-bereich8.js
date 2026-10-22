@@ -11,7 +11,7 @@ const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linu
 
 async function start(stub, errs) {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-  const page = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+  const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
   page.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 250)));
   page.on('console', m => { if (m.type() === 'error' && !/ERR_|Failed to load/.test(m.text())) errs.push('CONSOLE: ' + m.text().slice(0, 200)); });
   await page.route('**://www.gstatic.com/**', r => r.abort());
@@ -21,7 +21,7 @@ async function start(stub, errs) {
   await page.waitForTimeout(1600);
   await page.mouse.click(195, 400).catch(() => {});
   await page.waitForTimeout(2700);
-  /* Seit Runde 183 („fünf Räume", aus dem Betrieb 22.10.2026: „das
+  /* Seit Runde 184 („fünf Räume", aus dem Betrieb 22.10.2026: „das
      problem mit dem zu viel bleibt immer noch bestehen") stehen die
      Dokumente unter „Wissen" — dort sind sie der erste Reiter. */
   await page.evaluate(() => document.querySelector('.mobnav [data-group="g-wissen"]').click());

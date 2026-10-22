@@ -46,7 +46,7 @@ function pruefe(name, bedingung, zusatz) {
 }
 
 async function seite(b, stub, such, breite) {
-  const page = await b.newPage({ viewport: { width: breite || 390, height: 844 } });
+  const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: breite || 390, height: 844 } });
   page.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 180)));
   page.on('console', m => {
     if (m.type() === 'error' && !/ERR_|Failed to load/.test(m.text()))
@@ -121,7 +121,7 @@ async function seite(b, stub, such, breite) {
     }));
     console.log('NEU:', JSON.stringify(neu));
     pruefe('body trägt die Klasse „neu"', neu.klasse === true);
-    /* Runde 183, aus dem Betrieb, 22.10.2026: „das problem mit dem zu
+    /* Runde 184, aus dem Betrieb, 22.10.2026: „das problem mit dem zu
        viel bleibt immer noch bestehen" — zu viele Menüpunkte, man findet
        nichts; „jede Funktion hat ihren Sinn" (nichts streichen, nur neu
        ordnen); die Raumnamen „passen". Seitdem fünf Räume, am Handy
@@ -293,7 +293,7 @@ async function seite(b, stub, such, breite) {
 
   /* Seite und Schublade müssen dasselbe zeigen — sonst gibt es zwei
      Wahrheiten, und eine davon ist immer die alte. */
-  /* Runde 183: die Seite „Alles" hat keinen Leistenknopf mehr. Sie
+  /* Runde 184: die Seite „Alles" hat keinen Leistenknopf mehr. Sie
      bleibt für gespeicherte Wege (#alles) bestehen — also über genau
      so einen Link geöffnet. Solange es sie gibt, muss sie dasselbe
      zeigen wie die Schublade. */
@@ -440,7 +440,7 @@ async function seite(b, stub, such, breite) {
   console.log('\n── Passt die Startseite auf einen Bildschirm? ──');
   for (const stub of ['stub-chef.js', 'stub-mitarbeiter.js']) {
     for (const [breite, hoehe] of [[390, 844], [360, 780], [320, 568]]) {
-      const pn = await b.newPage({ viewport: { width: breite, height: hoehe } });
+      const pn = await b.newPage({ serviceWorkers: 'block', viewport: { width: breite, height: hoehe } });
       pn.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 180)));
       await pn.route('**://www.gstatic.com/**', r => r.abort());
       await pn.addInitScript({ path: path.join(SP, stub) });
@@ -537,7 +537,7 @@ async function seite(b, stub, such, breite) {
   ]) {
     const p3 = await seite(b, stub, '?neu=1');
     const r = await p3.evaluate(async () => {
-      /* Runde 183: „Alles" öffnet man über den ☰-Griff am Seitenkopf;
+      /* Runde 184: „Alles" öffnet man über den ☰-Griff am Seitenkopf;
          gelesen wird, was in der Schublade steht. */
       document.getElementById('bereichKopf').click();
       await new Promise(r => setTimeout(r, 900));

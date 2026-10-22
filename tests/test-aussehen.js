@@ -95,7 +95,7 @@ async function stand(p) {
 
 (async () => {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-  const p = await b.newPage({ viewport: { width: 390, height: 900 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 900 } });
   const fehler = [];
   p.on('pageerror', e => fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());

@@ -40,14 +40,14 @@ const TREFFER = (el) => {
 };
 
 async function oeffne(b, w, h) {
-  const p = await b.newPage({ viewport: { width: w, height: h } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
   await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
   await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(3000);
-  /* Runde 183 („fünf Räume“): „Alles“ liegt hinter dem ☰-Griff am
+  /* Runde 184 („fünf Räume“): „Alles“ liegt hinter dem ☰-Griff am
      Seitenkopf (#bereichKopf), nicht mehr in einer Leiste. Aus dem Betrieb,
      22.10.2026: „das problem mit dem zu viel bleibt immer noch bestehen“. */
   await p.evaluate(() => { const a = document.getElementById('bereichKopf'); if (a && a.getClientRects().length && a.getAttribute('aria-expanded') !== 'true') a.click(); });

@@ -58,7 +58,7 @@ const TODOS = `window.__todos = { 'studio-6': [
 ] };`;
 
 async function oeffnen(b, w, h, stub, vorher) {
-  const p = await b.newPage({ viewport: { width: w, height: h } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   p.on('dialog', d => d.accept());
@@ -150,7 +150,7 @@ const fremdSchreib = () => (window.__schreib || []).filter(x => /\/(todos|cleani
       pruefe('GEGENPROBE „Nach Name": kein Griff, kein Zurücksetzen', nameG.griffe === 0 && nameG.weg, JSON.stringify(nameG));
       await p.selectOption('#todoSort', 'standard'); await p.waitForTimeout(350);
 
-      /* Neuladen: vom Gerät. DIESELBE Seite — browser.newPage() wäre ein
+      /* Neuladen: vom Gerät. DIESELBE Seite — browser.newPage({ serviceWorkers: 'block' }) wäre ein
          frischer Kontext mit leerem Speicher, also ein anderes Gerät. */
       await p.reload({ waitUntil: 'domcontentloaded' }); await p.waitForTimeout(2800);
       await zu(p, 'todos');
@@ -215,7 +215,7 @@ const fremdSchreib = () => (window.__schreib || []).filter(x => /\/(todos|cleani
        verschoben, nichts abgehakt, die Seite nicht gerollt. */
     console.log('\n── Handy: mit dem Finger ──');
     {
-      const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+      const ctx = await b.newContext({ serviceWorkers: 'block', viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
       const p = await ctx.newPage();
       p._fehler = [];
       p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));

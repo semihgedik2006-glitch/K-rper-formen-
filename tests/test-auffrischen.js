@@ -41,7 +41,7 @@ const TREFFER = (el) => {
 };
 
 async function oeffne(b, w, h, vorher) {
-  const p = await b.newPage({ viewport: { width: w, height: h } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
@@ -53,7 +53,7 @@ async function oeffne(b, w, h, vorher) {
   await p.waitForTimeout(3200);
   return p;
 }
-/* Die Schulung lag bis Runde 179 unter „Ich". Seit Runde 183 („fünf
+/* Die Schulung lag bis Runde 179 unter „Ich". Seit Runde 184 („fünf
    Räume", aus dem Betrieb 22.10.2026: „das problem mit dem zu viel bleibt
    immer noch bestehen") steht sie unter „Wissen" — unten in der Leiste
    am Handy, in der Seitenleiste am Rechner, Reiter „Schulung". */
@@ -179,7 +179,7 @@ function karte(p) {
 
   /* Erst 13 Tage her: keine Frage. Die Demo legt den Durchlauf 16 Tage vor
      „jetzt" an; die Uhr springt nach dem Laden drei Tage zurück. */
-  const r = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const r = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 } });
   await r.route('**://www.gstatic.com/**', x => x.abort());
   await r.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
   const jetzt = Date.now();

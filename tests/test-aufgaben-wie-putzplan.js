@@ -99,7 +99,7 @@ const DATEN = `(() => {
 })()`;
 
 async function oeffnen(b, w, h, mitDaten, vorher) {
-  const p = await b.newPage({ viewport: { width: w, height: h } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   p.on('dialog', d => d.accept());
@@ -368,7 +368,7 @@ const GRUPPEN = () => [...document.querySelectorAll('#todoArea .pp-gruppe')].map
     /* ══ 8b/13. Rollen in der Demo, und die Trefferflächen ══ */
     console.log('\n── 8b. Rollen (Demo) ──');
     for (const rolle of ['mitarbeiter', 'leiter']) {
-      const q = await b.newPage({ viewport: { width: 1440, height: 900 } });
+      const q = await b.newPage({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
       q._fehler = [];
       q.on('pageerror', e => q._fehler.push(e.message.slice(0, 160)));
       await q.route('**://www.gstatic.com/**', r => r.abort());

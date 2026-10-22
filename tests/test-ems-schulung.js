@@ -52,7 +52,7 @@ function pruefe(was, bedingung, hinweis) {
 }
 
 async function starte(b, w, h) {
-  const p = await b.newPage({ viewport: { width: w || 390, height: h || 844 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w || 390, height: h || 844 } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
@@ -69,7 +69,7 @@ async function starte(b, w, h) {
   await p.waitForTimeout(3300);
   return p;
 }
-/* Die Schulung lag bis Runde 179 unter „Ich". Seit Runde 183 („fünf
+/* Die Schulung lag bis Runde 179 unter „Ich". Seit Runde 184 („fünf
    Räume", aus dem Betrieb 22.10.2026: „das problem mit dem zu viel bleibt
    immer noch bestehen") steht sie unter „Wissen" — unten in der Leiste
    am Handy, in der Seitenleiste am Rechner, Reiter „Schulung". */

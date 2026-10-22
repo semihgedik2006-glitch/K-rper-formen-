@@ -43,7 +43,7 @@ const TREFFER = (el) => {
   return { w: Math.round(re - l + 1), h: Math.round(u - o + 1) };
 };
 async function oeffne(b, w, h, rolle) {
-  const p = await b.newPage({ viewport: { width: w, height: h } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
@@ -52,7 +52,7 @@ async function oeffne(b, w, h, rolle) {
   await p.waitForTimeout(3200);
   return p;
 }
-/* Runde 183 („fünf Räume“): „Alles“ steht nicht mehr in Seitenleiste oder
+/* Runde 184 („fünf Räume“): „Alles“ steht nicht mehr in Seitenleiste oder
    unterer Leiste, sondern hinter dem ☰-Griff am Seitenkopf (#bereichKopf).
    Aus dem Betrieb, 22.10.2026: „das problem mit dem zu viel bleibt immer
    noch bestehen“. Der Weg bleibt „Alles“ → Verwaltung → Reiter. */

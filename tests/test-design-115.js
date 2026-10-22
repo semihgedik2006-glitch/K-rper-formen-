@@ -51,7 +51,7 @@ async function zuDenAufgaben(p) {
 
   for (const [w, h] of [[390, 844], [1440, 900]]) {
     console.log('\n── ' + w + ' × ' + h + ' ──');
-    const ctx = await b.newContext({ viewport: { width: w, height: h } });
+    const ctx = await b.newContext({ serviceWorkers: 'block', viewport: { width: w, height: h } });
     const p = await oeffne(ctx, 'chef');
 
     /* ══ 1. Fortschritt ══
@@ -121,7 +121,7 @@ async function zuDenAufgaben(p) {
 
     /* ══ 3. Hochzählen im Überblick ══ */
     /* Bis Runde 179 stand „Alles" als Knopf in Seitenleiste bzw. Leiste.
-       Seit Runde 183 („fünf Räume", aus dem Betrieb 22.10.2026: „das
+       Seit Runde 184 („fünf Räume", aus dem Betrieb 22.10.2026: „das
        problem mit dem zu viel bleibt immer noch bestehen") öffnet der
        ☰-Griff #bereichKopf dieselbe Liste als Schublade. */
     await p.evaluate(() => { const a = document.getElementById('bereichKopf'); if (a) a.click(); });
@@ -151,9 +151,9 @@ async function zuDenAufgaben(p) {
   /* ══ 3b. Weniger Bewegung: kein Hochzählen ══ */
   {
     console.log('\n── weniger Bewegung ──');
-    const ctx = await b.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+    const ctx = await b.newContext({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
     const p = await oeffne(ctx, 'chef');
-    // Runde 183: „Alles" über den ☰-Griff (siehe oben).
+    // Runde 184: „Alles" über den ☰-Griff (siehe oben).
     await p.evaluate(() => { const a = document.getElementById('bereichKopf'); if (a) a.click(); });
     await p.waitForTimeout(500);
     const verlauf = await p.evaluate(() => new Promise(fertig => {

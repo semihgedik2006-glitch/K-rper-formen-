@@ -520,7 +520,7 @@ const ohneKommentar = (() => {
   const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-  const page = await b.newPage({ viewport: { width: 390, height: 900 } });
+  const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 900 } });
   await page.route('**://www.gstatic.com/**', r => r.abort());
   await page.route('**fonts.googleapis.com/**', r => r.abort());
   await page.addInitScript({ path: path.join(__dirname, 'stub-chef.js') });

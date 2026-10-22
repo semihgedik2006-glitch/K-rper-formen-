@@ -36,7 +36,7 @@ function pruefe(was, bedingung, hinweis) {
 }
 
 async function starte(b, rolle, breite, hoehe) {
-  const p = await b.newPage({ viewport: { width: breite || 390, height: hoehe || 844 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: breite || 390, height: hoehe || 844 } });
   await p.route('**://www.gstatic.com/**', r => r.abort());
   await p.addInitScript(() => {
     localStorage.setItem('kf_prefs', JSON.stringify({ theme: 'dark' }));
@@ -46,7 +46,7 @@ async function starte(b, rolle, breite, hoehe) {
   await p.waitForTimeout(3300);
   return p;
 }
-/* Runde 183 („fünf Räume“): Die Schulung liegt jetzt unter „Wissen“
+/* Runde 184 („fünf Räume“): Die Schulung liegt jetzt unter „Wissen“
    (g-wissen), neben Dokumenten und Formi. Aus dem Betrieb, 22.10.2026:
    „das problem mit dem zu viel bleibt immer noch bestehen“, „jede
    Funktion hat ihren Sinn“ – nichts gestrichen, nur neu geordnet. */

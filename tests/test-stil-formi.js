@@ -62,7 +62,7 @@ const stil = (p) => p.evaluate(() => ({ formi: document.body.classList.contains(
   meta: (document.querySelector('meta[name="theme-color"]') || {}).content }));
 const ansicht = (p, v) => p.evaluate(async (v) => {
   const w = ms => new Promise(r => setTimeout(r, ms));
-  /* Runde 183 („fünf Räume“): die Aufgaben liegen im Raum „Studio“, die
+  /* Runde 184 („fünf Räume“): die Aufgaben liegen im Raum „Studio“, die
      Startseite heisst „Heute“. Aus dem Betrieb, 22.10.2026: „das problem
      mit dem zu viel bleibt immer noch bestehen“ – die Raumnamen „passen“. */
   const name = { todos: /^\s*Studio/, home: /^\s*Heute/, chef: /Verwaltung/ }[v];

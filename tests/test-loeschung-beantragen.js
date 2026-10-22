@@ -46,7 +46,7 @@ const TREFFER = (el) => {
 };
 
 async function oeffne(b, w, h, rolle) {
-  const p = await b.newPage({ viewport: { width: w, height: h } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   p.on('dialog', d => d.accept());
@@ -57,7 +57,7 @@ async function oeffne(b, w, h, rolle) {
   return p;
 }
 /* Ich → Daten: über „Alles", wie ein Mensch — zwei Tipps.
-   Runde 183 („das problem mit dem zu viel bleibt immer noch bestehen"):
+   Runde 184 („das problem mit dem zu viel bleibt immer noch bestehen"):
    „Alles" ist kein Leistenknopf mehr, sondern der ☰-Griff am Seitenkopf
    (#bereichKopf). Derselbe Weg, andere Stelle. */
 async function zuDaten(p) {

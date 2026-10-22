@@ -82,7 +82,7 @@ async function messen(p, wer, liste, vorher) {
   await p.evaluate(() => { document.body.dataset.dichte = 'normal'; });
 }
 async function demo(b, rolle, uhr, w, h) {
-  const p = await b.newPage({ viewport: { width: w || 1440, height: h || 900 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w || 1440, height: h || 900 } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
@@ -180,7 +180,7 @@ const sortieren = (p, id, wert) => p.evaluate(async ([id, wert]) => {
       const f = document.getElementById('ntZeit');
       if (!f || !f.offsetParent) {
         const s = (sel) => [...document.querySelectorAll(sel)].find(e => e.offsetParent);
-        /* Runde 183 („fünf Räume“): „Alles“ liegt hinter dem ☰-Griff am
+        /* Runde 184 („fünf Räume“): „Alles“ liegt hinter dem ☰-Griff am
            Seitenkopf (#bereichKopf), nicht mehr in der Leiste. Aus dem
            Betrieb, 22.10.2026: „das problem mit dem zu viel bleibt immer
            noch bestehen“. */
@@ -206,7 +206,7 @@ const sortieren = (p, id, wert) => p.evaluate(async ([id, wert]) => {
     p.on('dialog', d => d.accept('Tageszeit-Vorlage'));
     const tpl = await p.evaluate(async () => {
       const w = (ms) => new Promise(r => setTimeout(r, ms));
-      /* Runde 183: „Alles“ über den ☰-Griff (#bereichKopf), siehe oben. */
+      /* Runde 184: „Alles“ über den ☰-Griff (#bereichKopf), siehe oben. */
       const a = [...document.querySelectorAll('#bereichKopf')].find(x => x.offsetParent); if (a && a.getAttribute('aria-expanded') !== 'true') { a.click(); await w(500); }
       const e = [...document.querySelectorAll('[data-alles][data-al-cgo="erstellen"]')].find(x => x.offsetParent); if (e) { e.click(); await w(700); }
       document.querySelectorAll('.card.fold.zu').forEach(k => { if (k.querySelector('#tplSave, #ntZeit')) k.querySelector('.fold-head').click(); });
@@ -276,7 +276,7 @@ const sortieren = (p, id, wert) => p.evaluate(async ([id, wert]) => {
       { id: 'z-alt', uid: 'z-alt', firma: 'koerperformen', name: 'Zoe Altname', role: 'leiter', aktiv: true, studios: ['Studio, das es nicht mehr gibt'], studioKeys: ['studio-7'] },
       { id: 'z-gut', uid: 'z-gut', firma: 'koerperformen', name: 'Zack Passt', role: 'mitarbeiter', aktiv: true, studios: ['Hürth'], studioKeys: ['studio-6'] }
     ];
-    const q = await b.newPage({ viewport: { width: 1440, height: 900 } });
+    const q = await b.newPage({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
     const fe2 = []; q.on('pageerror', e => fe2.push(e.message.slice(0, 160)));
     await q.route('**://www.gstatic.com/**', r2 => r2.abort());
     await q.route('**fonts.googleapis.com/**', r2 => r2.abort());
@@ -320,7 +320,7 @@ const sortieren = (p, id, wert) => p.evaluate(async ([id, wert]) => {
 
   console.log('\n── 3. Die Meldung beim Mitarbeiter ──');
   {
-    const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 } });
     const fe = []; p.on('pageerror', e => fe.push(e.message.slice(0, 160)));
     await p.route('**://www.gstatic.com/**', r => r.abort());
     await p.route('**fonts.googleapis.com/**', r => r.abort());

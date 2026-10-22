@@ -61,7 +61,7 @@ const CERTS = [
 ];
 
 async function seite(b, certs) {
-  const p = await b.newPage({ viewport: { width: 430, height: 900 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 430, height: 900 } });
   p.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 200)));
   p.on('console', m => {
     if (m.type() === 'error' && !/Failed to load resource|net::ERR_/.test(m.text())) {
@@ -78,7 +78,7 @@ async function seite(b, certs) {
 }
 
 const ichDaten = p => p.evaluate(async () => {
-  /* Runde 183 („das problem mit dem zu viel bleibt immer noch
+  /* Runde 184 („das problem mit dem zu viel bleibt immer noch
      bestehen"): „Ich" ist keine eigene Gruppe mehr, sondern ein Reiter
      unter „Heute" (g-start). Der Reiter wird gleich darunter gewählt. */
   document.querySelector('.mobnav [data-group="g-start"]').click();

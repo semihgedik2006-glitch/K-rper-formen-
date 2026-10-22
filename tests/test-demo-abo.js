@@ -61,7 +61,7 @@ const ZUSTAENDE = [
    „Alles" → Verwaltung → Reiter System. NICHT ueber einen Aufruf von
    innen: renderAboKarte() liegt in einer Kapsel, und ein Durchlauf, der
    sie von aussen riefe, pruefte die Funktion statt den Weg.
-   Seit Runde 183 („fünf Räume", aus dem Betrieb 22.10.2026: „das
+   Seit Runde 184 („fünf Räume", aus dem Betrieb 22.10.2026: „das
    problem mit dem zu viel bleibt immer noch bestehen") steht „Alles"
    nicht mehr in der unteren Leiste; die Lade öffnet der ☰-Griff
    #bereichKopf. */
@@ -88,7 +88,7 @@ async function zurAboKarte(p) {
   // ══ 1. Die Auswahl gibt es, und sie kennt alle Zustaende ══
   console.log('\n── Die Auswahl in der Demo-Leiste ──');
   {
-    const p = await b.newPage({ viewport: { width: 390, height: 900 } });
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 900 } });
     await p.route('**://www.gstatic.com/**', r => r.abort());
     await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
     await p.waitForTimeout(3000);
@@ -145,7 +145,7 @@ async function zurAboKarte(p) {
   // ══ 2. und 3. Jeder Zustand zeigt sich, und die Demo widerspricht sich nicht ══
   console.log('\n── Die zehn Zustände ──');
   for (const z of ZUSTAENDE) {
-    const p = await b.newPage({ viewport: { width: 390, height: 900 } });
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 900 } });
     const fehler = [];
     p.on('pageerror', e => fehler.push(e.message.slice(0, 140)));
     await p.route('**://www.gstatic.com/**', r => r.abort());
@@ -214,7 +214,7 @@ async function zurAboKarte(p) {
      anderes. */
   console.log('\n── Rolle und Zustand reisen gemeinsam ──');
   {
-    const p = await b.newPage({ viewport: { width: 390, height: 900 } });
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 900 } });
     await p.route('**://www.gstatic.com/**', r => r.abort());
     await p.goto(APP + '?demo=chef&abo=nurlesen', { waitUntil: 'domcontentloaded' });
     await p.waitForTimeout(3000);
@@ -271,7 +271,7 @@ async function zurAboKarte(p) {
      overflow:hidden, die Seite scrollt also nicht seitwaerts. */
   console.log('\n── Die Leiste auf vier Breiten ──');
   for (const breite of [320, 390, 430, 820]) {
-    const p = await b.newPage({ viewport: { width: breite, height: 900 } });
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: breite, height: 900 } });
     await p.route('**://www.gstatic.com/**', r => r.abort());
     await p.goto(APP + '?demo=chef&abo=mahnung2', { waitUntil: 'domcontentloaded' });
     await p.waitForTimeout(2600);
@@ -317,7 +317,7 @@ async function zurAboKarte(p) {
      sie sagt, ist Teil der Zusicherung. */
   console.log('\n── Der Weg zur Kasse ──');
   {
-    const p = await b.newPage({ viewport: { width: 390, height: 900 } });
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 900 } });
     const fehler = [];
     p.on('pageerror', e => fehler.push(e.message.slice(0, 160)));
     await p.route('**://www.gstatic.com/**', r => r.abort());

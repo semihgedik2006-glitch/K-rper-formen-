@@ -104,7 +104,7 @@ pruefe('jede Frage und jeder Schritt genau einmal', folge.length === M.schritte.
 
 /* ── Browser ── */
 async function starte(b, w, h) {
-  const p = await b.newPage({ viewport: { width: w, height: h } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
@@ -113,7 +113,7 @@ async function starte(b, w, h) {
   await p.waitForTimeout(3300);
   return p;
 }
-/* Runde 183 („fünf Räume“): Die Schulung liegt jetzt unter „Wissen“
+/* Runde 184 („fünf Räume“): Die Schulung liegt jetzt unter „Wissen“
    (g-wissen), neben Dokumenten und Formi. Aus dem Betrieb, 22.10.2026:
    „das problem mit dem zu viel bleibt immer noch bestehen“, „jede
    Funktion hat ihren Sinn“ – nichts gestrichen, nur neu geordnet. */

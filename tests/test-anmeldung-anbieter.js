@@ -102,7 +102,7 @@ const ANBIETER_STUB = () => {
 };
 
 async function seite(b, w, h) {
-  const p = await b.newPage({ viewport: { width: w, height: h } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   p.on('dialog', d => d.accept());
@@ -208,7 +208,7 @@ const reiter = (p, m) => p.evaluate((m) => document.querySelector('[data-authmod
 
   console.log('\n── 5. Anmeldung und Sicherheit in der App ──');
   {
-    const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
     p._fehler = []; p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
     await p.route('**://www.gstatic.com/**', r => r.abort());
     await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });

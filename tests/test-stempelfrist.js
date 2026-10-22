@@ -23,14 +23,14 @@ function pruefe(was, bedingung, hinweis) {
 (async () => {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
   for (const [w, h] of [[1440, 900], [390, 844]]) {
-    const p = await b.newPage({ viewport: { width: w, height: h } });
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
     const fehler = [];
     p.on('pageerror', e => fehler.push(e.message.slice(0, 160)));
     await p.route('**://www.gstatic.com/**', r => r.abort());
     await p.addInitScript(() => localStorage.setItem('kf_tour', '99:demo-ich'));
     await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
     await p.waitForTimeout(3000);
-    /* Runde 183 („fünf Räume“): „Alles“ steht nicht mehr in der Leiste,
+    /* Runde 184 („fünf Räume“): „Alles“ steht nicht mehr in der Leiste,
        sondern hinter dem ☰-Griff am Seitenkopf (#bereichKopf). Aus dem
        Betrieb, 22.10.2026: „das problem mit dem zu viel bleibt immer noch
        bestehen“. Derselbe Weg, zwei Tipps. */
@@ -62,7 +62,7 @@ function pruefe(was, bedingung, hinweis) {
     await p.close();
   }
   /* 3. Datenschutzerklärung */
-  const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
   await p.route('**://www.gstatic.com/**', r => r.abort());
   await p.goto(APP + '?demo=mitarbeiter', { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(3000);

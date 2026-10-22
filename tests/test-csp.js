@@ -130,7 +130,7 @@ const ANSICHTEN = [
   // ══ 3. Der Browser: bricht die Regel etwas? ══
   console.log('\n── Zwölf Ansichten unter der Regel ──');
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-  const page = await b.newPage({ viewport: { width: 390, height: 900 } });
+  const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 900 } });
   const verstoesse = [];
   const seitenfehler = [];
   page.on('pageerror', e => seitenfehler.push(e.message.slice(0, 160)));
@@ -218,7 +218,7 @@ const ANSICHTEN = [
   // ══ 5. Die öffentliche Seite unter ihrer eigenen Regel ══
   console.log('\n── werbung.html unter der Regel ──');
   {
-    const w = await b.newPage({ viewport: { width: 390, height: 900 } });
+    const w = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 900 } });
     const wv = [];
     const wf = [];
     w.on('pageerror', e => wf.push(e.message.slice(0, 160)));
@@ -289,7 +289,7 @@ const ANSICHTEN = [
                  html.slice(groesster.index + groesster[0].length);
     console.log('  grosser Block entfernt:', groesster[1].length, 'Zeichen');
 
-    const n = await b.newPage({ viewport: { width: 390, height: 900 } });
+    const n = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 900 } });
     const nv = [];
     await n.exposeFunction('__cspFund3', (d) => nv.push(d));
     await n.addInitScript(`

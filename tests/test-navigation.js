@@ -10,7 +10,7 @@ const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linu
 
 async function start(stub, errs, breite) {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-  const page = await b.newPage({ viewport: { width: breite || 390, height: 844 }, deviceScaleFactor: 2 });
+  const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: breite || 390, height: 844 }, deviceScaleFactor: 2 });
   page.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 250)));
   page.on('console', m => { if (m.type() === 'error' && !/ERR_|Failed to load/.test(m.text())) errs.push('CONSOLE: ' + m.text().slice(0, 200)); });
   await page.route('**://www.gstatic.com/**', r => r.abort());
@@ -41,7 +41,7 @@ const ansicht = page => page.evaluate(() => {
        angehaengt laege der Bereich beim Chef auf Platz sechs, also
        hinter dem Rand der verschiebbaren Leiste. Wer ihn spaeter
        verschiebt, soll das hier merken. */
-    /* Runde 183, aus dem Betrieb, 22.10.2026: „das problem mit dem zu
+    /* Runde 184, aus dem Betrieb, 22.10.2026: „das problem mit dem zu
        viel bleibt immer noch bestehen" — zu viele Menüpunkte, man findet
        nichts; „jede Funktion hat ihren Sinn" (nichts streichen, nur neu
        ordnen); die Raumnamen „passen". Seitdem fünf Räume, für die
@@ -58,7 +58,7 @@ const ansicht = page => page.evaluate(() => {
     await page.waitForTimeout(600);
     const unter = await page.evaluate(() => [...document.querySelectorAll('[data-subview]')].map(s => s.textContent.trim()));
     console.log('STUDIO:', JSON.stringify(unter));
-    /* Runde 183: Dokumente sind von „Betrieb" nach „Wissen" gezogen
+    /* Runde 184: Dokumente sind von „Betrieb" nach „Wissen" gezogen
        (neben Schulung und Formi) — „Studio" beantwortet nur noch, was
        HEUTE im Studio zu tun ist. Beides wird geprüft: weg von hier, da
        drüben. */
@@ -79,7 +79,7 @@ const ansicht = page => page.evaluate(() => {
        Reiter hier und ist noch am selben Tag nach „Ich" gezogen — auf
        Ansage aus dem Betrieb: unter „Betrieb" liegt, was HEUTE im
        Studio zu tun ist, und eine Schulung ist nichts davon. */
-    /* Runde 183: fünf — Aufgaben, Putzplan, Material, Geräte,
+    /* Runde 184: fünf — Aufgaben, Putzplan, Material, Geräte,
        Probetraining. Die Dokumente sind der sechste von früher, jetzt
        unter „Wissen" (siehe oben). */
     if (unter.length !== 5) errs.push('Studio hat ' + unter.length + ' statt 5 Unterseiten');

@@ -52,7 +52,7 @@ function pruefe(was, bedingung, hinweis) {
    App. Würde sie aus derselben Quelle kommen, prüfte der Durchlauf,
    dass eine Liste sich selbst gleicht. Die Werte sind aus ACCENTS
    abgeschrieben — wer dort etwas ändert, muss hier hinsehen. */
-/* Runde 183 („fünf Räume"), aus dem Betrieb (22.10.2026): „das problem
+/* Runde 184 („fünf Räume"), aus dem Betrieb (22.10.2026): „das problem
    mit dem zu viel bleibt immer noch bestehen" — die Raumnamen „passen".
    Seitdem: „Ich" ist ein Reiter unter „Heute" und trägt dessen Blau;
    das Violett gehört „Wissen" (BEREICH_FARBE). „Alles" ist keine Seite
@@ -78,7 +78,7 @@ const ANSICHT = {
 
 /* Der Weg zu einem Bereich, genau wie ihn jemand geht: erst in der
    unteren Leiste suchen, sonst über „Alles". Kein showView() von
-   aussen — das prüfte die Funktion statt den Weg. Seit Runde 183 steht
+   aussen — das prüfte die Funktion statt den Weg. Seit Runde 184 steht
    „Alles" nicht mehr in der Leiste; der Weg dorthin ist der ☰-Griff
    #bereichKopf, der die Schublade öffnet. */
 async function zumBereich(p, gruppe) {
@@ -217,7 +217,7 @@ async function messen(p) {
 
   for (const modus of ['dark', 'light']) {
     console.log('\n══ ' + (modus === 'dark' ? 'Dunkler' : 'Heller') + ' Modus ══');
-    const p = await b.newPage({ viewport: { width: 390, height: 900 } });
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 900 } });
     p.on('pageerror', e => fehler.push(e.message.slice(0, 160)));
     await p.route('**://www.gstatic.com/**', r => r.abort());
     await p.addInitScript((m) => {
@@ -296,7 +296,7 @@ async function messen(p) {
     pruefe('GEGENPROBE die Bereiche tragen wirklich verschiedene Farben',
       verschieden.length === 6, verschieden.join(' '));
 
-    /* „Alles" seit Runde 183 (aus dem Betrieb, 22.10.2026: „das problem
+    /* „Alles" seit Runde 184 (aus dem Betrieb, 22.10.2026: „das problem
        mit dem zu viel bleibt immer noch bestehen"): kein Knopf mehr in
        der Leiste, sondern der ☰-Griff auf jeder Seite. Die Schublade
        liegt ÜBER der Seite — die Farbe bleibt die des Bereichs, in dem
@@ -345,7 +345,7 @@ async function messen(p) {
     await zumBereich(p, 'g-start');
     await p.waitForTimeout(700);
     const bewegung = await p.evaluate(async () => {
-      /* Seit Runde 183 ist „Bericht" oben überall verborgen (er steht
+      /* Seit Runde 184 ist „Bericht" oben überall verborgen (er steht
          unter Verwaltung → Berichte). An einem Element mit display:none
          läuft kein Übergang — gemessen wird deshalb am ersten der
          gleitenden Bauteile, das wirklich im Bild steht. */
@@ -367,7 +367,7 @@ async function messen(p) {
          bis dahin 250–550 ms (CPU ÷4, vor P1 genauso gemessen). Das ist
          kein Sprung der Farbe, sondern eine langsame Seite; sie steht in
          docs/BEKANNTE-PROBLEME.md. Der Putzplan zeichnet in 120–330 ms. */
-      /* Runde 183: einen eigenen Putzplan-Knopf gibt es nicht mehr (er
+      /* Runde 184: einen eigenen Putzplan-Knopf gibt es nicht mehr (er
          ist Reiter unter „Studio", und der Knopf „Studio" führt zu den
          langsamen Aufgaben). Gemessen am 22.10.2026, je drei Läufe: bei
          „Studio", „Nachrichten" und „Wissen" stand bei 90 ms noch der

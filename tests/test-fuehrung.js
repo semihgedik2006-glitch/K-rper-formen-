@@ -48,7 +48,7 @@ function pruefe(was, bedingung, hinweis) {
 const WARTEN = 6500;
 
 async function seite(b, rolle, prefs) {
-  const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 } });
   p.on('pageerror', e => { p._fehler = (p._fehler || []).concat(e.message.slice(0, 160)); });
   await p.route('**://www.gstatic.com/**', r => r.abort());
   await p.addInitScript((v) => {

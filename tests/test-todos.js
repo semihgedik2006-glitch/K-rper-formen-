@@ -27,7 +27,7 @@ const pruefe = (b, m) => { if (!b) errs.push(m); };
 
 (async () => {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-  const p = await b.newPage({ viewport: { width: 430, height: 900 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 430, height: 900 } });
   const fehler = [];
   p.on('pageerror', e => fehler.push('PAGEERROR: ' + e.message.slice(0, 200)));
   p.on('console', m => {
@@ -49,7 +49,7 @@ const pruefe = (b, m) => { if (!b) errs.push(m); };
   await p.waitForTimeout(2600);
 
   await p.evaluate(async () => {
-    /* Runde 183 („fünf Räume“): „Ich“ und „Persönlich“ sind Reiter unter
+    /* Runde 184 („fünf Räume“): „Ich“ und „Persönlich“ sind Reiter unter
        „Heute“ (g-start); die Gruppe g-ich gibt es nicht mehr. Aus dem
        Betrieb, 22.10.2026: „das problem mit dem zu viel bleibt immer noch
        bestehen“ – nichts gestrichen, nur neu geordnet. */

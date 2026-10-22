@@ -47,7 +47,7 @@ const TREFFER = (el) => {
 const GROESSEN = [[320, 568], [390, 844], [430, 932], [820, 1180], [1280, 800], [1440, 900], [1920, 1080]];
 
 async function oeffne(b, rolle, w, h) {
-  const p = await b.newPage({ viewport: { width: w, height: h } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
@@ -63,7 +63,7 @@ async function zuKennzahlen(p) {
   return p.evaluate(async () => {
     const w = (ms) => new Promise(r => setTimeout(r, ms));
     const s = (sel) => [...document.querySelectorAll(sel)].find(e => e.offsetParent);
-    /* Runde 183 („das problem mit dem zu viel bleibt immer noch
+    /* Runde 184 („das problem mit dem zu viel bleibt immer noch
        bestehen"): „Alles" steht nicht mehr als Knopf in der Leiste,
        sondern hinter dem ☰-Griff am Seitenkopf (#bereichKopf) — auf
        jeder Seite, am Handy und am Rechner. Weiterhin zwei Tipps. */
@@ -252,7 +252,7 @@ function tabelle(p) {
   console.log('\n── Mitarbeiter ──');
   const r = await oeffne(b, 'mitarbeiter', 390, 844);
   const ma = await r.evaluate(async () => {
-    // Runde 183: „Alles" liegt hinter dem ☰-Griff #bereichKopf (siehe oben).
+    // Runde 184: „Alles" liegt hinter dem ☰-Griff #bereichKopf (siehe oben).
     const a = [...document.querySelectorAll('#bereichKopf, [data-group="g-alles"]')].find(e => e.offsetParent);
     if (a) { a.click(); await new Promise(x => setTimeout(x, 700)); }
     return { offen: document.querySelectorAll('[data-alles]').length,

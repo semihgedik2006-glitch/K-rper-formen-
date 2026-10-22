@@ -97,7 +97,7 @@ function pruefe(name, bedingung, zusatz) {
   // ══ 3. Der Browser: was wird geholt, was kommt an ══
   console.log('\n── Im Browser ──');
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-  const page = await b.newPage({ viewport: { width: 390, height: 900 } });
+  const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 900 } });
 
   const nachDraussen = [];
   const geholt = [];

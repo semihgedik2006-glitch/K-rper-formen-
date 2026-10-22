@@ -44,7 +44,7 @@ const VORMONAT = MONATSANFANG - 86400000;          // sicher draußen
 
 async function persoenlichZiele(p) {
   return p.evaluate(async () => {
-    /* Runde 183 („fünf Räume“): „Ich“ und „Persönlich“ sind Reiter unter
+    /* Runde 184 („fünf Räume“): „Ich“ und „Persönlich“ sind Reiter unter
        „Heute“ (g-start); die Gruppe g-ich gibt es nicht mehr. Aus dem
        Betrieb, 22.10.2026: „das problem mit dem zu viel bleibt immer noch
        bestehen“ – nichts gestrichen, nur neu geordnet. */
@@ -64,7 +64,7 @@ async function persoenlichZiele(p) {
 
 (async () => {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-  const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 } });
   const fehler = [];
   p.on('pageerror', e => fehler.push('PAGEERROR: ' + e.message.slice(0, 200)));
   await p.route('**://www.gstatic.com/**', r => r.abort());

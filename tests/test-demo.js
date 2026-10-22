@@ -95,7 +95,7 @@ const ERLAUBT = [
 function nachDraussen(u) { return !ERLAUBT.some(r => r.test(u)); }
 
 async function seite(b, url, errs, marke) {
-  const page = await b.newPage({ viewport: { width: 430, height: 950 }, deviceScaleFactor: 2 });
+  const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 430, height: 950 }, deviceScaleFactor: 2 });
   const anfragen = [];
   page.on('request', r => anfragen.push(r.url()));
   page.on('pageerror', e => errs.push('PAGEERROR (' + marke + '): ' + e.message.slice(0, 160)));
@@ -403,7 +403,7 @@ async function seite(b, url, errs, marke) {
      Deshalb: jede Ansicht jeder Rolle einmal öffnen. Kein PAGEERROR,
      und etwas Sichtbares muss darin stehen. */
   for (const rolle of ['chef', 'leiter', 'mitarbeiter']) {
-    const pv = await b.newPage({ viewport: { width: 390, height: 844 } });
+    const pv = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 } });
     const seitenfehler = [];
     pv.on('pageerror', e => seitenfehler.push(e.message.slice(0, 120)));
     await pv.route('**://www.gstatic.com/**', r => r.abort());

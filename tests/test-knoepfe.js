@@ -150,7 +150,7 @@ async function lauf() {
   const fehler = [];
   const errs = [];
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-  const page = await b.newPage({ viewport: { width: 430, height: 900 } });
+  const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 430, height: 900 } });
   page.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 160)));
   await page.route('**://www.gstatic.com/**', r => r.abort());
   await page.route('**fonts.googleapis.com/**', r => r.abort());

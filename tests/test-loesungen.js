@@ -83,7 +83,7 @@ async function suchen(p, text) {
 }
 
 async function starte(b, rolle) {
-  const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 } });
   await p.route('**://www.gstatic.com/**', r => r.abort());
   /* Die Führung würde sonst über dem Fenster liegen und jeden Klick
      schlucken. Sie hat einen eigenen Durchlauf. */
@@ -149,7 +149,7 @@ async function starte(b, rolle) {
      absucht, findet ihn dort. */
   const imVerzeichnis = await p.evaluate(() => {
     document.getElementById('hilfeZu').click();
-    /* Runde 183 („das problem mit dem zu viel bleibt immer noch
+    /* Runde 184 („das problem mit dem zu viel bleibt immer noch
        bestehen"): „Alles" ist kein Leistenknopf mehr, sondern der
        ☰-Griff am Seitenkopf (#bereichKopf). */
     const a = [...document.querySelectorAll('#bereichKopf, .mobnav [data-group="g-alles"]')].find(e => e.offsetParent);

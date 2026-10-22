@@ -44,7 +44,7 @@ const TREFFER = (el) => {
 };
 
 async function oeffne(b, w, h, rolle, uhr, theme) {
-  const ctx = await b.newContext({ viewport: { width: w, height: h } });
+  const ctx = await b.newContext({ serviceWorkers: 'block', viewport: { width: w, height: h } });
   const p = await ctx.newPage();
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
@@ -168,7 +168,7 @@ const KONTRAST = (el) => {
   {
     /* Die Uhr läuft hier 120-mal so schnell (1 s = 2 min), und die
        Minuten-Uhr der Seite tickt alle 250 ms statt alle 60 s. */
-    const ctx = await b.newContext({ viewport: { width: 1440, height: 900 } });
+    const ctx = await b.newContext({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
     const p = await ctx.newPage();
     await p.route('**://www.gstatic.com/**', r => r.abort());
     await p.addInitScript(() => {

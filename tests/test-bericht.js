@@ -3,7 +3,7 @@ const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 const SP = process.env.SP || __dirname;
 (async () => {
   const b = await chromium.launch({ executablePath: process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox'] });
-  const page = await b.newPage({ viewport: { width: 430, height: 950 }, deviceScaleFactor: 2 });
+  const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 430, height: 950 }, deviceScaleFactor: 2 });
   const errs = [];
   page.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 250)));
   page.on('console', m => { if (m.type() === 'error' && !/ERR_|Failed to load/.test(m.text())) errs.push('CONSOLE: ' + m.text().slice(0, 200)); });

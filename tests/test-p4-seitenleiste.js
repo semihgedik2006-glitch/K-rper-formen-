@@ -10,7 +10,7 @@
    (zwei Klicks). Die Schnellzugriffe standen am PC unten auf der
    Startseite in einer 600 px schmalen Reihe und nahmen der Liste 86 px.
 
-   Runde 183, aus dem Betrieb, 22.10.2026: „das problem mit dem zu viel
+   Runde 184, aus dem Betrieb, 22.10.2026: „das problem mit dem zu viel
    bleibt immer noch bestehen" — zu viele Menüpunkte, zu viel auf einem
    Bildschirm, man findet nichts; „jede Funktion hat ihren Sinn" (nichts
    streichen, nur neu ordnen); die Raumnamen „passen". Seitdem stehen
@@ -56,7 +56,7 @@ const TREFFER = (el) => {
   return { w: Math.round(re - l + 1), h: Math.round(u - o + 1) };
 };
 async function start(b, rolle, w, h) {
-  const p = await b.newPage({ viewport: { width: w, height: h } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
@@ -98,7 +98,7 @@ async function trefferSeite(p) {
     const p = await start(b, 'chef', 1440, 900);
     const a = await p.evaluate(LEISTE);
     console.log('  ' + JSON.stringify(a));
-    // Runde 183: „das problem mit dem zu viel bleibt immer noch bestehen" — fünf Räume plus Verwaltung.
+    // Runde 184: „das problem mit dem zu viel bleibt immer noch bestehen" — fünf Räume plus Verwaltung.
     pruefe('Reihenfolge nach Nutzung: Heute, Studio, Plan, Nachrichten, Wissen, Verwaltung',
       a.reihe.join('|') === 'Heute|Studio|Plan|Nachrichten|Wissen|Verwaltung', a.reihe.join('|'));
     pruefe('Schnellzugriffe in der Seitenleiste (Vorschlag Chef) und „Anpassen"',
@@ -111,7 +111,7 @@ async function trefferSeite(p) {
     pruefe('unten auf der Startseite stehen sie am PC nicht mehr', !unten.sichtbar, JSON.stringify(unten));
     pruefe('die Liste der Startseite ist dadurch höher (vorher 619 px)', unten.hoehe >= 690, String(unten.hoehe));
 
-    /* Runde 183: kein eigener Putzplan-Knopf mehr. Der Weg: „Studio" →
+    /* Runde 184: kein eigener Putzplan-Knopf mehr. Der Weg: „Studio" →
        Reiter „Putzplan"; die Marke bleibt dabei auf „Studio". */
     await klick(p, '#side > button', 'Studio');
     const au = await p.evaluate(LEISTE);
@@ -152,7 +152,7 @@ async function trefferSeite(p) {
     const p = await start(b, rolle, w, h);
     const a = await p.evaluate(LEISTE);
     if (rolle === 'mitarbeiter')
-      // Runde 183: dieselben fünf Räume wie am Handy, ohne Verwaltung.
+      // Runde 184: dieselben fünf Räume wie am Handy, ohne Verwaltung.
       pruefe('Mitarbeiter: Heute, Studio, Plan, Nachrichten, Wissen',
         a.reihe.join('|') === 'Heute|Studio|Plan|Nachrichten|Wissen', a.reihe.join('|'));
     for (const dichte of ['normal', 'kompakt']) {
@@ -182,7 +182,7 @@ async function trefferSeite(p) {
   /* ── GEGENPROBE bisheriges Design ── */
   {
     console.log('\n── bisheriges Design, 1440 ──');
-    const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
     await p.route('**://www.gstatic.com/**', r => r.abort());
     await p.addInitScript({ path: __dirname + '/stub-mitarbeiter.js' });
     await p.goto(APP, { waitUntil: 'domcontentloaded' });
@@ -190,7 +190,7 @@ async function trefferSeite(p) {
     const a = await p.evaluate(() => ({ neu: document.body.classList.contains('neu'),
       reihe: [...document.querySelectorAll('#side > button')].map(x => x.dataset.group),
       schnell: !!document.querySelector('.side-schnell') }));
-    /* Runde 183: auch im bisherigen Design dieselben fünf Räume (die
+    /* Runde 184: auch im bisherigen Design dieselben fünf Räume (die
        untere Leiste und die Seitenleiste lesen dieselben NAVGROUPS). */
     pruefe('GEGENPROBE bisheriges Design: dieselben Räume, kein Putzplan-Knopf, keine Schnellzugriffe',
       a.neu === false && a.reihe.join('|') === 'g-start|g-arbeit|g-team|g-komm|g-wissen' &&

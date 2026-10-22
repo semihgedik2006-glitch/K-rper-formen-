@@ -43,7 +43,7 @@ const GRUPPEN = ['g-start', 'g-ich', 'g-komm', 'g-arbeit', 'g-team', 'g-chef'];
 async function lauf(rolle, extra) {
   const errs = [];
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-  const page = await b.newPage({ viewport: { width: 430, height: 900 } });
+  const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 430, height: 900 } });
   page.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 160)));
   page.on('console', m => {
     if (m.type() === 'error' && !/ERR_|Failed to load/.test(m.text())) {
@@ -144,7 +144,7 @@ async function lauf(rolle, extra) {
   /* ── 2: tut der Knopf auch etwas? ── */
   {
     const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-    const page = await b.newPage({ viewport: { width: 430, height: 900 } });
+    const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 430, height: 900 } });
     page.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 160)));
     await page.route('**://www.gstatic.com/**', r => r.abort());
     await page.route('**script.google.com/**', r => r.fulfill({ status: 200, body: 'ok' }));
@@ -191,7 +191,7 @@ async function lauf(rolle, extra) {
      hier als eigener, deterministischer Griff. */
   {
     const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-    const page = await b.newPage({ viewport: { width: 430, height: 900 } });
+    const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 430, height: 900 } });
     page.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 160)));
     await page.route('**://www.gstatic.com/**', r => r.abort());
     await page.route('**script.google.com/**', r => r.fulfill({ status: 200, body: 'ok' }));
@@ -238,7 +238,7 @@ async function lauf(rolle, extra) {
   /* ── 4: Gegenprobe ── */
   {
     const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-    const page = await b.newPage({ viewport: { width: 430, height: 900 } });
+    const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 430, height: 900 } });
     const konsole = [];
     page.on('console', m => konsole.push(m.text()));
     await page.route('**://www.gstatic.com/**', r => r.abort());

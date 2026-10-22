@@ -41,7 +41,7 @@ const TREFFER = (el) => {
   return { w: Math.round(re - l + 1), h: Math.round(u - o + 1) };
 };
 async function oeffne(b, w, h, rolle) {
-  const p = await b.newPage({ viewport: { width: w, height: h } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
@@ -88,7 +88,7 @@ const nav = (p, g) => p.evaluate((g) => document.querySelector('.mobnav [data-gr
   console.log('\n── 2. Schulung: der offene Rest ──');
   {
     const p = await oeffne(b, 390, 844);
-    /* Bis Runde 179: „Alles" bzw. „Ich" → Reiter Schulung. Seit Runde 183
+    /* Bis Runde 179: „Alles" bzw. „Ich" → Reiter Schulung. Seit Runde 184
        („fünf Räume", aus dem Betrieb 22.10.2026: „das problem mit dem zu
        viel bleibt immer noch bestehen") steht die Schulung unter
        „Wissen", unten in der Leiste. */

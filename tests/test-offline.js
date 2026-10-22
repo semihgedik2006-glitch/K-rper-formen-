@@ -69,7 +69,7 @@ const NETZ = `
 const ZUSATZ = eval('`' + /const ZUSATZ = `([\s\S]*?)`;/.exec(fs.readFileSync(path.join(__dirname, 'test-terminal.js'), 'utf8'))[1] + '`');
 
 async function starten(b, vorbereiten, w, h) {
-  const p = await b.newPage({ viewport: { width: w || 900, height: h || 1000 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w || 900, height: h || 1000 } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
@@ -242,7 +242,7 @@ const leiste = (p) => p.evaluate(() => { const l = document.getElementById('offl
 
   console.log('\n── 3. Der Vermerk am Stempel (Demo) ──');
   {
-    const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 } });
     const fe = []; p.on('pageerror', e => fe.push(e.message.slice(0, 160)));
     await p.route('**://www.gstatic.com/**', r => r.abort());
     await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });

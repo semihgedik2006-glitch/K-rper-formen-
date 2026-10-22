@@ -79,7 +79,7 @@ const WORKER = `
   setTimeout(function(){ clearInterval(wartet); }, 4000);`;
 
 async function anlegen(b, rolle, studiosAnkreuzen) {
-  const p = await b.newPage({ viewport: { width: 430, height: 900 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 430, height: 900 } });
   const fehler = [];
   p.on('pageerror', e => fehler.push('PAGEERROR: ' + e.message.slice(0, 200)));
   await p.route('**://www.gstatic.com/**', r => r.abort());

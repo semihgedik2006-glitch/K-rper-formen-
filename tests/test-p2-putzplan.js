@@ -42,14 +42,14 @@ const TREFFER = (el) => {
 };
 
 async function zumPutzplan(b, rolle, w, h) {
-  const p = await b.newPage({ viewport: { width: w, height: h } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
   await p.goto(APP + '?demo=' + rolle, { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(3200);
   await p.evaluate(() => { const t = document.getElementById('tourWeg'); if (t && t.offsetParent) t.click(); });
-  /* Runde 183 („das problem mit dem zu viel bleibt immer noch
+  /* Runde 184 („das problem mit dem zu viel bleibt immer noch
      bestehen"; die Raumnamen „passen"): der Raum heisst „Studio", nicht
      mehr „Aufgaben". Aufgaben sind sein erster Reiter, der Putzplan
      sein zweiter (kein eigener Knopf mehr). */

@@ -130,7 +130,7 @@ function zusatz(frei, codeFehler) {
 
 async function starten(errs, frei, codeFehler, adresse) {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-  const page = await b.newPage({ viewport: { width: 460, height: 950 }, deviceScaleFactor: 2 });
+  const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 460, height: 950 }, deviceScaleFactor: 2 });
   page.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 160)));
   page.on('console', m => {
     if (m.type() === 'error' && !/ERR_|Failed to load/.test(m.text())) {
@@ -277,7 +277,7 @@ async function zurIchKarte(page) {
   {
     const errs2 = [];
     const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-    const page = await b.newPage({ viewport: { width: 1000, height: 760 }, deviceScaleFactor: 2 });
+    const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 1000, height: 760 }, deviceScaleFactor: 2 });
     page.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 160)));
     await page.route('**://www.gstatic.com/**', r => r.abort());
     await page.route('**fonts.googleapis.com/**', r => r.abort());
@@ -333,7 +333,7 @@ async function zurIchKarte(page) {
   /* ══ 4. Ohne Antwort vom Server bleibt die Anzeige leer ═══════════ */
   {
     const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-    const page = await b.newPage({ viewport: { width: 1000, height: 760 }, deviceScaleFactor: 2 });
+    const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 1000, height: 760 }, deviceScaleFactor: 2 });
     page.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 160)));
     await page.route('**://www.gstatic.com/**', r => r.abort());
     await page.addInitScript({ path: SP + '/stub-chef.js' });
@@ -359,7 +359,7 @@ async function zurIchKarte(page) {
   /* ══ 5. Der Haken beim Chef ═══════════════════════════════════════ */
   {
     const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-    const page = await b.newPage({ viewport: { width: 900, height: 1000 }, deviceScaleFactor: 2 });
+    const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 900, height: 1000 }, deviceScaleFactor: 2 });
     page.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 160)));
     await page.route('**://www.gstatic.com/**', r => r.abort());
     await page.addInitScript({ path: SP + '/stub-chef.js' });

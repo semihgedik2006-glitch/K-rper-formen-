@@ -82,7 +82,7 @@ async function konfigMit2FA(p, an) {
 
   console.log('\n── 1. Anmelden mit zweitem Faktor ──');
   {
-    const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 } });
     const fehler = []; p.on('pageerror', e => fehler.push(e.message.slice(0, 160)));
     const anfragen = [];
     await googleNachstellen(p, anfragen);
@@ -168,7 +168,7 @@ async function konfigMit2FA(p, an) {
 
   console.log('\n── 2.+3. Einrichten (Demo, Geschäftsführung) ──');
   for (const [w, h] of [[390, 844], [1440, 900]]) {
-    const p = await b.newPage({ viewport: { width: w, height: h } });
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
     const fehler = []; p.on('pageerror', e => fehler.push(e.message.slice(0, 160)));
     const anfragen = [];
     await googleNachstellen(p, anfragen);
@@ -231,7 +231,7 @@ async function konfigMit2FA(p, an) {
     await p.keyboard.press('Escape');
     await p.waitForTimeout(200);
 
-    /* Runde 183 („fünf Räume“): „Alles“ liegt hinter dem ☰-Griff am
+    /* Runde 184 („fünf Räume“): „Alles“ liegt hinter dem ☰-Griff am
        Seitenkopf (#bereichKopf), nicht mehr in einer Leiste. Aus dem Betrieb,
        22.10.2026: „das problem mit dem zu viel bleibt immer noch bestehen“. */
     await p.evaluate(() => { const a = document.getElementById('bereichKopf'); if (a && a.getClientRects().length && a.getAttribute('aria-expanded') !== 'true') a.click(); });
@@ -269,7 +269,7 @@ async function konfigMit2FA(p, an) {
 
   console.log('\n── 4. Im Projekt noch nicht eingeschaltet ──');
   {
-    const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
     await konfigMit2FA(p, false);
     await p.route('**://www.gstatic.com/**', r => r.abort());
     await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });

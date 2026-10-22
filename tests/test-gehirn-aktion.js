@@ -105,6 +105,20 @@ console.log('── Erinnerung, Tausch, Stichpunkte (20.10.2026) ──');
   pruefe('Stichpunkte: jede Zeile mit •, Spiegelstriche weg, höchstens 8', ST('- Klo putzen\n* Handtücher fehlen\n\n• Lea kommt später') === '• Klo putzen\n• Handtücher fehlen\n• Lea kommt später' && ST(Array(12).fill('a').join('\n')).split('\n').length === 8);
   pruefe('Stichpunkte: leer → leer', ST('') === '' && ST(null) === '');
 }
+console.log('── Formi lernt: Leitung gibt frei (Runde 183, 22.10.2026) ──');
+{
+  const WP = __intern.gehirnWissenPruefen, VI = __intern.gehirnVonId;
+  pruefe('unbekannte Art → nichts', WP({ art: 'loeschen', id: 3 }) === null && WP(null) === null);
+  pruefe('Liste schickt nichts mit', JSON.stringify(WP({ art: 'liste', von: 'Fremd' }).body) === '{}');
+  const e = WP({ art: 'entscheiden', id: '12', gut: true, inhalt: '  Neuer Text für Formi  ', vonId: 'gefälscht' });
+  pruefe('Entscheiden: Nummer, ja/nein, Text gekürzt — keine Kennung vom Gerät', e.body.id === 12 && e.body.gut === true && e.body.inhalt === 'Neuer Text für Formi' && !('vonId' in e.body));
+  pruefe('Entscheiden: „gut" nur bei echtem true', WP({ art: 'entscheiden', id: 4, gut: 'ja' }).body.gut === false);
+  pruefe('Entscheiden ohne gültige Nummer oder mit zu kurzem Text → nichts', WP({ art: 'entscheiden', id: 0, gut: true }) === null && WP({ art: 'entscheiden', id: 2.5 }) === null && WP({ art: 'entscheiden', id: 2, gut: true, inhalt: 'kurz' }) === null);
+  const v = WP({ art: 'vorschlagen', thema: 'Handtücher', inhalt: 'Handtücher liegen im Schrank links.', kategorie: 'Erfunden' });
+  pruefe('Vorschlagen: genau ein Eintrag, unbekannte Kategorie → Sonstiges, Quelle fest', v.body.eintraege.length === 1 && v.body.eintraege[0].kategorie === 'Sonstiges' && v.body.quelle === 'Studioleitung (App)');
+  pruefe('Vorschlagen ohne Thema oder Text → nichts', WP({ art: 'vorschlagen', thema: 'ab', inhalt: 'lang genug hier' }) === null && WP({ art: 'vorschlagen', thema: 'Thema', inhalt: 'kurz' }) === null);
+  pruefe('Kennung für vier Augen: stabil, nicht die uid', VI('abc') === VI('abc') && VI('abc') !== VI('abd') && !VI('abc').includes('abc') && VI('abc').length === 24);
+}
 console.log('── Vorschlag prüfen ──');
 pruefe('unbekannter Typ → kein Vorschlag', P({ typ: 'keins', titel: 'x' }, NAMEN, ALLE, 'chef', HEUTE) === null);
 pruefe('Aufgabe ohne Titel → kein Vorschlag', P({ typ: 'aufgabe', titel: '  ' }, NAMEN, ALLE, 'chef', HEUTE) === null);

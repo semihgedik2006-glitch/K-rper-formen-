@@ -27,7 +27,7 @@ function pruefe(was, bedingung, hinweis) {
   else { schlecht++; console.log('  ✗ ' + was + (hinweis ? '  — ' + String(hinweis).slice(0, 200) : '')); }
 }
 async function oeffne(b, w, h, rolle) {
-  const ctx = await b.newContext({ viewport: { width: w, height: h }, acceptDownloads: true });
+  const ctx = await b.newContext({ serviceWorkers: 'block', viewport: { width: w, height: h }, acceptDownloads: true });
   const p = await ctx.newPage();
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
@@ -39,7 +39,7 @@ async function oeffne(b, w, h, rolle) {
 }
 async function allesZu(p, sel) {
   /* Bis Runde 179 stand „Alles" als Knopf in Seitenleiste bzw. Leiste.
-     Seit Runde 183 („fünf Räume", aus dem Betrieb 22.10.2026: „das
+     Seit Runde 184 („fünf Räume", aus dem Betrieb 22.10.2026: „das
      problem mit dem zu viel bleibt immer noch bestehen") öffnet der
      ☰-Griff #bereichKopf dieselbe Liste als Schublade — Handy wie
      Rechner. */

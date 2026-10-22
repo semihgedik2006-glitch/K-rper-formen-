@@ -39,7 +39,7 @@ const TREFFER = (el) => {
   return { w: Math.round(re - l + 1), h: Math.round(u - o + 1) };
 };
 async function oeffne(b, rolle, w, h) {
-  const p = await b.newPage({ viewport: { width: w, height: h } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
@@ -48,7 +48,7 @@ async function oeffne(b, rolle, w, h) {
   await p.waitForTimeout(3000);
   /* Die Abfragen ans Brett mitschreiben (Haken in demo-daten.js). */
   await p.evaluate(() => { window.DEMO_ABFRAGEN = []; });
-  /* Der Weg wie im Studio: „Alles" → „Schwarzes Brett". Seit Runde 183
+  /* Der Weg wie im Studio: „Alles" → „Schwarzes Brett". Seit Runde 184
      steht „Alles" nicht mehr als Knopf in der Leiste (aus dem Betrieb,
      22.10.2026: „das problem mit dem zu viel bleibt immer noch
      bestehen"); dieselbe Liste öffnet der ☰-Griff #bereichKopf. */
