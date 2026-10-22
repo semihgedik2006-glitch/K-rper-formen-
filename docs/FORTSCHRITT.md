@@ -17231,3 +17231,97 @@ Aufgabenkarten ruhiger machen“ kam: „ja“.
 **Offen für den Betrieb:** Sollen Stift und Papierkorb am Handy aus der
 Aufgabenzeile ins „…“ wandern? Dort stehen sie schon. Das hiesse, den
 Beschluss vom 9.10. für das Handy zu ändern.
+
+## Runde 177 — Formi als Kugel: wohnt in der App und bedient sie (Etappe 1) (22.10.2026)
+
+**Aus dem Betrieb:** „das design von formi anpassen und ihn zu einem
+richtigen assistenten machen der wirklich in der app ist und gesteuert
+wird“. Auf die Rückfragen kamen diese Wünsche:
+- Platz: schwebende Kugel
+- Steuerung: „Alles allein“
+- Design: das Loch als Gesicht
+- Können: Masken ausfüllen, „Zeig mir wie“, weiß, wo du bist, meldet sich
+  selbst, „denkt richtig mit“
+
+Der Plan geht in drei Etappen. Diese Runde ist Etappe 1, das Grundgerüst.
+
+**Gebaut:**
+- **Kugel `#formiKugel`.** Unten rechts auf jeder Seite schwebt ein
+  schwarzer Kern mit bunter Scheibe. Am Handy sitzt sie über der Leiste
+  (80 px + Rand). Diese Leiste ist in beiden Dichten 68 px hoch gemessen;
+  `--s72` schrumpft in „kompakt“ auf 50 und hätte die Kugel auf die Leiste
+  gesetzt.
+  - Nicht im Chat (dort sitzt Senden unten rechts), nicht auf Formis
+    eigener Seite und nie bei fremden Firmen.
+  - z 150: unter Suche, Hilfe und jedem Dialog, damit sie nie einen
+    Speichern-Knopf verdeckt.
+  - `.main` bekommt unten so viel Luft, dass nichts dauerhaft unter der
+    Kugel liegt.
+- **Kompakt ist Standard.**
+  - Das Fenster sitzt unten rechts (am Handy von unten, 74 dvh).
+  - `aria-modal=false`, kein `body.jv-offen`: Die App bleibt dahinter
+    scrollbar und bedienbar.
+  - Die grossen Leinwände laufen nur im Vollbild.
+  - Im Kopf sitzt das Loch als kleines Gesicht. Es dreht sich nur,
+    solange Formi arbeitet.
+  - „Groß“ (vier Ecken) bringt das Vollbild von bisher. Das Gerät merkt
+    sich die Wahl (`kf_jv_kompakt`).
+- **Formi bedient die echte App.** „öffne die Aufgaben“ im kompakten
+  Fenster öffnet die echte Seite statt des Mini-Fensters:
+  - Ein Zeiger fährt per Web Animations nur über `transform` zum Knopf des
+    Bereichs (Seitenleiste bzw. Leiste unten) und tippt sichtbar.
+  - Das Ziel leuchtet per `outline` auf, dann wechselt die Seite.
+  - Am Rechner bleibt Formi daneben offen, auch wenn man selbst die Seite
+    wechselt (`formiBleibtOffen`). Am Handy wird es zur Kugel, weil das
+    Fenster die Leiste zudeckt. Im Chat geht Formi immer zu.
+  - Bei „weniger Bewegung“ gibt es keinen Flug, nur das Aufleuchten.
+  - Im Vollbild bleibt das Mini-Fenster wie bisher.
+- NEUIGKEITEN-Eintrag „Formi wohnt jetzt unten rechts in der App“.
+
+**Abweichung vom Wunsch „Alles allein“ (mit Semih abgesprochen):**
+- Abhaken, Öffnen und Erinnern laufen ohne Rückfrage, mit Rückgängig.
+- Was andere sehen, speichert Formi ab Etappe 3 selbst, aber erst nach
+  3 Sekunden mit „Stopp“.
+- Löschen kann Formi nie.
+
+**Fund beim Testen, wichtig für alle Oberflächen-Durchläufe:** In dieser
+Umgebung waren `test-gehirn`, `test-knoepfe` und andere schon auf `main`
+rot. Die App stand in der Anmeldemaske. Ursache ist der Service-Worker:
+- Er holt nach dem ersten Laden das echte Firebase.
+- Playwright fängt Anfragen des Workers nicht ab, `page.route` greift also
+  nicht.
+- Die App lädt neu und meldet sich echt an, ohne Konto.
+
+Abhilfe ist `newContext({ serviceWorkers: 'block' })`. Das steht jetzt in
+`test-formi-kugel` und `test-gehirn`. Mit einer Kopie, in der das ergänzt
+war, liefen grün: `test-knoepfe`, `test-gestaltung`, `test-abgeschnitten`,
+`test-quer` und `test-uebersicht`. Die übrigen Durchläufe sollten es auch
+bekommen (eigener PR).
+
+**Geprüft:**
+- `test-formi-kugel`: 56 Zusicherungen.
+  - Kugel: wo sie steht und wo nicht, fremde Firma.
+  - Kompakt kein Dialog, Leinwände aus, Gross/Klein gemerkt.
+  - Zeiger, danach die echte Seite. Rechner: Formi bleibt. Handy: Kugel.
+    Vollbild-Gegenprobe mit Mini-Fenster.
+  - Trefferflächen von Kugel, Gross, Schliessen und Senden ≥ 44 × 44 per
+    Hit-Test bei 320 / 390 / 430 / 820 / 1280 / 1440 / 1920, normal und
+    kompakt, im Bild und nicht auf der Leiste.
+  - Gegenprobe: Mit dem `index.html` von `main` schlägt der Durchlauf an.
+- `test-gehirn` prüft jetzt ausdrücklich das Vollbild
+  (`kf_jv_kompakt=0`). Gleiches Ergebnis wie auf `main`: 185 grün. Ein
+  Punkt ist rot, und zwar schon auf `main`: „neues Aussehen 360 × 780:
+  Knopf in der Bereichszeile“ (seit Runde 176). Er bricht den Rest der
+  Datei ab, der Rest lief also auch hier nicht.
+- `test-gestaltung` ist grün. Rundungen und Schatten stehen auf den
+  Leitern.
+
+**Nicht geprüft:**
+- Die Arbeit je Bild beim Zeigerflug wurde nicht gemessen. Er bewegt nur
+  `transform`, und kompakt laufen keine Leinwände.
+- Echtes Handy, Anmeldeweg.
+
+**Als Nächstes (Etappe 2):** Formi weiss, auf welcher Seite man ist
+(„hak das zweite ab“), und es gibt „Zeig mir wie“-Rundgänge in der echten
+App. Offen ist ausserdem, ob die alten Formi-Knöpfe auf der Startseite
+(Handy) neben der Kugel bleiben sollen.
