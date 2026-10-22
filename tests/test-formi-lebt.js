@@ -73,7 +73,10 @@ async function oeffne(b, w, h, opt) {
    endlos ist und welche Eigenschaften sie bewegen. */
 const KUGEL_ANIM = () => {
   const k = document.getElementById('formiKugel');
-  const a = k.getAnimations({ subtree: true });
+  /* Nur was LÄUFT: ein abgeschlossener, gehaltener Blick (fill:forwards,
+     playState „finished") ist Stillstand, keine Bewegung — seit Runde 205
+     halten Pupillen und Loch so ihre Blickrichtung. */
+  const a = k.getAnimations({ subtree: true }).filter(x => x.playState === 'running');
   const eig = new Set();
   a.forEach(x => (x.effect && x.effect.getKeyframes ? x.effect.getKeyframes() : []).forEach(f =>
     Object.keys(f).forEach(n => { if (!['offset', 'easing', 'composite', 'computedOffset'].includes(n)) eig.add(n); })));
@@ -143,9 +146,13 @@ const KUGEL_ANIM = () => {
           ruhig: k.getAnimations({ subtree: true }).length };
       });
       pruefe('im Loch ein Gesicht: zwei Augen, ein Mund (Runde 195)', k0.auge);
+      const figur = await p.evaluate(() => ({ kugel: document.querySelectorAll('#formiKugel .fk-auge b').length + document.querySelectorAll('#formiKugel .fk-braue').length,
+        zeile: document.querySelectorAll('#homeAlerts .fz-ring .fk-auge').length + document.querySelectorAll('#homeAlerts .fz-ring .fk-mund').length,
+        kopf: document.querySelectorAll('#jarvis .formi-gesicht .fk-auge').length + document.querySelectorAll('#jarvis .formi-gesicht .fk-mund').length }));
+      pruefe('Runde 205: Augen mit Pupillen, Brauen; dasselbe Gesicht in Formi-Zeile und Fensterkopf', figur.kugel === 4 && figur.zeile === 3 && figur.kopf === 3, JSON.stringify(figur));
       pruefe('Punkt „hat etwas für dich" bei Überfälligem, für Vorleser als Beschreibung (Name bleibt „Formi öffnen")', k0.hat && k0.label === 'Formi öffnen' && /hat etwas für dich/.test(k0.besch), JSON.stringify(k0));
 
-      for (const art of ['freut', 'staunt', 'feiert', 'erschrickt', 'nickt', 'blinzelt']) {
+      for (const art of ['freut', 'staunt', 'feiert', 'erschrickt', 'nickt', 'blinzelt', 'zwinkert2', 'gaehnt', 'aha']) {
         await p.evaluate((a) => window.__formiLebt.fuehlt(a), art);
         const a = await p.evaluate(KUGEL_ANIM);
         pruefe(`${art}: ${a.n} Animation(en), endlich, nur transform/opacity (${a.eig.join(', ')})`,
@@ -218,6 +225,37 @@ const KUGEL_ANIM = () => {
         attr: document.querySelector('#formiKugel .fk-loch').getAttribute('style') }));
       const m = /matrix\(1, 0, 0, 1, (-?[\d.]+), (-?[\d.]+)\)/.exec(blick.t || '');
       pruefe(`schaut der Maus nach (${blick.t})`, m && +m[1] < 0 && +m[2] < 0 && Math.hypot(+m[1], +m[2]) <= 4.6, JSON.stringify(blick));
+      /* Runde 205 — aus dem Betrieb: „gib dem gesicht mehr leben auch und
+         den augen vorallem". Die Pupillen wandern im Auge mit. */
+      const pup = await p.evaluate(() => [...document.querySelectorAll('#formiKugel .fk-auge b')].map(b => getComputedStyle(b).transform));
+      const pm = pup.map(t => /matrix\(1, 0, 0, 1, (-?[\d.]+), (-?[\d.]+)\)/.exec(t));
+      pruefe(`… die Pupillen schauen mit (${pup[0]})`, pm.length === 2 && pm.every(x => x && +x[1] < 0 && +x[2] < 0 && Math.hypot(+x[1], +x[2]) <= 1.9), JSON.stringify(pup));
+      const nah = await p.evaluate(async () => {
+        const k = document.getElementById('formiKugel').getBoundingClientRect();
+        return { x: k.left + k.width / 2 - 60, y: k.top + k.height / 2 - 40 };
+      });
+      await p.mouse.move(nah.x, nah.y); await p.waitForTimeout(400);
+      const gross = await p.evaluate(() => getComputedStyle(document.querySelector('#formiKugel .fk-auge')).transform);
+      pruefe(`kommt die Maus nah, werden die Augen gross (${gross})`, /matrix\(1\.1[0-9]*, 0, 0, 1\.1/.test(gross), gross);
+      await p.mouse.move(10, 10); await p.waitForTimeout(400);
+      const klein = await p.evaluate(() => getComputedStyle(document.querySelector('#formiKugel .fk-auge')).transform);
+      pruefe('… und wieder normal, wenn sie weggeht', klein === 'none' || klein === 'matrix(1, 0, 0, 1, 0, 0)', klein);
+      await p.evaluate(() => window.__formiLebt.schauHin('#homeAlerts .fz-teil.bad'));
+      await p.waitForTimeout(400);
+      /* Die Richtung aus der Lage rechnen: seit Runde 205 sitzt die Kugel
+         am Rechner unten LINKS in der Seitenleiste, der Hinweis liegt
+         dann rechts oberhalb. */
+      const hin = await p.evaluate(() => {
+        const t = getComputedStyle(document.querySelector('#formiKugel .fk-auge b')).transform;
+        const k = document.getElementById('formiKugel').getBoundingClientRect(), z = document.querySelector('#homeAlerts .fz-teil.bad').getBoundingClientRect();
+        return { t, dx: Math.sign(z.left + z.width / 2 - (k.left + k.width / 2)), dy: Math.sign(z.top + z.height / 2 - (k.top + k.height / 2)) };
+      });
+      const hm = /matrix\(1, 0, 0, 1, (-?[\d.]+), (-?[\d.]+)\)/.exec(hin.t);
+      pruefe(`schaut hin, wo etwas passiert (zum Hinweis: ${hin.t})`, hm && Math.sign(+hm[1]) === hin.dx && Math.sign(+hm[2]) === hin.dy, JSON.stringify(hin));
+      const muede = await p.evaluate(() => window.__formiLebt.muede() && document.getElementById('formiKugel').classList.contains('fk-muede'));
+      pruefe('nach 60 s ohne Bedienung wird Formi müde (halb zu)', muede);
+      await p.mouse.move(20, 20); await p.waitForTimeout(150);
+      pruefe('… eine Bewegung, und es ist wieder wach', await p.evaluate(() => !document.getElementById('formiKugel').classList.contains('fk-muede')));
       pruefe('… ohne das style-Attribut anzufassen', !blick.attr, JSON.stringify(blick));
 
       // Einschlafen und Aufwachen
@@ -253,6 +291,8 @@ const KUGEL_ANIM = () => {
     for (const [w, h] of [[1440, 900], [390, 844]]) {
       const p = await oeffne(b, w, h);
       await p.click('#formiKugel'); await p.waitForTimeout(400);
+      /* Runde 209: im kleinen Fenster liegen die Einstellungen hinter „…". */
+      await p.click('#jarvisMehr'); await p.waitForTimeout(200);
       await p.click('#jarvisPersonaBtn'); await p.waitForTimeout(300);
       const aus = '#jarvisPersona [data-jvp="gefuehle"][data-jvw="aus"]', an = '#jarvisPersona [data-jvp="gefuehle"][data-jvw="an"]';
       pruefe(`${w} px: der Schalter steht in Formis Einstellungen, Standard „Zeigen"`,
@@ -279,12 +319,63 @@ const KUGEL_ANIM = () => {
       pruefe(`${w} px: nach dem Neuladen bleibt es aus`, await p.evaluate(() => document.getElementById('formiKugel').getAnimations({ subtree: true }).length === 0));
       pruefe(`${w} px: der Punkt „hat etwas für dich" gibt es auch mit Gefühlen aus`, await p.evaluate(() => document.getElementById('formiKugel').classList.contains('fk-hat')));
       await p.click('#formiKugel'); await p.waitForTimeout(400);
+      await p.click('#jarvisMehr'); await p.waitForTimeout(200);
       await p.click('#jarvisPersonaBtn'); await p.waitForTimeout(300);
       await p.click(an); await p.waitForTimeout(200);
       await p.click('#jarvisZu'); await p.waitForTimeout(400);
       await p.evaluate(() => window.__formiLebt.fuehlt('freut'));
       pruefe(`${w} px: wieder „Zeigen" — Formi freut sich wieder`, await p.evaluate(() => document.getElementById('formiKugel').getAnimations({ subtree: true }).length > 0));
       pruefe(`${w} px: keine Fehler auf der Seite`, !p._fehler.length, p._fehler.join(' | '));
+      await p._ctx.close();
+    }
+
+    /* Runde 209 — aus dem Betrieb, auf die Ideenliste: „mach alles davon".
+       Das Formi-Fenster aufgeräumt, Formi in leeren Listen, beim Laden und
+       vor jeder Antwort. */
+    console.log('\n── Formi-Fenster aufgeräumt, Formi in leeren Listen und beim Laden ──');
+    for (const [w, h] of [[1440, 900], [390, 844], [320, 568]]) {
+      for (const dichte of ['normal', 'kompakt']) {
+        const p = await oeffne(b, w, h);
+        if (dichte === 'kompakt') await p.evaluate(() => document.body.setAttribute('data-dichte', 'kompakt'));
+        const lade = await p.evaluate(() => document.querySelectorAll('#loadingWrap .formi-lade .fk-auge').length);
+        await p.click('#formiKugel'); await p.waitForTimeout(500);
+        const st = await p.evaluate(() => {
+          const sicht = (s) => { const e = document.querySelector(s); return !!e && e.getClientRects().length > 0 && getComputedStyle(e).visibility !== 'hidden'; };
+          return { figur: sicht('#jarvisVerlauf .jv-start-figur') && document.querySelectorAll('#jarvisVerlauf .jv-start-figur .fk-braue').length === 2,
+            brief: sicht('#jarvisVerlauf .jv-brief'), kopfGesicht: sicht('#jarvis .jv-titel .formi-gesicht'),
+            knoepfe: ['jarvisMehr', 'jarvisPersonaBtn', 'jarvisGespraecheBtn', 'jarvisTon', 'jarvisGroesse', 'jarvisZu'].filter(id => sicht('#' + id)) };
+        });
+        const tag = `${w} px ${dichte}`;
+        if (dichte === 'normal') pruefe(`${tag}: beim Laden dreht sich Formis Ring mit Gesicht (statt Kreisel)`, lade === 2, String(lade));
+        pruefe(`${tag}: Startschirm mit grossem Gesicht, ohne doppelte Lage-Zeilen, kein zweites Gesicht im Kopf`, st.figur && !st.brief && !st.kopfGesicht, JSON.stringify(st));
+        pruefe(`${tag}: im Kopf drei Knöpfe (… · Groß · Schließen)`, JSON.stringify(st.knoepfe) === JSON.stringify(['jarvisMehr', 'jarvisGroesse', 'jarvisZu']), JSON.stringify(st.knoepfe));
+        await p.click('#jarvisMehr'); await p.waitForTimeout(200);
+        const sechs = await p.evaluate(([TR]) => ['jarvisMehr', 'jarvisPersonaBtn', 'jarvisGespraecheBtn', 'jarvisTon', 'jarvisGroesse', 'jarvisZu'].map(id => {
+          const m = (eval(TR))(document.getElementById(id)); return id + ':' + m.w + '×' + m.h + (m.imBild ? '' : ':raus'); }), [TREFFER.toString()]);
+        pruefe(`${tag}: „…" klappt Einstellungen, Gespräche und Ton auf — alle sechs ≥ 44 × 44, im Bild`,
+          sechs.every(x => { const m = /:(\d+)×(\d+)$/.exec(x); return m && +m[1] >= 44 && +m[2] >= 44; }), sechs.join(' '));
+        await p.click('#jarvisZu'); await p.waitForTimeout(300);
+        if (dichte === 'normal') {
+          // Leere Liste: Formi bietet sich an
+          await p.evaluate(() => { history.pushState({ v: 'archive' }, '', '#archive'); window.dispatchEvent(new PopStateEvent('popstate', { state: { v: 'archive' } })); });
+          await p.waitForTimeout(400);
+          const leer = await p.evaluate(([TR]) => { const b = document.querySelector('.view.show .empty .leer-formi'); if (!b) return null; b.scrollIntoView({ block: 'center' }); return (eval(TR))(b); }, [TREFFER.toString()]);
+          pruefe(`${tag}: leere Liste (Archiv): „Frag Formi" mit Gesicht, ${leer && leer.w}×${leer && leer.h}`, leer && leer.w >= 44 && leer.h >= 44 && leer.imBild, JSON.stringify(leer));
+          await p.click('.view.show .empty .leer-formi'); await p.waitForTimeout(400);
+          pruefe(`${tag}: … ein Tipp öffnet Formi`, await p.evaluate(() => !document.getElementById('jarvis').hidden));
+        }
+        pruefe(`${tag}: keine Fehler auf der Seite`, !p._fehler.length, p._fehler.join(' | '));
+        await p._ctx.close();
+      }
+    }
+    {
+      // Am Rechner: die Gesichter im Fenster schauen der Maus nach
+      const p = await oeffne(b, 1440, 900);
+      await p.click('#formiKugel'); await p.waitForTimeout(500);
+      await p.mouse.move(1430, 890); await p.waitForTimeout(400);
+      const pu = await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf .jv-start-figur .fk-auge b')].map(b => getComputedStyle(b).transform));
+      const m = pu.map(t => /matrix\(1, 0, 0, 1, (-?[\d.]+), (-?[\d.]+)\)/.exec(t));
+      pruefe(`Fenster offen: das grosse Gesicht schaut der Maus nach (${pu[0]})`, m.length === 2 && m.every(x => x && +x[1] > 0 && +x[2] > 0), JSON.stringify(pu));
       await p._ctx.close();
     }
 

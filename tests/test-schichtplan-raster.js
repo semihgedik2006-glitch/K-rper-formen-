@@ -135,7 +135,7 @@ const ZUSTAND = () => {
   console.log('\n── 3. Stunden und Soll ──');
   {
     const p = await oeffne(b, 'chef', 1440, 900);
-    const s = await p.evaluate(() => [...document.querySelectorAll('.wp-z:not(.wp-kopfz)')].map(r => ({
+    const s = await p.evaluate(() => [...document.querySelectorAll('.wp-z:not(.wp-kopfz):not(.wp-besetzt)')].map(r => ({
       name: r.querySelector('.wp-p').textContent, std: r.querySelector('.wp-std').textContent.replace(/\s+/g, ' ').trim(),
       warn: r.querySelector('.wp-std').classList.contains('warn'),
       summe: [...r.querySelectorAll('.wp-schicht')].reduce((a, x) => {
@@ -157,11 +157,63 @@ const ZUSTAND = () => {
     const m = await oeffne(b, 'mitarbeiter', 1440, 900);
     await m.evaluate(() => document.querySelector('[data-wpansicht="person"]').click());
     await m.waitForTimeout(400);
-    const t = await m.evaluate(() => [...document.querySelectorAll('.wp-z:not(.wp-kopfz)')].map(r => ({
+    const t = await m.evaluate(() => [...document.querySelectorAll('.wp-z:not(.wp-kopfz):not(.wp-besetzt)')].map(r => ({
       ich: r.classList.contains('ich'), soll: /\//.test(r.querySelector('.wp-std').textContent) })));
     pruefe('Team: Soll nur in der eigenen Zeile (die Regel lässt nur sie lesen)',
       t.length > 1 && t.filter(x => x.soll).every(x => x.ich), JSON.stringify(t));
     await m._ctx.close();
+  }
+
+  console.log('\n── 3b. Besetzung je Tag: Lücken in der Öffnungszeit ──');
+  /* Runde 200 — aus dem Betrieb: „mach weiter mit dem design". Die
+     Leiste unter dem Raster sagt, wann niemand eingeteilt ist, obwohl das
+     Studio offen hat. Nachgerechnet wird unabhängig: aus den Zeiten der
+     Pillen in derselben Spalte, alle 30 Minuten der Öffnungszeit. Über
+     mehrere Studios, damit Tage mit und ohne Lücke vorkommen. */
+  {
+    const p = await oeffne(b, 'chef', 1440, 900);
+    const r = await p.evaluate(async () => {
+      const w = ms => new Promise(r => setTimeout(r, ms));
+      const min = t => { const m = /^(\d{2})(?::(\d{2}))?$/.exec(t); return m ? +m[1] * 60 + (+(m[2] || 0)) : null; };
+      const sel = document.getElementById('teamStudio'), aus = [], fehler = [];
+      for (const o of [...sel.options].slice(0, 6)) {
+        sel.value = o.value; sel.onchange(); await w(400);
+        for (const wo of [0, 1]) {
+          document.getElementById(wo ? 'shiftNext' : 'shiftToday').click(); await w(150);
+          const zeilen = [...document.querySelectorAll('.wp-z:not(.wp-kopfz):not(.wp-besetzt)')];
+          const besetzt = document.querySelector('.wp-besetzt');
+          if (!besetzt) { fehler.push(o.value + ': keine Zeile „Besetzt"'); continue; }
+          const zellen = [...besetzt.querySelectorAll('.wp-c')];
+          zellen.forEach((z, i) => {
+            if (z.classList.contains('vorbei')) return;
+            const band = z.querySelector('.wp-band'); const lab = band ? band.getAttribute('aria-label') : '';
+            const off = /Geöffnet (\S+)–(\S+) Uhr/.exec(lab);
+            const zeiten = zeilen.flatMap(r => [...r.querySelectorAll('.wp-c')[i].querySelectorAll('.wp-schicht')])
+              .map(x => /(\d\d):(\d\d)–(\d\d):(\d\d)/.exec(x.getAttribute('title') || '')).filter(Boolean)
+              .map(m => { const a = +m[1] * 60 + +m[2]; let e = +m[3] * 60 + +m[4]; if (e <= a) e = 1440; return [a, e]; });
+            const luecken = ((/niemand eingeteilt: (.*)$/.exec(lab) || [])[1] || '').split(', ').filter(Boolean)
+              .map(t => t.split('–').map(min));
+            if (!off) { if (luecken.length) fehler.push(o.value + ' Tag ' + i + ': Lücke ohne Öffnungszeit'); return; }
+            const [ov, ob] = [min(off[1]), min(off[2])];
+            for (let t = ov + 15; t < ob; t += 30) {
+              const da = zeiten.some(([a, e]) => a <= t && e > t);
+              const inLuecke = luecken.some(([a, e]) => a <= t && e > t);
+              if (da === inLuecke) fehler.push(o.value + ' Tag ' + i + ' ' + Math.floor(t / 60) + ':' + (t % 60) + ' da=' + da + ' Lücke=' + inLuecke);
+            }
+            aus.push({ st: o.value, tag: i, schichten: zeiten.length, luecken: luecken.length,
+              text: (z.querySelector('.wp-band-txt') || {}).textContent || '' });
+          });
+        }
+      }
+      return { aus, fehler };
+    });
+    const mitL = r.aus.filter(x => x.luecken), ohneL = r.aus.filter(x => !x.luecken);
+    console.log('  Tage geprüft: ' + r.aus.length + ' (mit Lücke ' + mitL.length + ', ohne ' + ohneL.length + ')');
+    pruefe('Lücken stimmen alle 30 Minuten mit den Schichten überein', r.aus.length > 10 && !r.fehler.length, r.fehler.slice(0, 5).join(' | '));
+    pruefe('es kommen Tage mit UND ohne Lücke vor (sonst prüft das nichts)', mitL.length > 0 && ohneL.length > 0);
+    pruefe('eine Lücke steht als Text unter der Leiste („… niemand")', mitL.every(x => /niemand/.test(x.text)), JSON.stringify(mitL.slice(0, 3)));
+    pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await p._ctx.close();
   }
 
   console.log('\n── 4. Eintragen per Klick in eine leere Zelle ──');

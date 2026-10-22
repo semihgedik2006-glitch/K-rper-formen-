@@ -1,4 +1,4 @@
-/* ══ FORMI-WELT, STUFE 2: DIE APP IM FORMI-LOOK (Runde 200) ══════════
+/* ══ FORMI-WELT, STUFE 2: DIE APP IM FORMI-LOOK (Runde 210) ══════════
    Aus dem Betrieb, 22.10.2026: „können wir noch mehr am design anpassen
    und auch mehr auf den formi look eingehen also das die app so ein
    ähnliches verhalten und design hat" – und auf die Rückfragen „1. b
@@ -15,9 +15,8 @@
     4. Hauptknöpfe im Verlauf mit dunkler Schrift – Kontrast an echten
        Bildpunkten ≥ 4,5 : 1.
     5. Teilchen beim Abhaken; GEGENPROBE: keine bei „Bewegung reduzieren".
-    6. Leere Zustände zeigen Formi statt des Zeichens; GEGENPROBE Stil
-       „Hell": das Zeichen.
-    7. Laden: Formis atmender Kern statt Kreisel.
+    (6./7. Leere Listen und Laden kamen parallel in Runde 209 und werden
+       in test-formi-lebt geprüft.)
     8. Tagesabschluss: Glitch über dem Kopf, Teilchen von oben, Satz.
     9. GEGENPROBE Stil „Hell": keine schillernde Kante.
    ══════════════════════════════════════════════════════════════════ */
@@ -137,36 +136,6 @@ function kontrast(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) +
     await zu(p);
   }
 
-  console.log('\n── 6 Leere Zustände ──');
-  for (const [stil, prefs] of [['Formi', null], ['Hell', JSON.stringify({ theme: 'light', stil2: true })]]) {
-    const p = await oeffne(b, 1440, 900, { prefs });
-    await tippe(p, '#side [data-group="g-komm"]');
-    await tippe(p, '#subnav [data-subview="ann"]');
-    await tippe(p, '#view-ann [data-pinteil="brett"]');
-    /* Leerer Zustand in der Suche: sicher leer, egal was die Attrappe kennt. */
-    await tippe(p, '#side [data-group="g-arbeit"]');
-    await p.evaluate(() => { const s = document.getElementById('todoSearch') || document.querySelector('#view-todos input[type="search"]'); if (s) { s.value = 'qqqxxyyzz'; s.dispatchEvent(new Event('input', { bubbles: true })); } });
-    await p.waitForTimeout(500);
-    const e = await p.evaluate(() => {
-      const leer = [...document.querySelectorAll('.empty')].find(x => x.getClientRects().length);
-      if (!leer) return null;
-      const f = leer.querySelector('.leer-formi'), svg = leer.querySelector(':scope > svg');
-      return { formi: !!f && !!f.getClientRects().length, zeichen: !!svg && !!svg.getClientRects().length };
-    });
-    if (stil === 'Formi') pruefe('Stil Formi: ein leerer Zustand zeigt Formis Gesicht statt des Zeichens', !!e && e.formi && !e.zeichen, JSON.stringify(e));
-    else pruefe('GEGENPROBE Stil Hell: das Zeichen, nicht Formi', !!e && !e.formi && e.zeichen, JSON.stringify(e));
-    await zu(p);
-  }
-
-  console.log('\n── 7 Laden ──');
-  {
-    const p = await oeffne(b, 1440, 900);
-    const l = await p.evaluate(() => { const f = document.querySelector('#loadingWrap .lade-formi'), k = document.querySelector('#loadingWrap .spinner');
-      return { formi: f ? getComputedStyle(f).display : 'fehlt', kreisel: k ? getComputedStyle(k).display : 'fehlt' }; });
-    pruefe('Laden: Formis atmender Kern statt Kreisel', l.formi === 'block' && l.kreisel === 'none', JSON.stringify(l));
-    await zu(p);
-  }
-
   console.log('\n── 8 Tagesabschluss ──');
   {
     const p = await oeffne(b, 1440, 900);
@@ -193,6 +162,6 @@ function kontrast(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) +
   await b.close();
   console.log(schlecht
     ? '\n✗ Formi-Welt: ' + schlecht + ' von ' + (gut + schlecht) + ' Zusicherungen falsch'
-    : '\n✓ Formi-Welt: Kanten, Farben, Ring nur Formi, Kontrast, Teilchen, leere Zustände, Laden, Abschluss — ' + gut + ' Zusicherungen');
+    : '\n✓ Formi-Welt: Kanten, Farben, Ring nur Formi, Kontrast, Teilchen, Abschluss — ' + gut + ' Zusicherungen');
   process.exit(schlecht ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

@@ -18,6 +18,8 @@ Diese laufen ohne Zutun, täglich, als geplante Cloud Functions.
 | Vollsicherung der Datenbank | **7 Tage** | täglich 02:40 | `dailyBackup`, `BACKUP_TAGE = 7` |
 | Wochensicherungen Material | **52 Wochen** | wöchentlich | `archives` |
 | Stempelzeiten | **3 Jahre** ab dem Tag des Stempels | täglich 03:50 | `stempelzeitenAblaufen`, `STEMPEL_FRIST_JAHRE = 3` |
+| Korrekturanträge (seit 22.10.2026) | **3 Jahre** ab dem beantragten Tag | täglich 03:50 | derselbe Lauf, Sammlung `zeitAntraege` |
+| Monatsabschlüsse (seit 22.10.2026) | **3 Jahre** ab dem Monat | täglich 03:50 | derselbe Lauf, Sammlung `zeitAbschluesse` |
 | Übergaben im Blick der Startseite | **24 Stunden** sichtbar | — | Anzeigefenster, kein Löschen |
 
 > **Beim Papierkorb ist eine Besonderheit zu kennen:** Bei gelöschten
@@ -136,7 +138,11 @@ und Reaktionen · **Stempelzeiten** (Zeitpunkt, Art, Person, Studio des
 Geräts, Gerätename — Abschnitt 6 sagt, was dabei ausdrücklich nicht
 erfasst wird) · **registrierte Stempel-Geräte** je Studio, mit dem Hash
 ihres Geräteschlüssels. Nachgetragene oder für ungültig erklärte
-Stempel tragen dazu, wer es war, wann und warum · **Anliegen** an die
+Stempel tragen dazu, wer es war, wann und warum · **Korrekturanträge**
+der Beschäftigten (Tag, Uhrzeit, Art, Grund, Stand; nach der
+Entscheidung wer, wann und bei Ablehnung warum) · **Monatsabschlüsse**
+(Summen je Person: Stunden, Soll, Urlaub/Krank, Saldo, Konto; wer wann
+abgeschlossen und wieder geöffnet hat, mit Grund) · **Anliegen** an die
 Leitung samt Antwort · **Schulungen**: Teilnehmer mit Name und
 Teilnahme-Code; je Durchlauf Modul, Zeitpunkt, Gerät, Studio, aktive
 Dauer, Versuche und falsch angeklickte Antworten je Frage, Ergebnis,

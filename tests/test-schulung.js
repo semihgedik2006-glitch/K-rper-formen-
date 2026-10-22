@@ -389,17 +389,31 @@ async function codeHolen(p, name) {
 
   // ══ 4. Der Durchlauf ══
   console.log('\n── Schritt für Schritt ──');
-  let videoGesagt = false, hakenSperrte = false, hakenLoeste = false, schritte = 0;
+  let videoGesagt = false, animGesperrt = false, hakenSperrte = false, hakenLoeste = false, schritte = 0;
   for (let i = 0; i < 12; i++) {
     const st = await p.evaluate(() => ({
       frage: !!document.querySelector('.sch-frage'),
       video: (document.querySelector('.sch-video b') || {}).textContent || '',
+      anim: !!document.getElementById('schAnim'),
       haken: !!document.getElementById('schHaken'),
       weiterAus: !!(document.getElementById('schWeiter') || {}).disabled
     }));
     if (st.frage) break;
     schritte++;
     if (st.video) videoGesagt = videoGesagt || /Video folgt/.test(st.video);
+    /* Runde 202, aus dem Betrieb: „den rest können wir sonst auch selber
+       erstellen mit animationen". Ein Video-Schritt ohne Video zeigt
+       jetzt eine Animation aus dem Handbuch — und „Weiter" kommt wie beim
+       Video erst, wenn jedes Bild zu sehen war. Durchgeklickt wird mit
+       „›", wie ein Mensch es tut. */
+    if (st.anim) {
+      animGesperrt = animGesperrt || st.weiterAus;
+      for (let k = 0; k < 12; k++) {
+        const vor = await p.$('#schAnimVor:not([disabled])');
+        if (!vor) break;
+        await vor.click(); await p.waitForTimeout(150);
+      }
+    }
     if (st.haken) {
       hakenSperrte = hakenSperrte || st.weiterAus;
       await p.evaluate(() => document.querySelector('#schHaken input').click());
@@ -413,7 +427,12 @@ async function codeHolen(p, name) {
   /* Solange kein Video hinterlegt ist, MUSS die App das sagen. Ein
      leerer Rahmen liesse jeden glauben, sein Gerät sei schuld — und
      ein Schritt, der so tut, als sei er vollständig, ist schlimmer. */
-  pruefe('ein fehlendes Video wird als fehlend benannt', videoGesagt);
+  /* Bis Runde 201 stand hier „Video folgt". Seit Runde 202 zeigt der
+     Schritt eine Animation; leer oder stumm ist er weiterhin nie (die
+     Gegenprobe „ohne Szenen → Video folgt" steht in
+     tests/test-schulung-animation.js). */
+  pruefe('ein Video-Schritt ohne Video ist nie leer: Animation oder „Video folgt"', videoGesagt || animGesperrt);
+  pruefe('die Animation sperrt „Weiter", bis jedes Bild zu sehen war', animGesperrt);
   pruefe('ohne Haken ist „Weiter" gesperrt', hakenSperrte);
   pruefe('GEGENPROBE mit Haken geht es weiter', hakenLoeste);
 
@@ -509,8 +528,12 @@ async function codeHolen(p, name) {
      etwas steht, BEVOR man drei Reiter durchtippt. */
   const reiterZahlen = await p.evaluate(() =>
     [...document.querySelectorAll('[data-schvwtab]')].map(x => x.textContent.trim()));
-  pruefe('die Verwaltung hat drei Reiter', reiterZahlen.length === 3,
-    reiterZahlen.join(' | '));
+  /* Runde 207, aus dem Betrieb („aight mach die nächste runde" auf den
+     Vorschlag „Pflichtschulungen auf einen Blick"): dazu kam der Reiter
+     „Pflicht". Geprüft wird weiter, dass es Reiter sind und welche. */
+  pruefe('die Verwaltung hat vier Reiter: Teilnehmer, Pflicht, Module, Auswertung',
+    reiterZahlen.length === 4 && /^Teilnehmer/.test(reiterZahlen[0]) && /^Pflicht/.test(reiterZahlen[1]) &&
+    /^Module/.test(reiterZahlen[2]) && /^Auswertung/.test(reiterZahlen[3]), reiterZahlen.join(' | '));
   pruefe('und jeder sagt, wieviel dahintersteht',
     reiterZahlen.every(x => /\d/.test(x)), reiterZahlen.join(' | '));
   await vwReiter(p, 'aus');

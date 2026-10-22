@@ -408,20 +408,20 @@ Rückfragen vorgelegt, Antworten:
 1. ✅ **Pause oder Feierabend, Stand jetzt, Plan neben Ist, Jetzt im
    Studio** (Runde 189). Dabei gefunden: am Terminal und am Handy liess
    sich gar kein Feierabend stempeln.
-2. **Pausenregel (auffüllen) und Hinweise nach dem Arbeitszeitgesetz** —
+2. ✅ **Pausenregel (auffüllen) und Hinweise nach dem Arbeitszeitgesetz** (Runde 203) —
    über 10 h am Tag, Ruhezeit unter 11 h, über 6 h ohne Pause. Die
    Rohdaten bleiben unverändert; abgezogen wird in der Rechnung, und
    jeder Abzug steht als solcher da.
-3. **Korrekturantrag** vom Mitarbeiter („Feierabend 16:30 vergessen",
+3. ✅ **Korrekturantrag** (Runde 204) vom Mitarbeiter („Feierabend 16:30 vergessen",
    mit Grund), Bestätigung nur durch die Geschäftsführung; bestätigt läuft
    der vorhandene Weg `zeitNachtragen`. Neue Sammlung → in BEIDE Teile von
    `firestore.rules`, in den Regeltest und in beide Einstiege der
    Attrappen.
-4. **Stundenkonto und Monatsabschluss**: Ist gegen Vertragssoll je Monat,
+4. ✅ **Stundenkonto und Monatsabschluss** (Runde 208): Ist gegen Vertragssoll je Monat,
    Übertrag, Korrekturbuchung mit Grund; die Geschäftsführung schliesst
    einen Monat ab, danach ändert sich darin nichts mehr ohne neuen
    Eintrag.
-5. **Export**: Excel/CSV je Person und Tag, dazu DATEV. **Offen und vor
+5. **Export**: ✅ Excel/CSV je Person und Tag (Runde 208), dazu DATEV. **Offen und vor
    dem Bau zu klären:** DATEV hat mehrere Formate (u. a. ASCII für
    Lohn und Gehalt, LODAS); welches das Lohnbüro einliest, entscheidet
    das Lohnbüro. Der Export enthält nie `zeitPins` oder `terminalCodes`.

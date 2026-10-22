@@ -18753,7 +18753,662 @@ Am Handy bleibt sie über der Kugel.
 auf keinem Knopf der Seitenleiste“. Die Gegenprobe gegen main ergibt 4 von
 21 falsch, jetzt sind alle 21 grün.
 
-## Runde 200 — Formi-Welt, Stufe 2: die App im Formi-Look (22.10.2026)
+
+## Runde 200 — Schichtplan: Besetzung je Tag, Zeitstrich in der Schicht (22.10.2026)
+
+**Aus dem Betrieb:** „mach weiter mit dem design“.
+
+**Was gebaut ist**
+- **Besetzungs-Leiste je Tag** — die „Top 1“ aus
+  `docs/design-vorbilder/dienstplan-und-schichten.md` (Skello): Ist jede
+  Stunde besetzt? Ein Balken von 6 bis 22 Uhr (weiter, wenn das Studio
+  länger offen hat); hell, wo eine Person da ist, kräftig ab zwei. Die
+  Öffnungszeit ist als Rahmen eingezeichnet; offen und niemand eingeteilt
+  ist **bernstein gestreift** und steht als Text darunter („07–09
+  niemand“). Das ist ein Status, deshalb die Statusfarbe.
+  - in „Tage“ unter jedem Tageskopf (Handy und Rechner),
+  - in „Personen“ als letzte Zeile „Besetzt“,
+  - vergangene Tage ohne Lücken-Markierung (dort ist nichts mehr zu tun).
+- **Bezug sind die Öffnungszeiten** aus `config/studios` (Verwaltung →
+  Studios → Zeiten). Nicht gepflegt heisst: keine Lücken, nur die Leiste —
+  „nicht gepflegt“ ist nicht „geschlossen“ (derselbe Unterschied wie bei
+  der Zeiterfassung). Geschlossene Tage sagen „geschlossen“.
+- **Zeitstrich in jeder Pille** (Raster): wo im Tag 6–22 Uhr die Schicht
+  liegt — Früh und Spät sieht man, ohne die Ziffern zu lesen.
+
+**Gefunden beim Messen:** Die Leiste lag über den unteren 3–4 px des „＋“
+am Tageskopf (Hit-Test 44 × 40). Das ＋ liegt jetzt darüber.
+
+**Geprüft**
+- test-schichtplan-raster, neuer Abschnitt 3b: in sechs Studios, diese
+  und nächste Woche, 54 Tage (42 mit Lücke, 12 ohne): für jeden halben
+  Stundentakt der Öffnungszeit muss gelten „jemand da“ ⇔ „keine Lücke
+  angezeigt“ — nachgerechnet aus den Zeiten der Pillen in derselben
+  Spalte, nicht aus dem Code. Dazu: Text „… niemand“ bei jeder Lücke.
+  92 Prüfungen, grün.
+- Gegenprobe: Öffnungsbeginn um eine Stunde verschoben gerechnet → rot
+  („studio-7 Tag 3 7:15 da=false Lücke=false“).
+
+**Nicht gelöst:** Bei 1280 × 800 mit „Wartet auf deine Entscheidung“
+steht die Woche im Raster jetzt nicht mehr ganz im Bild — die neue Zeile
+„Besetzt“ kostet ~57 px. Bei 1440 × 900 passt sie (Ende 796, Rand 810).
+
+## Runde 201 — Schulung: auffrischen in Runden, Fristen, weitermachen, am Rechner zwei Spalten (22.10.2026)
+
+**Aus dem Betrieb:** „bei der anderen auf die schulungen“ eingehen. Erst
+Ist-Stand, Vergleich und Plan mit Rückfragen, dann bauen. Auf den Plan:
+„plan klingt gut“. Die Antworten auf die Rückfragen:
+
+1. Wo liegen die Auffrisch-Antworten? „das was leichter ist für leute ohne
+   zugang“
+2. Soll die Leitung sehen, welche Fragen im Team oft danebengehen? „Ja“
+3. Eine Zeile auf „Heute“? „was du empfiehlst einfach“
+4. Fristen für Pflichtmodule jetzt oder später? „ja jetzt“
+5. Videos: „bis jetzt gibts nur für die verkaufsschulung videos den rest
+   können wir sonst auch selber erstellen mit animationen“ — das ist
+   Runde 202.
+
+**Ist-Stand, gemessen** (Demo, vor dem Umbau):
+- Handy 390 px: die Modulliste begann bei Pixel 1.540, nach zwei
+  Bildschirmen. Davor „Kurz auffrischen“ mit 543 px für EINE Frage.
+- Rechner 1280 × 800: die Modulliste begann bei Pixel 1.059, unter dem
+  Rand. Die Code-Seite eines Moduls zog sich über 1.174 px, der Durchlauf
+  einspaltig über die ganze Breite.
+- „‹ Zurück“ in der Schulung traf am Handy nur 39 px hoch: die Reiter
+  „Dokumente / Schulung / Formi“ lagen mit ihrer Trefferfläche auf den
+  oberen 5 px.
+- „Das Beratungsgespräch“: 150 Minuten, 17 Schritte, 67 Fragen, ohne
+  die Möglichkeit, aufzuhören und später weiterzumachen. Daneben acht
+  Module mit 8 bis 35 Minuten.
+- Die 5 Videos der drei Pflichtmodule sind Platzhalter („Video folgt“).
+
+**Recherche, kurz** (Websuche; die Seiten selbst liessen sich hier nicht
+öffnen, der Proxy lehnte sie ab — alles aus Suchauszügen, kein Abstract
+selbst gelesen):
+- Belegt: Abfragen hält länger als Wiederlesen (Roediger & Karpicke 2006,
+  nach 2 Tagen und 1 Woche). Verteilt hält länger als am Stück, der beste
+  Abstand wächst mit der Behaltenszeit (Cepeda u. a. 2006, 2008). Nach
+  einer Antwort die Lösung zeigen (Butler & Roediger 2008). Dunlosky u. a.
+  2013: nur Abfragen und Verteilen „high utility“.
+- Schwach belegt: dass kurze Einheiten („Mikrolernen“) an sich besser
+  lehren. Kürze hilft vor allem beim Wiederkommen.
+- Vorbilder (Herstellerangaben): SC Training/EdApp „Brain Boost“ (falsche
+  Fragen öfter), Axonify (wenige Fragen am Tag), Trainual (Frist ab
+  Zuweisung, Erinnerungen), Duolingo (eine Lektion hält die Serie).
+  Ranglisten bewusst NICHT — sie belohnen Tempo statt Verständnis.
+
+**Was gebaut ist**
+
+1. **Auffrischen als kleine Runde.** Höchstens drei Fragen, gemischt aus
+   den bestandenen Modulen. Abstände 2 · 7 · 30 · 90 · 180 Tage; falsch →
+   wieder nach 2 Tagen. Je Modul höchstens sechs Fragen im Plan, die beim
+   Durchlauf danebengegangenen zuerst. Nach jeder Antwort sofort die
+   Lösung mit Erklärung.
+   - Die Karte ist eine Zeile und ein Knopf, bis man „Los geht’s“ drückt
+     (gemessen 218 statt 543 px am 390er Telefon; die Modulliste beginnt
+     dort bei 1.251 statt 1.540).
+   - **Der Plan hängt am Teilnehmer**, nicht am Gerät und nicht am Konto
+     (Antwort 1). Mit verknüpftem Konto ohne Code; am Studio-Tablet mit
+     demselben Code wie beim Anfangen. Der Code lebt nur für diese Runde
+     im Speicher der Seite; nach „Fertig“ ist auch der Name wieder weg.
+   - Neue Cloud Function `schulungAuffrischen` (holen und antworten in
+     einem Aufruf). Die Code-Prüfung ist dieselbe wie beim Anfangen und
+     steht jetzt genau einmal da (`schulungTeilnehmerAusCode`) — samt
+     Bremse gegen Durchprobieren.
+   - Zwei neue Sammlungen, in **beiden** Regelbäumen:
+     `schulungLernplan` (niemand im Browser) und `schulungFragenStat`
+     (lesen nur die Leitung, schreiben niemand).
+2. **Fristen für Pflichtmodule** (Antwort 4): 14 Tage ab Anlage des
+   Teilnehmers, je Modul im Editor einstellbar (`fristTage`, das Feld
+   erscheint nur bei „Pflicht“). „bis 5.11.“ neutral, erst eine
+   verstrichene Frist in der Statusfarbe.
+   - **Übergang:** Wer schon vorher Teilnehmer war, hätte über Nacht
+     lauter überfällige Module gehabt. Die Frist beginnt deshalb für alle
+     frühestens am 22.10.2026.
+   - Die Leitung sieht je Teilnehmer „überfällig: …“ bzw. „Pflicht offen:
+     … (bis …)“.
+3. **„Heute“: eine Zeile, wenn etwas wartet** (Antwort 3, empfohlen):
+   „Kurz auffrischen: 3 Fragen warten“ bzw. „Pflichtschulung „…“ bis …“
+   (ab drei Tagen vorher, überfällig in der Statusfarbe). Gelesen aus
+   einem Zwischenstand auf dem Gerät (`kf_schulstand`), beim Start ohne
+   Abfrage. Höchstens alle 20 Stunden holt die App ihn im Hintergrund nach
+   (eine Funktion, eine Abfrage der eigenen Durchläufe), damit er auch bei
+   Leuten stimmt, die nie unter „Schulung“ schauen.
+4. **„Fragen, die im Team nicht sitzen“** (Antwort 2) unter Verwaltung →
+   Auswertung: je Frage die Quote „beim ersten Versuch daneben“ aus den
+   Durchläufen und dem Auffrischen. Ohne Namen. Erst ab drei Antworten;
+   die Zahl aus dem Auffrischen steht nur, wenn sie selbst mindestens drei
+   Antworten hat.
+5. **Weitermachen statt von vorn.** `schulungStart` setzt einen
+   angefangenen, nicht leeren Durchlauf derselben Person (unter 30 Tagen)
+   fort: gesehene Schritte, beantwortete Fragen, aktive Zeit. Das Gerät
+   wird dabei auf das neue umgeschrieben, sonst liessen die Regeln es
+   nicht hineinschreiben. Im Durchlauf ein Knopf „Später weiter“; in der
+   Übersicht „angefangen · 2 von 17 Schritten“.
+6. **Am Rechner** (ab 1.100 px):
+   - Übersicht in zwei Spalten: links „Das steht für dich an“, „Kurz
+     auffrischen“, „Was du schon gemacht hast“; rechts Fortschritt, Filter
+     und Module. Die Module stehen bei 1280 × 800 jetzt im ersten Bild.
+   - Code-Seite höchstens 640 px breit.
+   - Durchlauf mit Inhaltsverzeichnis links (gesehene Schritte mit Haken
+     und antippbar, kommende gesperrt — kein Weg an Video und Lesezeit
+     vorbei) und Tasten: 1–8 antworten, → weiter, ← zurück.
+7. **„‹ Zurück“ und „Später weiter“** liegen 8 px tiefer und treffen jetzt
+   44 px hoch.
+
+**Was die Tests gefunden haben**
+- **Eine Ziffer rutschte aus dem Durchlauf zu den Tastenkürzeln der App
+  durch.** Nach einer beantworteten Frage (Bestehensgrenze: die Antworten
+  sind gesperrt) sprang die „3“ mitten aus der Schulung zu den Aufgaben.
+  Im Durchlauf gehören Ziffern und Pfeile jetzt immer der Schulung.
+- **Die Demo hatte keinen verknüpften Teilnehmer.** Die eigenen
+  Durchläufe hingen an „Nora Haas“, deren Eintrag auf ein anderes Konto
+  zeigte. Neu: „Du (Demo-Konto)“, verknüpft mit dem Demo-Konto.
+- **Datum mit zwei Punkten** („ab 24.10..“). Jetzt ein Satz, ein Punkt;
+  die Probe prüft es.
+- `test-gestaltung`: fester Buchstabenabstand am neuen Codefeld (jetzt
+  `--ls-l`) und `#schListe` zweimal mit `grid-template-columns`.
+- **Der Hintergrund-Abruf für die Startseite** (höchstens alle 20 Stunden)
+  hatte drei Nebenwirkungen, alle von bestehenden Proben gefunden:
+  - Er lief auch am **Stempel-Terminal** und überschrieb dort den letzten
+    Funktionsaufruf (`test-terminal`). Am Terminal läuft er jetzt nicht.
+  - Konnte die Funktion gar nicht aufgerufen werden, landete das als
+    Fehler auf der Seite (`test-zugang-rolle`). Jetzt abgefangen.
+  - Er zeichnete die Startseite nach vier Sekunden neu, auch wenn sich
+    nichts geändert hatte (`test-scrollkopf`). Jetzt nur, wenn sich die
+    Schulungszeile wirklich ändert.
+- **Zwei Modulspalten am Rechner** (`test-pc-spalten`, Wunsch aus Runde
+  143): Neben der linken Spalte blieb bei 1280 px nur Platz für eine.
+  Jetzt `minmax(max(300px, 30%), 1fr)`: zwei bei 1280, drei bei 1920.
+- **Beim Zusammenführen mit `main`** verlor der NEUIGKEITEN-Eintrag seine
+  schliessende Klammer. Die Demo merkte es nicht sofort, die Attrappen
+  schon (`Unexpected token '{'`). Behoben vor dem ersten Push.
+
+**Entschieden, und warum**
+- **Plan am Teilnehmer statt auf dem Gerät.** Auf dem Gerät allein wüsste
+  das Tablet nicht, wer davor sitzt, und am Rechner wäre es eine andere
+  Runde. Der Preis: der Plan liegt jetzt in der Datenbank. Lesen kann ihn
+  im Browser niemand; er enthält Stufe und Fälligkeit, nicht die Antwort.
+- **Die Leitung sieht keinen Lernplan einzelner.** „Wird es als Kontrolle
+  empfunden, schadet es.“ (Runde 134) gilt weiter. Sie sieht nur die
+  Summe je Frage — die Frage soll besser werden, nicht die Person.
+- **Kein Algorithmus, eine Liste von Tagen.** SM-2 und Ähnliches rechnen
+  aus dem Gefühl der Lernenden; bei drei Fragen am Tag bringt das nichts,
+  was man nachprüfen könnte. Die Tage sind abgeleitet, nicht gemessen.
+- **Ziffern statt Buchstaben** als Tasten: Buchstaben sind bei den
+  Tastenkürzeln der App belegt.
+
+**Nicht geprüft — bevor „alles grün“ jemanden beruhigt**
+- Der echte Aufruf der Funktion aus dem Browser: Das Firebase-SDK lädt
+  im Test-Browser dieser Umgebung nicht (Proxy-Zertifikat). Geprüft ist
+  die Funktion im Emulator (`tests/rules/funktionen.test.js`) und die App
+  gegen die Demo-Attrappe, die dieselbe Rechnung nachbaut.
+- Ob 2 · 7 · 30 · 90 · 180 Tage im Studio gut passen, zeigt erst der
+  Betrieb.
+- **Offen:** Wird ein Teilnehmer gelöscht, bleibt sein Lernplan liegen
+  (kein Auslöser räumt ihn weg). Er kommt nicht mehr dran, weil es keine
+  Durchläufe mehr gibt, belegt aber Platz.
+
+**Gesamtdurchlauf** (alle 203 Browser-Durchläufe, Regeln und Funktionen
+im Emulator): Regeln und Funktionen grün. Von den Browser-Durchläufen
+waren nach einer Wiederholung acht rot, und alle acht sind auf dem
+unveränderten `main` genauso rot (gegengeprüft auf einer zweiten Kopie):
+`test-block-d`, `test-formi-verdeckt`, `test-gehirn`, `test-neu-design`,
+`test-p1-aufgaben`, `test-p4-seitenleiste`, `test-startseite-putz`,
+`test-team-woche`. Sie gehören nicht zu dieser Runde und sind nicht
+angefasst. Rund 30 weitere fielen nur unter der Last von zwei parallelen
+Strängen und waren einzeln grün.
+
+**Tests**
+- `tests/rules/funktionen.test.js` (+36, jetzt 248): die Rechnung ohne
+  Datenbank und die echte Funktion im Emulator: Code am Tablet, Konto
+  ohne Code, falscher Code und Bremse, gezählt wird nur, was dran war (ein
+  erfundenes Modul nicht, dieselbe Antwort zweimal nicht), Summe ohne
+  Namen, Testcode zählt nicht, Weitermachen und neuer Durchgang danach.
+- `tests/rules/schulung.test.js` (+18, jetzt 92): Lernplan liest und
+  schreibt im Browser niemand, die Summe nur die Leitung; beide Bäume.
+  Gegenprobe: mit einer offenen Leseregel fallen 6 Zeilen.
+- `tests/test-auffrischen.js` neu geschrieben (50): Karte klein, Runde,
+  Ergebnis, Startseite, Fristen über die Uhr, Code-Weg mit Gegenproben,
+  Fingerziele bei sieben Breiten normal und kompakt. Die alten Prüfungen
+  („eine Frage“, „nur auf dem Gerät“) verlangten das Gegenteil des neuen
+  Wunsches und sind ersetzt, nicht gelockert. Gegenprobe: ohne die
+  Konto-Prüfung am Zwischenstand fällt die Zeile.
+- `tests/test-schulung-lernen.js` neu (66): zwei Spalten bei 1280/1440/
+  1920, eine bei 320/390/430/820; Weitermachen, Inhaltsverzeichnis,
+  Tasten (mit der Ziffer auf gesperrten Antworten als Gegenprobe), „Später
+  weiter“, „‹ Zurück“ per Hit-Test (Gegenprobe ohne den Abstand: 39 px,
+  7 Zeilen rot), Leitung: Fristen je Teilnehmer, Fragen ohne Namen, die
+  Schwelle von drei Antworten, das Fristfeld im Editor.
+
+## Runde 202 — Schulung: Animationen statt „Video folgt“ (22.10.2026)
+
+**Aus dem Betrieb:** „bis jetzt gibts nur für die verkaufsschulung videos
+den rest können wir sonst auch selber erstellen mit animationen lade
+dafür dann passende skills oder plugins runter“.
+
+**Was gebaut ist**
+- Die fünf Video-Schritte der drei Pflichtmodule („Ein Tag im Studio“,
+  „Wen frage ich wann?“, „Trainingsplatz reinigen“, „Elektroden und Weste
+  desinfizieren“, „Der Ablauf, Schritt für Schritt“) zeigen eine
+  Animation: Bild für Bild ein Zeichen und ein Satz, alle gut fünf
+  Sekunden weiter, mit Pause, ‹ und ›.
+- Neues Feld `szenen` an einem Video-Schritt in `schulungen-basis.js`
+  (`ico`, `text`, `quelle`). Kommt später ein echtes Video (`quelle`),
+  steht es an derselben Stelle und die Animation tritt zurück. Ohne
+  Szenen steht wie bisher „Video folgt“.
+- „Weiter“ erst, wenn jedes Bild einmal zu sehen war — dieselbe Regel und
+  dieselbe Ausnahme für die Geschäftsführung wie beim Video. Im
+  Hintergrund (Tab nicht sichtbar) läuft die Animation nicht weiter.
+- Speichert die Leitung eine eigene Fassung des Moduls, bleiben die
+  Szenen erhalten.
+- `sw.js` VERSION v31 → v32 (die Moduldatei hat sich geändert).
+
+**Woher die Sätze kommen** — erfunden ist keiner:
+- Die drei Abläufe stehen wortgleich in „Hilfe im Studio“: Nr. 36
+  (Trainingsplatz), Nr. 37 (EMS-Equipment desinfizieren), Nr. 95 (Kunde
+  fühlt sich plötzlich unwohl). Die Probe vergleicht Satz für Satz.
+- Der Rundgang und „Wen frage ich wann?“ fassen mehrere Einträge und
+  Sätze aus dem Modul selbst zusammen; jede Szene nennt ihre Quelle.
+- Beim Notfall bewusst NUR das Handbuch: Was darüber hinausgeht
+  (Lagerung, Erste Hilfe), gehört nicht in eine selbstgemachte
+  Animation. Der alte Hinweis „Beine hoch“ stand nirgends im Handbuch
+  und ist deshalb nicht in die Animation gewandert.
+
+**Entschieden, und warum: in der App gezeichnet statt als Videodatei**
+- Gewünscht war, „passende skills oder plugins“ zu laden. Im Verzeichnis
+  gibt es dafür z. B. „Remotion“ (Videos aus React-Code). Nicht genommen,
+  weil:
+  - ein gerendertes Video in den Speicher-Eimer hochgeladen werden muss.
+    Das geht nur mit Zugangsdaten zum Betrieb, die diese Umgebung nicht
+    hat und nicht anfasst (CLAUDE.md, Sicherheit);
+  - Remotion für Firmen ab einer gewissen Grösse eine kostenpflichtige
+    Lizenz verlangt (laut Remotion-Lizenz, hier nicht nachgeprüft);
+  - eine Änderung im Handbuch so eine Zeile ist, kein neues Video.
+- Der Preis: Es ist eine Bildfolge, kein Film mit Ton und Bewegung im
+  Raum. Für echte Handgriffe (Weste anlegen, Elektroden befeuchten) bleibt
+  ein gefilmtes Video besser. Der Platz dafür ist da.
+- Bewegt wird nur `opacity` und `transform`, einmal je Bild, mit
+  fill-mode backwards; „Bewegung reduzieren“ am Gerät schaltet sie ab.
+
+**Im Durchlauf gefunden**
+- Am 390er Telefon ragte die Fläche 37 px aus der Karte: `aspect-ratio`
+  zusammen mit `min-height` zog die Breite auf. Jetzt Höhe über `clamp`.
+  Die Probe misst, dass die Fläche in der Karte bleibt (Gegenprobe mit
+  dem alten CSS: 4 Zeilen rot).
+
+**Tests**
+- `tests/test-schulung-animation.js` neu (31): Quellen und Wortgleichheit
+  aus den Dateien, Animation statt „Video folgt“, läuft von selbst,
+  Pause hält (Gegenprobe über die Zeit), „Weiter“ erst nach allen
+  Bildern, nur opacity/transform, Fingerziele bei sieben Breiten normal
+  und kompakt; Gegenproben: ohne Szenen „Video folgt“, die
+  Geschäftsführung ist ausgenommen.
+- `tests/test-schulung.js`: Der Gang durch „Dein erster Tag“ blättert die
+  Animation mit „›“ durch. Die Prüfung „ein fehlendes Video wird als
+  fehlend benannt“ heisst jetzt „nie leer: Animation oder ‚Video folgt‘“,
+  mit dem Zitat aus dem Betrieb; dazu neu: die Animation sperrt „Weiter“.
+
+
+
+## Runde 203 — Die Stempelseite, Schritt 2: Pausenregel wie Crewmeister, Hinweise nach dem Arbeitszeitgesetz (22.10.2026)
+
+Antwort aus dem Betrieb auf „nur warnen oder wie Crewmeister auffüllen?":
+„genau wie bei crewmeister".
+
+**Auffüllen.** § 4 ArbZG verlangt über 6 Stunden Arbeit 30 Minuten
+Pause, über 9 Stunden 45. Die gestempelte Pause zählt; fehlt etwas, wird
+nur die Differenz von der Arbeitszeit abgezogen (`pauseAbzugMin`).
+
+- **Mit Kappung, und das ist eine eigene Entscheidung:** nie so viel, dass
+  der Tag unter die Grenze fällt, die die Pause erst auslöst. 6:10 h ohne
+  Pause werden 6:00 h, nicht 5:40 h; 9:20 h werden 8:50 h (dann gilt nur
+  die 30-Minuten-Regel). Ohne Kappung kostete eine Minute länger bleiben
+  zwanzig. Ob Crewmeister genauso kappt, habe ich nicht belegt gefunden
+  (die Hilfeseiten waren aus dieser Umgebung gesperrt).
+- **Nichts wird gespeichert oder geändert.** Die Stempel bleiben, wie sie
+  sind; abgezogen wird in der Rechnung, und jede Tageszeile mit Abzug trägt
+  „Pause +0:30". Im Monat steht „… Pause ergänzt".
+- Ein laufender Tag wird noch nicht aufgefüllt — erst am Feierabend steht
+  fest, wie lang er war.
+
+**Hinweise** (Bernstein, denn sie melden etwas) an der Tageszeile in
+„Meine Zeiten", in der Woche und bei der Leitung:
+- „über 10 h" (§ 3),
+- „über 6 h am Stück" (§ 4 Satz 3) — eine Pause unter 15 Minuten
+  unterbricht nicht, das sagt § 4 selbst,
+- „Ruhezeit 9:30 h" (§ 5), wenn zwischen Feierabend und nächstem Kommen
+  weniger als 11 Stunden liegen. Nur wenn beide Tage vorliegen; am
+  Monatsersten fehlt der Vortag, und dann steht nichts da statt einer
+  Vermutung.
+
+Die App weist hin; ob der Betrieb damit gesetzeskonform ist, sagt sie
+nicht (dieselbe Grenze wie in `ZEITERFASSUNG-PLAN.md`).
+
+**Solange es noch hilft:** In „Jetzt" steht ab 5:30 h am Stück „Nach 6
+Stunden ist eine Pause Pflicht", über 6 h in Bernstein. Bei der Leitung
+unter „Jetzt im Studio" steht an der Person „6:12 h ohne Pause".
+
+**Geprüft** (`tests/test-stempelseite.js`, jetzt 127): acht Fälle der
+Pausenregel, zwei Tage mit allen drei Hinweisen, ein laufender Tag ohne
+Abzug. Meine erste Erwartung für 11:20 h Arbeit mit 10 Minuten Pause war
+„20 Minuten ergänzt" — falsch: über 9 h gilt die 45-Minuten-Pause, richtig
+sind 35. Der Fehler lag in der Erwartung, nicht im Code.
+
+## Runde 204 — Die Stempelseite, Schritt 3: Korrekturanträge, nur die Geschäftsführung entscheidet (22.10.2026)
+
+Antwort aus dem Betrieb auf „wer bestätigt einen Antrag?": „nur
+geschäftsführung".
+
+**Ablauf.** Unter Heute → Ich → Zeiten trägt die Person ein, was fehlt:
+Tag, Art, Uhrzeit, Grund — bis 31 Tage zurück, wie bei Crewmeister. Bei
+einem Tag mit „Feierabend fehlt" füllt ein Tipp auf „Feierabend
+beantragen" Tag und Art vor. Ein Stempel entsteht erst, wenn die
+Geschäftsführung annimmt; dann legt der Server ihn genau wie
+`zeitNachtragen` an (quelle `korrektur`, Grund „Antrag: …", wer, wann,
+dazu `antragId`). Der Urbestand bleibt unberührt.
+
+**Warum alles über den Server.** `zeitAntraege` steht in beiden Teilen von
+`firestore.rules` auf `write:false`. Gestellt, zurückgezogen und
+entschieden wird über `zeitAntragStellen`, `zeitAntragZurueckziehen` und
+`zeitAntragEntscheiden`. So prüft der Server die 31 Tage, das Studio
+(nur ein eigenes, sonst wäre der Antrag ein Weg, Stempel in ein fremdes
+Studio zu schreiben) und die Doppelung (derselbe Antrag zweimal → einer).
+Entschieden wird in einer Transaktion: ein doppelter Klick macht keinen
+zweiten Stempel.
+
+**Wer was sieht.** Lesen: die Person ihre eigenen, die Geschäftsführung
+alle. **Die Studioleitung bewusst nicht** — sie entscheidet sie auch nicht.
+Die Geschäftsführung entscheidet nie den eigenen Antrag; das wäre genau
+die Änderung ohne zweite Person. Hat ein Betrieb nur eine Person in der
+Geschäftsführung, bleibt deren eigener Antrag offen — sie trägt ihre
+Zeiten weiter selbst über „Nachtragen" ein, wie bisher.
+
+**Was gleich bleibt, und das gehört gesagt:** Die Studioleitung kann
+fremde Stempel weiter direkt nachtragen und für ungültig erklären (P-09,
+24.9.). Die Antwort „nur geschäftsführung" galt den Anträgen. Ob die
+Leitung das direkte Nachtragen behalten soll, ist eine offene Frage an
+den Betrieb.
+
+**Löschfrist und Unterlagen.** Anträge laufen mit derselben Frist ab wie
+die Stempel (drei Jahre, `stempelzeitenAblaufen`). Die Datenschutzerklärung
+in der App und `docs/av/LOESCHKONZEPT.md` nennen die neue Sammlung. In die
+Auskunft nach Art. 15 kommen sie von selbst (Feld `uid`).
+
+**Geprüft**
+- `tests/rules/zeitantrag.test.js` (neu, 51): Regeln in beiden Welten —
+  Person und Geschäftsführung lesen, Studioleitung, Kollege, fremde Firma
+  und ohne Konto nicht, niemand schreibt; die drei Funktionen ausgeführt.
+  Gegenprobe: Studioleitung im Firmenpfad zugelassen → genau die eine
+  Zeile rot.
+- `tests/test-stempelseite.js` jetzt 146: Antrag vom fehlenden Feierabend
+  aus, ohne Grund kein Antrag, Zurückziehen; bei der Geschäftsführung
+  Annehmen/Ablehnen (≥ 44 × 44 bei 1440 und 320), Ablehnen ohne Antwort
+  entscheidet nichts; die Studioleitung sieht keine Anträge.
+
+## Runde 205 — Formis Augen leben, ein Gesicht überall (22.10.2026)
+
+**Aus dem Betrieb:** Auf die Ideenliste (11 Ideen, wie Formi mehr ins
+Design kommt) kam „mach alles davon, gib dem gesicht mehr leben auch und
+den augen vorallem“. Gebaut wird in drei Paketen; das ist Paket 1. Paket
+2 bringt das aufgeräumte Formi-Fenster, leere Listen und die
+Ladeanzeige, Paket 3 Suche und Formi in einem Feld.
+
+**Gebaut**
+- **Augen.**
+  - Weiss, mit Pupille und Lichtpunkt, dazu Brauen.
+  - Die Pupillen folgen der Maus (bis 1,8 px), das ganze Loch nur noch
+    ein wenig (bis 2,5 px): So schauen Augen, nicht ein Ball.
+  - Kommt die Maus näher als 150 px, werden die Augen gross.
+  - Steht die Maus still (oder es gibt keine, am Handy), sieht Formi sich
+    alle 1,5–4 s um, mit kleinen schnellen Sprüngen; manchmal blinzelt es
+    zweimal.
+  - Nach 60 s ohne Bedienung wird Formi müde (halb zu, die Brauen
+    sinken), nach 90 s schläft es.
+  - Die Brauen tragen den Ausdruck: hoch beim Staunen, schräg beim
+    Schreck, gehoben bei Freude.
+- **Neue Ausdrücke:** Gähnen (morgens einmal je Gerät), „Aha“ (wenn Formi
+  mit dem Denken fertig ist), zweimal blinzeln.
+- **Hinschauen:** Bei einem Hinweis unten und bei einer neuen Meldung an
+  der Glocke schaut Formi kurz dorthin.
+- **Ein Gesicht überall.**
+  - Die Figur ist in Anteilen gebaut (`--fg`). Dieselbe Figur steht im
+    Kopf des Formi-Fensters (28 px), in der Formi-Zeile (30 px) und als
+    fliegender Zeiger (28 px), wenn Formi eine Seite öffnet.
+  - Unter 32 px fallen Brauen und Lichtpunkt weg; sie wären nur noch
+    Krümel.
+- **Denken und Sprechen im Fensterkopf.**
+  - Beim Denken dreht sich nur der Ring (vorher die ganze Figur), und die
+    Augen schauen nach oben zur Seite.
+  - Beim Sprechen geht der Mund auf und zu. Mit menschlicher Stimme folgt
+    er der Lautstärke: eine angehaltene Animation, deren Zeit je Bild
+    gesetzt wird, ohne ins style-Attribut zu schreiben.
+- **Ring:**
+  - Ein Schimmer in der Farbe des Bereichs, von einer Kante: Heute blau,
+    Wissen violett, Nachrichten türkis, Studio orange, Plan pink. Die
+    Verwaltung bekommt keinen.
+  - Ab 19 Uhr wird der Ring wärmer.
+- **Anlass:** An Silvester und Neujahr feiert Formi beim ersten Öffnen,
+  im Dezember fallen beim Atmen Schneeflocken.
+
+**Warum so**
+- *Blick als Web Animation mit `fill:forwards`*, die vorige wird
+  abgelöst. Wieder kein Schreiben ins style-Attribut, wegen der
+  `:has()`-Regeln am `<body>` (Runde 186).
+- *Umsehen, Müde, Atmen sind Zeitgeber, keine `infinite`-Animation.*
+  Zwischen zwei Momenten kostet die Kugel nichts.
+- *Kein Rot, Grün, Bernstein im Ring*: Die Bereichsfarben sind blau,
+  violett, türkis, orange und pink. Ein fest gewählter Akzent ändert am
+  Ring nichts, weil der Schimmer an `data-bereich` hängt, nicht an
+  `--accent`.
+
+**Gemessen** (Arbeit je Bild, CPU ÷4, die Maus bewegt sich 3 s)
+- Über der leeren Seitenleiste: 3,8 ms (vorher 3,4–3,8).
+- Über dem Inhalt samt Formi-Zeile: 7,3 ms (vorher 6,7).
+- Die Grenze ist 8,3 ms. Die Pupillen kosten also etwas, es bleibt aber
+  unter der Grenze. Weitere Augen-Effekte im Takt der Maus wären hier
+  zu viel.
+
+**Geprüft** (`tests/test-formi-lebt.js`, jetzt 112 Zusicherungen)
+- Das Gesicht hat Pupillen und Brauen; dasselbe Gesicht steht in der
+  Formi-Zeile und im Fensterkopf.
+- Neue Ausdrücke sind endlich und bewegen nur `transform`/`opacity`.
+- Die Pupillen schauen der Maus nach (≤ 1,9 px). Kommt die Maus nah,
+  werden die Augen gross, und danach wieder normal.
+- Formi schaut zum Hinweis oben links; müde und wieder wach.
+- „Läuft nichts mehr“ zählt jetzt nur laufende Animationen. Ein
+  gehaltener Blick (`fill:forwards`, abgeschlossen) ist Stillstand. Das
+  ist eine Anpassung an den gehaltenen Blick, keine gelockerte Grenze.
+- Weitere grüne Durchläufe: test-formi-platz und test-formi-kumpel (die
+  Runden 196/198/199 der anderen Sitzung, mit dieser zusammengeführt),
+  test-formi-kugel, test-formi-angedockt, test-knoepfe, test-gestaltung
+  (meldete zuerst einen festen Schatten an der kleinen Figur, jetzt
+  `--e1` plus Schein), test-csp, test-quer, test-uebersicht.
+- test-gehirn: Rot sind nur die bekannten Leistungsprüfungen unter
+  CPU ÷4 (zwei von drei in diesem Lauf).
+- „Schaut hin“ rechnet die erwartete Richtung aus der Lage von Kugel und
+  Ziel. Seit Runde 198 sitzt die Kugel am Rechner unten links.
+- Gegenprobe mit dem `index.html` von vorher: schlägt an.
+
+**Nicht geprüft:** Wie lebendig die Augen auf einem echten Bildschirm
+wirken. Die Pupillen sind bei der Kugel etwa 3,5 px gross.
+
+## Runde 206 — Schichtplaner: alle Fragen auf einmal, und was von LogX gebraucht wird (22.10.2026)
+
+**Aus dem Betrieb:** „kanst du … uns alle fragen stellen welche wir
+beantworten müssen damit der schichtplan danach direkt klappt“, „gib mir
+die liste als pdf und auch die excel vorlage nochmal“ und „sag mir was
+du von logx brauchst“.
+
+**Was entstanden ist**
+- `docs/schichtplaner/Schichtplaner-Fragen.pdf` neu, jetzt aus
+  `werkzeug/fragen.py` erzeugt (vorher gab es keinen Erzeuger dafür):
+  24 Fragen in fünf Gruppen (Pflicht · Besetzung · Arbeitszeit · Wünsche
+  und Fairness · Ablauf), je Frage **was die App heute annimmt** — passt
+  das, reicht „passt“. Die letzte Seite: was ich von LogX brauche (Export
+  eines alten Plans, Importvorlage, Bildschirmfotos, Mitarbeiterliste mit
+  Personalnummer, Programm und Version, heutiger Ablauf) und der Hinweis,
+  **keine Zugangsdaten** zu schicken.
+- Dieselbe Liste steht in `werkzeug/inhalt.py` und füllt das Blatt
+  „Fragen“ der Excel-Vorlage, jetzt mit eigener Spalte „Heute in der App“.
+  Das Blatt liest der Planer nicht ein (geprüft: `ausVorlage` kennt es
+  nicht); die anderen Blätter sind unverändert.
+
+**Warum je Frage die heutige Annahme dabeisteht:** Die meisten Antworten
+sind „so wie es ist“. Wer nur Abweichungen schreiben muss, ist in zehn
+Minuten fertig statt in einer Stunde.
+
+**Geprüft:** test-schichtplaner-rechnung (82, liest die Vorlage): grün.
+Das PDF ist angesehen (4 Seiten), die Vorlage mit openpyxl geöffnet.
+
+## Runde 207 — Schulung für die Leitung: Pflicht auf einen Blick, Erinnern, Frage nachbessern (22.10.2026)
+
+**Aus dem Betrieb:** „aight mach die nächste runde“ — nach den Runden 201
+und 202. Empfohlen und gebaut: die Seite der Leitung, denn das
+Auffrischen und die Fristen erzeugen jetzt Zahlen, die jemand lesen muss.
+
+**Was gebaut ist**
+- **Reiter „Pflicht“** unter Schulung → Verwalten: Personen ×
+  Pflichtmodule. Je Zelle ✓ mit Datum, „bis …“, „angefangen 2/17“ oder
+  „überfällig“ bzw. „wieder fällig“ (bei `gueltigMonate`). Oben die Summe
+  („3 von 12 erledigt“), Filter Alle / Offen / Überfällig, am Reiter die
+  Zahl der überfälligen. Stillgelegte Personen stehen nicht darin.
+  - Am Rechner eine Tabelle; am Handy je Person eine Karte, Modulname
+    links (gekürzt), Stand rechts. Beim ersten Anlauf schob ein langer
+    Modulname den Stand aus der Zeile (flex); jetzt ein Raster.
+- **„Erinnern“**: eine fertige Nachricht mit Vorname, den offenen
+  Pflichtmodulen samt Frist und dem Code — über das Teilen-Fenster des
+  Geräts, sonst in die Zwischenablage. Dasselbe Muster wie „Weitergeben“.
+- **„Bearbeiten“** bei „Fragen, die im Team nicht sitzen“: öffnet den
+  Modul-Editor bei genau dieser Frage, markiert und ins Bild geholt (bei
+  einem Modul aus der Datei als eigene Fassung, wie sonst auch).
+
+**Entschieden, und warum**
+- **Die App verschickt die Erinnerung nicht selbst.** Leute ohne Zugang
+  erreicht sie gar nicht, und eine Nachricht von der Leitung wirkt anders
+  als eine Meldung „vom System“. Der Preis: Die Leitung muss tippen.
+- **Statusfarbe nur für erledigt und überfällig.** „bis …“ und
+  „angefangen“ sind keine Meldung, also neutral.
+- Der Code steht in der Nachricht: Die Person braucht ihn zum Anfangen,
+  und lesen darf ihn die Leitung ohnehin (Runde 98).
+
+**Tests**
+- `tests/test-schulung-pflicht.js` neu (30): Stand aus den Demo-Daten,
+  Summe und Reiterzahl, Filter (Gegenprobe: heute niemand überfällig),
+  20 Tage später überfällig in der Statusfarbe — und Jamie, erst vor vier
+  Tagen angelegt, noch in der Frist (Gegenprobe); stillgelegt nicht in
+  der Tabelle (Gegenprobe ohne den Filter: fällt); „Erinnern“ mit offenen
+  Modulen und Code, ohne erledigte (Gegenprobe); „Bearbeiten“ springt zur
+  Frage; Tabelle am Rechner, Stand bleibt am Handy im Bild; Fingerziele bei
+  sieben Breiten, normal und kompakt.
+
+## Runde 208 — Die Stempelseite, Schritt 4: Stundenkonto, Monatsabschluss, Export als Excel und CSV (22.10.2026)
+
+Antworten aus dem Betrieb: Soll fürs Konto aus den Vertragsstunden
+(„JA"), Lohnbüro „mach beides", Abschluss mit dabei.
+
+**Verwaltung → Zeiten → „Monat & Konto"** (nur die Geschäftsführung — darin
+stehen alle Konten nebeneinander, und die Vertragsstunden in
+`planerTeam` darf ohnehin nur sie lesen). Je Person, **betriebsweit** und
+nicht je Studio — ein Konto gehört der Person:
+
+| Spalte | Rechnung |
+|---|---|
+| Ist | gestempelte Arbeit nach der Pausenregel; Tage ohne Feierabend zählen nicht und stehen als „Feierabend fehlt" daneben |
+| Soll | Wochenstunden × Kalendertage / 7 — dieselbe Rechnung wie im Schichtplaner; ohne Wochenstunden die Monatsgrenze des Minijobs; ohne beides kein Soll und kein Konto. Im laufenden Monat: bis heute |
+| Urlaub/Krank | genehmigter Urlaub und Krankheit an Werktagen (Mo–Fr) × Tagessoll (Wochenstunden / Tage je Woche, sonst 5) |
+| Saldo | Ist + Urlaub/Krank − Soll |
+| Übertrag | das Konto des **abgeschlossenen** Vormonats; sonst „–" und gerechnet mit 0 |
+
+**Entscheidungen, die eine Begründung brauchen:**
+- *Soll über Kalendertage/7 statt über Arbeitstage.* So rechnet der
+  Schichtplaner seit Runde 168; zwei Rechnungen für dasselbe Wort „Soll"
+  wären die Stelle, an der Plan und Konto auseinanderlaufen.
+- *Gutschrift nur Mo–Fr.* Das ist eine Annahme — ein Studio hat auch
+  samstags offen. Ein Tagessoll je Wochentag (wie Crewmeisters „Zeitregeln")
+  wäre genauer und ist nicht gebaut. Gehört in die Rückfragen.
+- *Die App rechnet, der Server speichert.* `monatAbschliessen` prüft Form,
+  Grenzen und dass der Monat vorbei ist, rechnet aber nicht ein zweites
+  Mal nach. Die Zahl, die die Geschäftsführung gesehen und bestätigt hat,
+  ist die, die stehen bleibt — eine zweite Rechnung auf dem Server wäre
+  eine zweite Stelle, die von der ersten abweichen kann.
+
+**Abschluss.** Nur vergangene Monate. Danach lehnt der Server in diesem
+Monat ab: Nachtragen, Stornieren, Antrag stellen, Antrag **annehmen**
+(Ablehnen geht — es ändert keine Stunden). „Wieder öffnen …" nur mit Grund;
+die alten Zahlen bleiben stehen, bis neu abgeschlossen wird, und der
+Verlauf hält beides fest. Neue Sammlung `zeitAbschluesse` in beiden Teilen
+von `firestore.rules`: lesen nur die Geschäftsführung, schreiben niemand.
+Löschfrist wie die Stempel.
+
+**Export.** „CSV": Semikolon, Dezimalstunden mit Komma, UTF-8 mit BOM — so
+öffnet ein deutsches Excel die Datei ohne Nachfrage. Stunden:Minuten wären
+für Menschen schöner und in einer Tabelle falsch (Excel macht daraus eine
+Uhrzeit). „Excel": Übersicht und jeder Tag einzeln, über den vorhandenen
+`downloadXls`. Keine PIN, kein Hash, kein Geheimnis in einer Datei.
+
+**DATEV kommt in Schritt 5**, mit Einstellungen (Berater-, Mandanten-,
+Personalnummern, Lohnarten) — die Nummern kommen vom Lohnbüro, und das
+Format muss das Lohnbüro einmal mit einer Probedatei bestätigen.
+
+**Geprüft**
+- `tests/rules/monatsabschluss.test.js` (neu, 31): Regeln in beiden Welten,
+  Abschliessen/Öffnen ausgeführt, die vier Sperren. Gegenprobe: Sperre beim
+  Nachtragen herausgenommen → zwei rote Zeilen. Mein erster Testtag war der
+  5. des Vormonats — am 22.10. sind das 47 Tage, und der Antrag scheiterte
+  an der 31-Tage-Grenze statt am Abschluss. Der Fehler lag im Test.
+- Die drei Zeiterfassungs-Tests im Emulator räumen jetzt hinter sich auf;
+  in falscher Reihenfolge zählte `zeitkorrektur` sonst fremde Stempel.
+- `tests/test-stempelseite.js` jetzt 180: Konto bei 320/390/1440/1920,
+  Trefferflächen, CSV-Inhalt, Excel, Abschliessen und danach gesperrtes
+  Nachtragen; die Studioleitung sieht kein Konto.
+- Der Umschalter steht über „Jetzt im Studio"; in der Konto-Ansicht sind
+  Tage, Jetzt und Anträge ausgeblendet.
+
+## Runde 209 — Formi-Fenster aufgeräumt, Formi in leeren Listen und beim Laden (22.10.2026)
+
+**Aus dem Betrieb:** „mach alles davon“ (Ideenliste, Paket 2 von 3).
+
+**Gebaut**
+- **Startschirm im kleinen Formi-Fenster:**
+  - Oben steht ein grosses Gesicht (76 px, mit Brauen) über der
+    Begrüssung.
+  - Die drei Lage-Zeilen („4 Aufgaben offen …“) fallen dort weg. Sie
+    standen doppelt: in der Formi-Zeile und im Satz zur Lage (Runde 196).
+  - Solange das grosse Gesicht zu sehen ist, ist das kleine im Kopf
+    ausgeblendet.
+- **Kopf des kleinen Fensters:** Statt fünf Knöpfen sind es drei: „…“,
+  Groß, Schließen. Hinter „…“ klappen Einstellungen, gespeicherte
+  Gespräche und Ton in der Kopfzeile auf. Name und Gesicht treten so
+  lange zurück, damit es auch bei 320 px passt. Im Vollbild bleibt alles
+  wie bisher.
+- **Gesichter im Fenster leben:** Ist das Fenster offen (und die Kugel
+  deshalb weg), schauen das grosse und das kleine Gesicht der Maus nach
+  und blinzeln mit. Wieder als Web Animation, Lage im Bild gelesen.
+- **Vor jeder Antwort** steht Formis Gesicht statt des kleinen Lochs.
+- **Leere Listen:** Unter jedem leeren Zustand (`emptyHTML`) steht
+  „Frag Formi“ mit Gesicht; ein Tipp öffnet Formi.
+- **Ladeanzeige:** Statt des Kreisels dreht sich Formis Ring, die Augen
+  schauen nach oben. Der Text bleibt „Verbindung wird hergestellt …“.
+- Neue Ikone `mehr` („…“).
+
+**Geprüft** (`tests/test-formi-lebt.js`, jetzt 146 Zusicherungen)
+- Je bei 1440, 390 und 320 px, normal und kompakt:
+  - Ladeanzeige mit Gesicht.
+  - Startschirm mit grossem Gesicht, ohne Lage-Zeilen, kein zweites
+    Gesicht im Kopf.
+  - Im Kopf genau drei Knöpfe; „…“ klappt auf, alle sechs ≥ 44 × 44 und
+    im Bild.
+  - Leere Liste (Archiv): „Frag Formi“ ≥ 44 × 44, ein Tipp öffnet Formi.
+- Bei offenem Fenster schaut das grosse Gesicht der Maus nach.
+- `test-formi-angedockt` prüft im Spaltenkopf jetzt „…“ statt des
+  Reglers.
+- Grün: test-leerzustand, test-knoepfe, test-gestaltung, test-csp,
+  test-abgeschnitten, test-formi-kugel, test-formi-kumpel,
+  test-formi-platz, test-formi-angedockt, test-uebersicht, test-quer.
+- test-gehirn (Vollbild): Rot sind nur die drei bekannten
+  Leistungsprüfungen unter CPU ÷4.
+## Runde 210 — Formi-Welt, Stufe 2: die App im Formi-Look (22.10.2026)
 
 **Aus dem Betrieb:** „können wir noch mehr am design anpassen und auch
 mehr auf den formi look eingehen also das die app so ein ähnliches
@@ -18791,15 +19446,17 @@ Gesicht, Atmen, Glitch, Teilchen.
      Farben, 600 ms. Der erste Name `formiTeilchen` war schon vergeben
      (Runde 195), die spätere Fassung hätte die neue still
      überschrieben, und der Test fand 0 Teilchen.
-   - Leere Zustände: `emptyHTML` zeigt Formis Gesicht. Das Zeichen bleibt
-     für die anderen Stile.
-   - Laden: Formis Kern atmet statt des Kreisels. Das ist die einzige
-     Endlos-Bewegung, mit Grund: Sie sagt „es läuft noch“.
+   - Leere Listen und Laden: parallel in Runde 209 gebaut (Formi mit
+     „Frag Formi“ in jedem leeren Zustand, Formis drehender Ring mit
+     Gesicht beim Laden). Beim Zusammenführen gilt deren Fassung. Meine
+     eigene (ein Formi-Gesicht nur im Stil Formi, ein atmender Kern) ist
+     entfallen, sie nutzte sogar denselben Klassennamen `leer-formi`.
    - Tagesabschluss (`formiTagesabschluss`): Glitch über dem Kopf,
      Konfetti in Formis Farben, Formi freut sich, ein Satz. Ausgelöst,
      wenn alle Aufgaben oder der Putzplan eines Studios fertig sind.
    - Bei „Bewegung reduzieren“ bleibt jeweils nur das Bild bzw. der Satz.
 
-**Geprüft:** test-formi-welt hat 20 Zusicherungen, mit Gegenproben für
-„Bewegung reduzieren“ und den Stil Hell. Die Gegenprobe gegen main ergibt
-9 von 20 falsch.
+**Geprüft:** test-formi-welt prüft Flächen, Farben, Ring nur Formi,
+Kontrast, Teilchen und Tagesabschluss, mit Gegenproben für „Bewegung
+reduzieren“ und den Stil Hell. Leere Listen und Laden prüft
+test-formi-lebt (Runde 209).
