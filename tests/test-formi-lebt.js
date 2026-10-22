@@ -74,7 +74,7 @@ async function oeffne(b, w, h, opt) {
 const KUGEL_ANIM = () => {
   const k = document.getElementById('formiKugel');
   /* Nur was LÄUFT: ein abgeschlossener, gehaltener Blick (fill:forwards,
-     playState „finished") ist Stillstand, keine Bewegung — seit Runde 203
+     playState „finished") ist Stillstand, keine Bewegung — seit Runde 205
      halten Pupillen und Loch so ihre Blickrichtung. */
   const a = k.getAnimations({ subtree: true }).filter(x => x.playState === 'running');
   const eig = new Set();
@@ -149,7 +149,7 @@ const KUGEL_ANIM = () => {
       const figur = await p.evaluate(() => ({ kugel: document.querySelectorAll('#formiKugel .fk-auge b').length + document.querySelectorAll('#formiKugel .fk-braue').length,
         zeile: document.querySelectorAll('#homeAlerts .fz-ring .fk-auge').length + document.querySelectorAll('#homeAlerts .fz-ring .fk-mund').length,
         kopf: document.querySelectorAll('#jarvis .formi-gesicht .fk-auge').length + document.querySelectorAll('#jarvis .formi-gesicht .fk-mund').length }));
-      pruefe('Runde 203: Augen mit Pupillen, Brauen; dasselbe Gesicht in Formi-Zeile und Fensterkopf', figur.kugel === 4 && figur.zeile === 3 && figur.kopf === 3, JSON.stringify(figur));
+      pruefe('Runde 205: Augen mit Pupillen, Brauen; dasselbe Gesicht in Formi-Zeile und Fensterkopf', figur.kugel === 4 && figur.zeile === 3 && figur.kopf === 3, JSON.stringify(figur));
       pruefe('Punkt „hat etwas für dich" bei Überfälligem, für Vorleser als Beschreibung (Name bleibt „Formi öffnen")', k0.hat && k0.label === 'Formi öffnen' && /hat etwas für dich/.test(k0.besch), JSON.stringify(k0));
 
       for (const art of ['freut', 'staunt', 'feiert', 'erschrickt', 'nickt', 'blinzelt', 'zwinkert2', 'gaehnt', 'aha']) {
@@ -225,7 +225,7 @@ const KUGEL_ANIM = () => {
         attr: document.querySelector('#formiKugel .fk-loch').getAttribute('style') }));
       const m = /matrix\(1, 0, 0, 1, (-?[\d.]+), (-?[\d.]+)\)/.exec(blick.t || '');
       pruefe(`schaut der Maus nach (${blick.t})`, m && +m[1] < 0 && +m[2] < 0 && Math.hypot(+m[1], +m[2]) <= 4.6, JSON.stringify(blick));
-      /* Runde 203 — aus dem Betrieb: „gib dem gesicht mehr leben auch und
+      /* Runde 205 — aus dem Betrieb: „gib dem gesicht mehr leben auch und
          den augen vorallem". Die Pupillen wandern im Auge mit. */
       const pup = await p.evaluate(() => [...document.querySelectorAll('#formiKugel .fk-auge b')].map(b => getComputedStyle(b).transform));
       const pm = pup.map(t => /matrix\(1, 0, 0, 1, (-?[\d.]+), (-?[\d.]+)\)/.exec(t));
@@ -242,7 +242,7 @@ const KUGEL_ANIM = () => {
       pruefe('… und wieder normal, wenn sie weggeht', klein === 'none' || klein === 'matrix(1, 0, 0, 1, 0, 0)', klein);
       await p.evaluate(() => window.__formiLebt.schauHin('#homeAlerts .fz-teil.bad'));
       await p.waitForTimeout(400);
-      /* Die Richtung aus der Lage rechnen: seit Runde 203 sitzt die Kugel
+      /* Die Richtung aus der Lage rechnen: seit Runde 205 sitzt die Kugel
          am Rechner unten LINKS in der Seitenleiste, der Hinweis liegt
          dann rechts oberhalb. */
       const hin = await p.evaluate(() => {

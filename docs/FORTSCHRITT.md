@@ -19049,7 +19049,104 @@ dafür dann passende skills oder plugins runter“.
   fehlend benannt“ heisst jetzt „nie leer: Animation oder ‚Video folgt‘“,
   mit dem Zitat aus dem Betrieb; dazu neu: die Animation sperrt „Weiter“.
 
-## Runde 203 — Formis Augen leben, ein Gesicht überall (22.10.2026)
+
+
+## Runde 203 — Die Stempelseite, Schritt 2: Pausenregel wie Crewmeister, Hinweise nach dem Arbeitszeitgesetz (22.10.2026)
+
+Antwort aus dem Betrieb auf „nur warnen oder wie Crewmeister auffüllen?":
+„genau wie bei crewmeister".
+
+**Auffüllen.** § 4 ArbZG verlangt über 6 Stunden Arbeit 30 Minuten
+Pause, über 9 Stunden 45. Die gestempelte Pause zählt; fehlt etwas, wird
+nur die Differenz von der Arbeitszeit abgezogen (`pauseAbzugMin`).
+
+- **Mit Kappung, und das ist eine eigene Entscheidung:** nie so viel, dass
+  der Tag unter die Grenze fällt, die die Pause erst auslöst. 6:10 h ohne
+  Pause werden 6:00 h, nicht 5:40 h; 9:20 h werden 8:50 h (dann gilt nur
+  die 30-Minuten-Regel). Ohne Kappung kostete eine Minute länger bleiben
+  zwanzig. Ob Crewmeister genauso kappt, habe ich nicht belegt gefunden
+  (die Hilfeseiten waren aus dieser Umgebung gesperrt).
+- **Nichts wird gespeichert oder geändert.** Die Stempel bleiben, wie sie
+  sind; abgezogen wird in der Rechnung, und jede Tageszeile mit Abzug trägt
+  „Pause +0:30". Im Monat steht „… Pause ergänzt".
+- Ein laufender Tag wird noch nicht aufgefüllt — erst am Feierabend steht
+  fest, wie lang er war.
+
+**Hinweise** (Bernstein, denn sie melden etwas) an der Tageszeile in
+„Meine Zeiten", in der Woche und bei der Leitung:
+- „über 10 h" (§ 3),
+- „über 6 h am Stück" (§ 4 Satz 3) — eine Pause unter 15 Minuten
+  unterbricht nicht, das sagt § 4 selbst,
+- „Ruhezeit 9:30 h" (§ 5), wenn zwischen Feierabend und nächstem Kommen
+  weniger als 11 Stunden liegen. Nur wenn beide Tage vorliegen; am
+  Monatsersten fehlt der Vortag, und dann steht nichts da statt einer
+  Vermutung.
+
+Die App weist hin; ob der Betrieb damit gesetzeskonform ist, sagt sie
+nicht (dieselbe Grenze wie in `ZEITERFASSUNG-PLAN.md`).
+
+**Solange es noch hilft:** In „Jetzt" steht ab 5:30 h am Stück „Nach 6
+Stunden ist eine Pause Pflicht", über 6 h in Bernstein. Bei der Leitung
+unter „Jetzt im Studio" steht an der Person „6:12 h ohne Pause".
+
+**Geprüft** (`tests/test-stempelseite.js`, jetzt 127): acht Fälle der
+Pausenregel, zwei Tage mit allen drei Hinweisen, ein laufender Tag ohne
+Abzug. Meine erste Erwartung für 11:20 h Arbeit mit 10 Minuten Pause war
+„20 Minuten ergänzt" — falsch: über 9 h gilt die 45-Minuten-Pause, richtig
+sind 35. Der Fehler lag in der Erwartung, nicht im Code.
+
+## Runde 204 — Die Stempelseite, Schritt 3: Korrekturanträge, nur die Geschäftsführung entscheidet (22.10.2026)
+
+Antwort aus dem Betrieb auf „wer bestätigt einen Antrag?": „nur
+geschäftsführung".
+
+**Ablauf.** Unter Heute → Ich → Zeiten trägt die Person ein, was fehlt:
+Tag, Art, Uhrzeit, Grund — bis 31 Tage zurück, wie bei Crewmeister. Bei
+einem Tag mit „Feierabend fehlt" füllt ein Tipp auf „Feierabend
+beantragen" Tag und Art vor. Ein Stempel entsteht erst, wenn die
+Geschäftsführung annimmt; dann legt der Server ihn genau wie
+`zeitNachtragen` an (quelle `korrektur`, Grund „Antrag: …", wer, wann,
+dazu `antragId`). Der Urbestand bleibt unberührt.
+
+**Warum alles über den Server.** `zeitAntraege` steht in beiden Teilen von
+`firestore.rules` auf `write:false`. Gestellt, zurückgezogen und
+entschieden wird über `zeitAntragStellen`, `zeitAntragZurueckziehen` und
+`zeitAntragEntscheiden`. So prüft der Server die 31 Tage, das Studio
+(nur ein eigenes, sonst wäre der Antrag ein Weg, Stempel in ein fremdes
+Studio zu schreiben) und die Doppelung (derselbe Antrag zweimal → einer).
+Entschieden wird in einer Transaktion: ein doppelter Klick macht keinen
+zweiten Stempel.
+
+**Wer was sieht.** Lesen: die Person ihre eigenen, die Geschäftsführung
+alle. **Die Studioleitung bewusst nicht** — sie entscheidet sie auch nicht.
+Die Geschäftsführung entscheidet nie den eigenen Antrag; das wäre genau
+die Änderung ohne zweite Person. Hat ein Betrieb nur eine Person in der
+Geschäftsführung, bleibt deren eigener Antrag offen — sie trägt ihre
+Zeiten weiter selbst über „Nachtragen" ein, wie bisher.
+
+**Was gleich bleibt, und das gehört gesagt:** Die Studioleitung kann
+fremde Stempel weiter direkt nachtragen und für ungültig erklären (P-09,
+24.9.). Die Antwort „nur geschäftsführung" galt den Anträgen. Ob die
+Leitung das direkte Nachtragen behalten soll, ist eine offene Frage an
+den Betrieb.
+
+**Löschfrist und Unterlagen.** Anträge laufen mit derselben Frist ab wie
+die Stempel (drei Jahre, `stempelzeitenAblaufen`). Die Datenschutzerklärung
+in der App und `docs/av/LOESCHKONZEPT.md` nennen die neue Sammlung. In die
+Auskunft nach Art. 15 kommen sie von selbst (Feld `uid`).
+
+**Geprüft**
+- `tests/rules/zeitantrag.test.js` (neu, 51): Regeln in beiden Welten —
+  Person und Geschäftsführung lesen, Studioleitung, Kollege, fremde Firma
+  und ohne Konto nicht, niemand schreibt; die drei Funktionen ausgeführt.
+  Gegenprobe: Studioleitung im Firmenpfad zugelassen → genau die eine
+  Zeile rot.
+- `tests/test-stempelseite.js` jetzt 146: Antrag vom fehlenden Feierabend
+  aus, ohne Grund kein Antrag, Zurückziehen; bei der Geschäftsführung
+  Annehmen/Ablehnen (≥ 44 × 44 bei 1440 und 320), Ablehnen ohne Antwort
+  entscheidet nichts; die Studioleitung sieht keine Anträge.
+
+## Runde 205 — Formis Augen leben, ein Gesicht überall (22.10.2026)
 
 **Aus dem Betrieb:** Auf die Ideenliste (11 Ideen, wie Formi mehr ins
 Design kommt) kam „mach alles davon, gib dem gesicht mehr leben auch und
