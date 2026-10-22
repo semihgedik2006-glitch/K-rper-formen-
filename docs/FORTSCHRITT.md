@@ -19145,3 +19145,66 @@ Auskunft nach Art. 15 kommen sie von selbst (Feld `uid`).
   aus, ohne Grund kein Antrag, Zurückziehen; bei der Geschäftsführung
   Annehmen/Ablehnen (≥ 44 × 44 bei 1440 und 320), Ablehnen ohne Antwort
   entscheidet nichts; die Studioleitung sieht keine Anträge.
+
+## Runde 205 — Die Stempelseite, Schritt 4: Stundenkonto, Monatsabschluss, Export als Excel und CSV (22.10.2026)
+
+Antworten aus dem Betrieb: Soll fürs Konto aus den Vertragsstunden
+(„JA"), Lohnbüro „mach beides", Abschluss mit dabei.
+
+**Verwaltung → Zeiten → „Monat & Konto"** (nur die Geschäftsführung — darin
+stehen alle Konten nebeneinander, und die Vertragsstunden in
+`planerTeam` darf ohnehin nur sie lesen). Je Person, **betriebsweit** und
+nicht je Studio — ein Konto gehört der Person:
+
+| Spalte | Rechnung |
+|---|---|
+| Ist | gestempelte Arbeit nach der Pausenregel; Tage ohne Feierabend zählen nicht und stehen als „Feierabend fehlt" daneben |
+| Soll | Wochenstunden × Kalendertage / 7 — dieselbe Rechnung wie im Schichtplaner; ohne Wochenstunden die Monatsgrenze des Minijobs; ohne beides kein Soll und kein Konto. Im laufenden Monat: bis heute |
+| Urlaub/Krank | genehmigter Urlaub und Krankheit an Werktagen (Mo–Fr) × Tagessoll (Wochenstunden / Tage je Woche, sonst 5) |
+| Saldo | Ist + Urlaub/Krank − Soll |
+| Übertrag | das Konto des **abgeschlossenen** Vormonats; sonst „–" und gerechnet mit 0 |
+
+**Entscheidungen, die eine Begründung brauchen:**
+- *Soll über Kalendertage/7 statt über Arbeitstage.* So rechnet der
+  Schichtplaner seit Runde 168; zwei Rechnungen für dasselbe Wort „Soll"
+  wären die Stelle, an der Plan und Konto auseinanderlaufen.
+- *Gutschrift nur Mo–Fr.* Das ist eine Annahme — ein Studio hat auch
+  samstags offen. Ein Tagessoll je Wochentag (wie Crewmeisters „Zeitregeln")
+  wäre genauer und ist nicht gebaut. Gehört in die Rückfragen.
+- *Die App rechnet, der Server speichert.* `monatAbschliessen` prüft Form,
+  Grenzen und dass der Monat vorbei ist, rechnet aber nicht ein zweites
+  Mal nach. Die Zahl, die die Geschäftsführung gesehen und bestätigt hat,
+  ist die, die stehen bleibt — eine zweite Rechnung auf dem Server wäre
+  eine zweite Stelle, die von der ersten abweichen kann.
+
+**Abschluss.** Nur vergangene Monate. Danach lehnt der Server in diesem
+Monat ab: Nachtragen, Stornieren, Antrag stellen, Antrag **annehmen**
+(Ablehnen geht — es ändert keine Stunden). „Wieder öffnen …" nur mit Grund;
+die alten Zahlen bleiben stehen, bis neu abgeschlossen wird, und der
+Verlauf hält beides fest. Neue Sammlung `zeitAbschluesse` in beiden Teilen
+von `firestore.rules`: lesen nur die Geschäftsführung, schreiben niemand.
+Löschfrist wie die Stempel.
+
+**Export.** „CSV": Semikolon, Dezimalstunden mit Komma, UTF-8 mit BOM — so
+öffnet ein deutsches Excel die Datei ohne Nachfrage. Stunden:Minuten wären
+für Menschen schöner und in einer Tabelle falsch (Excel macht daraus eine
+Uhrzeit). „Excel": Übersicht und jeder Tag einzeln, über den vorhandenen
+`downloadXls`. Keine PIN, kein Hash, kein Geheimnis in einer Datei.
+
+**DATEV kommt in Schritt 5**, mit Einstellungen (Berater-, Mandanten-,
+Personalnummern, Lohnarten) — die Nummern kommen vom Lohnbüro, und das
+Format muss das Lohnbüro einmal mit einer Probedatei bestätigen.
+
+**Geprüft**
+- `tests/rules/monatsabschluss.test.js` (neu, 31): Regeln in beiden Welten,
+  Abschliessen/Öffnen ausgeführt, die vier Sperren. Gegenprobe: Sperre beim
+  Nachtragen herausgenommen → zwei rote Zeilen. Mein erster Testtag war der
+  5. des Vormonats — am 22.10. sind das 47 Tage, und der Antrag scheiterte
+  an der 31-Tage-Grenze statt am Abschluss. Der Fehler lag im Test.
+- Die drei Zeiterfassungs-Tests im Emulator räumen jetzt hinter sich auf;
+  in falscher Reihenfolge zählte `zeitkorrektur` sonst fremde Stempel.
+- `tests/test-stempelseite.js` jetzt 180: Konto bei 320/390/1440/1920,
+  Trefferflächen, CSV-Inhalt, Excel, Abschliessen und danach gesperrtes
+  Nachtragen; die Studioleitung sieht kein Konto.
+- Der Umschalter steht über „Jetzt im Studio"; in der Konto-Ansicht sind
+  Tage, Jetzt und Anträge ausgeblendet.

@@ -343,6 +343,74 @@ async function zuVerwaltungZeiten(p) {
     await p.close();
   }
 
+  console.log('\n── 9. Monat & Konto, Abschluss, Export (Runde 205) ──');
+  for (const [rolle, w, h] of [['chef', 1440, 900], ['chef', 1920, 1080], ['chef', 390, 844], ['chef', 320, 568], ['leiter', 1280, 800]]) {
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h }, acceptDownloads: true });
+    p._fehler = []; p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
+    await p.route('**://www.gstatic.com/**', r => r.abort());
+    await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
+    await p.goto(APP + '?demo=' + rolle, { waitUntil: 'domcontentloaded' });
+    await p.waitForTimeout(3200);
+    await zuVerwaltungZeiten(p);
+    const sicht = await p.evaluate(() => { const a = document.getElementById('zkAnsicht'); return !!a && !a.hidden && !!a.offsetParent; });
+    if (rolle === 'leiter') { pruefe('Studioleitung ' + w + ' px: kein „Monat & Konto" (nur die Geschäftsführung)', !sicht); await p.close(); continue; }
+    pruefe('Geschäftsführung ' + w + ' px: Umschalter „Tage | Monat & Konto" ist da', sicht);
+    const k = await p.evaluate(async (SRC) => {
+      const T = eval('(' + SRC + ')');
+      const ws = (ms) => new Promise(r => setTimeout(r, ms));
+      document.querySelector('[data-zkansicht="konto"]').click(); await ws(2200);
+      const box = document.getElementById('zkKonto');
+      const masse = [];
+      for (const el of [...document.querySelectorAll('[data-zkansicht], #zkKonto button')]) {
+        el.scrollIntoView({ block: 'center' }); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        const m = T(el); masse.push(el.textContent.trim() + ' ' + m.w + '×' + m.h);
+      }
+      return { zeilen: box.querySelectorAll('tbody tr').length, kopf: [...box.querySelectorAll('th')].map(x => x.textContent),
+        tageWeg: document.getElementById('zkWrap').hidden, jetztWeg: getComputedStyle(document.getElementById('zkJetzt')).display === 'none',
+        text: box.innerText.slice(0, 200), masse, quer: document.documentElement.scrollWidth - innerWidth };
+    }, TREFFER.toString());
+    pruefe(w + ' px: Tabelle je Person mit Ist, Soll, Saldo, Übertrag, Konto', k.zeilen > 3 && ['Ist', 'Soll', 'Saldo', 'Übertrag', 'Konto'].every(x => k.kopf.some(y => new RegExp(x, 'i').test(y))), JSON.stringify(k.kopf));
+    pruefe(w + ' px: die Tage-Liste und „Jetzt im Studio" sind in dieser Ansicht weg', k.tageWeg && k.jetztWeg);
+    pruefe(w + ' px: laufender Monat → „Soll bis heute", kein Abschliessen-Knopf', /Soll bis heute/.test(k.text) && !k.masse.some(x => /abschliessen/.test(x)), k.text);
+    pruefe(w + ' px: jeder Knopf trifft ≥ 44 × 44 (' + k.masse.join(', ') + ')', k.masse.length >= 4 && k.masse.every(x => { const m = /(\d+)×(\d+)$/.exec(x); return +m[1] >= 44 && +m[2] >= 44; }));
+    pruefe(w + ' px: die SEITE rollt nicht seitlich (die Tabelle darf es)', k.quer <= 0, k.quer);
+    if (w === 1440) {
+      const [dl] = await Promise.all([p.waitForEvent('download'), p.evaluate(() => document.querySelector('[data-zkexport="csv"]').click())]);
+      const csv = require('fs').readFileSync(await dl.path(), 'utf8');
+      pruefe('CSV: Name „Stunden-JJJJ-MM.csv", Semikolon, Dezimalkomma, BOM', /^Stunden-\d{4}-\d{2}\.csv$/.test(dl.suggestedFilename()) &&
+        csv.charCodeAt(0) === 0xFEFF && /^\ufeffPerson;Tage;Ist \(h\);Soll \(h\)/.test(csv) && /;\d+,\d{2};/.test(csv), csv.slice(0, 120));
+      pruefe('CSV: keine PIN, kein Hash, kein Geheimnis', !/pin|hash|geheim|secret|token/i.test(csv));
+      const [dx] = await Promise.all([p.waitForEvent('download'), p.evaluate(() => document.querySelector('[data-zkexport="xls"]').click())]);
+      const xls = require('fs').readFileSync(await dx.path(), 'utf8');
+      pruefe('Excel: Übersicht UND Tage', /Übersicht je Person/.test(xls) && /<h3>Tage<\/h3>/.test(xls), dx.suggestedFilename());
+      const ab = await p.evaluate(async () => {
+        const ws = (ms) => new Promise(r => setTimeout(r, ms)); window.confirm = () => true;
+        document.getElementById('zkPrev').click(); await ws(2200);
+        const kn = document.querySelector('[data-zkabschluss]'); if (!kn) return { fehlt: document.getElementById('zkKonto').innerText.slice(0, 160) };
+        kn.click(); await ws(1500);
+        const t = document.getElementById('zkKonto').innerText;
+        document.querySelector('[data-zkansicht="tage"]').click(); await ws(1500);
+        return { zu: /Abgeschlossen/.test(t), oeffnen: /Wieder öffnen/.test(t) };
+      });
+      pruefe('Vormonat abschliessen → „Abgeschlossen", „Wieder öffnen …" steht da', ab.zu && ab.oeffnen, JSON.stringify(ab));
+      const nach = await p.evaluate(async () => {
+        const ws = (ms) => new Promise(r => setTimeout(r, ms));
+        const z = document.querySelector('#zkListe [data-zk]'); if (!z) return { fehlt: true };
+        z.click(); await ws(600);
+        const uhr = document.querySelector('[data-zkfeld="uhr"]'), grund = document.querySelector('[data-zkfeld="grund"]'), los = document.querySelector('[data-zknach]');
+        if (!uhr || !los) return { keinFormular: true };
+        uhr.value = '17:00'; grund.value = 'Ausstempeln vergessen, Test';
+        const tm = document.getElementById('toast'), gesehen = [];
+        const mo = new MutationObserver(() => gesehen.push(tm.textContent)); mo.observe(tm, { childList: true, subtree: true, characterData: true });
+        los.click(); await ws(1200); mo.disconnect();
+        return { meldung: gesehen.join(' | ') };
+      });
+      pruefe('… danach ist Nachtragen in diesem Monat gesperrt („abgeschlossen")', /abgeschlossen/.test(nach.meldung || ''), JSON.stringify(nach));
+    }
+    pruefe(rolle + ' ' + w + ' px: ohne Skriptfehler (Konto)', !p._fehler.length, p._fehler.join(' | '));
+    await p.close();
+  }
+
   await b.close();
   console.log(schlecht
     ? '\n✗ Stempelseite: ' + schlecht + ' von ' + (gut + schlecht) + ' Zusicherungen falsch'

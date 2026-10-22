@@ -1888,6 +1888,8 @@
       if (!person) throw new Error('Diese Person gibt es in diesem Betrieb nicht.');
       var ts = new Date(d.tag + 'T' + d.uhr + ':00').getTime();
       if (ts > Date.now()) throw new Error('Ein Stempel in der Zukunft lässt sich nicht nachtragen.');
+      var abg = holen(P('zeitAbschluesse')).filter(function (x) { return x.id === String(d.tag).slice(0, 7) && x.abgeschlossen; })[0];
+      if (abg) throw new Error('Der Monat ' + abg.id + ' ist abgeschlossen. Die Geschäftsführung kann ihn mit Grund wieder öffnen.');
       var id = neueId();
       holen(P('zeiten')).push({
         id: id, uid: person.id, name: person.name || '', studioKey: studioKey,
@@ -1941,6 +1943,30 @@
       a.status = 'angenommen'; a.zeitId = id;
       melden(P('zeitAntraege')); melden(P('zeiten'));
       return { ok: true, status: 'angenommen', zeitId: id };
+    },
+    /* Runde 205: Monatsabschluss — wie der Server: nur die
+       Geschäftsführung, nur vergangene Monate, danach gesperrt. */
+    monatAbschliessen: function (d) {
+      if (ICH.role !== 'chef') throw new Error('Den Monat schliesst die Geschäftsführung ab.');
+      var m = String(d.monat || '');
+      if (!/^\d{4}-\d{2}$/.test(m)) throw new Error('Kein gültiger Monat.');
+      if (m >= new Date().toLocaleDateString('sv-SE').slice(0, 7)) throw new Error('Abschliessen geht erst, wenn der Monat vorbei ist.');
+      var liste = holen(P('zeitAbschluesse'));
+      var alt = liste.filter(function (x) { return x.id === m; })[0];
+      if (alt && alt.abgeschlossen) throw new Error('Dieser Monat ist schon abgeschlossen.');
+      var neu = { id: m, monat: m, abgeschlossen: true, zeilen: d.zeilen || [], von: ICH.id, vonName: ICH.name || '', am: Date.now() };
+      if (alt) Object.assign(alt, neu); else liste.push(neu);
+      melden(P('zeitAbschluesse'));
+      return { ok: true, monat: m };
+    },
+    monatOeffnen: function (d) {
+      if (ICH.role !== 'chef') throw new Error('Den Monat öffnet die Geschäftsführung.');
+      if (String(d.grund || '').trim().length < 5) throw new Error('Bitte kurz den Grund angeben.');
+      var a = holen(P('zeitAbschluesse')).filter(function (x) { return x.id === String(d.monat || ''); })[0];
+      if (!a || !a.abgeschlossen) throw new Error('Dieser Monat ist nicht abgeschlossen.');
+      a.abgeschlossen = false;
+      melden(P('zeitAbschluesse'));
+      return { ok: true };
     },
     zeitStornieren: function (d) {
       var z = holen(P('zeiten')).filter(function (x) { return x.id === String(d.id || ''); })[0];
