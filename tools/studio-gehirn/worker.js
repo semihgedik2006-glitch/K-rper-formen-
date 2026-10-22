@@ -1,5 +1,5 @@
 /**
- * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.14)
+ * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.15)
  * Cloudflare Worker: WhatsApp (Text + Sprachnachrichten), Studio-Chat-Schnittstelle,
  * Leitstand-Webseite, Speicher in D1, Antworten über Workers AI.
  *
@@ -677,10 +677,18 @@ export function wissenRangieren(treffer, original) {
    ein paar hundert Einträgen nicht, und es bleibt nichts einzurichten.
    Die Fingerabdrücke liegen 10 Minuten im Speicher des Workers. */
 const VEKTOR_MODELL = "@cf/baai/bge-m3";
-/* Ab dieser Ähnlichkeit (Kosinus) zählt ein Eintrag als passend. Ein
-   Schätzwert für bge-m3 — die KI entscheidet danach ohnehin, ob ein
-   Eintrag die Frage beantwortet. Nachjustieren nach dem Live-Verlauf. */
-const VEKTOR_MIN = 0.42;
+/* Ab dieser Ähnlichkeit (Kosinus) zählt ein Eintrag als passend.
+   2.15 (22.10.2026), gemessen mit /api/suche an 10 echten Fragen gegen
+   275 Einträge: Fragen ohne Bezug zum Studio („wie wird das wetter
+   morgen", „pizza bestellen") erreichen höchstens 0,48; der richtige
+   Eintrag lag bei 0,52 bis 0,73. Vorher 0,42 (geschätzt) — damit kam
+   bei jeder Frage Rauschen mit. */
+export const VEKTOR_MIN = 0.5;
+/* Die Bedeutung zählt doppelt beim Mischen. Gemessen: bei „darf eine
+   schwangere trainieren" stand „Warum kein EMS in der Schwangerschaft"
+   nach Bedeutung auf Platz 1 (0,62), im Volltext gar nicht — mit
+   gleichem Gewicht fiel er aus den ersten drei. */
+export const GEWICHT_BEDEUTUNG = 2;
 let _vektoren = null, _vektorZeit = 0;
 export function vektorNorm(v) { let q = 0; for (const x of v) q += x * x; const n = Math.sqrt(q) || 1; return Array.from(v, x => x / n); }
 export function vektorPacken(v) {
@@ -759,9 +767,12 @@ export async function sucheBedeutung(env, frage, k, ohneSchwelle) {
 /* Zwei Ranglisten zu einer (Reciprocal Rank Fusion). Rein rechnerisch.
    Wer in beiden weit oben steht, kommt nach vorn; wer nur in einer
    steht, bleibt dabei. */
-export function rangMischen(listen, k) {
+export function rangMischen(listen, k, gewichte) {
   const punkte = new Map();
-  for (const l of listen) (l || []).forEach((id, i) => punkte.set(id, (punkte.get(id) || 0) + 1 / (60 + i)));
+  (listen || []).forEach((l, j) => {
+    const g = gewichte && gewichte[j] != null ? gewichte[j] : 1;
+    (l || []).forEach((id, i) => punkte.set(id, (punkte.get(id) || 0) + g / (60 + i)));
+  });
   return [...punkte.entries()].sort((a, b) => b[1] - a[1]).map(x => x[0]).slice(0, k || 6);
 }
 /* Nach dem Speichern: den einen Fingerabdruck gleich nachrechnen. Klappt
@@ -808,7 +819,7 @@ export async function findeWissen(env, frage, diagnose) {
   /* 2.13: beide Ranglisten mischen; was nur die Bedeutung fand, wird
      nachgeladen. */
   if (bedeutung.length) {
-    const ids = rangMischen([treffer.map(w => w.id), bedeutung.map(x => x.id)], 6);
+    const ids = rangMischen([treffer.map(w => w.id), bedeutung.map(x => x.id)], 6, [1, GEWICHT_BEDEUTUNG]);
     const da = new Map(treffer.map(w => [w.id, w]));
     const fehlt = ids.filter(id => !da.has(id));
     if (fehlt.length) {
