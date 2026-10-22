@@ -282,7 +282,7 @@ async function zuVerwaltungZeiten(p) {
     await p.close();
   }
 
-  console.log('\n── 8. Korrekturanträge (Runde 193) ──');
+  console.log('\n── 8. Korrekturanträge (Runde 196) ──');
   {
     const p = await oeffne(b, 'mitarbeiter', 390, 844);
     await zurSeite(p);

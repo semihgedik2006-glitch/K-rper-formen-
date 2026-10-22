@@ -1,4 +1,4 @@
-/* ── Korrekturanträge (Runde 193) ──────────────────────────────────────
+/* ── Korrekturanträge (Runde 196) ──────────────────────────────────────
    Aus dem Betrieb, 22.10.2026, auf die Frage, wer einen Antrag der
    Mitarbeiter bestätigt: „nur geschäftsführung".
 

@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Z7GsYyMNXdaR47R2K/VtQefd+8+p4KQoFvl92+7r1HI='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-SKKdw1isI5OlG9ZWbI6xxfU4IcaxFIqntfL2Q+w1SGM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -9289,7 +9289,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                 </div>
                 <div id="stWoche"></div>
               </div>
-              <!-- Korrekturantrag (Runde 193): die Person trägt ein, was fehlt;
+              <!-- Korrekturantrag (Runde 196): die Person trägt ein, was fehlt;
                    ein Stempel wird erst daraus, wenn die Geschäftsführung
                    annimmt („nur geschäftsführung", 22.10.2026). -->
               <div class="ich-blatt" id="stAntragKarte">
@@ -11125,10 +11125,13 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                    wer laut Plan erwartet wird und noch nicht gestempelt hat.
                    Wie die „Live-Übersicht" bei Crewmeister — aber nur hier,
                    bei der Leitung, und nicht mehr am Terminal am Tresen. -->
-              <!-- Korrekturanträge (Runde 193): nur bei der Geschäftsführung. -->
-              <section class="zk-antraege" id="zkAntraege" aria-label="Korrekturanträge" hidden></section>
               <section class="zk-jetzt" id="zkJetzt" aria-label="Jetzt im Studio"></section>
               <button type="button" class="zk-vormonat" id="zkVormonat" hidden></button>
+              <!-- Korrekturanträge (Runde 196): nur bei der Geschäftsführung.
+                   UNTER dem Vormonats-Hinweis: darüber verschob der Block ihn
+                   so weit, dass er bei 320 px nach dem Dichtewechsel nur noch
+                   38 px hoch traf (test-zeitkorrektur). -->
+              <section class="zk-antraege" id="zkAntraege" aria-label="Korrekturanträge" hidden></section>
               <p class="hint" id="zkStand"></p>
               <div class="zk-wrap">
                 <div id="zkListe"></div>
@@ -14244,6 +14247,13 @@ function renderRecht(){
         'angekommen ist; bis dahin liegt er samt PIN nur im geöffneten '+
         'Fenster des Terminals. Sehen können '+
         'die Zeiten du, die Leitung deines Studios und die Geschäftsführung.</p>'+
+      /* Runde 196: Korrekturanträge sind eine neue Sorte Daten. */
+      '<p><b>Korrekturanträge:</b> Beantragst du einen fehlenden Stempel, '+
+        'stehen Tag, Uhrzeit, Art, dein Grund und der Stand des Antrags da; '+
+        'nach der Entscheidung auch, wer entschieden hat, wann und – bei einer '+
+        'Ablehnung – warum. Sehen können ihn du und die Geschäftsführung, '+
+        'nicht die Studioleitung. Er wird mit derselben Frist gelöscht wie '+
+        'die Stempelzeiten.</p>'+
       /* Schulungen (Runde 108 ff., Videos seit 29.9.2026). Gespeichert
          wird genau, was schulungStart und schLaufSichern schreiben; der
          Video-Fortschritt bleibt im Browser und gibt nur „Weiter" frei. */
@@ -20869,6 +20879,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-22-korrekturantrag', datum:'22.10.2026', titel:'Fehlenden Stempel selbst beantragen', wo:'ich:zeiten', punkte:[
+    'Feierabend vergessen? Unter Heute → Ich → Zeiten gibt es „Korrektur beantragen": Tag, was fehlt, Uhrzeit und ein kurzer Grund. Bei einem Tag mit „Feierabend fehlt" reicht ein Tipp auf den Tag und dann auf „Feierabend beantragen" – Tag und Art sind schon eingetragen.',
+    'Beantragen geht bis 31 Tage zurück. Darunter siehst du, ob dein Antrag noch wartet, angenommen oder abgelehnt wurde – mit Antwort. Solange er wartet, kannst du ihn zurückziehen.',
+    'Für die Geschäftsführung: Verwaltung → Zeiten zeigt oben die offenen Anträge mit „Annehmen" und „Ablehnen …". Angenommen wird daraus ein Stempel mit dem Vermerk „nachgetragen"; abgelehnt nur mit kurzer Begründung. Den eigenen Antrag entscheidet jemand anderes.'
+  ]},
   { id:'2026-10-22-pausenregel', datum:'22.10.2026', titel:'Pausen wie bei Crewmeister, Hinweise zum Arbeitszeitgesetz', wo:'ich:zeiten', punkte:[
     'Wer länger als 6 Stunden arbeitet, braucht 30 Minuten Pause, über 9 Stunden 45 Minuten. Hast du weniger gestempelt, wird nur der fehlende Teil abgezogen – an dem Tag steht dann „Pause +0:30". Deine Stempel selbst bleiben unverändert.',
     'Es wird nie mehr abgezogen, als nötig ist: Aus 6:10 Stunden ohne Pause werden 6:00 Stunden, nicht 5:40.',
@@ -37060,7 +37075,7 @@ function renderIchZeiten(rows){
       '</button>'+
       '<div class="mz-stempel" id="mzs-'+esc(t.tag)+'"'+(auf?'':' hidden')+'>'+
         t.stempel.map(zkStempelZeile).join('')+
-        /* Runde 193: der direkte Weg vom Fehler zum Antrag. */
+        /* Runde 196: der direkte Weg vom Fehler zum Antrag. */
         '<button type="button" class="btn btn-ghost btn-sm st-antrag-hier" data-antragtag="'+esc(t.tag)+'" data-antragart="'+(luecke?'gehen':'kommen')+'">'+
           (luecke ? 'Feierabend beantragen' : 'Korrektur beantragen')+'</button>'+
       '</div>';
@@ -37131,7 +37146,7 @@ function zkOeffnen(){
    „Erwartet": eine Schicht hat begonnen, und es gibt heute keinen
    Stempel. Nicht rot — die Person kann im Stau stehen oder in einem
    anderen Studio gestempelt haben; das steht hier nicht fest. */
-/* ── Korrekturanträge bei der Geschäftsführung (Runde 193) ──
+/* ── Korrekturanträge bei der Geschäftsführung (Runde 196) ──
    Alle offenen des Betriebs (status ==, ein Gleichheitsfilter). Lesen
    darf das nur die Geschäftsführung (firestore.rules), und nur sie sieht
    diesen Block. Den eigenen Antrag entscheidet jemand anderes — der
@@ -37590,7 +37605,7 @@ function stLaden(neu){
   stAntraegeLaden();
 }
 
-/* ── Korrekturantrag (Runde 193) ──
+/* ── Korrekturantrag (Runde 196) ──
    Wie bei Crewmeister trägt die Person ein, was fehlt — bis 31 Tage
    zurück. Daraus wird ein Stempel erst, wenn die Geschäftsführung
    annimmt; der Server legt ihn dann an (zeitAntragEntscheiden). Gelesen
@@ -48421,7 +48436,7 @@ function bindActions(){
     if(e.key==='Enter'){ e.preventDefault(); ichHandyStempeln($('ichHandyBtn')); }
   });
 
-  // ── Korrekturanträge (Runde 193) ──
+  // ── Korrekturanträge (Runde 196) ──
   var saBtn=$('stAntragBtn');
   if(saBtn) saBtn.addEventListener('click', function(){ stAntragStellen(saBtn); });
   var saListe=$('stAntraege');

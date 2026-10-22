@@ -18572,3 +18572,54 @@ Pausenregel, zwei Tage mit allen drei Hinweisen, ein laufender Tag ohne
 Abzug. Meine erste Erwartung für 11:20 h Arbeit mit 10 Minuten Pause war
 „20 Minuten ergänzt" — falsch: über 9 h gilt die 45-Minuten-Pause, richtig
 sind 35. Der Fehler lag in der Erwartung, nicht im Code.
+
+## Runde 196 — Die Stempelseite, Schritt 3: Korrekturanträge, nur die Geschäftsführung entscheidet (22.10.2026)
+
+Antwort aus dem Betrieb auf „wer bestätigt einen Antrag?": „nur
+geschäftsführung".
+
+**Ablauf.** Unter Heute → Ich → Zeiten trägt die Person ein, was fehlt:
+Tag, Art, Uhrzeit, Grund — bis 31 Tage zurück, wie bei Crewmeister. Bei
+einem Tag mit „Feierabend fehlt" füllt ein Tipp auf „Feierabend
+beantragen" Tag und Art vor. Ein Stempel entsteht erst, wenn die
+Geschäftsführung annimmt; dann legt der Server ihn genau wie
+`zeitNachtragen` an (quelle `korrektur`, Grund „Antrag: …", wer, wann,
+dazu `antragId`). Der Urbestand bleibt unberührt.
+
+**Warum alles über den Server.** `zeitAntraege` steht in beiden Teilen von
+`firestore.rules` auf `write:false`. Gestellt, zurückgezogen und
+entschieden wird über `zeitAntragStellen`, `zeitAntragZurueckziehen` und
+`zeitAntragEntscheiden`. So prüft der Server die 31 Tage, das Studio
+(nur ein eigenes, sonst wäre der Antrag ein Weg, Stempel in ein fremdes
+Studio zu schreiben) und die Doppelung (derselbe Antrag zweimal → einer).
+Entschieden wird in einer Transaktion: ein doppelter Klick macht keinen
+zweiten Stempel.
+
+**Wer was sieht.** Lesen: die Person ihre eigenen, die Geschäftsführung
+alle. **Die Studioleitung bewusst nicht** — sie entscheidet sie auch nicht.
+Die Geschäftsführung entscheidet nie den eigenen Antrag; das wäre genau
+die Änderung ohne zweite Person. Hat ein Betrieb nur eine Person in der
+Geschäftsführung, bleibt deren eigener Antrag offen — sie trägt ihre
+Zeiten weiter selbst über „Nachtragen" ein, wie bisher.
+
+**Was gleich bleibt, und das gehört gesagt:** Die Studioleitung kann
+fremde Stempel weiter direkt nachtragen und für ungültig erklären (P-09,
+24.9.). Die Antwort „nur geschäftsführung" galt den Anträgen. Ob die
+Leitung das direkte Nachtragen behalten soll, ist eine offene Frage an
+den Betrieb.
+
+**Löschfrist und Unterlagen.** Anträge laufen mit derselben Frist ab wie
+die Stempel (drei Jahre, `stempelzeitenAblaufen`). Die Datenschutzerklärung
+in der App und `docs/av/LOESCHKONZEPT.md` nennen die neue Sammlung. In die
+Auskunft nach Art. 15 kommen sie von selbst (Feld `uid`).
+
+**Geprüft**
+- `tests/rules/zeitantrag.test.js` (neu, 51): Regeln in beiden Welten —
+  Person und Geschäftsführung lesen, Studioleitung, Kollege, fremde Firma
+  und ohne Konto nicht, niemand schreibt; die drei Funktionen ausgeführt.
+  Gegenprobe: Studioleitung im Firmenpfad zugelassen → genau die eine
+  Zeile rot.
+- `tests/test-stempelseite.js` jetzt 146: Antrag vom fehlenden Feierabend
+  aus, ohne Grund kein Antrag, Zurückziehen; bei der Geschäftsführung
+  Annehmen/Ablehnen (≥ 44 × 44 bei 1440 und 320), Ablehnen ohne Antwort
+  entscheidet nichts; die Studioleitung sieht keine Anträge.

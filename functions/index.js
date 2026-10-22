@@ -4183,7 +4183,7 @@ exports.stempelzeitenAblaufen = region
         weg += snap.size;
         if (snap.size < 400) break;
       }
-      /* Runde 193: Korrekturanträge laufen mit derselben Frist ab. */
+      /* Runde 196: Korrekturanträge laufen mit derselben Frist ab. */
       for (;;) {
         const snap = await W(firma).collection('zeitAntraege').where('tag', '<', grenz).limit(400).get();
         if (snap.empty) break;
@@ -5637,7 +5637,7 @@ exports.zeitStornieren = region.https.onCall(async (data, context) => {
 });
 
 /* ══════════════════════════════════════════════════════════════════════
-   KORREKTURANTRAG (Runde 193)
+   KORREKTURANTRAG (Runde 196)
 
    Aus dem Betrieb, 22.10.2026, auf die Frage, wer einen Antrag der
    Mitarbeiter bestätigt: „nur geschäftsführung".
