@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-7FjHrfCCmRpUQHHKHMikXcYSJWe98wvgSM1HNl8ZQVA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-HDQrQdFL4LgLxjAPx2fJyxZCxp7S6Cp69ZImGFronLU='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -4590,19 +4590,57 @@ html{font-size:var(--fs,100%)}
 .home-tile.ok .hn{color:var(--ok-tx)}
 .home-tile.muted .hn{color:var(--text-3)}
 
-.alert-bar{display:flex;align-items:center;gap:var(--s10);padding:var(--s10) var(--s12);border-radius:var(--r-md);
-  margin-bottom:var(--s8);cursor:pointer;animation:cardUp .45s var(--ease-ios) both;
-  background:var(--f-bad-leise);border:none;border-left:3px solid var(--danger)}
-.alert-bar.warn{background:var(--f-warn-leise);border-left-color:var(--warm)}
-.alert-bar.pin{background:rgba(var(--akz-rgb),.07);border-left-color:var(--accent)}
-/* Die Sammelzeile ist selbst keine Warnung – sie darf nicht rot sein */
-.alert-bar.mehr{background:var(--bg-soft);border-left-color:var(--line-2);color:var(--text-2)}
-.alert-bar .ab-ico{font-size:var(--t-lg);flex-shrink:0}
-.alert-bar .ab-t{flex:1;min-width:0;font-size:var(--t-sm);font-weight:600;
-  /* Eine Zeile statt zwei: vier Hinweise haben vorher den ganzen ersten
-     Bildschirm gefüllt, die Zahlen darunter sah man erst nach dem Scrollen. */
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.alert-bar .ab-go{font-size:var(--t-xs);color:var(--text-3);white-space:nowrap}
+/* ── Die Formi-Zeile (Runde 186) ────────────────────────────────────────
+   Aus dem Betrieb (22.10.2026), auf „Formi-Zeile statt drei Bändern":
+   „mega find ich auch gut". Vorher standen oben bis zu vier Balken
+   (Angeheftet, überfällig, Material) — und dasselbe noch einmal im
+   Formi-Fenster. Jetzt meldet Formi es in EINER Zeile: links der Ring,
+   daneben die Meldungen als Knöpfe. Die Statusfarbe bleibt als Punkt
+   vor der Meldung, sie heisst weiter etwas (rot überfällig, bernstein
+   fehlt). Die Farbe der Zeile selbst ist Formis Violett von der linken
+   Kante, auslaufend — kein Status. */
+.formi-zeile{display:flex;align-items:center;gap:var(--s8);margin:0 0 var(--s12);padding:var(--s4) var(--s6) var(--s4) var(--s4);
+  border-radius:var(--r-md);border:1px solid var(--line);box-shadow:var(--e1);
+  background:linear-gradient(90deg, rgba(182,156,255,.16), rgba(95,225,255,.05) 38%, rgba(95,225,255,0) 70%), var(--bg-2)}
+.fz-gesicht{flex:0 0 auto;width:44px;height:44px;padding:0;border:0;border-radius:var(--r-rund);background:none;
+  display:grid;place-items:center;cursor:pointer;color:inherit}
+.fz-ring{display:block;width:28px;height:28px;border-radius:var(--r-rund);
+  background:radial-gradient(circle, #02040A 0 34%, rgba(2,4,10,0) 38%), var(--formi-ring);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.2), 0 0 10px rgba(95,225,255,.35);transition:transform .16s ease}
+@media (hover:hover){ .fz-gesicht:hover .fz-ring{transform:scale(1.08)} }
+.fz-gesicht:active .fz-ring{transform:scale(.92)}
+.fz-teile{flex:1 1 auto;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:var(--s4) var(--s6)}
+.fz-teil{display:inline-flex;align-items:center;gap:var(--s6);min-height:44px;max-width:100%;padding:0 var(--s12);
+  border:1px solid var(--line);border-radius:var(--r-rund);background:var(--bg-soft);box-shadow:var(--e1);
+  color:var(--text);font:inherit;font-size:var(--t-sm);font-weight:600;cursor:pointer;
+  transition:transform .14s var(--ease-ios), border-color .2s}
+@media (hover:hover){ .fz-teil:hover{border-color:var(--line-2)} }
+.fz-teil:active{transform:translateY(1px)}
+.fz-gesicht:focus-visible,.fz-teil:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* Eine Zeile je Meldung; ein langer Aushang wird gekürzt, ganz steht er
+   im Titel und unten unter „Zum Lesen". */
+.fz-t{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fz-teil.pin .fz-t{max-width:32ch}
+.fz-kurz{display:none}
+@media(max-width:600px){ .fz-kurz{display:inline} .fz-lang{display:none} .fz-teil.pin .fz-t{max-width:21ch} }
+.fz-punkt{flex:0 0 auto;width:8px;height:8px;border-radius:var(--r-rund);background:var(--accent)}
+.fz-teil.bad .fz-punkt{background:var(--danger)}
+.fz-teil.warn .fz-punkt{background:var(--warm)}
+.fz-teil.mehr{color:var(--text-2)}
+.fz-teil.mehr .fz-punkt{background:var(--text-3)}
+/* Einmal je Sitzung „übernimmt" Formi die Zeile: die Meldungen springen
+   glitchend herein (Stufen statt Gleiten), nacheinander. backwards, nicht
+   both — nach dem Ende gilt wieder der ruhende Zustand. */
+.formi-zeile.fz-ein .fz-teil{animation:fzEin .42s steps(1, end) backwards;animation-delay:calc(var(--i, 0) * 70ms)}
+.formi-zeile.fz-ein .fz-ring{animation:fzRing .6s cubic-bezier(.3,1.4,.5,1) backwards}
+@keyframes fzEin{0%{opacity:0;transform:translateX(-8px)}25%{opacity:1;transform:translateX(5px)}
+  50%{opacity:.55;transform:translateX(-3px)}75%{opacity:1;transform:translateX(1px)}100%{opacity:1;transform:none}}
+@keyframes fzRing{from{opacity:0;transform:scale(.4) rotate(-120deg)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){ .formi-zeile.fz-ein .fz-teil,.formi-zeile.fz-ein .fz-ring{animation:none} }
+/* Die Spur: was Formi getan hat, trägt den kleinen Ring (Runde 186). */
+.formi-spur{display:inline-flex;align-items:center;gap:var(--s4);font-size:var(--t-xs);color:var(--text-2);white-space:nowrap}
+.formi-ring-mini{flex:0 0 auto;display:inline-block;width:10px;height:10px;border-radius:var(--r-rund);
+  background:radial-gradient(circle, #02040A 0 30%, rgba(2,4,10,0) 36%), var(--formi-ring)}
 
 /* Kleine Zwischenüberschrift mit auslaufender Linie. Teilt lange Seiten in
    benannte Blöcke, ohne so schwer zu wirken wie eine weitere Karte. */
@@ -5708,14 +5746,63 @@ html{font-size:var(--fs,100%)}
    nie einen Speichern-Knopf verdecken. Das kompakte Fenster liegt
    ebenso darunter (190): es ist kein Dialog mehr, die App bleibt
    bedienbar. */
+/* Runde 186 — Formis Zeichen. Der bunte Ring gehört NUR Formi: Kugel,
+   Gesicht im Fenster, Formi-Zeile auf „Heute" und die Spur an allem, was
+   Formi getan hat. Nichts anderes in der App trägt diesen Verlauf
+   (test-formi-lebt prüft es) — sonst heisst er nichts mehr, wie eine
+   Statusfarbe, die nichts meldet. */
+:root{--formi-ring:conic-gradient(from 210deg, #5FE1FF, #B69CFF, #FF8FC8, #FFA85C, #5FE1FF)}
 .formi-kugel{--jv-rgb:95,225,255;position:fixed;z-index:150;right:max(var(--s16), var(--sar, 0px));
   bottom:calc(var(--s16) + var(--sab));width:58px;height:58px;padding:0;border:0;border-radius:var(--r-rund);cursor:pointer;
-  background:radial-gradient(circle at 50% 50%, #02040A 0 37%, rgba(2,4,10,.0) 39%),
-    conic-gradient(from 210deg, #5FE1FF, #B69CFF, #FF8FC8, #FFA85C, #5FE1FF);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.22), inset 0 0 10px 3px rgba(2,4,10,.55),
-    var(--e2), 0 0 22px rgba(var(--jv-rgb),.35);
+  background:none;color:inherit;
   transition:transform .16s ease}
 .formi-kugel[hidden]{display:none}
+/* ── Formi lebt (Runde 186) ────────────────────────────────────────────
+   Aus dem Betrieb (22.10.2026): „viele emotionen und so am besten auch
+   reaktionen falls das geht auf kleinigkeiten" — und: „Formi soll
+   einfach ganz integriert sein wie ein kleiner glitch im system".
+
+   Der Körper trägt Ring und Schein, das Loch ist ein Auge: es schaut dem
+   Zeiger nach, blinzelt, schläft ein, freut sich, erschrickt. Bewegt wird
+   NUR transform und opacity, und zwar an den Kindern — der Knopf selbst
+   behält sein transform für Hover und das Ausweichen vor „Rückgängig".
+   Die Gefühle laufen als Web Animations (endlich, ohne Klassen-Neustart),
+   siehe formiFuehlt(). Bei „weniger Bewegung" steht alles still. */
+.fk-koerper{position:absolute;inset:0;border-radius:var(--r-rund);pointer-events:none;background:var(--formi-ring);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.22), inset 0 0 10px 3px rgba(2,4,10,.55),
+    var(--e2), 0 0 22px rgba(var(--jv-rgb),.35);
+  transition:opacity .6s ease}
+/* Das Loch: 30 px wie vorher der schwarze Kern (37 % des Verlaufs). */
+.fk-loch{position:absolute;left:50%;top:50%;width:30px;height:30px;margin:-15px 0 0 -15px}
+.fk-pupille{position:absolute;inset:0;border-radius:var(--r-rund);background:#02040A;
+  box-shadow:0 0 0 1px rgba(2,4,10,.65), 0 0 7px 2px rgba(2,4,10,.55);transition:transform .3s ease}
+.fk-pupille i{position:absolute;left:7px;top:6px;width:5px;height:5px;border-radius:var(--r-rund);background:rgba(255,255,255,.85)}
+/* Die Geister für den Glitch: zwei Ringe in Cyan und Magenta, die für
+   einen Wimpernschlag neben dem Körper stehen. Ruhend unsichtbar. */
+.fk-geist{position:absolute;inset:0;border-radius:var(--r-rund);border:3px solid rgba(95,225,255,.9);opacity:0}
+.fk-geist.b{border-color:rgba(255,90,205,.85)}
+/* „Hat etwas für dich": ein Punkt in Formi-Violett — NICHT Rot, Formi
+   ist kein Alarm. Er geht weg, sobald man Formi einmal geöffnet hat. */
+.fk-punkt{position:absolute;right:1px;top:1px;width:13px;height:13px;border-radius:var(--r-rund);pointer-events:none;
+  background:#B69CFF;box-shadow:0 0 0 2px #02040A, 0 0 8px rgba(182,156,255,.8);opacity:0;transform:scale(.3);
+  transition:opacity .2s ease, transform .3s cubic-bezier(.3,1.6,.5,1)}
+.formi-kugel.fk-hat .fk-punkt{opacity:1;transform:none}
+/* Schläft: das Auge geht zu, der Ring wird leiser. Aufwachen = Glitch. */
+.formi-kugel.fk-schlaeft .fk-pupille{transform:scaleY(.12)}
+.formi-kugel.fk-schlaeft .fk-koerper{opacity:.7}
+/* Neugierig, wenn die Maus darüber steht: die Pupille wird gross. */
+@media (hover:hover){ .formi-kugel:not(.fk-schlaeft):hover .fk-pupille{transform:scale(1.18)} }
+/* Der Glitch über einem Ziel in der App (formiGlitch): zwei Balken, die
+   springen, dann ist es vorbei. Kein Flackern der ganzen Fläche: eine
+   einzige Abblendung, die Balken bewegen sich nur seitlich (WCAG 2.3.1,
+   nicht mehr als drei Blitze je Sekunde). */
+.formi-glitch{position:fixed;left:0;top:0;z-index:1190;pointer-events:none;border-radius:var(--r-sm);
+  box-shadow:0 0 0 1px rgba(95,225,255,.55), 0 0 18px rgba(182,156,255,.35)}
+.formi-glitch i{position:absolute;left:-2%;right:-2%;display:block;top:18%;height:min(22%, 14px);
+  background:linear-gradient(90deg, rgba(95,225,255,0), rgba(95,225,255,.5) 18%, rgba(95,225,255,.5) 72%, rgba(95,225,255,0))}
+.formi-glitch i + i{top:62%;height:min(11%, 8px);
+  background:linear-gradient(90deg, rgba(255,90,205,0), rgba(255,90,205,.5) 30%, rgba(255,90,205,.5) 86%, rgba(255,90,205,0))}
+@media (prefers-reduced-motion:reduce){ .fk-loch,.fk-pupille,.fk-koerper,.fk-punkt{transition:none} .formi-glitch{display:none} }
 .formi-kugel::after{content:"";position:absolute;inset:-4px;border-radius:var(--r-rund);border:1px solid rgba(var(--jv-rgb),.35);pointer-events:none}
 .formi-kugel:hover{transform:scale(1.05)}
 .formi-kugel:active{transform:scale(.94)}
@@ -5751,6 +5838,7 @@ body.formi-kugel-an .main{padding-bottom:calc(var(--s16) + 58px + var(--s16))}
 }
 /* Kleines Gesicht im Kopf des kompakten Fensters — dieselbe Kugel. */
 .formi-gesicht{flex:0 0 auto;width:22px;height:22px;border-radius:var(--r-rund);
+  /* Formis Ring, in den Farben des Themas (Runde 186: nur Formi trägt ihn). */
   background:radial-gradient(circle, #02040A 0 36%, rgba(2,4,10,0) 40%),
     conic-gradient(from 210deg, rgb(var(--jv-t1)), rgb(var(--jv-t2)), rgb(var(--jv-t3)), rgb(var(--jv-t1)));
   box-shadow:0 0 10px rgba(var(--jv-rgb),.5)}
@@ -12289,9 +12377,13 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
     </div>
   </div>
 </div>
-<!-- Formi als schwebende Kugel (Runde 177): auf jeder Seite unten rechts. -->
+<!-- Formi als schwebende Kugel (Runde 177): auf jeder Seite unten rechts.
+     Runde 186: die Kugel lebt — Körper, Geister für den Glitch, das Loch
+     als Auge (Pupille mit Lichtpunkt) und ein Punkt „hat etwas für dich".
+     Alles Schmuck: aria-hidden, keine Trefferfläche (pointer-events:none). -->
 <button type="button" class="formi-kugel" id="formiKugel" hidden aria-haspopup="dialog" aria-controls="jarvis"
-  aria-label="Formi öffnen" title="Formi — frag mich oder sag, was ich tun soll"></button>
+  aria-label="Formi öffnen" title="Formi — frag mich oder sag, was ich tun soll"><span class="fk-koerper" aria-hidden="true"><span class="fk-geist a"></span><span class="fk-geist b"></span><span class="fk-loch"><span class="fk-pupille"><i></i></span></span></span><span class="fk-punkt" aria-hidden="true"></span></button>
+<span id="formiKugelHat" hidden>Formi hat etwas für dich</span>
 <script>
 (function(){
 'use strict';
@@ -16727,6 +16819,7 @@ function fmtStand(ts){
 var _toastTimer;
 function toast(msg, isErr){
   var t=$('toast'); t.textContent=msg;
+  if(isErr && typeof formiFuehlt==='function') formiFuehlt('erschrickt');
   t.style.borderColor = isErr ? 'var(--danger)' : 'var(--accent-d)';
   t.classList.add('show');
   clearTimeout(_toastTimer);
@@ -20269,6 +20362,12 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-22-formi-lebt', datum:'22.10.2026', titel:'Formi lebt: es schaut, freut sich und meldet sich oben', wo:'home', punkte:[
+    'Wo oben auf der Startseite bisher bunte Hinweis-Balken standen, steht jetzt eine Zeile von Formi: links der bunte Ring, daneben z. B. „1 Aufgabe ist überfällig" oder „5 Artikel fehlen". Antippen führt direkt hin, der Ring öffnet Formi.',
+    'Die Kugel unten rechts hat jetzt ein Auge: Sie schaut der Maus nach, blinzelt, freut sich bei jedem Haken, staunt, wenn du schnell hintereinander abhakst, feiert, wenn der Putzplan für heute fertig ist, und erschrickt bei einer Fehlermeldung. Lässt du die App eine Weile liegen, schläft sie ein.',
+    'Ein kleiner violetter Punkt an der Kugel heisst: Formi hat etwas für dich. Er verschwindet, sobald du Formi öffnest.',
+    'Was Formi für dich abgehakt oder angelegt hat, steht in Aufgaben und Putzplan mit „über Formi" und dem kleinen Ring.',
+    'Öffnet Formi eine Seite für dich, flackert sie kurz wie ein Glitch: Dann weisst du, dass gerade Formi am Werk war. Wer am Gerät „Bewegung reduzieren" eingestellt hat, sieht nichts davon.' ] },
   { id:'2026-10-22-formi-findet-besser', datum:'22.10.2026', titel:'Formi findet die passende Antwort öfter', wo:'gehirn', punkte:[
     'Fragst du in eigenen Worten – etwa „Was mache ich, wenn ein Kunde im letzten Moment absagt?" oder „Darf eine Schwangere trainieren?" –, findet Formi jetzt eher den richtigen Eintrag, auch wenn deine Wörter dort nicht vorkommen.',
     'Fragen, die mit dem Studio nichts zu tun haben, ziehen keine unpassenden Einträge mehr mit.'
@@ -25656,7 +25755,7 @@ function gehirnJetztAnlegen(i, btn){
       var batch=db.batch();
       targets.forEach(function(sk){
         var data={ title:s.titel, desc:s.text||'', done:false, doneBy:null, doneAt:null,
-          createdBy:session.name, createdByUid:session.uid, ts:Date.now() };
+          createdBy:session.name, createdByUid:session.uid, ts:Date.now(), vonFormi:true };
         if(due) data.due=due;
         if((s.schritte||[]).length) data.steps=s.schritte.slice(0,20).map(function(x){ return { t:String(x).slice(0,120), d:false }; });
         batch.set(S('studios').doc(sk).collection('todos').doc(), data);
@@ -25837,7 +25936,9 @@ function gehirnOeffne(s){
      wird zur Kugel, bevor der Zeiger losfährt. Am Rechner bleibt es
      offen neben der Seite. */
   if(!formiBleibtOffen() || s.ziel==='chat') jarvisZu();
-  formiZeiger(s.ziel).then(wechseln);
+  /* Runde 186: wenn Formi eine Seite öffnet, „übernimmt" es sie kurz —
+     ein Glitch über dem Seitenkopf. */
+  formiZeiger(s.ziel).then(function(){ wechseln(); formiGlitch($('bereichKopf')); });
 }
 function formiHandy(){ return !!(window.matchMedia && window.matchMedia('(max-width:820px)').matches); }
 /* Bleibt Formi neben der Seite offen? Nur kompakt und nur am Rechner. */
@@ -25886,10 +25987,231 @@ function formiKugelZeigen(){
     }
     return;
   }
-  if(!k._gebunden){ k._gebunden=true; k.addEventListener('click', function(){ jarvisAuf(); }); }
+  if(!k._gebunden){ k._gebunden=true; k.addEventListener('click', function(){ jarvisAuf(); }); formiLebtStart(); }
   k.hidden=!(gehirnVerfuegbar() && !jarvisOffen() && currentView!=='gehirn' && currentView!=='chat');
   document.body.classList.toggle('formi-kugel-an', !k.hidden);
 }
+
+/* ══ Formi lebt (Runde 186, 22.10.2026) ══════════════════════════════
+   Aus dem Betrieb: „ja viele emotionen und so am besten auch reaktionen
+   falls das geht auf kleinigkeiten" und „Formi soll einfach ganz
+   integriert sein wie ein kleiner glitch im system mässig welcher die
+   app übernimmt".
+
+   Was die Kugel tut, und worauf:
+     schaut      dem Mauszeiger nach (nur Maus), einem Eingabefeld beim Tippen
+     blinzelt    alle 4–11 s, solange sie zu sehen ist
+     nickt       beim Tippen in ein Feld (höchstens alle 0,4 s)
+     freut sich  bei jedem Haken in Aufgaben und Putzplan
+     staunt      beim dritten Haken binnen 20 s
+     feiert      wenn der Putzplan eines Studios für heute fertig ist
+     erschrickt  bei jeder Fehlermeldung
+     schläft     nach 90 s ohne Bedienung ein; wacht mit einem Glitch auf
+     freut sich  wenn man nach über einer Minute zurück in die App kommt
+     Punkt       „hat etwas für dich" (siehe formiHatEtwas)
+
+   Regeln, damit das nicht teuer und nicht lästig wird:
+   - nur transform und opacity, als Web Animations: endlich, kein
+     Neustart über Klassen und kein Messen im Ereignis;
+   - Lage der Kugel wird im Bild gelesen und eine Sekunde gemerkt; die
+     Zeigerbewegung schreibt höchstens einmal je Bild;
+   - nichts davon bei „weniger Bewegung", nichts bei verborgener Kugel
+     oder verborgenem Tab; keine Dauer-Animation — Blinzeln und Schlafen
+     laufen über Zeitgeber, nicht über `infinite`. */
+var _fl={ gestartet:false, x:0, y:0, raf:0, mitte:null, mitteBis:0, zuletzt:Date.now(), schlaeft:false,
+          blinzelUhr:0, nickBis:0, haken:[], weg:0, hatKey:'', zeileGezeigt:false };
+var FK_SCHRITT={ easing:'steps(1, end)' };
+function formiLebtAn(){
+  var k=$('formiKugel');
+  return !!(k && !k.hidden && !gehirnWenigBewegung() && document.visibilityState!=='hidden' && document.body.animate);
+}
+function formiTeile(){
+  var k=$('formiKugel'); if(!k) return null;
+  return { k:k, koerper:k.querySelector('.fk-koerper'), loch:k.querySelector('.fk-loch'),
+           pupille:k.querySelector('.fk-pupille'), geister:k.querySelectorAll('.fk-geist') };
+}
+/* Die Gefühle als Bewegung. Jede Zeile: [Teil, Bildfolge, Dauer]. */
+function formiGefuehl(art){
+  var hops=[{transform:'none'},{transform:'translateY(-8px) scale(1.07)',offset:.35},{transform:'translateY(1px) scale(.97)',offset:.7},{transform:'none'}];
+  var grins=[{transform:'none'},{transform:'scale(1.12,.42)',offset:.22},{transform:'scale(1.12,.42)',offset:.8},{transform:'none'}];
+  return {
+    freut:     [['koerper', hops, 460], ['pupille', grins, 700]],
+    staunt:    [['koerper', [{transform:'none'},{transform:'scale(1.12)',offset:.3},{transform:'none'}], 520],
+                ['pupille', [{transform:'none'},{transform:'scale(1.35)',offset:.25},{transform:'scale(1.35)',offset:.75},{transform:'none'}], 900]],
+    feiert:    [['koerper', [{transform:'none'},{transform:'rotate(200deg) scale(1.16)',offset:.45},{transform:'rotate(360deg) scale(1)'}], 820],
+                ['pupille', grins, 1100]],
+    erschrickt:[['koerper', [{transform:'none'},{transform:'translateX(-5px)',offset:.15},{transform:'translateX(5px)',offset:.35},
+                  {transform:'translateX(-4px)',offset:.55},{transform:'translateX(3px)',offset:.75},{transform:'none'}], 380],
+                ['pupille', [{transform:'none'},{transform:'scale(.6)',offset:.12},{transform:'scale(.6)',offset:.8},{transform:'none'}], 600]],
+    nickt:     [['koerper', [{transform:'none'},{transform:'scale(.94)',offset:.4},{transform:'none'}], 200]],
+    blinzelt:  [['pupille', [{transform:'none'},{transform:'scaleY(.1)',offset:.5},{transform:'none'}], 170]]
+  }[art] || [];
+}
+function formiFuehlt(art){
+  if(!formiLebtAn()) return;
+  var t=formiTeile(); if(!t) return;
+  if(art!=='blinzelt') formiWach(true);
+  formiGefuehl(art).forEach(function(z){
+    var el=t[z[0]]; if(!el) return;
+    try{ el.animate(z[1], { duration:z[2], easing:'cubic-bezier(.3,.7,.2,1)' }); }catch(e){}
+  });
+  if(art==='feiert' || art==='erschrickt' || art==='staunt') formiKugelGlitch();
+}
+/* Der Glitch an der Kugel: zwei Geister springen neben den Körper. */
+function formiKugelGlitch(){
+  if(!formiLebtAn()) return;
+  var t=formiTeile(); if(!t) return;
+  var wege=[['translate(-4px,1px)','translate(3px,-2px)','translate(-2px,2px)'],
+            ['translate(4px,-1px)','translate(-3px,2px)','translate(2px,-2px)']];
+  [].forEach.call(t.geister, function(g, i){
+    var w=wege[i%2];
+    try{
+      g.animate([Object.assign({opacity:.9, transform:w[0]}, FK_SCHRITT), Object.assign({opacity:.6, transform:w[1], offset:.33}, FK_SCHRITT),
+                 Object.assign({opacity:.85, transform:w[2], offset:.66}, FK_SCHRITT), {opacity:0, transform:'none'}],
+                { duration:300 });
+    }catch(e){}
+  });
+}
+/* Formi „übernimmt" ein Stück der App: zwei Balken springen über das
+   Ziel. Gemessen wird im nächsten Bild, nie im Klick. */
+function formiGlitch(el){
+  if(!el || gehirnWenigBewegung() || !document.body.animate) return;
+  requestAnimationFrame(function(){
+    if(!el.getClientRects || !el.getClientRects().length) return;
+    var r=el.getBoundingClientRect();
+    if(!r.width || !r.height || r.bottom<0 || r.top>innerHeight) return;
+    var g=document.createElement('div');
+    g.className='formi-glitch'; g.setAttribute('aria-hidden', 'true');
+    g.style.width=Math.round(r.width)+'px'; g.style.height=Math.round(r.height)+'px';
+    g.style.transform='translate('+Math.round(r.left)+'px,'+Math.round(r.top)+'px)';
+    g.innerHTML='<i></i><i></i>';
+    document.body.appendChild(g);
+    function weg(){ if(g.parentNode) g.parentNode.removeChild(g); }
+    try{
+      g.animate([{opacity:1},{opacity:.85, offset:.6},{opacity:0}], { duration:360 }).onfinish=weg;
+      g.children[0].animate([{transform:'translateX(-12px)'},{transform:'translateX(9px)'},{transform:'translateX(-4px)'},{transform:'none'}],
+        { duration:360, easing:'steps(3, end)' });
+      g.children[1].animate([{transform:'translateX(10px)'},{transform:'translateX(-7px)'},{transform:'translateX(3px)'},{transform:'none'}],
+        { duration:360, easing:'steps(3, end)' });
+    }catch(e){ weg(); }
+    setTimeout(weg, 700);
+  });
+}
+/* Wohin das Auge schaut. Nur hier wird gemessen — im Bild, einmal je
+   Sekunde; die Kugel steht fest und bewegt sich sonst nicht. */
+function formiSchauen(){
+  _fl.raf=0;
+  var t=formiTeile(); if(!t || !t.loch || !formiLebtAn() || _fl.schlaeft) return;
+  var jetzt=Date.now();
+  if(!_fl.mitte || jetzt>_fl.mitteBis){
+    var r=t.k.getBoundingClientRect();
+    _fl.mitte={ x:r.left+r.width/2, y:r.top+r.height/2 }; _fl.mitteBis=jetzt+1000;
+  }
+  var dx=_fl.x-_fl.mitte.x, dy=_fl.y-_fl.mitte.y, d=Math.sqrt(dx*dx+dy*dy)||1;
+  var weit=Math.min(4.5, d/60);
+  var ziel='translate('+(dx/d*weit).toFixed(1)+'px,'+(dy/d*weit).toFixed(1)+'px)';
+  if(ziel===_fl.blickZiel) return;
+  /* Als Web Animation, NICHT über style.transform: jede Änderung am
+     style-Attribut liess die :has()-Regeln am <body> den ganzen Baum neu
+     berechnen und die ganze Seite neu malen — gemessen 12,9 ms je Bild
+     statt 1,9 (CPU ÷4, Maus über der leeren Seitenleiste, Spur
+     „StyleInvalidator … BODY … invalidates subtree"). Eine Animation
+     ändert kein Attribut. Die vorige wird abgelöst, nicht gestapelt. */
+  var alt=_fl.blick;
+  try{
+    _fl.blick=t.loch.animate([{ transform:_fl.blickZiel||'none' }, { transform:ziel }], { duration:140, easing:'ease-out', fill:'forwards' });
+    _fl.blickZiel=ziel;
+  }catch(e){}
+  if(alt) try{ alt.cancel(); }catch(e){}
+}
+function formiSchauNach(x, y){
+  _fl.x=x; _fl.y=y;
+  if(!_fl.raf) _fl.raf=requestAnimationFrame(formiSchauen);
+}
+function formiWach(stumm){
+  _fl.zuletzt=Date.now();
+  if(!_fl.schlaeft) return;
+  _fl.schlaeft=false;
+  var k=$('formiKugel'); if(k) k.classList.remove('fk-schlaeft');
+  if(!stumm){ formiKugelGlitch(); setTimeout(function(){ formiFuehlt('blinzelt'); }, 320); }
+}
+function formiBlinzelnPlanen(){
+  clearTimeout(_fl.blinzelUhr);
+  _fl.blinzelUhr=setTimeout(function(){
+    if(formiLebtAn() && !_fl.schlaeft) formiFuehlt('blinzelt');
+    formiBlinzelnPlanen();
+  }, 4000+Math.random()*7000);
+}
+/* Zählt Haken; ab dem dritten binnen 20 s staunt Formi statt sich zu freuen. */
+function formiHaken(){
+  var jetzt=Date.now();
+  _fl.haken=_fl.haken.filter(function(t){ return jetzt-t<20000; }); _fl.haken.push(jetzt);
+  formiFuehlt(_fl.haken.length>=3 ? 'staunt' : 'freut');
+}
+function formiFeiert(text){
+  formiFuehlt('feiert');
+  if(text) toast(text);
+}
+/* „Hat etwas für dich": der Punkt steht, solange es Überfälliges oder
+   fehlendes Material gibt, das man in Formi noch nicht gesehen hat.
+   Gesehen heisst: Formi seit diesem Stand einmal geöffnet. */
+function formiHatEtwas(schluessel){
+  _fl.hatKey=schluessel||'';
+  var k=$('formiKugel'); if(!k) return;
+  var gesehen=''; try{ gesehen=localStorage.getItem('kf_formi_gesehen')||''; }catch(e){}
+  var an=!!_fl.hatKey && _fl.hatKey!==gesehen;
+  k.classList.toggle('fk-hat', an);
+  /* Der Name bleibt „Formi öffnen" (test-uebersicht); der Punkt kommt
+     als Beschreibung dazu, damit Vorleser ihn auch melden. */
+  /* Nur schreiben, wenn es sich ändert: jede Attributänderung lässt die
+     :has()-Regeln am <body> nachrechnen (siehe formiSchauen). */
+  if(an !== k.hasAttribute('aria-describedby')){
+    if(an) k.setAttribute('aria-describedby', 'formiKugelHat'); else k.removeAttribute('aria-describedby');
+  }
+}
+function formiGesehen(){
+  try{ localStorage.setItem('kf_formi_gesehen', _fl.hatKey||''); }catch(e){}
+  formiHatEtwas(_fl.hatKey);
+}
+function formiLebtStart(){
+  if(_fl.gestartet) return; _fl.gestartet=true;
+  var maus=!!(window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches);
+  function tun(){ formiWach(); }
+  document.addEventListener('pointermove', function(e){ _fl.zuletzt=Date.now(); if(_fl.schlaeft) formiWach(); if(maus) formiSchauNach(e.clientX, e.clientY); }, { passive:true });
+  ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(function(n){ document.addEventListener(n, tun, { passive:true, capture:true }); });
+  /* Tippen in ein Feld: hinschauen und nicken. Die Lage des Feldes wird
+     im Bild gelesen, nicht im Ereignis. */
+  document.addEventListener('input', function(e){
+    var f=e.target; if(!f || !/^(INPUT|TEXTAREA)$/.test(f.tagName) && !f.isContentEditable) return;
+    var jetzt=Date.now(); if(jetzt<_fl.nickBis) return; _fl.nickBis=jetzt+400;
+    requestAnimationFrame(function(){
+      if(!f.getClientRects().length) return;
+      var r=f.getBoundingClientRect(); formiSchauNach(r.left+r.width/2, r.top+r.height/2);
+    });
+    formiFuehlt('nickt');
+  }, true);
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState==='hidden'){ _fl.weg=Date.now(); return; }
+    if(_fl.weg && Date.now()-_fl.weg>60000) setTimeout(function(){ formiFuehlt('freut'); }, 400);
+    _fl.weg=0;
+  });
+  addEventListener('resize', function(){ _fl.mitte=null; }, { passive:true });
+  setInterval(formiSchlafPruefen, 10000);
+  formiBlinzelnPlanen();
+}
+function formiSchlafPruefen(){
+  if(_fl.schlaeft || !formiLebtAn()) return;
+  if(Date.now()-_fl.zuletzt>90000){ _fl.schlaeft=true; var k=$('formiKugel'); if(k) k.classList.add('fk-schlaeft'); }
+}
+/* Für die Durchläufe (test-formi-lebt): Gefühle auslösen und die Uhr
+   vorstellen, statt 90 Sekunden zu warten. Liest und schreibt nichts
+   ausser Formis eigenem Zustand. */
+window.__formiLebt = {
+  fuehlt: function(a){ formiFuehlt(a); },
+  haken: function(){ formiHaken(); },
+  glitch: function(sel){ formiGlitch(document.querySelector(sel)); },
+  einschlafen: function(){ _fl.zuletzt=Date.now()-91000; formiSchlafPruefen(); return _fl.schlaeft; }
+};
 /* Wohin der Zeiger fährt: der Knopf des Bereichs in der Seitenleiste
    (Rechner) oder unten in der Leiste (Handy), sonst der Bereichskopf. */
 function formiZeigerZiel(ziel){
@@ -25924,7 +26246,7 @@ function formiZeiger(ziel){
       var ok=false;
       function weiter(){
         if(ok) return; ok=true;
-        z.classList.add('tippt'); leuchten(); jvTon('schritt');
+        z.classList.add('tippt'); leuchten(); jvTon('schritt'); formiGlitch(el);
         setTimeout(fertig, 260);
         setTimeout(function(){ if(z.parentNode) z.parentNode.removeChild(z); }, 900);
       }
@@ -26751,13 +27073,19 @@ function gehirnAbhakenSuchen(v){
 }
 function gehirnAbhakenSchreiben(bereich, k, t, done){
   if(bereich==='aufgabe'){
-    return aufgabeHaken(k, t.id, done).catch(function(e){ throw new Error(aufgabeFehlerText(e, k)); });
+    return aufgabeHaken(k, t.id, done, true).catch(function(e){ throw new Error(aufgabeFehlerText(e, k)); });
   }
   var kuerzel = done ? putzKuerzel() : null;
-  return S('studios').doc(k).collection('cleaning').doc(t.id)
-    .update({ done:done, doneBy:done?session.name:null, doneByUid:done?session.uid:null,
-              doneKuerzel:kuerzel||null, doneAt:done?Date.now():null })
-    .then(function(){ schedulePutzplanSheets(k); });
+  var jetzt = done ? Date.now() : null;
+  var ref = S('studios').doc(k).collection('cleaning').doc(t.id);
+  var daten = { done:done, doneBy:done?session.name:null, doneByUid:done?session.uid:null,
+                doneKuerzel:kuerzel||null, doneAt:jetzt, formiAt:jetzt };
+  /* Runde 186: die Formi-Spur (formiAt), Übergang wie in aufgabeHaken. */
+  return ref.update(daten).catch(function(e){
+    if(!e || !/permission/i.test(String(e.code||''))) throw e;
+    delete daten.formiAt;
+    return ref.update(daten);
+  }).then(function(){ schedulePutzplanSheets(k); });
 }
 function gehirnAbhaken(v, x, btn){
   /* Ohne Netz wartet die Datenbank, bis sie wieder durchkommt (der
@@ -26948,6 +27276,13 @@ function jarvisAuf(){
   jvTon('auf');
   setTimeout(jvBriefingSprechen, 1300);
   requestAnimationFrame(function(){ j.classList.add('da'); var f=$('jarvisFeld'); if(f && !('ontouchstart' in window)) f.focus(); gehirnNachUnten(); });
+  /* Runde 186: das kleine Fenster springt glitchend auf — Formi kommt aus
+     dem System, nicht aus einer Schublade. Nur transform/opacity. */
+  if(_jvKompakt && !gehirnWenigBewegung() && j.animate){
+    try{ j.animate([Object.assign({ transform:'translateX(-6px)', opacity:.4 }, FK_SCHRITT), Object.assign({ transform:'translateX(5px)', opacity:.9, offset:.3 }, FK_SCHRITT),
+                    Object.assign({ transform:'translateX(-2px)', opacity:.7, offset:.6 }, FK_SCHRITT), { transform:'none', opacity:1 }], { duration:280 }); }catch(e){}
+  }
+  formiGesehen();
   tick(8);
 }
 function jarvisZu(){
@@ -32982,6 +33317,9 @@ function renderHome(){
   });
   var putzOffen=putzOffenGesamt(keys);
   var dmUngelesen=dmUnreadCount();
+  /* Runde 186: hat Formi etwas für dich? Der Stand als Schlüssel — ändert
+     er sich, ist es neu. */
+  if(typeof formiHatEtwas==='function') formiHatEtwas(ueber||matArtikel ? 'u'+ueber+'m'+matArtikel : '');
 
   // Begrüßung
   var h=new Date().getHours();
@@ -33008,8 +33346,8 @@ function renderHome(){
        beim Namen. Ein Balken, der daneben „5 Aufgaben sind überfällig"
        sagt, wiederholt nur — und Wiederholung ist genau die Unruhe,
        gegen die die Startseite umgebaut wurde. */
-    if(ueber && !layoutNeu()) alerts.push({k:'',i:ikon('warnung'),t:ueber+(ueber===1?' Aufgabe ist überfällig':' Aufgaben sind überfällig'),v:'todos',f:'faellig'});
-    if(matArtikel) alerts.push({k:' warn',i:ikon('paket'),t:matArtikel+' Artikel fehlen in '+matStudios+(matStudios===1?' Studio':' Studios'),v:'material'});
+    if(ueber && !layoutNeu()) alerts.push({k:' bad',i:ikon('warnung'),t:ueber+(ueber===1?' Aufgabe ist überfällig':' Aufgaben sind überfällig'),kurz:ueber+' überfällig',v:'todos',f:'faellig'});
+    if(matArtikel) alerts.push({k:' warn',i:ikon('paket'),t:matArtikel+' Artikel fehlen in '+matStudios+(matStudios===1?' Studio':' Studios'),kurz:matArtikel+' Artikel fehlen',v:'material'});
     // Die Hinweiszeile entfällt: der Text der Aushänge steht ein Stück
     // weiter unten unter „Zum Lesen". Zweimal dasselbe zu melden ist genau
     // die Unruhe, die die Startseite unlesbar macht.
@@ -33023,13 +33361,27 @@ function renderHome(){
     if(alerts.length>4){
       var rest=alerts.length-3;
       alerts=alerts.slice(0,3);
-      alerts.push({k:' mehr',i:'•',t:'und '+rest+' weitere Hinweise',v:'todos'});
+      alerts.push({k:' mehr',i:'•',t:'und '+rest+' weitere Hinweise',kurz:'+'+rest,v:'todos'});
     }
-    al.innerHTML=alerts.map(function(a){
-      return '<div class="alert-bar'+a.k+'" data-go="'+a.v+'"'+(a.f?' data-f="'+a.f+'"':'')+'>'+
-        '<span class="ab-ico">'+a.i+'</span><span class="ab-t">'+esc(a.t)+'</span>'+
-        '<span class="ab-go">ansehen ›</span></div>';
-    }).join('');
+    /* Runde 186: Formi meldet es — EINE Zeile statt eines Balkens je
+       Hinweis (siehe .formi-zeile). Ohne Formi (abgeschaltet) steht die
+       Zeile ohne Ring da: das Zeichen gehört nur Formi. */
+    var mitFormi=gehirnVerfuegbar();
+    var ersteZeile=!_fl.zeileGezeigt && alerts.length>0 && !gehirnWenigBewegung();
+    if(alerts.length) _fl.zeileGezeigt=true;
+    al.innerHTML = !alerts.length ? '' :
+      '<div class="formi-zeile'+(ersteZeile?' fz-ein':'')+'" role="group" aria-label="'+(mitFormi?'Formi meldet':'Hinweise')+'">'+
+      (mitFormi ? '<button type="button" class="fz-gesicht" data-fzformi aria-label="Formi fragen" title="Formi fragen"><span class="fz-ring" aria-hidden="true"></span></button>' : '')+
+      '<div class="fz-teile">'+alerts.map(function(a, i){
+        return '<button type="button" class="fz-teil'+a.k+'" style="--i:'+i+'" data-go="'+a.v+'"'+(a.f?' data-f="'+a.f+'"':'')+
+          ' title="'+esc(a.t)+' — ansehen"><i class="fz-punkt" aria-hidden="true"></i><span class="fz-t">'+
+          /* Am Handy die kurze Form: drei lange Meldungen standen sonst
+             untereinander, und die Zeile wäre so hoch wie drei Balken. */
+          (a.kurz ? '<span class="fz-lang">'+esc(a.t)+'</span><span class="fz-kurz">'+esc(a.kurz)+'</span>' : esc(a.t))+'</span></button>';
+      }).join('')+'</div></div>';
+    var fzg=al.querySelector('[data-fzformi]');
+    if(fzg) fzg.addEventListener('click', function(){ jarvisAuf(); });
+    if(ersteZeile) formiGlitch(al.querySelector('.formi-zeile'));
     al.querySelectorAll('[data-go]').forEach(function(el){
       el.addEventListener('click',function(){
         var f=el.getAttribute('data-f');
@@ -33950,7 +34302,17 @@ function aufgabeFehlerText(e, sk){
   return errMsg(e);
 }
 
-function aufgabeHaken(sk, id, done){
+/* Die Formi-Spur (Runde 186): was Formi getan hat, trägt den kleinen
+   Ring. „über Formi" — die Person bleibt die, in deren Namen es geschah. */
+function formiSpurHTML(t, done){
+  if(!t) return '';
+  if(done && t.formiAt && t.formiAt===t.doneAt)
+    return '<span class="formi-spur" title="Über Formi abgehakt"><i class="formi-ring-mini" aria-hidden="true"></i>über Formi</span>';
+  if(t.vonFormi)
+    return '<span class="formi-spur" title="Über Formi angelegt"><i class="formi-ring-mini" aria-hidden="true"></i>über Formi angelegt</span>';
+  return '';
+}
+function aufgabeHaken(sk, id, done, vonFormi){
   var ref=S('studios').doc(sk).collection('todos').doc(id);
   var daten={ done:done, doneBy:done?session.name:null,
               doneByUid:done?session.uid:null,
@@ -33967,9 +34329,20 @@ function aufgabeHaken(sk, id, done){
   var t=todoFinden(sk, id);
   var k=done ? putzKuerzel() : '';
   if(k || (t && t.doneKuerzel)) daten.doneKuerzel = k || null;
-  return ref.update(daten).catch(function(e){
-    if(!('doneKuerzel' in daten) || !e || !/permission/i.test(String(e.code||''))) throw e;
-    delete daten.doneKuerzel;
+  /* Runde 186, Formi-Spur: hakt Formi ab, steht formiAt = doneAt daneben.
+     Angezeigt wird „über Formi" nur, solange beide gleich sind — hakt
+     danach ein Mensch neu ab, hat doneAt einen anderen Wert und die Spur
+     ist von selbst weg, ohne dass jeder Haken-Weg davon wissen muss.
+     ÜBERGANG wie beim Kürzel: lehnt eine noch alte Regel das Feld ab,
+     geht der Haken ohne Spur noch einmal raus. */
+  if(vonFormi && done) daten.formiAt = daten.doneAt;
+  else if(vonFormi && t && t.formiAt) daten.formiAt = null;
+  return ref.update(daten).then(function(){
+    if(done && !vonFormi && typeof formiHaken==='function') formiHaken();
+  }, function(e){
+    if(!e || !/permission/i.test(String(e.code||''))) throw e;
+    if(!('doneKuerzel' in daten) && !('formiAt' in daten)) throw e;
+    delete daten.doneKuerzel; delete daten.formiAt;
     return ref.update(daten);
   });
 }
@@ -37064,7 +37437,7 @@ function todoHTML(t,sk,chefView,mitStudio,ziehbar){
     ((ziehbar && !done) ? griffHTML() : '')+
     '<button class="check" aria-label="abhaken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg></button>'+
     '<div class="t-body"><div class="t-title">'+esc(t.title)+rep+dueBadge+stepCount+'</div>'+
-    '<div class="pp-meta t-foot">'+studioMarke+stand+assign+'</div>'+
+    '<div class="pp-meta t-foot">'+studioMarke+stand+formiSpurHTML(t, done)+assign+'</div>'+
     (t.desc?'<div class="t-desc">'+esc(t.desc)+'</div>':'')+
     stepsHtml+
     grundHtml+
@@ -41398,7 +41771,7 @@ function renderPutzplan(){
       ? esc(t.doneKuerzel)+' <span class="pp-konto">('+esc(t.doneBy||'')+')</span>'
       : esc(t.doneBy||'')) : '';
     var doneInfo = d && (t.doneBy || t.doneKuerzel)
-      ? '<span class="pp-doneby">✓ '+wer+' · '+fmtDateTime(t.doneAt)+'</span>'
+      ? '<span class="pp-doneby">✓ '+wer+' · '+fmtDateTime(t.doneAt)+'</span>'+formiSpurHTML(t, d)
       : '';
     /* Stift VOR dem Papierkorb: die haeufigere Handlung steht zuerst,
        und ein Loeschknopf, den der Daumen als erstes trifft, ist an
@@ -41797,7 +42170,12 @@ function bindPutzplanClicks(box){
       if(willDone){
         frischMerken(id);
         if(node){ node.classList.add('just-done'); setTimeout(function(){ node.classList.remove('just-done'); },720); }
-        burstAt(chk); tick(); toast(pickPraise());
+        burstAt(chk); tick();
+        /* Runde 186: Formi freut sich mit — und feiert, wenn damit der
+           Putzplan dieses Studios für heute fertig ist. */
+        var nochOffen=_ppTasks.filter(function(x){ return x.id!==id && !isDone(x) && !ppPausiert(x); }).length;
+        if(!nochOffen && typeof formiFeiert==='function'){ formiFeiert('Putzplan '+studioName(_ppStudioKey)+' für heute fertig – Formi feiert mit'); }
+        else { toast(pickPraise()); if(typeof formiHaken==='function') formiHaken(); }
       }
       /* Das Kürzel wird MITGESCHRIEBEN, nicht statt des Kontonamens.
          Beides zusammen beantwortet die Frage, die der Chef wirklich
