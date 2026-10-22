@@ -4,7 +4,7 @@ const SP = process.env.SP || __dirname;
 
 (async () => {
   const b = await chromium.launch({ executablePath: process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
-  const page = await b.newPage({ viewport: { width: 430, height: 950 }, deviceScaleFactor: 2 });
+  const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 430, height: 950 }, deviceScaleFactor: 2 });
   const errs = [];
   page.on('pageerror', e => errs.push(e.message.slice(0, 200)));
   await page.route('**://www.gstatic.com/**', r => r.abort());

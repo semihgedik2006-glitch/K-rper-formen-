@@ -28,7 +28,7 @@ function pruefe(was, bedingung, hinweis) {
 }
 
 async function seite(b, rolle, w, h) {
-  const p = await b.newPage({ viewport: { width: w || 390, height: h || 844 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w || 390, height: h || 844 } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());

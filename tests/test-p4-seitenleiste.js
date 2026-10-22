@@ -47,7 +47,7 @@ const TREFFER = (el) => {
   return { w: Math.round(re - l + 1), h: Math.round(u - o + 1) };
 };
 async function start(b, rolle, w, h) {
-  const p = await b.newPage({ viewport: { width: w, height: h } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
@@ -169,7 +169,7 @@ async function trefferSeite(p) {
   /* ── GEGENPROBE bisheriges Design ── */
   {
     console.log('\n── bisheriges Design, 1440 ──');
-    const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
     await p.route('**://www.gstatic.com/**', r => r.abort());
     await p.addInitScript({ path: __dirname + '/stub-mitarbeiter.js' });
     await p.goto(APP, { waitUntil: 'domcontentloaded' });

@@ -54,7 +54,7 @@ const LAGE = () => {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
   for (const [w, h] of [[320, 568], [390, 844], [430, 932]]) {
     console.log('\n── ' + w + ' × ' + h + ' ──');
-    const ctx = await b.newContext({ viewport: { width: w, height: h }, hasTouch: true, isMobile: true });
+    const ctx = await b.newContext({ serviceWorkers: 'block', viewport: { width: w, height: h }, hasTouch: true, isMobile: true });
     const p = await ctx.newPage();
     const fehler = [];
     p.on('pageerror', e => fehler.push(e.message.slice(0, 160)));

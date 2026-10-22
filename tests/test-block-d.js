@@ -43,7 +43,7 @@ const TREFFER = (el) => {
 
 (async () => {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-  const p = await b.newPage({ viewport: { width: 430, height: 932 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 430, height: 932 } });
   const fehler = [];
   p.on('pageerror', e => fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
@@ -142,7 +142,7 @@ const TREFFER = (el) => {
      nachvollziehen kann." Am PC UND am Handy. */
   console.log('\n── Was ist neu ──');
   for (const [w, h] of [[1440, 900], [390, 844]]) {
-    const q = await b.newPage({ viewport: { width: w, height: h } });
+    const q = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
     const f2 = [];
     q.on('pageerror', e => f2.push(e.message.slice(0, 160)));
     await q.route('**://www.gstatic.com/**', r => r.abort());

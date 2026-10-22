@@ -53,7 +53,7 @@ const NOTIZEN = [
 ];
 
 async function seite(b, notizen) {
-  const p = await b.newPage({ viewport: { width: 430, height: 900 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 430, height: 900 } });
   p.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 200)));
   p.on('console', m => {
     if (m.type() === 'error' && !/Failed to load resource|net::ERR_/.test(m.text())) {

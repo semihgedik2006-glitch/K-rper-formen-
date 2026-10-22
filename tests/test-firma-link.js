@@ -49,7 +49,7 @@ const SPUR = `
 async function start(errs, opt) {
   opt = opt || {};
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-  const page = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 } });
   page.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 200)));
   page.on('console', m => {
     if (m.type() === 'error' && !/ERR_|Failed to load/.test(m.text())) errs.push('CONSOLE: ' + m.text().slice(0, 160));

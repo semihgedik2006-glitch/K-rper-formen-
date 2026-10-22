@@ -28,7 +28,7 @@ const SPLASH_MAX = 1800;
 const SPLASH_MIN = 400;
 
 async function seite(b, extra) {
-  const page = await b.newPage({ viewport: { width: 430, height: 844 } });
+  const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 430, height: 844 } });
   await page.route('**://www.gstatic.com/**', r => r.abort());
   await page.route('**fonts.googleapis.com/**', r => r.abort());
   await page.route('**script.google.com/**', r => r.fulfill({ status: 200, body: 'ok' }));

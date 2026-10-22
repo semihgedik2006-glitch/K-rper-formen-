@@ -47,7 +47,7 @@ const MITSCHRIFT = `
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
   /* Die Aufzeichnung haengt am Kontext, nicht an der einen Seite: die
      Gegenprobe unten braucht dieselbe. */
-  const ktx = await b.newContext({ viewport: { width: 390, height: 900 } });
+  const ktx = await b.newContext({ serviceWorkers: 'block', viewport: { width: 390, height: 900 } });
 
   /* Jede Anfrage an die Web-App wird festgehalten statt geblockt: ein
      abgewiesener Aufruf sähe im Protokoll aus wie keiner. */

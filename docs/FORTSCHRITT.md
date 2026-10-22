@@ -17613,3 +17613,60 @@ Mal hier ganz durch: 327 von 332 grün.
 
 **Nicht geprüft:** echtes Handy, Darstellung im Stil „Formi“ (Runde 178/179)
 im Zusammenspiel mit der Kugel ausser über die Durchläufe.
+
+## Runde 183 — Formi lernt dazu, die Studioleitung gibt frei (Worker 2.14, 22.10.2026)
+
+Aus dem Betrieb: „wie können wir ihm mehr wissen geben das sich die ki
+halt weiter entwickelt" — und auf den Vorschlag, mehr Wissen auf einmal
+einzuspielen und die Studioleitungen freigeben zu lassen: „dein
+vorschlag klingt super".
+
+**Gebaut**
+- Worker 2.14: neue Vorschlagsart „Neues Wissen" (`import`).
+  `POST /api/vorschlag/import` nimmt bis zu 50 Einträge und legt
+  Vorschläge an — nie direkt Wissen. Gibt es das Thema schon, wird der
+  Vorschlag zur Änderung genau dieses Eintrags; derselbe Text ein zweites
+  Mal erzeugt nichts (Fingerabdruck im `schluessel`).
+- `POST /api/vorschlag/liste` und `/entscheiden` für die App (Studio-
+  Schlüssel, Server zu Server). Die Tabelle `vorschlag` bekommt `kategorie`,
+  `quelle`, `von`, `von_id`, `geprueft_von` — der Worker legt sie selbst an.
+- Function `gehirnWissen` (nur chef/leiter, nur Körperformen):
+  Liste, Entscheiden, „Wissen vorschlagen".
+- App: Karte „Formi lernt" auf Formis Seite, nur für die Leitung. Ein
+  Vorschlag zur Zeit („1 von N"), Text änderbar, Übernehmen / Verwerfen /
+  Später, darunter „Wissen vorschlagen".
+- `GET /api/suche?q=…` (nur Leitstand): Suchwörter, Volltext-Treffer und
+  die Ähnlichkeit nach Bedeutung OHNE Schwelle — damit `VEKTOR_MIN` nach
+  echten Zahlen eingestellt wird statt nach Gefühl.
+- Alle Oberflächen-Durchläufe sperren jetzt Service-Worker
+  (`serviceWorkers: 'block'`, 173 Dateien; `test-zwischenspeicher` prüft
+  den Service-Worker selbst und bleibt, wie er ist).
+
+**Warum so**
+- *Vier Augen.* Wer einen Vorschlag schreibt, gibt ihn nicht selbst frei.
+  Geprüft wird im Worker, nicht in der App: eine nachgebaute Anfrage
+  käme sonst vorbei. Die Kennung dafür ist ein Hash der uid — der Worker
+  braucht nur „dieselbe Person oder nicht", nicht wer.
+- *„Doppelt" bleibt im Leitstand.* Es löscht einen Eintrag; Formi löscht
+  nie, und aus der App soll auch über einen Umweg nichts verschwinden.
+- *Ein Vorschlag zur Zeit.* Die Seitenspalte ist am Rechner `sticky`;
+  eine lange Liste wäre unten nicht erreichbar. Gemessen: alle Knöpfe
+  ≥ 44 × 44 bei 320 / 390 / 430 / 820 / 1280 / 1440 / 1920, normal und
+  kompakt, mit und ohne offenes Formular (`tests/test-formi-lernt.js`,
+  Gegenprobe mit 30-px-Knöpfen: 29 rot).
+- *Kein automatischer Sammler aus Ankündigungen.* Ankündigungen nennen
+  oft Namen aus dem Team. Was Formi wissen soll, schreibt die Leitung
+  bewusst als Vorschlag — nichts wandert ungefragt zur KI.
+- *Ehrlich, wenn der Worker noch alt ist.* Antwortet er mit 404, steht in
+  der Karte „Formi braucht dafür noch das Update 2.14".
+
+**Gefunden**
+- Die Klasse `.gl-zahl` gab es schon (ein Abzeichen, absolut gesetzt):
+  der Zähler „1 von N" rutschte halb aus der Karte. Umbenannt in
+  `.gl-stand`, der Durchlauf prüft jetzt, dass er ganz in der Karte liegt.
+- `test-gehirn` mass die Rückfrage-Knöpfe im Vollbild mit 34 bzw. 42 px.
+  Ruhend sind es 44: gemessen wurde mitten im sanften Nachunten-Rollen
+  des Verlaufs. Der Durchlauf wartet jetzt, bis nichts mehr scrollt; die
+  Schwelle bleibt 44.
+- Ohne Service-Worker-Sperre landeten die Oberflächen-Durchläufe hier in
+  der Anmeldemaske („Die App ist gar nicht gestartet").

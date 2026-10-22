@@ -82,7 +82,7 @@ async function messen(p, wer, liste, vorher) {
   await p.evaluate(() => { document.body.dataset.dichte = 'normal'; });
 }
 async function demo(b, rolle, uhr, w, h) {
-  const p = await b.newPage({ viewport: { width: w || 1440, height: h || 900 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w || 1440, height: h || 900 } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
@@ -271,7 +271,7 @@ const sortieren = (p, id, wert) => p.evaluate(async ([id, wert]) => {
       { id: 'z-alt', uid: 'z-alt', firma: 'koerperformen', name: 'Zoe Altname', role: 'leiter', aktiv: true, studios: ['Studio, das es nicht mehr gibt'], studioKeys: ['studio-7'] },
       { id: 'z-gut', uid: 'z-gut', firma: 'koerperformen', name: 'Zack Passt', role: 'mitarbeiter', aktiv: true, studios: ['Hürth'], studioKeys: ['studio-6'] }
     ];
-    const q = await b.newPage({ viewport: { width: 1440, height: 900 } });
+    const q = await b.newPage({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
     const fe2 = []; q.on('pageerror', e => fe2.push(e.message.slice(0, 160)));
     await q.route('**://www.gstatic.com/**', r2 => r2.abort());
     await q.route('**fonts.googleapis.com/**', r2 => r2.abort());
@@ -315,7 +315,7 @@ const sortieren = (p, id, wert) => p.evaluate(async ([id, wert]) => {
 
   console.log('\n── 3. Die Meldung beim Mitarbeiter ──');
   {
-    const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 } });
     const fe = []; p.on('pageerror', e => fe.push(e.message.slice(0, 160)));
     await p.route('**://www.gstatic.com/**', r => r.abort());
     await p.route('**fonts.googleapis.com/**', r => r.abort());

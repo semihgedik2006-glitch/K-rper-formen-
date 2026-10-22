@@ -46,7 +46,7 @@ const ROLLEN = ['chef', 'leiter', 'mitarbeiter'];
 
   for (const rolle of ROLLEN) {
     for (const [w, h] of BREITEN) {
-      const p = await b.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: 2 });
+      const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h }, deviceScaleFactor: 2 });
       p.on('pageerror', e => errs.push('PAGEERROR ' + rolle + ' ' + w + ': ' + e.message.slice(0, 140)));
       await p.goto(APP + '?demo=' + rolle, { waitUntil: 'domcontentloaded' });
       await p.waitForTimeout(4200);

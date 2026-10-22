@@ -8085,7 +8085,90 @@ exports.lageberichtJetzt = region
     return { ok: true };
   });
 
-exports.__intern = { gehirnErlaubt, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnStimmePruefen, GEHIRN_STIMMEN, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
+/* ══════════════════════════════════════════════════════════════════════
+   FORMI LERNT — DIE LEITUNG GIBT FREI (Runde 183, 22.10.2026)
+
+   Aus dem Betrieb: „wie können wir ihm mehr wissen geben das sich die
+   ki halt weiter entwickelt" — und auf den Vorschlag, dass auch die
+   Studioleitungen freigeben: „dein vorschlag klingt super".
+
+   ── WAS GEHT ────────────────────────────────────────────────────────
+   art 'liste'        offene Vorschläge (ohne „doppelt", das löscht)
+   art 'entscheiden'  übernehmen / verwerfen, Text vorher änderbar
+   art 'vorschlagen'  „Das soll Formi wissen" — wird ein VORSCHLAG
+
+   ── WER ─────────────────────────────────────────────────────────────
+   Nur Leitung (chef, leiter) und nur Körperformen. Vier Augen: den
+   eigenen Vorschlag gibt jemand anderes frei — das prüft der Worker
+   an einer Kennung. Die Kennung ist ein Hash der uid, nicht die uid:
+   der Worker braucht nur „dieselbe Person oder nicht".
+   ══════════════════════════════════════════════════════════════════════ */
+const GEHIRN_WISSEN_ARTEN = ['liste', 'entscheiden', 'vorschlagen'];
+const GEHIRN_KATEGORIEN = ['Geräte & Hygiene', 'Training & EMS', 'Kunden & Verträge', 'Gesundheit & Atteste', 'Abläufe & Ansprechpartner', 'Marketing', 'Sonstiges'];
+function gehirnWissenPruefen(daten) {
+  const d = daten || {};
+  const art = GEHIRN_WISSEN_ARTEN.indexOf(d.art) >= 0 ? d.art : null;
+  if (!art) return null;
+  if (art === 'liste') return { art, body: {} };
+  if (art === 'entscheiden') {
+    const id = Number(d.id);
+    if (!(Number.isInteger(id) && id > 0)) return null;
+    const body = { id, gut: d.gut === true };
+    if (typeof d.inhalt === 'string') {
+      const t = d.inhalt.trim().slice(0, 5000);
+      if (body.gut && t.length < 10) return null;
+      body.inhalt = t;
+    }
+    return { art, body };
+  }
+  const thema = String(d.thema || '').trim().slice(0, 300);
+  const inhalt = String(d.inhalt || '').trim().slice(0, 5000);
+  if (thema.length < 3 || inhalt.length < 10) return null;
+  const kategorie = GEHIRN_KATEGORIEN.indexOf(d.kategorie) >= 0 ? d.kategorie : 'Sonstiges';
+  return { art, body: { eintraege: [{ thema, inhalt, kategorie }], quelle: 'Studioleitung (App)' } };
+}
+function gehirnVonId(uid) {
+  return require('crypto').createHash('sha256').update('formi-von:' + String(uid || '')).digest('hex').slice(0, 24);
+}
+
+exports.gehirnWissen = region
+  .runWith({ timeoutSeconds: 30, memory: '256MB' })
+  .https.onCall(async (data, context) => {
+    const { uid, profil } = await anruferProfil(context);
+    const firma = await firmaVonProfil(profil);
+    if (!gehirnErlaubt(firma)) throw new functions.https.HttpsError('permission-denied', 'Formi ist für diesen Betrieb nicht eingerichtet.');
+    if (profil.role !== 'chef' && profil.role !== 'leiter') {
+      throw new functions.https.HttpsError('permission-denied', 'Was Formi lernt, gibt die Studioleitung frei.');
+    }
+    const a = gehirnWissenPruefen(data);
+    if (!a) throw new functions.https.HttpsError('invalid-argument', 'Bitte Thema (ab 3 Zeichen) und Text (ab 10 Zeichen) angeben.');
+    const schluessel = process.env.STUDIO_GEHIRN_KEY || '';
+    if (!schluessel) throw new functions.https.HttpsError('failed-precondition', 'Formi ist noch nicht verbunden.');
+    await tagesGrenze('gehirnWissen', GEHIRN_TAGESGRENZE, firma);
+    const pfad = { liste: 'liste', entscheiden: 'entscheiden', vorschlagen: 'import' }[a.art];
+    const body = Object.assign({}, a.body, { von: String(profil.name || 'Leitung').slice(0, 60), vonId: gehirnVonId(uid) });
+    let antwort, json;
+    try {
+      antwort = await fetch((process.env.GEHIRN_URL || GEHIRN_URL_STANDARD).replace(/\/+$/, '') + '/api/vorschlag/' + pfad, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-studio-key': schluessel },
+        body: JSON.stringify(body)
+      });
+      json = await antwort.json().catch(() => ({}));
+    } catch (e) {
+      throw new functions.https.HttpsError('unavailable', 'Formi ist gerade nicht erreichbar.');
+    }
+    /* 404: Worker älter als 2.14 — sagen, statt still nichts zu zeigen. */
+    if (antwort.status === 404) throw new functions.https.HttpsError('failed-precondition', 'Formi braucht dafür noch das Update 2.14 im Leitstand-Server.');
+    if (!antwort.ok) {
+      console.error('gehirnWissen HTTP ' + antwort.status + ':', JSON.stringify(json).slice(0, 200));
+      throw new functions.https.HttpsError('unavailable', (json && json.fehler) || 'Formi hat gerade nicht geantwortet.');
+    }
+    if (a.art === 'entscheiden' && !json.ok) throw new functions.https.HttpsError('failed-precondition', json.fehler || 'Das hat nicht geklappt.');
+    return json;
+  });
+
+exports.__intern = { gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnStimmePruefen, GEHIRN_STIMMEN, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
                      gehirnVorschlagPruefen, gehirnBefehlPruefen, gehirnWeg, gehirnKontextText, lageberichtOhneKi,
                      geminiSperreAufheben: () => { _geminiAusBis = 0; }, geminiGesperrt: () => Date.now() < _geminiAusBis, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,
                      authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,

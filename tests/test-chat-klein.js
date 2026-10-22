@@ -24,7 +24,7 @@ function pruefe(was, bedingung, hinweis) {
 }
 
 async function oeffne(b, w, h, mobil) {
-  const ctx = await b.newContext({ viewport: { width: w, height: h }, hasTouch: !!mobil, isMobile: !!mobil });
+  const ctx = await b.newContext({ serviceWorkers: 'block', viewport: { width: w, height: h }, hasTouch: !!mobil, isMobile: !!mobil });
   const p = await ctx.newPage();
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));

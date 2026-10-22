@@ -281,6 +281,54 @@ function ki(antworten) {
     pruefe(/"vorschlaege","Vorschläge"/.test(html) && /Jetzt lernen/.test(html) && /Bedeutung berechnen/.test(html), 'Leitstand: Reiter „Vorschläge", Knöpfe „Jetzt lernen" und „Bedeutung berechnen"');
     const ohne = await w.default.fetch(new Request('https://x.test/api/vorschlaege'), env2, {});
     pruefe(ohne.status === 401, 'Vorschläge nur mit ADMIN_KEY');
+
+    /* ── 2.14 Viel Wissen auf einmal — als Vorschlag, Leitung gibt frei ── */
+    const post = (pfad, body, kopf) => w.default.fetch(new Request('https://x.test' + pfad, { method: 'POST',
+      headers: Object.assign({ 'Content-Type': 'application/json' }, kopf || { 'x-studio-key': 'k' }), body: JSON.stringify(body) }), env2, { waitUntil() {} });
+    const wissenVorher = env2.DB.roh.prepare('SELECT COUNT(*) AS n FROM wissen').get().n;
+    const westeThema = env2.DB.roh.prepare('SELECT thema, inhalt FROM wissen WHERE id = ?').get(weste);
+    const imp = await (await post('/api/vorschlag/import', { von: 'Lea Leitung', vonId: 'uid-lea', quelle: 'Schulung', eintraege: [
+      { thema: 'Hautkontakt der Elektroden', inhalt: 'Elektroden vor dem Training gut anfeuchten, sonst kribbelt es unangenehm.', kategorie: 'Training & EMS' },
+      { thema: westeThema.thema.toUpperCase(), inhalt: 'Westen bei 30 Grad im Schonprogramm, danach hängend trocknen.' },
+      { thema: westeThema.thema, inhalt: westeThema.inhalt },
+      { thema: 'x', inhalt: 'zu kurz' }
+    ] })).json();
+    pruefe(imp.neu === 2 && imp.schonDa === 1 && imp.ungueltig === 1, 'Import: zwei neue Vorschläge, gleicher Text wird übersprungen, Unsinn abgelehnt (' + JSON.stringify(imp) + ')');
+    pruefe(env2.DB.roh.prepare('SELECT COUNT(*) AS n FROM wissen').get().n === wissenVorher, 'Import macht NICHTS direkt zu Wissen');
+    const imp2 = await (await post('/api/vorschlag/import', { eintraege: [{ thema: 'Hautkontakt der Elektroden', inhalt: 'Elektroden vor dem Training gut anfeuchten, sonst kribbelt es unangenehm.' }] })).json();
+    pruefe(imp2.neu === 0 && imp2.schonDa === 1, 'Derselbe Import zweimal: kein doppelter Vorschlag');
+    const zuViel = await (await post('/api/vorschlag/import', { eintraege: Array.from({ length: 60 }, (_, i) => ({ thema: 'Massentest ' + i, inhalt: 'Ein Eintrag zum Zählen Nummer ' + i })) })).json();
+    pruefe(zuViel.neu === 50, 'Höchstens 50 Einträge je Import (' + zuViel.neu + ')');
+    env2.DB.roh.prepare("UPDATE vorschlag SET status = 'verworfen' WHERE thema LIKE 'Massentest %'").run();
+
+    const liste = await (await post('/api/vorschlag/liste', { vonId: 'uid-lea' })).json();
+    const neuV = liste.liste.find(x => x.thema === 'Hautkontakt der Elektroden');
+    const aendV = liste.liste.find(x => x.art === 'import' && x.wissenId === weste);
+    pruefe(neuV && neuV.eigen === true && neuV.von === 'Lea Leitung' && aendV && /30 Grad/.test(aendV.inhalt) && aendV.alt === westeThema.inhalt, 'Liste für die App: Herkunft, „eigen" und bei bekanntem Thema der bisherige Text');
+    pruefe(!liste.liste.some(x => x.art === 'doppelt') && !JSON.stringify(liste).includes('uid-lea'), 'App sieht keine „doppelt"-Vorschläge und keine fremden Kennungen');
+
+    const eigen = await (await post('/api/vorschlag/entscheiden', { id: neuV.id, gut: true, von: 'Lea Leitung', vonId: 'uid-lea' })).json();
+    pruefe(!eigen.ok && /jemand anderes/.test(eigen.fehler), 'Vier Augen: den eigenen Vorschlag kann man nicht selbst freigeben');
+    const frei = await (await post('/api/vorschlag/entscheiden', { id: neuV.id, gut: true, von: 'Max Chef', vonId: 'uid-max', inhalt: 'Elektroden vor dem Training gut anfeuchten.' })).json();
+    const neuW = env2.DB.roh.prepare("SELECT * FROM wissen WHERE thema = 'Hautkontakt der Elektroden'").get();
+    pruefe(frei.ok && neuW && neuW.inhalt === 'Elektroden vor dem Training gut anfeuchten.' && neuW.kategorie === 'Training & EMS' && neuW.quelle === 'Schulung', 'Freigabe durch jemand anderen: Wissen mit geändertem Text, Kategorie und Quelle');
+    pruefe(env2.DB.roh.prepare('SELECT geprueft_von FROM vorschlag WHERE id = ?').get(neuV.id).geprueft_von === 'Max Chef', 'Es steht dabei, wer freigegeben hat');
+    const aend = await (await post('/api/vorschlag/entscheiden', { id: aendV.id, gut: true, von: 'Max Chef', vonId: 'uid-max' })).json();
+    pruefe(aend.ok && /30 Grad/.test(env2.DB.roh.prepare('SELECT inhalt FROM wissen WHERE id = ?').get(weste).inhalt) && env2.DB.roh.prepare('SELECT COUNT(*) AS n FROM wissen').get().n === wissenVorher + 1, 'Bekanntes Thema: der Eintrag wird geändert, kein Doppel');
+    const zweimal = await (await post('/api/vorschlag/entscheiden', { id: aendV.id, gut: false, von: 'Max Chef', vonId: 'uid-max' })).json();
+    pruefe(!zweimal.ok, 'Schon entschieden bleibt entschieden');
+
+    env2.DB.roh.prepare("INSERT INTO vorschlag (art, wissen_id, ref, thema, inhalt, status, schluessel, erstellt) VALUES ('doppelt', ?, ?, 'Test doppelt', 'x', 'neu', 'test-doppelt', 1)").run(weste, weste);
+    const dopId = env2.DB.roh.prepare("SELECT id FROM vorschlag WHERE schluessel = 'test-doppelt'").get().id;
+    const dopApp = await (await post('/api/vorschlag/entscheiden', { id: dopId, gut: true, von: 'Max Chef', vonId: 'uid-max' })).json();
+    pruefe(!dopApp.ok && env2.DB.roh.prepare('SELECT id FROM wissen WHERE id = ?').get(weste), '„doppelt" (löscht) geht aus der App nicht — nur im Leitstand');
+    const ohneSchl = await post('/api/vorschlag/import', { eintraege: [] }, { 'x-studio-key': 'falsch' });
+    pruefe(ohneSchl.status === 401, 'Import nur mit Schlüssel');
+
+    const such = await (await w.default.fetch(new Request('https://x.test/api/suche?q=' + encodeURIComponent('wie wasche ich die westen'), { headers: { 'x-admin-key': 'admin' } }), env2, {})).json();
+    pruefe(Array.isArray(such.bedeutung) && such.bedeutung.length > 0 && typeof such.bedeutung[0].wert === 'number' && such.schwelle > 0 && such.ergebnis.some(x => x.id === weste), 'Suche-Diagnose: Wörter, Volltext, Ähnlichkeit ohne Schwelle, Ergebnis (' + JSON.stringify(such).slice(0, 160) + ')');
+    const suchOhne = await w.default.fetch(new Request('https://x.test/api/suche?q=x', { headers: { 'x-studio-key': 'k' } }), env2, {});
+    pruefe(suchOhne.status === 401, 'Suche-Diagnose nur im Leitstand');
   }
 
   console.log(`\n${ok} bestanden, ${fehler} fehlgeschlagen`);

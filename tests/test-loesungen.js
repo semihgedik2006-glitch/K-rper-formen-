@@ -83,7 +83,7 @@ async function suchen(p, text) {
 }
 
 async function starte(b, rolle) {
-  const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 } });
   await p.route('**://www.gstatic.com/**', r => r.abort());
   /* Die Führung würde sonst über dem Fenster liegen und jeden Klick
      schlucken. Sie hat einen eigenen Durchlauf. */

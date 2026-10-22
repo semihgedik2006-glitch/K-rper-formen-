@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-G/+7XHU24sHN5R3mS9seTSzq6QXUkw5rhw9VRentKUI='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-by6CoxUrU/5YtRmk+MT4Hwmt0Pca6rndGA9m5ryiTQ8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -6289,6 +6289,25 @@ body.jv-offen{overflow:hidden}
 .gv-vorschlaege li span{flex:1 1 auto;color:var(--text-2)}
 .gv-vorschlaege li .btn{min-height:44px;min-width:44px}
 .gehirn-vorschlaege .gv-alle{width:100%;min-height:44px;margin-top:var(--s8)}
+/* Formi lernt (Runde 183): eine Karte, EIN Vorschlag zur Zeit — so bleibt
+   die Seitenspalte am Rechner kurz genug für „sticky". */
+.gehirn-lernt .gl-kopf{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s8);margin-bottom:var(--s8)}
+.gehirn-lernt .gl-kopf h3{margin:0;flex:1 1 auto;min-width:0;width:auto}
+.gehirn-lernt .gl-stand{flex:none;font-size:var(--t-2xs);color:var(--text-3);white-space:nowrap}
+.gehirn-lernt details>summary::after{content:'›';margin-left:var(--s6)}
+.gehirn-lernt details[open]>summary::after{content:'‹'}
+.gehirn-lernt .gl-art{display:inline-block;font-size:var(--t-2xs);color:var(--text-2);border:1px solid var(--line);border-radius:var(--r-pille);padding:var(--s2) var(--s8);margin-bottom:var(--s6)}
+.gehirn-lernt .gl-thema{font-weight:600;margin:0 0 var(--s4);overflow-wrap:anywhere}
+.gehirn-lernt .gl-grund{font-size:var(--t-xs);color:var(--text-3);margin:0 0 var(--s8);overflow-wrap:anywhere}
+.gehirn-lernt .gl-text{width:100%;min-height:96px;resize:vertical;font-size:var(--t-sm)}
+.gehirn-lernt .gl-fest{font-size:var(--t-sm);line-height:var(--lh);background:var(--bg-3);border-radius:var(--r-sm);padding:var(--s8);margin:0 0 var(--s8);overflow-wrap:anywhere;max-height:180px;overflow:auto}
+.gehirn-lernt details{margin:0 0 var(--s8)}
+.gehirn-lernt details>summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-size:var(--t-xs);color:var(--text-2)}
+.gehirn-lernt .gl-knoepfe{display:grid;grid-template-columns:1fr 1fr;gap:var(--s8);margin-top:var(--s8)}
+.gehirn-lernt .gl-knoepfe .btn,.gehirn-lernt .gl-breit{min-height:44px;width:100%}
+.gehirn-lernt .gl-breit{margin-top:var(--s8)}
+.gehirn-lernt .gl-form{display:flex;flex-direction:column;gap:var(--s8);margin-top:var(--s8)}
+.gehirn-lernt .gl-form .inp{min-height:44px}
 .gehirn-chip-tun svg{width:16px;height:16px;flex:0 0 auto}
 /* Lagebericht (Stufe 4) */
 .gehirn-bericht .gb-text{white-space:pre-wrap;line-height:var(--lh);font-size:var(--t-sm);margin:0 0 var(--s8)}
@@ -10040,6 +10059,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             <aside class="gehirn-seite" id="gehirnSeite">
               <div class="card gehirn-vorschlaege" id="gehirnVorschlaege" style="display:none"></div>
               <div class="card gehirn-bericht" id="gehirnBericht" style="display:none"></div>
+              <div class="card gehirn-lernt" id="gehirnLernt" style="display:none"></div>
               <div class="card">
                 <h3 data-ikon="gehirn">So hilft dir Formi</h3>
                 <ul class="hint" style="margin:0;padding-left:18px;line-height:var(--lh)">
@@ -20236,6 +20256,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-22-formi-lernt-leitung', datum:'22.10.2026', titel:'Formi lernt dazu – die Studioleitung gibt frei', wo:'gehirn', punkte:[
+    'Für die Studioleitung: Bei Formi (große Ansicht) steht die Karte „Formi lernt". Dort zeigt Formi, was es dazulernen möchte – zum Beispiel Inhalte aus den Schulungen oder Korrekturen aus dem Team. Text bei Bedarf ändern, dann „Übernehmen" oder „Verwerfen".',
+    'Mit „Wissen vorschlagen" schreibst du selbst auf, was Formi wissen soll. Freigeben muss das jemand anderes aus der Leitung – so schauen immer zwei drauf.',
+    'Nichts davon wird Wissen, bevor ein Mensch „Übernehmen" drückt.'
+  ]},
   { id:'2026-10-22-formi-nur-kugel', datum:'22.10.2026', titel:'Formi gibt es jetzt nur noch als Kugel', wo:'home', punkte:[
     'Der runde Formi-Knopf oben auf der Startseite (und oben am Rechner) ist weg – Formi öffnest du über die bunte Kugel unten rechts, am Rechner auch mit der Taste J.',
     'Die Kugel verdeckt nichts mehr: Am Ende jeder Seite ist unten Platz, und wenn unten „Rückgängig" oder ein Hinweis erscheint, rutscht sie kurz nach oben.'
@@ -24991,6 +25016,7 @@ function gehirnOeffnen(){
   ikonenEinsetzen($('view-gehirn'));
   gehirnZeichnen();
   gehirnBerichtLaden();
+  gehirnLerntLaden();
 }
 function gehirnBinden(){
   if(_gGebunden) return; _gGebunden=true;
@@ -27892,6 +27918,118 @@ function gehirnFristWoche(key, btn){
     var neu=new Date(Math.max(t.due||0, Date.now())+7*86400000).setHours(23,59,59,999);
     return ref.update({ due: neu }).then(function(){ _gVerschoben[key]={ alt:alt, neu:neu }; t.due=neu; tick(8); gehirnVorschlaegeZeichnen(); })
       .catch(function(e){ toast(errMsg(e), true); });
+  });
+}
+
+/* ── Formi lernt: die Leitung gibt frei (Runde 183, 22.10.2026) ──────
+   Aus dem Betrieb: „wie können wir ihm mehr wissen geben das sich die
+   ki halt weiter entwickelt" — Formi schlägt vor (nachts, aus
+   Korrekturen, aus Schulungen), die Studioleitung entscheidet. Nichts
+   wird Wissen, bevor ein Mensch „Übernehmen" drückt. Vier Augen: den
+   eigenen Vorschlag gibt jemand anderes frei (prüft der Server).
+   Einer zur Zeit, damit die Spalte am Rechner kurz bleibt. */
+var _gLernt=null, _gLerntPos=0, _gLerntForm=false, _gLerntLaeuft=false, _gLerntFehler='';
+var GL_ART={ frage:'Selbsttest', luecke:'Antwort-Entwurf', veraltet:'Noch aktuell?', korrektur:'Korrektur aus dem Team', 'import':'Neues Wissen' };
+function gehirnLernt(art, daten){
+  return firebase.app().functions(KONFIG.region).httpsCallable('gehirnWissen')(Object.assign({ art:art }, daten||{}))
+    .then(function(r){ return (r && r.data) || {}; });
+}
+function gehirnLerntLaden(){
+  var karte=$('gehirnLernt'); if(!karte) return;
+  if(!canManage()){ karte.style.display='none'; return; }
+  karte.style.display='';
+  if(!_gLernt) { _gLerntFehler=''; gehirnLerntZeichnen(true); }
+  gehirnLernt('liste').then(function(d){
+    _gLernt=Array.isArray(d.liste) ? d.liste : [];
+    _gLernt.anzahl=Number(d.anzahl)||_gLernt.length;
+    _gLerntFehler='';
+    if(_gLerntPos>=_gLernt.length) _gLerntPos=0;
+    gehirnLerntZeichnen();
+  }).catch(function(err){
+    _gLernt=[]; _gLerntFehler=errMsg(err);
+    gehirnLerntZeichnen();
+  });
+}
+function gehirnLerntZeichnen(laedt){
+  var karte=$('gehirnLernt'); if(!karte) return;
+  var liste=_gLernt||[], v=liste[_gLerntPos];
+  /* Was schon getippt ist, überlebt das Neuzeichnen. */
+  var merkT=($('glNeuThema')||{}).value||'', merkX=($('glNeuText')||{}).value||'';
+  var kopf='<div class="gl-kopf"><h3 data-ikon="gehirn">Formi lernt</h3>'+
+    (liste.length ? '<span class="gl-stand">'+(_gLerntPos+1)+' von '+(liste.anzahl||liste.length)+'</span>' : '')+'</div>';
+  var inhalt;
+  if(laedt) inhalt='<p class="hint" style="margin:0">Lädt …</p>';
+  else if(_gLerntFehler) inhalt='<p class="hint" style="margin:0">'+esc(_gLerntFehler)+'</p>';
+  else if(!v) inhalt='<p class="hint" style="margin:0">Keine Vorschläge offen. Formi lernt nachts weiter — oder schlag selbst etwas vor.</p>';
+  else {
+    var art=v.art==='import' && v.wissenId ? 'Änderung' : (GL_ART[v.art]||v.art);
+    var fest = v.art==='frage';
+    inhalt='<span class="gl-art">'+esc(art)+'</span>'+
+      '<p class="gl-thema">'+esc(v.thema||'')+'</p>'+
+      '<p class="gl-grund">'+esc(v.begruendung||'')+(v.von && v.art!=='import' ? ' · von '+esc(v.von) : '')+'</p>'+
+      (v.alt && !fest ? '<details><summary>Bisheriger Text ansehen</summary><div class="gl-fest">'+esc(v.alt)+'</div></details>' : '')+
+      (fest
+        ? '<p class="hint" style="margin:0 0 var(--s4)">So könnte jemand fragen. Übernehmen heisst: Formi findet Eintrag Nr. '+esc(String(v.wissenId||''))+' auch so.</p><div class="gl-fest">'+esc(v.inhalt||'')+'</div>'
+        : '<label class="hint" for="glText" style="display:block;margin:0 0 var(--s4)">Text, der Wissen wird — bei Bedarf ändern:</label>'+
+          '<textarea class="inp gl-text" id="glText" maxlength="5000">'+esc(v.inhalt||'')+'</textarea>')+
+      (v.eigen ? '<p class="hint" style="margin:var(--s8) 0 0">Dein eigener Vorschlag — freigeben kann ihn jemand anderes aus der Leitung.</p>' : '')+
+      '<div class="gl-knoepfe">'+
+        '<button type="button" class="btn btn-primary btn-sm" data-glurteil="1"'+(v.eigen||_gLerntLaeuft ? ' disabled' : '')+'>'+(v.art==='veraltet' ? 'Stimmt noch' : 'Übernehmen')+'</button>'+
+        '<button type="button" class="btn btn-ghost btn-sm" data-glurteil="0"'+(_gLerntLaeuft ? ' disabled' : '')+'>Verwerfen</button>'+
+      '</div>'+
+      (liste.length>1 ? '<button type="button" class="btn btn-ghost btn-sm gl-breit" data-glweiter="1">Später — nächster Vorschlag ›</button>' : '');
+  }
+  var form = _gLerntForm
+    ? '<div class="gl-form"><label class="hint" for="glNeuThema" style="margin:0">Das soll Formi wissen</label>'+
+      '<input class="inp" id="glNeuThema" maxlength="300" placeholder="Thema, z. B. Handtücher nachfüllen" autocomplete="off">'+
+      '<textarea class="inp gl-text" id="glNeuText" maxlength="5000" placeholder="So geht es bei uns … (keine Kundennamen, keine Diagnosen)"></textarea>'+
+      '<div class="gl-knoepfe"><button type="button" class="btn btn-primary btn-sm" data-glneu="senden"'+(_gLerntLaeuft ? ' disabled' : '')+'>Vorschlagen</button>'+
+      '<button type="button" class="btn btn-ghost btn-sm" data-glneu="zu">Abbrechen</button></div>'+
+      '<p class="hint" style="margin:0">Wird erst Wissen, wenn jemand anderes aus der Leitung es freigibt.</p></div>'
+    : '<button type="button" class="btn btn-ghost btn-sm gl-breit" data-glneu="auf">Wissen vorschlagen</button>';
+  karte.innerHTML=kopf+inhalt+form;
+  if($('glNeuThema')) $('glNeuThema').value=merkT;
+  if($('glNeuText')) $('glNeuText').value=merkX;
+  ikonenEinsetzen(karte);
+  karte.querySelectorAll('[data-glurteil]').forEach(function(b){
+    b.addEventListener('click', function(){
+      if(!v || _gLerntLaeuft) return;
+      var gut=b.getAttribute('data-glurteil')==='1';
+      var ta=$('glText');
+      var daten={ id:v.id, gut:gut };
+      if(gut && ta) daten.inhalt=ta.value;
+      _gLerntLaeuft=true;
+      b.disabled=true;
+      gehirnLernt('entscheiden', daten).then(function(r){
+        _gLerntLaeuft=false;
+        toast(r.text || (gut ? 'Übernommen.' : 'Verworfen.'));
+        _gLernt.splice(_gLerntPos,1);
+        if(_gLernt.anzahl) _gLernt.anzahl--;
+        if(_gLerntPos>=_gLernt.length) _gLerntPos=0;
+        tick(8);
+        gehirnLerntZeichnen();
+        if(!_gLernt.length) gehirnLerntLaden();
+      }).catch(function(err){ _gLerntLaeuft=false; gehirnLerntZeichnen(); toast(errMsg(err), true); });
+    });
+  });
+  var weiter=karte.querySelector('[data-glweiter]');
+  if(weiter) weiter.addEventListener('click', function(){
+    _gLerntPos=(_gLerntPos+1)%Math.max(1,(_gLernt||[]).length); gehirnLerntZeichnen();
+  });
+  karte.querySelectorAll('[data-glneu]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var was=b.getAttribute('data-glneu');
+      if(was==='auf'){ _gLerntForm=true; gehirnLerntZeichnen(); var f=$('glNeuThema'); if(f) f.focus(); return; }
+      if(was==='zu'){ _gLerntForm=false; gehirnLerntZeichnen(); return; }
+      var thema=(($('glNeuThema')||{}).value||'').trim(), text=(($('glNeuText')||{}).value||'').trim();
+      if(thema.length<3 || text.length<10){ toast('Bitte ein Thema und ein paar Sätze eintragen.', true); return; }
+      _gLerntLaeuft=true; b.disabled=true;
+      gehirnLernt('vorschlagen', { thema:thema, inhalt:text }).then(function(r){
+        _gLerntLaeuft=false; _gLerntForm=false;
+        toast(r.neu ? 'Vorgeschlagen — jemand aus der Leitung gibt es frei.' : 'Das weiss Formi schon.');
+        gehirnLerntLaden();
+      }).catch(function(err){ _gLerntLaeuft=false; gehirnLerntZeichnen(); toast(errMsg(err), true); });
+    });
   });
 }
 

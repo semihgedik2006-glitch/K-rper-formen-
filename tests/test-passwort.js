@@ -23,7 +23,7 @@ const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linu
 (async () => {
   const errs = [];
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-  const page = await b.newPage({ viewport: { width: 320, height: 844 }, deviceScaleFactor: 2 });
+  const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 320, height: 844 }, deviceScaleFactor: 2 });
   page.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 200)));
   page.on('console', m => {
     if (m.type() === 'error' && !/ERR_|Failed to load/.test(m.text())) errs.push('CONSOLE: ' + m.text().slice(0, 160));

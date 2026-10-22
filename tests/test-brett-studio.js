@@ -39,7 +39,7 @@ const TREFFER = (el) => {
   return { w: Math.round(re - l + 1), h: Math.round(u - o + 1) };
 };
 async function oeffne(b, rolle, w, h) {
-  const p = await b.newPage({ viewport: { width: w, height: h } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());

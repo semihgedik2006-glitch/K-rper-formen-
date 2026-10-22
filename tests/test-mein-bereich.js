@@ -83,7 +83,7 @@ async function reiterOeffnen(p, tab) {
 
 (async () => {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-  const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 } });
   p.on('pageerror', e => fehler.push('PAGEERROR: ' + e.message.slice(0, 200)));
   /* Die abgebrochenen Anfragen sind unsere eigenen: p.route(...abort())
      weiter unten kappt gstatic und die Schriften, damit der Durchlauf

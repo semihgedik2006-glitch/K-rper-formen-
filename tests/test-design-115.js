@@ -51,7 +51,7 @@ async function zuDenAufgaben(p) {
 
   for (const [w, h] of [[390, 844], [1440, 900]]) {
     console.log('\n── ' + w + ' × ' + h + ' ──');
-    const ctx = await b.newContext({ viewport: { width: w, height: h } });
+    const ctx = await b.newContext({ serviceWorkers: 'block', viewport: { width: w, height: h } });
     const p = await oeffne(ctx, 'chef');
 
     /* ══ 1. Fortschritt ══
@@ -147,7 +147,7 @@ async function zuDenAufgaben(p) {
   /* ══ 3b. Weniger Bewegung: kein Hochzählen ══ */
   {
     console.log('\n── weniger Bewegung ──');
-    const ctx = await b.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+    const ctx = await b.newContext({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
     const p = await oeffne(ctx, 'chef');
     await p.evaluate(() => { const a = document.querySelector('#side [data-group="g-alles"], .mobnav [data-group="g-alles"]'); if (a) a.click(); });
     await p.waitForTimeout(500);

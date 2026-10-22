@@ -47,7 +47,7 @@ const TREFFER = (el) => {
 const GROESSEN = [[320, 568], [390, 844], [430, 932], [820, 1180], [1280, 800], [1440, 900], [1920, 1080]];
 
 async function oeffne(b, rolle, w, h) {
-  const p = await b.newPage({ viewport: { width: w, height: h } });
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());

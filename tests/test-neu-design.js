@@ -46,7 +46,7 @@ function pruefe(name, bedingung, zusatz) {
 }
 
 async function seite(b, stub, such, breite) {
-  const page = await b.newPage({ viewport: { width: breite || 390, height: 844 } });
+  const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: breite || 390, height: 844 } });
   page.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 180)));
   page.on('console', m => {
     if (m.type() === 'error' && !/ERR_|Failed to load/.test(m.text()))
@@ -429,7 +429,7 @@ async function seite(b, stub, such, breite) {
   console.log('\n── Passt die Startseite auf einen Bildschirm? ──');
   for (const stub of ['stub-chef.js', 'stub-mitarbeiter.js']) {
     for (const [breite, hoehe] of [[390, 844], [360, 780], [320, 568]]) {
-      const pn = await b.newPage({ viewport: { width: breite, height: hoehe } });
+      const pn = await b.newPage({ serviceWorkers: 'block', viewport: { width: breite, height: hoehe } });
       pn.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 180)));
       await pn.route('**://www.gstatic.com/**', r => r.abort());
       await pn.addInitScript({ path: path.join(SP, stub) });

@@ -48,7 +48,7 @@ const GIFT = '<img src=x onerror="window.__xss=1">' + MARKE;
 
 (async () => {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-  const page = await b.newPage({ viewport: { width: 390, height: 900 } });
+  const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 900 } });
   const seitenFehler = [];
   page.on('pageerror', e => seitenFehler.push('PAGEERROR: ' + e.message.slice(0, 160)));
   /* Schriften und die zwei Bilder von der Hauptseite abklemmen: der

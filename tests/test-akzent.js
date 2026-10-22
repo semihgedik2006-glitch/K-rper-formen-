@@ -208,7 +208,7 @@ async function messen(p) {
 
   for (const modus of ['dark', 'light']) {
     console.log('\n══ ' + (modus === 'dark' ? 'Dunkler' : 'Heller') + ' Modus ══');
-    const p = await b.newPage({ viewport: { width: 390, height: 900 } });
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 900 } });
     p.on('pageerror', e => fehler.push(e.message.slice(0, 160)));
     await p.route('**://www.gstatic.com/**', r => r.abort());
     await p.addInitScript((m) => {
