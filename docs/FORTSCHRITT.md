@@ -18090,3 +18090,147 @@ geben soll, falls die Gefühle der Kugel jemandem im Team zu viel sind:
   - Der Punkt bleibt, und nach dem Neuladen ist es weiter aus.
   - Mit „Zeigen“ freut Formi sich wieder.
 - Gegenprobe mit dem `index.html` von `main`: schlägt an.
+
+## Runde 189 — Die Stempelseite, Schritt 1: Pause oder Feierabend, Stand jetzt, Plan neben Ist (22.10.2026)
+
+Aus dem Betrieb: „erstelle bitte noch eine session nur für die stempel
+seite auch die müssen wir auch sehr viel verbessern das sie so wie
+crewmeister funktioniert am besten". Erst Plan und Rückfragen (neuer
+Bereich), dann gebaut. Die Antworten auf die fünf Rückfragen:
+
+| Frage | Antwort |
+|---|---|
+| Soll aus dem Schichtplan plus Vertragsstunden fürs Konto? | „JA" |
+| Pausen: nur warnen oder wie Crewmeister auffüllen? | „genau wie bei crewmeister" |
+| Korrekturanträge: wer bestätigt? | „nur geschäftsführung" |
+| Stand an den Kacheln am Terminal weg? | „ja" |
+| Lohnbüro: Excel/CSV oder DATEV? | „mach beides" |
+
+Diese Runde ist Schritt 1 von fünf (siehe `docs/ZEITERFASSUNG-PLAN.md`,
+Nachtrag 22.10.). Pausenregel, Korrekturanträge, Stundenkonto mit
+Monatsabschluss und die Exporte folgen.
+
+**Crewmeister: was belegt ist und was nicht.** Die Seiten von
+crewmeister.com, das Hilfe-Center und der Play Store waren aus dieser
+Umgebung gesperrt (Proxy, 403). Was ich über Crewmeister weiss, stammt aus
+Zusammenfassungen der Websuche, nicht aus dem Wortlaut der Seiten oder aus
+Bildschirmfotos. Belegt in diesen Zusammenfassungen: Startseite mit einem
+Stempelknopf, nach dem Kommen „Pause" und Stopp; Pausenregel als
+Auffüllen auf das gesetzliche Mindestmass; Zeitkonto = Ist minus Soll;
+Live-Übersicht; Terminal mit PIN. Nicht gefunden: Warnungen bei 10 h
+und 11 h Ruhezeit, ein Korrekturantrag mit Verlauf, ein gesperrter
+Monatsabschluss.
+
+**Der wichtigste Fund stand im eigenen Server.** `naechsterSchritt()`
+kannte nur kommen → pause → zurueck → pause → … **Einen Feierabend gab es
+am Terminal und am Handy nicht.** Jeder Tag endete mit „Feierabend fehlt",
+bis die Leitung ihn nachtrug. Kein Test hat das gesehen, weil jeder Test
+genau diesen Ablauf als richtig festhielt.
+
+- `stempeln` und `handyStempeln` nehmen jetzt `art`. Der Server prüft, ob
+  der Schritt gerade passt (`erlaubteSchritte`): nach Kommen Pause oder
+  Feierabend, in der Pause Zurück oder Feierabend. Was nicht passt, wird
+  abgewiesen, mit dem Satz, was dran ist — und es entsteht kein Stempel.
+- **Ohne `art` bleibt es beim alten Ablauf.** Ein Tablet, das die alte
+  Seite noch im Speicher hat, stempelt weiter wie bisher, bis es neu lädt.
+- Ein als ungültig markierter Stempel zählt beim „was ist dran" nicht
+  mehr mit. Vorher hätte ein stornierter Feierabend den nächsten Schritt
+  trotzdem auf „Kommen" gesetzt.
+
+**Terminal: der Stand steht erst nach der PIN da.**
+- Neue Funktion `stempelStand`: dieselben drei Schlösser wie `stempeln`
+  (Gerät, Person, PIN — mit derselben Bremse bei Fehlversuchen). Die drei
+  Prüfungen stehen jetzt einmal in `terminalUndPinPruefen`; eine zweite
+  Abschrift wäre die Stelle, an der eine Verschärfung nur auf einer Seite
+  ankommt. `test-zeitpin` liest den Text nur noch MIT dieser Hilfe und nur,
+  wenn `stempeln` sie aufruft.
+- Ablauf: Name antippen → PIN → „Weiter" → „Im Dienst seit 09:45 · heute
+  5:20 h" und die passenden Knöpfe (72 px hoch). Nach 30 Sekunden ohne
+  Tipp schliesst sich die Anzeige von selbst.
+- **Ein zweiter Grund, beim Nachlesen gefunden:** das Terminal fragte
+  `zeiten` des ganzen Studios ab, um „im Dienst" an die Kacheln zu
+  schreiben. Ein Terminal ist ein normales Mitarbeiter-Konto, und
+  `zeiten` darf es nur für sich selbst lesen. Die Kacheln zeigten in der
+  Produktion deshalb vermutlich bei allen „noch nicht da". **Nicht
+  nachgewiesen** — das echte Firebase lädt hier nicht; der Beleg ist die
+  Regel. Die Abfrage ist weg.
+- **Ohne Netz** gibt es keinen Stand. Dann stehen die Knöpfe zum zuletzt
+  in dieser Sitzung bekannten Stand da, sonst alle vier. Der gewählte
+  Schritt wird mit gemerkt und beim Nachreichen vom Server geprüft; was
+  nicht passt, steht oben als „Nicht gespeichert".
+
+**Heute → Ich → „Zeiten" (neuer Reiter).**
+- Oben „Jetzt": Stand, heute gearbeitet, laut Plan, die heutige Schicht.
+  Mit Handy-Freigabe darunter Code-Feld und die Knöpfe, die gerade passen.
+  Ohne Freigabe der Satz, dass am Terminal gestempelt wird.
+- „Diese Woche": sieben Tage, Plan neben Ist, Abweichung gegen den Plan.
+- Daneben „Meine Zeiten" (Monat) wie bisher, jetzt mit „laut Plan bis
+  heute" und der Abweichung je Tag. Die Stempel-PIN liegt mit auf dieser
+  Seite.
+- **Am Rechner zwei Spalten** (420 px + Rest ab 1100 px). Vorher lief die
+  Monatsliste über 1.174 px (1440) bzw. 1.654 px (1920).
+- **„Laut Plan" ist die Schicht abzüglich der Pause nach § 4 ArbZG** (30
+  min über 6 h, 45 über 9 h). Gestempelte Zeit ist Arbeit ohne Pause; ein
+  Plan mit Pause daneben hiesse an jedem langen Tag „30 Minuten zu wenig".
+  Das ist eine Entscheidung, keine Messung — wer Schichten ohne Pause
+  plant, sieht hier 30 Minuten weniger Soll.
+- Abweichungen stehen grau, nicht in Statusfarbe: eine kürzere Schicht
+  ist oft abgesprochen.
+- Die laufende Zeit wird alle 30 Sekunden neu geschrieben, nur solange
+  der Reiter offen ist — keine Animation, kein Takt je Bild.
+
+**Verwaltung → Zeiten: „Jetzt im Studio".** Im Dienst (seit wann, wie
+lange), in der Pause, Feierabend, und „Laut Plan erwartet": die Schicht
+hat begonnen, heute gibt es keinen Stempel. Nicht rot — wer im Stau steht
+oder woanders gestempelt hat, ist kein Fehler. Gelesen wird mit
+`studioKey` und `tag` (zwei Gleichheitsfilter, kein Index), das darf
+genau, wer das Studio leitet.
+
+**Schnellzugriff „Meine Zeiten"** hiess intern `ich:daten`. Er heisst jetzt
+`ich:zeiten`; wer ihn gewählt hatte, wird beim Lesen umgeschrieben, sonst
+wäre er stumm verschwunden. `ich:daten` gibt es weiter als „Meine Daten"
+(Nachweise, Stammdaten, Auskunft) — vier ältere Neuigkeiten zeigen dorthin.
+
+**Zwei Mängel, die der neue Test fand und die vorher schon da waren:**
+- Die Monatspfeile `‹ Heute ›` trafen 38 × 38 (Meine Zeiten und Kalender).
+  Jetzt 44.
+- Die Reiter Woche/Kalender/… trafen am Handy nur 41–43 px hoch: die
+  unsichtbar vergrösserte Trefferfläche der Unternavigation (`::after`,
+  5,5 px) lag über ihrer Oberkante. 6 px Abstand darüber.
+
+**Ein Test, der vorher stumm übersprungen hat:** `test-offline`, Teil 3,
+suchte den Raum `g-ich`, den es seit Runde 184 nicht mehr gibt — `if (g)`
+liess ihn still durch. Jetzt geht er über Heute → Ich → Zeiten.
+
+**Geprüft**
+- `tests/rules/stempel-schritte.test.js` (neu, 28, Emulator, Funktionen
+  ausgeführt). Gegenprobe: `naechsterSchritt` statt `schrittWaehlen` →
+  12 rot.
+- `tests/test-stempelseite.js` (neu, 114): Ablauf am Handy, Rechenkern,
+  Spalten und Trefferflächen bei 320/390/430/820/1280/1440/1920 in
+  „normal" und „kompakt", Terminal nach der PIN, „Jetzt im Studio".
+  Gegenproben, jede einzeln: nur ein Knopf statt zwei → 2 rot (der Lauf
+  bricht danach ab, weil der Feierabend-Knopf fehlt); Zwei-Spalten-Regel
+  aus → 3 rot; Pfeile wieder 38 px → rot (gesehen bei 320–820 px, je
+  „normal" und „kompakt"; zusammen mit der Spalten-Gegenprobe gelaufen).
+- Angepasst, nichts gelockert: `test-terminal` (Stand an der Kachel ist
+  jetzt der Fehler; Fehlschlag-Meldung über MutationObserver, weil eine
+  Aufgaben-Erinnerung sie überschrieb), `test-zeitpin`, `test-offline`,
+  `test-demo`, `test-meine-zeiten`, `test-handy-stempeln` (+ `art`),
+  `test-block-a`. **`test-mein-bereich` erwartet jetzt vier Reiter statt
+  drei** — mit dem Zitat aus dem Betrieb im Test; die Zahl bleibt genau.
+
+**Gesamtdurchlauf** (`tests/alle.sh`): 174 grün, 12 rot. Jeder rote
+gegen `origin/main` nachgemessen (zweite Arbeitskopie, Port 8766):
+- auch auf main rot: test-block-d, test-formi-verdeckt, test-gehirn
+  (Arbeit je Bild 10,3 ms beim Denken), test-navigation (2,28
+  Bildschirme), test-neu-design, test-p1-aufgaben, test-p4-seitenleiste,
+  test-startseite-putz, test-team-woche — dieselben Meldungen wie hier.
+- einzeln grün, im langen Lauf nur über die Zeit: test-pc-durchsicht (auf
+  main grün, hier einzeln 44 Zusicherungen grün), test-zwischenspeicher,
+  test-video-hochladen.
+Keiner davon berührt Stempeln oder Zeiten.
+
+**Nicht testbar hier:** der Anmeldeweg und das echte Firebase-SDK (Proxy).
+Ob ein Terminal in der Produktion bisher wirklich „noch nicht da" zeigte,
+ist nicht gemessen.
