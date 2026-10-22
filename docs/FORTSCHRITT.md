@@ -19768,6 +19768,18 @@ vier Minuten und lief im Gesamtdurchlauf in die 240-Sekunden-Grenze von
 Verwaltung (Anträge, Konto, Abschluss, DATEV, Soll je Wochentag) jetzt in
 `tests/test-zeiten-verwaltung.js`: 127 + 74 = dieselben 201 Prüfungen,
 2:07 und 1:59 Minuten.
+
+### Nachtrag zu Runde 215 — der Kalendertest und die Zeitumstellung
+
+Nach dem Merge von #272 fiel im Deploy der Regeltest — nicht in der
+Zeiterfassung, sondern in `kalender.test.js`: „DTEND ist der Tag danach“.
+Ursache war der Test selbst. Er rechnete „in n Tagen“ als `jetzt + n × 24 h`.
+Um 00:17 Berliner Zeit am 23.10. landen +2 und +3 Tage dann beide auf dem
+25.10., weil in dieser Nacht die Uhr zurückgestellt wird — der Test erwartete
+DTEND am Tag der Frist. Die App rechnet richtig (DTEND 26.10.). Der Test
+zählt jetzt Kalendertage ab dem heutigen Berliner Datum; die Erwartung ist
+unverändert. Gegenprobe: mit der alten Rechnung sind tag(2) und tag(3) zu
+diesem Zeitpunkt gleich, mit der neuen nicht.
 **Nachtrag zu Runde 214 (23.10.2026):** Nach dem Zusammenführen mit Runde
 212/213 (Formi-Welt Stufe 2, Akkretionsscheibe) misst `test-gehirn` bei
 1920 px, CPU ÷4 wieder 9,8 ms je Bild bei offenem Formi (Grenze 8,3; vor

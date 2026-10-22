@@ -64,8 +64,16 @@ function ruf(fn, query) {
   });
 }
 
-const tag = (v) => new Date(Date.now() + v * 86400000)
-  .toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' });
+/* Kalendertage, nicht 24-Stunden-Schritte: in der Nacht vor der
+   Zeitumstellung (25.10.2026, 00:17 Berlin) ergab „jetzt + 3 × 24 h“
+   denselben Tag wie „jetzt + 2 × 24 h“ — der Test erwartete DTEND am
+   Tag der Frist statt am Tag danach. Gerechnet wird darum vom heutigen
+   Berliner Datum aus, Tag für Tag in UTC (dort gibt es keine Umstellung). */
+const tag = (v) => {
+  const [j, m, t] = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' })
+    .split('-').map(Number);
+  return new Date(Date.UTC(j, m - 1, t + v)).toISOString().slice(0, 10);
+};
 
 /* initializeApp ruft das Modul selbst — genau wie in funktionen.test.js.
    Ein zweiter Aufruf hier bricht mit app/duplicate-app ab. Ein EIGENES
