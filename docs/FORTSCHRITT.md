@@ -18414,8 +18414,122 @@ gut!“. Die Antworten auf die Rückfragen:
 - 1280 × 800 mit „Wartet auf deine Entscheidung“: die letzte Zeile des
   Rasters (Demo, Brühl, drei Personen mit Doppelschichten) liegt 31 px
   unter dem Rand. Ohne den Block passt die Woche.
+## Runde 192 — Alte rote Tests: eine gemeinsame Ursache gefunden (22.10.2026)
 
-## Runde 192 — Die Stempelseite, Schritt 2: Pausenregel wie Crewmeister, Hinweise nach dem Arbeitszeitgesetz (22.10.2026)
+**Auftrag:** „mach weiter dann“, nach Runde 187.
+
+**Gebaut:** nichts am Code. Eine Korrektur für das Springen der
+Team-Seite (P-12) war fertig, aber Runde 191 (Schichtplan) hatte dasselbe
+parallel anders gelöst: Sie misst die Lage per offsetTop statt mitten in
+der Einblende-Bewegung. Deren Fassung gilt.
+
+**Gefunden – die gemeinsame Ursache von fünf alten roten Tests:**
+Seit Runde 177 hält `.main` unten Platz für die Formi-Kugel frei, und zwar
+über die ganze Breite. Am Rechner sind das 90 px. Am Handy sind es 146 px:
+72 für die Leiste plus 74 für die Kugel. Ausserhalb der Startseite hält
+der Scrollbereich zusätzlich noch einmal Platz frei (Runde 182), am Handy
+doppelt also.
+- test-p4-seitenleiste: Liste 612 statt ≥ 690 px. Mit Platz nur im
+  Scrollbereich wäre sie grün.
+- test-p1-aufgaben und test-bestellung: Die unterste Zeile liegt im
+  Streifen (Hit-Test 0×0).
+- test-navigation: Die Startseite ist 2,28 Bildschirme lang, ohne den
+  Streifen 1,96. test-neu-design hätte 1 statt 2 Fehler.
+
+Nicht umgebaut, weil es eine Entscheidung des Betriebs ist:
+- Liegt der Platz nur im Scrollbereich (übliches Muster für schwebende
+  Knöpfe), liegt die Kugel beim Lesen über dem „…“ der untersten Zeile.
+  Das widerspricht „achte aber bitte darauf das der neue formi knopf
+  nichts verdeckt“.
+- Die Alternative, am Rechner die Kugel in den Fuss der Seitenleiste zu
+  setzen, ändert, wo Formi „wohnt“.
+- Gefragt am 22.10.2026.
+
+**Startseite am Handy, „Putzplan“ gegen „Zum Übernehmen“:**
+- Bei 430 × 950 (Mitarbeiter) passt nach „Heute“ nur ein Block.
+  „Zum Übernehmen“ steht darüber, deshalb rutscht der Putzplan unter
+  „Ausserdem“ (test-startseite-putz).
+- Vertauscht wird test-startseite-putz grün und test-block-b rot.
+  Selbst ohne Kugel-Streifen passen bei 390 × 844 nicht beide.
+- Gelassen, wie es ist: „Zum Übernehmen“ erscheint nur, wenn jemand eine
+  Schicht abgibt, und ist eilig. An den anderen Tagen steht der Putzplan.
+  Gefragt.
+
+## Runde 193 — Formi am Rechner angedockt (22.10.2026)
+
+**Aus dem Betrieb:** Auf „am Rechner als feste Spalte andocken oder
+schwebend?“ kam „was sinnvoller ist“. In Runde 186 entschieden: ab
+1440 px andocken, in einer eigenen Runde mit Messung. Auf „mach weiter“
+ist das hier gebaut.
+
+**Gebaut**
+- Ist Formi offen und klein (nicht „Groß“), steht ab 1440 px rechts eine
+  Spalte von oben bis unten: 380 px breit, ab 1680 px 420 px.
+- `.app` bekommt rechts genau diese Breite als Abstand. Kopfzeile,
+  Seitenleiste und Inhalt rücken zusammen, statt unter dem Fenster zu
+  liegen.
+- Gesteuert wird über die Klasse `formi-angedockt` am `<body>`. Ob die
+  Breite reicht, entscheidet allein das CSS; es gibt kein Messen und
+  keinen Resize-Horcher.
+- Unter 1440 px bleibt alles wie bisher: schwebend bei 1280, Blatt von
+  unten am Handy.
+
+**Warum**
+- Bei 1440 px deckte das Fenster vorher die Formi-Zeile und halb „Mein
+  Dienst“ zu, während links über 1.100 px Inhalt breiter stand als nötig.
+- Kein Übergang auf die Breite: Hausregel, nichts auf `width`/`padding`
+  animieren. Es springt einmal; die Spalte glitcht herein wie zuvor das
+  Fenster.
+- Ab 1440 und nicht schon bei 1280: Neben Seitenleiste (210 px) und
+  Spalte (380 px) blieben bei 1280 nur 690 px für Liste + Detail.
+
+**Geprüft — `tests/test-formi-angedockt.js` (neu, 32 Zusicherungen)**
+- Lage bei 1440, 1920, 1280, 820 und 390 px: Spalte an der Kante, der
+  Inhalt endet genau dort; zu → volle Breite. Die Knöpfe im Spaltenkopf
+  sind ≥ 44 × 44, frei und im Bild.
+- Wechselt man selbst die Seite, bleibt Formi angedockt.
+- Je Rolle (Chef, Leitung, Mitarbeiter), bei 1440 × 900 und
+  1920 × 1080, normal und kompakt, auf jeder Ansicht und jedem Reiter:
+  - Jedes Bedienelement, das ohne Formi per Hit-Test trifft, trifft auch
+    mit angedocktem Formi und liegt links der Spalte.
+  - Kein neuer Querlauf.
+  - Gemessen: 308 Ansichten/Reiter, 10 664 Bedienelemente, keins neu
+    verdeckt.
+  - 592 trafen schon ohne Formi nicht (zum Beispiel unter der Kopfzeile
+    oder unter einer klebenden Leiste). Das ist nicht von hier, wird aber
+    mitgezählt.
+- Gegenprobe mit dem `index.html` von vorher: Die Lage-Prüfungen
+  schlagen an.
+- Grün: test-formi-kugel, test-formi-lebt, test-knoepfe, test-gestaltung
+  (meldete zuerst einen festen Schatten an der Spalte, jetzt `--e3`),
+  test-quer, test-csp, test-abgeschnitten.
+
+**Nicht geprüft:** echte Bildschirme und Studio-Rechner. Wie es sich
+anfühlt, wenn die Seite beim Öffnen zur Seite springt, lässt sich hier
+nicht beurteilen.
+
+## Runde 194 — Sammelknopf im Leitstand ohne confirm() (Worker 2.17, 22.10.2026)
+
+Aus dem Betrieb: „der knopf im leitstand funktioniert irgendwie nicht das
+ich alles freigeben kann".
+
+**Gefunden:** Die Knöpfe waren da und die Schnittstelle antwortete (live
+geprüft: 9 Gruppen). Der Knopf fragte aber mit `confirm()` nach.
+Eingebettete Browser — vermutlich auch das Browser-Fenster der Claude-App —
+zeigen diesen Dialog nicht und geben still „nein" zurück; dann passiert
+nichts. Nachgestellt im Test: Playwright schliesst Dialoge ebenso, und mit
+2.16 bleibt der Knopf wirkungslos (Gegenprobe: 3 rot).
+
+**Geändert:** Die Rückfrage steht im Knopf („Wirklich alle … übernehmen?
+Nochmal klicken"), wie in der App. Der Worker-Durchlauf bedient den
+Leitstand jetzt im echten Browser gegen den Worker (109/109).
+
+**Im Test selbst gefunden:** Ein Locator nach Text („Knopftest") wartet,
+bis der Text wieder passt — nach dem ersten Klick also bis zum Zurück-
+setzen nach 6 s. Deshalb ein fester Griff auf das Element.
+
+
+## Runde 195 — Die Stempelseite, Schritt 2: Pausenregel wie Crewmeister, Hinweise nach dem Arbeitszeitgesetz (22.10.2026)
 
 Antwort aus dem Betrieb auf „nur warnen oder wie Crewmeister auffüllen?":
 „genau wie bei crewmeister".
