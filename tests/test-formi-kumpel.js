@@ -50,9 +50,19 @@ const blase = (p) => p.evaluate(() => {
   const b = document.getElementById('formiBlase'), k = document.getElementById('formiKugel');
   if (!b || b.hidden || !b.getClientRects().length) return { da: false };
   const r = b.getBoundingClientRect(), kr = k.getBoundingClientRect();
+  /* Runde 198 (aus dem Betrieb, 22.10.2026, „1. a"): am Rechner wohnt die
+     Kugel unten in der Seitenleiste. Dort spricht Formi nach rechts in die
+     Seite hinein – „über der Kugel" heisst seitdem: über ihr ODER neben
+     ihr, und nie auf einem Knopf der Seitenleiste (vorher lag die Blase
+     auf „Tastenkürzel"). */
+  const neben = r.left >= kr.right - 1 && r.bottom <= kr.bottom + 1 && r.bottom >= kr.top;
+  const aufKnopf = [...document.querySelectorAll('#side button')].filter(e => e.getClientRects().length).some(e => {
+    const q = e.getBoundingClientRect();
+    return !(q.bottom <= r.top || q.top >= r.bottom || q.right <= r.left || q.left >= r.right);
+  });
   return { da: true, text: b.textContent, pe: getComputedStyle(b).pointerEvents,
     imBild: r.left >= 0 && r.top >= 0 && r.right <= innerWidth + 0.5 && r.bottom <= innerHeight + 0.5,
-    ueberKugel: r.bottom <= kr.top + 1, w: Math.round(r.width) };
+    ueberKugel: (r.bottom <= kr.top + 1 || neben) && !aufKnopf, aufKnopf, w: Math.round(r.width) };
 });
 
 (async () => {
