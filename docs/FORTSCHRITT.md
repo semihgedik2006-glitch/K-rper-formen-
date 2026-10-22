@@ -18527,3 +18527,85 @@ Leitstand jetzt im echten Browser gegen den Worker (109/109).
 **Im Test selbst gefunden:** Ein Locator nach Text („Knopftest") wartet,
 bis der Text wieder passt — nach dem ersten Klick also bis zum Zurück-
 setzen nach 6 s. Deshalb ein fester Griff auf das Element.
+
+## Runde 195 — Formi hat ein Gesicht: weisses Loch, Teilchen, Atmen (22.10.2026)
+
+**Aus dem Betrieb:** „können wir formi mehr animationen geben oder vlt
+ein kleines gesicht was der maus folgt und reagiert und so im schwarzen
+loch drinen und wenn er sich freut weil eine aufgabe erledigt wurde oder
+so spuckt er partikel aus und wird zu einem weissen loch und danach zu
+einem schwarzen was die partikel wieder einsaugt und vlt auch mehr das
+gefühl das es ein lebendes schwarzes/weisses loch ist“.
+
+**Gebaut**
+- **Gesicht im Loch.**
+  - Statt Pupille mit Lichtpunkt hat das Loch zwei Augen und einen Mund
+    in Weiss. Das ganze Loch folgt der Maus wie bisher.
+  - Ausdrücke:
+    - freut sich: Augen als Halbmonde, breites Lachen;
+    - staunt: grosse Augen, runder Mund;
+    - erschrickt: kleine Augen, der Mund kippt nach unten;
+    - nickt beim Tippen, blinzelt;
+    - schläft: Augen zu, kleiner Mund;
+    - neugierig unter der Maus: grosse Augen.
+- **Weisses Loch.**
+  - Bei Freude (jeder Haken) wird das Loch für 1,5 s weiss und bläht sich
+    auf. Es spuckt 12 Teilchen in den Ringfarben aus, wird wieder schwarz
+    und saugt sie schneller werdend ein; zuletzt schluckt es.
+  - Beim Feiern (Putzplan fertig) sind es 22 Teilchen, weiter hinaus und
+    1,9 s lang.
+  - Das Gesicht wird dabei von selbst schwarz (`mix-blend-mode:
+    difference`), es bleibt also zu sehen.
+- **Atmen.** Alle 7–12 s dreht sich der Ring einmal ganz und langsam
+  (3,6 s), das Loch weitet sich kaum merklich, und drei Krümel fallen
+  spiralig hinein.
+- **Kleinigkeit:** Wer mit dem Mausrad scrollt, dem schaut Formi kurz in
+  die Richtung nach.
+- Der Ring liegt jetzt auf einer eigenen Ebene (`.fk-wirbel`), damit er
+  sich drehen kann, ohne Gesicht und Schatten mitzudrehen.
+
+**Warum so**
+- *Kein `infinite`, trotz „lebend“.*
+  - Das Atmen hängt an einem Zeitgeber wie das Blinzeln.
+  - Eine volle Drehung endet genau dort, wo sie anfing; es bleibt keine
+    Animation stehen.
+  - So gilt die Hausregel „keine Endlos-Animation ohne Grund“ weiter, und
+    zwischen zwei Atemzügen kostet die Kugel nichts.
+- *Teilchen als ein paar `<i>` in der Kugel, nicht als Leinwand.*
+  - Für 12–22 Punkte, die 1,5 s leben, lohnt sich keine Leinwand mit
+    eigener Bildschleife.
+  - Die Punkte bewegen sich nur per `transform`/`opacity`, lassen jeden
+    Tipp durch und sind danach wieder weg.
+- *Nichts davon bei „weniger Bewegung“ oder „Gefühle der Kugel: Aus“*
+  (Runde 188).
+- *Für Durchläufe* gibt es `__formiLebt.uhrenAus()`. Blinzeln und Atmen
+  kommen zu zufälligen Zeiten und hätten jede Prüfung „danach läuft
+  nichts mehr“ zufällig rot machen können.
+
+**Gemessen** (Arbeit je Bild, CPU ÷4, ohne Mausbewegung)
+
+| | Rechner 1440 | Handy 390 |
+|---|---|---|
+| Freude (weisses Loch, 12 Teilchen) | 3,2 ms | 3,0 ms |
+| Feiern (22 Teilchen) | 3,1 ms | 4,4 ms |
+| Atmen (Drehung, 3 Krümel) | 2,0 ms | 1,9 ms |
+
+Die Grenze ist 8,3 ms.
+
+**Geprüft** (`tests/test-formi-lebt.js`, jetzt 102 Zusicherungen)
+- Das Gesicht ist da: zwei Augen, ein Mund.
+- Alle Gefühle laufen endlich und nur auf `transform`/`opacity`; danach
+  läuft nichts mehr, und es liegen keine Teilchen herum.
+- Freude: Das Loch geht von schwarz über weiss zurück zu schwarz. Zwölf
+  Teilchen landen wieder in der Mitte und lassen Tipps durch.
+- Feiern: 22 Teilchen, danach weg.
+- Atmen: eine volle Drehung, endlich, drei Krümel, danach Ruhe.
+- Staunen beim dritten Haken (grosse Augen).
+- „Weniger Bewegung“: keine Teilchen, kein Atmen.
+- Gegenprobe mit dem `index.html` von vorher: schlägt an.
+- Grün: test-formi-kugel, test-knoepfe, test-gestaltung, test-csp,
+  test-uebersicht, test-stil-formi, test-quer, test-abgeschnitten.
+
+**Nicht geprüft:** Wie das Gesicht auf einem echten Handy-Bildschirm
+wirkt (es ist 30 px gross) und ob es im Team als „zu viel“ empfunden wird.
+Dafür gibt es den Schalter aus Runde 188.
