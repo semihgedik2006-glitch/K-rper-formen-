@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-sSdCoBpoGmWVuBQhTNdd86qQG0GJ0UlWX0zpdAwh6kg='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-3ynNaRh8F+Ilwm/yDsS3HcFQ0+2LDPtfViQ1SyyIkIE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -7084,6 +7084,40 @@ body.jv-offen{overflow:hidden}
 /* Eine verstrichene Frist ist ein Status — nur sie bekommt die Farbe. */
 .sch-frist.ueber{color:var(--warm-tx);font-weight:700}
 .sch-faellig-zeile .sch-frist{display:inline}
+/* Pflicht: wer hat was (Runde 207). Am Handy je Person eine Karte, am
+   Rechner eine Tabelle. Statusfarbe nur für ✓ und überfällig. */
+.sch-stand-summe{margin:0 0 var(--s8);font-size:var(--t-sm);color:var(--text-2)}
+.sch-stand-summe b{font-family:var(--font-head);font-size:var(--t-md);color:var(--text)}
+.sch-stand{width:100%;border-collapse:collapse}
+.sch-stand thead{display:none}
+.sch-stand tr{display:block;padding:var(--s10) 0;border-top:1px solid var(--line)}
+.sch-stand tbody tr:first-child{border-top:none}
+.sch-stand th[scope=row]{display:block;text-align:left;font-weight:700;margin-bottom:var(--s6)}
+.sch-stand th[scope=row] span,.sch-zelle small{display:block;font-size:var(--t-2xs);font-weight:400;color:var(--text-3)}
+/* Raster statt flex: der Modulname links kürzt sich, der Stand rechts
+   bleibt ganz — mit flex schob ein langer Name den Stand aus der Zeile. */
+.sch-zelle{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:var(--s10);
+  padding:var(--s2) 0;font-size:var(--t-sm)}
+.sch-zelle::before{content:attr(data-modul);grid-row:1 / span 2;color:var(--text-2);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sch-zelle > span,.sch-zelle > small{grid-column:2;text-align:right;white-space:nowrap}
+.sch-zelle.fertig > span{color:var(--ok-tx);font-weight:700}
+.sch-zelle.ueber > span{color:var(--warm-tx);font-weight:700}
+.sch-stand-tun{display:block;padding-top:var(--s6)}
+.sch-stand-tun .btn{min-height:44px}
+.sch-stand-alles{font-size:var(--t-2xs);color:var(--text-3)}
+.sch-feld-markiert{outline:2px solid var(--accent);outline-offset:2px;border-radius:var(--r-md)}
+@media (min-width:1100px){
+  .sch-stand thead{display:table-header-group}
+  .sch-stand tr{display:table-row;padding:0}
+  .sch-stand th,.sch-stand td{display:table-cell;padding:var(--s8) var(--s10);border-top:1px solid var(--line);
+    text-align:left;vertical-align:middle}
+  .sch-stand thead th{font-size:var(--t-2xs);font-weight:700;color:var(--text-3);border-top:none;max-width:180px}
+  .sch-stand th[scope=row]{margin:0}
+  .sch-zelle::before{content:none}
+  .sch-zelle > span,.sch-zelle > small{text-align:left}
+  .sch-stand-tun{text-align:right;padding-top:var(--s8)}
+}
 .sch-fortschritt .sch-pause{flex:0 0 auto;min-height:44px}
 .sch-inhalt,.sch-tasten{display:none}
 @media (min-width:1100px){
@@ -21170,6 +21204,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-22-schulung-pflicht', datum:'22.10.2026', titel:'Für die Leitung: Pflichtschulungen auf einen Blick', wo:'schulung', punkte:[
+    'Unter Wissen → Schulung → Verwalten gibt es den Reiter „Pflicht": je Person und Pflichtschulung erledigt (✓), offen mit Frist, angefangen oder überfällig. Am Reiter steht, wie viel überfällig ist.',
+    '„Erinnern" neben einer Person gibt eine fertige Nachricht weiter – mit den offenen Schulungen und dem Code. Du schickst sie selbst, per WhatsApp, Mail oder wie du willst.',
+    'Unter „Auswertung" führt „Bearbeiten" bei einer Frage, die im Team oft danebengeht, direkt zu dieser Frage im Modul.'
+  ]},
   { id:'2026-10-22-schichtplaner-fragen', datum:'22.10.2026', titel:'Schichtplaner: neue Vorlage mit allen Fragen', wo:'planer', punkte:[
     'Die Excel-Vorlage im Schichtplaner (Verwaltung → Schichtplaner → „Vorlage herunterladen") hat ein neues Blatt „Fragen": 24 Fragen, nach denen der erste Plan ohne Nacharbeit läuft.',
     'Bei jeder Frage steht, was die App heute annimmt. Passt das, reicht als Antwort „passt".' ] },
@@ -31647,6 +31686,9 @@ function schVerwaltenZeichnen(){
   var fertig=_schAlleLaeufe.filter(function(l){ return l.status==='fertig' && !l.test; });
   var reiter=[
     { id:'tn',   name:'Teilnehmer', zahl:_schTeilnehmer.length },
+    /* Runde 207: die Zahl am Reiter ist, was noch überfällig ist — sie
+       soll auffallen, wenn etwas zu tun ist, und sonst 0 sagen. */
+    { id:'stand', name:'Pflicht',   zahl:schStandDaten().zeilen.reduce(function(n,z){ return n+z.ueber; },0) },
     { id:'mod',  name:'Module',     zahl:schModule().length },
     { id:'aus',  name:'Auswertung', zahl:fertig.length }
   ];
@@ -31679,6 +31721,14 @@ function schVerwaltenZeichnen(){
       '<button class="btn btn-primary btn-sm" id="schTnNeu">Teilnehmer anlegen</button>'+
       '<div id="schCodeBox"></div>'+
       '<div id="schTnListe" style="margin-top:14px"></div>'+
+    '</div>';
+  } else if(_schVwTab==='stand'){
+    inhalt=
+    '<div class="card">'+
+      '<h3 data-ikon="schild">Pflichtschulungen: wer hat was</h3>'+
+      '<p class="hint">Je Person und Pflichtmodul: erledigt, offen mit Frist, angefangen oder überfällig. '+
+        '„Erinnern" gibt eine fertige Nachricht mit dem Code weiter.</p>'+
+      '<div id="schStand2"></div>'+
     '</div>';
   } else if(_schVwTab==='mod'){
     inhalt=
@@ -31721,6 +31771,8 @@ function schVerwaltenZeichnen(){
     schTnListeZeichnen();
     var b=$('schTnNeu');
     if(b) b.addEventListener('click', schTnAnlegen);
+  } else if(_schVwTab==='stand'){
+    schStandZeichnen();
   } else if(_schVwTab==='mod'){
     schModulListeZeichnen();
     var mn=$('schModulNeu');
@@ -31796,9 +31848,136 @@ function schSchwerZeichnen(){
            Durchläufe sieht die Leitung ohnehin mit Namen, das Auffrischen
            soll sie nicht einzeln sehen. */
         (e.an>=SCH_SCHWER_MIN ? ' · Auffrischen: '+e.ax+' von '+e.an+' daneben' : '')+'</span></span>'+
-      '<span class="sch-lauf-zahl">'+Math.round(e.quote*100)+'%</span></div>';
+      '<span class="sch-lauf-zahl">'+Math.round(e.quote*100)+'%</span>'+
+      /* Runde 207: von der Zahl direkt zur Frage — wer sieht, dass sie
+         nicht sitzt, will sie meist umformulieren oder den Hinweis
+         schärfen. */
+      '<button type="button" class="btn btn-ghost btn-sm" data-schschwerbearb="'+esc(e.modul+'#'+e.idx)+'">Bearbeiten</button></div>';
   }).join('');
+  box.querySelectorAll('[data-schschwerbearb]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var k=b.getAttribute('data-schschwerbearb').split('#');
+      schModulFormZeigen(k[0]);
+      var feld=document.querySelector('#schModulForm [data-frage="'+Number(k[1])+'"]');
+      if(feld){
+        feld.classList.add('sch-feld-markiert');
+        requestAnimationFrame(function(){ feld.scrollIntoView({ block:'center' }); });
+      }
+    });
+  });
 }
+/* ── Pflicht: wer hat was (Runde 207) ────────────────────────────────
+   Aus dem Betrieb, 22.10.2026: „aight mach die nächste runde“ — auf den
+   Vorschlag, der Leitung den Stand der Pflichtschulungen auf einen Blick
+   zu geben, mit einem Tipp zum Erinnern.
+
+   Vorher stand das verstreut: je Teilnehmer eine Zeile „Pflicht offen:
+   …“ unter „Teilnehmer“, die Durchläufe unter „Auswertung“. Wer wissen
+   wollte, wer bei „Hygiene“ noch fehlt, las jede Zeile einzeln.
+
+   Jetzt: Personen × Pflichtmodule. Am Rechner eine Tabelle (Breite
+   nutzen), am Handy dieselben Zeilen untereinander, je Person eine
+   Karte. Status in den Statusfarben, und nur da: ✓ grün, überfällig
+   rot; „bis …“ und „angefangen“ neutral. */
+var _schStandFilter='alle';
+function schStandZelle(t, m){
+  var laeufe=_schAlleLaeufe.filter(function(l){ return l.teilnehmer===t.id && l.modul===m.id && !l.test; });
+  var fertig=laeufe.filter(function(l){ return l.status==='fertig' && l.bestanden; })
+    .sort(function(a,b){ return (b.ende||0)-(a.ende||0); })[0];
+  if(fertig){
+    /* Wiederholung fällig (gueltigMonate): zählt wieder als offen —
+       dieselbe Rechnung wie schStand() für die eigene Übersicht. */
+    var bis = m.gueltigMonate ? fertig.ende + m.gueltigMonate*30.4*86400000 : 0;
+    if(!bis || Date.now()<=bis) return { art:'fertig', t:'✓ '+fmtDateTime(fertig.ende).split(' ')[0] };
+    return { art:'ueber', t:'wieder fällig' };
+  }
+  var an=laeufe.filter(function(l){ return l.status==='laeuft' && (l.schritteGesehen||[]).length; })[0];
+  var ft=schFristText(schFristBis(m, t.ts||0));
+  if(ft.ueber) return { art:'ueber', t:'überfällig', zusatz:an ? 'angefangen' : '' };
+  return { art: an ? 'an' : 'offen',
+           t: an ? 'angefangen '+(an.schritteGesehen||[]).length+'/'+((m.schritte||[]).length||1) : (ft.t || 'offen'),
+           zusatz: an && ft.t ? ft.t : '' };
+}
+function schStandDaten(){
+  var module=schModule().filter(function(m){ return m.pflicht; });
+  var leute=_schTeilnehmer.filter(function(t){ return !t.gesperrt; });
+  var zeilen=leute.map(function(t){
+    var zellen=module.map(function(m){ return schStandZelle(t, m); });
+    return { t:t, zellen:zellen,
+      offen:zellen.filter(function(z){ return z.art!=='fertig'; }).length,
+      ueber:zellen.filter(function(z){ return z.art==='ueber'; }).length };
+  });
+  return { module:module, zeilen:zeilen };
+}
+function schStandZeichnen(){
+  var box=$('schStand2'); if(!box) return;
+  var d=schStandDaten();
+  if(!d.module.length){ box.innerHTML='<p class="hint">Es gibt kein Pflichtmodul.</p>'; return; }
+  if(!d.zeilen.length){ box.innerHTML='<p class="hint">Noch niemand als Teilnehmer angelegt — unter „Teilnehmer“.</p>'; return; }
+  var gesamt=d.zeilen.length*d.module.length;
+  var erledigt=d.zeilen.reduce(function(s,z){ return s+(d.module.length-z.offen); },0);
+  var ueber=d.zeilen.reduce(function(s,z){ return s+z.ueber; },0);
+  var liste=d.zeilen.filter(function(z){
+    return _schStandFilter==='alle' || (_schStandFilter==='ueber' ? z.ueber>0 : z.offen>0);
+  }).sort(function(a,b){ return (b.ueber-a.ueber) || (b.offen-a.offen) ||
+    String(a.t.name||'').localeCompare(String(b.t.name||'')); });
+  var filter=[['alle','Alle'],['offen','Offen'],['ueber','Überfällig']];
+  box.innerHTML=
+    '<p class="sch-stand-summe"><b>'+erledigt+' von '+gesamt+' erledigt</b>'+
+      (ueber ? ' · <span class="sch-frist ueber">'+ueber+' überfällig</span>' : '')+'</p>'+
+    '<div class="chip-row" style="margin-bottom:10px">'+filter.map(function(f){
+      return '<button type="button" class="chip'+(_schStandFilter===f[0]?' an':'')+'" data-schstandfilter="'+f[0]+'">'+f[1]+'</button>';
+    }).join('')+'</div>'+
+    (liste.length
+      ? '<table class="sch-stand"><thead><tr><th scope="col">Person</th>'+
+          d.module.map(function(m){ return '<th scope="col">'+esc(m.titel||'')+'</th>'; }).join('')+
+          '<th scope="col"><span class="nur-vorlesen">Erinnern</span></th></tr></thead><tbody>'+
+        liste.map(function(z){
+          return '<tr data-schstand="'+esc(z.t.id)+'"><th scope="row">'+esc(z.t.name||'')+
+              (z.t.uid ? '' : '<span>ohne Zugang</span>')+'</th>'+
+            z.zellen.map(function(c, i){
+              return '<td class="sch-zelle '+c.art+'" data-modul="'+esc(d.module[i].titel||'')+'">'+
+                '<span>'+esc(c.t)+'</span>'+(c.zusatz ? '<small>'+esc(c.zusatz)+'</small>' : '')+'</td>';
+            }).join('')+
+            '<td class="sch-stand-tun">'+(z.offen
+              ? '<button type="button" class="btn btn-ghost btn-sm" data-scherinnern="'+esc(z.t.id)+'">Erinnern</button>'
+              : '<span class="sch-stand-alles">alles erledigt</span>')+'</td></tr>';
+        }).join('')+'</tbody></table>'
+      : '<p class="hint">Niemand in dieser Auswahl.</p>');
+  box.querySelectorAll('[data-schstandfilter]').forEach(function(b){
+    b.addEventListener('click', function(){ _schStandFilter=b.getAttribute('data-schstandfilter'); schStandZeichnen(); tick(6); });
+  });
+  box.querySelectorAll('[data-scherinnern]').forEach(function(b){
+    b.addEventListener('click', function(){ schErinnern(b.getAttribute('data-scherinnern')); });
+  });
+}
+/* „Erinnern" reicht eine fertige Nachricht weiter — dasselbe Muster wie
+   „Weitergeben" beim Code: über das, was das Gerät kennt (Nachrichten,
+   Mail), sonst in die Zwischenablage. Die App verschickt selbst nichts:
+   Leute ohne Zugang erreicht sie gar nicht, und wer erinnert wird, soll
+   wissen, von wem. Der Code steht dabei — die Person braucht ihn zum
+   Anfangen, und lesen darf ihn die Leitung ohnehin. */
+function schErinnernText(t){
+  var offen=schModule().filter(function(m){ return m.pflicht; }).map(function(m){
+    var z=schStandZelle(t, m);
+    if(z.art==='fertig') return null;
+    return '„'+(m.titel||'')+'“'+(z.art==='ueber' ? ' (überfällig)' : z.zusatz ? ' ('+z.zusatz+')' : z.art==='offen' && z.t!=='offen' ? ' ('+z.t+')' : '');
+  }).filter(Boolean);
+  var vorname=String(t.name||'').split(' ')[0];
+  return 'Hallo '+vorname+', bitte denk an '+(offen.length===1 ? 'die Pflichtschulung ' : 'die Pflichtschulungen ')+
+    offen.join(', ')+'. Du findest sie in StudioChat unter Wissen → Schulung'+
+    (t.code ? ', dein Code ist '+t.code : '')+'. Danke!';
+}
+function schErinnern(id){
+  var t=_schTeilnehmer.filter(function(x){ return x.id===id; })[0]; if(!t) return;
+  var text=schErinnernText(t);
+  if(navigator.share){
+    navigator.share({ title:'Pflichtschulung', text:text }).catch(function(){});
+  } else {
+    copyText(text).then(function(){ toast('Erinnerung kopiert — jetzt einfügen und senden ✓'); });
+  }
+}
+
 function schTnSelectBauen(){
   var sel=$('schTnKonto'); if(!sel) return;
   var leute=(typeof _employees!=='undefined' && _employees) ? _employees : [];
