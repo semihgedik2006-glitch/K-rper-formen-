@@ -148,10 +148,10 @@ const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel
     await zu(p);
   }
 
-  console.log('\n── 4b Reiter kosten auf „Heute" keine Zeile ──');
+  console.log('\n── 4b Reiter am Rechner in der Kopfzeile ──');
   /* „am besten steht alles auf einer Seite ohne dass man scrollen muss":
-     Am Rechner stehen die Reiter in der Kopfzeile, am Handy fehlen sie
-     auf „Heute" – „Ich" bleibt über ☰ zwei Tipps entfernt. */
+     Am Rechner stehen die Reiter in der Kopfzeile und kosten keine
+     eigene Zeile. Am Handy ist dafür kein Platz; dort bleibt die Zeile. */
   for (const [w, h, touch] of [[1280, 800, false], [1440, 900, false], [1920, 1080, false], [390, 844, true], [320, 568, true]]) {
     const p = await oeffne(b, w, h, { touch });
     const m = await p.evaluate(() => {
@@ -162,13 +162,11 @@ const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel
                scrollOben: Math.round(sa.top), kopfUnten: Math.round(kopf.bottom) };
     });
     if (w > 820) pruefe(w + ' px: Reiter stehen in der Kopfzeile, die Liste beginnt direkt darunter', m.zeile && m.inKopf && m.scrollOben <= m.kopfUnten + 2, JSON.stringify(m));
-    else pruefe(w + ' px: auf „Heute" keine Reiterzeile', !m.zeile && m.scrollOben <= m.kopfUnten + 2, JSON.stringify(m));
-    if (w <= 820) {
-      await p.click('#bereichKopf'); await p.waitForTimeout(400);
-      await p.evaluate(() => document.querySelector('#allesLade [data-alles="ich"]').click()); await p.waitForTimeout(500);
-      const v = await p.evaluate(() => ({ ansicht: (document.querySelector('.view.show') || {}).id,
-        reiter: [...document.querySelectorAll('#subnav [data-subview]')].filter(e => e.getClientRects().length).map(e => e.dataset.subview) }));
-      pruefe(w + ' px: „Ich" über ☰ in zwei Tipps, dort stehen die Reiter wieder', v.ansicht === 'view-ich' && v.reiter.join('|') === 'home|ich|persoenlich', JSON.stringify(v));
+    else {
+      /* Am Handy bleibt die Zeile: „Ich" (Stempeln, Zeiten) ist das
+         tägliche Ziel und soll einen Tipp entfernt sein, nicht hinter ☰. */
+      const v = await p.evaluate(() => [...document.querySelectorAll('#subnav [data-subview]')].filter(e => e.getClientRects().length).map(e => e.dataset.subview));
+      pruefe(w + ' px: auf „Heute" ist „Ich" einen Tipp entfernt', m.zeile && v.join('|') === 'home|ich|persoenlich', JSON.stringify(v));
     }
     await zu(p);
   }

@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-NcgROafDvcIVU+FFqu3ORU/sBzaKS1yKJYwc+lwu0Sg='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-engiZZsOb3zO7nEdJGQDBatQGWjyOs5mVd29praTQKM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -20253,7 +20253,7 @@ var NEUIGKEITEN = [
     'Links am Rechner und unten am Handy stehen jetzt dieselben fünf Räume: Heute, Studio, Plan, Nachrichten, Wissen. Wer leitet, hat dazu die Verwaltung. Weggefallen ist nichts, es ist nur einsortiert.',
     'Putzplan, Aufgaben, Material, Geräte und Probetraining liegen unter „Studio" als Reiter nebeneinander. „Ich" und „Persönlich" findest du unter „Heute", Dokumente, Schulung und Hilfe unter „Wissen", Chats, Direktnachrichten und Infos unter „Nachrichten".',
     'Am Rechner stehen die Reiter jetzt oben neben dem Seitentitel statt in einer eigenen Zeile – so bleibt mehr Platz für die Liste. Deine Schnellzugriffe stehen weiter links unter den Räumen.',
-    'Etwas nicht gefunden? Der Knopf ☰ neben dem Seitentitel zeigt alles auf einen Blick, jedes Ziel ist zwei Tipps entfernt. Der Bericht an dich liegt jetzt unter Verwaltung → System → Bericht.' ] },
+    'Etwas nicht gefunden? Die drei Striche links neben dem Seitentitel zeigen alles auf einen Blick, jedes Ziel ist zwei Tipps entfernt. Der Bericht an dich liegt jetzt unter Verwaltung → System → Bericht.' ] },
   { id:'2026-10-22-formi-nur-kugel', datum:'22.10.2026', titel:'Formi gibt es jetzt nur noch als Kugel', wo:'home', punkte:[
     'Der runde Formi-Knopf oben auf der Startseite (und oben am Rechner) ist weg – Formi öffnest du über die bunte Kugel unten rechts, am Rechner auch mit der Taste J.',
     'Die Kugel verdeckt nichts mehr: Am Ende jeder Seite ist unten Platz, und wenn unten „Rückgängig" oder ein Hinweis erscheint, rutscht sie kurz nach oben.'
@@ -21703,14 +21703,11 @@ function buildSubNav(){
   var bar=$('subnav'); if(!bar) return;
   var g=groupOfView(currentView);
   var views=sichtbareViews(g);
-  /* Am Handy auf „Heute" keine Reiterzeile (Runde 183). Gemessen: sie
-     nahm der Startseite 40 px – bei 390 px stand ein Block weniger im
-     Bild, bei 320 px passte sie gar nicht mehr. „Am besten steht alles
-     auf einer Seite ohne dass man scrollen muss" geht hier vor. „Ich"
-     und „Persönlich" liegen über ☰ zwei Tipps entfernt, wie vor den
-     fünf Räumen auch; wer dort ist, sieht die Reiter wieder. Am Rechner
-     stehen sie ohnehin in der Kopfzeile und kosten nichts. */
-  if(currentView==='home' && !(_reiterPc && _reiterPc.matches && layoutNeu())) views=[];
+  /* Am Handy bleibt die Reiterzeile auch auf „Heute" (Runde 183). Ein
+     Versuch ohne sie sparte 40 px, versteckte aber „Ich" hinter ☰ –
+     und genau dort stempelt man, sieht seine Zeiten und Notizen. Sechs
+     Durchläufe (test-handy-stempeln, test-kalender, test-notizen …)
+     fielen darüber. Ein Tipp für das tägliche Ziel geht vor 40 px. */
   if(views.length<2){
     bar.innerHTML=''; bar.style.display='none';
     /* Die ganze Zeile weg, nicht nur die Leiste — sonst bliebe „Alle"

@@ -146,14 +146,21 @@ async function seite(b, stub, prefs) {
 
     // ══ 3./4. Was schickt er, und sperrt er sich? ══
     const klick = await p.evaluate(async () => {
-      window.__aufruf = null;
+      /* Eigene Attrappe für sendTestReport: Unter Last kam ein später
+         sheetsPush („putzplan") NACH dem Klick an und überschrieb
+         window.__aufruf (wie in test-bericht, 22.10.2026). Geprüft wird
+         dasselbe, nur ohne fremden Aufruf in der Messung. */
+      window.__antwort = window.__antwort || {};
+      window.__antwort.sendTestReport = (d) => { window.__berichtAufruf = { name: 'sendTestReport', data: d };
+        return Promise.resolve({ data: { ok: true, empfaenger: 1, tage: (d && d.tage) || 30 } }); };
+      window.__berichtAufruf = null;
       const k = document.getElementById('repTestSend');
       k.click();
       // Sofort ein zweites Mal: darf NICHT durchgehen
       const gesperrtSofort = k.disabled === true;
       k.click();
       await new Promise(r => setTimeout(r, 900));
-      return { aufruf: window.__aufruf, gesperrtSofort,
+      return { aufruf: window.__berichtAufruf, gesperrtSofort,
         wiederFrei: document.getElementById('repTestSend').disabled !== true,
         note: (document.getElementById('repTestNote') || {}).textContent || '' };
     });
@@ -181,13 +188,20 @@ async function seite(b, stub, prefs) {
     const weg = await zumBericht(p);
     pruefe(!weg.weg, 'WEG (gemerkt): ' + weg.weg);
     const r = await p.evaluate(async () => {
-      window.__aufruf = null;
+      /* Eigene Attrappe für sendTestReport: Unter Last kam ein später
+         sheetsPush („putzplan") NACH dem Klick an und überschrieb
+         window.__aufruf (wie in test-bericht, 22.10.2026). Geprüft wird
+         dasselbe, nur ohne fremden Aufruf in der Messung. */
+      window.__antwort = window.__antwort || {};
+      window.__antwort.sendTestReport = (d) => { window.__berichtAufruf = { name: 'sendTestReport', data: d };
+        return Promise.resolve({ data: { ok: true, empfaenger: 1, tage: (d && d.tage) || 30 } }); };
+      window.__berichtAufruf = null;
       const sel = document.getElementById('repTestTage');
       const wert = sel ? sel.value : null;
       const k = document.getElementById('repTestSend');
       if (k) k.click();
       await new Promise(r => setTimeout(r, 900));
-      return { wert, aufruf: window.__aufruf };
+      return { wert, aufruf: window.__berichtAufruf };
     });
     console.log('Mit gemerkten 90 Tagen:', JSON.stringify(r));
     pruefe(r.wert === '90',

@@ -17701,10 +17701,13 @@ das Zitat aus dem Betrieb. Dabei kamen zwei echte Rückschritte heraus:
      dem Titel (`subnavPlatzieren`, das Element wird umgehängt, nicht
      kopiert). Dort waren 700 px leer, und das spart die Zeile auf jeder
      Seite, nicht nur auf „Heute“.
-   - Am Handy fehlt die Zeile auf „Heute“; „Ich“ ist über ☰ zwei Tipps
-     entfernt, wie vor dieser Runde auch.
-   - Gemessen: Die Liste beginnt wieder bei 154 px (vorher 194), bei
-     390 px sind es 463 px Höhe wie vor der Runde.
+   - Gemessen am Rechner: Die Liste beginnt wieder bei 154 px statt 194.
+   - Am Handy bleibt die Zeile. Ein Versuch ohne sie auf „Heute“ sparte
+     40 px, versteckte aber „Ich“ hinter ☰. Dort stempelt man, sieht
+     Zeiten und Notizen; sechs Durchläufe fielen darüber. Ein Tipp für
+     das tägliche Ziel geht vor 40 px. Die Handy-Startseite hat damit
+     40 px weniger als vorher (390 px: 423 statt 463). Was nicht mehr
+     passt, steht unter „Ausserdem“ und verschwindet nicht.
    - Trefferflächen der Reiter in der Kopfzeile: 92–146 × 46 px bei
      1280/1440/1920, normal und kompakt (Hit-Test).
 
@@ -17713,8 +17716,9 @@ nachgemessen, nicht gelockert):
 - test-p4-seitenleiste: Liste ≥ 690 px, gemessen 612, alter Stand
   ebenfalls 612.
 - test-navigation: Handy-Startseite höchstens 1,9 Bildschirme; alter
-  Stand 2,1.
-- test-neu-design: Startseite bei 320 × 568.
+  Stand 2,1, jetzt 2,28 (die Reiterzeile, siehe oben).
+- test-neu-design: Startseite bei 320 × 568; vorher 339 px Inhalt in 276
+  Platz, jetzt in 236.
 - test-p1-aufgaben: unterste Zeile bei 1280 × 800 vom Scrollbereich
   abgeschnitten.
 - test-startseite-putz, test-block-d, test-team-woche, test-bestellung,
