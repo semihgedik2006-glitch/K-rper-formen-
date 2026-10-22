@@ -109,11 +109,15 @@ async function oeffne(b, w, h, rolle, dichte) {
   await p.waitForTimeout(3300);
   return p;
 }
-/* Derselbe Weg wie ein Mensch: Ich → Schulung → Verwalten → Module →
-   „Bearbeiten" am ersten Modul. */
+/* Derselbe Weg wie ein Mensch: Wissen → Schulung → Verwalten → Module →
+   „Bearbeiten" am ersten Modul.
+   Runde 184 („fünf Räume“): Die Schulung liegt jetzt unter „Wissen“
+   (g-wissen), neben Dokumenten und Formi. Aus dem Betrieb, 22.10.2026:
+   „das problem mit dem zu viel bleibt immer noch bestehen“, „jede
+   Funktion hat ihren Sinn“ – nichts gestrichen, nur neu geordnet. */
 async function zumEditor(p) {
   await p.evaluate(() => {
-    const k = document.querySelector('.mobnav [data-group="g-ich"]') || document.querySelector('#side [data-group="g-ich"]');
+    const k = document.querySelector('.mobnav [data-group="g-wissen"]') || document.querySelector('#side [data-group="g-wissen"]');
     if (k) k.click();
   });
   await p.waitForTimeout(700);
@@ -165,7 +169,7 @@ const VIDEO = { name: 'Einweisung EMS.mp4', mimeType: 'video/mp4', buffer: Buffe
   console.log('\n── 2. Wo der Knopf steht ──');
   {
     const p = await oeffne(b, 1440, 900, 'chef');
-    pruefe('der Editor ist erreichbar (Ich → Schulung → Verwalten → Module)', await zumEditor(p));
+    pruefe('der Editor ist erreichbar (Wissen → Schulung → Verwalten → Module)', await zumEditor(p));
     await artSetzen(p, 0, 'video');
     pruefe('Video-Schritt: Knopf „Video hochladen" ist da', (await zeile(p, 0)).knopf);
     await artSetzen(p, 0, 'lesen');

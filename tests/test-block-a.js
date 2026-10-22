@@ -128,8 +128,11 @@ async function leiste(p) {
     pruefe('„Meine Zeiten" öffnet „Ich" im Reiter Zeiten', da.ansicht === 'view-ich' && da.reiter === 'daten',
       JSON.stringify(da));
 
-    /* Zurück zur Startseite, Anpassen öffnen. */
-    await p.evaluate(() => [...document.querySelectorAll('.mobnav button')].find(x => /Start/.test(x.textContent)).click());
+    /* Zurück zur Startseite, Anpassen öffnen. Der Knopf heisst seit
+       Runde 184 „Heute" statt „Start" (aus dem Betrieb, 22.10.2026: „das
+       problem mit dem zu viel bleibt immer noch bestehen"; die Raumnamen
+       „passen"). */
+    await p.evaluate(() => [...document.querySelectorAll('.mobnav button')].find(x => /Heute/.test(x.textContent)).click());
     await p.waitForTimeout(600);
     await p.evaluate(() => document.getElementById('schnellAnpassen').click());
     await p.waitForTimeout(500);
@@ -243,7 +246,9 @@ async function leiste(p) {
   console.log('\n── A2: die Hauptaktion in Daumennähe ──');
   {
     const p = await seite(b, 'chef');
-    await p.evaluate(() => [...document.querySelectorAll('.mobnav button')].find(x => /Aufgaben/.test(x.textContent)).click());
+    /* Runde 184: der Raum mit den Aufgaben heisst „Studio" (vorher
+       „Aufgaben"), sein erster Reiter sind weiter die Aufgaben. */
+    await p.evaluate(() => [...document.querySelectorAll('.mobnav button')].find(x => /Studio/.test(x.textContent)).click());
     await p.waitForTimeout(800);
     const k = await p.evaluate((TREFFER_SRC) => {
       const TREFFER = eval(TREFFER_SRC);
@@ -303,9 +308,11 @@ async function leiste(p) {
 
     /* „Verwalten" in der Schulung wandert nicht mit. */
     await p.evaluate(() => { document.querySelectorAll('.show[id$="Modal"]').forEach(m => m.classList.remove('show')); });
-    await p.evaluate(() => [...document.querySelectorAll('.mobnav button')].find(x => /Alles/.test(x.textContent)).click());
+    /* Seit Runde 184 steht „Alles" nicht mehr unten in der Leiste: der
+       Weg ist der ☰-Griff #bereichKopf, er öffnet die Schublade. */
+    await p.evaluate(() => document.getElementById('bereichKopf').click());
     await p.waitForTimeout(400);
-    await p.evaluate(() => document.querySelector('#allesSeite [data-alles="schulung"]').click());
+    await p.evaluate(() => document.querySelector('#allesLadeInhalt [data-alles="schulung"]').click());
     await p.waitForTimeout(800);
     const sch = await p.evaluate(() => {
       const v = document.getElementById('schVerwaltenBtn');
@@ -323,7 +330,8 @@ async function leiste(p) {
      weiter dasselbe: nicht unten in der Daumenzone, sichtbar, oben. */
   {
     const p = await seite(b, 'chef', { w: 1100, h: 900 });
-    await p.evaluate(() => [...document.querySelectorAll('.side button, .side a')].find(x => /Aufgaben/.test(x.textContent)).click());
+    // Runde 184: in der Seitenleiste heisst der Raum „Studio" (vorher „Aufgaben").
+    await p.evaluate(() => [...document.querySelectorAll('.side button, .side a')].find(x => /Studio/.test(x.textContent)).click());
     await p.waitForTimeout(800);
     const r = await p.evaluate(() => {
       const b = document.getElementById('todoNew');
@@ -340,9 +348,10 @@ async function leiste(p) {
   console.log('\n── A3: Bento in der Verwaltung ──');
   {
     const p = await seite(b, 'chef');
-    await p.evaluate(() => [...document.querySelectorAll('.mobnav button')].find(x => /Alles/.test(x.textContent)).click());
+    // Runde 184: „Alles" über den ☰-Griff, nicht mehr über die Leiste.
+    await p.evaluate(() => document.getElementById('bereichKopf').click());
     await p.waitForTimeout(400);
-    await p.evaluate(() => document.querySelector('#allesSeite [data-alles="chef"][data-al-cgo="ueberblick"]').click());
+    await p.evaluate(() => document.querySelector('#allesLadeInhalt [data-alles="chef"][data-al-cgo="ueberblick"]').click());
     await p.waitForTimeout(1000);
     await p.evaluate(() => {
       const k = document.getElementById('studioGrid').closest('.card');

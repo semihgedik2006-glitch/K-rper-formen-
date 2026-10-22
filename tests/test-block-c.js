@@ -43,7 +43,11 @@ async function seite(b, rolle, ruhig) {
   return p;
 }
 /* Wie ein Mensch: erst unten in der Leiste, sonst über „Alles". Seit
-   Runde 103, P5 liegen die Nachrichten unter „Alles". */
+   Runde 103, P5 lagen die Nachrichten unter „Alles"; seit Runde 184
+   („fünf Räume", aus dem Betrieb 22.10.2026: „das problem mit dem zu
+   viel bleibt immer noch bestehen") stehen sie wieder unten, die
+   Aufgaben sind der erste Reiter von „Studio", und „Alles" ist kein
+   Leistenknopf mehr, sondern die Schublade hinter dem ☰-Griff. */
 async function nav(p, wort) {
   const direkt = await p.evaluate(w => {
     const k = [...document.querySelectorAll('.mobnav button')].find(x => x.textContent.includes(w));
@@ -51,10 +55,10 @@ async function nav(p, wort) {
     return !!k;
   }, wort);
   if (!direkt) {
-    await p.evaluate(() => [...document.querySelectorAll('.mobnav button')].find(x => x.textContent.includes('Alles')).click());
+    await p.evaluate(() => document.getElementById('bereichKopf').click());
     await p.waitForTimeout(600);
-    await p.evaluate(w => (w === 'Nachrichten' ? document.querySelector('#allesSeite [data-alles="chat"]')
-      : [...document.querySelectorAll('#allesSeite [data-alles]')].find(x => x.textContent.includes(w))).click(), wort);
+    await p.evaluate(w => (w === 'Nachrichten' ? document.querySelector('#allesLadeInhalt [data-alles="chat"]')
+      : [...document.querySelectorAll('#allesLadeInhalt [data-alles]')].find(x => x.textContent.includes(w))).click(), wort);
   }
   await p.waitForTimeout(900);
 }
@@ -67,7 +71,7 @@ const FEDERN = () => document.getAnimations().filter(a => a.animationName === 'c
   console.log('\n── C1: Abhaken ──');
   {
     const p = await seite(b, 'chef');
-    await nav(p, 'Aufgaben');
+    await nav(p, 'Studio');
     const beimOeffnen = await p.evaluate(() => ({
       erledigt: document.querySelectorAll('#todoArea .todo.done').length,
       federn: document.getAnimations().filter(a => a.animationName === 'checkPop').length
@@ -113,7 +117,7 @@ const FEDERN = () => document.getAnimations().filter(a => a.animationName === 'c
   /* ══ C1: Putzplan ══ */
   {
     const p = await seite(b, 'mitarbeiter');
-    await nav(p, 'Aufgaben');
+    await nav(p, 'Studio');
     await p.evaluate(() => { const s = document.querySelector('[data-subview="putzplan"]'); if (s) s.click(); });
     await p.waitForTimeout(900);
     const r = await p.evaluate(async () => {
@@ -149,7 +153,7 @@ const FEDERN = () => document.getAnimations().filter(a => a.animationName === 'c
     if (!ruhig) pruefe('der Senden-Knopf federt einmal', r.anim === 1, JSON.stringify(r));
     else pruefe('GEGENPROBE „weniger Bewegung": der Senden-Knopf bleibt ruhig', r.anim === 0, JSON.stringify(r));
     if (ruhig) {
-      await nav(p, 'Aufgaben');
+      await nav(p, 'Studio');
       const a = await p.evaluate(async () => {
         const node = document.querySelector('#todoArea .todo:not(.done)');
         node.querySelector('.check').click();

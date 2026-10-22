@@ -53,7 +53,11 @@ async function oeffne(b, w, h, rolle, vorher) {
 }
 
 /* Welche Rahmen-Elemente ändern beim Wechsel Start → Putzplan ihre
-   Farbe, und liegen sie nach 60 ms schon zwischen alt und neu? */
+   Farbe, und liegen sie nach 60 ms schon zwischen alt und neu?
+   Seit Runde 184 („fünf Räume", aus dem Betrieb 22.10.2026: „das problem
+   mit dem zu viel bleibt immer noch bestehen") gibt es keinen eigenen
+   Putzplan-Knopf mehr; er ist ein Reiter unter „Studio". Derselbe
+   Wechsel (Blau nach Orange) geht jetzt über den Knopf „Studio". */
 const GLEITEN = async () => {
   const props = ['color', 'background-color', 'background-image', 'border-top-color', 'box-shadow', 'fill', 'stroke'];
   const els = [...document.querySelectorAll('.side, .side *, .topbar, .topbar *, .demo-bar, .demo-bar *, .mobnav, .mobnav *')]
@@ -61,7 +65,7 @@ const GLEITEN = async () => {
   const f = () => els.map(e => { const c = getComputedStyle(e); return props.map(k => c.getPropertyValue(k)).join('|'); });
   const name = (e) => e.tagName.toLowerCase() + (e.id ? '#' + e.id : '') + (typeof e.className === 'string' && e.className ? '.' + e.className.trim().split(/\s+/)[0] : '');
   const vor = f();
-  [...document.querySelectorAll('[data-group="g-putz"]')].find(x => x.getClientRects().length).click();
+  [...document.querySelectorAll('[data-group="g-arbeit"]')].find(x => x.getClientRects().length).click();
   /* Nicht auf die Uhr warten: unter Last (Gesamtdurchlauf mit zwei
      Hälften nebeneinander) war der Übergang nach „60 ms" schon vorbei,
      weil der Klick selbst länger brauchte — der Durchlauf fiel, einzeln
@@ -89,7 +93,12 @@ const GLEITEN = async () => {
     pruefe(w + ' px: ' + r.gleitet.length + ' Elemente gleiten, keines springt',
       r.gleitet.length >= 20 && r.springt.length === 0, 'springt: ' + r.springt.join(', '));
     if (w === 1440) {
-      pruefe('„Bericht" gleitet mit (der Verlauf, den test-akzent misst)', r.gleitet.some(x => /tbBericht/.test(x)), r.gleitet.join(', '));
+      /* Bis Runde 179 stand hier „Bericht" (#tbBericht). Seit Runde 184
+         ist der Knopf oben überall verborgen — der Bericht steht unter
+         Verwaltung → Berichte —, und test-akzent misst an der ersten
+         gleitenden Fläche, die im Bild steht: in der Demo die Leiste
+         #demoBar. Die muss mitgleiten. */
+      pruefe('die Demo-Leiste gleitet mit (die Fläche, die test-akzent misst)', r.gleitet.some(x => /#demoBar/.test(x)), r.gleitet.join(', '));
       /* GEGENPROBE: die neuen Übergänge weg — dann muss die Messung
          Springer finden, sonst misst sie nichts. */
       await p.addStyleTag({ content: '.tb-bericht,.tb-live,.demo-bar,.tb-brand b,body .topbar .icon-btn.tb-bericht{transition:none!important}' });

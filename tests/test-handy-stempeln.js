@@ -154,8 +154,14 @@ async function starten(errs, frei, codeFehler, adresse) {
   return { b, page };
 }
 
+/* „Ich" war bis Runde 179 ein eigener Knopf unten (g-ich). Seit Runde
+   180 („fünf Räume", aus dem Betrieb 22.10.2026: „das problem mit dem zu
+   viel bleibt immer noch bestehen") ist es ein Reiter unter „Heute":
+   erst der Raum, dann der Reiter. */
 async function zurIchKarte(page) {
-  await page.evaluate(() => document.querySelector('.mobnav [data-group="g-ich"]').click());
+  await page.evaluate(() => document.querySelector('.mobnav [data-group="g-start"]').click());
+  await page.waitForTimeout(300);
+  await page.evaluate(() => document.querySelector('[data-subview="ich"]').click());
   await page.waitForTimeout(400);
   await page.evaluate(() => {
     const t = document.querySelector('[data-ichtab="daten"]');

@@ -127,8 +127,11 @@ const TREFFER = (el) => {
   const aus = await sagen();
   pruefe('ein zweiter Tipp nimmt es zurück', !/dir/.test(aus), aus);
 
-  /* ── Gelesen ist gelesen ── */
-  await p.evaluate(() => [...document.querySelectorAll('.mobnav button')].find(x => /Start/.test(x.textContent)).click());
+  /* ── Gelesen ist gelesen ──
+     Der Knopf heisst seit Runde 184 „Heute" statt „Start" (aus dem
+     Betrieb, 22.10.2026: „das problem mit dem zu viel bleibt immer noch
+     bestehen"; die Raumnamen „passen"). */
+  await p.evaluate(() => [...document.querySelectorAll('.mobnav button')].find(x => /Heute/.test(x.textContent)).click());
   await p.waitForTimeout(800);
   const nochmal = await p.evaluate(() =>
     [...document.querySelectorAll('#heuteListe .heute-zeile')].some(x => /sagt Danke/.test(x.textContent)));
@@ -177,10 +180,12 @@ const TREFFER = (el) => {
     const nachLaden = await q.evaluate(() => !document.getElementById('neuPille').getClientRects().length);
     pruefe(w + ' px: auch nach dem Neuladen (bis zur nächsten Auslieferung)', nachLaden);
 
-    /* Dauerhaft erreichbar über „Alles", und „Zeigen ›" führt hin. */
-    await q.evaluate(() => { const n = [...document.querySelectorAll('.mobnav button, .side button')].find(x => /Alles/.test(x.textContent) && x.getClientRects().length); n.click(); });
+    /* Dauerhaft erreichbar über „Alles", und „Zeigen ›" führt hin. Seit
+       Runde 184 ist „Alles" kein Knopf in Leiste oder Seitenleiste mehr,
+       sondern der ☰-Griff #bereichKopf — auf Handy und Rechner. */
+    await q.evaluate(() => { const n = document.getElementById('bereichKopf'); if (n && n.getClientRects().length) n.click(); });
     await q.waitForTimeout(500);
-    await q.evaluate(() => document.querySelector('#allesSeite [data-al-neu]').click());
+    await q.evaluate(() => document.querySelector('#allesLadeInhalt [data-al-neu]').click());
     await q.waitForTimeout(500);
     const ueberAlles = await q.evaluate(() => document.getElementById('neuModal').classList.contains('show'));
     pruefe(w + ' px: „Alles → Was ist neu" öffnet dieselbe Liste', ueberAlles);

@@ -16,9 +16,12 @@ const SP = process.env.SP || __dirname;
   await page.mouse.click(215, 400).catch(() => {});
   await page.waitForTimeout(1800);
 
+  /* Runde 184 („fünf Räume", aus dem Betrieb 22.10.2026: „das problem
+     mit dem zu viel bleibt immer noch bestehen"): die Dokumente stehen
+     unter „Wissen" (g-wissen), nicht mehr unter „Betrieb". */
   const GROUP = { home:'g-start', chat:'g-komm', dm:'g-komm', ann:'g-komm',
                   todos:'g-arbeit', putzplan:'g-arbeit', material:'g-arbeit',
-                  team:'g-team', docs:'g-arbeit', chef:'g-chef', archive:'g-chef' };
+                  team:'g-team', docs:'g-wissen', chef:'g-chef', archive:'g-chef' };
   async function go(view) {
     await page.evaluate(g => document.querySelector('.mobnav [data-group="' + g + '"]').click(), GROUP[view]);
     await page.waitForTimeout(450);

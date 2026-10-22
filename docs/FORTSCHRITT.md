@@ -17671,7 +17671,123 @@ vorschlag klingt super".
 - Ohne Service-Worker-Sperre landeten die Oberflächen-Durchläufe hier in
   der Anmeldemaske („Die App ist gar nicht gestartet").
 
-## Runde 184 — Suche nach Bedeutung nachgemessen (Worker 2.15, 22.10.2026)
+## Runde 184 — Fünf Räume: eine Navigation auf allen Geräten (22.10.2026)
+
+**Aus dem Betrieb:** „das problem mit dem zu viel bleibt immer noch
+bestehen“. Vorher kam die Bitte um Recherche: vergleichbare Apps, Studien
+zur Psychologie und zur Ergonomie, und wie man Funktionen einteilt oder
+zusammenlegt.
+
+**Antworten auf die Rückfragen:**
+- Was ist „zu viel“? Alle vier Antworten zugleich: zu viele Menüpunkte,
+  zu viel auf einem Bildschirm, man findet nichts, zu viele Funktionen.
+- Täglich genutzt werden „Putzplan, Aufgaben hauptsächlich“, am
+  wenigsten die Nachrichten.
+- „jede Funktion hat ihren Sinn“, also nichts streichen, nur neu ordnen.
+- Die Raumnamen „passen“, Chat und Direkt in eine Liste: „ja warum
+  nicht“.
+- Card Sorting mit dem Team entfällt: Die App betreut eine Person, die
+  anderen nutzen sie nur.
+
+**Recherche, kurz:**
+- Apple und Google empfehlen 3–5 Hauptziele in der unteren Leiste.
+- Das Arbeitsgedächtnis hält etwa 4 Dinge auf einmal (Cowan 2001).
+- Versteckte Navigation wird seltener gefunden (NN/g 2016).
+- Visuelle Unruhe bestimmt den ersten Eindruck stärker als Farbe
+  (Reinecke & Gajos 2013).
+- Selten Gebrauchtes gehört auf eine zweite Ebene (NN/g, progressive
+  disclosure).
+- Vergleichbare Apps:
+  - Deputy hat „Me“ und „Dashboard“ zu einem „Home“ zusammengelegt.
+  - Microsoft heftet für Frontline-Kräfte nur 4 Apps an.
+  - Connecteam ordnet in 4 Gruppen.
+- Frontline-Kräfte geben Apps mit überladener Startseite nach wenigen Tagen
+  auf (Anbieterquellen, mit Vorsicht).
+
+**Was gebaut ist** (Grundgerüst; Zusammenlegungen auf Datenebene folgen)
+- **Fünf Räume** in `NAVGROUPS`:
+  - Heute (Start, Ich, Persönlich)
+  - Studio (Aufgaben, Putzplan, Material, Geräte, Probetraining)
+  - Plan (Team-Seite)
+  - Nachrichten (Chat, Direkt, Infos)
+  - Wissen (Dokumente, Schulung, Formi; neue Gruppe `g-wissen` in Violett,
+    der Farbe des früheren „Ich“)
+  - dazu Verwaltung für die Leitung
+- **Reihenfolge nach Nutzung:** Studio steht vor Nachrichten.
+- **Dieselben fünf am Rechner links und am Handy unten**, in beiden
+  Designs. Vorher zeigte das Handy (neues Design) nur Start, Aufgaben,
+  Putzplan und Alles; Ich, Team, Nachrichten und Verwaltung fehlten dort.
+- **Was wegfiel, weil es doppelt war:**
+  - Putzplan als eigener Knopf. Er ist Reiter unter Studio, ein Tipp
+    mehr, dafür nur noch an einer Stelle.
+  - „Alles“ in den Leisten. Es bleibt hinter ☰ am Seitenkopf, auf jeder
+    Seite. Damit gilt der Wunsch „jedes Ziel in zwei Tipps“ weiter: Raum,
+    dann Reiter.
+  - Bericht in der Kopfzeile. Er steht unter Verwaltung → System, Karte
+    „Bericht“. Die alten Formi-Knöpfe hatte Runde 182 parallel schon
+    entfernt; beim Zusammenführen gilt deren Fassung.
+- **Bewusst NICHT verschoben:**
+  - Hilfe im Studio bleibt oben, ausdrücklich gewünscht am 22.9.
+  - Abmelden bleibt oben, wegen des geteilten Geräts beim Schichtwechsel.
+    Die Rückfrage dazu ist offen.
+- **Zwei Funde beim Ansehen:**
+  - Ohne den Bericht stand die Glocke allein in der Mitte der Kopfzeile;
+    sie rückt jetzt zu den Werkzeugen (`margin-left:auto`).
+  - Die Formi-Kugel (Runde 177) lag am Handy auf „+ Aufgabe“; sie rückt
+    eine Knopfhöhe hoch, wenn es den Knopf gibt (`:has`).
+- **Gemessen** (Demo als Geschäftsführung, Startseite):
+  - Rechner: Kopfzeile 7 → 5 Griffe, Seitenleiste 13 → 7.
+  - Handy: untere Leiste 4 → 5, alle Bereiche erreichbar.
+
+**Was die Tests gefunden haben – und wie es entschieden ist**
+
+Rund 70 Durchläufe hingen am alten Weg (Knopf „Putzplan“, „Alles“ in
+der Leiste, Gruppe „Ich“). Drei Helfer haben sie auf die neuen Wege
+umgestellt, ohne eine Grenze zu lockern. Jede geänderte Erwartung trägt
+das Zitat aus dem Betrieb. Dabei kamen zwei echte Rückschritte heraus:
+
+1. **Schnellzugriffe auf „Heute“ waren ein Fehler.** Dort ist Platz für
+   drei statt sechs, die Tasten fehlten, und die Startseite verlor 81 px.
+   „Heute im Studio“ rutschte unter „Ausserdem“ (gefunden von
+   test-schnell-editor und test-tagesband). Sie stehen deshalb wieder
+   links, abgesetzt unter den Räumen.
+2. **Die Reiterzeile Heute/Ich/Persönlich kostete jede Startseite
+   40 px** (test-p4-seitenleiste, test-navigation, test-neu-design).
+   - Am Rechner stehen die Reiter jetzt *in* der Kopfzeile rechts neben
+     dem Titel (`subnavPlatzieren`, das Element wird umgehängt, nicht
+     kopiert). Dort waren 700 px leer, und das spart die Zeile auf jeder
+     Seite, nicht nur auf „Heute“.
+   - Gemessen am Rechner: Die Liste beginnt wieder bei 154 px statt 194.
+   - Am Handy bleibt die Zeile. Ein Versuch ohne sie auf „Heute“ sparte
+     40 px, versteckte aber „Ich“ hinter ☰. Dort stempelt man, sieht
+     Zeiten und Notizen; sechs Durchläufe fielen darüber. Ein Tipp für
+     das tägliche Ziel geht vor 40 px. Die Handy-Startseite hat damit
+     40 px weniger als vorher (390 px: 423 statt 463). Was nicht mehr
+     passt, steht unter „Ausserdem“ und verschwindet nicht.
+   - Trefferflächen der Reiter in der Kopfzeile: 92–146 × 46 px bei
+     1280/1440/1920, normal und kompakt (Hit-Test).
+
+**Rot, aber schon vor dieser Runde rot** (gegen den alten Stand
+nachgemessen, nicht gelockert):
+- test-p4-seitenleiste: Liste ≥ 690 px, gemessen 612, alter Stand
+  ebenfalls 612.
+- test-navigation: Handy-Startseite höchstens 1,9 Bildschirme; alter
+  Stand 2,1, jetzt 2,28 (die Reiterzeile, siehe oben).
+- test-neu-design: Startseite bei 320 × 568; vorher 339 px Inhalt in 276
+  Platz, jetzt in 236.
+- test-p1-aufgaben: unterste Zeile bei 1280 × 800 vom Scrollbereich
+  abgeschnitten.
+- test-startseite-putz, test-block-d, test-team-woche, test-bestellung,
+  test-gehirn (Last).
+
+**Bewusst nicht in dieser Runde** (Vorschläge aus dem Vergleich mit
+`docs/design-vorbilder/`):
+- Material, Geräte und Archiv zu „Bestand“ zusammenlegen.
+- Infos und Brett zu einer Pinnwand zusammenlegen.
+- Chat und Direkt in eine Liste.
+- „Erledigt“ eingeklappt.
+- Punkte statt Zahlen an den Räumen.
+## Runde 185 — Suche nach Bedeutung nachgemessen (Worker 2.15, 22.10.2026)
 
 Nach dem Einspielen von 2.14 mit `/api/suche` an zehn echten Fragen gegen
 275 Einträge gemessen, statt die Schwelle zu schätzen.
