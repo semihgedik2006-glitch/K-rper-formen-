@@ -8199,6 +8199,13 @@ function gehirnWissenPruefen(daten) {
   if (!art) return null;
   if (art === 'liste') return { art, body: {} };
   if (art === 'entscheiden') {
+    /* Sammelfreigabe (22.10.2026, „ja sind zu viele klicks"): alle einer
+       Quelle. Ohne Text — die Texte bleiben, wie sie sind. */
+    if (d.id == null && typeof d.quelle === 'string') {
+      const quelle = d.quelle.trim().slice(0, 120);
+      if (quelle.length < 3) return null;
+      return { art, body: { quelle, gut: d.gut === true } };
+    }
     const id = Number(d.id);
     if (!(Number.isInteger(id) && id > 0)) return null;
     const body = { id, gut: d.gut === true };

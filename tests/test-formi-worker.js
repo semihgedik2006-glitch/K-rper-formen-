@@ -337,6 +337,30 @@ function ki(antworten) {
     pruefe(Array.isArray(such.bedeutung) && such.bedeutung.length > 0 && typeof such.bedeutung[0].wert === 'number' && such.schwelle > 0 && such.ergebnis.some(x => x.id === weste), 'Suche-Diagnose: Wörter, Volltext, Ähnlichkeit ohne Schwelle, Ergebnis (' + JSON.stringify(such).slice(0, 160) + ')');
     const suchOhne = await w.default.fetch(new Request('https://x.test/api/suche?q=x', { headers: { 'x-studio-key': 'k' } }), env2, {});
     pruefe(suchOhne.status === 401, 'Suche-Diagnose nur im Leitstand');
+
+    /* ── 2.16 Sammelfreigabe: „ja sind zu viele klicks" ── */
+    const Q = 'Schulung „Hygiene“';
+    const viele = Array.from({ length: 25 }, (_, i) => ({ thema: 'Sammeltest ' + i, inhalt: 'Ein Eintrag aus der Schulung Nummer ' + i, kategorie: 'Geräte & Hygiene', quelle: Q }));
+    await post('/api/vorschlag/import', { eintraege: viele });
+    await post('/api/vorschlag/import', { eintraege: [{ thema: 'Sammeltest eigen', inhalt: 'Von Lea selbst vorgeschlagen, gleiche Quelle.' }], quelle: Q, von: 'Lea Leitung', vonId: 'uid-lea' });
+    await post('/api/vorschlag/import', { eintraege: [{ thema: 'Andere Quelle A', inhalt: 'Gehört nicht zur Schulung, bleibt offen.' }, { thema: 'Andere Quelle B', inhalt: 'Gehört auch nicht zur Schulung.' }], quelle: 'Etwas anderes' });
+    const gl2 = await (await post('/api/vorschlag/liste', { vonId: 'uid-lea' })).json();
+    const gq = (gl2.gruppen || []).find(g => g.quelle === Q);
+    pruefe(gq && gq.anzahl === 26 && gl2.liste.some(x => x.quelle === Q), 'Liste nennt Gruppen je Quelle (' + JSON.stringify(gl2.gruppen) + ')');
+    const vorW = env2.DB.roh.prepare('SELECT COUNT(*) AS n FROM wissen').get().n;
+    const r1 = await (await post('/api/vorschlag/entscheiden', { quelle: Q, gut: true, von: 'Lea Leitung', vonId: 'uid-lea' })).json();
+    pruefe(r1.ok && r1.erledigt === w.SAMMEL_JE_AUFRUF && r1.uebrig === 5 && r1.uebersprungen === 1, 'Erster Aufruf: 20 übernommen, 5 übrig, der eigene übersprungen (' + JSON.stringify(r1) + ')');
+    const r2 = await (await post('/api/vorschlag/entscheiden', { quelle: Q, gut: true, von: 'Lea Leitung', vonId: 'uid-lea' })).json();
+    pruefe(r2.erledigt === 5 && r2.uebrig === 0, 'Zweiter Aufruf: der Rest (' + JSON.stringify(r2) + ')');
+    pruefe(env2.DB.roh.prepare('SELECT COUNT(*) AS n FROM wissen').get().n === vorW + 25, '25 neue Einträge im Wissen');
+    pruefe(env2.DB.roh.prepare("SELECT status FROM vorschlag WHERE thema = 'Sammeltest eigen'").get().status === 'neu', 'Vier Augen: der eigene Vorschlag bleibt offen');
+    pruefe(env2.DB.roh.prepare("SELECT COUNT(*) AS n FROM vorschlag WHERE status = 'neu' AND quelle = 'Etwas anderes'").get().n === 2, 'Andere Quelle bleibt unberührt');
+    const r3 = await (await post('/api/vorschlag/entscheiden', { quelle: 'Etwas anderes', gut: false, von: 'Max Chef', vonId: 'uid-max' })).json();
+    pruefe(r3.erledigt === 2 && env2.DB.roh.prepare("SELECT COUNT(*) AS n FROM wissen WHERE thema LIKE 'Andere Quelle%'").get().n === 0, 'Alle verwerfen: nichts wird Wissen');
+    const r4 = await (await post('/api/vorschlag/entscheiden', { quelle: '', gut: true })).json();
+    pruefe(!r4.ok, 'Ohne Quelle: nichts');
+    const lsHtml = await (await w.default.fetch(new Request('https://x.test/leitstand'), env2, {})).text();
+    pruefe(/" übernehmen"/.test(lsHtml) && /\/api\/vorschlag\/entscheiden/.test(lsHtml), 'Leitstand hat die Sammelknöpfe');
   }
 
   console.log(`\n${ok} bestanden, ${fehler} fehlgeschlagen`);
