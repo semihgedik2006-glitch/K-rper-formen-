@@ -148,7 +148,7 @@ async function stand(p) {
 
   // ══ 2. Der App-Hintergrund liegt auf der App ══
   console.log('\n── Der Hintergrund der ganzen App ──');
-  /* Seit Runde 177 ist „Raum" die Voreinstellung (aus dem Betrieb,
+  /* Seit Runde 178 ist „Raum" die Voreinstellung (aus dem Betrieb,
      22.10.2026: „Neuer Stil ist Standard, Wahl bleibt"). „Schlicht"
      wird deshalb hier ausdrücklich gewählt — die Aussage „Schlicht heisst
      kein Muster" bleibt dieselbe. */
@@ -236,7 +236,7 @@ async function stand(p) {
     zurueck.gewaehlt === 'bunt', String(zurueck.gewaehlt));
   pruefe('Chat-Hintergrund ist wieder „verlauf"',
     zurueck.chatbg === 'verlauf', zurueck.chatbg);
-  /* Voreinstellung seit Runde 177: „Raum" (siehe oben). */
+  /* Voreinstellung seit Runde 178: „Raum" (siehe oben). */
   pruefe('App-Hintergrund ist wieder die Voreinstellung „raum"',
     zurueck.appbg === 'raum', zurueck.appbg);
   pruefe('und damit liegt wieder der Raum auf der App, nicht „Ecken"',

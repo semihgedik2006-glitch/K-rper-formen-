@@ -54,7 +54,11 @@ const TREFFER = (el) => {
 
 async function oeffne(b, w, h, opt) {
   opt = opt || {};
-  const ctx = await b.newContext({ viewport: { width: w, height: h },
+  /* serviceWorkers:'block' (22.10.2026): sonst holt der Service-Worker
+     nach dem ersten Laden das echte Firebase an page.route vorbei, die
+     App lädt neu und steht in der Anmeldemaske — jeder Durchlauf hier
+     war deshalb rot, auch auf main. */
+  const ctx = await b.newContext({ viewport: { width: w, height: h }, serviceWorkers: 'block',
     reducedMotion: opt.wenigBewegung ? 'reduce' : 'no-preference' });
   const p = await ctx.newPage();
   p._fehler = [];
@@ -62,6 +66,10 @@ async function oeffne(b, w, h, opt) {
   await p.route('**://www.gstatic.com/**', r => r.abort());
   await p.route('**fonts.googleapis.com/**', r => r.abort());
   await p.route('**script.google.com/**', r => r.fulfill({ status: 200, body: 'ok' }));
+  /* Seit Runde 177 öffnet Formi standardmäßig KOMPAKT (Kugel, Fenster
+     neben der App; geprüft in test-formi-kugel). Diese Datei prüft das
+     Vollbild mit Mini-Fenstern, das per „Groß" weiter da ist. */
+  if (!opt.kompakt) await p.addInitScript(() => { try { localStorage.setItem('kf_jv_kompakt', '0'); } catch (e) {} });
   if (opt.vorher) await p.addInitScript(opt.vorher);
   await p.addInitScript({ path: SP + '/' + (opt.stub || 'stub-chef.js') });
   await p.goto(APP, { waitUntil: 'domcontentloaded' });

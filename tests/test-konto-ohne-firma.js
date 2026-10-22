@@ -115,7 +115,7 @@ const zustand = (p) => p.evaluate(() => ({
     await p.click('#mkAussehen');
     await p.waitForTimeout(400);
     const au = await p.evaluate(() => getComputedStyle(document.getElementById('pmPaneAussehen')).display !== 'none'
-      /* Vier seit Runde 177: Formi, Automatisch, Dunkel, Hell (aus dem
+      /* Vier seit Runde 178: Formi, Automatisch, Dunkel, Hell (aus dem
          Betrieb, 22.10.2026: „Neuer Stil ist Standard, Wahl bleibt"). */
       && document.querySelectorAll('#thOpts [data-th]').length === 4);
     pruefe('„Aussehen" öffnet Hell/Dunkel und Co.', au);

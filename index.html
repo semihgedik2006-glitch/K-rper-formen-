@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-jiZoAEO/TDpbCBusQXQkWnY7ZCwmN8llz4S5/vvFWJQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-LreYpcwvYcT5hNEJ+ORSQrPcmL+ah34u03s/T5KZ2kc='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -4165,7 +4165,7 @@ body[data-appbg="raster"] .app::before{
                    linear-gradient(90deg, var(--dot) 1px, transparent 1px);
   background-size:40px 40px}
 
-/* ══ STIL „FORMI" (Runde 177) ═══════════════════════════════════════
+/* ══ STIL „FORMI" (Runde 178) ═══════════════════════════════════════
    Aus dem Betrieb, 22.10.2026: „es sieht aber noch alles gleich aus wir
    sollten am ganzen hud arbeiten und den farben und mehr motion". Auf
    drei Skizzen fiel die Wahl auf „A · Formi-Welt“, Bewegung „spürbar,
@@ -5695,6 +5695,68 @@ body.neu .bereich-zeile:has(#jarvisStart:not([hidden])) .bereich-kopf{flex-basis
 .jv-zeichen{position:absolute;left:50%;top:50%;width:min(340%, 94vw);height:auto;aspect-ratio:1 / 1;
   transform:translate(-50%,-50%);pointer-events:none}
 .jarvis[hidden]{display:none}
+/* ══ Formi als Kugel und kompaktes Fenster (Runde 177, 22.10.2026) ══
+   Aus dem Betrieb: „das design von formi anpassen und ihn zu einem
+   richtigen assistenten machen der wirklich in der app ist und gesteuert
+   wird". Auf die Rückfragen: schwebende Kugel, das schwarze Loch als
+   Gesicht, Formi bedient die App selbst.
+
+   Die Kugel liegt UNTER allen Fenstern (z 150: über Leiste 30 und
+   Hinweisen 90, unter Suche 200, Hilfe 300 und jedem Dialog) — sie soll
+   nie einen Speichern-Knopf verdecken. Das kompakte Fenster liegt
+   ebenso darunter (190): es ist kein Dialog mehr, die App bleibt
+   bedienbar. */
+.formi-kugel{--jv-rgb:95,225,255;position:fixed;z-index:150;right:max(var(--s16), var(--sar, 0px));
+  bottom:calc(var(--s16) + var(--sab));width:58px;height:58px;padding:0;border:0;border-radius:var(--r-rund);cursor:pointer;
+  background:radial-gradient(circle at 50% 50%, #02040A 0 37%, rgba(2,4,10,.0) 39%),
+    conic-gradient(from 210deg, #5FE1FF, #B69CFF, #FF8FC8, #FFA85C, #5FE1FF);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.22), inset 0 0 10px 3px rgba(2,4,10,.55),
+    var(--e2), 0 0 22px rgba(var(--jv-rgb),.35);
+  transition:transform .16s ease}
+.formi-kugel[hidden]{display:none}
+.formi-kugel::after{content:"";position:absolute;inset:-4px;border-radius:var(--r-rund);border:1px solid rgba(var(--jv-rgb),.35);pointer-events:none}
+.formi-kugel:hover{transform:scale(1.05)}
+.formi-kugel:active{transform:scale(.94)}
+.formi-kugel:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+/* Über der Leiste unten: sie ist gemessen 68 px hoch (+ Rand unten),
+   in BEIDEN Dichten — --s72 schrumpft in „kompakt" auf 50 und hätte die
+   Kugel auf die Leiste gesetzt (test-formi-kugel). */
+@media(max-width:820px){ .formi-kugel{bottom:calc(80px + var(--sab))} }
+/* Damit das Letzte auf der Seite nicht dauerhaft unter der Kugel liegt:
+   so viel Luft unten, wie die Kugel braucht. */
+body.formi-kugel-an .main{padding-bottom:calc(var(--s16) + 58px + var(--s16))}
+@media(max-width:820px){ body.formi-kugel-an .main{padding-bottom:calc(80px + 58px + var(--s8))} }
+/* Kleines Gesicht im Kopf des kompakten Fensters — dieselbe Kugel. */
+.formi-gesicht{flex:0 0 auto;width:22px;height:22px;border-radius:var(--r-rund);
+  background:radial-gradient(circle, #02040A 0 36%, rgba(2,4,10,0) 40%),
+    conic-gradient(from 210deg, rgb(var(--jv-t1)), rgb(var(--jv-t2)), rgb(var(--jv-t3)), rgb(var(--jv-t1)));
+  box-shadow:0 0 10px rgba(var(--jv-rgb),.5)}
+.jarvis:not(.jv-kompakt) .formi-gesicht{display:none}
+/* Dreht sich nur, solange Formi arbeitet — keine Endlos-Animation ohne Grund. */
+.jarvis.jv-kompakt.jv-z-denkt .formi-gesicht{animation:jvDreh 1.1s linear infinite}
+.jarvis.jv-kompakt{inset:auto;right:max(var(--s16), var(--sar, 0px));bottom:calc(var(--s16) + var(--sab));
+  width:min(420px, calc(100vw - 2 * var(--s16)));height:min(640px, calc(100dvh - 2 * var(--s16)));
+  z-index:190;border-radius:var(--radius);border:1px solid rgba(var(--jv-rgb),.35);
+  box-shadow:var(--e3), 0 0 30px rgba(var(--jv-rgb),.18)}
+@media(max-width:820px){
+  .jarvis.jv-kompakt{left:0;right:0;bottom:0;width:auto;height:min(74dvh, 640px);border-radius:var(--radius) var(--radius) 0 0;border-bottom:0}
+}
+.jarvis.jv-kompakt .jv-feld,.jarvis.jv-kompakt .jv-raster,.jarvis.jv-kompakt .jv-scan,.jarvis.jv-kompakt .jv-ecke,
+.jarvis.jv-kompakt .jv-log,.jarvis.jv-kompakt .jv-links,.jarvis.jv-kompakt .jv-strom-rahmen{display:none}
+.jarvis.jv-kompakt .jv-rahmen{max-width:none;height:100%;display:flex;flex-direction:column;gap:var(--s8);
+  padding:var(--s8) var(--s12) max(var(--s12), env(safe-area-inset-bottom))}
+.jarvis.jv-kompakt .jv-rechts{flex:1 1 auto;min-height:0}
+/* Der Zeiger: Formi zeigt, wo es hintippt. Bewegt wird nur transform. */
+.formi-zeiger{--jv-rgb:95,225,255;position:fixed;left:0;top:0;z-index:1200;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:var(--r-rund);
+  pointer-events:none;will-change:transform;
+  background:radial-gradient(circle, #fff 0 22%, rgba(var(--jv-rgb),.95) 24% 46%, rgba(var(--jv-rgb),0) 70%);
+  box-shadow:0 0 16px 4px rgba(var(--jv-rgb),.6)}
+.formi-zeiger::after{content:"";position:absolute;inset:-6px;border-radius:var(--r-rund);border:2px solid rgba(var(--jv-rgb),.95);opacity:0}
+.formi-zeiger.tippt::after{animation:formiTipp .45s ease-out backwards}
+@keyframes formiTipp{from{transform:scale(.4);opacity:1}to{transform:scale(2.6);opacity:0}}
+/* Das Ziel leuchtet kurz auf. outline statt Rahmen: verschiebt nichts. */
+.formi-markiert{outline:2px solid #5FE1FF !important;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){ .formi-kugel{transition:none} .jarvis.jv-kompakt.jv-z-denkt .formi-gesicht{animation:none} }
 /* Die Themen. Farbe folgt dem Bereich wie in den Mini-Fenstern; Rot,
    Bernstein und Grün bleiben dem Status vorbehalten. */
 .jarvis[data-thema="putzplan"]{--jv-t1:78,230,210;--jv-t2:95,225,255;--jv-t3:150,140,255}
@@ -12144,11 +12206,12 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
     <span class="jv-ecke ul" aria-hidden="true"></span><span class="jv-ecke ur" aria-hidden="true"></span>
     <ol class="jv-log" aria-hidden="true"><li>&gt; Systeme starten</li><li>&gt; Studio-Wissen verbunden</li><li>&gt; App-Steuerung bereit</li><li>&gt; Online</li></ol>
     <div class="jv-kopf">
-      <span class="jv-titel"><span class="jv-punkt" aria-hidden="true"></span><span id="jarvisTitel">Formi</span><span class="jv-weck" id="jarvisWeck" hidden>hört auf dich</span><span class="jv-offline" id="jarvisOffline" hidden>offline · Schnellbefehle gehen</span></span>
+      <span class="jv-titel"><span class="formi-gesicht" aria-hidden="true"></span><span class="jv-punkt" aria-hidden="true"></span><span id="jarvisTitel">Formi</span><span class="jv-weck" id="jarvisWeck" hidden>hört auf dich</span><span class="jv-offline" id="jarvisOffline" hidden>offline · Schnellbefehle gehen</span></span>
       <span class="jv-kopf-knoepfe">
         <button type="button" class="icon-btn" id="jarvisPersonaBtn" data-ikon="regler" aria-expanded="false" aria-controls="jarvisPersona" aria-label="Persönlichkeit und Stimme" title="Persönlichkeit und Stimme"></button>
         <button type="button" class="icon-btn" id="jarvisGespraecheBtn" data-ikon="uhr" aria-expanded="false" aria-controls="jarvisGespraeche" aria-label="Gespeicherte Gespräche" title="Gespeicherte Gespräche"></button>
         <button type="button" class="icon-btn" id="jarvisTon" data-ikon="ton" aria-pressed="true" aria-label="Ton und Stimme" title="Ton und Stimme an/aus"></button>
+        <button type="button" class="icon-btn" id="jarvisGroesse" data-ikon="vollbild" aria-label="Groß machen (Vollbild)" title="Groß machen (Vollbild)"></button>
         <button type="button" class="icon-btn" id="jarvisZu" data-ikon="schliessen" aria-label="Schließen"></button>
       </span>
     </div>
@@ -12191,6 +12254,9 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
     </div>
   </div>
 </div>
+<!-- Formi als schwebende Kugel (Runde 177): auf jeder Seite unten rechts. -->
+<button type="button" class="formi-kugel" id="formiKugel" hidden aria-haspopup="dialog" aria-controls="jarvis"
+  aria-label="Formi öffnen" title="Formi — frag mich oder sag, was ich tun soll"></button>
 <script>
 (function(){
 'use strict';
@@ -12201,9 +12267,9 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
    Ansicht selbst ein, ohne die anderen zu beeinflussen.
    ============================================================ */
 var PREFS = {
-  theme:'formi',    // formi | auto | dark | light (formi seit Runde 177)
+  theme:'formi',    // formi | auto | dark | light (formi seit Runde 178)
   chatbg:'verlauf', // siehe CHAT_BGS
-  appbg:'raum',     // siehe APP_BGS — der Hintergrund der ganzen App (raum seit Runde 177)
+  appbg:'raum',     // siehe APP_BGS — der Hintergrund der ganzen App (raum seit Runde 178)
   /* 'bunt' ist seit dem 21.9.2026 die Voreinstellung: die Farbe folgt
      dem Bereich (siehe BEREICH_FARBE). Jeder feste Wert aus ACCENTS
      bleibt wählbar und wechselt dann NICHT mit der Ansicht.
@@ -12593,7 +12659,7 @@ function akzentAnwenden(){
    ersten Start gemustert ist, nimmt dem Benutzer die Entscheidung ab,
    die er hier gerade bekommen soll. */
 var APP_BGS = [
-  /* „Raum" (Runde 177): der Hintergrund des Stils Formi, zwei Nebel und
+  /* „Raum" (Runde 178): der Hintergrund des Stils Formi, zwei Nebel und
      ein Sternenfeld. Ein eigener Eintrag und nicht an „Schlicht"
      gehängt: Schlicht heisst „kein Muster", und das muss es bleiben. */
   {id:'raum',     name:'Raum'},
@@ -12618,7 +12684,7 @@ function loadPrefs(){
     // alte Einstellung übernehmen
     var old=localStorage.getItem('kf_theme');
     if(old && !raw) PREFS.theme = (old==='light'?'light':'dark');
-    /* Runde 177: „Formi" wird die Voreinstellung, auch für alle, die nie
+    /* Runde 178: „Formi" wird die Voreinstellung, auch für alle, die nie
        etwas gewählt haben. Ihr gespeichertes 'auto' ist die alte
        Voreinstellung, keine Wahl. Wer ausdrücklich Hell oder Dunkel
        gewählt hat, behält es. Einmal je Gerät (stil2), danach gilt, was
@@ -13254,6 +13320,9 @@ var IKONEN = {
   hantel:      '<path d="M6 7v10M18 7v10M3 9v6M21 9v6M6 12h12"/>',
   /* Studio-Gehirn: eine Glühbirne — „eine Idee haben" und „Bescheid
      wissen" in einem Zeichen, ohne ein anatomisches Gehirn zu malen. */
+  /* Formi gross / klein (Runde 177) */
+  vollbild:    '<path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/>',
+  kompakt:     '<path d="M3 8h5V3M21 8h-5V3M3 16h5v5M21 16h-5v5"/>',
   gehirn:      '<path d="M9 18h6M10 21h4"/>' +
                '<path d="M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.2h5c0-.9.4-1.7 1.1-2.2A6 6 0 0 0 12 3z"/>',
   blitz:       '<path d="M13 2 3 14h8l-1 8 10-12h-8z"/>',
@@ -20175,6 +20244,11 @@ var NEUIGKEITEN = [
     'Die App sieht jetzt aus wie Formi: dunkler Raum mit leisem Sternenfeld, Flächen wie Glas mit einer Lichtkante, Ecken wie im Cockpit über jeder Seite.',
     'Mehr Bewegung, aber nur wenn du etwas tust: Beim Öffnen einer Seite bauen sich die Zeilen kurz nacheinander auf, und unter der Kopfzeile läuft ein Lichtimpuls in der Farbe des Bereichs.',
     'Hell oder Dunkel wie bisher? Profil (dein Bild oben rechts) → Aussehen → Hell, Dunkel oder Automatisch. Wer dort schon ausdrücklich Hell oder Dunkel gewählt hatte, behält das.' ] },
+  { id:'2026-10-22-formi-kugel', datum:'22.10.2026', titel:'Formi wohnt jetzt unten rechts in der App', wo:'home', punkte:[
+    'Unten rechts schwebt auf jeder Seite eine kleine bunte Kugel mit schwarzem Kern – das ist Formi. Ein Tipp öffnet Formi als kleines Fenster; die App bleibt dahinter sichtbar und bedienbar.',
+    'Sagst du „öffne den Putzplan" oder „zu den Aufgaben", fährt ein leuchtender Punkt zum richtigen Knopf, tippt drauf, und die echte Seite geht auf. Am Rechner bleibt Formi daneben offen, am Handy wird es wieder zur Kugel.',
+    'Lieber groß? Oben im Formi-Fenster macht der Knopf mit den vier Ecken Vollbild daraus – und wieder klein. Dein Gerät merkt sich die Wahl.'
+  ]},
   { id:'2026-10-22-verwaltung-gruppen', datum:'22.10.2026', titel:'Verwaltung geordnet, ruhigere Listen am Rechner', wo:'chef', punkte:[
     'Die Startseite der Verwaltung ist in vier Gruppen geordnet: Jeden Tag, Team & Studios, Zahlen, Einstellungen. Man liest die Überschriften statt elf Kacheln.',
     'Am grossen Bildschirm stehen die Bereiche der Verwaltung links als Liste – mit denselben Gruppen –, rechts der Inhalt. Vorher lagen zwei Reiterzeilen übereinander.',
@@ -21884,12 +21958,15 @@ function showView(id, fromKey, ausVerlauf){
   if(id==='gehirn') gehirnOeffnen();
   if(id==='planer') spOeffnen();
   jarvisKachel(id);
-  if(id!=='gehirn') jarvisZu();
+  /* Runde 177: Formi kompakt bleibt am Rechner offen, während die Seite
+     wechselt — es wohnt IN der App. Am Handy deckt das Fenster die Seite
+     zu, und im Chat säße es über dem Senden-Knopf: dort geht es zu. */
+  if(id!=='gehirn' && !(formiBleibtOffen() && id!=='chat')) jarvisZu();
   if(id==='team'){ ensureTeamLoaded(); buildTeamTabs(); spWunschZeigen(); }
   if(id==='dm'){ closeDmConvo(); renderDmPeople($('dmSearch')?$('dmSearch').value:''); }
   hudBewegung(id);
 }
-/* Die zwei Momente des Stils „Formi" (siehe Stylesheet, Runde 177).
+/* Die zwei Momente des Stils „Formi" (siehe Stylesheet, Runde 178).
    Nur Klassen setzen, nichts messen. Die Klassen fallen nach Ablauf
    wieder ab, damit spätere Neuzeichnungen sich nicht bewegen. */
 var _hudUhr=0, _hudImpulsUhr=0;
@@ -25112,7 +25189,7 @@ function gehirnZeichnenInRoh(box, tippen){
     return frage+antwort;
   }).join('');
   box.querySelectorAll('[data-gziel]').forEach(function(b){
-    b.addEventListener('click', function(){ jarvisZu(); showView(b.getAttribute('data-gziel')); tick(8); });
+    b.addEventListener('click', function(){ if(!formiBleibtOffen()) jarvisZu(); showView(b.getAttribute('data-gziel')); tick(8); });
   });
   box.querySelectorAll('[data-gvorschlag]').forEach(function(b){
     b.addEventListener('click', function(){ gehirnVorschlagUebernehmen(_gVerlauf[+b.getAttribute('data-gvorschlag')]); });
@@ -25608,7 +25685,10 @@ function gehirnSofort(v){
        „statt die seite putzplan direkt zu öffnen … sowas als mini
        fenster in der ki seite"). Wer ausdrücklich die ganze Seite will
        („ganz", „Seite", „wechsle", „geh zu"), bekommt sie wie bisher. */
-    if(GEHIRN_MINI[s.ziel] && !/\b(ganz\w*|seite|wechsl\w*|wechsel\w*|geh\w* (zu|zum|zur|in|auf))\b/i.test(v.text||'')){
+    /* Runde 177: Im kompakten Fenster ist die App sichtbar — dort öffnet
+       Formi die ECHTE Seite (mit Zeiger), statt sie als Mini-Fenster ins
+       Gespräch zu holen. Im Vollbild bleibt das Mini-Fenster. */
+    if(GEHIRN_MINI[s.ziel] && !(_jvKompakt && jarvisOffen()) && !/\b(ganz\w*|seite|wechsl\w*|wechsel\w*|geh\w* (zu|zum|zur|in|auf))\b/i.test(v.text||'')){
       var mk = s.studioKey ? [s.studioKey] : gehirnMeineKeys();
       if(mk.length){
         /* Ohne genanntes Studio: das erste, in dem etwas offen ist. */
@@ -25673,12 +25753,122 @@ function gehirnSofort(v){
     gehirnSchritt(v, 'Vorschau fertig — gespeichert wird erst mit deinem Druck', true);
 }
 function gehirnOeffne(s){
-  jarvisZu();
-  showView(s.ziel);
-  if(s.ziel==='team' && s.studioKey){
-    var sel=$('teamStudio'); if(sel) sel.value=s.studioKey;
-    loadTeam(s.studioKey);
+  function wechseln(){
+    showView(s.ziel);
+    if(s.ziel==='team' && s.studioKey){
+      var sel=$('teamStudio'); if(sel) sel.value=s.studioKey;
+      loadTeam(s.studioKey);
+    }
   }
+  /* Vollbild wie bisher: Fenster zu, Seite auf. */
+  if(!_jvKompakt || !jarvisOffen()){ jarvisZu(); wechseln(); return; }
+  /* Kompakt (Runde 177): Formi zeigt, wo es hintippt, und öffnet die
+     echte Seite. Am Handy deckt das Fenster die Leiste unten zu — es
+     wird zur Kugel, bevor der Zeiger losfährt. Am Rechner bleibt es
+     offen neben der Seite. */
+  if(!formiBleibtOffen() || s.ziel==='chat') jarvisZu();
+  formiZeiger(s.ziel).then(wechseln);
+}
+function formiHandy(){ return !!(window.matchMedia && window.matchMedia('(max-width:820px)').matches); }
+/* Bleibt Formi neben der Seite offen? Nur kompakt und nur am Rechner. */
+function formiBleibtOffen(){ return _jvKompakt && jarvisOffen() && !formiHandy(); }
+
+/* ── Formi-Kugel und Zeiger (Runde 177, 22.10.2026) ──────────────────
+   Aus dem Betrieb: „ihn zu einem richtigen assistenten machen der
+   wirklich in der app ist und gesteuert wird" — auf die Rückfragen:
+   schwebende Kugel, das Loch als Gesicht, Formi bedient die App selbst.
+
+   KOMPAKT ist ab jetzt Standard: ein Fenster unten rechts (Handy: von
+   unten), die App bleibt sichtbar und bedienbar. „Gross" bringt das
+   Vollbild von bisher zurück; die Wahl merkt sich das Gerät. */
+var _jvKompakt=true;
+try{ _jvKompakt=localStorage.getItem('kf_jv_kompakt')!=='0'; }catch(e){}
+function jvKompaktAnwenden(){
+  var j=$('jarvis'); if(!j) return;
+  j.classList.toggle('jv-kompakt', _jvKompakt);
+  j.setAttribute('aria-modal', _jvKompakt ? 'false' : 'true');
+  document.body.classList.toggle('jv-offen', !j.hidden && !_jvKompakt);
+  var b=$('jarvisGroesse');
+  if(b){
+    var t=_jvKompakt ? 'Groß machen (Vollbild)' : 'Klein machen — die App bleibt sichtbar';
+    b.innerHTML=_jvKompakt ? ikon('vollbild') : ikon('kompakt');
+    b.setAttribute('aria-label', t); b.title=t;
+  }
+  formiKugelZeigen();
+}
+function jvGroesseWechseln(){
+  _jvKompakt=!_jvKompakt;
+  try{ localStorage.setItem('kf_jv_kompakt', _jvKompakt ? '1' : '0'); }catch(e){}
+  jvKompaktAnwenden();
+  if(jarvisOffen()){ if(_jvKompakt) jvFeldStop(); else jvFeldStart(); gehirnNachUnten(); }
+  tick(6);
+}
+/* Die Kugel: überall, wo Formi verfügbar ist — ausser im Chat (dort
+   sitzen Eingabe und Senden unten rechts) und auf Formis eigener Seite. */
+function formiKugelZeigen(){
+  var k=$('formiKugel');
+  /* Die Kugel steht im Dokument NACH diesem Skript: beim ersten
+     Seitenwechsel gibt es sie noch nicht. */
+  if(!k){
+    if(document.readyState==='loading' && !formiKugelZeigen._warten){
+      formiKugelZeigen._warten=true;
+      document.addEventListener('DOMContentLoaded', function(){ formiKugelZeigen(); });
+    }
+    return;
+  }
+  if(!k._gebunden){ k._gebunden=true; k.addEventListener('click', function(){ jarvisAuf(); }); }
+  k.hidden=!(gehirnVerfuegbar() && !jarvisOffen() && currentView!=='gehirn' && currentView!=='chat');
+  document.body.classList.toggle('formi-kugel-an', !k.hidden);
+}
+/* Wohin der Zeiger fährt: der Knopf des Bereichs in der Seitenleiste
+   (Rechner) oder unten in der Leiste (Handy), sonst der Bereichskopf. */
+function formiZeigerZiel(ziel){
+  var g=(navGruppen()||[]).filter(function(x){ return (x.views||[]).indexOf(ziel)>=0; })[0];
+  var wege=[];
+  if(g) wege.push('#side [data-group="'+g.id+'"]', '#mobnav [data-group="'+g.id+'"]');
+  wege.push('#bereichKopf');
+  for(var i=0;i<wege.length;i++){
+    var el=document.querySelector(wege[i]);
+    if(!el || !el.getClientRects().length) continue;
+    var r=el.getBoundingClientRect();
+    if(r.width && r.height && r.bottom>0 && r.top<innerHeight) return el;
+  }
+  return null;
+}
+function formiZeiger(ziel){
+  return new Promise(function(fertig){
+    var el=formiZeigerZiel(ziel);
+    function leuchten(){ if(!el) return; el.classList.add('formi-markiert'); setTimeout(function(){ el.classList.remove('formi-markiert'); }, 900); }
+    if(!el || gehirnWenigBewegung() || !document.body.animate){ leuchten(); return fertig(); }
+    /* Erst im nächsten Bild messen, dann schreiben — nicht im Klick. */
+    requestAnimationFrame(function(){
+      var start=(jarvisOffen() && $('jarvisSenden')) || $('formiKugel');
+      var a=start && start.getClientRects().length ? start.getBoundingClientRect() : null;
+      var b=el.getBoundingClientRect();
+      var x0=a ? a.left+a.width/2 : innerWidth-40, y0=a ? a.top+a.height/2 : innerHeight-40;
+      var x1=b.left+b.width/2, y1=b.top+b.height/2;
+      var z=document.createElement('div');
+      z.className='formi-zeiger'; z.setAttribute('aria-hidden', 'true');
+      z.style.transform='translate('+x0+'px,'+y0+'px)';
+      document.body.appendChild(z);
+      var ok=false;
+      function weiter(){
+        if(ok) return; ok=true;
+        z.classList.add('tippt'); leuchten(); jvTon('schritt');
+        setTimeout(fertig, 260);
+        setTimeout(function(){ if(z.parentNode) z.parentNode.removeChild(z); }, 900);
+      }
+      try{
+        var anim=z.animate([
+          { transform:'translate('+x0+'px,'+y0+'px) scale(.6)', opacity:0 },
+          { transform:'translate('+Math.round((x0+x1)/2)+'px,'+Math.round(Math.min(y0, y1)-40)+'px) scale(1)', opacity:1, offset:.45 },
+          { transform:'translate('+x1+'px,'+y1+'px) scale(1)', opacity:1 }
+        ], { duration:560, easing:'cubic-bezier(.3,.7,.2,1)', fill:'forwards' });
+        anim.onfinish=weiter;
+        setTimeout(weiter, 900);
+      }catch(e){ weiter(); }
+    });
+  });
 }
 /* ── Mini-Fenster (20.10.2026) ─────────────────────────────────────
    Was die Person ohnehin sehen darf, mit ihren Rechten gelesen — aus dem
@@ -26678,9 +26868,11 @@ function jarvisAuf(){
   j.classList.add('jv-boot');
   _jvBootUhr=setTimeout(function(){ j.classList.remove('jv-boot'); }, 2200);
   j.hidden=false;
-  document.body.classList.add('jv-offen');
+  /* Runde 177: kompakt ist kein Dialog — die Seite dahinter bleibt
+     scrollbar; die grossen Leinwände laufen nur im Vollbild. */
+  jvKompaktAnwenden();
   gehirnZeichnen();
-  jvWerte(); jvUhrStart(); jvFeldStart();
+  jvWerte(); jvUhrStart(); if(!_jvKompakt) jvFeldStart();
   jvKachelnZeichnen(); gehirnLageLaden();
   jvPersonaAnwenden(); jvPersonaAuf(false); jvOfflineZeigen();
   jvTon('auf');
@@ -26695,6 +26887,7 @@ function jarvisZu(){
   jvUhrStop(); jvFeldStop();
   j.classList.remove('da', 'jv-boot'); j.hidden=true;
   document.body.classList.remove('jv-offen');
+  formiKugelZeigen();
   if(_jvVorher && _jvVorher.focus && document.contains(_jvVorher)) try{ _jvVorher.focus(); }catch(e){}
 }
 function jarvisStatus(){
@@ -26712,6 +26905,7 @@ function jarvisStatus(){
 function jarvisBinden(){
   if(_jvGebunden) return; _jvGebunden=true;
   var zu=$('jarvisZu'); if(zu) zu.addEventListener('click', jarvisZu);
+  var gr=$('jarvisGroesse'); if(gr) gr.addEventListener('click', jvGroesseWechseln);
   var gb=$('jarvisGespraecheBtn'); if(gb) gb.addEventListener('click', function(){ jvGesprAuf(); });
   var pb=$('jarvisPersonaBtn'); if(pb) pb.addEventListener('click', function(){ jvPersonaAuf(); });
   var fb=$('jarvisFoto'), fd=$('jarvisFotoDatei');
@@ -27442,6 +27636,7 @@ function jarvisKachel(ansicht){
     k.hidden=!x[1];
     if(!k._gebunden){ k._gebunden=true; k.addEventListener('click', jarvisAuf); }
   });
+  formiKugelZeigen();
 }
 
 /* ── Schnellweg ohne KI (19.10.2026) ────────────────────────────────
