@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-oMtMvvmZ5yawwyW5cKp9eLv8pXnZ4zJ89rrO3pR98iE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-qgHduTQrkUW/ENmmkwGBCkjgMVSNhvPQn6Pyt8I7uGA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1150,6 +1150,14 @@ html.demo #terminalSchirm{top:44px}
 .chat-arten[hidden]{display:none}
 /* Runde 185: derselbe Umschalter in Bestand, Pinnwand und Direkt. */
 .umschalter{margin-bottom:var(--s8)}
+/* Am Handy nennt der Umschalter die Seite schon („Material | Geräte").
+   Die Überschrift darüber wäre die zweite Antwort auf dieselbe Frage und
+   kostete 77 px: die erste Materialzeile rutschte von 570 auf 626 px
+   (test-rahmen). Am Rechner bleibt die Überschrift. */
+@media(max-width:820px){
+  .view:has(> .umschalter:not([hidden])) > .view-head{display:none}
+  .umschalter{margin-top:var(--s4)}
+}
 [data-teamtab="brett"].pin-umgezogen,#obCard.pin-weg,#annArea[hidden]{display:none !important}
 .ks-punkt{flex:0 0 auto;width:8px;height:8px;border-radius:var(--r-rund);background:var(--accent)}
 .ks-alle .ks-txt b{color:var(--text-2);font-weight:600}
@@ -4596,6 +4604,7 @@ html{font-size:var(--fs,100%)}
   font-weight:600;font-size:var(--t-sm);white-space:nowrap;cursor:pointer;
   transition:background .2s,color .2s}
 .chan-alle:hover{background:var(--auf-2);color:var(--text)}
+.chan-zeile > .chan-direkt{margin-left:var(--rand)}
 .kn-gruppe{margin:var(--s12) 0 var(--s4);font-size:var(--t-2xs);color:var(--text-3);
   font-weight:700;letter-spacing:var(--ls-l);text-transform:uppercase}
 .kn-gruppe:first-child{margin-top:0}
@@ -9250,6 +9259,12 @@ body.neu .kn-zeile{min-height:var(--zeile)}
              Zahl. Ein Mitarbeiter mit zwei Studios braucht es nicht; der
              Chef hat fünfzehn Kanäle, von denen drei zu sehen waren. -->
         <div class="chan-zeile">
+          <!-- „Direkt" (Runde 185): Chat und Direktnachrichten unter einem
+               Reiter. Fest vorn in der Kanalzeile statt in einer eigenen
+               Zeile – eine eigene Zeile kostete bei 320 × 640 den Verlauf
+               die Höhe, die Runde 127 ihm gerade gegeben hatte
+               (test-chat-klein). -->
+          <button type="button" class="chan-alle chan-direkt" id="kanalDirekt">Direkt</button>
           <button type="button" class="chan-alle" id="kanalAlle" hidden
                   aria-haspopup="dialog">Alle Kanäle</button>
           <div class="chat-channels" id="chatChannels"></div>
@@ -21863,11 +21878,10 @@ document.addEventListener('click', function(e){
 
 /* ── Chats: Direkt in derselben Zeile wie Studios | Gruppen ── */
 function chatArtenDirekt(){
-  var arten=$('chatArten'), dm=$('view-dm'); if(!arten || !dm) return;
-  if(!arten.querySelector('[data-chatart="direkt"]')){
-    var b=document.createElement('button');
-    b.type='button'; b.className='chat-art'; b.setAttribute('data-chatart','direkt'); b.textContent='Direkt';
-    arten.appendChild(b);
+  var dm=$('view-dm'), pille=$('kanalDirekt'); if(!dm) return;
+  if(pille && !pille._gebunden){
+    pille._gebunden=true;
+    pille.addEventListener('click', function(){ showView('dm'); tick(8); });
   }
   var box=dm.querySelector('.umschalter[data-umschalter="chats"]');
   if(!box){
@@ -22387,12 +22401,9 @@ function buildChannels(){
   var arten=$('chatArten');
   /* Ohne Gruppe keine Umschaltung. Ein Reiter, hinter dem nichts liegt,
      ist schlimmer als keiner. */
+  chatArtenDirekt();
   if(arten){
-    /* Seit Runde 185 steht „Direkt" mit in der Zeile – es gibt sie also
-       für jeden, auch ohne Gruppe (dann „Studios | Direkt"). */
-    chatArtenDirekt();
-    arten.hidden = false;
-    var gk=arten.querySelector('[data-chatart="gruppen"]'); if(gk) gk.hidden=!gruppen.length;
+    arten.hidden = !gruppen.length;
     if(!gruppen.length || _chatArt==='direkt') _chatArt=(_chatArt==='gruppen' && gruppen.length) ? 'gruppen' : 'studios';
     arten.querySelectorAll('[data-chatart]').forEach(function(t){
       t.classList.toggle('active', t.dataset.chatart===_chatArt);
@@ -22445,7 +22456,6 @@ function chatArtBinden(){
   arten._gebunden = true;
   arten.addEventListener('click', function(e){
     var t=e.target.closest('[data-chatart]'); if(!t) return;
-    if(t.dataset.chatart==='direkt'){ showView('dm'); tick(8); return; }
     if(_chatArt===t.dataset.chatart) return;
     _chatArt = t.dataset.chatart;
     buildChannels();

@@ -113,9 +113,9 @@ const TREFFER = (el) => {
       pruefe('Rechner: die Kanalspalte hat einen Abschnitt „Direkt" mit dem Weg zu allen', spalte.kopf.indexOf('Direkt') >= 0 && spalte.alle, JSON.stringify(spalte));
       await tippe(p, '#kanalSpalte [data-dmalle]');
     } else {
-      const da = await p.evaluate(() => { const k = document.querySelector('#chatArten [data-chatart="direkt"]'); return !!k && !!k.getClientRects().length; });
-      pruefe('Handy: „Direkt" steht in der Zeile Studios | Gruppen', da);
-      await tippe(p, '#chatArten [data-chatart="direkt"]');
+      const da = await p.evaluate(() => { const k = document.getElementById('kanalDirekt'); return !!k && !!k.getClientRects().length; });
+      pruefe('Handy: „Direkt" steht fest vorn in der Kanalzeile', da);
+      await tippe(p, '#kanalDirekt');
     }
     s = await stand(p);
     pruefe(w + ' px: Direkt öffnet die Direktnachrichten, Marke bleibt auf „Chats"', s.ansicht === 'view-dm' && s.reiter.indexOf('Chats*') >= 0, JSON.stringify(s));
@@ -253,7 +253,7 @@ const TREFFER = (el) => {
         const g = reiter.indexOf('bestand') >= 0 ? 'g-arbeit' : 'g-komm';
         await tippe(p, '#side [data-group="' + g + '"], .mn-reihe [data-group="' + g + '"], .mobnav [data-group="' + g + '"]');
         await tippe(p, reiter);
-        if (reiter.indexOf('chats') >= 0) await tippe(p, '#chatArten [data-chatart="direkt"], #kanalSpalte [data-dmalle]');
+        if (reiter.indexOf('chats') >= 0) await tippe(p, '#kanalDirekt, #kanalSpalte [data-dmalle]');
         await p.waitForTimeout(200);
         const m = await p.evaluate(({ sel, f }) => [...document.querySelectorAll(sel)].filter(e => e.getClientRects().length)
           .map(e => { const t = eval(f)(e); const r = e.getBoundingClientRect(); return { k: e.textContent, w: t.w, h: t.h, im: r.left >= 0 && r.right <= innerWidth }; }), { sel: knoepfe, f: TREFFER.toString() });
