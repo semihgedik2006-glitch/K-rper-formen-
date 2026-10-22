@@ -166,6 +166,13 @@ const LEUTE = {
   const e4 = await fns.zeitAntragEntscheiden.run({ id: r4.id, annehmen: true }, lauf('mia'));
   pruefe('(Gegenprobe) jemand anderes aus der Geschäftsführung schon', e4.status === 'angenommen');
 
+  /* Aufräumen: dieselben Namen (anna, max …) benutzen andere Regeltests
+     im selben Emulator — liegen hier gebliebene Stempel, zählen die
+     dort falsch. */
+  for (const s of ['zeitAbschluesse', 'zeitAntraege', 'zeiten']) {
+    const rest = await db.collection(F + s).get();
+    for (const d of rest.docs) await d.ref.delete();
+  }
   console.log('\n══ Korrekturanträge ══');
   protokoll.forEach((z) => console.log(z));
   console.log('\n  ' + bestanden + ' bestanden, ' + gefallen + ' gefallen');
