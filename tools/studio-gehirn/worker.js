@@ -1,5 +1,5 @@
 /**
- * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.12)
+ * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.13)
  * Cloudflare Worker: WhatsApp (Text + Sprachnachrichten), Studio-Chat-Schnittstelle,
  * Leitstand-Webseite, Speicher in D1, Antworten über Workers AI.
  *
@@ -46,6 +46,9 @@ export default {
   // Täglicher Cron: alte Nachrichten löschen (Datensparsamkeit, DSGVO)
   async scheduled(event, env, ctx) {
     ctx.waitUntil(aufraeumen(env));
+    /* 2.13: Formi lernt nachts selbst — Ergebnis sind Vorschläge, nichts
+       wird ohne Freigabe Wissen (siehe lernlauf). */
+    ctx.waitUntil(lernlauf(env).catch(e => console.error("Lernlauf:", e && e.stack || e)));
   },
 };
 
@@ -255,6 +258,14 @@ export async function behandleText(env, { kanal, absender, studio, text, typ, ad
       return { text: antwort };
     }
     const offenId = await legeOffenAn(env, { nachrichtId: letzte.id, frage: letzte.text, entwurf: letzte.antwort, absender, kanal, studio, grund: "Als falsch gemeldet" });
+    /* 2.13: Steht die Richtigstellung gleich dabei („stimmt nicht, richtig
+       ist …"), wird sie ein Vorschlag für den Leitstand. */
+    const richtig = korrekturText(t);
+    if (richtig) {
+      const wid = Number(String(letzte.wissen_ids || "").split(",")[0]) || null;
+      await vorschlagAnlegen(env, { art: "korrektur", wissenId: wid, ref: offenId, thema: letzte.text, inhalt: richtig, alt: letzte.antwort,
+        begruendung: "Aus dem Team als falsch gemeldet, mit Richtigstellung" + (studio ? " (" + studio + ")" : ""), schluessel: "korrektur:" + letzte.id }).catch(() => {});
+    }
     const antwort = `Danke! Ich habe die Antwort zur Prüfung an Semih gegeben (Nr. ${offenId}).`;
     await speichere({ typ: "befehl", antwort });
     await benachrichtigeAdmins(env, absender, `⚠️ Antwort als falsch gemeldet, Nr. ${offenId} (${studio || "?"}): ${kuerze(letzte.text, 300)}\n\nMeine Antwort war: ${kuerze(letzte.antwort, 1200)}\n\nKorrigieren mit: Antwort ${offenId}: ...`);
@@ -653,24 +664,157 @@ export function wissenRangieren(treffer, original) {
     .map(x => x.w);
 }
 
+/* ── 2.13 Suche nach Bedeutung (22.10.2026) ───────────────────────────
+   Aus dem Betrieb: „wie können wir ihm mehr wissen geben das sich die ki
+   halt weiter entwickelt". Die Wortsuche findet nur, was wörtlich (oder
+   über die Synonymliste) dasteht — „Rücken tut weh" fand „LWS" nicht.
+   Jetzt bekommt jeder Eintrag einen Bedeutungs-Fingerabdruck (Embedding,
+   bge-m3, mehrsprachig, Workers AI, kostenlos im Tageskontingent). Eine
+   Frage wird genauso umgerechnet; die ähnlichsten Einträge kommen dazu.
+
+   Gespeichert in D1 (wissen_vektor), als 8-Bit-Zahlen (1 KB je Eintrag
+   statt 4) — eine eigene Vektor-Datenbank (Vectorize) braucht es bei
+   ein paar hundert Einträgen nicht, und es bleibt nichts einzurichten.
+   Die Fingerabdrücke liegen 10 Minuten im Speicher des Workers. */
+const VEKTOR_MODELL = "@cf/baai/bge-m3";
+/* Ab dieser Ähnlichkeit (Kosinus) zählt ein Eintrag als passend. Ein
+   Schätzwert für bge-m3 — die KI entscheidet danach ohnehin, ob ein
+   Eintrag die Frage beantwortet. Nachjustieren nach dem Live-Verlauf. */
+const VEKTOR_MIN = 0.42;
+let _vektoren = null, _vektorZeit = 0;
+export function vektorNorm(v) { let q = 0; for (const x of v) q += x * x; const n = Math.sqrt(q) || 1; return Array.from(v, x => x / n); }
+export function vektorPacken(v) {
+  const n = vektorNorm(v), b = new Int8Array(n.length);
+  for (let i = 0; i < n.length; i++) b[i] = Math.max(-127, Math.min(127, Math.round(n[i] * 127)));
+  return zuBase64(new Uint8Array(b.buffer));
+}
+export function vektorAuspacken(text) {
+  const bin = atob(text), b = new Int8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) { const c = bin.charCodeAt(i); b[i] = c > 127 ? c - 256 : c; }
+  return b;
+}
+/* a: normierte Frage (Zahlen), b: gepackter Eintrag. Ergebnis ≈ Kosinus. */
+export function aehnlich(a, b) { let q = 0; const n = Math.min(a.length, b.length); for (let i = 0; i < n; i++) q += a[i] * b[i]; return q / 127; }
+/* Die Doku zu bge-m3 nennt zwei Schreibweisen (text bzw. contexts) und
+   zeigt die Antwort nicht — deshalb beide, und jede bekannte Form der
+   Antwort. Kontingent-Fehler gehen sofort weiter. */
+export function vektorenAusAntwort(r, n) {
+  const kand = [r && r.data, r && r.response, r && r.response && r.response.data, r && r.result && r.result.data];
+  for (const d of kand) if (Array.isArray(d) && d.length === n && Array.isArray(d[0]) && typeof d[0][0] === "number") return d;
+  return null;
+}
+async function einbetten(env, texte) {
+  let fehler = null;
+  for (const eingabe of [{ text: texte }, { contexts: texte.map(t => ({ text: t })), truncate_inputs: true }]) {
+    try {
+      const d = vektorenAusAntwort(await env.AI.run(VEKTOR_MODELL, eingabe), texte.length);
+      if (d) return d;
+    } catch (e) { if (istKontingentFehler(e)) throw e; fehler = e; }
+  }
+  throw new Error("Einbettung: unerwartete Antwort" + (fehler ? " (" + String(fehler.message || fehler).slice(0, 80) + ")" : ""));
+}
+async function vektorTabelle(env) {
+  await env.DB.prepare("CREATE TABLE IF NOT EXISTS wissen_vektor (id INTEGER PRIMARY KEY, vektor TEXT, modell TEXT, stand INTEGER)").run();
+}
+export function wissenText(w) { return kuerze(String(w.thema || "") + "\n" + String(w.inhalt || ""), 2000); }
+/* Fehlende und veraltete Fingerabdrücke nachrechnen, höchstens max. */
+export async function vektorenAufbauen(env, max) {
+  await vektorTabelle(env);
+  const fehlt = rows(await env.DB.prepare(
+    "SELECT w.id, w.thema, w.inhalt FROM wissen w LEFT JOIN wissen_vektor v ON v.id = w.id WHERE v.id IS NULL OR v.stand < w.geaendert OR v.modell != ? ORDER BY w.id LIMIT ?"
+  ).bind(VEKTOR_MODELL, Math.min(Math.max(Number(max) || 100, 1), 300)).all());
+  let neu = 0;
+  for (let i = 0; i < fehlt.length; i += 20) {
+    const teil = fehlt.slice(i, i + 20);
+    const vs = await einbetten(env, teil.map(wissenText));
+    for (let j = 0; j < teil.length; j++) {
+      await env.DB.prepare("INSERT INTO wissen_vektor (id, vektor, modell, stand) VALUES (?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET vektor = excluded.vektor, modell = excluded.modell, stand = excluded.stand")
+        .bind(teil[j].id, vektorPacken(vs[j]), VEKTOR_MODELL, Date.now()).run();
+      neu++;
+    }
+  }
+  await env.DB.prepare("DELETE FROM wissen_vektor WHERE id NOT IN (SELECT id FROM wissen)").run();
+  _vektoren = null;
+  const zahl = async (sql, ...x) => ((await env.DB.prepare(sql).bind(...x).first()) || {}).n || 0;
+  const gesamt = await zahl("SELECT COUNT(*) AS n FROM wissen");
+  const mit = await zahl("SELECT COUNT(*) AS n FROM wissen_vektor v JOIN wissen w ON w.id = v.id WHERE v.modell = ? AND v.stand >= w.geaendert", VEKTOR_MODELL);
+  return { neu, gesamt, mit, fertig: mit >= gesamt };
+}
+async function vektorenLaden(env) {
+  if (_vektoren && Date.now() - _vektorZeit < 600000) return _vektoren;
+  await vektorTabelle(env);
+  _vektoren = rows(await env.DB.prepare("SELECT id, vektor FROM wissen_vektor WHERE modell = ?").bind(VEKTOR_MODELL).all())
+    .map(x => ({ id: x.id, v: vektorAuspacken(x.vektor) }));
+  _vektorZeit = Date.now();
+  return _vektoren;
+}
+export async function sucheBedeutung(env, frage, k) {
+  const liste = await vektorenLaden(env);
+  if (!liste.length) return [];
+  const [q] = await einbetten(env, [kuerze(frage, 1000)]);
+  const qn = vektorNorm(q);
+  return liste.map(x => ({ id: x.id, wert: aehnlich(qn, x.v) })).filter(x => x.wert >= VEKTOR_MIN)
+    .sort((a, b) => b.wert - a.wert).slice(0, k || 8);
+}
+/* Zwei Ranglisten zu einer (Reciprocal Rank Fusion). Rein rechnerisch.
+   Wer in beiden weit oben steht, kommt nach vorn; wer nur in einer
+   steht, bleibt dabei. */
+export function rangMischen(listen, k) {
+  const punkte = new Map();
+  for (const l of listen) (l || []).forEach((id, i) => punkte.set(id, (punkte.get(id) || 0) + 1 / (60 + i)));
+  return [...punkte.entries()].sort((a, b) => b[1] - a[1]).map(x => x[0]).slice(0, k || 6);
+}
+/* Nach dem Speichern: den einen Fingerabdruck gleich nachrechnen. Klappt
+   das nicht (Kontingent), holt es der nächste Lernlauf nach. */
+async function vektorNachziehen(env, id) {
+  _vektoren = null;
+  try {
+    const w = await env.DB.prepare("SELECT id, thema, inhalt FROM wissen WHERE id = ?").bind(id).first();
+    if (!w) return;
+    await vektorTabelle(env);
+    const [v] = await einbetten(env, [wissenText(w)]);
+    await env.DB.prepare("INSERT INTO wissen_vektor (id, vektor, modell, stand) VALUES (?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET vektor = excluded.vektor, modell = excluded.modell, stand = excluded.stand")
+      .bind(id, vektorPacken(v), VEKTOR_MODELL, Date.now()).run();
+  } catch (e) { console.error("Fingerabdruck " + id + ":", e && e.message); }
+}
+
 export async function findeWissen(env, frage) {
   let begriffe = suchbegriffe(frage);
-  if (!begriffe.length) return [];
+  /* 2.13: auch ohne ein einziges Suchwort (z. B. „Rücken tut weh" nach
+     Abzug der Füllwörter) kann die Bedeutung etwas finden. */
+  let bedeutung = [];
+  try { bedeutung = await sucheBedeutung(env, frage, 8); }
+  catch (e) { console.error("Bedeutungssuche:", e && e.message); }
+  if (!begriffe.length && !bedeutung.length) return [];
   const original = begriffe.slice();
   try { begriffe = begriffeErweitern(begriffe, await vokabularLaden(env), await synonymeLaden(env)); }
   catch (e) { console.error("Erweitern fehlgeschlagen:", e && e.message); }
   // Präfix-Suche: "wasche" findet auch "waschen", "Westen" auch "Weste"
   const anfrage = begriffe.map(w => `"${w.length > 5 ? w.slice(0, 5) : w}"*`).join(" OR ");
   let treffer = [];
-  try {
-    treffer = (await env.DB.prepare(
-      "SELECT w.id, w.thema, w.inhalt, w.quelle FROM wissen_fts f JOIN wissen w ON w.id = f.rowid WHERE wissen_fts MATCH ? ORDER BY bm25(wissen_fts, 3.0, 1.0) LIMIT 20"
-    ).bind(anfrage).all()).results || [];
-    treffer = wissenRangieren(treffer, original).slice(0, 6);
-  } catch (e) {
-    console.error("Volltextsuche fehlgeschlagen, nutze einfache Suche:", e && e.message);
-    const like = "%" + begriffe[0].slice(0, 5) + "%";
-    treffer = (await env.DB.prepare("SELECT id, thema, inhalt, quelle FROM wissen WHERE thema LIKE ? OR inhalt LIKE ? LIMIT 6").bind(like, like).all()).results || [];
+  if (begriffe.length) {
+    try {
+      treffer = (await env.DB.prepare(
+        "SELECT w.id, w.thema, w.inhalt, w.quelle FROM wissen_fts f JOIN wissen w ON w.id = f.rowid WHERE wissen_fts MATCH ? ORDER BY bm25(wissen_fts, 3.0, 1.0) LIMIT 20"
+      ).bind(anfrage).all()).results || [];
+      treffer = wissenRangieren(treffer, original).slice(0, 6);
+    } catch (e) {
+      console.error("Volltextsuche fehlgeschlagen, nutze einfache Suche:", e && e.message);
+      const like = "%" + begriffe[0].slice(0, 5) + "%";
+      treffer = (await env.DB.prepare("SELECT id, thema, inhalt, quelle FROM wissen WHERE thema LIKE ? OR inhalt LIKE ? LIMIT 6").bind(like, like).all()).results || [];
+    }
+  }
+  /* 2.13: beide Ranglisten mischen; was nur die Bedeutung fand, wird
+     nachgeladen. */
+  if (bedeutung.length) {
+    const ids = rangMischen([treffer.map(w => w.id), bedeutung.map(x => x.id)], 6);
+    const da = new Map(treffer.map(w => [w.id, w]));
+    const fehlt = ids.filter(id => !da.has(id));
+    if (fehlt.length) {
+      rows(await env.DB.prepare("SELECT id, thema, inhalt, quelle FROM wissen WHERE id IN (" + fehlt.map(() => "?").join(",") + ")").bind(...fehlt).all())
+        .forEach(w => da.set(w.id, w));
+    }
+    treffer = ids.map(id => da.get(id)).filter(Boolean);
   }
   const auswahl = [];
   let zeichen = 0;
@@ -690,6 +834,7 @@ export async function wissenSpeichern(env, { thema, inhalt, kategorie, quelle })
     .bind(kuerze(thema, 300), kuerze(inhalt, 5000), kat, kuerze(quelle || "", 200), jetzt, jetzt).run();
   const id = r.meta.last_row_id;
   await env.DB.prepare("INSERT INTO wissen_fts (rowid, thema, inhalt) VALUES (?, ?, ?)").bind(id, kuerze(thema, 300), kuerze(inhalt, 5000)).run();
+  await vektorNachziehen(env, id);
   return id;
 }
 
@@ -701,12 +846,15 @@ async function wissenAendern(env, id, { thema, inhalt, kategorie }) {
   await env.DB.prepare("UPDATE wissen SET thema = ?, inhalt = ?, kategorie = ?, geaendert = ? WHERE id = ?").bind(neuThema, neuInhalt, kat, Date.now(), id).run();
   await env.DB.prepare("DELETE FROM wissen_fts WHERE rowid = ?").bind(id).run();
   await env.DB.prepare("INSERT INTO wissen_fts (rowid, thema, inhalt) VALUES (?, ?, ?)").bind(id, neuThema, neuInhalt).run();
+  await vektorNachziehen(env, id);
   return true;
 }
 
 async function wissenLoeschen(env, id) {
   const r = await env.DB.prepare("DELETE FROM wissen WHERE id = ?").bind(id).run();
   await env.DB.prepare("DELETE FROM wissen_fts WHERE rowid = ?").bind(id).run();
+  try { await vektorTabelle(env); await env.DB.prepare("DELETE FROM wissen_vektor WHERE id = ?").bind(id).run(); } catch (e) {}
+  _vektoren = null;
   return r.meta.changes > 0;
 }
 
@@ -765,6 +913,189 @@ async function datenLoeschen(env, nummerRoh) {
   await env.DB.prepare("UPDATE ideen SET absender = 'gelöscht' WHERE absender = ?").bind(nummer).run();
   await env.DB.prepare("DELETE FROM mitarbeiter WHERE nummer = ?").bind(nummer).run();
   return { nachrichten: a.meta.changes, offen: b.meta.changes };
+}
+
+/* ── 2.13 Lernschleife: Formi lernt selbst, du gibst frei (22.10.2026) ──
+   Aus dem Betrieb: „am besten würde ich es finden wenn sich die ki
+   sozusagen selber trainieren könnte". Ganz allein lernen darf sie
+   nicht: in der Nacht auf den 22.10. lagen 23 ungeprüfte KI-Entwürfe als
+   „Wissen" in der Datenbank, einer mit erfundenen Konditionen — eine KI,
+   die sich selbst trainiert, hätte das Erfinden gelernt. Deshalb:
+   Formi SAMMELT, ENTWIRFT und PRÜFT selbst; jedes Ergebnis ist ein
+   Vorschlag, und erst ein Tipp im Leitstand macht daraus Wissen.
+
+   Vier Quellen (lernlauf, nachts und per Knopf):
+     frage      Selbsttest: Formi schreibt zu einem Eintrag eine Frage, wie
+                das Team sie tippen würde, und sucht. Findet es den Eintrag
+                nicht unter den ersten drei, schlägt es vor, die Frage im
+                Eintrag zu ergänzen („Auch gefragt als …").
+     luecke     Zu offenen Fragen ein Entwurf NUR aus vorhandenem Wissen,
+                mit den Nummern. Reicht das Wissen nicht, gibt es keinen
+                Vorschlag — die Frage bleibt bei dir.
+     veraltet   Einträge, die über ein Jahr nicht angefasst wurden.
+     doppelt    Zwei Einträge, die fast dasselbe sagen (Bedeutung ≥ 0,95).
+   Dazu korrektur: „stimmt nicht, richtig ist …" aus dem Team.
+
+   Je Lauf wenig Arbeit (Rechenzeit des kostenlosen Workers); was liegen
+   bleibt, holt der nächste Lauf. Abgelehntes kommt nicht wieder
+   (schluessel). Freigegebene Selbsttest-Fragen zählen als geprüfte
+   Beispiele fürs spätere Nachtrainieren. */
+export const VORSCHLAG_ARTEN = ["frage", "luecke", "veraltet", "doppelt", "korrektur"];
+export async function vorschlagTabelle(env) {
+  await env.DB.prepare("CREATE TABLE IF NOT EXISTS vorschlag (id INTEGER PRIMARY KEY AUTOINCREMENT, art TEXT, wissen_id INTEGER, ref INTEGER, thema TEXT, inhalt TEXT, alt TEXT, begruendung TEXT, status TEXT DEFAULT 'neu', schluessel TEXT UNIQUE, erstellt INTEGER, geprueft INTEGER)").run();
+  await env.DB.prepare("CREATE TABLE IF NOT EXISTS selbsttest (wissen_id INTEGER PRIMARY KEY, zuletzt INTEGER, gefunden INTEGER, frage TEXT)").run();
+}
+export async function vorschlagAnlegen(env, v) {
+  if (!VORSCHLAG_ARTEN.includes(v.art) || !v.schluessel) return false;
+  await vorschlagTabelle(env);
+  const r = await env.DB.prepare("INSERT OR IGNORE INTO vorschlag (art, wissen_id, ref, thema, inhalt, alt, begruendung, schluessel, erstellt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
+    .bind(v.art, v.wissenId || null, v.ref || null, kuerze(v.thema || "", 300), kuerze(v.inhalt || "", 5000), kuerze(v.alt || "", 5000), kuerze(v.begruendung || "", 500), String(v.schluessel).slice(0, 300), Date.now()).run();
+  return r.meta.changes > 0;
+}
+/* „stimmt nicht, richtig ist: …" → der Teil nach dem Komma/Doppelpunkt.
+   Rein rechnerisch. Zu kurz (< 15 Zeichen) heisst: keine Richtigstellung. */
+export function korrekturText(text) {
+  const m = String(text || "").trim().match(/^(?:das\s+)?(?:stimmt nicht|falsch)\s*[,.:;!\-–—]*\s*(?:(?:richtig|korrekt)\s+(?:ist|wäre|waere)\s*[:,]?\s*)?([\s\S]*)$/i);
+  const rest = m ? m[1].trim() : "";
+  return rest.length >= 15 ? kuerze(rest, 3000) : "";
+}
+export function normFrage(f) { return normWort(f).replace(/[^a-z0-9ß]+/g, " ").trim(); }
+const SELBSTTEST_SYSTEM = `Du hilfst, eine Wissensdatenbank für Mitarbeiter eines EMS-Fitnessstudios zu testen.
+Du bekommst EINEN Eintrag. Schreib genau EINE kurze Frage, wie ein Mitarbeiter sie im Alltag in sein Handy tippen würde: locker, Du-Form, eigene Worte — benutze möglichst NICHT die Wörter aus dem Thema, sondern Umschreibungen oder Alltagssprache.
+Antworte nur mit JSON: {"frage":"..."}`;
+const LUECKE_SYSTEM = `Du schreibst Antworten für Formi, die interne KI von Körperformen (EMS-Studios in Köln).
+Du bekommst eine Frage aus dem Team und Einträge aus dem Studio-Wissen mit Nummern.
+Schreib eine Antwort NUR aus diesen Einträgen — Deutsch, Du-Form, höchstens 120 Wörter, Abläufe als 1. 2. 3., kein Markdown.
+Erfinde nichts. Reichen die Einträge nicht, um die Frage sicher zu beantworten, antworte mit "reicht": false.
+Antworte nur mit JSON: {"reicht": true oder false, "antwort": "...", "quellen": [Nummern]}`;
+async function kiJsonWorker(env, system, nutzer) {
+  const messages = [{ role: "system", content: system }, { role: "user", content: nutzer }];
+  for (const modell of [MODELL_SCHNELL, MODELL_GRUENDLICH]) {
+    try {
+      const d = parseJson(kiText(await env.AI.run(modell, { messages, max_tokens: 900, temperature: 0.3 })));
+      if (d && typeof d === "object") return d;
+    } catch (e) { if (istKontingentFehler(e)) throw e; console.error("Lernlauf " + modell + ":", e && e.message); }
+  }
+  return null;
+}
+export async function lernlauf(env, opt) {
+  const o = Object.assign({ tests: 3, luecken: 3, veraltet: 5, doppelt: 4 }, opt || {});
+  const bericht = { vektoren: null, getestet: 0, nichtGefunden: 0, luecken: 0, veraltet: 0, doppelt: 0, kontingent: false, neu: 0 };
+  await vorschlagTabelle(env);
+  try { bericht.vektoren = await vektorenAufbauen(env, 60); }
+  catch (e) { if (istKontingentFehler(e)) { bericht.kontingent = true; return bericht; } console.error("Lernlauf Vektoren:", e && e.message); }
+
+  // 1. Selbsttest — zuerst nie geprüfte, dann die am längsten nicht geprüften
+  const pruefen = rows(await env.DB.prepare(
+    "SELECT w.id, w.thema, w.inhalt FROM wissen w LEFT JOIN selbsttest t ON t.wissen_id = w.id ORDER BY COALESCE(t.zuletzt, 0), w.id LIMIT ?"
+  ).bind(o.tests).all());
+  for (const w of pruefen) {
+    let d = null;
+    try { d = await kiJsonWorker(env, SELBSTTEST_SYSTEM, "Thema: " + w.thema + "\n\n" + kuerze(w.inhalt, 2500)); }
+    catch (e) { bericht.kontingent = true; break; }
+    const frage = d && typeof d.frage === "string" ? kuerze(d.frage.trim(), 300) : "";
+    if (frage.length < 6) continue;
+    const gefunden = (await findeWissen(env, frage)).slice(0, 3).some(x => x.id === w.id);
+    bericht.getestet++;
+    await env.DB.prepare("INSERT INTO selbsttest (wissen_id, zuletzt, gefunden, frage) VALUES (?, ?, ?, ?) ON CONFLICT(wissen_id) DO UPDATE SET zuletzt = excluded.zuletzt, gefunden = excluded.gefunden, frage = excluded.frage")
+      .bind(w.id, Date.now(), gefunden ? 1 : 0, frage).run();
+    if (!gefunden) {
+      bericht.nichtGefunden++;
+      if (await vorschlagAnlegen(env, { art: "frage", wissenId: w.id, thema: frage, inhalt: w.inhalt, alt: w.thema,
+        begruendung: "Selbsttest: Auf diese Frage findet Formi Eintrag Nr. " + w.id + " nicht. Übernehmen ergänzt sie im Eintrag („Auch gefragt als …“).",
+        schluessel: "frage:" + w.id + ":" + normFrage(frage) })) bericht.neu++;
+    }
+  }
+
+  // 2. Lücken — offene Fragen, nur aus vorhandenem Wissen beantwortet
+  if (!bericht.kontingent) {
+    const offen = rows(await env.DB.prepare(
+      "SELECT o.id, o.frage FROM offen o LEFT JOIN vorschlag v ON v.art = 'luecke' AND v.ref = o.id WHERE o.status = 'offen' AND v.id IS NULL ORDER BY o.id DESC LIMIT ?"
+    ).bind(o.luecken).all());
+    for (const f of offen) {
+      const wissen = await findeWissen(env, f.frage);
+      if (!wissen.length) { await vorschlagAnlegen(env, { art: "luecke", ref: f.id, thema: f.frage, inhalt: "", begruendung: "kein passendes Wissen", schluessel: "luecke:" + f.id }); await env.DB.prepare("UPDATE vorschlag SET status = 'leer' WHERE schluessel = ?").bind("luecke:" + f.id).run(); continue; }
+      let d = null;
+      try { d = await kiJsonWorker(env, LUECKE_SYSTEM, "FRAGE: " + f.frage + "\n\nEINTRÄGE:\n" + wissen.map(w => "[Nr. " + w.id + "] " + w.thema + "\n" + w.inhalt).join("\n\n")); }
+      catch (e) { bericht.kontingent = true; break; }
+      const gueltig = new Set(wissen.map(w => w.id));
+      const quellen = (d && Array.isArray(d.quellen) ? d.quellen : []).map(Number).filter(x => gueltig.has(x));
+      const reicht = !!(d && d.reicht === true && typeof d.antwort === "string" && d.antwort.trim().length >= 20 && quellen.length);
+      /* Auch „reicht nicht" wird gemerkt (Status leer), damit der nächste
+         Lauf nicht dieselbe Frage wieder rechnet. */
+      await vorschlagAnlegen(env, { art: "luecke", ref: f.id, thema: f.frage, inhalt: reicht ? entferneMarkdown(d.antwort.trim()) : "",
+        begruendung: reicht ? "Entwurf nur aus Wissen Nr. " + quellen.join(", ") : "Wissen reicht nicht — bleibt bei dir unter Offen", schluessel: "luecke:" + f.id });
+      if (reicht) { bericht.luecken++; bericht.neu++; }
+      else await env.DB.prepare("UPDATE vorschlag SET status = 'leer' WHERE schluessel = ?").bind("luecke:" + f.id).run();
+    }
+  }
+
+  // 3. Veraltet — über ein Jahr nicht angefasst
+  const jahr = new Date().getUTCFullYear();
+  for (const w of rows(await env.DB.prepare("SELECT id, thema, inhalt, geaendert FROM wissen WHERE geaendert < ? ORDER BY geaendert LIMIT ?").bind(Date.now() - 365 * TAG, o.veraltet).all())) {
+    if (await vorschlagAnlegen(env, { art: "veraltet", wissenId: w.id, thema: w.thema, inhalt: w.inhalt,
+      begruendung: "Seit " + new Date(w.geaendert).toLocaleDateString("de-DE") + " nicht geändert — stimmt das noch?", schluessel: "veraltet:" + w.id + ":" + jahr })) { bericht.veraltet++; bericht.neu++; }
+  }
+
+  // 4. Doppelt — reihum ein paar Einträge gegen alle (Rechenzeit!)
+  try {
+    const alle = await vektorenLaden(env);
+    if (alle.length > 1) {
+      const start = Math.floor(Date.now() / TAG) * o.doppelt % alle.length;
+      for (let i = 0; i < Math.min(o.doppelt, alle.length); i++) {
+        const a = alle[(start + i) % alle.length];
+        const an = Array.from(a.v, x => x / 127);
+        for (const b of alle) {
+          if (b.id === a.id) continue;
+          if (aehnlich(an, b.v) >= 0.95) {
+            const [x, y] = a.id < b.id ? [a.id, b.id] : [b.id, a.id];
+            const wx = await env.DB.prepare("SELECT thema, inhalt FROM wissen WHERE id = ?").bind(x).first();
+            const wy = await env.DB.prepare("SELECT thema, inhalt FROM wissen WHERE id = ?").bind(y).first();
+            if (!wx || !wy) continue;
+            if (await vorschlagAnlegen(env, { art: "doppelt", wissenId: x, ref: y, thema: wx.thema + "  ⟷  " + wy.thema, inhalt: wx.inhalt, alt: wy.inhalt,
+              begruendung: "Nr. " + x + " und Nr. " + y + " sagen fast dasselbe. Übernehmen behält Nr. " + x + " (mit deinem Text) und löscht Nr. " + y + ".", schluessel: "doppelt:" + x + ":" + y })) { bericht.doppelt++; bericht.neu++; }
+          }
+        }
+      }
+    }
+  } catch (e) { console.error("Lernlauf doppelt:", e && e.message); }
+  return bericht;
+}
+/* Ein Vorschlag wird angenommen oder verworfen. „inhalt" ist der Text,
+   wie du ihn im Leitstand stehen lassen oder geändert hast. */
+export async function vorschlagUrteil(env, { id, gut, inhalt }) {
+  await vorschlagTabelle(env);
+  const v = await env.DB.prepare("SELECT * FROM vorschlag WHERE id = ?").bind(Number(id)).first();
+  if (!v || v.status !== "neu") return { ok: false, fehler: "Gibt es nicht oder ist schon erledigt." };
+  const fertig = (status, text) => env.DB.prepare("UPDATE vorschlag SET status = ?, geprueft = ? WHERE id = ?").bind(status, Date.now(), v.id).run().then(() => ({ ok: true, text }));
+  if (!gut) return fertig("verworfen", "Verworfen.");
+  const text = String(inhalt == null ? v.inhalt : inhalt).trim();
+  if (v.art === "frage") {
+    const w = await env.DB.prepare("SELECT inhalt FROM wissen WHERE id = ?").bind(v.wissen_id).first();
+    if (!w) return fertig("verworfen", "Den Eintrag gibt es nicht mehr.");
+    await wissenAendern(env, v.wissen_id, { inhalt: kuerze(w.inhalt + "\n\nAuch gefragt als: „" + v.thema + "“", 5000) });
+    return fertig("gut", "Frage im Eintrag Nr. " + v.wissen_id + " ergänzt.");
+  }
+  if (!text) return { ok: false, fehler: "Bitte zuerst einen Text eintragen." };
+  if (v.art === "luecke") {
+    const r = await beantworteOffen(env, v.ref, text);
+    return fertig("gut", r);
+  }
+  if (v.art === "korrektur") {
+    const nr = await wissenSpeichern(env, { thema: v.thema, inhalt: text, kategorie: "Sonstiges", quelle: "Korrektur aus dem Team" });
+    if (v.ref) await verwerfen(env, v.ref);
+    return fertig("gut", "Als Wissen Nr. " + nr + " gespeichert." + (v.wissen_id ? " Eintrag Nr. " + v.wissen_id + " bitte unter Wissen prüfen." : ""));
+  }
+  if (v.art === "veraltet") {
+    await wissenAendern(env, v.wissen_id, { inhalt: text });
+    return fertig("gut", "Eintrag Nr. " + v.wissen_id + " ist bestätigt.");
+  }
+  if (v.art === "doppelt") {
+    await wissenAendern(env, v.wissen_id, { inhalt: text });
+    await wissenLoeschen(env, v.ref);
+    return fertig("gut", "Nr. " + v.wissen_id + " behalten, Nr. " + v.ref + " gelöscht.");
+  }
+  return { ok: false, fehler: "Unbekannte Art." };
 }
 
 /* Rein rechnerisch, damit es sich ohne Datenbank prüfen lässt.
@@ -885,6 +1216,9 @@ async function trainingsDaten(env) {
   for (const r of rows(await env.DB.prepare("SELECT thema AS frage, inhalt AS antwort FROM wissen WHERE quelle LIKE 'Offene Frage %'").all())) zeilen.push({ frage: r.frage, antwort: r.antwort, quelle: "offene-frage", gold: true });
   for (const r of rows(await env.DB.prepare("SELECT frage, antwort FROM uebung WHERE status = 'gut'").all())) zeilen.push({ frage: r.frage, antwort: r.antwort, quelle: "uebung", gold: true });
   for (const r of rows(await env.DB.prepare("SELECT frage, antwort FROM bewertung WHERE wert = 1 AND frage != ''").all())) zeilen.push({ frage: r.frage, antwort: r.antwort, quelle: "daumen", gold: true });
+  await vorschlagTabelle(env);
+  for (const r of rows(await env.DB.prepare("SELECT v.thema AS frage, w.inhalt AS antwort FROM vorschlag v JOIN wissen w ON w.id = v.wissen_id WHERE v.status = 'gut' AND v.art = 'frage'").all())) zeilen.push({ frage: r.frage, antwort: r.antwort, quelle: "selbsttest", gold: true });
+  for (const r of rows(await env.DB.prepare("SELECT thema AS frage, inhalt AS antwort FROM wissen WHERE quelle = 'Korrektur aus dem Team'").all())) zeilen.push({ frage: r.frage, antwort: r.antwort, quelle: "korrektur", gold: true });
   for (const r of rows(await env.DB.prepare("SELECT n.text AS frage, n.antwort FROM nachrichten n LEFT JOIN bewertung b ON b.nachricht_id = n.id WHERE n.typ IN ('text','sprache') AND n.abgedeckt = 1 AND n.antwort != '' AND b.id IS NULL").all())) zeilen.push({ frage: r.frage, antwort: r.antwort, quelle: "aus-wissen", gold: false });
   return zeilen.map(z => JSON.stringify(z)).join("\n") + (zeilen.length ? "\n" : "");
 }
@@ -955,14 +1289,23 @@ async function statistik(env) {
   const goldOffen = await zahl("SELECT COUNT(*) AS n FROM wissen WHERE quelle LIKE 'Offene Frage %'");
   const goldUebung = await zahl("SELECT COUNT(*) AS n FROM uebung WHERE status = 'gut'");
   const goldDaumen = await zahl("SELECT COUNT(*) AS n FROM bewertung WHERE wert = 1 AND frage != ''");
+  await vorschlagTabelle(env);
+  /* 2.13: freigegebene Selbsttest-Fragen (Frage → Eintrag) und
+     Korrekturen sind von dir geprüfte Paare. Lücken laufen über
+     beantworteOffen und zählen dort schon. */
+  const goldLernen = await zahl("SELECT COUNT(*) AS n FROM vorschlag WHERE status = 'gut' AND art IN ('frage','korrektur')");
+  const vorschlaege = await zahl("SELECT COUNT(*) AS n FROM vorschlag WHERE status = 'neu'");
+  let vektoren = { mit: 0, gesamt: 0 };
+  try { await vektorTabelle(env); vektoren = { mit: await zahl("SELECT COUNT(*) AS n FROM wissen_vektor v JOIN wissen w ON w.id = v.id WHERE v.modell = ? AND v.stand >= w.geaendert", VEKTOR_MODELL), gesamt: 0 }; } catch (e) {}
   const daumenRunter = await zahl("SELECT COUNT(*) AS n FROM bewertung WHERE wert = -1");
   const uebungNeu = await zahl("SELECT COUNT(*) AS n FROM uebung WHERE status = 'neu'");
   const tempo = await zahl("SELECT COUNT(*) AS n FROM nachrichten WHERE typ IN ('text','sprache') AND abgedeckt = 1 AND erstellt > ?", vor14)
     + await zahl("SELECT COUNT(*) AS n FROM wissen WHERE quelle LIKE 'Offene Frage %' AND erstellt > ?", vor14)
     + await zahl("SELECT COUNT(*) AS n FROM uebung WHERE status = 'gut' AND geprueft > ?", vor14)
     + await zahl("SELECT COUNT(*) AS n FROM bewertung WHERE wert = 1 AND erstellt > ?", vor14);
-  const training = Object.assign(trainingsStand(ausWissen, goldOffen + goldUebung + goldDaumen, tempo), { goldOffen, goldUebung, goldDaumen, daumenRunter, uebungNeu });
-  return { fragen7: z.fragen || 0, abgedeckt7: z.abgedeckt || 0, sprache7: z.sprache || 0, fragenHeute: heute.n, offen: offen.n, wissen: wissen.n, ideen7: ideen.n, mitarbeiter: mitarbeiter.n, training };
+  const training = Object.assign(trainingsStand(ausWissen, goldOffen + goldUebung + goldDaumen + goldLernen, tempo), { goldOffen, goldUebung, goldDaumen, goldLernen, daumenRunter, uebungNeu });
+  vektoren.gesamt = wissen.n;
+  return { fragen7: z.fragen || 0, abgedeckt7: z.abgedeckt || 0, sprache7: z.sprache || 0, fragenHeute: heute.n, offen: offen.n, wissen: wissen.n, ideen7: ideen.n, mitarbeiter: mitarbeiter.n, training, vorschlaege, vektoren };
 }
 
 async function legeOffenAn(env, { nachrichtId, frage, entwurf, absender, kanal, studio, grund }) {
@@ -1218,6 +1561,7 @@ async function api(request, env, url) {
   if (request.method === "GET") {
     if (pfad === "/api/statistik") return json(await statistik(env));
     if (pfad === "/api/wochenbericht") return json(await wochenbericht(env));
+    if (pfad === "/api/vorschlaege") { await vorschlagTabelle(env); return json(rows(await env.DB.prepare("SELECT * FROM vorschlag WHERE status = 'neu' ORDER BY id DESC LIMIT ?").bind(limit).all())); }
     if (pfad === "/api/wissen") return json(rows(await env.DB.prepare("SELECT * FROM wissen ORDER BY geaendert DESC LIMIT ?").bind(limit).all()));
     if (pfad === "/api/offen") return json(rows(await env.DB.prepare("SELECT * FROM offen WHERE status = 'offen' ORDER BY id DESC LIMIT ?").bind(limit).all()));
     if (pfad === "/api/ideen") return json(rows(await env.DB.prepare("SELECT * FROM ideen ORDER BY id DESC LIMIT ?").bind(limit).all()));
@@ -1240,6 +1584,12 @@ async function api(request, env, url) {
     if (pfad === "/api/antwort") return json({ ergebnis: await beantworteOffen(env, Number(b.id), b.text ? String(b.text) : null) });
     if (pfad === "/api/verwerfen") return json({ ok: await verwerfen(env, Number(b.id)) });
     if (pfad === "/api/uebung/erzeugen") return json(await uebungErzeugen(env, b.eintraege));
+    if (pfad === "/api/lernlauf") return json(await lernlauf(env, { tests: 5, luecken: 5 }));
+    if (pfad === "/api/vektoren") {
+      try { return json(await vektorenAufbauen(env, 150)); }
+      catch (e) { return json({ fehler: istKontingentFehler(e) ? "Kontingent von Workers AI für heute aufgebraucht" : "Konnte nicht rechnen: " + String(e && e.message || e).slice(0, 120) }, 502); }
+    }
+    if (pfad === "/api/vorschlag/urteil") return json(await vorschlagUrteil(env, { id: b.id, gut: !!b.gut, inhalt: b.inhalt == null ? null : String(b.inhalt) }));
     if (pfad === "/api/uebung/urteil") return json(await uebungUrteil(env, b));
     if (pfad === "/api/wissen") {
       if (!b.thema || !b.inhalt) return json({ fehler: "Thema und Inhalt nötig" }, 400);
@@ -1382,7 +1732,7 @@ textarea{min-height:90px;resize:vertical}
 <script>
 var KEY = "";
 try { KEY = sessionStorage.getItem("sg-key") || ""; } catch (e) {}
-var TABS = [["start","Übersicht"],["offen","Offen"],["ueben","Üben"],["wissen","Wissen"],["synonyme","Synonyme"],["ideen","Ideen"],["team","Mitarbeiter"],["verlauf","Verlauf"]];
+var TABS = [["start","Übersicht"],["vorschlaege","Vorschläge"],["offen","Offen"],["ueben","Üben"],["wissen","Wissen"],["synonyme","Synonyme"],["ideen","Ideen"],["team","Mitarbeiter"],["verlauf","Verlauf"]];
 var KATS = ["Geräte & Hygiene","Training & EMS","Kunden & Verträge","Gesundheit & Atteste","Abläufe & Ansprechpartner","Marketing","Sonstiges"];
 var IST = ["neu","in Prüfung","umgesetzt","abgelehnt"];
 var tab = "start";
@@ -1407,7 +1757,7 @@ function start() {
 }
 function zeige() {
   var v = document.getElementById("view"); v.replaceChildren(el("div", { class: "s", text: "Lädt …" }));
-  ({ start: uebersicht, offen: offen, ueben: ueben, wissen: wissen, synonyme: synonyme, ideen: ideen, team: team, verlauf: verlauf })[tab](v);
+  ({ start: uebersicht, vorschlaege: vorschlaege, offen: offen, ueben: ueben, wissen: wissen, synonyme: synonyme, ideen: ideen, team: team, verlauf: verlauf })[tab](v);
 }
 var _uebTaste = null;
 document.addEventListener("keydown", function (e) { if (_uebTaste && tab === "ueben") _uebTaste(e); });
@@ -1488,7 +1838,16 @@ function synonyme(v) {
 function uebersicht(v) {
   api("/api/statistik").then(function (s) {
     function box(z, t) { return el("div", { class: "card" }, el("div", { class: "num", text: z }), el("div", { class: "s", text: t })); }
-    v.replaceChildren(el("div", { class: "grid" }, box(s.offen, "offene Fragen"), box(s.fragenHeute, "Fragen heute"), box(s.fragen7, "Fragen in 7 Tagen"), box(s.abgedeckt7, "davon aus dem Wissen"), box(s.sprache7, "per Sprachnachricht"), box(s.wissen, "Wissenseinträge"), box(s.ideen7, "Ideen in 7 Tagen"), box(s.mitarbeiter, "freigeschaltet")));
+    v.replaceChildren(el("div", { class: "grid" }, box(s.vorschlaege || 0, "Vorschläge von Formi"), box(s.offen, "offene Fragen"), box(s.fragenHeute, "Fragen heute"), box(s.fragen7, "Fragen in 7 Tagen"), box(s.abgedeckt7, "davon aus dem Wissen"), box(s.sprache7, "per Sprachnachricht"), box(s.wissen, "Wissenseinträge"), box(s.ideen7, "Ideen in 7 Tagen"), box(s.mitarbeiter, "freigeschaltet")));
+    var vk = s.vektoren || { mit: 0, gesamt: 0 };
+    v.append(el("div", { class: "card" },
+      el("div", { class: "t", text: "Formi lernt selbst" }),
+      el("div", { class: "s", text: "Nachts testet sich Formi selbst, entwirft Antworten aus vorhandenem Wissen und sucht Doppeltes und Veraltetes. Daraus werden Vorschläge — Wissen wird es erst, wenn du es freigibst." }),
+      el("div", { class: "s", style: "margin-top:6px", text: "Suche nach Bedeutung: " + vk.mit + " von " + vk.gesamt + " Einträgen berechnet." }),
+      el("div", { class: "row" },
+        el("button", { class: "btn pri", text: s.vorschlaege ? "Vorschläge ansehen (" + s.vorschlaege + ")" : "Vorschläge ansehen", onclick: function () { tab = "vorschlaege"; start(); } }),
+        el("button", { class: "btn", text: "Jetzt lernen", onclick: function (e) { e.target.disabled = true; e.target.textContent = "Formi lernt …"; api("/api/lernlauf", {}).then(function (r) { toast(r.kontingent ? "Kontingent für heute aufgebraucht" : (r.neu + " neue Vorschläge · " + r.getestet + " Einträge getestet")); zeige(); }); } }),
+        vk.mit < vk.gesamt ? el("button", { class: "btn", text: "Bedeutung berechnen", onclick: function (e) { e.target.disabled = true; e.target.textContent = "Rechnet …"; api("/api/vektoren", {}).then(function (r) { toast(r.fehler || (r.mit + " von " + r.gesamt + " berechnet")); zeige(); }); } }) : null)));
     wochenKarte(v);
     var t = s.training;
     if (t) {
@@ -1501,7 +1860,7 @@ function uebersicht(v) {
         balken(t.gesamt, t.ziel),
         el("div", { style: "margin-top:8px" }, el("span", { class: "t", text: t.vonDir + " von " + t.gold }), el("span", { class: "s", text: " geprüft" + (t.fehltGold ? " · noch " + t.fehltGold : " ✓") })),
         balken(t.vonDir, t.gold),
-        el("div", { class: "s", text: "Davon: " + (t.goldOffen || 0) + " offene Fragen beantwortet · " + (t.goldUebung || 0) + " aus dem Übungsstapel · " + (t.goldDaumen || 0) + " Daumen hoch im Team" + (t.daumenRunter ? " · " + t.daumenRunter + " Daumen runter" : "") }),
+        el("div", { class: "s", text: "Davon: " + (t.goldOffen || 0) + " offene Fragen beantwortet · " + (t.goldUebung || 0) + " aus dem Übungsstapel · " + (t.goldLernen || 0) + " Vorschläge von Formi · " + (t.goldDaumen || 0) + " Daumen hoch im Team" + (t.daumenRunter ? " · " + t.daumenRunter + " Daumen runter" : "") }),
         el("div", { class: "row" },
           el("button", { class: "btn pri", text: t.uebungNeu ? "Üben (" + t.uebungNeu + " warten)" : "Üben", onclick: function () { tab = "ueben"; start(); } }),
           el("button", { class: "btn", text: "Trainingsdaten herunterladen", onclick: trainingHerunterladen })),
@@ -1533,6 +1892,32 @@ function wochenKarte(v) {
       el("button", { class: "btn pri", text: "Offene Fragen beantworten", onclick: function () { tab = "offen"; start(); } }),
       el("button", { class: "btn", text: "Wissen ergänzen", onclick: function () { tab = "wissen"; start(); } })));
     v.append(karte);
+  });
+}
+/* 2.13: Vorschläge von Formi — ✓ macht Wissen daraus, ✗ verwirft. */
+var VS_NAME = { frage: "Selbsttest", luecke: "Antwort-Entwurf", veraltet: "Noch aktuell?", doppelt: "Doppelt", korrektur: "Korrektur aus dem Team" };
+function vorschlaege(v) {
+  api("/api/vorschlaege").then(function (liste) {
+    v.replaceChildren(el("div", { class: "s", style: "margin-bottom:10px", text: "Formi schlägt vor, du entscheidest. Text bei Bedarf ändern, dann übernehmen. Nichts davon ist Wissen, bevor du es freigibst." }));
+    if (!liste.length) { v.append(el("div", { class: "empty", text: "Keine Vorschläge. Formi lernt nachts weiter — oder unter Übersicht „Jetzt lernen“." })); return; }
+    liste.forEach(function (x) {
+      var ta = null;
+      var karte = el("div", { class: "card" },
+        el("div", { class: "row", style: "margin-top:0;justify-content:space-between" }, el("span", { class: "t", text: x.thema }), el("span", { class: "pill", text: VS_NAME[x.art] || x.art })),
+        el("div", { class: "s", text: x.begruendung || "" }));
+      if (x.art === "frage") {
+        karte.append(el("div", { class: "s", style: "margin-top:8px", text: "Eintrag Nr. " + x.wissen_id + ": " + (x.alt || "") }), el("div", { class: "pre s", text: x.inhalt }));
+      } else {
+        if (x.alt) karte.append(el("div", { class: "s", style: "margin-top:8px", text: x.art === "doppelt" ? "Wird gelöscht (Nr. " + x.ref + "):" : "Bisher:" }), el("div", { class: "pre s", text: x.alt }));
+        ta = el("textarea"); ta.value = x.inhalt || "";
+        karte.append(el("div", { class: "s", style: "margin-top:8px", text: x.art === "doppelt" ? "Bleibt (Nr. " + x.wissen_id + "), gern zusammengefasst:" : "Text, der Wissen wird:" }), ta);
+      }
+      function urteil(gut) { api("/api/vorschlag/urteil", { id: x.id, gut: gut, inhalt: ta ? ta.value : null }).then(function (r) { toast(r.text || r.fehler || "Erledigt"); zeige(); }); }
+      karte.append(el("div", { class: "row" },
+        el("button", { class: "btn pri", text: x.art === "doppelt" ? "Zusammenführen" : x.art === "veraltet" ? "Stimmt noch" : "Übernehmen", onclick: function () { urteil(true); } }),
+        el("button", { class: "btn bad", text: "Verwerfen", onclick: function () { urteil(false); } })));
+      v.append(karte);
+    });
   });
 }
 function offen(v) {
