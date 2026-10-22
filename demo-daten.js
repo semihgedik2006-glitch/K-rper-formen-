@@ -1146,7 +1146,7 @@
     { id: 'tn-nora', name: 'Nora Haas', uid: 'u5', kennung: 'M4K7',
       code: 'M4K7-9TQD-B2HX',
       gesperrt: false, angelegtVon: 'Demo-Studioleitung', ts: vorTag(30), codeAm: vorTag(30) },
-    /* Runde 197: das angemeldete Demo-Konto ist selbst Teilnehmer —
+    /* Runde 199: das angemeldete Demo-Konto ist selbst Teilnehmer —
        verknüpft, wie es im Betrieb sein soll. Vorher hingen seine
        Durchläufe an „Nora Haas", deren Eintrag aber auf ein anderes
        Konto zeigte; das Auffrischen ohne Code fand deshalb niemanden. */
@@ -1186,7 +1186,7 @@
                { frage: 'Kunde sagt, es sei nichts …', versuche: 1, falsch: [], richtig: true },
                { frage: 'Wer entscheidet?', versuche: 2, falsch: [1], richtig: true }],
       punkte: 100, bestanden: true, status: 'fertig', ts: vorTag(16) },
-    /* Runde 197: ein angefangenes „Beratungsgespräch" des Demo-Kontos —
+    /* Runde 199: ein angefangenes „Beratungsgespräch" des Demo-Kontos —
        damit „angefangen · 2/17" und das Weitermachen zu sehen sind. */
     { id: 'lauf4', modul: 'm-beratung', modulTitel: 'Das Beratungsgespräch — vom Anruf bis zur Empfehlung',
       kategorie: 'verkauf', teilnehmer: 'tn-ich', teilnehmerName: 'Du (Demo-Konto)',
@@ -1195,7 +1195,7 @@
       schritteGesehen: [0, 1], fragen: [],
       punkte: 0, bestanden: false, status: 'laeuft', ts: vorTag(2) }
   ]);
-  /* Die Summe je Frage aus dem Auffrischen (Runde 197) — ohne Namen,
+  /* Die Summe je Frage aus dem Auffrischen (Runde 199) — ohne Namen,
      wie im Betrieb. Damit „Fragen, die im Team nicht sitzen" in der
      Vorführung etwas zeigt. */
   legen(P('schulungFragenStat'), [
@@ -1493,7 +1493,7 @@
         return l.teilnehmer === t.id && l.modul === modul; });
       var frueher = frueherListe.length;
       var konto = t.uid ? holen('users').filter(function (u) { return u.id === t.uid; })[0] : null;
-      /* Weitermachen (Runde 197), wie functions/index.js: ein angefangener,
+      /* Weitermachen (Runde 199), wie functions/index.js: ein angefangener,
          nicht leerer Durchlauf unter 30 Tagen wird fortgesetzt. */
       var offen = frueherListe.filter(function (l) {
         return l.status === 'laeuft' && !l.test && (Date.now() - (l.ts || 0)) < 30 * 86400000 &&
@@ -1524,7 +1524,7 @@
                ohneVideoSperre: !!(konto && konto.role === 'chef') };
     },
 
-    /* ── Auffrischen (Runde 197) ──
+    /* ── Auffrischen (Runde 199) ──
        Dieselbe Rechnung wie functions/index.js (auffrischRunde,
        auffrischWeiter): Stufen 2 · 7 · 30 · 90 · 180 Tage, höchstens
        sechs Fragen je Modul, drei je Runde, gemischt. Der Plan liegt in

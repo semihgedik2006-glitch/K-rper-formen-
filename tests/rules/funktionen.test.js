@@ -1331,7 +1331,7 @@ const TAG = 86400000;
       ((await F.collection('schulungVersuche').doc('schulMit').get()).data() || {}).zahl === 1);
   }
 
-  /* ══ Schulung: Auffrischen und Weitermachen (Runde 197) ══
+  /* ══ Schulung: Auffrischen und Weitermachen (Runde 199) ══
      Aus dem Betrieb, 22.10.2026: „plan klingt gut", und für die Frage,
      wo die Antworten liegen: „das was leichter ist für leute ohne
      zugang". Deshalb hängt der Plan am Teilnehmer und geht mit dem Code

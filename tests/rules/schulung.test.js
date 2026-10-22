@@ -118,7 +118,7 @@ const WELTEN = [
       await db.doc(w.pfad('schulungCodes/M4K7')).set({
         hash: 'xxx', salz: 'yyy', teilnehmer: 't-anna', ts: 1 });
       await db.doc(w.pfad('schulungVersuche/tablet')).set({ zahl: 3, seit: 1 });
-      /* Auffrischen (Runde 197): der Lernplan je Teilnehmer und die
+      /* Auffrischen (Runde 199): der Lernplan je Teilnehmer und die
          Summe je Frage. Beide schreibt nur die Cloud Function. */
       await db.doc(w.pfad('schulungLernplan/t-anna')).set({
         teilnehmer: 't-anna', uid: 'anna', karten: { 'm-hygiene#0': { s: 1, f: 9 } }, ts: 1 });
@@ -223,7 +223,7 @@ const WELTEN = [
     await darfNicht('… und niemand liest sie aus',
       alsMax.doc(P('schulungVersuche/tablet')).get());
 
-    // ══ Auffrischen (Runde 197) ══
+    // ══ Auffrischen (Runde 199) ══
     /* Aus dem Betrieb, Runde 134: „Wird es als Kontrolle empfunden,
        schadet es." Den Lernplan liest deshalb im Browser NIEMAND —
        nicht die Person (sie bekommt ihre Runde von der Funktion), und

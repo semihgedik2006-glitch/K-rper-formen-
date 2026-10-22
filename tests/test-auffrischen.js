@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════════
-   KURZ AUFFRISCHEN — die kleine Runde (Runde 197)
+   KURZ AUFFRISCHEN — die kleine Runde (Runde 199)
 
    Bis Runde 196: EINE Frage, 14 Tage nach dem Bestehen, gemerkt nur auf
    dem Gerät. Aus dem Betrieb, 22.10.2026, auf den Plan „aus der einen

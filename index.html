@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-aTKMGW9kdMyA6EWpuP3e62CqQlrcQZF+vsxhZY0nqT4='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-ewtkrIn1Qd2oJ2fdVyv7pX01UybBOvHbOf5w8gNrp3U='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1389,7 +1389,7 @@ html.demo #terminalSchirm{top:44px}
   #view-probe .scroll-area > #pbQuotenCard{grid-column:2;grid-row:1}
   /* Die Schulungsliste in zwei Spalten: eine Karte über 1.175 px trug
      eine Zeile Beschreibung und viel Leere. */
-  /* Runde 197: auto-fill statt fest zwei. Rechts neben der Spalte „für
+  /* Runde 199: auto-fill statt fest zwei. Rechts neben der Spalte „für
      dich" bleiben bei 1280 px gut 600 px — zwei Spalten zu je 300 px —,
      bei 1920 drei (30 % Mindestbreite, damit es nicht vier werden). */
   #schListe{display:grid;grid-template-columns:repeat(auto-fill,minmax(max(300px,30%),1fr));gap:var(--s10)}
@@ -6850,7 +6850,7 @@ body.jv-offen{overflow:hidden}
 .sch-video .sym{width:34px;height:34px;color:var(--text-3);margin-bottom:var(--s8)}
 .sch-video b{display:block;font-family:var(--font-head);font-size:var(--t-md)}
 .sch-video span{display:block;font-size:var(--t-xs);color:var(--text-3);margin-top:var(--s4)}
-/* Die Animation (Runde 198): Farbe geht von einer Kante aus und läuft
+/* Die Animation (Runde 200): Farbe geht von einer Kante aus und läuft
    aus; bewegt wird nur opacity und transform, einmal je Bild. */
 .sch-anim{margin-bottom:var(--s16)}
 /* Höhe über clamp, nicht über aspect-ratio: zusammen mit einer
@@ -6934,7 +6934,7 @@ body.jv-offen{overflow:hidden}
 .sch-antwort.richtig .sch-buchst{background:var(--ok-tx);color:var(--on-accent)}
 .sch-antwort.falsch{border-color:var(--k-warn);background:var(--f-warn-leise)}
 .sch-antwort.falsch .sch-buchst{background:var(--warm-tx);color:var(--on-accent)}
-/* ── Runde 197: Auffrischen klein, Fristen, Durchlauf am Rechner ── */
+/* ── Runde 199: Auffrischen klein, Fristen, Durchlauf am Rechner ── */
 /* „‹ Zurück" lag am Handy mit seinen oberen 5 px unter der Trefferfläche
    der Reiter darüber (Hit-Test: 39 statt 44 px). Ein Abstand nach oben
    schiebt ihn ganz ins Freie. */
@@ -10638,7 +10638,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
               <h3 data-ikon="warnung">Das steht für dich an</h3>
               <div id="schFaellig"></div>
             </div>
-            <!-- „Kurz auffrischen" (Runde 197): eine kleine Runde aus
+            <!-- „Kurz auffrischen" (Runde 199): eine kleine Runde aus
                  höchstens drei Fragen in wachsenden Abständen. Der Plan
                  hängt am Teilnehmer (Konto oder Code), die Leitung sieht
                  nur die Summe je Frage, ohne Namen. -->
@@ -10659,7 +10659,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                  ist und was fehlt, als Zahl und Balken. Nur für die
                  Person selbst — dieselben Zahlen wie „Was du schon
                  gemacht hast". -->
-            <!-- Runde 197: am Rechner die rechte Spalte (Fortschritt, Filter,
+            <!-- Runde 199: am Rechner die rechte Spalte (Fortschritt, Filter,
                  Module). Eigene Hülle, damit die linke Spalte die Zeilen
                  rechts nicht auseinanderzieht. Am Handy ein Block. -->
             <div class="sch-haupt">
@@ -14330,7 +14330,7 @@ function renderRecht(){
         'nur auf deinem Gerät, wann „Weiter“ geht. Sehen können die '+
         'Ergebnisse du und die Leitung. Ein Durchlauf bleibt als Nachweis '+
         'stehen, bis die Geschäftsführung ihn löscht.</p>'+
-      /* Runde 197: der Lernplan zum Auffrischen und die Summe je Frage. */
+      /* Runde 199: der Lernplan zum Auffrischen und die Summe je Frage. */
       '<p><b>Auffrischen:</b> Zu deinem Teilnehmer-Eintrag wird gespeichert, '+
         'welche Fragen aus bestandenen Schulungen auf welcher Stufe stehen und '+
         'wann sie wieder dran sind — nicht, was du angeklickt hast. Diesen Plan '+
@@ -29791,7 +29791,7 @@ function schMeineLaden(){
     }, function(e){ console.warn('Meine Schulungen:', e.message); });
 }
 
-/* ══ KURZ AUFFRISCHEN, als kleine Runde (Runde 197) ════════════════
+/* ══ KURZ AUFFRISCHEN, als kleine Runde (Runde 199) ════════════════
    Bis Runde 196 stand hier EINE Frage, 14 Tage nach dem Bestehen, und
    nur dieses Gerät merkte sich, dass sie dran war. Aus dem Betrieb,
    22.10.2026: „plan klingt gut" — aus der einen Frage wird eine Runde
@@ -30035,7 +30035,7 @@ function schAufBinden(box){
   if(codeLos) codeLos.addEventListener('click', mitCode);
   if(feld) feld.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); mitCode(); } });
 }
-/* ── Fristen für Pflichtmodule (Runde 197) ──────────────────────────
+/* ── Fristen für Pflichtmodule (Runde 199) ──────────────────────────
    Aus dem Betrieb, 22.10.2026, auf „Fristen jetzt mitbauen oder
    später?": „ja jetzt".
 
@@ -30336,7 +30336,7 @@ function schFaelligZeichnen(alle){
 }
 /* Ein eigener, angefangener Durchlauf mit Fortschritt — „Kapitel 3 von
    15" statt „150 Minuten". Nur für das angemeldete Konto sichtbar; am
-   Tablet sagt es der Server nach dem Code (Weitermachen, Runde 197). */
+   Tablet sagt es der Server nach dem Code (Weitermachen, Runde 199). */
 function schAngefangen(m){
   var l=_schMeine.filter(function(x){
     return x.modul===m.id && x.status==='laeuft' && !x.test &&
@@ -30466,7 +30466,7 @@ function schStarten(){
   });
 }
 
-/* ── Weitermachen (Runde 197) ──
+/* ── Weitermachen (Runde 199) ──
    Der Server gibt einen angefangenen Durchlauf derselben Person zurück
    (functions/index.js, schulungStart). Hier wird er wieder aufgebaut:
    gesehene Schritte, beantwortete Fragen, die aktive Zeit — und es geht
@@ -30568,7 +30568,7 @@ function schLaufZeichnen(){
       '<span class="sch-balken"><i style="width:'+
         Math.round(fertig/Math.max(1,gesamt)*100)+'%"></i></span>'+
       '<span class="sch-zahl">'+(_schLauf.test ? 'Testlauf' : esc(_schLauf.name))+'</span>'+
-      /* Aufhören ist erlaubt (Runde 197): gespeichert wird ohnehin alle
+      /* Aufhören ist erlaubt (Runde 199): gespeichert wird ohnehin alle
          15 Sekunden, und beim nächsten Code geht es hier weiter. Der
          Knopf sagt das, statt dass man die Seite einfach verlässt und
          hofft. */
@@ -30592,7 +30592,7 @@ function schLaufZeichnen(){
     if(h && h.scrollIntoView) h.scrollIntoView({ block:'nearest', behavior:'smooth' });
   }
 }
-/* ── Am Rechner: das Inhaltsverzeichnis neben dem Schritt (Runde 197) ──
+/* ── Am Rechner: das Inhaltsverzeichnis neben dem Schritt (Runde 199) ──
    Aus CLAUDE.md: „Eine Ansicht, die am Rechner eine Spalte über 1.200 px
    zieht, ist dort genauso ungestaltet wie ein abgeschnittener Knopf auf
    dem Handy." Der Durchlauf stand am Rechner einspaltig über die ganze
@@ -30677,7 +30677,7 @@ function schSchrittMarkup(){
   if(s.art==='video'){
     inhalt = s.quelle
       ? schVideoMarkup(s.quelle)
-      /* Runde 198: ohne Video, aber mit Szenen — die Animation. */
+      /* Runde 200: ohne Video, aber mit Szenen — die Animation. */
       : (s.szenen && s.szenen.length) ? schAnimMarkup(s)
       /* Ehrlich statt hübsch: der Kasten sagt, dass das Video fehlt.
          Ein leerer Rahmen liesse jeden glauben, sein Gerät sei schuld. */
@@ -30894,7 +30894,7 @@ function schVideosAufloesen(box){
   });
 }
 
-/* ══ ANIMATION STATT „VIDEO FOLGT" (Runde 198) ═══════════════════════
+/* ══ ANIMATION STATT „VIDEO FOLGT" (Runde 200) ═══════════════════════
    Aus dem Betrieb, 22.10.2026: „bis jetzt gibts nur für die
    verkaufsschulung videos den rest können wir sonst auch selber
    erstellen mit animationen".
@@ -31295,7 +31295,7 @@ function schVerwaltenZeichnen(){
         'solange das Fenster wirklich offen war.</p>'+
       '<div id="schLaufListe"></div>'+
     '</div>'+
-    /* Runde 197, aus dem Betrieb: „Ja" auf die Frage, ob die Leitung
+    /* Runde 199, aus dem Betrieb: „Ja" auf die Frage, ob die Leitung
        sehen soll, welche Fragen im Team oft danebengehen — als Summe je
        Frage, ohne Namen. */
     '<div class="card" id="schSchwerKarte">'+
@@ -31327,7 +31327,7 @@ function schVerwaltenZeichnen(){
   }
   ikonenEinsetzen(box);
 }
-/* ── Fragen, die nicht sitzen (Runde 197) ──
+/* ── Fragen, die nicht sitzen (Runde 199) ──
    Zwei Quellen, beide ohne Namen gezählt:
    · die Durchläufe: beim ersten Versuch daneben (versuche > 1 oder nie
      richtig) — die Zahl, die der Betrieb von Anfang an wollte;
@@ -31491,7 +31491,7 @@ function schTnListeZeichnen(){
   });
 }
 /* Die offenen Pflichtmodule eines Teilnehmers mit ihrer Frist
-   (Runde 197). „überfällig" in der Statusfarbe, der Rest mit Datum. */
+   (Runde 199). „überfällig" in der Statusfarbe, der Rest mit Datum. */
 function schTnFristen(t){
   var raus={ ueber:[], bald:[] };
   schModule().forEach(function(m){
@@ -31638,7 +31638,7 @@ function schEntwurfAus(m){
                text:String(s.text||''), quelle:s.quelle||null,
                dauer:Number(s.dauer||0), hinweis:String(s.hinweis||''),
                ems:(s.ems||[]).slice(),
-               /* Runde 198: die Animation bleibt erhalten, wenn die Leitung
+               /* Runde 200: die Animation bleibt erhalten, wenn die Leitung
                   eine eigene Fassung des Moduls speichert. */
                szenen:Array.isArray(s.szenen) ? s.szenen.map(function(x){ return Object.assign({}, x); }) : null };
     }),
@@ -31691,7 +31691,7 @@ function schModulFormZeichnen(){
       '<label class="studio-check'+(e.pflicht?' on':'')+'" id="schFPflichtWrap">'+
         '<input type="checkbox" id="schFPflicht"'+(e.pflicht?' checked':'')+' />'+
         '<span><b>Pflicht</b> — jeder muss es machen</span></label>'+
-      /* Runde 197: die Frist ab dem Tag, an dem jemand als Teilnehmer
+      /* Runde 199: die Frist ab dem Tag, an dem jemand als Teilnehmer
          angelegt wird. Nur bei Pflicht — ein freiwilliges Modul hat
          keine. */
       (e.pflicht
@@ -32117,7 +32117,7 @@ function schFormBinden(box){
 
   var pf=$('schFPflichtWrap');
   /* Neu gezeichnet statt nur umgefärbt: mit „Pflicht" erscheint das
-     Feld für die Frist (Runde 197), ohne verschwindet es. */
+     Feld für die Frist (Runde 199), ohne verschwindet es. */
   if(pf) pf.addEventListener('change', neu);
   var st=$('schFStrenge');
   if(st) st.addEventListener('change', neu);
@@ -35372,7 +35372,7 @@ function renderHome(){
        gegen die die Startseite umgebaut wurde. */
     if(ueber && !layoutNeu()) alerts.push({k:' bad',i:ikon('warnung'),t:ueber+(ueber===1?' Aufgabe ist überfällig':' Aufgaben sind überfällig'),kurz:ueber+' überfällig',v:'todos',f:'faellig'});
     if(matArtikel) alerts.push({k:' warn',i:ikon('paket'),t:matArtikel+' Artikel fehlen in '+matStudios+(matStudios===1?' Studio':' Studios'),kurz:matArtikel+' Artikel fehlen',v:'material'});
-    /* Schulung (Runde 197): Fragen zum Auffrischen und eine nahe
+    /* Schulung (Runde 199): Fragen zum Auffrischen und eine nahe
        Pflicht-Frist — aus dem Zwischenstand auf dem Gerät, ohne Abfrage. */
     if(typeof schStartHinweise==='function') schStartHinweise().forEach(function(x){ alerts.push(x); });
     // Die Hinweiszeile entfällt: der Text der Aushänge steht ein Stück

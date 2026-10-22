@@ -18647,7 +18647,7 @@ auf die Rückfrage gewählt: „Kumpel aus dem Studio".
 **Nicht geprüft:** wie die KI den Charakter tatsächlich umsetzt — das
 zeigt sich erst live nach dem Einspielen von 2.18.
 
-## Runde 197 — Schulung: auffrischen in Runden, Fristen, weitermachen, am Rechner zwei Spalten (22.10.2026)
+## Runde 199 — Schulung: auffrischen in Runden, Fristen, weitermachen, am Rechner zwei Spalten (22.10.2026)
 
 **Aus dem Betrieb:** „bei der anderen auf die schulungen“ eingehen. Erst
 Ist-Stand, Vergleich und Plan mit Rückfragen, dann bauen. Auf den Plan:
@@ -18660,7 +18660,7 @@ Ist-Stand, Vergleich und Plan mit Rückfragen, dann bauen. Auf den Plan:
 4. Fristen für Pflichtmodule jetzt oder später? „ja jetzt“
 5. Videos: „bis jetzt gibts nur für die verkaufsschulung videos den rest
    können wir sonst auch selber erstellen mit animationen“ — das ist
-   Runde 198.
+   Runde 200.
 
 **Ist-Stand, gemessen** (Demo, vor dem Umbau):
 - Handy 390 px: die Modulliste begann bei Pixel 1.540, nach zwei
@@ -18835,7 +18835,7 @@ Strängen und waren einzeln grün.
   7 Zeilen rot), Leitung: Fristen je Teilnehmer, Fragen ohne Namen, die
   Schwelle von drei Antworten, das Fristfeld im Editor.
 
-## Runde 198 — Schulung: Animationen statt „Video folgt“ (22.10.2026)
+## Runde 200 — Schulung: Animationen statt „Video folgt“ (22.10.2026)
 
 **Aus dem Betrieb:** „bis jetzt gibts nur für die verkaufsschulung videos
 den rest können wir sonst auch selber erstellen mit animationen lade

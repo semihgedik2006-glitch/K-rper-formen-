@@ -78,7 +78,7 @@ window.SCHULUNGEN_BASIS = {
                 'versuchst, bis es sitzt.' },
         { art: 'video', titel: 'Ein Tag im Studio', dauer: 240, quelle: null,
           hinweis: 'Rundgang: Empfang, Trainingsfläche, Umkleide, Lager.',
-          /* Runde 198: bis das Video da ist, eine Animation. Jeder Satz
+          /* Runde 200: bis das Video da ist, eine Animation. Jeder Satz
              aus diesem Modul oder aus „Hilfe im Studio" (Nummer dabei). */
           szenen: [
             { ico: 'schloss', quelle: 'modul',
