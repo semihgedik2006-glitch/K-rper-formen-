@@ -17935,13 +17935,25 @@ liess ihn still durch. Jetzt geht er über Heute → Ich → Zeiten.
   „normal" und „kompakt", Terminal nach der PIN, „Jetzt im Studio".
   Gegenproben, jede einzeln: nur ein Knopf statt zwei → 2 rot (der Lauf
   bricht danach ab, weil der Feierabend-Knopf fehlt); Zwei-Spalten-Regel
-  aus → 3 rot; Pfeile 38 px → 14 rot.
+  aus → 3 rot; Pfeile wieder 38 px → rot (gesehen bei 320–820 px, je
+  „normal" und „kompakt"; zusammen mit der Spalten-Gegenprobe gelaufen).
 - Angepasst, nichts gelockert: `test-terminal` (Stand an der Kachel ist
   jetzt der Fehler; Fehlschlag-Meldung über MutationObserver, weil eine
   Aufgaben-Erinnerung sie überschrieb), `test-zeitpin`, `test-offline`,
   `test-demo`, `test-meine-zeiten`, `test-handy-stempeln` (+ `art`),
   `test-block-a`. **`test-mein-bereich` erwartet jetzt vier Reiter statt
   drei** — mit dem Zitat aus dem Betrieb im Test; die Zahl bleibt genau.
+
+**Gesamtdurchlauf** (`tests/alle.sh`): 174 grün, 12 rot. Jeder rote
+gegen `origin/main` nachgemessen (zweite Arbeitskopie, Port 8766):
+- auch auf main rot: test-block-d, test-formi-verdeckt, test-gehirn
+  (Arbeit je Bild 10,3 ms beim Denken), test-navigation (2,28
+  Bildschirme), test-neu-design, test-p1-aufgaben, test-p4-seitenleiste,
+  test-startseite-putz, test-team-woche — dieselben Meldungen wie hier.
+- einzeln grün, im langen Lauf nur über die Zeit: test-pc-durchsicht (auf
+  main grün, hier einzeln 44 Zusicherungen grün), test-zwischenspeicher,
+  test-video-hochladen.
+Keiner davon berührt Stempeln oder Zeiten.
 
 **Nicht testbar hier:** der Anmeldeweg und das echte Firebase-SDK (Proxy).
 Ob ein Terminal in der Produktion bisher wirklich „noch nicht da" zeigte,
