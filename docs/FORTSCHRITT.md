@@ -18738,9 +18738,24 @@ ist nachgezogen, wie in den anderen Oberflächen-Durchläufen seit Runde 183.
 **Gemessen:** test-formi-platz hat 35 Zusicherungen. Die Gegenprobe gegen
 main ergibt 13 falsch.
 
+## Runde 199 — Formis Sprechblase am Rechner neben Formi (22.10.2026)
+
+**Gefunden beim Ansehen:** Runde 196 (Sprechblase) und Runde 198 (Kugel in
+der Seitenleiste) kamen am selben Tag. Zusammen ergab das am Rechner eine
+Blase von 133 px Breite in der linken Leiste, die auf „Tastenkürzel“ lag.
+test-formi-kumpel prüfte nur „über der Kugel“ und blieb deshalb grün.
+
+**Gebaut:** Steht die Kugel links, setzt `formiSagt` die Blase rechts
+neben die Leiste, auf Höhe der Kugel, mit der spitzen Ecke zur Kugel hin.
+Am Handy bleibt sie über der Kugel.
+
+**Test:** test-formi-kumpel prüft jetzt „über ODER neben der Kugel und
+auf keinem Knopf der Seitenleiste“. Die Gegenprobe gegen main ergibt 4 von
+21 falsch, jetzt sind alle 21 grün.
 
 
-## Runde 199 — Die Stempelseite, Schritt 2: Pausenregel wie Crewmeister, Hinweise nach dem Arbeitszeitgesetz (22.10.2026)
+
+## Runde 200 — Die Stempelseite, Schritt 2: Pausenregel wie Crewmeister, Hinweise nach dem Arbeitszeitgesetz (22.10.2026)
 
 Antwort aus dem Betrieb auf „nur warnen oder wie Crewmeister auffüllen?":
 „genau wie bei crewmeister".
@@ -18784,7 +18799,7 @@ Abzug. Meine erste Erwartung für 11:20 h Arbeit mit 10 Minuten Pause war
 „20 Minuten ergänzt" — falsch: über 9 h gilt die 45-Minuten-Pause, richtig
 sind 35. Der Fehler lag in der Erwartung, nicht im Code.
 
-## Runde 200 — Die Stempelseite, Schritt 3: Korrekturanträge, nur die Geschäftsführung entscheidet (22.10.2026)
+## Runde 201 — Die Stempelseite, Schritt 3: Korrekturanträge, nur die Geschäftsführung entscheidet (22.10.2026)
 
 Antwort aus dem Betrieb auf „wer bestätigt einen Antrag?": „nur
 geschäftsführung".

@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-JDa2XNO7IuxsDjpIUvuO+kDcWWfp4ERhwzb+NcfWSKE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-PsmcjLp7ib3uaT+SST4gwV8yDCmSxvXvA85/zsVyUuM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -6154,6 +6154,8 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
   box-shadow:var(--e2);
   font-size:var(--t-sm);line-height:var(--lh);overflow-wrap:anywhere}
 .formi-blase[hidden]{display:none}
+/* Neben der Kugel (Rechner): die spitze Ecke zeigt nach links unten zu ihr. */
+.formi-blase.links{border-radius:var(--radius) var(--radius) var(--radius) var(--r-xs)}
 .formi-blase.rein{animation:formiBlaseRein .28s cubic-bezier(.2,.8,.2,1) backwards}
 @keyframes formiBlaseRein{from{opacity:0;transform:translateY(6px) scale(.96)}}
 @media (prefers-reduced-motion:reduce){ .formi-blase.rein{animation:none} }
@@ -9373,7 +9375,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                 </div>
                 <div id="stWoche"></div>
               </div>
-              <!-- Korrekturantrag (Runde 200): die Person trägt ein, was fehlt;
+              <!-- Korrekturantrag (Runde 201): die Person trägt ein, was fehlt;
                    ein Stempel wird erst daraus, wenn die Geschäftsführung
                    annimmt („nur geschäftsführung", 22.10.2026). -->
               <div class="ich-blatt" id="stAntragKarte">
@@ -11239,7 +11241,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                    bei der Leitung, und nicht mehr am Terminal am Tresen. -->
               <section class="zk-jetzt" id="zkJetzt" aria-label="Jetzt im Studio"></section>
               <button type="button" class="zk-vormonat" id="zkVormonat" hidden></button>
-              <!-- Korrekturanträge (Runde 200): nur bei der Geschäftsführung.
+              <!-- Korrekturanträge (Runde 201): nur bei der Geschäftsführung.
                    UNTER dem Vormonats-Hinweis: darüber verschob der Block ihn
                    so weit, dass er bei 320 px nach dem Dichtewechsel nur noch
                    38 px hoch traf (test-zeitkorrektur). -->
@@ -14371,7 +14373,7 @@ function renderRecht(){
         'angekommen ist; bis dahin liegt er samt PIN nur im geöffneten '+
         'Fenster des Terminals. Sehen können '+
         'die Zeiten du, die Leitung deines Studios und die Geschäftsführung.</p>'+
-      /* Runde 200: Korrekturanträge sind eine neue Sorte Daten. */
+      /* Runde 201: Korrekturanträge sind eine neue Sorte Daten. */
       '<p><b>Korrekturanträge:</b> Beantragst du einen fehlenden Stempel, '+
         'stehen Tag, Uhrzeit, Art, dein Grund und der Stand des Antrags da; '+
         'nach der Entscheidung auch, wer entschieden hat, wann und – bei einer '+
@@ -21014,6 +21016,8 @@ var NEUIGKEITEN = [
     'An einem Tag stehen jetzt Hinweise, wenn er über 10 Stunden ging, wenn mehr als 6 Stunden am Stück ohne Pause gearbeitet wurde oder wenn seit dem letzten Feierabend weniger als 11 Stunden Ruhe lagen.',
     'Unter Heute → Ich → Zeiten erinnert dich die App ab 5½ Stunden am Stück an die Pause. Die Leitung sieht unter „Jetzt im Studio", wer schon über 6 Stunden ohne Pause ist.'
   ]},
+  { id:'2026-10-22-formi-blase-rechts', datum:'22.10.2026', titel:'Formis Sprechblase am Rechner neben Formi', wo:'home', punkte:[
+    'Am Rechner sagt Formi seine kurzen Sätze jetzt rechts neben sich, in die Seite hinein. Vorher stand die Blase schmal in der linken Leiste und lag auf „Tastenkürzel".' ] },
   { id:'2026-10-22-formi-seitenleiste', datum:'22.10.2026', titel:'Am Rechner: Formi unten links, mehr Platz für die Liste', wo:'home', punkte:[
     'Am Rechner sitzt Formi jetzt unten in der linken Leiste statt unten rechts. Formi verdeckt damit nichts mehr, und jede Seite reicht bis ganz nach unten – die Startseite und die Aufgaben zeigen eine Zeile mehr.',
     'Am Handy bleibt Formi, wo es war.',
@@ -27178,8 +27182,23 @@ function formiSagt(text, immer){
   requestAnimationFrame(function(){
     if(k.hidden) return;
     var r=k.getBoundingClientRect(), w=innerWidth, h=innerHeight;
-    b.style.right=Math.max(8, Math.round(w-r.right))+'px';
-    b.style.bottom=Math.max(8, Math.round(h-r.top+8))+'px';
+    /* Runde 199. Am Rechner wohnt die Kugel seit Runde 198 unten in der Seitenleiste.
+       Dort war die Blase über der Kugel 133 px schmal und lag auf
+       „Tastenkürzel". Steht die Kugel links, spricht Formi nach RECHTS
+       in die Seite hinein, auf Höhe der Kugel – erst rechts der Leiste,
+       damit sie auf keinem ihrer Knöpfe liegt (test-formi-kumpel). */
+    var links = r.left < w/2;
+    b.classList.toggle('links', links);
+    if(links){
+      b.style.right='auto';
+      var leiste=$('side'), lr=leiste && leiste.getClientRects().length ? leiste.getBoundingClientRect().right : 0;
+      b.style.left=Math.round(Math.max(r.right, lr)+10)+'px';
+      b.style.bottom=Math.max(8, Math.round(h-r.bottom))+'px';
+    } else {
+      b.style.left='auto';
+      b.style.right=Math.max(8, Math.round(w-r.right))+'px';
+      b.style.bottom=Math.max(8, Math.round(h-r.top+8))+'px';
+    }
     b.classList.remove('rein'); b.hidden=false;
     requestAnimationFrame(function(){ b.classList.add('rein'); });
   });
@@ -37210,7 +37229,7 @@ function stundenText(ms){
   return Math.floor(min/60)+':'+('0'+(min%60)).slice(-2)+' h';
 }
 
-/* ── Pausenregel wie Crewmeister: auffüllen (Runde 199) ──
+/* ── Pausenregel wie Crewmeister: auffüllen (Runde 200) ──
    Aus dem Betrieb, 22.10.2026, auf die Frage „nur warnen oder wie
    Crewmeister auffüllen?": „genau wie bei crewmeister".
 
@@ -37235,7 +37254,7 @@ function pauseAbzugMin(rohMin, pauseMin){
    Strecken zwischen zwei Stempeln: nach „kommen" und „zurueck" läuft
    Arbeit, nach „pause" läuft Pause, nach „gehen" läuft nichts.
 
-   Runde 199: dazu die Hinweise nach dem Arbeitszeitgesetz — über 10
+   Runde 200: dazu die Hinweise nach dem Arbeitszeitgesetz — über 10
    Stunden (§ 3), mehr als 6 Stunden am Stück (§ 4), weniger als 11
    Stunden Ruhe seit dem letzten Feierabend (§ 5). Die App weist hin;
    ob der Betrieb damit gesetzeskonform ist, sagt sie nicht. */
@@ -37399,7 +37418,7 @@ function renderIchZeiten(rows){
       '</button>'+
       '<div class="mz-stempel" id="mzs-'+esc(t.tag)+'"'+(auf?'':' hidden')+'>'+
         t.stempel.map(zkStempelZeile).join('')+
-        /* Runde 200: der direkte Weg vom Fehler zum Antrag. */
+        /* Runde 201: der direkte Weg vom Fehler zum Antrag. */
         '<button type="button" class="btn btn-ghost btn-sm st-antrag-hier" data-antragtag="'+esc(t.tag)+'" data-antragart="'+(luecke?'gehen':'kommen')+'">'+
           (luecke ? 'Feierabend beantragen' : 'Korrektur beantragen')+'</button>'+
       '</div>';
@@ -37470,7 +37489,7 @@ function zkOeffnen(){
    „Erwartet": eine Schicht hat begonnen, und es gibt heute keinen
    Stempel. Nicht rot — die Person kann im Stau stehen oder in einem
    anderen Studio gestempelt haben; das steht hier nicht fest. */
-/* ── Korrekturanträge bei der Geschäftsführung (Runde 200) ──
+/* ── Korrekturanträge bei der Geschäftsführung (Runde 201) ──
    Alle offenen des Betriebs (status ==, ein Gleichheitsfilter). Lesen
    darf das nur die Geschäftsführung (firestore.rules), und nur sie sieht
    diesen Block. Den eigenen Antrag entscheidet jemand anderes — der
@@ -37929,7 +37948,7 @@ function stLaden(neu){
   stAntraegeLaden();
 }
 
-/* ── Korrekturantrag (Runde 200) ──
+/* ── Korrekturantrag (Runde 201) ──
    Wie bei Crewmeister trägt die Person ein, was fehlt — bis 31 Tage
    zurück. Daraus wird ein Stempel erst, wenn die Geschäftsführung
    annimmt; der Server legt ihn dann an (zeitAntragEntscheiden). Gelesen
@@ -48802,7 +48821,7 @@ function bindActions(){
     if(e.key==='Enter'){ e.preventDefault(); ichHandyStempeln($('ichHandyBtn')); }
   });
 
-  // ── Korrekturanträge (Runde 200) ──
+  // ── Korrekturanträge (Runde 201) ──
   var saBtn=$('stAntragBtn');
   if(saBtn) saBtn.addEventListener('click', function(){ stAntragStellen(saBtn); });
   var saListe=$('stAntraege');
