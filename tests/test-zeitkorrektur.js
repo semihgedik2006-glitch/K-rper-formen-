@@ -17,7 +17,7 @@
    4. Ungültig markieren: der Stempel bleibt sichtbar, durchgestrichen,
       mit Grund.
    5. Die Studioleitung sieht nur ihre Studios und bekommt kein
-      Formular — weder an den eigenen Zeiten noch (seit Runde 211) an
+      Formular — weder an den eigenen Zeiten noch (seit Runde 214) an
       denen ihres Teams —, sondern den Hinweis auf die Geschäftsführung.
    6. Am Rechner steht der Tag rechts neben der Liste; jedes
       Bedienelement ≥ 44 × 44 bei 320 bis 1920 px, normal und kompakt.
@@ -258,7 +258,7 @@ function stand(p) {
       z.click(); await new Promise(r => setTimeout(r, 400));
       return !!document.querySelector('#zkDetail [data-zknach]');
     });
-    /* Runde 211, umgekehrt zu vorher. Aus dem Betrieb, 22.10.2026, auf
+    /* Runde 214, umgekehrt zu vorher. Aus dem Betrieb, 22.10.2026, auf
        die Frage, ob die Studioleitung fremde Stempel weiter direkt
        nachtragen darf: „nur führung". Die Gegenprobe (die
        Geschäftsführung trägt nach) steht oben in Abschnitt 2. */

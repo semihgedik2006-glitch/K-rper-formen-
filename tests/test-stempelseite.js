@@ -461,7 +461,7 @@ async function zuVerwaltungZeiten(p) {
     await p.close();
   }
 
-  console.log('\n── 11. Soll je Wochentag, Feiertage; nur die Geschäftsführung korrigiert (Runde 211) ──');
+  console.log('\n── 11. Soll je Wochentag, Feiertage; nur die Geschäftsführung korrigiert (Runde 214) ──');
   {
     /* Das erwartete Soll unabhängig von der App: Mo–Fr 8 h, Sa 4 h, So 0,
        vom Monatsersten bis heute, Feiertage aus schichtplaner.js. */

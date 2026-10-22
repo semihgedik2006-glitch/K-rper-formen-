@@ -76,7 +76,11 @@ const KUGEL_ANIM = () => {
   /* Nur was LÄUFT: ein abgeschlossener, gehaltener Blick (fill:forwards,
      playState „finished") ist Stillstand, keine Bewegung — seit Runde 205
      halten Pupillen und Loch so ihre Blickrichtung. */
-  const a = k.getAnimations({ subtree: true }).filter(x => x.playState === 'running');
+  /* Runde 213: die Akkretionsscheibe dreht sich immer (CSS formiScheibe) —
+     aus dem Betrieb: „er soll auch so die physik von einem schwarzen loch
+     haben". Sie ist der einzige gewollte Dauerlauf und wird eigens
+     geprüft (Abschnitt „Akkretionsscheibe"); hier zählt alles andere. */
+  const a = k.getAnimations({ subtree: true }).filter(x => x.playState === 'running' && x.animationName !== 'formiScheibe');
   const eig = new Set();
   a.forEach(x => (x.effect && x.effect.getKeyframes ? x.effect.getKeyframes() : []).forEach(f =>
     Object.keys(f).forEach(n => { if (!['offset', 'easing', 'composite', 'computedOffset'].includes(n)) eig.add(n); })));
@@ -185,12 +189,15 @@ const KUGEL_ANIM = () => {
       const atem = await p.evaluate(() => {
         window.__formiLebt.atmen();
         const k = document.getElementById('formiKugel');
-        const w = k.querySelector('.fk-wirbel').getAnimations();
+        /* Seit Runde 213 dreht sich die Scheibe ständig (eigener Abschnitt
+           „Akkretionsscheibe"); beim Atmen weitet sich nur das Loch, und
+           Krümel fallen hinein. */
+        const w = k.querySelector('.fk-pupille').getAnimations();
         return { dreh: w.map(a => a.effect.getKeyframes().map(f => f.transform).join(' > ')), endlos: w.some(a => a.effect.getTiming().iterations === Infinity),
           kruemel: k.querySelectorAll('.fk-teilchen.klein i').length };
       });
-      pruefe(`Atmen: der Ring dreht sich einmal ganz (${atem.dreh[0]}), endlich, drei Krümel fallen hinein`,
-        atem.dreh.length === 1 && /rotate\(360deg\)/.test(atem.dreh[0]) && !atem.endlos && atem.kruemel === 3, JSON.stringify(atem));
+      pruefe(`Atmen: das Loch weitet sich (${atem.dreh[0]}), endlich, drei Krümel fallen hinein`,
+        atem.dreh.length === 1 && /scale\(1\.07\)/.test(atem.dreh[0]) && !atem.endlos && atem.kruemel === 3, JSON.stringify(atem));
       await p.waitForTimeout(3800);
       pruefe('… und danach steht wieder alles still', (await p.evaluate(KUGEL_ANIM)).n === 0 && await p.evaluate(() => !document.querySelector('#formiKugel .fk-teilchen')));
 
@@ -376,6 +383,105 @@ const KUGEL_ANIM = () => {
       const pu = await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf .jv-start-figur .fk-auge b')].map(b => getComputedStyle(b).transform));
       const m = pu.map(t => /matrix\(1, 0, 0, 1, (-?[\d.]+), (-?[\d.]+)\)/.exec(t));
       pruefe(`Fenster offen: das grosse Gesicht schaut der Maus nach (${pu[0]})`, m.length === 2 && m.every(x => x && +x[1] > 0 && +x[2] > 0), JSON.stringify(pu));
+      await p._ctx.close();
+    }
+
+    /* ── Runde 213: Akkretionsscheibe, Umgebung, Frage ins Loch ────── */
+    console.log('\n── Akkretionsscheibe, Umgebung, Frage ins Loch ──');
+    {
+      const p = await oeffne(b, 1440, 900);
+      await p.evaluate(() => window.__formiLebt.uhrenAus());
+      const sch = await p.evaluate(() => {
+        const k = document.getElementById('formiKugel');
+        const an = (sel) => { const e = k.querySelector(sel); return e ? e.getAnimations().filter(a => a.animationName === 'formiScheibe').map(a => ({ endlos: a.effect.getTiming().iterations === Infinity, dauer: parseFloat(getComputedStyle(e).animationDuration), kf: a.effect.getKeyframes().map(f => Object.keys(f).filter(n => !['offset', 'easing', 'composite', 'computedOffset'].includes(n))).flat() })) : []; };
+        return { innen: !!k.querySelector('.fk-innen'), licht: !!k.querySelector('.fk-licht'), aussen: an('.fk-wirbel'), innenA: an('.fk-innen') };
+      });
+      pruefe('Akkretionsscheibe: Scheibe, schnellere Innenscheibe, Photonenring/Doppler-Licht', sch.innen && sch.licht, JSON.stringify(sch));
+      pruefe(`… dreht sich ständig, innen schneller als aussen (${sch.aussen[0] && sch.aussen[0].dauer} s / ${sch.innenA[0] && sch.innenA[0].dauer} s), nur transform`,
+        sch.aussen.length === 1 && sch.innenA.length === 1 && sch.aussen[0].endlos && sch.innenA[0].dauer < sch.aussen[0].dauer &&
+        sch.aussen[0].kf.every(n => n === 'transform'), JSON.stringify(sch));
+      const umg = await p.evaluate(async () => {
+        window.__formiLebt.fuehlt('freut');
+        /* Die Welle entsteht im nächsten Bild — kurz nach dem Laden kann
+           das dauern; bis zu 600 ms darauf warten statt fest zu schlafen. */
+        let schub = null;
+        for (let i = 0; i < 30 && !schub; i++) { await new Promise(r => setTimeout(r, 20)); schub = document.querySelector('.formi-welle.schub'); }
+        const schubOk = !!schub && getComputedStyle(schub).pointerEvents === 'none';
+        const t = [...document.querySelectorAll('#formiKugel .fk-teilchen:not(.klein) i')];
+        const kf = t.length ? t[0].getAnimations()[0].effect.getKeyframes().length : 0;
+        await new Promise(r => setTimeout(r, 1000));
+        const sog = document.querySelector('.formi-welle.sog');
+        return { schub: schubOk, sog: !!sog, kf };
+      });
+      pruefe('Freude: das weisse Loch stösst eine Welle in die App, das schwarze zieht sie wieder zusammen', umg.schub && umg.sog, JSON.stringify(umg));
+      pruefe(`… die Teilchen fallen spiralig zurück (${umg.kf} Stationen statt 4)`, umg.kf >= 7, JSON.stringify(umg));
+      await p.waitForTimeout(1500);
+      pruefe('… danach ist von der Welle nichts mehr da', await p.evaluate(() => !document.querySelector('.formi-welle')));
+
+      // Die Frage fliegt ins Loch, die Antwort kommt aus dem weissen Loch
+      await p.evaluate(() => { window.__antwort = window.__antwort || {}; window.__antwort.gehirnAktion = () => new Promise(r => setTimeout(() => r({ data: { art: 'frage', antwort: 'Bei 30 Grad, nicht schleudern.', abgedeckt: true } }), 1500)); });
+      await p.click('#formiKugel'); await p.waitForTimeout(500);
+      const frage = 'Wie wasche ich die Westen?';
+      await p.fill('#jarvisFeld', frage);
+      await p.click('#jarvisSenden');
+      await p.waitForTimeout(150);
+      const flug = await p.evaluate(() => {
+        const z = [...document.querySelectorAll('.formi-flug i')];
+        const a = z.map(i => i.getAnimations()[0]).filter(Boolean);
+        const kopf = document.querySelector('#jarvis .jv-titel .formi-gesicht').getBoundingClientRect();
+        const ende = a.length ? a[0].effect.getKeyframes().slice(-1)[0].transform : '';
+        return { n: z.length, text: z.map(i => i.textContent).join(''), endlos: a.some(x => x.effect.getTiming().iterations === Infinity),
+          eig: [...new Set(a.flatMap(x => x.effect.getKeyframes().flatMap(f => Object.keys(f))))].filter(n => !['offset', 'easing', 'composite', 'computedOffset'].includes(n)),
+          stationen: a.length ? a[0].effect.getKeyframes().length : 0, ende, kopf: [Math.round(kopf.left + kopf.width / 2), Math.round(kopf.top + kopf.height / 2)] };
+      });
+      const em = /translate\((-?[\d.]+)px, ?(-?[\d.]+)px\)/.exec(flug.ende || '');
+      pruefe(`Frage: ${flug.n} Buchstaben lösen sich aus dem Feld und fliegen in ${flug.stationen} Stationen spiralig ins Gesicht im Kopf`,
+        flug.n === frage.length && flug.text.replace(/\u00a0/g, ' ') === frage && flug.stationen >= 8 && em && Math.abs(+em[1] - flug.kopf[0]) < 3 && Math.abs(+em[2] - flug.kopf[1]) < 3, JSON.stringify(flug));
+      pruefe('… endlich, nur transform/opacity', !flug.endlos && flug.eig.every(n => n === 'transform' || n === 'opacity'), JSON.stringify(flug.eig));
+      await p.waitForFunction(() => /30 Grad/.test((document.getElementById('jarvisVerlauf') || {}).textContent || ''), null, { timeout: 6000 });
+      const spuck = await p.evaluate(() => ({ weiss: document.querySelector('#jarvis .jv-titel .formi-gesicht .fk-weiss').getAnimations().length,
+        teilchen: document.querySelectorAll('.formi-flug i').length, schub: !!document.querySelector('.formi-welle.schub') }));
+      pruefe('Antwort: das Loch im Kopf wird weiss und spuckt Licht auf die Antwort, mit Welle', spuck.weiss > 0 && spuck.teilchen >= 10 && spuck.schub, JSON.stringify(spuck));
+      await p.waitForTimeout(1800);
+      pruefe('… danach liegt nichts mehr herum', await p.evaluate(() => !document.querySelector('.formi-flug, .formi-welle')));
+      pruefe('keine Fehler auf der Seite', !p._fehler.length, p._fehler.join(' | '));
+      await p._ctx.close();
+    }
+    {
+      const p = await oeffne(b, 1440, 900, { wenigBewegung: true });
+      const r = await p.evaluate(() => ({ dreh: document.querySelector('#formiKugel .fk-wirbel').getAnimations().length }));
+      await p.click('#formiKugel'); await p.waitForTimeout(400);
+      await p.fill('#jarvisFeld', 'Wer hat heute Dienst?'); await p.click('#jarvisSenden'); await p.waitForTimeout(150);
+      pruefe('weniger Bewegung: die Scheibe steht, keine fliegende Frage', r.dreh === 0 && await p.evaluate(() => !document.querySelector('.formi-flug')), JSON.stringify(r));
+      await p._ctx.close();
+    }
+
+    /* ── Runde 213: Suche und Formi in einem Feld ────────────────────── */
+    console.log('\n── Suche und Formi in einem Feld ──');
+    for (const [w, h] of [[1440, 900], [390, 844]]) {
+      const p = await oeffne(b, w, h);
+      const suche = async (t) => { await p.evaluate(() => { if (!document.getElementById('searchOverlay').classList.contains('show')) document.getElementById('searchBtn').click(); }); await p.waitForTimeout(200); await p.fill('#searchInput', t); await p.waitForTimeout(200); };
+      await suche('wer hat heute Dienst?');
+      const f = await p.evaluate(([TR]) => { const b = document.querySelector('#searchResults > :first-child'); return { id: b && b.id, art: b && b.getAttribute('data-art'), figur: !!(b && b.querySelector('.formi-figur .fk-auge')), m: b ? (eval(TR))(b) : null }; }, [TREFFER.toString()]);
+      pruefe(`${w} px: Frage → Formi steht OBEN, mit Gesicht, ${f.m && f.m.w}×${f.m && f.m.h}`, f.id === 'sucheFormi' && f.art === 'frage' && f.figur && f.m.h >= 44 && f.m.imBild, JSON.stringify(f));
+      await p.press('#searchInput', 'Enter'); await p.waitForTimeout(500);
+      /* Abgeschickt wird erst in Formi — die Suche setzt nichts in Gang,
+         was man nicht sieht (Entscheidung vom 21.10.2026, test-uebersicht). */
+      const gefragt = await p.evaluate(() => ({ offen: !document.getElementById('jarvis').hidden, feld: document.getElementById('jarvisFeld').value,
+        gesendet: /wer hat heute Dienst\?/.test(document.getElementById('jarvisVerlauf').textContent) }));
+      pruefe(`${w} px: Eingabetaste bringt die Frage zu Formi, abgeschickt ist noch nichts`, gefragt.offen && gefragt.feld === 'wer hat heute Dienst?' && !gefragt.gesendet, JSON.stringify(gefragt));
+      await p.click('#jarvisZu'); await p.waitForTimeout(300);
+      await suche('Westen');
+      const wort = await p.evaluate(() => { const b = document.getElementById('sucheFormi'); return { art: b && b.getAttribute('data-art'), letzte: !!b && b === document.querySelector('#searchResults > :last-child') }; });
+      pruefe(`${w} px: ein Wort bleibt eine Suche — Formi steht unten`, wort.art === '' && wort.letzte, JSON.stringify(wort));
+      await suche('hak Spiegel putzen ab');
+      const a = await p.evaluate(() => (document.getElementById('sucheFormi') || {}).getAttribute && document.getElementById('sucheFormi').getAttribute('data-art'));
+      pruefe(`${w} px: Auftrag erkannt`, a === 'auftrag', String(a));
+      const vorher = await p.evaluate(() => (window.__schreib || []).length);
+      await p.press('#searchInput', 'Enter'); await p.waitForTimeout(500);
+      const auftrag = await p.evaluate((n) => ({ feld: document.getElementById('jarvisFeld').value, geschrieben: (window.__schreib || []).slice(n).filter(x => /cleaning|todos/.test(x.pfad)).length }), vorher);
+      pruefe(`${w} px: … ein Auftrag steht nur im Feld, nichts wird gespeichert`, auftrag.feld === 'hak Spiegel putzen ab' && auftrag.geschrieben === 0, JSON.stringify(auftrag));
+      pruefe(`${w} px: keine Fehler auf der Seite`, !p._fehler.length, p._fehler.join(' | '));
       await p._ctx.close();
     }
 

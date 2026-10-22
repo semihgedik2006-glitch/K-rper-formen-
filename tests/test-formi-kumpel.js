@@ -55,7 +55,10 @@ const blase = (p) => p.evaluate(() => {
      Seite hinein – „über der Kugel" heisst seitdem: über ihr ODER neben
      ihr, und nie auf einem Knopf der Seitenleiste (vorher lag die Blase
      auf „Tastenkürzel"). */
-  const neben = r.left >= kr.right - 1 && r.bottom <= kr.bottom + 1 && r.bottom >= kr.top;
+  /* „Neben" heisst: rechts der Kugel und auf ihrer Höhe (die Bereiche
+     überschneiden sich senkrecht). Nicht auf den Pixel dieselbe
+     Unterkante – die Blase wippt beim Erscheinen ein paar Pixel (Runde 205). */
+  const neben = r.left >= kr.right - 1 && r.top < kr.bottom && r.bottom > kr.top;
   const aufKnopf = [...document.querySelectorAll('#side button')].filter(e => e.getClientRects().length).some(e => {
     const q = e.getBoundingClientRect();
     return !(q.bottom <= r.top || q.top >= r.bottom || q.right <= r.left || q.left >= r.right);
