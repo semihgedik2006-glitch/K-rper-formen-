@@ -27,6 +27,11 @@
    tests/rules/security.test.js — hier läuft eine Attrappe), und ob die
    Texte rechtlich vollständig sind.
    ───────────────────────────────────────────────────────────────────── */
+/* Runde 230: Seit dem 23.10.2026 ist das neue Design für alle der Standard.
+   Dieser Durchlauf prüft eine Funktion, kommt aber über die BISHERIGE
+   Navigation dorthin. Bis er auf die neue umgestellt ist, läuft er im
+   bisherigen Aussehen (kf_neu=0, der Geräteschalter des Übergangs).
+   Offen als P-20 in docs/BEKANNTE-PROBLEME.md. */
 const { chromium } = require('playwright');
 const path = require('path');
 
@@ -96,6 +101,7 @@ async function start(opt) {
   await page.addInitScript('window.__firma = ' + JSON.stringify(opt.firma || null) + ';' +
     'window.__recht = ' + JSON.stringify(opt.recht || null) + ';');
   await page.addInitScript({ path: path.join(SP, opt.stub || 'stub-chef.js') });
+  await page.addInitScript(() => { try { localStorage.setItem('kf_neu', '0'); } catch (e) {} });
   await page.addInitScript(konfigRecht(opt.konfig || AUS_KONFIG));
   await page.goto(APP, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(2800);
@@ -469,6 +475,7 @@ async function formularOeffnen(page) {
       telefon: '02232 999888'
     })};`);
     await page.addInitScript({ path: path.join(SP, 'stub-ohne-login.js') });
+    await page.addInitScript(() => { try { localStorage.setItem('kf_neu', '0'); } catch (e) {} });
     await page.goto(APP, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2200);
 

@@ -10,6 +10,11 @@
 
    Beides wird hier geprüft – mit der grossen Datenmenge aus stub-last.js,
    damit man auch sieht, ob überhaupt etwas ankommt.                     */
+/* Runde 230: Seit dem 23.10.2026 ist das neue Design für alle der Standard.
+   Dieser Durchlauf prüft eine Funktion, kommt aber über die BISHERIGE
+   Navigation dorthin. Bis er auf die neue umgestellt ist, läuft er im
+   bisherigen Aussehen (kf_neu=0, der Geräteschalter des Übergangs).
+   Offen als P-20 in docs/BEKANNTE-PROBLEME.md. */
 const { chromium } = require('playwright');
 const SP = process.env.SP || __dirname;
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
@@ -44,6 +49,7 @@ const ZAEHLER = `
   await page.route('**script.google.com/**', r => r.fulfill({ status: 200, body: 'ok' }));
   await page.addInitScript('window.__rolle = "chef";');
   await page.addInitScript({ path: SP + '/stub-last.js' });
+  await page.addInitScript(() => { try { localStorage.setItem('kf_neu', '0'); } catch (e) {} });
   await page.addInitScript(ZAEHLER);
   await page.goto(APP, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => {

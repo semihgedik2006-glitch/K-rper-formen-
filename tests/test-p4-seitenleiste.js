@@ -34,6 +34,11 @@
        bisherigen Design dieselben Räume, ohne Putzplan-Knopf und ohne
        Schnellzugriffe
    ══════════════════════════════════════════════════════════════════ */
+/* Runde 230: Seit dem 23.10.2026 ist das neue Design für alle der Standard.
+   Dieser Durchlauf prüft eine Funktion, kommt aber über die BISHERIGE
+   Navigation dorthin. Bis er auf die neue umgestellt ist, läuft er im
+   bisherigen Aussehen (kf_neu=0, der Geräteschalter des Übergangs).
+   Offen als P-20 in docs/BEKANNTE-PROBLEME.md. */
 const { chromium } = require('playwright');
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
@@ -187,6 +192,7 @@ async function trefferSeite(p) {
     const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
     await p.route('**://www.gstatic.com/**', r => r.abort());
     await p.addInitScript({ path: __dirname + '/stub-mitarbeiter.js' });
+    await p.addInitScript(() => { try { localStorage.setItem('kf_neu', '0'); } catch (e) {} });
     await p.goto(APP, { waitUntil: 'domcontentloaded' });
     await p.waitForTimeout(3200);
     const a = await p.evaluate(() => ({ neu: document.body.classList.contains('neu'),
