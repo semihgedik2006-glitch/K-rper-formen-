@@ -19978,3 +19978,108 @@ eher spät als früh dran), und Formi hat dafür die Satzart `nacht`
 Uhr des Browsers auf 3, 7, 14 und 20 Uhr (Mittwoch, Berliner Zeit): Kopf
 und Blase beginnen gleich, der Satz passt. Gegen `main` laufen die beiden
 3-Uhr-Zusicherungen falsch.
+
+## Runde 222 — Zeiten als eigener Bereich: stempeln, Konto im Plus oder Minus, Resturlaub (23.10.2026)
+
+Aus dem Betrieb, 22.10.2026: „wäre es auch eventuell nützlich eine ganz
+neue seite fürs terminal und für die chefs zu erstellen wo man alles
+managen kann und mitarbeiter können sich nur einstempeln und ihre eigenen
+stunden sehen ob plus oder minus und halt alles was sie sonst bräuchten".
+
+Empfohlen und angenommen: **keine zweite App**, sondern ein eigener
+Bereich in derselben App. Eine zweite Seite hätte Anmeldung, Regeln und
+Studiogrenze doppelt gebraucht — und genau diese Doppelung ist in diesem
+Projekt schon fünfmal die Lücke gewesen. Antworten auf die Rückfragen
+(23.10.2026): laufender Monat „vorläufig" — „ja"; ein Modus „nur
+Stempeln" für Aushilfen — „nur startknopf"; Resturlaub — „ja"; wohin —
+„eigener knopf".
+
+### Was gebaut wurde
+
+- **Knopf „Zeiten"** unten (Handy) bzw. links (Rechner), direkt hinter
+  „Studio": gestempelt wird jeden Tag. Bereichsfarbe Cyan — der einzige
+  der zehn Akzente, der noch keinem Bereich gehört und keine
+  Statusfarbe ist. Taste **Z**.
+- Darunter zwei Seiten: **„Meine Zeiten"** (jeder) und **„Team"** (die
+  Leitung). „Meine Zeiten" ist der bisherige Reiter Heute → Ich →
+  Zeiten, „Team" der bisherige Reiter Verwaltung → Zeiten — die Blöcke
+  sind umgezogen, nicht kopiert; alle IDs sind gleich geblieben. Alte
+  Wege (ein gespeicherter Schnellzugriff `ich:zeiten`/`chef:zeiten`, ein
+  Link auf den Reiter) führen auf die neue Stelle.
+- **Mein Konto**: eine grosse Zahl mit Vorzeichen („+2:15 h · im Plus"),
+  darunter Gearbeitet, Soll bis heute, Urlaub/Krank und der Monat. Ohne
+  Statusfarbe: ein Minus meldet keinen Fehler, sondern einen Stand.
+  Der laufende Monat heisst „vorläufig", bis die Geschäftsführung
+  abschliesst.
+- **Resturlaub** im Kalenderjahr, in Arbeitstagen: ein Tag zählt, an dem
+  Soll ist (Soll je Wochentag, sonst Mo–Fr); Feiertage nie; beantragt
+  zählt getrennt; überlappende Einträge zählen einmal. Den Anspruch trägt
+  die Geschäftsführung im Soll-Formular ein (neues Feld „Urlaub", Tage im
+  Jahr).
+- **„Einrichten"** unter Team (nur Geschäftsführung): Wege zu den
+  Terminals, zur Handy-Freigabe und zur Aufbewahrung.
+
+### Warum `meinKonto` und keine neue Sammlung
+
+Was die Person für ihr Konto braucht, liegt an drei Stellen, die sie
+nicht lesen darf und auch künftig nicht lesen soll: `zeitAbschluesse`
+(alle Konten nebeneinander), `lohnEinstellungen` (Soll und Urlaub aller),
+`planerTeam` (Vertragsstunden aller). Zwei Wege standen offen:
+
+1. eine neue Sammlung `zeitKonten/{uid}`, die beim Abschluss und bei
+   jeder Soll-Änderung mitgeschrieben wird — neue Regeln in BEIDEN
+   Welten, ein Schreibweg mehr, und eine Kopie, die neben dem Original
+   veralten kann (wer das Soll ändert, ohne dass der Spiegel nachzieht,
+   sieht ein falsches Konto);
+2. eine Funktion, die mit Serverrechten liest und **nur die eigene
+   Zeile** zurückgibt.
+
+Gewählt ist 2. Es gibt keinen Parameter „für wen" — wer `uid` mitschickt,
+bekommt trotzdem sein eigenes (geprüft). Den laufenden Monat rechnet die
+App selbst mit **derselben** Funktion wie die Geschäftsführung
+(`kontoRechnen`), aus den eigenen Stempeln und Abwesenheiten — sonst
+gäbe es zwei Rechnungen, die irgendwann auseinanderlaufen.
+
+### Was dabei gefunden wurde
+
+- Der Kalendertest fiel in der Nacht vor der Zeitumstellung (siehe
+  Nachtrag zu Runde 215) — nicht diese Runde, aber sie hielt die
+  Auslieferung von Runde 215 auf.
+- Ein Ich-Reiter „Zeiten" UND ein Knopf „Zeiten" wären zwei Wege an
+  dieselbe Stelle. Der Reiter ist weg; `test-mein-bereich` prüft jetzt,
+  dass er weg ist. Aus demselben Grund steht „Meine Zeiten" nicht mehr
+  im Vorschlag für die Schnellzugriffe (an seiner Stelle „Mein Kalender")
+  — wie beim Putzplan in Runde 103.
+
+### Was nicht geprüft ist
+
+- Der echte Anmeldeweg (Firebase-SDK lädt hier nicht): `meinKonto` ist im
+  Emulator geprüft (`tests/rules/mein-konto.test.js`), die Seite in der
+  Demo.
+- In der Demo ist der Vormonat absichtlich NICHT abgeschlossen (den
+  schliesst die Vorführung der Geschäftsführung selbst ab); das Konto
+  zeigt dort den Stand von vor zwei Monaten und sagt das dazu.
+- `test-navigation` meldet „Startseite ist 2,19 Bildschirme lang (erlaubt
+  1,9)". Das ist **nicht** diese Runde: auf `main` vor dem Zusammenführen
+  gemessen, derselbe Wert. Liegen gelassen, nicht die Grenze angehoben.
+
+### Was die Leiste dabei gelernt hat
+
+Sechs Knöpfe statt fünf. Am Handy im neuen Aussehen richtet sich die
+Breite bis 420 px nach dem Wort (jeder ≥ 44 px): gleich breit hatte
+„Nachrichten" bei 320 px 52 px für 59, bei 375 noch 61 für 64 — eine
+kleinere Schrift reichte nicht. Im bisherigen Aussehen stehen für die
+Leitung sieben Knöpfe; unter 360 px brechen dort „Nachrichten" und
+„Verwaltung" an einer festen Stelle (`<wbr>`) in die zweite Zeile, die
+Leiste wird 83 statt 68 px hoch. Am Rechner war die Seitenleiste bei
+1280 × 720 bis 104 px zu lang; bis 860 px Höhe teilen sich Formi-Kugel
+und „Tastenkürzel" jetzt eine Zeile.
+
+### Gemessen (Trefferfläche per elementFromPoint, normal und kompakt)
+
+Knopf „Zeiten" und jeder andere Knopf der Leiste ≥ 44 × 44, im Bild,
+ohne abgeschnittene Beschriftung bei 320 / 390 / 430 / 820 / 1280 /
+1440 / 1920 px (`test-zeiten-bereich`); alle Bedienelemente der Seite
+„Meine Zeiten" ≥ 44 × 44 in denselben Breiten (`test-stempelseite`);
+„Zeiten → Team" bei der Leitung (`test-zeitkorrektur`). Am Rechner zwei
+Spalten, „Mein Konto" links bei „Jetzt", Taste Z (1280/1440/1920).
