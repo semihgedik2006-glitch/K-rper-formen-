@@ -3514,7 +3514,7 @@ button.ich-zeile:active{opacity:.7}
    Fehler, sondern ein Stand. */
 .st-konto-gross{display:flex;flex-direction:column;gap:var(--s2);margin:0 0 var(--s12)}
 .st-konto-zahl{font-family:var(--font-head);font-weight:800;font-size:var(--t-2xl);
-  line-height:1.05;font-variant-numeric:tabular-nums;color:var(--text)}
+  line-height:var(--lh-eng);font-variant-numeric:tabular-nums;color:var(--text)}
 .st-konto-gross span{font-size:var(--t-sm);color:var(--text-2)}
 .st-konto-reihe{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:var(--s8);margin:0 0 var(--s10)}
 .st-konto-reihe .st-zahl b{font-size:var(--t-lg)}
@@ -8289,6 +8289,16 @@ body.neu .view-head .vh-line{justify-content:flex-end}
   body.neu .mn-reihe button{flex:1 1 0;min-width:0}
   body.neu .mobnav button svg{width:24px;height:24px}
   body.neu .mn-reihe button span:not(.badge):not(.ndot){font-size:var(--t-2xs)}
+  /* Runde 216: sechs Knöpfe. Gleich breit sind sie auf 320 px je 52 px,
+     und „Nachrichten" braucht 59 — es ragte 7 px über den Knopf
+     (test-abgeschnitten, test-quer). Eine kleinere Schrift reichte nicht
+     (bei 88 % noch 56 px). Auf schmalen Handys richtet sich die Breite
+     deshalb nach dem Wort: jeder mindestens 44 px, der Rest wird
+     verteilt — bis 420 px (bei 375 waren es noch 61 für 64). Gemessen
+     bei 320 px: 5 × 44 + 68 = 288 von 312 px. */
+  @media(max-width:420px){
+    body.neu .mn-reihe button{flex:1 1 auto;min-width:44px}
+  }
   /* Die gleitende Füllung nimmt die Farbe des Bereichs an, in dem man
      gerade ist. Damit stimmt unten und oben dieselbe Aussage überein. */
   body.neu .mobnav::before{background:var(--ber-f);box-shadow:inset 0 0 0 1px var(--ber)}
