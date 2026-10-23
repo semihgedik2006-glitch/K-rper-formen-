@@ -20709,3 +20709,53 @@ Etappe 1.
   Lichtablenkung, Hawking-Strahlung, Jets, Doppler-Leuchten,
   Gezeitenkräfte, Gravitationswellen, Wurmloch, Zeitdehnung, wachsende
   Masse).
+
+## Runde 232 — Formi antwortet mit geprüften Beispielen (Worker 2.23, 23.10.2026)
+
+Aus dem Betrieb: zuerst „lass ihn im leitstand fragen erstellen und
+beantworte diese … bis die 500 fragen durch sind", danach auf die
+Empfehlung, die freigegebenen Paare direkt in den Antworten zu nutzen:
+„Ja".
+
+**Stand des Trainings (Leitstand, gemessen 23.10.2026 10:15):**
+- 528 von 500 Trainingspaaren, Gold 466; der Leitstand meldet „bereit".
+- Rund 700 Übungsfragen hat die KI erzeugt. Claude hat 451 davon
+  freigegeben, die meisten dabei umformuliert. Rund 230 sind verworfen,
+  fast alle als dieselbe Frage in anderer Schreibweise.
+- Im Export stehen Claudes Prüfungen als „Claude (für Semih)", die 15
+  früheren als „Leitstand".
+- Zwei Widersprüche im Wissen sind dabei aufgefallen und in den Antworten
+  richtig gestellt:
+  - Bluthochdruck: unbehandelt absolut ausgeschlossen, gut eingestellt nur
+    mit Freigabe.
+  - Herzschrittmacher: absolut ausgeschlossen. Ein Wissenseintrag klingt,
+    als ginge es mit Bescheinigung. Der Eintrag selbst ist unverändert und
+    muss von Semih geprüft werden.
+
+**Geändert (Worker 2.23)**
+- Zu jeder Frage holt der Worker die freigegebenen Übungen (`status =
+  'gut'`) der gefundenen Wissenseinträge. Die bis zu drei ähnlichsten
+  gehen als „GEPRÜFTE BEISPIELE" ins Gespräch mit der KI.
+- Die Ähnlichkeit sind gemeinsame Suchwörter (`vorbilderWaehlen`). Ohne
+  ein gemeinsames Wort geht kein Beispiel mit.
+- Die Regel im Systemtext: Fakten und Schritte übernehmen, in eigenem Ton
+  antworten. Widerspricht ein Beispiel dem Wissen, gilt das Wissen.
+- `/api/probe` nennt die mitgeschickten Beispiele (`beispiele`). Mit
+  `ohneBeispiele` lässt sich vergleichen.
+
+**Warum so und nicht anders**
+- Kein eigenes Modell trainieren: Bei Workers AI geht das nur mit
+  kleineren Grundmodellen (nach unserem Stand nicht mit gpt-oss-120b). Ein
+  kleines, trainiertes Modell wäre vermutlich schwächer als das grosse mit
+  Vorbildern. Das ist nicht gemessen und wird geprüft, bevor es ansteht.
+- Kein eigener Fingerabdruck je Paar: Die Paare hängen schon am
+  Wissenseintrag, den die Suche nach Bedeutung findet. Ein zweiter Index
+  hiesse doppelte Rechenzeit.
+- Höchstens drei Beispiele, je 700 Zeichen: Jedes Beispiel kostet Platz
+  im Gespräch und lenkt ab, wenn es nicht passt.
+
+**Geprüft:** `test-formi-worker` 139 (neu: freigegebenes Beispiel geht
+mit, ungeprüfte und verworfene nicht, Gegenprobe fremde Frage ohne
+Beispiel, Probe nennt die Beispiele, höchstens drei, keine doppelten).
+**Nicht geprüft:** wie stark die echten Antworten dadurch besser werden.
+Das zeigt erst `/api/probe` nach dem Einspielen.
