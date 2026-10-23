@@ -20244,8 +20244,11 @@ Idee 2). Paket 2 bringt Stempeln, Anmeldeseite, hellen Stil und Schulung.
 - **Mehr Gefühle**: traurig (Träne; ein Haken wird zurückgenommen, Daumen
   runter, offline), gelangweilt (nach 35 s Stille, einmal; Formi spielt
   mit einem Krümel), verwirrt (Fragezeichen; nichts erkannt oder die
-  Antwort steht nicht im Studio-Wissen – „Formi sagt offen, wenn es
-  unsicher ist"), stolz, verliebt (Herzchen; „danke" an Formi, Daumen
+  Antwort ist nur eine erste Einschätzung, die an Semih geht – „Formi
+  sagt offen, wenn es unsicher ist". Beim Einarbeiten von Runde 217
+  (Formi antwortet wie ChatGPT, mit Herkunft „Allgemeines Wissen" /
+  „Aus deinen Daten") wurde daraus bewusst nur der Fall `offen`: sonst
+  grübelte Formi bei fast jeder Antwort, die ja mit Herkunft dasteht), stolz, verliebt (Herzchen; „danke" an Formi, Daumen
   hoch), schnarcht (im Schlaf alle 3 s ein Atemzug mit einem z).
   Ist das Formi-Fenster offen, fühlt das Gesicht dort.
 - **Offline**: traurig, ein Satz, die Scheibe wird leise (`fk-offline`);
@@ -20308,3 +20311,81 @@ statt eine Grenze zu prüfen, die schon vorher nicht hielt.
   test-formi-lernt, test-stil-formi, test-gestaltung, test-knoepfe,
   test-csp, test-abgeschnitten, test-quer, test-uebersicht,
   test-leerzustand, test-block8, test-mitarbeiter.
+
+### Runde 226, Paket 2 — Formi beim Stempeln, bei der Anmeldung, im hellen Stil und in der Schulung
+
+Die Ideen 1, 3, 4 und 5 aus derselben Zusage („ja können wir alles
+umsetzen").
+
+**Gebaut**
+- **Idee 1, Stempeln** (`formiStempelt`, `formiPause`, `formiFeierabend`):
+  Kommen → Formi freut sich und grüsst, am Terminal mit Vornamen; Pause →
+  die Scheibe ruht (halbe Deckkraft, Augen halb zu); Zurück → freut sich;
+  Gehen → die Tageszeit („7:42 h") fliegt Buchstabe für Buchstabe vom
+  Feld „Heute" ins Loch, mit demselben Einfall wie die Funken (erlischt
+  am Horizont), danach steht sie in der Blase. Die Zahl wartet auf den
+  neu geladenen Tag (`stJetztZeichnen`, höchstens 60 s nach dem Stempeln),
+  damit nie eine alte Zahl hineinfliegt. **Warum ein Moment und keine
+  Dauerbewegung:** Stempeln passiert zweimal am Tag; der Moment darf
+  etwas kosten, der Rest des Tages nicht.
+- **Idee 3, Anmeldeseite**: Formi (84 px, mit Scheibe) statt des
+  „SC"-Zeichens. Die Augen folgen der Schreibmarke in der E-Mail und am
+  Rechner der Maus; beim Passwort Augen zu und weggedreht, mit „Passwort
+  anzeigen" linst es mit einem Auge; bei einer Fehlermeldung erschrickt
+  es. Der Mauszeiger-Hörer prüft zuerst nur die Klasse `show` an
+  `#authWrap` — nach der Anmeldung kostet eine Mausbewegung damit nichts,
+  was die Seite vermessen müsste. **Nicht prüfbar hier:** der echte
+  Anmeldeweg (Firebase lädt in dieser Umgebung nicht); geprüft wird mit
+  der Attrappe ohne Anmeldung.
+- **Idee 4, heller Stil — das weisse Loch**: Beim Ansehen gefunden: im
+  hellen Stil verschwand die neue Scheibe fast, weil ihr heisser Rand
+  weiss ist. Jetzt: heller Kern mit violettem Rand, dunkles Gesicht (ohne
+  `mix-blend-mode`, sonst hätte es schwarze Augen mit heller Pupille),
+  die Scheibe in derselben Farbfolge, nur satter. Zeichen (?, Träne,
+  Herz) in dunkleren Tönen. Nur Farben, keine neue Bewegung.
+- **Idee 5, Schulung**: Nach einer falschen Antwort steht Formi im
+  Hinweis („Formi denkt mit:") und grübelt mit Fragezeichen; richtig nach
+  einem Fehlversuch → es freut sich. Am Ende steht Formi über dem
+  Ergebnis: bestanden stolz mit Konfetti; nicht bestanden guckt es
+  traurig, **ohne Träne und ohne Konfetti** — eine Träne bei einer
+  Schulung würde tadeln, und der Bereich soll erklären, nicht tadeln.
+  Das Statusabzeichen (Haken grün / Warnung bernstein) bleibt als kleines
+  Abzeichen an Formis Seite: Statusfarben nur für Status, Formi selbst
+  ist keiner. Neue Hilfsfunktion `formiFigurFuehlt` (eine einzelne Figur
+  fühlt), die das Formi-Fenster jetzt auch benutzt.
+- **Beim Einarbeiten von main** (Runden 216–225 kamen parallel dazu): die
+  Nummern 216 und 223–225 waren vergeben, diese Runde heisst 226. „Verwirrt" bei einer
+  Antwort nur noch, wenn sie eine erste Einschätzung ist (`offen`), siehe
+  oben.
+
+**Gemessen** (`tests/test-formi-ideen.js`, 47 Zusicherungen, neu)
+- Anmeldung, 320 / 390 / 430 / 820 / 1280 / 1440 / 1920 px, normal und
+  kompakt, per Hit-Test: „Anmelden" 222 × 46 (320 px) bis 368 × 46,
+  „Passwort anzeigen" 44 × 44; Formi und Scheibe im Bild, kein Querlauf.
+- Heller Stil an echten Bildpunkten: Gesicht gegen Kern 15,9 : 1
+  (1440) und 15,4 : 1 (390); die Scheibe gegen den hellen Grund
+  3,3 : 1 (1440) und 3,6 : 1 (390), Grenze 3 : 1 für Grafik.
+- Leistung nach dem Einarbeiten (`test-formi-physik`, CPU ÷4): 390 px
+  Ruhe 5,3 / offen 6,0 ms; 1440 px 5,6 / 4,8 ms; 1920 px 5,8 / 4,7 ms.
+
+**Rot, aber nicht von hier** (auf main mit demselben Test genauso rot):
+- `test-formi-kugel`: bei 320 px liegt die Kugel auf der unteren Leiste
+  (2 von 70).
+- `test-neu-design`: unten stehen seit Runde 222 sechs Knöpfe statt
+  fünf; bei 320 px ist „Plan" nicht 44 px treffbar, und die Startseite
+  passt nicht mehr ohne Scrollen (7 Fehler).
+- Nicht rot, aber zu wissen: `test-gehirn` „gespeichert wird NICHT von
+  selbst" war einmal rot, als mehrere Durchläufe gleichzeitig liefen;
+  einzeln grün (alle 330), auf main grün — zeitabhängig.
+
+**Grün**: test-formi-ideen (47), test-formi-physik (55), test-formi-lebt
+(169), test-formi-welt, -angedockt, -kumpel, -platz, -verdeckt, -lernt,
+test-stil-formi, test-gestaltung, test-knoepfe, test-csp,
+test-abgeschnitten, test-anmeldung-anbieter, test-anmelde-mail,
+test-handy-stempeln, test-stempelseite, test-meine-zeiten, test-schulung,
+-beratung, -lernen, -testcode, -animation, -pflicht, test-ems-schulung, test-neu-messlatte, test-gehirn (330).
+
+**Noch nicht gebaut** (aus der Bewegungs-Recherche, app-weit): drei Federn
+statt zehn Kurven und View Transitions beim Seitenwechsel. Und die
+Maus-Messung (11–12 ms, auf main schon 9–10) wartet auf eine eigene
+Runde — am besten gemessen auf dem Laptop aus dem Betrieb.
