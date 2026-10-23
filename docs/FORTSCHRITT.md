@@ -22250,3 +22250,57 @@ dort ist es an „Zeiten“ geprüft.
 
 **Nicht getestet:** echtes iPhone; die Kontrastmessung des Titels im
 Verlauf ist unverändert gegenüber Runde 241 (Farben nicht angefasst).
+
+## Runde 253 — Blätter mit Griff und Rasthöhen (23.10.2026)
+
+Neunter Bauschritt aus dem Plan „Studio Chat wie von Apple“: „Blatt
+(Sheet): Rasthöhen halb und voll, ein Griff oben zeigt, dass man ziehen
+kann.“
+
+**Was schon da war.** Zehn Fenster kamen am Handy (bis 620 px) schon als
+Blatt von unten (`profileModal`, `personModal`, `devModal`, `pollModal`,
+`todoEditModal`, `aboModal`, `ownTodoModal`, `probeModal`, `zugangModal`,
+`putzModal`), dazu die vier Blätter `docSheet`, `todoSheet`, `msgSheet`,
+`shiftSheet` bis 1099 px. Oben sass ein gemalter Strich (`::before`) —
+er sah aus wie ein Griff, liess sich aber nicht ziehen. Ein Zeichen, das
+etwas verspricht und nichts tut, ist schlechter als keins.
+
+**Geändert.**
+- Der Strich ist jetzt ein echtes Element `.blatt-griff` (oben im Blatt,
+  `position:sticky`, damit er beim Scrollen im Blatt bleibt). Trefferfläche
+  ≥ 44 px hoch und `min(200px, 60%)` breit, der sichtbare Strich bleibt
+  36 × 5 px wie bei iOS. Er wird in `dialogeVorbereiten` einmal eingesetzt,
+  `aria-hidden` — er ist eine Abkürzung, kein eigener Bedienweg.
+- Ziehen per Pointer-Ereignissen am Griff, Bewegung nur per `transform`.
+  Beim Loslassen zählt Weg **und** Tempo (geschätzt aus den letzten
+  Bewegungen): kurzer Zug federt zurück, weiter oder schnell nach unten
+  schliesst. Nach oben gibt es nur einen Gummiband-Widerstand.
+- Halbe Höhe nur bei hohen Blättern (Inhalt über 62 % des Bildschirms):
+  ein mittlerer Zug rastet bei 50 % ein, von dort nach oben wieder ganz.
+  Kurze Blätter springen nicht auf halb — sie wären danach kaum kleiner.
+  Der Wechsel der Höhe läuft per FLIP (einmal Layout, dann `transform`).
+- Geschlossen wird über einen Klick auf den Hintergrund des Fensters —
+  also über die vorhandenen Schliess-Wege, mit allem, was die schon
+  tun. Ein eigener Schliessweg hätte das ein
+  zweites Mal gebaut. Beim nächsten Öffnen steht das Blatt wieder ganz da.
+- Wo das Fenster in der Mitte steht (Profil ab 621 px, Aufgaben-Blatt ab
+  1100 px), gibt es keinen Griff — am Rechner zieht man keine Fenster
+  nach unten weg, dort bleiben Esc, ✕ und der Klick daneben.
+
+**Nicht gemacht, mit Grund:** Ziehen am ganzen Blatt (iOS erlaubt das
+auch aus dem Inhalt, wenn er oben steht). Im Browser kollidiert das mit
+dem Scrollen im Blatt und mit Wischgesten in Listen darin; der Griff ist
+eindeutig. Kann folgen, wenn es im Studio vermisst wird.
+
+**Test:** neu `tests/test-blaetter.js`, 69 grün: Aufgaben-Blatt und Profil
+bei 320 / 390 / 430 in normal und kompakt — Griff per Hit-Test ≥ 44 × 44
+(172 × 44 bei 320), Strich 36 × 5 mittig, ganz oben im Blatt, überdeckt
+keinen Knopf; 30 px gezogen federt zurück; mittlerer Zug am hohen Blatt
+rastet bei 50 % ± 3 % ein (320 von 640 px), nach oben wieder ganz; weit
+gezogen und schnell geschnippt (80 px) schliesst; öffnet danach wieder
+ganz. Bei 820 hat das Aufgaben-Blatt einen Griff, bei 1280 / 1440 / 1920
+keins; das Profil hat ab 621 px keinen.
+
+**Nicht getestet:** echtes iPhone mit Finger (gezogen wird im Test mit
+der Maus über dieselben Pointer-Ereignisse); das Gefühl der Federung ist
+eine Einschätzung, keine Messung.

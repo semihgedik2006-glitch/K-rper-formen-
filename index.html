@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-w9hhamVh3koT4HyqRRt/9GxlbtXaXleHts3x3mOisjI='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-bdBTXr2mU36+m8tn2x3smiPPBavOP42FlG229Rr7/is='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3211,10 +3211,28 @@ body.neu .scroll-area > .pp-leiste:first-child{margin-top:var(--s8)}
     overscroll-behavior:contain;touch-action:none}
   #profileModal.show .pm-box,#personModal.show .pm-box{
     animation:sheetUp .5s var(--ease-ios)}
-  /* Griff oben – zeigt ohne Worte, dass sich das Blatt schließen lässt */
-  #profileModal .pm-box::before,#personModal .pm-box::before{
-    content:'';display:block;width:38px;height:4px;border-radius:var(--r-pille);
-    background:var(--line-2);margin:-6px auto var(--s12)}
+  /* Griff oben: seit Runde 253 ein echtes Element an JEDEM Blatt
+     (.blatt-griff, siehe unten) statt ::before nur an zwei. */
+  #profileModal .blatt-griff,#personModal .blatt-griff,#devModal .blatt-griff,#pollModal .blatt-griff,#todoEditModal .blatt-griff,
+  #aboModal .blatt-griff,#ownTodoModal .blatt-griff,#probeModal .blatt-griff,#zugangModal .blatt-griff,#putzModal .blatt-griff{
+    display:block;top:calc(-1 * var(--s20));margin:calc(-1 * var(--s20)) auto calc(-1 * var(--s8))}
+}
+/* ── Blätter mit Griff und Rasthöhen (Runde 253) ─────────────────────
+   Plan „Studio Chat wie von Apple", Schritt 7: „Blatt (Sheet): Rasthöhen
+   halb und voll, ein Griff oben zeigt, dass man ziehen kann."
+   Der Griff ist ein echtes Element (blattGriffAnbringen), oben in der
+   Mitte, klebt beim Scrollen im Blatt oben und ist 44 px hoch — der
+   Strich darin ist 36 × 5 px wie bei iOS. Er ist bewusst nur so breit
+   wie nötig (bis 200 px): rechts oben sitzt bei manchen Blättern das
+   Kreuz, das soll er nicht überdecken. Ziehen: blattZiehenBinden. */
+.blatt-griff{display:none;position:sticky;top:0;z-index:3;width:min(200px, 60%);height:44px;
+  cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none}
+.blatt-griff::before{content:'';position:absolute;left:50%;top:var(--s8);width:36px;height:5px;margin-left:-18px;
+  border-radius:var(--r-pille);background:var(--text-3);opacity:.55}
+.blatt-griff:active{cursor:grabbing}
+@media (max-width:1099px){
+  /* top negativ: „sticky" hält sonst Abstand zum Innenrand des Blatts. */
+  .msg-sheet:not(.am-ort) .blatt-griff{display:block;top:calc(-1 * var(--s16));margin:calc(-1 * var(--s16)) auto calc(-1 * var(--s8))}
 }
 @keyframes sheetUp{
   from{opacity:.4;transform:translateY(100%)}
@@ -19133,6 +19151,107 @@ function offenerDialog(){
   return treffer;
 }
 
+/* ── Blätter mit Griff und Rasthöhen (Runde 253) ─────────────────────
+   Plan „Studio Chat wie von Apple", Schritt 7. Was von unten kommt
+   (am Handy die Fenster unter 620 px, die Aktionsblätter bis 1099 px),
+   trägt oben einen Griff. Am Griff zieht man das Blatt:
+     - nach unten, weit genug oder schnell genug: es geht zu — über
+       denselben Weg wie ein Tipp daneben (der Klick auf den Hintergrund
+       ruft das Schliessen des jeweiligen Fensters, mit Aufräumen);
+     - ist das Blatt höher als 62 % des Bildschirms, rastet es auf halber
+       Höhe ein (Apples „medium"); von dort nach oben wieder ganz.
+   Während des Ziehens bewegt sich nur transform (keine Layout-Arbeit je
+   Bild); beim Einrasten EIN Layout (max-height) und die Bewegung per
+   FLIP mit der weichen Feder. Geöffnet wird immer ganz — ein halb
+   offenes Formular hätte seinen Knopf versteckt. */
+var BLATT_PM = ['profileModal','personModal','devModal','pollModal','todoEditModal','aboModal','ownTodoModal','probeModal','zugangModal','putzModal'];
+var BLAETTER = BLATT_PM.concat(['docSheet','todoSheet','msgSheet','shiftSheet']);
+function blattGriffAnbringen(wrap){
+  var karte = wrap.querySelector('.pm-box, .ms-card');
+  if(!karte || karte.querySelector(':scope > .blatt-griff')) return;
+  var g = document.createElement('div');
+  g.className = 'blatt-griff'; g.setAttribute('aria-hidden', 'true');
+  karte.insertBefore(g, karte.firstChild);
+  blattZiehenBinden(wrap, karte, g);
+  /* Jedes Öffnen beginnt ganz, ohne Reste vom letzten Ziehen. */
+  new MutationObserver(function(){
+    if(!wrap.classList.contains('show')) return;
+    karte.style.maxHeight = ''; karte.style.transform = ''; wrap.removeAttribute('data-rast');
+  }).observe(wrap, { attributes:true, attributeFilter:['class'] });
+}
+function blattZiehenBinden(wrap, karte, g){
+  var z = null;
+  function setze(dy){ karte.style.transform = dy ? 'translateY(' + dy.toFixed(1) + 'px)' : ''; }
+  g.addEventListener('pointerdown', function(e){
+    if(!g.getClientRects().length || (e.button && e.button !== 0)) return;
+    karte.getAnimations().forEach(function(a){ if(a.effect && a.effect.target === karte) a.finish(); });
+    z = { y0:e.clientY, y:e.clientY, t:performance.now(), v:0, dy:0, h:karte.getBoundingClientRect().height,
+          halb: wrap.getAttribute('data-rast') === 'halb' };
+    try{ g.setPointerCapture(e.pointerId); }catch(x){}
+    e.preventDefault();
+  });
+  g.addEventListener('pointermove', function(e){
+    if(!z) return;
+    var jetzt = performance.now(), dt = Math.max(1, jetzt - z.t);
+    z.v = .7 * ((e.clientY - z.y) / dt) + .3 * z.v; z.y = e.clientY; z.t = jetzt;
+    var dy = e.clientY - z.y0;
+    /* Nach oben gibt es nur aus der halben Höhe Weg; sonst federt es
+       zäh (wie am Rand einer Liste). */
+    if(dy < 0) dy = z.halb ? Math.max(dy, -innerHeight * .4) : -Math.sqrt(-dy) * 3;
+    z.dy = dy; setze(dy);
+  });
+  function los(){
+    if(!z) return;
+    var dy = z.dy, v = z.v, h = z.h, halb = z.halb; z = null;
+    var hoch = karte.scrollHeight > innerHeight * .62 || halb;
+    if(halb){
+      if(dy < -50 || v < -.45) return blattRast(wrap, karte, 'voll');
+      if(dy > h * .35 || v > .6) return blattZu(wrap, karte);
+      return blattZurueck(karte);
+    }
+    if(v > .9 || dy > h * .55) return blattZu(wrap, karte);
+    if(hoch && (dy > h * .16 || v > .35)) return blattRast(wrap, karte, 'halb');
+    if(!hoch && (dy > h * .3 || v > .5)) return blattZu(wrap, karte);
+    blattZurueck(karte);
+  }
+  g.addEventListener('pointerup', los);
+  g.addEventListener('pointercancel', function(){ if(z){ z = null; blattZurueck(karte); } });
+}
+function blattZurueck(karte){
+  var m = /translateY\(([-\d.]+)px\)/.exec(karte.style.transform || ''), dy = m ? +m[1] : 0;
+  karte.style.transform = '';
+  if(!dy || willRuhe() || !karte.animate) return;
+  karte.animate([{ transform:'translateY(' + dy + 'px)' }, { transform:'none' }], { duration:320, easing:'cubic-bezier(.32,.72,0,1)' });
+}
+/* Einrasten: erst die alte Oberkante merken, dann die neue Höhe setzen
+   (ein Layout), dann vom alten Platz auf den neuen gleiten. */
+function blattRast(wrap, karte, rast){
+  var vorher = karte.getBoundingClientRect().top;
+  karte.style.transform = '';
+  karte.style.maxHeight = rast === 'halb' ? Math.round(innerHeight * .5) + 'px' : '';
+  if(rast === 'halb') wrap.setAttribute('data-rast', 'halb'); else wrap.removeAttribute('data-rast');
+  tick(6);
+  if(willRuhe() || !karte.animate) return;
+  var nachher = karte.getBoundingClientRect().top;
+  karte.animate([{ transform:'translateY(' + (vorher - nachher).toFixed(1) + 'px)' }, { transform:'none' }],
+    { duration:380, easing:'cubic-bezier(.32,.72,0,1)' });
+}
+function blattZu(wrap, karte){
+  var m = /translateY\(([-\d.]+)px\)/.exec(karte.style.transform || ''), dy = m ? +m[1] : 0;
+  var fertig = function(){
+    /* Derselbe Weg wie ein Tipp neben das Blatt: dort hängt das
+       Schliessen des Fensters mit seinem Aufräumen. */
+    wrap.dispatchEvent(new MouseEvent('click', { bubbles:true }));
+    if(wrap.classList.contains('show')) wrap.classList.remove('show');
+    karte.style.transform = ''; karte.style.maxHeight = ''; wrap.removeAttribute('data-rast');
+  };
+  tick(6);
+  if(willRuhe() || !karte.animate){ fertig(); return; }
+  var a = karte.animate([{ transform:'translateY(' + dy + 'px)' }, { transform:'translateY(' + (karte.getBoundingClientRect().height + 40) + 'px)' }],
+    { duration:220, easing:'cubic-bezier(.4,0,1,1)', fill:'forwards' });
+  a.onfinish = function(){ fertig(); a.cancel(); };
+}
+
 /* Mehrfach aufrufbar: einmal beim Anmeldebildschirm (dort gibt es schon
    das Rechtliches-Fenster) und einmal beim Start der App. Ohne diese
    Sperre bekäme jedes Fenster zwei Beobachter und der Fokus würde zweimal
@@ -19142,6 +19261,7 @@ function dialogeVorbereiten(){
   DIALOGE.forEach(function(id){
     var wrap = document.getElementById(id); if(!wrap || wrap._dlg) return;
     wrap._dlg = true;
+    if(BLAETTER.indexOf(id) >= 0) blattGriffAnbringen(wrap);
     var box = wrap.querySelector('.pm-box, .ms-card, .search-box') || wrap;
     box.setAttribute('role','dialog');
     box.setAttribute('aria-modal','true');
@@ -22418,6 +22538,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-23-blaetter', datum:'23.10.2026', titel:'Fenster von unten lassen sich ziehen', wo:'todos', punkte:[
+    'Fenster, die am Handy von unten hochkommen (zum Beispiel „…" an einer Aufgabe oder dein Profil), haben oben einen kleinen Strich. Daran kannst du sie ziehen.',
+    'Nach unten ziehen oder schnell wischen schliesst das Fenster. Bei langen Fenstern hält ein mittlerer Zug auf halber Höhe, nach oben wird es wieder ganz gross.',
+    'Schliessen geht weiter wie bisher mit dem Knopf oder einem Tipp daneben.'
+  ]},
   { id:'2026-10-23-grosser-titel', datum:'23.10.2026', titel:'Grosser Titel oben, wie in den iPhone-Apps', wo:'todos', punkte:[
     'Oben auf jeder Seite steht der Name jetzt gross und fett, zum Beispiel „Studio" oder „Zeiten" – so wie bei Mail oder den Einstellungen auf dem iPhone.',
     'Scrollst du nach unten, wird der Titel klein und macht Platz. Oben angekommen, ist er wieder gross.'
