@@ -48,7 +48,7 @@ function einstLesen() {
 messaging.onBackgroundMessage(function (payload) {
   const d = (payload && payload.data) || {};
   const n = (payload && payload.notification) || {};
-  /* Runde 240 (Idee 14): was die App selbst schickt, spricht Formi —
+  /* Runde 242 (Idee 14): was die App selbst schickt, spricht Formi —
      Name vorn, Formis Bild. Nachrichten von Menschen bleiben, wie sie sind. */
   const formi = d.von === 'formi';
   const titel = (formi ? 'Formi · ' : '') + (d.title || n.title || 'StudioChat');

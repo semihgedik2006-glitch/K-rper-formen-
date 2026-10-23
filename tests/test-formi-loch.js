@@ -67,7 +67,7 @@ const EIG = (anims) => [...new Set(anims.flatMap(a => a.effect.getKeyframes().fl
         const k = document.getElementById('formiKugel').getBoundingClientRect();
         const m = /translate\((-?[\d.]+)px, ?(-?[\d.]+)px\).*scale\(([\d.]+), ?([\d.]+)\)/.exec(kf[kf.length - 1].transform);
         const gr = g.getBoundingClientRect();
-        /* Runde 240 — aus dem Betrieb: „fliegen ganz steif … statt gestreckt
+        /* Runde 242 — aus dem Betrieb: „fliegen ganz steif … statt gestreckt
            und drehend … keine spagettifikation". Gemessen aus den Bildern:
            wie weit er sich dreht, ob die Streckung zum Ende wächst und ob
            das letzte Fünftel des Wegs länger dauert (Zeitdehnung). */
@@ -88,6 +88,17 @@ const EIG = (anims) => [...new Set(anims.flatMap(a => a.effect.getKeyframes().fl
       await p.waitForTimeout(2100);
       pruefe('… danach ist er weg und die Kugel saugt (Welle „sog")', await p.evaluate(() => !document.querySelector('.formi-schluck') && !!document.querySelector('.formi-welle.sog')));
       await zeige(p, 'home'); await p.waitForTimeout(600);
+      // 1b Auch der Haken direkt auf „Heute" (Runde 240) lässt den Punkt ins Loch fallen
+      const hh = await p.evaluate(async () => {
+        const b = document.querySelector('.hz-haken'); if (!b) return { fehlt: true };
+        const titel = b.closest('.hz-mit-haken').querySelector('.hz-txt b').textContent.trim();
+        b.click();
+        await new Promise(r => setTimeout(r, 120));
+        const g = document.querySelector('.formi-schluck');
+        return { titel, g: g ? g.textContent : null };
+      });
+      pruefe(`Haken auf „Heute": „${hh.titel}" fällt ins Loch`, hh.fehlt || (hh.g && hh.titel.indexOf(hh.g.replace(/…$/, '')) === 0), JSON.stringify(hh));
+      await p.waitForTimeout(2100);
       // 2 Photonenring
       const ring = await p.evaluate(() => getComputedStyle(document.querySelector('#formiKugel .fk-pupille')).boxShadow);
       pruefe('Photonenring: heller Lichtring am Rand des Lochs', /rgba\(255, 236, 214/.test(ring), ring);

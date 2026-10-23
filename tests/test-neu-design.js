@@ -67,7 +67,9 @@ async function seite(b, stub, such, breite) {
      Die Gegenprobe zuerst. Wäre sie rot, wäre alles andere egal. */
   console.log('── Ohne Schalter: die App von heute ──');
   {
-    const page = await seite(b, 'stub-chef.js', '');
+    /* Seit Runde 236 ist das neue Design der Standard; das bisherige gibt
+       es im Übergang nur noch über ?neu=0. Diese Gegenprobe prüft es dort. */
+    const page = await seite(b, 'stub-chef.js', '?neu=0');
     const alt = await page.evaluate(() => {
       const zeile = document.getElementById('bereichZeile');
       const lade = document.getElementById('allesLade');
@@ -476,7 +478,9 @@ async function seite(b, stub, such, breite) {
           ohneAusgang: [...document.querySelectorAll('#heuteListe .heute-block')]
             .filter(bl => {
               const kopf = bl.querySelector('.heute-kopf');
-              const zahl = /·\s*(\d+)/.exec((kopf.textContent || ''));
+              /* Runde 241: die Zahl steht ohne „·“ leise neben dem Titel, und im
+                 Kopf steht jetzt auch „Alle N“ — gelesen wird nur der Titel. */
+              const zahl = /(?:·\s*|\s)(\d+)$/.exec(((kopf.querySelector('.hk-wort') || {}).textContent || '').trim());
               const gezeigt = bl.querySelectorAll('.heute-zeile').length;
               return zahl && +zahl[1] > gezeigt && !kopf.querySelector('.mini-link');
             }).length,

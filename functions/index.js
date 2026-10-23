@@ -127,7 +127,7 @@ function willHaben(d, art) {
    niemand als Fehler, sie nervt nur, und genau das war die Rueckmeldung.
 
    Datenfelder muessen Zeichenketten sein; alles andere weist FCM ab. */
-/* Runde 240 (Idee 14): Meldungen, die die App SELBST schickt (Fristen,
+/* Runde 242 (Idee 14): Meldungen, die die App SELBST schickt (Fristen,
    Erinnerungen, Nachweise, Formi meldet sich), tragen von:'formi' — der
    Service Worker zeigt sie dann als „Formi · …" mit Formis Bild. Was ein
    Mensch schreibt (Chat, Ankündigung, neue Aufgabe), bleibt unverändert:

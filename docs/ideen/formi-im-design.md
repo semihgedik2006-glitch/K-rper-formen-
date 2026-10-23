@@ -534,6 +534,6 @@ Einzelheiten stehen in `docs/FORTSCHRITT.md`, Runde 227. Offen sind noch
 Idee 8 („Seit deiner letzten Schicht“) und Idee 14 (Push mit Formis
 Stimme).
 
-**Gebaut in Runde 240:** „Seit du weg warst“ (Idee 8), ohne KI: gezählt
+**Gebaut in Runde 242:** „Seit du weg warst“ (Idee 8), ohne KI: gezählt
 und wörtlich zitiert, mit Quelle. Benachrichtigungen mit Formis Stimme
 (Idee 14). Damit sind alle 14 Ideen gebaut.
