@@ -20760,7 +20760,117 @@ Beispiel, Probe nennt die Beispiele, höchstens drei, keine doppelten).
 **Nicht geprüft:** wie stark die echten Antworten dadurch besser werden.
 Das zeigt erst `/api/probe` nach dem Einspielen.
 
-## Runde 233 — Notbremse fürs KI-Tageskontingent (Worker 2.24, 23.10.2026)
+## Runde 233 — Neues Formi-Fenster und mehr Formi in der ganzen App (Etappe 2) (23.10.2026)
+
+**Aus dem Betrieb:**
+- „die ganze app hat viel zu wenig formi design wirklich“
+- „das hud sieht design technisch auch noch nicht all zu prickelnd aus“
+- Zur Ideenliste C (App) und D (Fenster): „alles davon … deutlich, mehr
+  formi“
+
+**Gebaut — das Fenster (D):**
+- **Bühne.**
+  - Farbe geht von der oberen Kante aus und läuft aus (Violett mittig,
+    Cyan links, Rosa rechts). Oben liegt Formis Ring als 2 px Linie.
+  - Formi ist auf dem Startschirm grösser (104 statt 76 px) und hat einen
+    Lichthof.
+- **Vorschläge als Karten.**
+  - Zwei Spalten, links ein Zeichen in der Farbe des Bereichs (dieselben
+    wie in den Mini-Fenstern), die Kante in derselben Farbe.
+  - Die Fragen selbst sind unverändert, die Durchläufe klicken sie.
+- **Sprechblasen.**
+  - Deine Frage steht rechts im Verlauf von Formis Farben, die Ecke unten
+    rechts ist spitz.
+  - Formis Antwort steht links aus Glas, die Ecke oben links ist spitz,
+    und eine Kante in Formis Ring läuft mit.
+  - Die Hologramm-Winkel aus dem grossen HUD fallen im kleinen Fenster
+    weg.
+- **Eingabe als eine Zeile:** Foto · Feld · Sprechen · Senden.
+  - Alle drei Knöpfe sind runde Zeichen-Knöpfe (`icon-btn`), die Namen
+    stehen in `aria-label`.
+  - Senden hat Formis Ring als Fläche und ein neues Zeichen `senden`
+    (Pfeil nach oben).
+  - Das Feld ist einzeilig und wächst. Der Platzhalter ist kurz („Frag
+    Formi …“), der lange brach bei 390 px um.
+  - Die IDs bleiben, alle Durchläufe greifen weiter.
+
+**Gebaut — die App (C):**
+- **Formi neben dem Gruss auf „Heute“** (44 px). Morgens vor 9 und
+  abends ab 19 Uhr sind die Augen halb zu. Die Figur macht beim
+  Eigenleben mit.
+- **Formi in jedem Hinweis unten** (Toast): Er freut sich über
+  Erledigtes und ist bei Fehlern verlegen. Der Text steht in einem
+  eigenen `<span>` und bleibt unverändert.
+- **Formi über leeren Listen:** zufrieden, die Augen als Bögen. Das
+  Zeichen des Bereichs schwebt klein daneben. „Frag Formi“ bleibt
+  darunter.
+- **Seitenwechsel:** ein leiser Wirbel aus der Kugel (Art `wechsel`,
+  650 ms, `transform`/`opacity`).
+- **Kanten:** Karten leuchten beim Erscheinen einmal in Formis Farben
+  auf (`::after`, nur `opacity`).
+- **Funken:** Hauptknöpfe (und Senden) sprühen beim Drücken sechs Funken
+  in Formis Farben.
+- Alles davon ist Schmuck: aria-hidden, keine Trefferfläche. Bei
+  „weniger Bewegung“ und „Gefühle aus“ ist es aus.
+
+**Entschieden und warum:**
+- *Kein Formi-Ring an der Navigation* (Idee C1). Der Ring gehört nur
+  Formi, so in Runde 186 entschieden und am 22.10. bestätigt
+  („2. ja“), und `test-formi-welt` prüft das. Stattdessen sitzt Formi
+  selbst an mehr Stellen: am Gruss, im Hinweis, in leeren Listen.
+- *Leuchtende Kanten über `opacity`, nicht über einen Lichtstreif.* Ein
+  Streif bräuchte `overflow:hidden` an der Karte. Das schnitte Menüs ab,
+  die aus Karten herausragen.
+
+**Nebenbei gefunden:** `var(--s14)` gibt es auf der Abstandsleiter nicht.
+Zwei Stellen verwiesen darauf und hatten damit 0 Abstand, eine davon die
+„Zeig mir wie“-Karte aus Runde 227. Beide stehen jetzt auf `--s16`
+bzw. `--s12`.
+
+**Geprüft:**
+- `tests/test-formi-app.js` (neu, 34 Zusicherungen):
+  - Karten mit Zeichen, Eingabe in einer Zeile, Senden mit Zeichen und
+    Wort, Sprechblasen
+  - Trefferflächen von Foto, Senden, Sprechen und Vorschlägen per
+    Hit-Test ≥ 44 × 44 bei 320 / 390 / 430 / 820 / 1280 / 1440 / 1920,
+    normal und kompakt
+  - Gruss-Formi, Formi im Hinweis, Formi über leeren Listen, Wirbel
+    beim Seitenwechsel, leuchtende Kanten, Funken
+  - „weniger Bewegung“
+- Grün: test-knoepfe (vorher und nachher), test-gestaltung,
+  test-abgeschnitten, test-quer, test-formi-eigenleben, -lebt, -ideen,
+  -physik, -kugel, -welt, -platz, -kumpel, -angedockt, -reihe, -zeigwie,
+  test-stil-formi, test-gehirn (330), test-uebersicht, test-tagesgruss,
+  test-neuigkeiten, test-block8, test-mitarbeiter, test-csp.
+- Funde unterwegs, alle im Code behoben, kein Test gelockert:
+  - **test-gestaltung:** Das Zeichen `senden` galt als ungenutzt. Es
+    stand nur im Fenster-Markup, das der Test als Skript liest. Jetzt
+    setzt `jarvisBinden` es über `ikon('senden')` ein.
+  - **test-formi-welt:** Der Kontrast des Hauptknopfs wird an einem
+    Knopf mit Text gemessen, und der runde Senden-Knopf hatte keinen.
+    Am Rechner (ab 1100 px) trägt Senden jetzt Pfeil und Wort in Formis
+    Verlauf, am Handy bleibt er rund.
+  - **test-gehirn:** Die Hologramm-Eckwinkel an Formis Antwort sind ein
+    Wunsch vom 20.10. („hologramme dinger“). Sie bleiben in der
+    Sprechblase, um 10 px nach innen gerückt.
+  - **test-formi-zeigwie:** Bei 320 × 568 passte die Karte nicht mehr
+    neben „Von“/„Bis“, weil der neue Abstand (`--s16` statt der
+    fehlenden `--s14`) sie höher machte. Neu: Passt sie weder darüber
+    noch darunter, holt der Rundgang das Ziel so weit hoch, dass sie
+    darunter passt. Auf niedrigen Bildschirmen ist die Karte kompakter.
+  - **test-neuigkeiten:** Die Kennung `formi-ueberall` gab es schon
+    (Runde 226). Sie heisst jetzt `formi-fenster-neu`.
+- **Nicht von dieser Runde:** test-formi-verdeckt ist bei 320 × 568 rot
+  („schulung: nicht freizuscrollen: button.sch-karte …“, alle drei
+  Rollen). Auf `origin/main` ist das genauso, gemessen. Die Ursache ist
+  nicht geändert.
+- **Eigener Fehler:** Einmal wurde `index.html` geändert, während
+  test-formi-verdeckt lief. Der Lauf wurde wiederholt.
+
+**Nicht geprüft:** echte Handys. Die Arbeit je Bild beim Seitenwechsel
+wurde nicht gemessen: ein Element, 650 ms, nur `transform`/`opacity`.
+
+## Runde 234 — Notbremse fürs KI-Tageskontingent (Worker 2.24, 23.10.2026)
 
 Aus dem Betrieb: „können wir die tageskontigenten nicht erhöhen
 irgendwie ?". Die Rückfrage war Paid-Plan oder gratis mit Notbremse. Die
