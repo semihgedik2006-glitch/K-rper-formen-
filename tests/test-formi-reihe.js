@@ -1,4 +1,4 @@
-/* ══ HANDY-STARTSEITE: FORMI IN DER SCHNELLZUGRIFF-REIHE (Runde 216) ══
+/* ══ HANDY-STARTSEITE: FORMI IN DER SCHNELLZUGRIFF-REIHE (Runde 217) ══
    Aus dem Betrieb, 23.10.2026, auf „schmaler Kopf und Formi in der
    Schnellzugriff-Reihe statt eigenem Streifen?": „a mach weiter und
    merge".
