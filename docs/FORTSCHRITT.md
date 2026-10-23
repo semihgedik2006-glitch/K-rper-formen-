@@ -21295,3 +21295,48 @@ in dieser Umgebung nicht).
 Titel statt Versalien-Marken, dann untere Leiste mit fünf Einträgen,
 dann Bewegung (drei Federn, Blätter mit Griff), dann Chat in Blasen.
 Formi selbst bleibt bei der anderen Sitzung.
+
+## Runde 240 — Auf „Heute" direkt abhaken (23.10.2026)
+
+Aus dem Betrieb, 23.10.2026, auf meine Empfehlung „Aufbau nach Rolle und
+Aufgabe statt nach Bereich" und die Rückfragen:
+- „Mitarbeiter unten nur Heute, Zeiten, Plan, Nachrichten?": „ja";
+- „Eine Liste oder Blöcke nach Art?": „so wies leichter zu verstehen ist".
+  Meine Wahl dafür: Blöcke bleiben, weil man sie überfliegen kann.
+- „Wer testet?": „ich kann leider nur selber testen aktuell".
+
+Dagegen steht ein früherer Satz aus dem Betrieb (24.9.): „der am meisten
+benutzte Bereich [ist] der Aufgaben- und Putzplan-Bereich". Fällt
+„Studio" für Mitarbeiter weg, muss „Heute" deshalb das Abarbeiten
+übernehmen. Deshalb kommt dieser Schritt zuerst.
+
+**Gebaut.** Jede Aufgaben- und jede einzelne Putz-Zeile auf „Heute" trägt
+links einen Kreis als eigenen Knopf (`heuteZeile`, `heuteHakenBinden`).
+- Geschrieben wird über `gehirnAbhakenSchreiben()`, denselben Weg, den
+  Formi nimmt (Kürzel, Putzplan-Blatt).
+- Danach erscheint „Rückgängig", das wieder `done:false` schreibt.
+- Der Tipp auf die Zeile selbst öffnet sie weiter.
+
+**Unterwegs gefunden, beide behoben:**
+- *Erste Fassung, Haken über dem Zeichen (absolut):* Sie überdeckte 2 px
+  der vergrösserten Fläche von „alle 4 ›" darüber (test-p3-startseite:
+  44 × 42). Jetzt steht der Haken als Spalte links daneben und überdeckt
+  nichts.
+- *Kürzen auf einen Bildschirm (`heutePasst`):* Es entfernte nur die
+  Zeile, der Haken blieb allein stehen und drückte „Offen" nach
+  „Ausserdem". Jetzt geht die Hülle mit.
+
+**Gemessen.** `tests/test-heute-haken.js` hat 20 Zusicherungen:
+- Haken ≥ 44 × 44 bei 320, 390 und 1440 px, normal und kompakt;
+- `done:true` genau für diese Aufgabe, nach „Rückgängig" `done:false`;
+- Gegenprobe: Der Tipp auf die Zeile öffnet die Aufgaben und hakt nicht ab.
+
+Gegen `main` ist der Test rot. Grün sind ausserdem p3-startseite,
+startseite-putz, tagesband, formi-reihe, knoepfe, gestaltung, csp,
+neuigkeiten und formi-app.
+
+**Die vier Räume für Mitarbeiter sind gebaut, aber noch nicht
+ausgeliefert.** Im Gesamtlauf fielen damit rund 30 Durchläufe, die als
+Mitarbeiter über „Studio" oder „Wissen" an ihr Ziel gehen. Sie müssen auf
+den Weg über „Alles" umgestellt werden. Das kommt als eigener Schritt
+direkt danach, nicht halb in diesem.

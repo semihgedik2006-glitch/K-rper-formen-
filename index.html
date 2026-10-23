@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-kgiKvuigxyglalLEMfvYSU1ldOofqVdxBszuJwo+GHU='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-bsFu5cb0q5zgK3+oZG7AMAdr4Nuyvyuaz6iZRAwyyxE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -9140,6 +9140,23 @@ body.neu.light .heute-zeile.putz{--kat:#0B6A62;--kat-f:rgba(15,118,110,.18)}
 body.neu .hz-ikon{flex:0 0 auto;display:grid;place-items:center;
   width:26px;height:26px;color:var(--kat)}
 body.neu .hz-ikon svg{width:22px;height:22px}
+/* Runde 240: der Haken auf „Heute" (heuteZeile) steht als eigene Spalte
+   LINKS neben der Zeile, wie in jeder Checkliste. Erste Fassung lag er
+   absolut über dem Zeichen – dann überdeckte er 2 px der vergrösserten
+   Fläche von „alle 4 ›" darüber (test-p3-startseite, 44 × 42). Neben
+   der Zeile überdeckt er nichts. */
+body.neu .hz-mit-haken{display:flex;align-items:stretch;gap:var(--s4)}
+body.neu .hz-mit-haken > .heute-zeile{flex:1;min-width:0}
+body.neu .hz-haken{flex:0 0 44px;min-height:44px;display:grid;place-items:center;padding:0;
+  background:none;border:none;cursor:pointer;border-radius:var(--r-md)}
+body.neu .hz-kreis{width:24px;height:24px;border-radius:var(--r-rund);border:2px solid var(--text-3);
+  transition:transform .14s var(--ease-ios),background-color .14s var(--ease-ios)}
+body.neu .hz-mit-haken:has(.dringend) .hz-kreis{border-color:var(--danger)}
+body.neu .hz-haken:active .hz-kreis{transform:scale(.88)}
+@media (hover:hover){ body.neu .hz-haken:hover .hz-kreis{border-color:var(--accent)} }
+body.neu .hz-mit-haken.erledigt .hz-kreis{background:var(--ok);border-color:var(--ok)}
+body.neu .hz-mit-haken.erledigt .heute-zeile{opacity:.55}
+body.neu .hz-mit-haken.erledigt .hz-txt b{text-decoration:line-through}
 body.neu .hz-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:var(--s2)}
 body.neu .hz-txt b{font-size:var(--t-md);font-weight:700;line-height:var(--lh-eng);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -21971,6 +21988,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-23-heute-haken', datum:'23.10.2026', titel:'Auf „Heute" direkt abhaken', wo:'home', punkte:[
+    'Links neben jeder Aufgabe und jedem Putzpunkt auf „Heute" steht jetzt ein Kreis. Ein Tipp darauf hakt ab – ohne erst in „Studio" zu wechseln.',
+    'Aus Versehen? Unten erscheint „Rückgängig". Ein Tipp auf die Zeile selbst öffnet sie wie bisher.'
+  ]},
   { id:'2026-10-23-systemschrift', datum:'23.10.2026', titel:'Neue Schrift: klarer, ruhiger, wie bei Apple', wo:'home', punkte:[
     'Die ganze App schreibt jetzt in der Schrift deines Geräts: auf iPhone, iPad und Mac ist das Apples eigene Schrift, auf Windows-Rechnern und Android eine sehr ähnliche (Inter).',
     'Überschriften sind nicht mehr so schmal und gedrängt, sondern gut lesbar, und etwas weniger fett.',
@@ -37823,8 +37844,45 @@ function tbUhrStarten(){
     if(j) j.style.left=((m-von)/(bis-von)*100).toFixed(2)+'%';
   }, 60000);
 }
+function heuteHakenBinden(b){
+  b.addEventListener('click', function(e){
+    e.stopPropagation();
+    var art=b.getAttribute('data-hhak'), sk=b.getAttribute('data-hhak-sk'), id=b.getAttribute('data-hhak-id');
+    var huelle=b.closest('.hz-mit-haken');
+    if(!art || !sk || !id || b.disabled) return;
+    b.disabled=true;
+    if(huelle) huelle.classList.add('erledigt');
+    burstAt(b); tick();
+    if(typeof formiHaken==='function') formiHaken();
+    gehirnAbhakenSchreiben(art, sk, { id:id }, true).then(function(){
+      offerUndo(art==='putz' ? 'Putzpunkt erledigt' : 'Aufgabe erledigt', function(){
+        return gehirnAbhakenSchreiben(art, sk, { id:id }, false);
+      });
+    }).catch(function(err){
+      b.disabled=false;
+      if(huelle) huelle.classList.remove('erledigt');
+      toast(errMsg(err), true);
+    });
+  });
+}
+/* Runde 240: Abhaken direkt auf „Heute". Aus dem Betrieb, 23.10.2026:
+   Mitarbeiter haben unten nur noch Heute, Zeiten, Plan, Nachrichten –
+   und der meistbenutzte Bereich ist „Aufgaben und Putzplan" (24.9.).
+   Also muss „Heute" das können, wofür man bisher ins Studio ging.
+
+   Der Haken ist ein EIGENER Knopf neben der Zeile, nicht in ihr: ein
+   Knopf im Knopf ist ungültig, und der Tipp auf die Zeile soll weiter
+   öffnen. Er steht links daneben (44 px breit, so hoch wie die Zeile). */
 function heuteZeile(k){
   if(k.band) return k.band;
+  var zeile = heuteZeileKnopf(k);
+  if(!k.hak) return zeile;
+  return '<div class="hz-mit-haken">'+
+    '<button type="button" class="hz-haken" data-hhak="'+esc(k.hak.b)+'" data-hhak-sk="'+esc(k.hak.sk)+'" data-hhak-id="'+esc(k.hak.id)+'"'+
+    ' aria-label="Erledigt: '+esc(k.titel)+'" title="Erledigt"><span class="hz-kreis" aria-hidden="true"></span></button>'+
+    zeile+'</div>';
+}
+function heuteZeileKnopf(k){
   return '<button type="button" class="heute-zeile '+k.art+'" data-heute="'+esc(k.ziel)+'"'+
     (k.f?' data-hf="'+esc(k.f)+'"':'')+(k.sk?' data-hsk="'+esc(k.sk)+'"':'')+
     (k.ichtab?' data-hichtab="'+esc(k.ichtab)+'"':'')+
@@ -37889,7 +37947,7 @@ function renderHeuteJetzt(){
     (cachedTodos[sk]||[]).forEach(function(t){
       if(isDone(t)||isArchived(t)) return;
       if(!t.due){
-        ohneFrist.push({ ts:t.ts||0, art:'tun', ziel:'todos', f:'offen',
+        ohneFrist.push({ ts:t.ts||0, art:'tun', ziel:'todos', f:'offen', hak:{ b:'aufgabe', sk:sk, id:t.id },
           ikon:ikon('hakenKreis'), titel:t.title||'(ohne Titel)',
           unter:(mehrereStudios?studioName(sk)+' · ':'')+'ohne Frist' });
         return;
@@ -37897,11 +37955,11 @@ function renderHeuteJetzt(){
       var wo = mehrereStudios ? studioName(sk) : '';
       if(jetzt>t.due){
         var d=tageSeit(t.due);
-        ueber.push({ due:t.due, art:'dringend', ziel:'todos', f:'faellig',
+        ueber.push({ due:t.due, art:'dringend', ziel:'todos', f:'faellig', hak:{ b:'aufgabe', sk:sk, id:t.id },
           ikon:ikon('warnung'), titel:t.title||'(ohne Titel)',
           unter:(wo?wo+' · ':'')+(d<=0?'seit heute':(d===1?'seit 1 Tag':'seit '+d+' Tagen')) });
       } else if(t.due<=endeHeute){
-        heute.push({ due:t.due, art:'heute', ziel:'todos',
+        heute.push({ due:t.due, art:'heute', ziel:'todos', hak:{ b:'aufgabe', sk:sk, id:t.id },
           ikon:ikon('uhr'), titel:t.title||'(ohne Titel)',
           unter:(wo?wo+' · ':'')+'bis '+new Date(t.due).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}) });
       }
@@ -38061,7 +38119,7 @@ function renderHeuteJetzt(){
     } else if(putzJe.length){
       putzJe[0].liste.forEach(function(t){
         putz.push({ art:'putz', ziel:'putzplan', sk:putzJe[0].sk, ikon:allesIkon('putzplan'),
-          anzahl:1,
+          anzahl:1, hak:{ b:'putz', sk:putzJe[0].sk, id:t.id },
           titel:t.title||t.text||'Putzpunkt',
           unter:repLabelFor(t) || 'einmalig' });
       });
@@ -38211,6 +38269,7 @@ function renderHeuteJetzt(){
   box.innerHTML=html;
 
   box.querySelectorAll('[data-heute]').forEach(heuteTippBinden);
+  box.querySelectorAll('[data-hhak]').forEach(heuteHakenBinden);
 
   heutePasst(box);
 }
@@ -38388,7 +38447,9 @@ function heutePasst(box){
         ueber -= vorher - Math.max(hoehe[0], hoehe[1]);
       } else ueber -= f;
     }
-    weg.forEach(function(z){ z.remove(); });
+    /* Mit Haken (Runde 240) steckt die Zeile in einer Hülle – die muss
+       mit, sonst bleibt der Haken allein stehen und nimmt weiter Platz. */
+    weg.forEach(function(z){ (z.closest('.hz-mit-haken') || z).remove(); });
     betroffen.forEach(heuteKopfAusgang);
   }
   function kandidaten(){
@@ -38417,7 +38478,7 @@ function heutePasst(box){
     });
     if(laengster){
       var z = zeilenVon(laengster);
-      z[z.length-1].remove();
+      (z[z.length-1].closest('.hz-mit-haken') || z[z.length-1]).remove();
       heuteKopfAusgang(laengster);
       continue;
     }
@@ -38460,6 +38521,7 @@ function heuteRestZeichnen(box, liste){
         (x.zahl>1?' · '+x.zahl:'')+' ›</button>';
     }).join('')+'</div>');
   box.querySelectorAll('.heute-rest [data-heute]').forEach(heuteTippBinden);
+  box.querySelectorAll('.heute-rest [data-hhak]').forEach(heuteHakenBinden);
 }
 
 /* Wurde in einem Block gekürzt, MUSS der Weg zum Rest dastehen. Eine
