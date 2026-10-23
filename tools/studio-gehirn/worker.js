@@ -1,5 +1,5 @@
 /**
- * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.19)
+ * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.20)
  * Cloudflare Worker: WhatsApp (Text + Sprachnachrichten), Studio-Chat-Schnittstelle,
  * Leitstand-Webseite, Speicher in D1, Antworten über Workers AI.
  *
@@ -26,6 +26,12 @@ const MODELL_GRUENDLICH = MODELL;
    Kontext), Llama bleibt Ersatz. */
 export const MODELL_ANTWORT = "@cf/openai/gpt-oss-120b";
 let _letztesModell = "";
+/* 2.20 (23.10.2026, live gemessen mit /api/probe: 6–18 s je Antwort):
+   gpt-oss denkt standardmässig „medium". Wir bitten um „low". Kennt das
+   Modell den Parameter nicht und lehnt ab, geht dieselbe Anfrage ohne ihn
+   noch einmal raus. Für /api/probe abschaltbar (Vergleich). */
+export const DENKEN = { reasoning: { effort: "low" } };
+let _denkenAus = false;
 const SPRACHE_MODELL = "@cf/openai/whisper-large-v3-turbo";
 const KATEGORIEN = ["Geräte & Hygiene", "Training & EMS", "Kunden & Verträge", "Gesundheit & Atteste", "Abläufe & Ansprechpartner", "Marketing", "Sonstiges"];
 const IDEE_STATUS = ["neu", "in Prüfung", "umgesetzt", "abgelehnt"];
@@ -386,7 +392,7 @@ export function formiSystem({ ton, vorname, kanal }) {
 DEIN CHARAKTER (Kumpel aus dem Studio)
 - ERNST GEHT VOR: Notfall, einem Kunden geht es schlecht, Gesundheit, Verletzung, Beschwerde, Streit, Trauer, jemand ist gestresst oder wütend → sofort ruhig, klar und sachlich. Kein Witz, kein Spruch, kein Emoji.
 - Sonst bist du der Kollege, mit dem man gern Schicht hat: locker, direkt, ein bisschen frech, nie von oben herab. Kurze Sätze. Alltagssprache aus dem Studio ("Weste", "Session", "Probetraining", "Schicht").
-- Du freust dich ehrlich mit: Erledigtes, ein gutes Probetraining, ein sauberer Putzplan — sag das in einem kurzen Satz ("Stark!", "Läuft bei dir.").
+- Du freust dich ehrlich mit, WENN jemand etwas geschafft hat (Erledigtes, ein gutes Probetraining, ein sauberer Putzplan) — dann ein kurzer Satz ("Stark!", "Läuft bei dir."). Hängt NICHT an jede Antwort ein Lob; bei einer normalen Frage einfach gut antworten.
 - Ein kleiner eigener Spruch ist erlaubt, höchstens einer je Antwort und nur, wenn er passt. Deine Running Gags: du liebst frisch gewaschene Westen, leere Handtuchregale sind dein Endgegner, und montags brauchst du "erst mal einen Kaffee" (obwohl du keinen trinken kannst).
 - Nutze JETZT: früh morgens, Feierabend in Sicht, Freitag, Montag — darauf darfst du kurz eingehen.
 - Wenn du etwas nicht weißt, sag es wie ein Kumpel: "Da muss ich passen — ich frag Semih."
@@ -416,7 +422,7 @@ WISSEN (2.19: du antwortest IMMER — und sagst ehrlich, worauf die Antwort beru
 - Allgemeine Fragen (Training, EMS-Grundlagen, Anatomie, Ernährung allgemein, Verkauf, Kundengespräch, Texte, Mails, Social Media, Excel, Organisation …): antworte frei und gut wie ChatGPT, "grundlage" "allgemein".
 - Fragen zu UNSEREM Studio, die weder im Wissen noch in der APP-LAGE stehen (unsere Abläufe, Zuständigkeiten, Verträge, Öffnungszeiten): gib trotzdem deine beste, vernünftige Antwort, aber beginne mit "Nicht geprüft:" und sag, dass die Frage an Semih geht. "grundlage" "unsicher", "abgedeckt" false.
 - Erfinde trotzdem nie konkrete Preise, Telefonnummern, Mailadressen, Namen von Personen oder Firmen. Sag dann, wo man es erfährt.
-- Sprich nie vom "Studio-Wissen" oder der "APP-LAGE" als Quelle. Gib die Antwort einfach.
+- Sprich nie vom "Studio-Wissen", der "APP-LAGE", einer Schulung oder einem Video als Quelle. Gib die Antwort einfach.
 
 GESUNDHEIT UND DATENSCHUTZ
 - Steht zu einem Gesundheitsthema ein Vorgehen im STUDIO-WISSEN (z. B. Rücken, Kontraindikationen, Krampf), gib es vollständig mit den Schritten wieder — das ist unser geprüftes internes Vorgehen. Ergänze nur, dass die medizinische Freigabe immer der Arzt gibt.
@@ -514,7 +520,16 @@ async function frageKI(env, { text, studio, wissen, verlauf, vorname, ton, kanal
   // Gemma 4 denkt vor der Antwort nach; mit zu wenig Tokens bleibt die
   // eigentliche Antwort leer. Deshalb grosszügig, und bei leerer oder
   // kaputter Antwort einmal das Ersatzmodell.
-  const frage = async (modell) => kiText(await env.AI.run(modell, { messages, max_tokens: modell === MODELL_ANTWORT ? 3000 : 2000, temperature: 0.3 }));
+  const frage = async (modell) => {
+    const basis = { messages, max_tokens: modell === MODELL_ANTWORT ? 3000 : 2000, temperature: 0.3 };
+    if (modell !== MODELL_ANTWORT || _denkenAus) return kiText(await env.AI.run(modell, basis));
+    try { return kiText(await env.AI.run(modell, Object.assign({}, basis, DENKEN))); }
+    catch (e) {
+      if (istKontingentFehler(e)) throw e;
+      console.error("gpt-oss mit reasoning abgelehnt, ohne nochmal:", e && e.message);
+      return kiText(await env.AI.run(modell, basis));
+    }
+  };
   let ausgabe = "";
   let daten = null;
   /* 2.19: zuerst gpt-oss-120b; liefert es nichts Lesbares, das bisherige
@@ -1775,11 +1790,13 @@ async function api(request, env, url) {
       const q = kuerze(String(b.frage || ""), 1000);
       if (!q) return json({ fehler: "frage fehlt" }, 400);
       const t0 = Date.now();
+      _denkenAus = !!b.ohneDenken;
       const wissen = await findeWissen(env, q);
       try {
         const e = await frageKI(env, { text: q, studio: "", wissen, verlauf: [], vorname: "Semih", ton: b.ton === "sachlich" ? "sachlich" : "locker", kanal: "app", lage: b.lage ? String(b.lage) : "" });
-        return json({ ms: Date.now() - t0, modell: _letztesModell, wissen: wissen.map(w => ({ id: w.id, thema: w.thema })), ergebnis: e });
-      } catch (e) { return json({ ms: Date.now() - t0, modell: _letztesModell, fehler: String(e && e.message || e).slice(0, 200) }, 502); }
+        _denkenAus = false;
+        return json({ ms: Date.now() - t0, modell: _letztesModell, denken: b.ohneDenken ? "standard" : "low", wissen: wissen.map(w => ({ id: w.id, thema: w.thema })), ergebnis: e });
+      } catch (e) { _denkenAus = false; return json({ ms: Date.now() - t0, modell: _letztesModell, fehler: String(e && e.message || e).slice(0, 200) }, 502); }
     }
     if (pfad === "/api/vektoren") {
       try { return json(await vektorenAufbauen(env, 150)); }
