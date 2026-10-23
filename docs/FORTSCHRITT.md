@@ -19790,3 +19790,37 @@ aber bei grossen Figuren Malarbeit je Bild. Nicht angefasst, weil es
 gerade in einer zweiten Sitzung gebaut wird — gemeldet.
 Ausserdem misst `test-gehirn` die Spalte bei 1440 px erst, wenn sie
 nicht mehr hereinspringt (sonst 2 px vom Rand, je nach Last).
+
+## Runde 216 — Handy-Startseite: schmaler Kopf, Formi in der Reihe (23.10.2026)
+
+Aus dem Betrieb, auf „schmaler Kopf und Formi in der Schnellzugriff-Reihe
+statt eigenem Streifen?": „a mach weiter und merge".
+
+**Was gebaut ist.** Am Handy (≤ 820 px, Höhe > 600) auf „Heute" setzt
+`kugelInReiheSetzen()` die Klasse `kugel-in-reihe`, sobald die
+Schnellzugriff-Reihe sichtbar ist. Die Reihe bekommt rechts Platz für die
+Kugel (drei Knöpfe + „Anpassen" als 44-px-Feld), und der reservierte
+Streifen unter `.main` (80 + 58 px) fällt weg. Der Kopf im Raum „Heute"
+ist schmal: kleineres Zeichen, kein Datum (das steht im Tagesband).
+
+**Gemessen** (`tests/test-formi-reihe.js`, 36 Zusicherungen): 390 px Chef
+drei Blöcke statt zwei, 430 px Mitarbeiter zusätzlich der Putzplan; jeder
+Knopf der Reihe und die Kugel treffen ≥ 44 × 44 per Hit-Test, normal und
+kompakt, auch bei 820 px. Gegen `main` laufen 18 der 36 Zusicherungen
+falsch — der Test unterscheidet.
+
+**Warum nur auf „Heute" und nur mit Reihe.** Auf anderen Seiten gibt es
+keine Reihe, neben der die Kugel sitzen könnte; ohne Streifen läge sie
+dort auf dem letzten Listeneintrag. Bei 320 × 568 blendet die Startseite
+die Reihe aus — dann bleibt der Streifen, damit die Kugel nicht auf
+„Ausserdem" liegt (Gegenprobe im Test). Am Rechner sitzt Formi seit Runde
+198 in der Seitenleiste, dort ändert sich nichts.
+
+**Nebenbei: `test-bestellung`** mass den Knopf „Ändern" beim Lieferanten,
+während die Karte „Einkaufsliste" eingeklappt war — also einen
+unsichtbaren Knopf (61 × 32). Der Test klappt die Karte jetzt auf, wie es
+ein Mensch tun müsste; die Grenze bleibt 44 × 44, und der Knopf erfüllt sie.
+
+**Weiter rot wie auf `main`:** `test-neu-design` bei 320 × 568 (341 px
+Inhalt; auf `main` 236 px Platz, jetzt 265 px — besser, aber nicht genug)
+und `test-navigation` (Startseite 2,19 Bildschirme).
