@@ -21508,7 +21508,7 @@ ohne dass etwas erfunden werden kann.
     Tippen führt zu Übergabe, nach 2 Stunden keine Zeile, keine KI
     gefragt.
 - `test-formi-loch` (31) mit der Physik, siehe oben.
-- Weitere Durchläufe: siehe PR.
+- Gesamtdurchlauf auf dem Stand mit Runde 240/241 (31 Durchläufe): 30 grün. `test-formi-kugel` 430 px (2 von 70) ist auf `main` schon so rot.
 
 **Nicht geprüft:** eine echte Benachrichtigung auf einem echten Handy (FCM
 geht hier nicht) und Safari.
