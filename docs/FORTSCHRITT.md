@@ -21920,3 +21920,89 @@ Unterweisung.
   im Test-Browser.
 - Der Auslöser beim Löschen im echten Projekt. Geprüft ist er im Emulator
   mit `.run()`, so wie die anderen Auslöser in diesem Test.
+## Runde 249 — Chat wie iMessage, Menü an der Nachricht (23.10.2026)
+
+Sechster Bauschritt aus dem Plan „Studio Chat wie von Apple“. Vorbild
+ist das Probebild `3-chat-handy.png` (unter
+`/mnt/project-files/apple-probebilder/`), zu dem es aus dem Betrieb
+hiess: „genau so hab ichs mir vorgestellt“. Seit 15:18: „es soll
+einfach den ganzen plan erledigen“.
+
+**Was gebaut wurde**
+
+- **Blasen:** ohne Rahmen und Schatten, `--r-lg` rund. Fremde in
+  `--bg-3`, eigene in `--accent` mit `--on-accent` — dasselbe Paar wie
+  der Hauptknopf, das test-akzent für jede Akzentfarbe misst. In der
+  eigenen Blase zeigen Text-, Link- und Akzentfarben der Kinder auf
+  `--on-accent`, sonst verschwänden Links, Zitat und Erwähnung in der
+  Fläche.
+- **Kopf über der Blase:** „Name · Studio  Uhrzeit“ klein und leise
+  über der fremden Blase statt Name, VERSALIEN-Pille und Zeit darin.
+- **Eigene:** Uhrzeit und Häkchen unter der Blase, auf dem Hintergrund.
+  Bei einer Folge nur unter der letzten; an den anderen stehen sie
+  weiter im Dokument (test-gelesen-haken liest sie).
+- **Folgen:** Nachrichten derselben Person innerhalb von fünf Minuten
+  rücken auf 2 px zusammen; die Ecken zur Absenderseite werden klein.
+- **Menü an der Nachricht:** Ein Tipp öffnet das Menü dort, wo die
+  Nachricht steht — Reaktionen als Kapsel oben, die Nachricht als
+  Vorschau, die Einträge als gerundete Gruppe mit Haarlinien, Symbol
+  rechts. Am Rechner auch per rechter Maustaste, am Zeiger (auf Bild,
+  Link oder markiertem Text bleibt das Menü des Browsers). Hinaus:
+  daneben tippen oder Esc; „Abbrechen“ ist ausgeblendet.
+- Formis Sprechblase lag über dem Menü — sie wird, wie die Kugel schon,
+  ausgeblendet, solange das Menü offen ist. Formi selbst ist nicht
+  verändert.
+
+**Warum so**
+
+- Uhrzeit und Häkchen der eigenen Nachrichten UNTER statt IN der Blase:
+  in der Akzentfläche wären die Häkchen-Farben (grau/blau, „Jeder,
+  genau wie bei WhatsApp“, 27.9.2026) nicht mehr zu unterscheiden. Auf
+  dem Hintergrund bleiben sie, was sie waren.
+- Nur unter der letzten einer Folge: „gelesen“ heisst bis dahin
+  gelesen, der Stand der letzten gilt für die davor mit. Genau steht es
+  unter „Gelesen von …“ im Menü.
+- Umfragen und Sprachnachrichten in eigener Blase behalten die getönte
+  Fläche: ihre Balken und Knöpfe sind selbst Akzentfarbe.
+- Gemessen wird im nächsten Bild und gebündelt (`msgBlattPlatzieren`):
+  erst beide Rechtecke lesen, dann zwei Werte schreiben — im Klick wird
+  nichts vermessen.
+- `:has(a, b)` ist als `:has(a)` / `:has(b)` geschrieben: der
+  Gestaltungstest zerlegt Selektoren an jedem Komma.
+
+**Was dabei gefunden wurde**
+
+- Bei 320 × 568 schwebt Formis Kugel über der untersten eigenen Blase
+  (rechts unten, fest). Der Kontrast wird deshalb links im Innenabstand
+  der Blase gemessen. Formi gehört einer anderen Sitzung.
+- **Die Federn aus Runde 247 kosteten doch etwas.** Mit mehr Messungen
+  (Median aus je vier Runden, Reihenfolge A-B-B-A) lagen die Federn
+  beim Seitenwechsel durchgehend 0,2–2,2 ms je Bild über den alten
+  Kurven. Ursache: jede Stilneuberechnung setzt `var(--ease-ios)` neu
+  ein und liest eine `linear()`-Liste mit 29 Punkten. Jetzt nur so
+  viele Punkte, dass die Kurve höchstens 1 % abweicht (fest 10, formi
+  11) bzw. 0,5 % (weich 17, damit das Nachschwingen bleibt). Danach:
+  14,2 gegen 16,2 und 16,7 gegen 16,4 ms bei 390 px, 18,2 gegen 20,2
+  und 21,0 gegen 19,6 ms bei 1440 px — im Rauschen. test-federn
+  vergleicht jetzt Mediane aus A-B-B-A-Runden.
+- test-chat-bereich3 ist schon auf `main` rot („Langer Text drückt den
+  Verlauf auf 264 px“, 52 % der Ansicht) — nicht von dieser Runde.
+
+**Tests**
+
+- Neu: `tests/test-chat-blasen.js`, 226 Zusicherungen. Stil Formi bei
+  320 / 390 / 430 / 820 / 1280 / 1440 / 1920 px, Dunkel und Hell bei
+  390 / 1440. Schrift auf der eigenen Blase an Bildpunkten 9,9 : 1
+  (Formi/Dunkel) und 5,5 : 1 (Hell), Name über der Blase 7,3–9,7 : 1.
+  Reaktionen und Einträge im Menü ≥ 44 × 44 per Hit-Test in „normal“
+  und „kompakt“; Menü ganz im Bild; rechte Maustaste am Rechner;
+  GEGENPROBE altes Aussehen: Blatt von unten. Gegen `main`: 72 von 226
+  falsch.
+- Grün: chat, chat-antworten, gelesen-haken, block5, block8, ui,
+  dialoge, design-107, sprachabspieler, datum, zusammengelegt,
+  gestaltung, csp, knoepfe, fingerziele, abgeschnitten, quer, akzent.
+
+**Nicht getestet:** echtes iPhone; lange Nachrichten mit vielen Zeilen im
+Menü (die Vorschau ist auf vier Zeilen begrenzt).
+
+**Als Nächstes:** Formi-Gefühle auf der Startseite leichter.
