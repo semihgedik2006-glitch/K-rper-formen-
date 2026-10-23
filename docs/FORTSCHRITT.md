@@ -21053,3 +21053,69 @@ Umstellung gehalten und eingeordnet:
 Konten trifft und sich hier nicht prüfen lässt, bekommt einen Übergang.
 Entfernt wird das Bisherige in einem eigenen Schritt, wenn P-20
 abgearbeitet ist.
+
+## Runde 237 — Stempel vergessen? Erinnerung aufs Handy, per Mail und mit Formi (23.10.2026)
+
+Aus dem Betrieb, 23.10.2026: „mach die errinerungen und vlt auch in kobi
+mit formi und einer mail oder so" — gelesen als „in Kombi": Handy, Formi
+und Mail zusammen. Es ist Schritt 6 aus `docs/ZEITERFASSUNG-PLAN.md`.
+
+### Was gebaut wurde
+
+- **Server, alle 15 Minuten** (`stempelErinnern`): zwei Anlässe, je
+  Person und Tag einmal.
+  - *Schon eingestempelt?* — 15 min nach Schichtbeginn kein Stempel:
+    **Handy**. Keine Mail: wer gerade ankommt, liest sie erst abends.
+  - *Feierabend vergessen?* — 30 min nach Schichtende noch eingestempelt
+    (auch in der Pause), ohne Schicht 10 h nach dem Kommen (§ 3 ArbZG):
+    **Handy und Mail**. Wer schon zu Hause ist, sieht die Mail; und der
+    fehlende Feierabend ist das, was am Monatsende fehlt.
+  - Nicht bei Urlaub (genehmigt) oder Krankheit; ein abgelehnter Urlaub
+    ist kein freier Tag. Geteilter Dienst: die zweite Schicht wird
+    wieder erinnert.
+- **Formi in der App**: dieselben Anlässe beim Öffnen, beim Zurückkehren
+  und alle 5 Minuten — einmal je Anlass, Tag und Gerät. Schweigt Formi
+  (Gefühle aus, sachlich, Formi nicht da), kommt dieselbe Zeile als
+  Meldung.
+- **Abschalten**: Meldungen → „Stempel-Erinnerung" (Handy und Formi, je
+  Gerät), Mails → „Feierabend vergessen" (je Konto, für jeden sichtbar).
+  Auf der Seite „Zeiten" steht ein Satz, dass es die Erinnerung gibt.
+
+### Warum so
+
+- **Kein gespeicherter Stand.** Jeder Anlass hat einen festen Zeitpunkt
+  (Beginn + 15, Ende + 30, Kommen + 10 h); der Lauf nimmt nur, was seit
+  dem letzten Lauf erreicht wurde — wie Formis „Feierabend-Check"
+  (Runde 235). Eine Sammlung „schon erinnert" hätte in beide
+  Regel-Welten gemusst, und ihr einziger Zweck wäre gewesen, sich an
+  etwas zu erinnern, das die Uhr ohnehin weiss. Preis: fällt ein Lauf
+  aus, fällt diese eine Erinnerung aus (Formi in der App fängt es auf,
+  sobald jemand die App öffnet).
+- **Eigene Art `stempel`, nicht `formi`.** Wer Formis Tagesmeldungen
+  abschaltet, will trotzdem wissen, dass der Feierabend fehlt.
+- **30 statt 60 Minuten** (der Plan sagte eine Stunde): Crewmeister
+  erinnert ebenfalls früh, und nach einer halben Stunde ist man oft noch
+  in der Nähe des Terminals.
+
+### Geprüft
+
+- `tests/rules/stempel-erinnerung.test.js` (29): die Rechnung mit
+  Gegenproben (vor/nach dem Fenster, gestempelt, storniert, Pause, Urlaub,
+  krank, abgelehnter Urlaub, geteilter Dienst) und ein ganzer Lauf im
+  Emulator: Push nur an das eigene Gerät, Mail an die eigene Adresse;
+  GEGENPROBEN Gerät aus / Mail abbestellt, deaktiviertes Konto, andere
+  Firma, der nächste Lauf erinnert nicht noch einmal.
+- `tests/test-stempel-erinnerung.js` (12): mit gestellter Uhr in der Demo
+  sagt Formi es genau einmal; GEGENPROBEN 14:16 (zu früh), Schalter aus,
+  Urlaub. Gegenprobe der Gegenprobe: ohne das Merken je Tag wird
+  „nicht noch einmal" rot.
+
+### Nicht geprüft
+
+- Echter Push-Versand und echte Mail: im Emulator wird beides
+  nachgestellt (Ersatz-Versender). Ob die Mail ankommt, hängt am
+  SMTP-Zugang der Firma — ohne ihn geht keine Mail, und der Lauf
+  behauptet auch keine.
+- Ein Antippen der Push-Nachricht öffnet die App, aber nicht direkt die
+  Seite „Zeiten" (der Service Worker kennt keine Ziele). Beim Öffnen sagt
+  es Formi.

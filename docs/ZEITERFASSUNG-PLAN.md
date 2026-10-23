@@ -425,8 +425,13 @@ Rückfragen vorgelegt, Antworten:
    dem Bau zu klären:** DATEV hat mehrere Formate (u. a. ASCII für
    Lohn und Gehalt, LODAS); welches das Lohnbüro einliest, entscheidet
    das Lohnbüro. Der Export enthält nie `zeitPins` oder `terminalCodes`.
-6. **Erinnerung**, wenn eine Stunde nach Schichtende noch kein Feierabend
-   gestempelt ist.
+6. ✅ **Erinnerung** (Runde 237, „mach die errinerungen … in kobi mit
+   formi und einer mail"): 15 min nach Schichtbeginn ohne Stempel (Handy,
+   Formi), 30 min nach Schichtende noch eingestempelt bzw. ohne Schicht
+   nach 10 h (Handy, Mail, Formi). Nicht bei Urlaub oder Krankheit.
+   Abschaltbar: Meldungen → „Stempel-Erinnerung", Mails → „Feierabend
+   vergessen". Statt der hier geplanten Stunde 30 Minuten — wie
+   Crewmeister, und früh genug, dass man noch im Studio ist.
 7. ✅ **Eigener Bereich „Zeiten"** (Runde 222, Wunsch vom 23.10.2026:
    „eine ganz neue seite … wo man alles managen kann und mitarbeiter
    können sich nur einstempeln und ihre eigenen stunden sehen ob plus
