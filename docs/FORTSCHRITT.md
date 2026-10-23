@@ -21340,3 +21340,39 @@ ausgeliefert.** Im Gesamtlauf fielen damit rund 30 Durchläufe, die als
 Mitarbeiter über „Studio" oder „Wissen" an ihr Ziel gehen. Sie müssen auf
 den Weg über „Alles" umgestellt werden. Das kommt als eigener Schritt
 direkt danach, nicht halb in diesem.
+
+## Runde 241 — Vier Räume für Mitarbeiter (23.10.2026)
+
+Aus dem Betrieb, 23.10.2026, auf „Mitarbeiter unten nur Heute, Zeiten,
+Plan, Nachrichten – Studio und Wissen über ‚Alles'?": „ja". Seit Runde 240
+werden Aufgaben und Putzpunkte auf „Heute" abgehakt.
+
+**Gebaut.**
+- `seitenGruppen()` lässt `g-arbeit` und `g-wissen` für Rollen ohne
+  Verwaltung (`!canManage()`) weg, unten wie links. Studio und Wissen
+  bleiben über „Alles" zwei Tipps entfernt.
+- Leitung und Geschäftsführung behalten alle sechs Räume.
+
+**Dabei gefunden und behoben:**
+- *Kein Hinweis mehr auf offene Aufgaben* (`test-startseite-offen`). Der
+  Punkt hing nur am Raum „Studio". Bei Mitarbeitern trägt ihn jetzt
+  „Heute", wo die Aufgaben stehen.
+- *Fingerziel in „Dokumente"* (`test-fingerziele`, 86 × 39). Bei
+  Mitarbeitern fehlt die Karte „Hochladen", deshalb lag die Fläche der
+  Reiter 5 px über den Filter-Chips. Die Chips haben jetzt `--s8` Abstand
+  nach oben. Aufgefallen ist das erst jetzt: Der Test ordnete Dokumente
+  dem Raum „Studio" zu und übersprang die Seite für Mitarbeiter.
+
+**Tests.** Rund 30 Durchläufe gingen als Mitarbeiter über die Räume
+„Studio" oder „Wissen". Sie gehen jetzt über „Alles", wenn der Raum-Knopf
+fehlt. Geändert ist nur der Weg; keine Grenze, keine Erwartung. Die
+Raum-Zusicherungen in p4, p5 und raeume nennen jetzt die vier Räume, mit
+Zitat. p5 prüft die Abläufe über „Studio" mit der Studioleitung, die
+vier Räume der Mitarbeiter in einem eigenen Block. Die Umstellung haben
+drei Helfer parallel gemacht, je mit eigenen Dateien; ihre Änderungen
+habe ich durchgesehen.
+
+**Offen, nicht in dieser Runde.** `test-quer` misst bei Geräten und
+Dokumenten nach einem älteren Umbau die zuletzt offene Seite ein zweites
+Mal. Die Zahl der Messungen ist deshalb etwas grösser als die der
+erreichten Ansichten.
