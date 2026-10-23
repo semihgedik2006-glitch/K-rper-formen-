@@ -25,7 +25,7 @@
      6. Nur die Verwaltung sieht ihn — mit Gegenprobe über Leiter UND
         Mitarbeiter. Der Bericht ist serverseitig Chef-Sache.
    ───────────────────────────────────────────────────────────────────── */
-/* Runde 230: Seit dem 23.10.2026 ist das neue Design für alle der Standard.
+/* Runde 236: Seit dem 23.10.2026 ist das neue Design für alle der Standard.
    Dieser Durchlauf prüft eine Funktion, kommt aber über die BISHERIGE
    Navigation dorthin. Bis er auf die neue umgestellt ist, läuft er im
    bisherigen Aussehen (kf_neu=0, der Geräteschalter des Übergangs).

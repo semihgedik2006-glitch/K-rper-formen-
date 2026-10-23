@@ -10,7 +10,7 @@
      4. Der Chef sieht wartende Konten ganz oben im Team-Reiter, mit
         Freigeben und Ablehnen.
      5. Wartet niemand, ist die Karte komplett weg.                     */
-/* Runde 230: Seit dem 23.10.2026 ist das neue Design für alle der Standard.
+/* Runde 236: Seit dem 23.10.2026 ist das neue Design für alle der Standard.
    Dieser Durchlauf prüft eine Funktion, kommt aber über die BISHERIGE
    Navigation dorthin. Bis er auf die neue umgestellt ist, läuft er im
    bisherigen Aussehen (kf_neu=0, der Geräteschalter des Übergangs).

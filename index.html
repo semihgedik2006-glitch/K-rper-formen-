@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-6bZfwAu5UbfLvkb0iYj9+Cmn65TNH2Oen9b9zco+Kek='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-wP/+VChO/NiJm8n4IGI1L47SWB15hntYYIp8qWQZbjE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1921,7 +1921,7 @@ body.nurlesen .kopf-plus{display:none !important}
    #subnav .subtab::after) — gemessen 41 px bei „Dokument hinzufügen".
    Die 4 px Abstand gibt es nur dort. */
 .scroll-area > .card.fold:first-child{margin-top:var(--s4)}
-/* Runde 230: dasselbe für die Leiste über Aufgaben und Putzplan. Seit das
+/* Runde 236: dasselbe für die Leiste über Aufgaben und Putzplan. Seit das
    neue Design für alle gilt, lag die Fläche der Reiter 3 px über der
    Studio-Wahl (test-aufgaben-wie-putzplan: 150 × 41 in „kompakt"). */
 body.neu .scroll-area > .pp-leiste:first-child{margin-top:var(--s8)}
@@ -5850,7 +5850,7 @@ html{font-size:var(--fs,100%)}
    Handy über seinem ersten Knopf (gemessen am Schicht-Blatt bei 390 px;
    dasselbe galt für jedes .msg-sheet). */
 body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
-/* Runde 230: Auf kleinen Handys (320 × 640) bleibt mit offenem „Filter"
+/* Runde 236: Auf kleinen Handys (320 × 640) bleibt mit offenem „Filter"
    über Aufgaben oder Putzplan so wenig Fläche, dass die Kugel mitten auf
    den Chips und den „…" lag (test-aufgaben-wie-putzplan, kompakt). Für
    die Dauer des Filterns tritt sie zur Seite; zu → sie ist wieder da. */
@@ -6361,11 +6361,18 @@ body.light .fk-pupille{background:radial-gradient(circle, #FFFFFF 0 46%, #F6F1FF
 body.light .formi-figur .fk-pupille{box-shadow:0 0 0 1px rgba(91,62,190,.55)}
 body.light .fk-innen{background:radial-gradient(circle, #FFFFFF 0 56%, rgba(255,255,255,0) 62%),
     conic-gradient(from 30deg, rgba(232,150,40,.85), rgba(240,110,40,.25), rgba(214,70,140,.7), rgba(40,150,210,.25), rgba(232,150,40,.85))}
-body.light .fk-gesicht{mix-blend-mode:normal}
-body.light .fk-auge{background:#FFFFFF;box-shadow:inset 0 0 0 max(1px, calc(var(--fg, 58px) * .02)) #1B1433}
-body.light .fk-auge b{background:#1B1433}
+/* Heller Stil: dunkle Augen auf dem weissen Loch – so gross wie vor
+   Runde 231, sonst ist der Kern nicht mehr hell (test-formi-ideen). */
+body.light .fk-auge{top:24%;width:23%;height:31%;background:radial-gradient(circle at 50% 42%, #3A2E6E 0 30%, #1B1433 100%);box-shadow:none}
+body.light .fk-auge.l{left:19%}
+body.light .fk-auge.r{right:19%}
+body.light .fk-froh{top:31%;width:23%}
+body.light .fk-froh.l{left:19%}
+body.light .fk-froh.r{right:19%}
+body.light .fk-backe{opacity:.55}
+body.light .fk-auge b{background:#FFFFFF}
 body.light .fk-braue{background:#1B1433}
-body.light .fk-mund{border-color:#1B1433}
+body.light .fk-mund,body.light .fk-froh{border-color:#1B1433;filter:none}
 body.light .fk-flach{background:radial-gradient(14% 34% at 8% 50%, rgba(200,90,10,.85), rgba(200,90,10,0)),
     radial-gradient(closest-side, rgba(220,120,20,0) 0 57%, rgba(220,120,20,.95) 61%, rgba(185,70,10,.95) 68%,
       rgba(165,30,100,.95) 80%, rgba(85,45,180,.85) 91%, rgba(85,45,180,0) 100%)}
@@ -6382,6 +6389,33 @@ html.fk-still .fk-wirbel,html.fk-still .fk-innen{animation:none}
 .formi-welle{position:fixed;left:0;top:0;width:900px;height:900px;margin:-450px 0 0 -450px;z-index:149;pointer-events:none;border-radius:var(--r-rund);opacity:0}
 .formi-welle.schub{background:radial-gradient(circle, rgba(255,255,255,0) 0 38%, rgba(255,246,230,.46) 46%, rgba(182,156,255,.26) 52%, rgba(255,255,255,0) 60%)}
 .formi-welle.sog{background:radial-gradient(circle, rgba(2,4,10,.5) 0, rgba(2,4,10,.22) 30%, rgba(2,4,10,0) 62%)}
+/* Runde 233: Funken beim Drücken eines Hauptknopfs (formiFunken). */
+.formi-funken{position:fixed;left:0;top:0;z-index:1180;pointer-events:none}
+.formi-funken i{position:absolute;left:-3px;top:-3px;width:6px;height:6px;border-radius:var(--r-rund);background:var(--c);box-shadow:0 0 8px var(--c)}
+/* Formi neben dem Gruss: 44 px, morgens halb zu, abends müde. */
+.gruss-formi{--fg:44px;margin-right:var(--s12);align-self:center}
+.gruss-formi.gf-frueh .fk-auge,.gruss-formi.gf-abend .fk-auge{transform:scaleY(.6)}
+/* Formi im Hinweis unten. */
+.toast{display:flex;align-items:center;gap:var(--s8)}
+.toast-formi{--fg:24px}
+/* Leere Listen: Formi zufrieden, das Zeichen des Bereichs klein daneben. */
+.leer-figur{position:relative;display:block;width:64px;height:64px;margin:0 auto var(--s12)}
+.leer-figur .formi-figur{--fg:64px;display:block}
+.leer-zufrieden .fk-auge{opacity:0}
+.leer-zufrieden .fk-froh{opacity:1}
+.empty .leer-zeichen{position:absolute;right:-18px;top:-6px;display:grid;place-items:center;width:28px;height:28px;border-radius:var(--r-rund);
+  background:var(--bg-3);border:1px solid var(--line-2);color:var(--text-2)}
+.empty .leer-zeichen svg{width:16px;height:16px;margin:0;opacity:.9}
+/* Kanten der Karten leuchten beim Erscheinen einmal in Formis Farben. */
+body.formi:not(.light) .view.show .card{position:relative}
+body.formi:not(.light) .view.show .card::after{content:"";position:absolute;inset:-1px;border-radius:var(--radius);pointer-events:none;
+  box-shadow:0 0 0 1px rgba(182,156,255,.55), 0 0 22px rgba(95,225,255,.35);opacity:0;animation:formiKanteAuf 1.1s ease-out backwards}
+@keyframes formiKanteAuf{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){ body.formi:not(.light) .view.show .card::after{animation:none} .formi-funken{display:none} }
+html.fk-still .formi-funken{display:none}
+html.fk-still body.formi:not(.light) .view.show .card::after{animation:none}
+/* Runde 233: beim Seitenwechsel ein leiser Wirbel aus der Kugel. */
+.formi-welle.wechsel{background:radial-gradient(circle, rgba(255,255,255,0) 0 40%, rgba(95,225,255,.26) 47%, rgba(182,156,255,.18) 53%, rgba(255,255,255,0) 60%)}
 /* Die Frage auf dem Weg ins Loch (formiFrageFliegt). */
 .formi-flug{position:fixed;inset:0;z-index:1200;pointer-events:none;overflow:hidden}
 .formi-flug i{position:absolute;left:0;top:0;font-style:normal;font-weight:700;font-size:var(--t-md);color:#E8F8FF;
@@ -6426,24 +6460,44 @@ html.fk-still .fk-wirbel,html.fk-still .fk-innen{animation:none}
    Die Ausdrücke sind Web Animations auf transform (formiGefuehl). */
 .fk-weiss{position:absolute;inset:-2px;border-radius:var(--r-rund);opacity:0;
   background:radial-gradient(circle, #FFFFFF 0 46%, #F3EEFF 62%, rgba(255,255,255,0) 74%)}
-.fk-gesicht{position:absolute;inset:0;mix-blend-mode:difference;transition:transform .35s ease}
+.fk-gesicht{position:absolute;inset:0;transition:transform .35s ease}
+/* Runde 231: kein „difference" mehr — die Leuchtaugen blieben auf dem
+   weissen Loch (Freude) nicht cyan, sondern wurden braun. Auf Weiss
+   bekommen Bögen und Mund stattdessen einen dunklen Rand (.fk-weiss-an
+   gibt es nicht als Klasse: der Rand ist immer da und auf Schwarz
+   unsichtbar). */
 /* Runde 205 — aus dem Betrieb: „gib dem gesicht mehr leben auch und den
    augen vorallem". Die Augen sind jetzt weiss mit einer Pupille und einem
    Lichtpunkt darin; die Pupille wandert im Auge (schauen, umsehen), das
    Auge selbst blinzelt, wird gross oder schmal. Dazu Brauen, die den
    Ausdruck tragen (hoch = staunen, schräg = Sorge). */
-.fk-auge{position:absolute;top:24%;width:23%;height:31%;border-radius:var(--r-rund);background:#FFFFFF;overflow:hidden;
-  transition:transform .3s ease}
-.fk-auge.l{left:19%}
-.fk-auge.r{right:19%}
-.fk-auge b{position:absolute;left:21%;top:30%;width:58%;height:43%;border-radius:var(--r-rund);background:#02040A}
-.fk-auge b::after{content:"";position:absolute;left:16%;top:12%;width:38%;height:38%;border-radius:var(--r-rund);background:rgba(255,255,255,.95)}
-.fk-braue{position:absolute;top:12%;width:24%;height:max(1px, 5.5%);border-radius:var(--r-rund);background:#FFFFFF;opacity:.85;
+.fk-auge{position:absolute;top:19%;width:28%;height:38%;border-radius:var(--r-rund);
+  background:radial-gradient(circle at 50% 42%, #F2FFFF 0 20%, #A6F5FF 48%, #48CBEF 100%);
+  box-shadow:0 0 calc(var(--fg, 58px) * .09) rgba(95,225,255,.85);transition:transform .3s ease, opacity .25s ease}
+.fk-auge.l{left:15%}
+.fk-auge.r{right:15%}
+/* Runde 231 — aus dem Betrieb: „ein anderes gesicht was süsser aussieht"
+   und auf die Auswahl „Mischung aus A und B … kulleraugen aber mit den
+   leuchtaugen" (M1). Die Augen sind selbst aus Licht; das <b> ist der
+   Glanzpunkt, der mit dem Blick wandert (vorher die Pupille), sein
+   ::after der kleine zweite Glanz unten. */
+.fk-auge b{position:absolute;left:46%;top:14%;width:36%;height:28%;border-radius:var(--r-rund);background:#FFFFFF}
+.fk-auge b::after{content:"";position:absolute;left:-78%;top:150%;width:50%;height:62%;border-radius:var(--r-rund);background:rgba(255,255,255,.9)}
+.fk-braue{position:absolute;top:11%;width:15%;height:max(1px, 4%);border-radius:var(--r-rund);background:#9FF4FF;opacity:.55;
   transition:transform .35s ease}
-.fk-braue.l{left:19%}
-.fk-braue.r{right:19%}
-.fk-mund{position:absolute;left:33%;top:62%;width:34%;height:16%;border:max(1px, calc(var(--fg, 58px) * .034)) solid #FFFFFF;border-top:0;
-  border-radius:0 0 var(--r-rund) var(--r-rund);transition:transform .3s ease}
+.fk-braue.l{left:22%}
+.fk-braue.r{right:22%}
+.fk-mund{position:absolute;left:40%;top:64%;width:20%;height:10%;border:max(1px, calc(var(--fg, 58px) * .034)) solid #8FF2FF;border-top:0;
+  border-radius:0 0 var(--r-rund) var(--r-rund);filter:drop-shadow(0 0 calc(var(--fg, 58px) * .03) #5FE1FF) drop-shadow(0 0 1px rgba(2,4,10,.9));transition:transform .3s ease}
+/* Freude und Schlaf: das Auge wird ein leuchtender Bogen (^ froh, ‿ zu). */
+.fk-froh{position:absolute;top:29%;width:28%;height:16%;border:max(1px, calc(var(--fg, 58px) * .05)) solid #8FF2FF;border-bottom:0;
+  border-radius:var(--r-rund) var(--r-rund) 0 0;opacity:0;filter:drop-shadow(0 0 calc(var(--fg, 58px) * .03) #5FE1FF) drop-shadow(0 0 1px rgba(2,4,10,.9));transition:opacity .25s ease}
+.fk-froh.l{left:15%}
+.fk-froh.r{right:15%}
+.fk-backe{position:absolute;top:58%;width:19%;height:11%;border-radius:var(--r-rund);
+  background:radial-gradient(closest-side, rgba(255,143,200,.95) 35%, rgba(255,143,200,0));transition:opacity .3s ease}
+.fk-backe.l{left:5%}
+.fk-backe.r{right:5%}
 /* Müde (nach 60 s ohne Bedienung): halb zu, bevor es einschläft. */
 .formi-kugel.fk-muede .fk-auge{transform:scaleY(.55)}
 .formi-kugel.fk-muede .fk-braue{transform:translateY(25%)}
@@ -6454,7 +6508,7 @@ html.fk-still .fk-wirbel,html.fk-still .fk-innen{animation:none}
 .formi-figur .fk-wirbel{box-shadow:inset 0 0 0 1px rgba(255,255,255,.2), inset 0 0 4px 1px rgba(2,4,10,.5)}
 .formi-figur .fk-pupille{box-shadow:0 0 0 1px rgba(2,4,10,.6)}
 .formi-figur.mini .fk-braue,.formi-figur.mini .fk-auge b::after{display:none}
-.formi-figur.mini .fk-auge b{left:15%;top:25%;width:70%;height:52%}
+.formi-figur.mini .fk-auge b{left:44%;top:12%;width:42%;height:32%}
 /* Ring in der Farbe des Bereichs (Runde 205): ein Schimmer von einer
    Kante, nicht eine Fläche — und nie in Rot, Grün oder Bernstein. Die
    Verwaltung (Schiefer) bekommt keinen. */
@@ -6496,6 +6550,13 @@ body.light .fk-zeichen.herz path{fill:#D6468C}
 .fk-zeichen.herz{left:39%;top:2%;width:22%;height:20%}
 .fk-zeichen.frage{left:42%;top:-28%;font-size:calc(var(--fg) * .34)}
 .fk-zeichen.z{left:66%;top:-6%;font-size:calc(var(--fg) * .26)}
+.fk-zeichen.note{left:58%;top:4%;width:14%;height:19%}
+.fk-zeichen.stern{left:44%;top:30%;width:14%;height:14%}
+.fk-zeichen.kreis{left:44%;top:-4%;width:14%;height:14%}
+.fk-zeichen.tropfen{left:70%;top:14%;width:9%;height:13%}
+body.light .fk-zeichen.note path{fill:#6B4FD8}
+body.light .fk-zeichen.stern path{fill:#C98A00}
+body.light .fk-zeichen.tropfen path{fill:#1E8FD0}
 .fk-teilchen i::after{content:"";position:absolute;inset:0;border-radius:var(--r-rund);background:#FF9A55;opacity:0}
 /* Die Geister für den Glitch: zwei Ringe in Cyan und Magenta, die für
    einen Wimpernschlag neben dem Körper stehen. Ruhend unsichtbar. */
@@ -6508,7 +6569,8 @@ body.light .fk-zeichen.herz path{fill:#D6468C}
   transition:opacity .2s ease, transform .3s cubic-bezier(.3,1.6,.5,1)}
 .formi-kugel.fk-hat .fk-punkt{opacity:1;transform:none}
 /* Schläft: das Auge geht zu, der Ring wird leiser. Aufwachen = Glitch. */
-.formi-kugel.fk-schlaeft .fk-auge{transform:scaleY(.12)}
+.formi-kugel.fk-schlaeft .fk-auge{transform:scaleY(.12);opacity:0}
+.formi-kugel.fk-schlaeft .fk-froh{opacity:1;transform:translateY(55%) scaleY(-1)}
 .formi-kugel.fk-schlaeft .fk-braue{transform:translateY(40%)}
 .formi-kugel.fk-schlaeft .fk-mund{transform:scale(.5)}
 .formi-kugel.fk-schlaeft .fk-koerper{opacity:.7}
@@ -6706,11 +6768,14 @@ body.light .fk-zeichen.herz path{fill:#D6468C}
   transition:transform .32s var(--ease-ios)}
 #fwTitel{font-size:var(--t-lg);margin-bottom:var(--s6)}
 #fwText{font-size:var(--t-sm);line-height:var(--lh);color:var(--text-2)}
-.fw-zeile{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s8);margin-top:var(--s14)}
+.fw-zeile{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s8);margin-top:var(--s16)}
 #fwZahl{flex:1 1 auto;margin:0;font-family:var(--font-head);font-weight:800;font-size:var(--t-2xs);
   text-transform:uppercase;letter-spacing:var(--ls-m);color:var(--text-2)}
 .fw-zeile .btn{flex:0 0 auto;min-height:44px;min-width:44px}
 @media (max-width:400px){ #fwZahl{flex-basis:100%} .fw-zeile .btn{flex:1 1 0} }
+/* Niedrige Bildschirme (gemessen 320 × 568): die Karte passte unter
+   „Von"/„Bis" um ein paar Pixel nicht mehr und lag darauf. Kompakter. */
+@media (max-height:700px){ .fw-karte{padding:var(--s12)} #fwTitel{font-size:var(--t-md);margin-bottom:var(--s4)} .fw-zeile{margin-top:var(--s8)} }
 .ga-wie{flex-wrap:wrap}
 @media (prefers-reduced-motion:reduce){ .fw-karte{transition:none} }
 @media (prefers-reduced-motion:reduce){ .formi-kugel{transition:none} .jarvis.jv-kompakt.jv-z-denkt .formi-gesicht .fk-wirbel,
@@ -7003,6 +7068,77 @@ body.jv-offen{overflow:hidden}
 @media (prefers-reduced-motion:reduce){ .jarvis.jv-boot .jv-brief li,.jarvis.jv-boot .jv-kl{animation:none} .jv-kl{transition:none} }
 /* Leerer Verlauf: Begrüssung und Vorschläge zum Antippen */
 .jv-leer{margin:auto 0;padding:var(--s16) 0;text-align:center}
+/* ── Formi-Fenster neu (Runde 233) ───────────────────────────────────
+   Aus dem Betrieb: „das hud sieht design technisch auch noch nicht all
+   zu prickelnd aus" und zur Ideenliste D „alles davon": eine Bühne für
+   Formi, Vorschläge als Karten mit Zeichen, das Gespräch als
+   Sprechblasen, die Eingabe als EINE Zeile. Farbe geht von der oberen
+   Kante aus (Formis Ring) und läuft aus. Nur das kleine Fenster. */
+.jarvis.jv-kompakt{background:
+    radial-gradient(90% 46% at 50% -6%, rgba(182,156,255,.30), transparent 70%),
+    radial-gradient(60% 40% at 0% 0%, rgba(95,225,255,.20), transparent 70%),
+    radial-gradient(60% 40% at 100% 0%, rgba(255,143,200,.18), transparent 70%),
+    linear-gradient(180deg, #070C1C 0%, #03060F 100%)}
+.jarvis.jv-kompakt::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--formi-ring);opacity:.9;pointer-events:none;z-index:1}
+/* Die Bühne: Formi gross, ein Lichthof dahinter. */
+.jarvis.jv-kompakt .jv-start-figur{--fg:104px;margin:var(--s8) auto var(--s20)}
+.jarvis.jv-kompakt .jv-leer{position:relative}
+.jarvis.jv-kompakt .jv-leer::before{content:"";position:absolute;left:50%;top:0;width:240px;height:200px;margin-left:-120px;pointer-events:none;
+  background:radial-gradient(closest-side, rgba(95,225,255,.22), rgba(182,156,255,.12) 55%, transparent);z-index:-1}
+.jarvis.jv-kompakt .jv-gruss{font-size:var(--t-2xl)}
+/* Vorschläge als Karten: zwei Spalten, links das Zeichen in der Farbe
+   des Bereichs, eine Kante in derselben Farbe. */
+.jarvis.jv-kompakt .jv-chips{display:grid;grid-template-columns:1fr 1fr;gap:var(--s8);text-align:left}
+.jarvis.jv-kompakt .jv-chip{display:flex;align-items:center;gap:var(--s10);min-height:56px;padding:var(--s10) var(--s12);
+  border-radius:var(--r-md);border:1px solid rgba(var(--gm-rgb),.35);line-height:var(--lh-eng);text-align:left;
+  background:linear-gradient(90deg, rgba(var(--gm-rgb),.16), rgba(var(--gm-rgb),.04) 70%), rgba(8,18,34,.7);
+  box-shadow:var(--e1), inset 3px 0 0 rgba(var(--gm-rgb),.9)}
+.jarvis.jv-kompakt .jv-chip:hover{background:linear-gradient(90deg, rgba(var(--gm-rgb),.26), rgba(var(--gm-rgb),.08) 70%), rgba(8,18,34,.7);border-color:rgba(var(--gm-rgb),.7)}
+.jv-chip-z{flex:0 0 auto;display:grid;place-items:center;width:30px;height:30px;border-radius:var(--r-rund);
+  color:rgb(var(--gm-rgb));background:rgba(var(--gm-rgb),.14)}
+.jv-chip-z svg{width:17px;height:17px}
+/* Das Gespräch als Sprechblasen: deine rechts im Verlauf von Formis
+   Farben, Formis links aus Glas mit einer leuchtenden Kante. Die
+   Hologramm-Winkel aus dem grossen HUD fallen hier weg. */
+.jarvis.jv-kompakt .gehirn-frage{border:0;border-radius:var(--r-lg) var(--r-lg) var(--r-xs) var(--r-lg);padding:var(--s10) var(--s12);
+  background:linear-gradient(135deg, rgba(95,225,255,.30), rgba(182,156,255,.30) 60%, rgba(255,143,200,.26));color:#F4FCFF;
+  box-shadow:var(--e1), 0 0 18px rgba(182,156,255,.18)}
+.jarvis.jv-kompakt .gehirn-antwort{border:1px solid rgba(var(--jv-rgb),.22);border-radius:var(--r-xs) var(--r-lg) var(--r-lg) var(--r-lg);
+  /* Die Eckwinkel bleiben (20.10.2026: „hologramme dinger") — nach
+     innen gerückt, damit die runde Ecke sie nicht abschneidet. */
+  background:
+    linear-gradient(var(--jv-cyan),var(--jv-cyan)) right 10px top 10px / 12px 2px no-repeat,
+    linear-gradient(var(--jv-cyan),var(--jv-cyan)) right 10px top 10px / 2px 12px no-repeat,
+    linear-gradient(var(--jv-cyan),var(--jv-cyan)) right 10px bottom 10px / 12px 2px no-repeat,
+    linear-gradient(var(--jv-cyan),var(--jv-cyan)) right 10px bottom 10px / 2px 12px no-repeat,
+    linear-gradient(180deg, rgba(95,225,255,.08), transparent 40%), rgba(8,20,36,.82);
+  box-shadow:var(--e1), 0 0 22px rgba(var(--jv-rgb),.08)}
+.jarvis.jv-kompakt .gehirn-antwort::before{width:2px;top:var(--s12);bottom:var(--s12);border-radius:var(--r-rund);background:var(--formi-ring)}
+.jarvis.jv-kompakt .gehirn-antwort .ga-kopf{font-family:var(--font-head);letter-spacing:var(--ls-m)}
+/* Die Eingabe als eine Zeile: [Foto] [Feld] [Sprechen] [Senden]. */
+.jarvis.jv-kompakt .jv-eingabe{display:grid;grid-template-columns:auto 1fr auto auto;align-items:end;gap:var(--s6);
+  padding:var(--s6);border-radius:var(--r-lg);border:1px solid rgba(var(--jv-rgb),.3);
+  background:rgba(4,12,24,.9);box-shadow:var(--e1), 0 0 24px rgba(var(--jv-rgb),.1)}
+.jarvis.jv-kompakt .jv-eingabe:focus-within{border-color:rgba(var(--jv-rgb),.7);box-shadow:var(--e1), 0 0 0 3px rgba(var(--jv-rgb),.18)}
+.jarvis.jv-kompakt .jv-ein-knoepfe{display:contents}
+.jarvis.jv-kompakt #jarvisFoto{order:0;grid-column:1}
+.jarvis.jv-kompakt #jarvisFeld{order:1;grid-column:2;min-height:44px;max-height:132px;padding:var(--s10) var(--s8);border:0;background:transparent;box-shadow:none;resize:none}
+.jarvis.jv-kompakt #jarvisFeld:focus{box-shadow:none}
+.jarvis.jv-kompakt #jarvisMic{order:2;grid-column:3}
+.jarvis.jv-kompakt #jarvisSenden{order:3;grid-column:4}
+.jv-ein{width:44px;height:44px;border-radius:var(--r-rund);color:var(--jv-cyan)}
+.jv-ein.jv-senden svg{width:20px;height:20px;stroke-width:2.6;flex:0 0 auto}
+/* Senden: am Handy rund mit Pfeil, am Rechner eine Pille mit Pfeil und
+   Wort — Formis Verlauf wie jeder Hauptknopf, dunkle Schrift. */
+.jv-ein.jv-senden{display:inline-flex;align-items:center;justify-content:center;gap:var(--s6);min-width:44px;min-height:44px;padding:0;
+  color:#0A0D18;background:var(--formi-lin);border:0;box-shadow:var(--e1), 0 0 14px rgba(182,156,255,.45)}
+.jv-senden-wort{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (min-width:1100px){
+  .jarvis.jv-kompakt .jv-ein.jv-senden{width:auto;padding:0 var(--s16) 0 var(--s12);border-radius:var(--r-pille)}
+  .jarvis.jv-kompakt .jv-senden-wort{position:static;width:auto;height:auto;overflow:visible;clip:auto}
+}
+.jv-ein.jv-senden:disabled{opacity:.5}
+.jv-ein.jv-senden:active{transform:scale(.92)}
 /* Runde 209 — das Formi-Fenster aufgeräumt: ein grosses Gesicht statt
    „Hallo" allein, die Lage nicht doppelt, im Kopf drei Knöpfe statt fünf. */
 .jv-start-figur{--fg:76px;display:none;margin:0 auto var(--s12)}
@@ -8426,7 +8562,7 @@ body.neu .bereich-kopf.eng .bk-txt i{display:none}
 /* Runde 218: im Raum „Heute" ist der Kopf am Handy von Anfang an schmal.
    Das Datum steht ohnehin auf der Startseite („Heute"), und die 33 px
    gehören dem Tag. Dieselben Werte wie beim Zusammenrücken (.eng). */
-/* Runde 230: dasselbe in „Nachrichten". Der Chat scrollt in seinem
+/* Runde 236: dasselbe in „Nachrichten". Der Chat scrollt in seinem
    eigenen Bereich, der Kopf rückt also nie von selbst zusammen (.eng) –
    und der Verlauf bekam am Handy nur 49 % der Ansicht
    (test-chat-bereich3, Grenze 55 %). */
@@ -9353,7 +9489,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
 <div id="loadingWrap">
   <!-- Runde 209: beim Laden dreht sich Formis Ring, die Augen schauen
        nach oben — Formi denkt. -->
-  <div class="formi-lade" aria-hidden="true"><span class="formi-figur"><span class="fk-koerper"><span class="fk-scheibe hinten"><span class="fk-halb"><span class="fk-flach"><span class="fk-bahn"><i style="--w:20deg;--p:0.944"></i><i style="--w:140deg;--p:0.611"></i><i style="--w:260deg;--p:0.278"></i></span><span class="fk-bahn innen"><i style="--w:80deg;--p:0.778"></i><i style="--w:260deg;--p:0.278"></i></span></span></span></span><span class="fk-wirbel"></span><span class="fk-innen"></span><span class="fk-licht"></span><span class="fk-bogen"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i></span></span></span><span class="fk-scheibe vorn"><span class="fk-halb"><span class="fk-flach"><span class="fk-bahn"><i style="--w:20deg;--p:0.944"></i><i style="--w:140deg;--p:0.611"></i><i style="--w:260deg;--p:0.278"></i></span><span class="fk-bahn innen"><i style="--w:80deg;--p:0.778"></i><i style="--w:260deg;--p:0.278"></i></span></span></span></span></span></span></div>
+  <div class="formi-lade" aria-hidden="true"><span class="formi-figur"><span class="fk-koerper"><span class="fk-scheibe hinten"><span class="fk-halb"><span class="fk-flach"><span class="fk-bahn"><i style="--w:20deg;--p:0.944"></i><i style="--w:140deg;--p:0.611"></i><i style="--w:260deg;--p:0.278"></i></span><span class="fk-bahn innen"><i style="--w:80deg;--p:0.778"></i><i style="--w:260deg;--p:0.278"></i></span></span></span></span><span class="fk-wirbel"></span><span class="fk-innen"></span><span class="fk-licht"></span><span class="fk-bogen"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i><i class="fk-froh l"></i><i class="fk-froh r"></i><i class="fk-backe l"></i><i class="fk-backe r"></i></span></span></span><span class="fk-scheibe vorn"><span class="fk-halb"><span class="fk-flach"><span class="fk-bahn"><i style="--w:20deg;--p:0.944"></i><i style="--w:140deg;--p:0.611"></i><i style="--w:260deg;--p:0.278"></i></span><span class="fk-bahn innen"><i style="--w:80deg;--p:0.778"></i><i style="--w:260deg;--p:0.278"></i></span></span></span></span></span></span></div>
   <p id="loadingStatus">Verbindung wird hergestellt …</p>
   <p id="loadingStep">Schritt 1/3: Lade Code …</p>
   <button id="loadingForce" class="btn btn-ghost btn-sm" hidden>Login trotzdem anzeigen</button>
@@ -9427,7 +9563,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
     <!-- Runde 226 (Idee 3): Formi statt des „SC"-Zeichens. Die Augen
          folgen dem, was man eintippt; beim Passwort hält Formi sie zu.
          Die Marke STUDIOCHAT steht weiter darunter. -->
-    <div class="auth-logo"><span class="formi-figur auth-formi" id="authFormi" aria-hidden="true"><span class="fk-koerper"><span class="fk-scheibe hinten"><span class="fk-halb"><span class="fk-flach"><span class="fk-bahn"><i style="--w:20deg;--p:0.944"></i><i style="--w:140deg;--p:0.611"></i><i style="--w:260deg;--p:0.278"></i></span><span class="fk-bahn innen"><i style="--w:80deg;--p:0.778"></i><i style="--w:260deg;--p:0.278"></i></span></span></span></span><span class="fk-wirbel"></span><span class="fk-innen"></span><span class="fk-licht"></span><span class="fk-bogen"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-braue l"></i><i class="fk-braue r"></i><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i></span></span></span><span class="fk-scheibe vorn"><span class="fk-halb"><span class="fk-flach"><span class="fk-bahn"><i style="--w:20deg;--p:0.944"></i><i style="--w:140deg;--p:0.611"></i><i style="--w:260deg;--p:0.278"></i></span><span class="fk-bahn innen"><i style="--w:80deg;--p:0.778"></i><i style="--w:260deg;--p:0.278"></i></span></span></span></span></span></span>
+    <div class="auth-logo"><span class="formi-figur auth-formi" id="authFormi" aria-hidden="true"><span class="fk-koerper"><span class="fk-scheibe hinten"><span class="fk-halb"><span class="fk-flach"><span class="fk-bahn"><i style="--w:20deg;--p:0.944"></i><i style="--w:140deg;--p:0.611"></i><i style="--w:260deg;--p:0.278"></i></span><span class="fk-bahn innen"><i style="--w:80deg;--p:0.778"></i><i style="--w:260deg;--p:0.278"></i></span></span></span></span><span class="fk-wirbel"></span><span class="fk-innen"></span><span class="fk-licht"></span><span class="fk-bogen"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-braue l"></i><i class="fk-braue r"></i><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i><i class="fk-froh l"></i><i class="fk-froh r"></i><i class="fk-backe l"></i><i class="fk-backe r"></i></span></span></span><span class="fk-scheibe vorn"><span class="fk-halb"><span class="fk-flach"><span class="fk-bahn"><i style="--w:20deg;--p:0.944"></i><i style="--w:140deg;--p:0.611"></i><i style="--w:260deg;--p:0.278"></i></span><span class="fk-bahn innen"><i style="--w:80deg;--p:0.778"></i><i style="--w:260deg;--p:0.278"></i></span></span></span></span></span></span>
     </div>
     <div class="auth-brand">STUDIO<b>CHAT</b></div>
     <p class="auth-sub" id="authSub">Team-Portal</p>
@@ -13566,7 +13702,7 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
     <span class="jv-ecke ul" aria-hidden="true"></span><span class="jv-ecke ur" aria-hidden="true"></span>
     <ol class="jv-log" aria-hidden="true"><li>&gt; Systeme starten</li><li>&gt; Studio-Wissen verbunden</li><li>&gt; App-Steuerung bereit</li><li>&gt; Online</li></ol>
     <div class="jv-kopf">
-      <span class="jv-titel"><span class="formi-gesicht formi-figur mini" aria-hidden="true"><span class="fk-koerper"><span class="fk-wirbel"></span><span class="fk-innen"></span><span class="fk-licht"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i></span></span></span></span></span><span class="jv-punkt" aria-hidden="true"></span><span id="jarvisTitel">Formi</span><span class="jv-weck" id="jarvisWeck" hidden>hört auf dich</span><span class="jv-offline" id="jarvisOffline" hidden>offline · Schnellbefehle gehen</span></span>
+      <span class="jv-titel"><span class="formi-gesicht formi-figur mini" aria-hidden="true"><span class="fk-koerper"><span class="fk-wirbel"></span><span class="fk-innen"></span><span class="fk-licht"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i><i class="fk-froh l"></i><i class="fk-froh r"></i><i class="fk-backe l"></i><i class="fk-backe r"></i></span></span></span></span></span><span class="jv-punkt" aria-hidden="true"></span><span id="jarvisTitel">Formi</span><span class="jv-weck" id="jarvisWeck" hidden>hört auf dich</span><span class="jv-offline" id="jarvisOffline" hidden>offline · Schnellbefehle gehen</span></span>
       <span class="jv-kopf-knoepfe">
         <button type="button" class="icon-btn" id="jarvisMehr" data-ikon="mehr" aria-expanded="false" aria-label="Mehr: Einstellungen, Gespräche, Ton" title="Mehr"></button>
         <button type="button" class="icon-btn" id="jarvisPersonaBtn" data-ikon="regler" aria-expanded="false" aria-controls="jarvisPersona" aria-label="Persönlichkeit und Stimme" title="Persönlichkeit und Stimme"></button>
@@ -13603,13 +13739,15 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
       <div class="jv-gespraeche jv-persona" id="jarvisPersona" hidden role="region" aria-label="Persönlichkeit und Stimme"></div>
       <div class="jv-eingabe">
         <label class="nur-vorlesen" for="jarvisFeld">Frage oder Auftrag</label>
-        <textarea class="inp" id="jarvisFeld" rows="2" maxlength="2000"
-          placeholder="z. B. „Öffne den Putzplan", „Wer hat heute Dienst?" oder „Klo ist sauber"></textarea>
-        <div class="gehirn-knoepfe">
-          <button type="button" class="btn btn-ghost btn-sm gehirn-mic" id="jarvisMic" data-ikon="mikrofon" style="display:none" aria-pressed="false">Sprechen</button>
-          <button type="button" class="btn btn-ghost btn-sm" id="jarvisFoto" data-ikon="foto" title="Defekt mit Foto melden — bitte nur das Gerät fotografieren">Foto</button>
+        <textarea class="inp" id="jarvisFeld" rows="1" maxlength="2000"
+          placeholder="Frag Formi …"></textarea>
+        <!-- Runde 233: eine Zeile — Foto links, Feld, Sprechen und Senden
+             rechts, alle drei als runde Zeichen-Knöpfe (Namen über aria-label). -->
+        <div class="gehirn-knoepfe jv-ein-knoepfe">
+          <button type="button" class="icon-btn gehirn-mic jv-ein" id="jarvisMic" data-ikon="mikrofon" style="display:none" aria-pressed="false" aria-label="Sprechen" title="Sprechen — gedrückt halten oder einmal tippen"></button>
+          <button type="button" class="icon-btn jv-ein" id="jarvisFoto" data-ikon="foto" aria-label="Foto" title="Defekt mit Foto melden — bitte nur das Gerät fotografieren"></button>
           <input type="file" id="jarvisFotoDatei" accept="image/*" capture="environment" hidden>
-          <button type="button" class="btn btn-primary btn-sm" id="jarvisSenden">Senden</button>
+          <button type="button" class="btn btn-primary jv-ein jv-senden" id="jarvisSenden" title="Senden"><span class="jv-senden-wort">Senden</span></button>
         </div>
       </div>
     </div>
@@ -13620,7 +13758,7 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
      als Auge (Pupille mit Lichtpunkt) und ein Punkt „hat etwas für dich".
      Alles Schmuck: aria-hidden, keine Trefferfläche (pointer-events:none). -->
 <button type="button" class="formi-kugel" id="formiKugel" hidden aria-haspopup="dialog" aria-controls="jarvis"
-  aria-label="Formi öffnen" title="Formi — frag mich oder sag, was ich tun soll"><span class="fk-koerper" aria-hidden="true"><span class="fk-scheibe hinten"><span class="fk-halb"><span class="fk-flach"><span class="fk-bahn"><i style="--w:20deg;--p:0.944"></i><i style="--w:140deg;--p:0.611"></i><i style="--w:260deg;--p:0.278"></i></span><span class="fk-bahn innen"><i style="--w:80deg;--p:0.778"></i><i style="--w:260deg;--p:0.278"></i></span></span></span></span><span class="fk-wirbel"></span><span class="fk-innen"></span><span class="fk-licht"></span><span class="fk-bogen"></span><span class="fk-geist a"></span><span class="fk-geist b"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-braue l"></i><i class="fk-braue r"></i><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i></span></span></span><span class="fk-scheibe vorn"><span class="fk-halb"><span class="fk-flach"><span class="fk-bahn"><i style="--w:20deg;--p:0.944"></i><i style="--w:140deg;--p:0.611"></i><i style="--w:260deg;--p:0.278"></i></span><span class="fk-bahn innen"><i style="--w:80deg;--p:0.778"></i><i style="--w:260deg;--p:0.278"></i></span></span></span></span></span><span class="fk-punkt" aria-hidden="true"></span></button>
+  aria-label="Formi öffnen" title="Formi — frag mich oder sag, was ich tun soll"><span class="fk-koerper" aria-hidden="true"><span class="fk-scheibe hinten"><span class="fk-halb"><span class="fk-flach"><span class="fk-bahn"><i style="--w:20deg;--p:0.944"></i><i style="--w:140deg;--p:0.611"></i><i style="--w:260deg;--p:0.278"></i></span><span class="fk-bahn innen"><i style="--w:80deg;--p:0.778"></i><i style="--w:260deg;--p:0.278"></i></span></span></span></span><span class="fk-wirbel"></span><span class="fk-innen"></span><span class="fk-licht"></span><span class="fk-bogen"></span><span class="fk-geist a"></span><span class="fk-geist b"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-braue l"></i><i class="fk-braue r"></i><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i><i class="fk-froh l"></i><i class="fk-froh r"></i><i class="fk-backe l"></i><i class="fk-backe r"></i></span></span></span><span class="fk-scheibe vorn"><span class="fk-halb"><span class="fk-flach"><span class="fk-bahn"><i style="--w:20deg;--p:0.944"></i><i style="--w:140deg;--p:0.611"></i><i style="--w:260deg;--p:0.278"></i></span><span class="fk-bahn innen"><i style="--w:80deg;--p:0.778"></i><i style="--w:260deg;--p:0.278"></i></span></span></span></span></span><span class="fk-punkt" aria-hidden="true"></span></button>
 <span id="formiKugelHat" hidden>Formi hat etwas für dich</span>
 <!-- Formis Sprechblase (Runde 196): ein kurzer Satz, 4,5 s, dann weg.
      Keine Trefferfläche — sie verdeckt nie einen Knopf. -->
@@ -13656,13 +13794,16 @@ var PREFS = {
   // Welche Meldungen dieses Gerät bekommen soll. Bewusst pro GERÄT und
   // nicht pro Person: der Push hängt am Gerät, und viele wollen am Handy
   // etwas anderes als am Rechner.
-  notify:{ chat:true, dm:true, ann:true, todos:true, mentions:true }
+  notify:{ chat:true, dm:true, ann:true, todos:true, mentions:true, formi:true }
 };
 var NOTIFY_OPTS = [
   {id:'mentions', name:'Wenn ich erwähnt werde', hint:'@Name im Chat, in Übergaben und am Schwarzen Brett – empfohlen an'},
   {id:'dm',       name:'Direktnachrichten',      hint:'Persönliche Nachrichten an dich'},
   {id:'ann',      name:'Infos der Leitung',      hint:'Ankündigungen'},
   {id:'todos',    name:'Neue Aufgaben',          hint:'Wenn in deinem Studio eine Aufgabe angelegt wird'},
+  /* Etappe 3 (Runde 235): Formi meldet sich selbst — „so oft wie nötig",
+     aber jede Meldung hat genau einen Anlass. */
+  {id:'formi',    name:'Formi meldet sich',      hint:'Morgens dein Tag, Frist vorbei, Feierabend-Check – als Leitung auch Defekte und fehlendes Material'},
   /* Runde 216: die Erinnerung ans Auffrischen (schulungAuffrischErinnern).
      Nur sichtbar, wenn die Schulung für die Firma an ist — ein Schalter
      für etwas, das es nicht gibt, wäre ein Versprechen ohne Deckung. */
@@ -14724,6 +14865,8 @@ var IKONEN = {
                '<path d="m5.6 5.6 4 4M18.4 5.6l-4 4M18.4 18.4l-4-4M5.6 18.4l4-4"/>',
   werkzeug:    '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z"/>',
   hochladen:   '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 8 5-5 5 5"/><path d="M12 3v12"/>',
+  /* Runde 233: Senden im Formi-Fenster — ein Pfeil nach oben. */
+  senden:      '<path d="m5 12 7-7 7 7"/><path d="M12 19V5"/>',
   herz:        '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1L12 21l7.7-7.6 1.1-1a5.5 5.5 0 0 0 0-7.8z"/>',
   hantel:      '<path d="M6 7v10M18 7v10M3 9v6M21 9v6M6 12h12"/>',
   /* Studio-Gehirn: eine Glühbirne — „eine Idee haben" und „Bescheid
@@ -17193,7 +17336,7 @@ function featuresAnwenden(){
         in zwei Tabs. Überschreibt alles andere.
      2. Dieses Gerät (localStorage) — „auf diesem Gerät zurück zum
         bisherigen". Geht niemanden sonst etwas an.
-     3. Sonst: neu. Bis Runde 230 stand hier noch der Firmenschalter
+     3. Sonst: neu. Bis Runde 236 stand hier noch der Firmenschalter
         config/design.neu („für alle veröffentlichen"); seit dem
         23.10.2026 ist das neue Design für alle der Standard. */
 
@@ -17221,7 +17364,7 @@ function imDemo(){ return /[?&]demo(=|&|$)/.test(location.search); }
 function layoutNeu(){
   var u=designUrl();       if(u!==null) return u;
   var g=designGeraet();    if(g!==null) return g;
-  /* Runde 230, aus dem Betrieb, 23.10.2026: „spiel das neue design für
+  /* Runde 236, aus dem Betrieb, 23.10.2026: „spiel das neue design für
      alle einfach aus, ist leichter". Seitdem ist neu der Standard für
      jede Firma; der Firmenschalter (config/design) ist weg. Als
      Übergang bleiben Adresse (?neu=0) und Gerät („Auf diesem Gerät
@@ -18171,8 +18314,13 @@ function fmtStand(ts){
 }
 var _toastTimer;
 function toast(msg, isErr){
-  var t=$('toast'); t.textContent=msg;
-  if(isErr && typeof formiFuehlt==='function') formiFuehlt('erschrickt');
+  var t=$('toast');
+  /* Runde 233: in jedem Hinweis sitzt ein kleiner Formi — freut sich
+     über Erledigtes, ist bei Fehlern verlegen. */
+  t.innerHTML='<span class="formi-figur mini toast-formi" aria-hidden="true">'+formiFigurInnen()+'</span><span class="toast-text"></span>';
+  t.lastChild.textContent=msg;
+  if(typeof formiFigurFuehlt==='function') setTimeout(function(){ formiFigurFuehlt(t.firstChild, isErr ? 'verlegen' : 'freut', true); }, 120);
+  if(isErr && typeof formiFuehlt==='function'){ formiFuehlt('erschrickt'); setTimeout(function(){ formiFuehlt('verlegen'); }, 650); }
   if(typeof formiSchauHin==='function') formiSchauHin(t);
   t.style.borderColor = isErr ? 'var(--danger)' : 'var(--accent-d)';
   t.classList.add('show');
@@ -21760,6 +21908,32 @@ var NEUIGKEITEN = [
     'Die Geschäftsführung kann es für eine Übergangszeit auf ihrem eigenen Gerät zurückstellen: Verwaltung → System → Design.',
     'Nebenbei: In „Nachrichten" ist der Kopf am Handy schmaler, damit der Chat mehr Platz hat.'
   ]},
+  { id:'2026-10-23-formi-meldet-sich', datum:'23.10.2026', titel:'Formi trägt für dich ein – und meldet sich von selbst', wo:'gehirn', punkte:[
+    'Sag Formi z. B. „Nur noch 2 Westen M" oder „Hatte gerade ein Probetraining mit Abschluss" – Formi zeigt dir vorher, was eingetragen wird, und du bestätigst mit einem Tipp.',
+    'Morgens um 7 sagt Formi dir, was dein Tag bringt. Läuft eine Frist ab, während du Dienst hast, sagt Formi Bescheid – und am Schichtende, wenn die Übergabe oder Putzpunkte noch fehlen.',
+    'Die Leitung bekommt sofort Bescheid, wenn ein Gerät defekt gemeldet wird oder Material fehlt.',
+    'Zu viel? Profil → Mitteilungen → „Formi meldet sich" ausschalten.'
+  ]},
+  { id:'2026-10-23-formi-spart', datum:'23.10.2026', titel:'Formi fällt nicht mehr den ganzen Tag aus', wo:'gehirn', punkte:[
+    'Formi hat pro Tag nur ein begrenztes Rechenkontingent. Bisher war danach bis in die Nacht Schluss.',
+    'Jetzt schaltet Formi rechtzeitig auf ein sparsameres Modell um und antwortet weiter – etwas knapper. Kurz vor der Grenze kommt die passende Antwort direkt aus unserem Wissen („Ich spare heute Rechenzeit …“).',
+    'Weiß Formi dann etwas nicht, wird die Frage gespeichert und beantwortet, statt verloren zu gehen.'
+  ]},
+  { id:'2026-10-23-formi-fenster-neu', datum:'23.10.2026', titel:'Formi-Fenster neu und mehr Formi in der ganzen App', wo:'gehirn', punkte:[
+    'Das Formi-Fenster ist neu: oben eine Bühne mit großem Formi, die Vorschläge sind Karten mit Symbol, das Gespräch steht in Sprechblasen, und unten gibt es nur noch eine Zeile: Foto, Feld, Sprechen und ein runder Senden-Knopf mit Pfeil.',
+    'Formi ist überall dabei: neben deinem Gruß auf „Heute", in jedem Hinweis unten, zufrieden über leeren Listen.',
+    'Beim Seitenwechsel wirbelt es kurz aus der Kugel, Karten leuchten beim Erscheinen einmal in Formis Farben auf, und Hauptknöpfe sprühen beim Drücken kleine Funken.'
+  ]},
+  { id:'2026-10-23-formi-geprueft', datum:'23.10.2026', titel:'Formi hat für euch gelernt', wo:'gehirn', punkte:[
+    'Formi hat rund 450 typische Fragen aus dem Studioalltag mit geprüften Antworten geübt: Gerät defekt, Kunde mit Attest, Einwände im Beratungsgespräch, Westen waschen und vieles mehr.',
+    'Fragst du etwas Ähnliches, antwortet Formi jetzt mit denselben geprüften Schritten – nur in seinem eigenen Ton.'
+  ]},
+  { id:'2026-10-23-formi-gesicht', datum:'23.10.2026', titel:'Formi hat ein neues, süßeres Gesicht – und lebt von selbst', wo:'home', punkte:[
+    'Formi hat leuchtende Kulleraugen mit Glanzpunkten und Bäckchen. Freut es sich, werden die Augen zu ^ ^, beim Schlafen gehen sie zu.',
+    'Auch wenn du nichts tust, macht Formi ab und zu etwas: summt ein Lied, fängt einen Funken aus seiner Scheibe, niest Sterne, zwinkert, legt den Kopf schief oder hüpft.',
+    'Formi reagiert auf dich: Bei einem Fehler wird es verlegen, bei einer neuen Meldung staunt es. Scrollst du ganz wild, wird ihm schwindelig. Tipp im Formi-Fenster auf Formi, dann kichert es – dreimal schnell, und es wird schwindelig.',
+    'Zu viel? Formi öffnen → Regler oben → „Gefühle der Kugel" auf „Aus" – dann bleibt Formi still.'
+  ]},
   { id:'2026-10-23-formi-gefuehle-antworten', datum:'23.10.2026', titel:'Formi antwortet persönlicher – und zeigt dabei Gefühle', wo:'gehirn', punkte:[
     'Formi antwortet jetzt ausführlicher und persönlicher: spricht dich mit Namen an, bezieht sich auf das, was du vorher gesagt hast, und auf deinen Tag in der App („du hast ja heute bis 14 Uhr").',
     'Formi zeigt Gefühle: Freude, Begeisterung, Mitgefühl, auch mal Verwirrung – in Worten und im Gesicht oben im Formi-Fenster (z. B. ein ? über dem Kopf oder ein Freudensprung).',
@@ -23809,6 +23983,8 @@ function showView(id, fromKey, ausVerlauf){
      dem Neuladen auf einer Seite, die es für ihn nicht mehr gibt, und
      die untere Leiste zeigt nirgendwo hin. */
   if(!ansichtAn(id) && id!=='home'){ id='home'; ausVerlauf=true; }
+  /* Runde 233: wechselt die Seite, wirbelt es kurz aus Formis Kugel. */
+  if(id!==currentView && typeof formiSeitenwechsel==='function') formiSeitenwechsel();
   currentView=id;
   /* Für die Regeln „Chat auf kleinen Handys" (Runde 127): nur ein
      Klassenname, kein Messen. */
@@ -27003,6 +27179,9 @@ function gehirnRein(obj, feld){
   return { k:' rein', s:' style="--rein:'+(-alt)+'ms"' };
 }
 var JV_VORSCHLAEGE=['Wer hat heute Dienst?','Was ist heute offen?','Öffne den Putzplan','Wie wasche ich die Westen?'];
+/* Runde 233: jede Karte mit Zeichen und der Farbe ihres Bereichs
+   (dieselben wie in den Mini-Fenstern, nie Rot/Grün/Bernstein). */
+var JV_VORSCHLAG_ART={ 'Wer hat heute Dienst?':'team', 'Was ist heute offen?':'todos', 'Öffne den Putzplan':'putzplan', 'Wie wasche ich die Westen?':'wissen' };
 /* ── Lage: Morgen-Briefing und „Heute im Studio" (20.10.2026) ────────
    Gerechnet im Gerät aus dem, was die App ohnehin geladen hat; nur
    Dienst und defekte Geräte werden gelesen (höchstens 6 Studios, alle
@@ -27105,7 +27284,9 @@ function jvLeerHTML(){
      darunter (CSS: .jarvis.jv-kompakt .jv-brief). */
   return '<div class="jv-leer"><span class="formi-figur jv-start-figur" aria-hidden="true">'+formiFigurInnen(true, true)+'</span><p class="jv-gruss">'+esc(jvGruss()+(vorname ? ', '+vorname : ''))+'.</p>'+brief+
     '<p class="jv-unter">'+(jvPersona().ton==='sachlich' ? 'Ich bin '+esc(jvPersona().name)+'. ' : esc(formiLageSatz())+' ')+'Frag mich etwas oder gib mir einen Auftrag — ich erledige es in der App und zeige dir jeden Schritt.</p>'+
-    '<div class="jv-chips">'+JV_VORSCHLAEGE.map(function(t){ return '<button type="button" class="jv-chip" data-jvbefehl="'+esc(t)+'">'+esc(t)+'</button>'; }).join('')+'</div></div>';
+    '<div class="jv-chips">'+JV_VORSCHLAEGE.map(function(t){
+      var c=GEHIRN_MINI[JV_VORSCHLAG_ART[t]] || { rgb:'182,156,255', ikon:'gehirn' };
+      return '<button type="button" class="jv-chip" data-jvbefehl="'+esc(t)+'" style="--gm-rgb:'+c.rgb+'"><span class="jv-chip-z" aria-hidden="true">'+ikon(c.ikon)+'</span><span>'+esc(t)+'</span></button>'; }).join('')+'</div></div>';
 }
 function gehirnZeichnenIn(box, tippen){
   if(!box) return;
@@ -27543,6 +27724,8 @@ function gehirnVorschlagHTML(v, i){
   if(s.typ==='idee') return gehirnIdeeHTML(v, i);
   if(s.typ==='abhaken') return gehirnAbhakenHTML(v, i);
   if(s.typ==='defekt') return gehirnDefektHTML(v, i);
+  if(s.typ==='material') return gehirnMaterialHTML(v, i);
+  if(s.typ==='probe') return gehirnProbeHTML(v, i);
   var ank = s.typ==='ankuendigung';
   var studios = s.alle ? (ank ? 'Alle Mitarbeiter' : 'Alle Studios') : ((s.studioNamen||[]).join(', ') || '—');
   var teile=[], n=0;
@@ -27584,6 +27767,8 @@ function gehirnJetztAnlegen(i, btn){
   if(s.typ==='abwesenheit' || s.typ==='uebergabe') return gehirnEintragen(v, btn);
   if(s.typ==='idee') return gehirnIdeeSenden(v, btn);
   if(s.typ==='defekt') return gehirnDefektMelden(v, btn);
+  if(s.typ==='material') return gehirnMaterialMelden(v, btn);
+  if(s.typ==='probe') return gehirnProbeEintragen(v, btn);
   if(!canManage()) return;
   var darf=schreibStudios().filter(function(x){ return x.ok; });
   var darfKeys=darf.map(function(x){ return x.key; });
@@ -27626,6 +27811,8 @@ function gehirnVorschlagUebernehmen(v){
   if(!v || !v.vorschlag) return;
   var s=v.vorschlag;
   if(s.typ==='abwesenheit' || s.typ==='uebergabe') return gehirnInsTeam(s);
+  if(s.typ==='material'){ gehirnOeffne({ ziel:'material', studioKey:s.studioKey }); return; }
+  if(s.typ==='probe') return gehirnProbeFormular(s);
   if(!canManage()) return;
   showView('chef');
   setTimeout(function(){
@@ -27744,6 +27931,7 @@ function gehirnSofort(v){
     return r;
   }
   if(s.typ==='defekt'){ gehirnSchritt(v, 'Suche Gerät „'+s.geraet+'" in '+s.studioName+' …', true); return gehirnDefektSuchen(v); }
+  if(s.typ==='material'){ gehirnSchritt(v, 'Suche „'+s.artikel+'" im Material von '+s.studioName+' …', true); return gehirnMaterialSuchen(v); }
   if(s.typ==='rueckfrage'){ gehirnSchritt(v, 'Nicht ganz eindeutig — tipp an, was du meinst', true); return; }
   if(s.typ==='erinnerung'){ gehirnSchritt(v, 'Vorschau — „Erinnern" tippen, dann kommt sie als Push', true); return; }
   if(s.typ==='mail'){ gehirnSchritt(v, 'Entwurf — lies drüber, dann „Senden"', true); return; }
@@ -27924,23 +28112,27 @@ function formiTeile(){
            pupille:k.querySelector('.fk-pupille'), geister:k.querySelectorAll('.fk-geist'),
            wirbel:k.querySelector('.fk-wirbel'), weiss:k.querySelector('.fk-weiss'), gesicht:k.querySelector('.fk-gesicht'),
            augen:k.querySelectorAll('.fk-auge'), mund:k.querySelector('.fk-mund'),
-           pupillen:k.querySelectorAll('.fk-auge b'), brauen:k.querySelectorAll('.fk-braue') };
+           pupillen:k.querySelectorAll('.fk-auge b'), brauen:k.querySelectorAll('.fk-braue'), froh:k.querySelectorAll('.fk-froh'),
+           backen:k.querySelectorAll('.fk-backe') };
 }
 /* Die Gefühle als Bewegung. Jede Zeile: [Teil, Bildfolge, Dauer]. */
 /* Die Gefühle als Bewegung. Jede Zeile: [Teil, Bildfolge, Dauer].
    Runde 195: Augen und Mund tragen den Ausdruck („augen" bewegt beide). */
 function formiGefuehl(art){
   var hops=[{transform:'none'},{transform:'translateY(-8px) scale(1.07)',offset:.35},{transform:'translateY(1px) scale(.97)',offset:.7},{transform:'none'}];
-  /* Freude: Augen zu Halbmonden, der Mund wird breit. */
-  var froh=[{transform:'none'},{transform:'scale(1.15,.4)',offset:.2},{transform:'scale(1.15,.4)',offset:.8},{transform:'none'}];
+  /* Freude: die Leuchtaugen gehen aus, an ihrer Stelle leuchten zwei
+     Bögen (^ ^) — Runde 231; der Mund wird breit, die Bäckchen glühen. */
+  var froh=[{opacity:1, transform:'none'},{opacity:0, transform:'scale(1.1,.5)',offset:.15},{opacity:0, transform:'scale(1.1,.5)',offset:.85},{opacity:1, transform:'none'}];
+  var bogen=[{opacity:0, transform:'translateY(20%)'},{opacity:1, transform:'translateY(-8%)',offset:.18},{opacity:1, transform:'none',offset:.3},{opacity:1, transform:'none',offset:.85},{opacity:0, transform:'none'}];
+  var gluehen=[{transform:'none'},{transform:'scale(1.35)',offset:.2},{transform:'scale(1.35)',offset:.8},{transform:'none'}];
   var lachen=[{transform:'none'},{transform:'scale(1.35,1.6)',offset:.2},{transform:'scale(1.35,1.6)',offset:.8},{transform:'none'}];
   return {
-    freut:     [['koerper', hops, 460], ['augen', froh, 900], ['mund', lachen, 900]],
+    freut:     [['koerper', hops, 460], ['augen', froh, 900], ['froh', bogen, 900], ['backen', gluehen, 900], ['mund', lachen, 900]],
     staunt:    [['koerper', [{transform:'none'},{transform:'scale(1.12)',offset:.3},{transform:'none'}], 520],
                 ['augen', [{transform:'none'},{transform:'scale(1.3)',offset:.25},{transform:'scale(1.3)',offset:.75},{transform:'none'}], 900],
                 ['mund', [{transform:'none'},{transform:'scale(.6,1.9)',offset:.25},{transform:'scale(.6,1.9)',offset:.75},{transform:'none'}], 900]],
     feiert:    [['koerper', [{transform:'none'},{transform:'rotate(200deg) scale(1.16)',offset:.45},{transform:'rotate(360deg) scale(1)'}], 820],
-                ['augen', froh, 1400], ['mund', lachen, 1400]],
+                ['augen', froh, 1400], ['froh', bogen, 1400], ['backen', gluehen, 1400], ['mund', lachen, 1400]],
     /* Schreck: Augen klein, der Mund kippt nach unten. */
     erschrickt:[['koerper', [{transform:'none'},{transform:'translateX(-5px)',offset:.15},{transform:'translateX(5px)',offset:.35},
                   {transform:'translateX(-4px)',offset:.55},{transform:'translateX(3px)',offset:.75},{transform:'none'}], 380],
@@ -27981,12 +28173,46 @@ function formiGefuehl(art){
                 ['mund', [{transform:'none'},{transform:'scale(.55,.6) rotate(-14deg)',offset:.2},{transform:'scale(.55,.6) rotate(-14deg)',offset:.85},{transform:'none'}], 1500]],
     /* Stolz: richtet sich auf, Augen zufrieden zu, breites Lächeln. */
     stolz:     [['koerper', [{transform:'none'},{transform:'translateY(-4px) scale(1.1)',offset:.3},{transform:'translateY(-4px) scale(1.1)',offset:.75},{transform:'none'}], 1800],
-                ['augen', froh, 1800], ['mund', lachen, 1800]],
+                ['augen', froh, 1800], ['froh', bogen, 1800], ['backen', gluehen, 1800], ['mund', lachen, 1800]],
     /* Verliebt (ein Danke, ein Daumen hoch): Augen gross und weich,
        Herzchen steigen auf. */
     verliebt:  [['koerper', [{transform:'none'},{transform:'scale(1.08)',offset:.2},{transform:'scale(1)',offset:.4},{transform:'scale(1.08)',offset:.6},{transform:'none'}], 1600],
                 ['augen', [{transform:'none'},{transform:'scale(1.25,1.1)',offset:.2},{transform:'scale(1.25,1.1)',offset:.85},{transform:'none'}], 1600],
                 ['mund', lachen, 1600]],
+    /* ── Runde 231: Eigenleben und kleine Reaktionen ──
+       Aus dem Betrieb: „das formi emotionen und reaktionen auch laufen
+       lässt wenn nichts getan wird" — und auf die Ideenliste „mir gefällt
+       alles davon". Jedes ist endlich, nur transform/opacity. */
+    /* Summen: der Mund wird ein kleines o und wippt, Noten steigen auf. */
+    summt:     [['mund', [{transform:'none'},{transform:'scale(.55,1.3)',offset:.12},{transform:'scale(.5,1.15)',offset:.3},{transform:'scale(.6,1.35)',offset:.5},{transform:'scale(.5,1.15)',offset:.7},{transform:'scale(.55,1.3)',offset:.88},{transform:'none'}], 2200],
+                ['gesicht', [{transform:'none'},{transform:'rotate(-6deg)',offset:.25},{transform:'rotate(6deg)',offset:.5},{transform:'rotate(-6deg)',offset:.75},{transform:'none'}], 2200]],
+    /* Niesen: einziehen, Augen zu – hatschi – ein Ruck nach vorn. */
+    niest:     [['koerper', [{transform:'none'},{transform:'translateY(-2px) scale(1.06,1.1)',offset:.45},{transform:'translateY(3px) scale(1.12,.86)',offset:.55},{transform:'scale(.98)',offset:.75},{transform:'none'}], 900],
+                ['augen', [{opacity:1, transform:'none'},{opacity:1, transform:'scaleY(.6)',offset:.4},{opacity:0, transform:'scaleY(.2)',offset:.5},{opacity:0, transform:'scaleY(.2)',offset:.7},{opacity:1, transform:'none'}], 900],
+                ['froh', [{opacity:0, transform:'scaleY(-1)'},{opacity:0, transform:'scaleY(-1)',offset:.48},{opacity:1, transform:'scaleY(-1)',offset:.52},{opacity:1, transform:'scaleY(-1)',offset:.7},{opacity:0, transform:'scaleY(-1)'}], 900],
+                ['mund', [{transform:'none'},{transform:'scale(.5,1.6)',offset:.4},{transform:'scale(.9,.5)',offset:.55},{transform:'none'}], 900]],
+    /* Ein Auge zwinkert, der Kopf kippt ein wenig. */
+    zwinkert:  [['augeR', [{opacity:1, transform:'none'},{opacity:0, transform:'scaleY(.2)',offset:.25},{opacity:0, transform:'scaleY(.2)',offset:.6},{opacity:1, transform:'none'}], 700],
+                ['frohR', [{opacity:0},{opacity:1,offset:.25},{opacity:1,offset:.6},{opacity:0}], 700],
+                ['gesicht', [{transform:'none'},{transform:'rotate(8deg)',offset:.3},{transform:'rotate(8deg)',offset:.6},{transform:'none'}], 700],
+                ['mund', [{transform:'none'},{transform:'scale(1.2,1)',offset:.3},{transform:'scale(1.2,1)',offset:.6},{transform:'none'}], 700]],
+    /* Den Kopf schief legen, neugierig. */
+    kopfschief:[['gesicht', [{transform:'none'},{transform:'rotate(-14deg) translateX(-4%)',offset:.3},{transform:'rotate(-14deg) translateX(-4%)',offset:.7},{transform:'none'}], 1300],
+                ['augen', [{transform:'none'},{transform:'scale(1.12)',offset:.3},{transform:'scale(1.12)',offset:.7},{transform:'none'}], 1300]],
+    /* Ein kleiner Hüpfer aus Übermut. */
+    huepft:    [['koerper', [{transform:'none'},{transform:'translateY(1px) scale(1.06,.92)',offset:.15},{transform:'translateY(-9px) scale(.96,1.05)',offset:.4},{transform:'translateY(0) scale(1.05,.94)',offset:.65},{transform:'none'}], 700]],
+    /* Kichern (angetippt): Augen zu Bögen, kleines Schütteln. */
+    kichert:   [['koerper', [{transform:'none'},{transform:'rotate(-6deg)',offset:.15},{transform:'rotate(6deg)',offset:.3},{transform:'rotate(-5deg)',offset:.45},{transform:'rotate(4deg)',offset:.6},{transform:'none'}], 800],
+                ['augen', froh, 900], ['froh', bogen, 900], ['backen', gluehen, 900], ['mund', lachen, 900]],
+    /* Schwindelig: die Augen drehen sich, der Kopf eiert. */
+    schwindelig:[['augen', [{transform:'none'},{transform:'rotate(360deg) scale(.8)',offset:.45},{transform:'rotate(720deg) scale(.8)',offset:.85},{transform:'rotate(720deg)'}], 1800],
+                ['gesicht', [{transform:'none'},{transform:'translate(6%,-4%) rotate(8deg)',offset:.2},{transform:'translate(-6%,4%) rotate(-8deg)',offset:.45},{transform:'translate(5%,3%) rotate(6deg)',offset:.7},{transform:'none'}], 1800],
+                ['mund', [{transform:'none'},{transform:'scale(1,.4) rotate(-10deg)',offset:.2},{transform:'scale(1,.4) rotate(10deg)',offset:.6},{transform:'none'}], 1800]],
+    /* Verlegen (ein Fehler, die Maus ganz nah): Blick zur Seite, Bäckchen
+       glühen, ein Schweisstropfen. */
+    verlegen:  [['augen', [{transform:'none'},{transform:'translate(-14%,10%) scale(.9)',offset:.2},{transform:'translate(-14%,10%) scale(.9)',offset:.8},{transform:'none'}], 1600],
+                ['backen', [{transform:'none', opacity:1},{transform:'scale(1.5)', opacity:1,offset:.2},{transform:'scale(1.5)', opacity:1,offset:.8},{transform:'none', opacity:1}], 1600],
+                ['mund', [{transform:'none'},{transform:'scale(.8,.45)',offset:.2},{transform:'scale(.8,.45)',offset:.8},{transform:'none'}], 1600]],
     /* Im Schlaf: ein tiefer Atemzug (Zeitgeber, solange Formi schläft). */
     schnarcht: [['koerper', [{transform:'none'},{transform:'scale(1.05)',offset:.45},{transform:'none'}], 2600],
                 ['mund', [{transform:'scale(.5)'},{transform:'scale(.9,1.3)',offset:.45},{transform:'scale(.5)'}], 2600]]
@@ -28009,7 +28235,7 @@ var FK_BRAUEN={
 };
 /* Gefühle, die Formi nicht aufwecken: wer sich langweilt oder im Schlaf
    atmet, hat ja gerade niemanden, der etwas tut. */
-var FK_LEISE={ blinzelt:1, gelangweilt:1, schnarcht:1 };
+var FK_LEISE={ blinzelt:1, gelangweilt:1, schnarcht:1, summt:1, niest:1, zwinkert:1, kopfschief:1, huepft:1, faengt:1 };
 function formiFuehlt(art){
   /* Runde 226: Ist das Formi-Fenster offen, ist die Kugel weg – dann
      fühlt das Gesicht im Fenster (gross auf dem Startschirm, sonst klein
@@ -28023,6 +28249,10 @@ function formiFuehlt(art){
   if(art==='verwirrt') formiZeichen(t.k, 'frage');
   if(art==='verliebt') formiZeichen(t.k, 'herz');
   if(art==='schnarcht') formiZeichen(t.k, 'z');
+  if(art==='summt') formiZeichen(t.k, 'note');
+  if(art==='niest') setTimeout(function(){ formiZeichen(t.k, 'stern'); }, 430);
+  if(art==='schwindelig') formiZeichen(t.k, 'kreis');
+  if(art==='verlegen') formiZeichen(t.k, 'tropfen');
   if(art==='gelangweilt') formiSpielt(t);
   if(art==='feiert' || art==='erschrickt' || art==='staunt') formiKugelGlitch();
   if(art==='freut') formiAusbruch(false);
@@ -28037,6 +28267,8 @@ function formiGefuehlAuf(t, art){
   });
   formiGefuehl(art).forEach(function(z){
     var els = z[0]==='augen' ? [].slice.call(t.augen) : z[0]==='brauen' ? [].slice.call(t.brauen) :
+      z[0]==='froh' ? [].slice.call(t.froh||[]) : z[0]==='backen' ? [].slice.call(t.backen||[]) :
+      z[0]==='frohR' ? [(t.froh||[])[1]] :
       z[0]==='augeL' ? [t.augen[0]] : z[0]==='augeR' ? [t.augen[1]] : [t[z[0]]];
     els.forEach(function(el){
       if(!el) return;
@@ -28044,7 +28276,7 @@ function formiGefuehlAuf(t, art){
     });
   });
 }
-var FK_FENSTER_GEFUEHLE={ freut:1, staunt:1, feiert:1, erschrickt:1, traurig:1, verwirrt:1, stolz:1, verliebt:1, aha:1 };
+var FK_FENSTER_GEFUEHLE={ freut:1, staunt:1, feiert:1, erschrickt:1, traurig:1, verwirrt:1, stolz:1, verliebt:1, aha:1, verlegen:1, kichert:1, schwindelig:1 };
 function formiFensterFuehlt(art){
   if(!formiFigurenAn() || !document.body.animate) return;
   [].forEach.call(document.querySelectorAll(FK_FENSTER_FIGUREN), function(f){
@@ -28056,12 +28288,16 @@ function formiFensterFuehlt(art){
 function formiFigurFuehlt(f, art, ohneZeichen){
   if(!f || !document.body.animate || _fl.gefuehleAus || gehirnWenigBewegung()) return;
   var t={ k:f, koerper:f.querySelector('.fk-koerper'), gesicht:f.querySelector('.fk-gesicht'), mund:f.querySelector('.fk-mund'),
-          augen:f.querySelectorAll('.fk-auge'), brauen:f.querySelectorAll('.fk-braue') };
+          augen:f.querySelectorAll('.fk-auge'), brauen:f.querySelectorAll('.fk-braue'), froh:f.querySelectorAll('.fk-froh'),
+          backen:f.querySelectorAll('.fk-backe') };
   formiGefuehlAuf(t, art);
   if(ohneZeichen) return;
   if(art==='traurig') formiZeichen(f, 'traene');
   if(art==='verwirrt') formiZeichen(f, 'frage');
   if(art==='verliebt') formiZeichen(f, 'herz');
+  if(art==='summt') formiZeichen(f, 'note');
+  if(art==='schwindelig') formiZeichen(f, 'kreis');
+  if(art==='verlegen') formiZeichen(f, 'tropfen');
 }
 /* ── Was zu einem Gefühl dazu fliegt (Runde 226) ──
    Ein kleines Zeichen an der Figur: eine Träne rollt aus dem linken Auge,
@@ -28071,23 +28307,33 @@ function formiFigurFuehlt(f, art, ohneZeichen){
 var FK_ZEICHEN={
   traene:'<svg viewBox="0 0 10 14"><path d="M5 0C5 0 0 7 0 9.5a5 5 0 0 0 10 0C10 7 5 0 5 0z" fill="#5FE1FF"/></svg>',
   herz:'<svg viewBox="0 0 24 22"><path d="M20.8 2.6a5.5 5.5 0 0 0-7.8 0L12 3.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1L12 19l7.7-7.6 1.1-1a5.5 5.5 0 0 0 0-7.8z" fill="#FF8FC8"/></svg>',
-  frage:'<b>?</b>', z:'<b>z</b>'
+  frage:'<b>?</b>', z:'<b>z</b>',
+  /* Runde 231: Note (summt), Stern (niest, schwindelig), Tropfen (verlegen). */
+  note:'<svg viewBox="0 0 12 16"><path d="M4 12.5a2.5 2.5 0 1 1-1-2V1.5L11 0v3L5 4.2v8.3z" fill="#B69CFF"/></svg>',
+  stern:'<svg viewBox="0 0 16 16"><path d="M8 0l1.9 6.1L16 8l-6.1 1.9L8 16l-1.9-6.1L0 8l6.1-1.9z" fill="#FFE27A"/></svg>',
+  tropfen:'<svg viewBox="0 0 10 14"><path d="M5 0C5 0 0 7 0 9.5a5 5 0 0 0 10 0C10 7 5 0 5 0z" fill="#9FF4FF"/></svg>'
 };
 function formiZeichen(figur, art){
   if(!figur || !document.body.animate || gehirnWenigBewegung()) return;
-  var n = art==='herz' ? 3 : 1;
+  var n = (art==='herz' || art==='stern' || art==='kreis') ? 3 : art==='note' ? 2 : 1;
   for(var i=0;i<n;i++){
     var el=document.createElement('span');
     el.className='fk-zeichen '+art; el.setAttribute('aria-hidden', 'true');
-    el.innerHTML=FK_ZEICHEN[art];
+    el.innerHTML=FK_ZEICHEN[art==='kreis' ? 'stern' : art];
     figur.appendChild(el);
     var bild, dauer;
     if(art==='traene'){ dauer=1400; bild=[{ transform:'translate(0,0) scale(.3)', opacity:0 }, { transform:'translate(0,0) scale(1)', opacity:1, offset:.25 }, { transform:'translate(-10%,170%) scale(.9)', opacity:1, offset:.75 }, { transform:'translate(-14%,260%) scale(.7)', opacity:0 }]; }
     else if(art==='z'){ dauer=2200; bild=[{ transform:'translate(0,0) scale(.5)', opacity:0 }, { transform:'translate(30%,-60%) scale(.8)', opacity:.9, offset:.3 }, { transform:'translate(90%,-170%) scale(1.15)', opacity:0 }]; }
     else if(art==='frage'){ dauer=1500; bild=[{ transform:'translateY(20%) scale(.3)', opacity:0 }, { transform:'translateY(-20%) scale(1.15)', opacity:1, offset:.2 }, { transform:'translateY(0) scale(1) rotate(-8deg)', opacity:1, offset:.45 }, { transform:'translateY(0) scale(1) rotate(8deg)', opacity:1, offset:.7 }, { transform:'translateY(-30%) scale(.8)', opacity:0 }]; }
+    else if(art==='note'){ dauer=1900; var nx=i ? 70 : -40; bild=[{ transform:'translate(0,0) scale(.4) rotate(-10deg)', opacity:0 }, { transform:'translate('+(nx*.5)+'%,-70%) scale(1) rotate(8deg)', opacity:1, offset:.3 }, { transform:'translate('+nx+'%,-140%) scale(1) rotate(-8deg)', opacity:1, offset:.65 }, { transform:'translate('+(nx*1.3)+'%,-210%) scale(.8)', opacity:0 }]; }
+    else if(art==='stern'){ dauer=900; var sw=[-150,-30,90][i]; bild=[{ transform:'translate(0,0) scale(.2)', opacity:0 }, { transform:'translate('+sw+'%,-60%) scale(1) rotate(90deg)', opacity:1, offset:.4 }, { transform:'translate('+(sw*1.6)+'%,-120%) scale(.5) rotate(180deg)', opacity:0 }]; }
+    /* Drei Sterne kreisen über dem Kopf (schwindelig) — eine Bahn als Ellipse. */
+    else if(art==='kreis'){ dauer=1800; bild=[]; for(var q=0;q<=8;q++){ var wq=Math.PI*2*(q/8+i/3); bild.push({ transform:'translate('+(Math.cos(wq)*160).toFixed(0)+'%,'+(Math.sin(wq)*40).toFixed(0)+'%) scale('+(.7+Math.sin(wq)*.3).toFixed(2)+')', opacity: q===0||q===8 ? 0 : 1, offset:q/8 }); } }
+    else if(art==='tropfen'){ dauer=1500; bild=[{ transform:'translate(0,0) scale(.3)', opacity:0 }, { transform:'translate(0,0) scale(1)', opacity:1, offset:.2 }, { transform:'translate(0,60%) scale(1)', opacity:1, offset:.7 }, { transform:'translate(0,120%) scale(.8)', opacity:0 }]; }
     else { dauer=1500; var sx=(i-1)*80; bild=[{ transform:'translate('+sx+'%,0) scale(.3)', opacity:0 }, { transform:'translate('+(sx*1.2)+'%,-80%) scale(1)', opacity:1, offset:.35 }, { transform:'translate('+(sx*1.5)+'%,-220%) scale(.8)', opacity:0 }]; }
-    try{ el.animate(bild, { duration:dauer, delay:i*160, easing:'ease-out', fill:'backwards' }); }catch(e){}
-    (function(e, d){ setTimeout(function(){ if(e.parentNode) e.parentNode.removeChild(e); }, d+200); })(el, dauer+i*160);
+    var verz = art==='kreis' ? 0 : art==='note' ? i*500 : i*160;
+    try{ el.animate(bild, { duration:dauer, delay:verz, easing: art==='kreis' ? 'linear' : 'ease-out', fill:'backwards' }); }catch(e){}
+    (function(e, d){ setTimeout(function(){ if(e.parentNode) e.parentNode.removeChild(e); }, d+200); })(el, dauer+verz);
   }
 }
 /* Langeweile: Formi spielt mit einem Krümel – er kreist einmal ganz um
@@ -28431,10 +28677,12 @@ function formiUmgebung(el, art, verz){
       w.className='formi-welle '+art; w.setAttribute('aria-hidden', 'true');
       var x=Math.round(q.left+q.width/2), y=Math.round(q.top+q.height/2);
       document.body.appendChild(w);
-      var bild = art==='schub'
+      var bild = art==='wechsel'
+        ? [{ transform:'translate('+x+'px,'+y+'px) scale(.08) rotate(0deg)', opacity:.9 }, { transform:'translate('+x+'px,'+y+'px) scale(1.5) rotate(40deg)', opacity:0 }]
+        : art==='schub'
         ? [{ transform:'translate('+x+'px,'+y+'px) scale(.12)', opacity:1 }, { transform:'translate('+x+'px,'+y+'px) scale(1.4)', opacity:.7, offset:.45 }, { transform:'translate('+x+'px,'+y+'px) scale(2.6)', opacity:0 }]
         : [{ transform:'translate('+x+'px,'+y+'px) scale(2.2)', opacity:0 }, { transform:'translate('+x+'px,'+y+'px) scale(.9)', opacity:1, offset:.6 }, { transform:'translate('+x+'px,'+y+'px) scale(.2)', opacity:0 }];
-      try{ w.animate(bild, { duration: art==='schub' ? 900 : 800, easing: art==='schub' ? 'cubic-bezier(.2,.7,.3,1)' : 'cubic-bezier(.6,0,.9,.4)' }).onfinish=function(){ if(w.parentNode) w.parentNode.removeChild(w); }; }
+      try{ w.animate(bild, { duration: art==='schub' ? 900 : art==='wechsel' ? 650 : 800, easing: art==='schub' ? 'cubic-bezier(.2,.7,.3,1)' : 'cubic-bezier(.6,0,.9,.4)' }).onfinish=function(){ if(w.parentNode) w.parentNode.removeChild(w); }; }
       catch(e){ if(w.parentNode) w.parentNode.removeChild(w); }
       setTimeout(function(){ if(w.parentNode) w.parentNode.removeChild(w); }, 1400);
     });
@@ -28572,7 +28820,7 @@ function formiScheibeHTML(seite){
 function formiFigurInnen(brauen, scheibe){
   return '<span class="fk-koerper">'+(scheibe ? formiScheibeHTML('hinten') : '')+'<span class="fk-wirbel"></span><span class="fk-innen"></span><span class="fk-licht"></span>'+(scheibe ? '<span class="fk-bogen"></span>' : '')+'<span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span>'+
     '<span class="fk-gesicht">'+(brauen ? '<i class="fk-braue l"></i><i class="fk-braue r"></i>' : '')+
-    '<i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i></span></span></span>'+(scheibe ? formiScheibeHTML('vorn') : '')+'</span>';
+    '<i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i><i class="fk-froh l"></i><i class="fk-froh r"></i><i class="fk-backe l"></i><i class="fk-backe r"></i></span></span></span>'+(scheibe ? formiScheibeHTML('vorn') : '')+'</span>';
 }
 /* ── Figuren im Formi-Fenster (Runde 209) ─────────────────────────────
    Die Kugel ist weg, solange das Fenster offen ist — dann leben die
@@ -28582,6 +28830,8 @@ function formiFigurInnen(brauen, scheibe){
    Web Animation (kein style-Attribut), aus bei „weniger Bewegung" und
    „Gefühle der Kugel: Aus". */
 var FK_FENSTER_FIGUREN='#jarvis .jv-titel .formi-figur, #jarvis .jv-start-figur';
+/* Figuren ausserhalb der Kugel, die beim Eigenleben mitmachen (Runde 233). */
+var FK_APP_FIGUREN='#formiGruss';
 function formiFigurenAn(){ return jarvisOffen() && !_fl.gefuehleAus && !gehirnWenigBewegung(); }
 function formiFigurenSchauen(x, y){
   _fl.figX=x; _fl.figY=y;
@@ -28709,7 +28959,10 @@ function formiNah(t, nah){
   var alt=_fl.nahAnim||[];
   _fl.nahAnim = nah ? [].map.call(t.augen, function(a){
     try{ return a.animate([{ transform:'none' }, { transform:'scale(1.16)' }], { duration:220, easing:'ease-out', fill:'forwards' }); }catch(e){ return null; }
-  }) : [];
+  }).concat([].map.call(t.backen||[], function(b){
+    /* Runde 231: ganz nah wird Formi ein bisschen verlegen. */
+    try{ return b.animate([{ transform:'none' }, { transform:'scale(1.45)' }], { duration:380, easing:'ease-out', fill:'forwards' }); }catch(e){ return null; }
+  })) : [];
   alt.forEach(function(a){ if(a) try{ a.cancel(); }catch(e){} });
 }
 /* Hinschauen (Runde 205): wo etwas passiert — ein Hinweis unten, eine
@@ -28748,6 +29001,106 @@ function formiSchnarchen(){
   if(!_fl.schlaeft || _fl.uhrenAus) return;
   if(formiLebtAn()) formiFuehlt('schnarcht');
   _fl.schnarchUhr=setTimeout(formiSchnarchen, 3000);
+}
+/* ── Eigenleben (Runde 231) ──────────────────────────────────────────
+   Aus dem Betrieb: „das formi emotionen und reaktionen auch laufen lässt
+   wenn nichts getan wird", lebhaft „Mittel": etwa alle 8–20 s eine
+   Kleinigkeit. Ein Zeitgeber, keine Dauer-Animation; nichts im Schlaf,
+   nichts bei verborgener Kugel oder verborgenem Tab, nichts bei „Gefühle
+   aus" oder „weniger Bewegung" (formiLebtAn). Dieselbe Kleinigkeit nie
+   zweimal hintereinander. Ist das Fenster offen, lebt die Figur dort. */
+var FK_EIGENLEBEN=['summt','faengt','niest','zwinkert','kopfschief','huepft','umschauen'];
+function formiEigenlebenPlanen(){
+  clearTimeout(_fl.lebenUhr);
+  if(_fl.uhrenAus) return;
+  _fl.lebenUhr=setTimeout(function(){ formiEigenleben(); formiEigenlebenPlanen(); }, 8000+Math.random()*12000);
+}
+function formiEigenleben(art){
+  if(!art){
+    var l=FK_EIGENLEBEN.filter(function(a){ return a!==_fl.lebenZuletzt; });
+    art=l[Math.floor(Math.random()*l.length)];
+  }
+  _fl.lebenZuletzt=art;
+  if(jarvisOffen()){
+    if(art==='faengt' || art==='umschauen') art='kopfschief';
+    if(formiFigurenAn()) [].forEach.call(document.querySelectorAll(FK_FENSTER_FIGUREN), function(f){ if(f.getClientRects().length && f.offsetWidth>40) formiFigurFuehlt(f, art); });
+    return art;
+  }
+  if(!formiLebtAn() || _fl.schlaeft || _fl.muede) return '';
+  [].forEach.call(document.querySelectorAll(FK_APP_FIGUREN), function(f){
+    if(art!=='umschauen' && art!=='faengt' && f.getClientRects().length) formiFigurFuehlt(f, art, true);
+  });
+  if(art==='umschauen'){ formiSchauNach(Math.random()*innerWidth, Math.random()*innerHeight*.9); setTimeout(function(){ formiSchauNach(Math.random()*innerWidth, Math.random()*innerHeight*.9); }, 900); return art; }
+  if(art==='faengt'){ formiFaengt(); return art; }
+  formiFuehlt(art);
+  return art;
+}
+/* ── Mehr Formi in der ganzen App (Runde 233) ─────────────────────────
+   Aus dem Betrieb: „die ganze app hat viel zu wenig formi design" und
+   zur Ideenliste C „alles davon … deutlich, mehr formi". Jedes Stück ist
+   Schmuck: aria-hidden, keine Trefferfläche, nur transform/opacity, aus
+   bei „weniger Bewegung" und „Gefühle aus". */
+function formiSeitenwechsel(){
+  if(!_fl.gestartet || _fl.gefuehleAus) return;
+  var k=$('formiKugel');
+  if(k && !k.hidden && k.getClientRects().length) formiUmgebung(k, 'wechsel');
+}
+/* Funken beim Drücken eines Hauptknopfs: sechs Teilchen in Formis
+   Farben stieben aus dem Druckpunkt. Gelesen wird nichts — der Punkt
+   kommt aus dem Ereignis. */
+function formiFunken(x, y){
+  if(_fl.gefuehleAus || gehirnWenigBewegung() || !document.body.animate) return;
+  var box=document.createElement('div');
+  box.className='formi-funken'; box.setAttribute('aria-hidden', 'true');
+  box.style.transform='translate('+Math.round(x)+'px,'+Math.round(y)+'px)';
+  var html=''; for(var i=0;i<6;i++) html+='<i style="--c:'+FK_FARBEN[i%4]+'"></i>';
+  box.innerHTML=html;
+  document.body.appendChild(box);
+  [].forEach.call(box.children, function(el, i){
+    var w=Math.PI*2*i/6+Math.random()*.6, r=26+Math.random()*16;
+    try{ el.animate([{ transform:'translate(0,0) scale(1)', opacity:1 }, { transform:'translate('+(Math.cos(w)*r).toFixed(1)+'px,'+(Math.sin(w)*r).toFixed(1)+'px) scale(.2)', opacity:0 }],
+      { duration:520, easing:'cubic-bezier(.2,.7,.3,1)' }); }catch(e){}
+  });
+  setTimeout(function(){ if(box.parentNode) box.parentNode.removeChild(box); }, 650);
+}
+/* Formi neben dem Gruss auf „Heute": schaut wie die Tageszeit (morgens
+   verschlafen, abends müde) und blinzelt mit den anderen Figuren. */
+function formiGrussFigur(){
+  var h=$('homeGreet'); if(!h || $('formiGruss')) return;
+  var zeile=h.closest('.vh-line'); if(!zeile) return;
+  var f=document.createElement('span');
+  f.id='formiGruss'; f.className='formi-figur gruss-formi'; f.setAttribute('aria-hidden', 'true');
+  f.innerHTML=formiFigurInnen(true);
+  zeile.insertBefore(f, zeile.firstChild);
+  formiGrussStimmung();
+}
+function formiGrussStimmung(){
+  var f=$('formiGruss'); if(!f) return;
+  var st=new Date().getHours();
+  f.classList.toggle('gf-frueh', st<9);
+  f.classList.toggle('gf-abend', st>=19);
+}
+/* Ein Funke löst sich aus der Scheibe, Formi schaut ihm nach – und
+   schnappt ihn wieder ein (die Augen folgen dem Bogen). */
+function formiFaengt(){
+  var t=formiTeile(); if(!t || !t.koerper) return;
+  var box=formiTeilchen(t, 1, false);
+  t.koerper.appendChild(box);
+  var el=box.firstChild;
+  try{
+    el.animate([{ transform:'translate(28px,4px) scale(.6)', opacity:0 }, { transform:'translate(34px,-26px) scale(1)', opacity:1, offset:.25 },
+      { transform:'translate(-6px,-46px) scale(1.1)', opacity:1, offset:.5 }, { transform:'translate(-30px,-22px) scale(1)', opacity:1, offset:.72 },
+      { transform:'translate(0,0) scale(.2)', opacity:0 }], { duration:2200, easing:'ease-in-out' });
+  }catch(e){}
+  var wege=[[.7,-.2],[.9,-.9],[0,-1],[-.9,-.6],[0,0]];
+  wege.forEach(function(w, i){
+    setTimeout(function(){
+      if(!_fl.mitte){ var r=t.k.getBoundingClientRect(); _fl.mitte={ x:r.left+r.width/2, y:r.top+r.height/2 }; _fl.mitteBis=Date.now()+1000; }
+      formiSchauNach(_fl.mitte.x+w[0]*400, _fl.mitte.y+w[1]*400);
+    }, i*480);
+  });
+  setTimeout(function(){ formiFuehlt('freut'); }, 2150);
+  setTimeout(function(){ if(box.parentNode) box.parentNode.removeChild(box); }, 2600);
 }
 function formiWach(stumm){
   _fl.zuletzt=Date.now(); _fl.gelangweilt=false;
@@ -28889,6 +29242,8 @@ function formiHatEtwas(schluessel){
   var k=$('formiKugel'); if(!k) return;
   var gesehen=''; try{ gesehen=localStorage.getItem('kf_formi_gesehen')||''; }catch(e){}
   var an=!!_fl.hatKey && _fl.hatKey!==gesehen;
+  /* Runde 231: kommt etwas Neues dazu, staunt Formi kurz. */
+  if(an && !k.classList.contains('fk-hat') && _fl.gestartet) setTimeout(function(){ formiFuehlt('staunt'); }, 300);
   k.classList.toggle('fk-hat', an);
   /* Der Name bleibt „Formi öffnen" (test-uebersicht); der Punkt kommt
      als Beschreibung dazu, damit Vorleser ihn auch melden. */
@@ -28921,7 +29276,10 @@ function formiLebtStart(){
     var jetzt=Date.now(); if(jetzt<_fl.nickBis) return; _fl.nickBis=jetzt+400;
     requestAnimationFrame(function(){
       if(!f.getClientRects().length) return;
-      var r=f.getBoundingClientRect(); formiSchauNach(r.left+r.width/2, r.top+r.height/2);
+      var r=f.getBoundingClientRect();
+      /* Runde 231: im Fenster hört Formi zu – die Figuren schauen aufs Feld. */
+      if(jarvisOffen()) formiFigurenSchauen(r.left+Math.min(r.width/2, 40+(f.value||'').length*7), r.top+r.height/2);
+      else formiSchauNach(r.left+r.width/2, r.top+r.height/2);
     });
     formiFuehlt('nickt');
   }, true);
@@ -28939,10 +29297,24 @@ function formiLebtStart(){
   setTimeout(formiTagesgruss, 2500);
   formiAtmenPlanen();
   formiUmsehenPlanen();
+  formiEigenlebenPlanen();
+  formiGrussFigur();
+  document.addEventListener('pointerdown', function(e){
+    var b=e.target && e.target.closest && e.target.closest('.btn-primary, .jv-senden');
+    if(b && !b.disabled) formiFunken(e.clientX, e.clientY);
+  }, { passive:true, capture:true });
   formiTageszeit();
   formiAnlass();
   /* Kleinigkeit (Runde 195): wer mit dem Mausrad scrollt, dem schaut
      Formi kurz in die Richtung nach. */
+  /* Runde 231: wer wild scrollt, macht Formi schwindelig — gut 4.000 px in
+     einer Sekunde, höchstens alle 30 s. */
+  document.addEventListener('wheel', function(e){
+    var jetzt=Date.now();
+    if(jetzt-(_fl.rollStart||0)>1000){ _fl.rollStart=jetzt; _fl.rollWeg=0; }
+    _fl.rollWeg+=Math.abs(e.deltaY||0);
+    if(_fl.rollWeg>4000 && jetzt>(_fl.schwindelBis||0)){ _fl.schwindelBis=jetzt+30000; _fl.rollWeg=0; formiFuehlt('schwindelig'); }
+  }, { passive:true });
   if(maus) document.addEventListener('wheel', function(e){
     if(!_fl.mitte) return;
     formiSchauNach(_fl.mitte.x, _fl.mitte.y + (e.deltaY > 0 ? 300 : -300));
@@ -28994,7 +29366,11 @@ window.__formiLebt = {
   atmen: function(){ formiAtmen(); },
   /* Blinzeln und Atmen kommen zu zufälligen Zeiten — ein Durchlauf, der
      „danach läuft nichts mehr" prüft, schaltet sie dafür ab. */
-  uhrenAus: function(){ _fl.uhrenAus=true; clearTimeout(_fl.blinzelUhr); clearTimeout(_fl.atemUhr); clearTimeout(_fl.umsehUhr); clearTimeout(_fl.schnarchUhr); },
+  uhrenAus: function(){ _fl.uhrenAus=true; clearTimeout(_fl.blinzelUhr); clearTimeout(_fl.atemUhr); clearTimeout(_fl.umsehUhr); clearTimeout(_fl.schnarchUhr); clearTimeout(_fl.lebenUhr); },
+  /* Runde 231: eine Kleinigkeit aus dem Eigenleben sofort (Durchlauf). */
+  leben: function(a){ return formiEigenleben(a); },
+  lebenZuletzt: function(){ return _fl.lebenZuletzt||''; },
+  fehlerHinweis: function(t){ toast(t||'Hat nicht geklappt.', true); },
   /* Runde 226 */
   stempelt: function(a, wer){ formiStempelt(a, wer); }, pause: function(an){ formiPause(an); },
   feierabend: function(sel, zeit){ formiFeierabend(document.querySelector(sel), zeit); },
@@ -29230,13 +29606,28 @@ function formiWieZeichnen(still){
     r=el.getBoundingClientRect();
   }
   var mit=sch.mit && document.querySelector(sch.mit);
-  if(formiWieSichtbar(mit)){
-    var m=mit.getBoundingClientRect(), l=Math.min(r.left, m.left), o=Math.min(r.top, m.top);
-    r={ left:l, top:o, width:Math.max(r.right, m.right)-l, height:Math.max(r.bottom, m.bottom)-o };
+  function vereint(q){
+    if(!formiWieSichtbar(mit)) return q;
+    var m=mit.getBoundingClientRect(), l=Math.min(q.left, m.left), o=Math.min(q.top, m.top);
+    return { left:l, top:o, width:Math.max(q.right, m.right)-l, height:Math.max(q.bottom, m.bottom)-o };
   }
+  r=vereint(r);
   var box=$('formiWie'), licht=box.querySelector('.fw-licht'), fig=box.querySelector('.fw-formi'), karte=box.querySelector('.fw-karte');
   var hoehe=innerHeight, breite=innerWidth, luft=6, rand=8;
   var kh=karte.offsetHeight||170, kw=karte.offsetWidth||320;
+  /* Passt die Karte weder über noch unter das Ziel (gemessen: 320 × 568,
+     „Von" und „Bis" untereinander, Karte 205 px), wird das Ziel so weit
+     hochgeholt, dass sie darunter Platz hat — aber nie unter den Kopf. */
+  if(!still && r.top-luft-14-kh <= rand && r.top+r.height+luft+14+kh >= hoehe-rand){
+    var soll=hoehe-rand-kh-14-luft-r.height-luft;
+    if(soll>=64){
+      var sc=el.parentElement;
+      while(sc && sc!==document.body){ var oy=getComputedStyle(sc).overflowY; if((oy==='auto' || oy==='scroll') && sc.scrollHeight>sc.clientHeight) break; sc=sc.parentElement; }
+      if(!sc || sc===document.body) sc=document.scrollingElement;
+      sc.scrollTop+=r.top-soll;
+      r=vereint(el.getBoundingClientRect());
+    }
+  }
   var x=Math.max(4, r.left-luft), y=Math.max(4, r.top-luft);
   var w=Math.max(12, Math.min(r.width+luft*2, breite-x-4)), h=Math.max(12, Math.min(r.height+luft*2, hoehe-y-4));
   /* Die Karte unter den Ring, wenn Platz ist, sonst darüber, sonst unten
@@ -30171,6 +30562,7 @@ function gehirnAbhaken(v, x, btn){
 function gehirnWahl(i, j, btn){
   var v=_gVerlauf[i]; if(!v || !v.wahl || !v.wahl[j] || v.angelegt) return;
   if(v.vorschlag.typ==='defekt'){ v.geraet=v.wahl[j]; v.wahl=[v.geraet]; gehirnZeichnen(); return; }
+  if(v.vorschlag.typ==='material'){ v.artikel=v.wahl[j]; v.wahl=[v.artikel]; gehirnZeichnen(); return; }
   gehirnAbhaken(v, v.wahl[j], btn);
 }
 function gehirnAbhakenRueck(i, btn){
@@ -30208,6 +30600,120 @@ function gehirnAbhakenHTML(v, i){
    mit den Rechten der Person gelesen). Gemeldet wird wie im Geräte-
    Fenster: Verlauf, Zustand und — nur wo die Regel es erlaubt und noch
    keine offen ist — eine Aufgabe für die Leitung. */
+/* ── Etappe 3 (Runde 235, 23.10.2026): Material und Probetraining ──────
+   Aus dem Betrieb auf die Rückfrage, welche Formulare Formi ausfüllt:
+   „Gerät defekt melden, Material nachbestellen, Urlaub/Frei beantragen,
+   Probetraining eintragen". Defekt und Urlaub gab es schon.
+   Wie überall: Vorschau, Knopf, geschrieben mit den eigenen Rechten und
+   in denselben Feldern wie das Formular. */
+function gehirnMaterialNeu(it, s){
+  /* „nur noch 2" → Ist 2. „es fehlen 3" → bei gesetztem Soll Ist = Soll − 3,
+     sonst die Fehl-Menge direkt (wie in der Tabelle: Soll leer = von Hand). */
+  var neu={ name:it.name, have:it.have||0, need:it.need||0, limit:it.limit||0 };
+  if(s.ist!==null && s.ist!==undefined) neu.have=s.ist;
+  else if(neu.limit>0) neu.have=Math.max(0, neu.limit-s.fehlt);
+  else neu.need=s.fehlt;
+  return neu;
+}
+function gehirnMaterialListe(sk){
+  var gespeichert=(_invAll[sk]||[]).map(function(i){ return { name:i.name, have:i.have||0, need:i.need||0, limit:i.limit||0 }; });
+  var da={}; gespeichert.forEach(function(i){ da[i.name]=true; });
+  DEFAULT_MATERIALS.forEach(function(n){ if(!da[n]) gespeichert.push({ name:n, have:0, need:0, limit:0 }); });
+  return gespeichert;
+}
+function gehirnMaterialSuchen(v){
+  var s=v.vorschlag;
+  return S('inventory').doc(s.studioKey).get().then(function(doc){
+    var items=(doc.exists && Array.isArray(doc.data().items)) ? doc.data().items : [];
+    _invAll[s.studioKey]=items;
+    v.wahl=gehirnBeste(s.artikel, gehirnMaterialListe(s.studioKey), function(i){ return i.name||''; });
+    if(v.wahl.length===1) v.artikel=v.wahl[0];
+  }).catch(function(e){ v.wahl=[]; v.hinweis=errMsg(e); });
+}
+function gehirnKarteRahmen(v, kopf, inhalt, knoepfe, satz){
+  return '<p class="ga-text">'+(v.angelegt ? 'Erledigt:' : satz)+'</p>'+
+    '<div class="gv-karte'+(v.gezeigt ? '' : ' gv-neu')+(v.angelegt ? ' gv-fertig' : '')+(v.jetzt ? ' gv-jetzt' : '')+'">'+
+    '<div style="--gv-i:0" class="gv-kopf">'+kopf+'</div>'+inhalt+
+    (v.angelegt ? '<div style="--gv-i:3" class="gv-erfolg" role="status"><svg class="gv-haken" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="12"/>'+
+      '<path d="M8 14.5l4 4 8-9"/></svg><span>'+esc(v.angelegt)+'</span></div>' : '')+
+    '<div style="--gv-i:4" class="gv-knoepfe">'+knoepfe+'</div></div>';
+}
+function gehirnMaterialHTML(v, i){
+  var s=v.vorschlag;
+  if(v.hinweis && !v.angelegt) return '<p class="ga-text">'+gehirnText(v.hinweis)+'</p>';
+  if(!v.artikel){
+    if(v.wahl && v.wahl.length) return '<p class="ga-text">Welchen Artikel meinst du?</p><div class="gv-wahl">'+v.wahl.map(function(it, j){
+      return '<button type="button" class="btn btn-ghost btn-sm" data-gwahl="'+i+'|'+j+'">'+esc(it.name||'Artikel')+'</button>'; }).join('')+'</div>';
+    return '<p class="ga-text">„'+esc(s.artikel)+'" finde ich im Material von '+esc(s.studioName)+' nicht.</p>'+
+      '<div class="gehirn-ziele"><button type="button" class="btn btn-ghost btn-sm" data-gziel="material">Zum Material ›</button></div>';
+  }
+  var alt=v.artikel, neu=gehirnMaterialNeu(alt, s);
+  var zeile=function(it){ return 'Ist '+(it.have||0)+(it.limit>0 ? ' · Soll '+it.limit : '')+' · fehlt '+itemNeed(it); };
+  var inhalt='<div style="--gv-i:1" class="gv-titel">'+esc(alt.name)+'</div>'+
+    '<div style="--gv-i:2"><p class="gv-text">'+esc(zeile(alt))+' → <b>'+esc(zeile(neu))+'</b></p></div>';
+  var knoepfe = v.angelegt ? '<button type="button" class="btn btn-ghost btn-sm" data-gziel="material">Zum Material ›</button>' :
+    '<button type="button" class="btn btn-primary btn-sm" data-ganlegen="'+i+'">Jetzt eintragen</button>'+
+    '<button type="button" class="btn btn-ghost btn-sm" data-gvorschlag="'+i+'">Im Formular bearbeiten</button>';
+  return gehirnKarteRahmen(v, '<span class="gv-art">Material</span><span class="gv-chip">'+esc(s.studioName)+'</span>', inhalt, knoepfe, 'So würde ich es eintragen:');
+}
+function gehirnMaterialMelden(v, btn){
+  var s=v.vorschlag; if(!v.artikel || v.angelegt) return;
+  if(gehirnMeineKeys().indexOf(s.studioKey)<0){ toast('Für dieses Studio darfst du nichts eintragen.', true); return; }
+  var ref=S('inventory').doc(s.studioKey), name=v.artikel.name;
+  withBusy(btn, function(){
+    /* Frisch lesen und nur diesen Artikel ändern, die anderen bleiben, wie
+       sie gespeichert sind. Felder wie saveMaterialNow (das ebenfalls die
+       ganze Liste schreibt). */
+    return ref.get().then(function(doc){
+      var items=(doc.exists && Array.isArray(doc.data().items)) ? doc.data().items.slice() : [];
+      var at=-1; items.forEach(function(it, k){ if(it.name===name) at=k; });
+      var basis = at>=0 ? items[at] : { name:name, have:0, need:0, limit:0 };
+      var neu=gehirnMaterialNeu(basis, s);
+      if(at>=0) items[at]=neu; else items.push(neu);
+      return ref.set({ items:items, updatedAt:Date.now(), updatedBy:session.name }).then(function(){ return { items:items, neu:neu }; });
+    }).then(function(x){
+      try{ pushToSheets(s.studioKey, x.items); }catch(e){}
+      v.artikel=Object.assign({}, x.neu);
+      v.angelegt = itemNeed(x.neu)>0 ? 'Eingetragen — fehlt '+itemNeed(x.neu)+', die Leitung sieht es' : 'Eingetragen — nichts fehlt';
+      v.jetzt=!gehirnWenigBewegung(); tick(12); gehirnZeichnen();
+    }).catch(function(e){ toast(errMsg(e), true); });
+  });
+}
+function gehirnProbeHTML(v, i){
+  var s=v.vorschlag;
+  var inhalt='<div style="--gv-i:1" class="gv-titel">'+(s.abschluss ? 'Mit Abschluss ✓' : 'Ohne Abschluss')+' · '+esc(gehirnDatum(s.datum))+'</div>'+
+    (s.notiz ? '<div style="--gv-i:2"><p class="gv-text">'+esc(s.notiz)+'</p></div>' : '');
+  var knoepfe = v.angelegt ? '<button type="button" class="btn btn-ghost btn-sm" data-gziel="probe">Zum Probetraining ›</button>' :
+    '<button type="button" class="btn btn-primary btn-sm" data-ganlegen="'+i+'">Jetzt eintragen</button>'+
+    '<button type="button" class="btn btn-ghost btn-sm" data-gvorschlag="'+i+'">Im Formular bearbeiten</button>';
+  return gehirnKarteRahmen(v, '<span class="gv-art">Probetraining</span><span class="gv-chip">'+esc(s.studioName)+'</span><span class="gv-chip">'+esc(session.name||'')+'</span>',
+    inhalt, knoepfe, 'So würde ich es eintragen:');
+}
+function gehirnProbeEintragen(v, btn){
+  var s=v.vorschlag; if(v.angelegt) return;
+  if(gehirnMeineKeys().indexOf(s.studioKey)<0){ toast('Für dieses Studio darfst du nichts eintragen.', true); return; }
+  withBusy(btn, function(){
+    /* Dieselben Felder wie speichereProbe; Mittag statt Mitternacht. */
+    return S('probetrainings').add({ studioKey:s.studioKey, datum:new Date(s.datum+'T12:00:00').getTime(), abschluss:!!s.abschluss,
+      notiz:String(s.notiz||'').slice(0,200), vonUid:session.uid, vonName:String(session.name||'Unbekannt').slice(0,60),
+      erfasstVon:session.uid, erfasstVonName:session.name||'', ts:Date.now() })
+    .then(function(){
+      v.angelegt = s.abschluss ? 'Abschluss eingetragen — stark! 🎉' : 'Probetraining eingetragen';
+      v.jetzt=!gehirnWenigBewegung(); tick(12); gehirnZeichnen();
+    }).catch(function(e){ toast(errMsg(e), true); });
+  });
+}
+function gehirnProbeFormular(s){
+  if(!formiBleibtOffen()) jarvisZu();
+  oeffneProbe();
+  setTimeout(function(){
+    var st=$('pbStudio'); if(st && [].some.call(st.options, function(o){ return o.value===s.studioKey; })) st.value=s.studioKey;
+    var d=$('pbDatum'); if(d) d.value=s.datum;
+    var n=$('pbNotiz'); if(n) n.value=s.notiz||'';
+    _pbErgebnis = s.abschluss ? 1 : 0;
+    document.querySelectorAll('#pbErgebnis [data-pbe]').forEach(function(c){ c.classList.toggle('on', c.getAttribute('data-pbe')===String(_pbErgebnis)); });
+  }, 0);
+}
 function gehirnDefektSuchen(v){
   var s=v.vorschlag;
   return S('studios').doc(s.studioKey).collection('devices').get().then(function(sn){
@@ -30373,6 +30879,18 @@ function jarvisStatus(){
 }
 function jarvisBinden(){
   if(_jvGebunden) return; _jvGebunden=true;
+  /* Runde 233: der Pfeil im Senden-Knopf. */
+  var sk=$('jarvisSenden'); if(sk && !sk.querySelector('svg')) sk.insertAdjacentHTML('afterbegin', ikon('senden'));
+  /* Runde 231: wer Formi im Fenster antippt, bringt es zum Kichern;
+     dreimal schnell hintereinander, und ihm wird schwindelig. */
+  var jvb=$('jarvis'); if(jvb) jvb.addEventListener('pointerdown', function(e){
+    var f=e.target && e.target.closest && e.target.closest('.jv-start-figur, .jv-titel .formi-figur');
+    if(!f) return;
+    var jetzt=Date.now();
+    _fl.tipps=(_fl.tipps||[]).filter(function(z){ return jetzt-z<1200; }); _fl.tipps.push(jetzt);
+    formiFigurFuehlt(f, _fl.tipps.length>=3 ? 'schwindelig' : 'kichert');
+    if(_fl.tipps.length>=3) _fl.tipps=[];
+  });
   var zu=$('jarvisZu'); if(zu) zu.addEventListener('click', jarvisZu);
   var gr=$('jarvisGroesse'); if(gr) gr.addEventListener('click', jvGroesseWechseln);
   var gb=$('jarvisGespraecheBtn'); if(gb) gb.addEventListener('click', function(){ jvGesprAuf(); });
@@ -46460,6 +46978,9 @@ function emptyHTML(h,s,iko,tat){
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">'+
     '<path d="M9 11l3 3L22 4"/>'+
     '<path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>';
+  /* Runde 233: über der leeren Liste sitzt Formi, zufrieden (Augen als
+     Bögen); das Zeichen des Bereichs schwebt klein daneben. */
+  if(typeof formiFigurInnen==='function') bild='<span class="leer-figur" aria-hidden="true"><span class="formi-figur leer-zufrieden">'+formiFigurInnen(true)+'</span><span class="leer-zeichen">'+bild+'</span></span>';
   /* Runde 209: wo eine Liste leer ist, sitzt Formi mit einem Angebot. Der
      Platz ist ohnehin leer — es wird nichts voller. */
   var formi = (typeof gehirnVerfuegbar==='function' && gehirnVerfuegbar())

@@ -20586,7 +20586,438 @@ nannte „(vgl. ID 57)" in der Antwort.
 den Aufruf: rot). **Nicht geprüft:** wie die echten Antworten klingen —
 nach dem Einspielen mit `/api/probe`.
 
-## Runde 230 — Das neue Design für alle (23.10.2026)
+## Runde 230 — Übungen: wer geprüft hat; keine IDs in Antworten (Worker 2.22, 23.10.2026)
+
+Aus dem Betrieb: „kannst du formi noch bisschen trainieren einfach, also
+lass ihn im leitstand fragen erstellen und beantworte diese so wie du es
+tun würdest bis die 500 fragen durch sind und die 100 beantwortet".
+
+**Vorher live gemessen (2.21, `/api/probe`):** Auf eine gestresste Frage
+mit Beschwerde kamen acht saubere Schritte, aber auch „(ID 7)" zweimal im
+Text und ein angekündigter Witz („Lustiger Seitenhieb: …").
+
+**Geändert**
+- Tabelle `uebung` bekommt `geprueft_von`; `/api/uebung/urteil` nimmt
+  `von`, der Export nennt es. Claudes Prüfungen stehen als „Claude (für
+  Semih)" darin — so lässt sich später trennen, was ein Mensch aus dem
+  Studio geprüft hat und was Claude im Auftrag.
+- `idsEntfernen()`: „(ID 7)", „(vgl. ID 57)", „[ID 12, 13]" verschwinden
+  aus jeder Antwort, rechnerisch statt nur per Anweisung.
+- Witze werden nicht angekündigt; bei Beschwerde, Stress, Ärger keiner.
+
+**Geprüft:** `test-formi-worker` 131.
+
+## Runde 231 — Formi bekommt ein süsseres Gesicht und ein Eigenleben (Etappe 1) (23.10.2026)
+
+**Aus dem Betrieb:**
+- „sein design hat sich aber nicht wirklich signifikant geändert ausser die
+  dünne scheibe, ich würde mir ein anderes gesicht wünschen was süsser
+  aussieht und das formi emotionen und reaktionen auch laufen lässt wenn
+  nichts getan wird“
+
+Drei Gesichter lagen zur Wahl, A (Kulleraugen), B (Leuchtaugen) und C
+(Knopfaugen). Gewünscht wurde die „Mischung aus A und B“. Von den zwei
+Mischungen kam M1, „leuchtende Kulleraugen“. Das Eigenleben soll „Mittel“
+lebhaft sein. Zur Ideenliste (A Eigenleben, B Reaktionen, C Formi in der
+ganzen App, D Formi-Fenster) kam „mir gefällt alles davon“, Formi soll
+„deutlich“ zu sehen sein. Dazu kam der Wunsch nach mehr echten
+Schwarzes-Loch-Eigenschaften. Geplant sind drei Etappen. Das hier ist
+Etappe 1.
+
+**Gebaut:**
+- **Gesicht M1.**
+  - Die Augen sind selbst aus Licht: ein Verlauf von fast Weiss zu Cyan
+    und ein Schein drumherum.
+  - Das `<b>`, früher die Pupille, ist jetzt der Glanzpunkt. Er wandert
+    mit dem Blick, ein zweiter kleiner Glanz sitzt unten.
+  - Neu sind zwei Bäckchen und zwei Bögen (`.fk-froh`): bei Freude ^ ^,
+    im Schlaf geschlossen.
+  - Die Brauen bleiben, klein und leise. Sie tragen Staunen und Sorge.
+  - Der Mund ist kleiner und leuchtet.
+  - Das gilt überall, wo die Figur steht: Kugel, Fensterkopf, die grosse
+    Figur im Fenster, die Formi-Zeile, der Zeiger, Laden und Anmeldung.
+    Die vier festen Kopien im HTML sind mitgezogen.
+- **Kein `mix-blend-mode:difference` mehr am Gesicht.** Auf dem weissen
+  Loch (Freude) wurden die Leuchtaugen damit braun. Bögen und Mund tragen
+  jetzt einen feinen dunklen Rand, der nur auf Weiss sichtbar ist.
+- **Freude** blendet die Augen aus und die Bögen ein (`opacity`), die
+  Bäckchen glühen. Das gilt für freut, feiert, stolz und kichert.
+- **Eigenleben** (`formiEigenlebenPlanen`): Etwa alle 8–20 s passiert eine
+  Kleinigkeit, nie zweimal dieselbe hintereinander:
+  - summt (Noten steigen auf)
+  - fängt einen Funken (die Augen folgen dem Bogen, danach Freude)
+  - niest (Sterne)
+  - zwinkert
+  - legt den Kopf schief
+  - hüpft
+  - schaut sich um
+
+  Das Eigenleben läuft über einen Zeitgeber, nicht als Endlos-Animation.
+  Es weckt nicht, Formi wird also trotzdem müde und schläft ein. Im
+  Schlaf, bei verborgenem Tab, „Gefühle aus“ und „weniger Bewegung“ läuft
+  es nicht. Ist das Fenster offen, macht die grosse Figur dort mit.
+- **Reaktionen:**
+  - Fehlerhinweis: erst erschrocken, dann verlegen mit Schweisstropfen.
+  - Neue Meldung (der Punkt erscheint): Formi staunt.
+  - Maus ganz nah: Die Bäckchen glühen.
+  - Wildes Scrollen (über 4.000 px in einer Sekunde, höchstens alle 30 s):
+    schwindelig, die Augen drehen sich, drei Sterne kreisen.
+  - Figur im Fenster antippen: Formi kichert. Dreimal schnell: schwindelig.
+  - Tippen ins Formi-Feld: Die Figuren im Fenster schauen aufs Feld und
+    wandern mit dem Text mit.
+
+**Entschieden und warum:**
+- *Bögen als eigene Elemente, keine Pseudo-Elemente.* Die Gefühle laufen
+  als Web Animations. Ein `::before` lässt sich damit nur über die
+  Option `pseudoElement` animieren, und darauf ist kein Verlass.
+- *Die Brauen bleiben.* M1 hatte keine. Ohne sie fehlt aber bei Sorge,
+  Staunen und Langeweile der halbe Ausdruck. Klein und halb durchsichtig
+  stören sie das süsse Gesicht nicht.
+- *Das Eigenleben weckt nicht* (`FK_LEISE`). Sonst würde Formi nie müde.
+
+**Geprüft:**
+- `tests/test-formi-eigenleben.js` (neu, 25 Zusicherungen):
+  - das Gesicht an Kugel, Fensterkopf und grosser Figur
+  - Freude mit Bögen
+  - Schlaf mit geschlossenen Bögen
+  - jede Kleinigkeit des Eigenlebens: endlich, nur `transform`/`opacity`,
+    mit Noten und Sternen
+  - der Planer: von selbst nach 9 s, ohne Bedienung
+  - Eigenleben weckt nicht, nichts im Schlaf, nichts bei „weniger
+    Bewegung“
+  - die Reaktionen: Fehler, Scrollen, Antippen, dreimal Antippen
+- Grün: test-formi-lebt, -ideen, -physik, -kugel, -welt, -platz, -kumpel,
+  -angedockt, -reihe, -zeigwie, test-gestaltung, test-stil-formi,
+  test-gehirn, test-uebersicht, test-tagesgruss, test-csp.
+- Zwei Funde, im Code behoben, die Tests sind unverändert:
+  - test-formi-ideen: Im hellen Stil war der Kern mit den grösseren,
+    dunklen Augen nur noch 0,62–0,66 hell statt über 0,7. Dort haben die
+    Augen jetzt die alte Grösse.
+  - test-gestaltung: `top` stand zweimal an `.fk-zeichen.kreis`.
+
+**Nicht geprüft:**
+- Die Arbeit je Bild beim Eigenleben wurde nicht gemessen. Es wird nur
+  `transform`/`opacity` animiert, und meist läuft eine Kleinigkeit alle
+  8–20 s.
+- Echte Handys.
+
+**Als Nächstes:**
+- Etappe 2: Formi in der ganzen App (Ring als Markenzeichen, leere
+  Listen, Seitenwechsel, Kanten, Formi-Knöpfe, Kopfzeile,
+  Erfolgsmeldungen) und das neue Formi-Fenster.
+- Etappe 3: Schwarzes-Loch-Eigenschaften (Sog am Ereignishorizont,
+  Lichtablenkung, Hawking-Strahlung, Jets, Doppler-Leuchten,
+  Gezeitenkräfte, Gravitationswellen, Wurmloch, Zeitdehnung, wachsende
+  Masse).
+
+## Runde 232 — Formi antwortet mit geprüften Beispielen (Worker 2.23, 23.10.2026)
+
+Aus dem Betrieb: zuerst „lass ihn im leitstand fragen erstellen und
+beantworte diese … bis die 500 fragen durch sind", danach auf die
+Empfehlung, die freigegebenen Paare direkt in den Antworten zu nutzen:
+„Ja".
+
+**Stand des Trainings (Leitstand, gemessen 23.10.2026 10:15):**
+- 528 von 500 Trainingspaaren, Gold 466; der Leitstand meldet „bereit".
+- Rund 700 Übungsfragen hat die KI erzeugt. Claude hat 451 davon
+  freigegeben, die meisten dabei umformuliert. Rund 230 sind verworfen,
+  fast alle als dieselbe Frage in anderer Schreibweise.
+- Im Export stehen Claudes Prüfungen als „Claude (für Semih)", die 15
+  früheren als „Leitstand".
+- Zwei Widersprüche im Wissen sind dabei aufgefallen und in den Antworten
+  richtig gestellt:
+  - Bluthochdruck: unbehandelt absolut ausgeschlossen, gut eingestellt nur
+    mit Freigabe.
+  - Herzschrittmacher: absolut ausgeschlossen. Ein Wissenseintrag klingt,
+    als ginge es mit Bescheinigung. Der Eintrag selbst ist unverändert und
+    muss von Semih geprüft werden.
+
+**Geändert (Worker 2.23)**
+- Zu jeder Frage holt der Worker die freigegebenen Übungen (`status =
+  'gut'`) der gefundenen Wissenseinträge. Die bis zu drei ähnlichsten
+  gehen als „GEPRÜFTE BEISPIELE" ins Gespräch mit der KI.
+- Die Ähnlichkeit sind gemeinsame Suchwörter (`vorbilderWaehlen`). Ohne
+  ein gemeinsames Wort geht kein Beispiel mit.
+- Die Regel im Systemtext: Fakten und Schritte übernehmen, in eigenem Ton
+  antworten. Widerspricht ein Beispiel dem Wissen, gilt das Wissen.
+- `/api/probe` nennt die mitgeschickten Beispiele (`beispiele`). Mit
+  `ohneBeispiele` lässt sich vergleichen.
+
+**Warum so und nicht anders**
+- Kein eigenes Modell trainieren: Bei Workers AI geht das nur mit
+  kleineren Grundmodellen (nach unserem Stand nicht mit gpt-oss-120b). Ein
+  kleines, trainiertes Modell wäre vermutlich schwächer als das grosse mit
+  Vorbildern. Das ist nicht gemessen und wird geprüft, bevor es ansteht.
+- Kein eigener Fingerabdruck je Paar: Die Paare hängen schon am
+  Wissenseintrag, den die Suche nach Bedeutung findet. Ein zweiter Index
+  hiesse doppelte Rechenzeit.
+- Höchstens drei Beispiele, je 700 Zeichen: Jedes Beispiel kostet Platz
+  im Gespräch und lenkt ab, wenn es nicht passt.
+
+**Geprüft:** `test-formi-worker` 139 (neu: freigegebenes Beispiel geht
+mit, ungeprüfte und verworfene nicht, Gegenprobe fremde Frage ohne
+Beispiel, Probe nennt die Beispiele, höchstens drei, keine doppelten).
+**Nicht geprüft:** wie stark die echten Antworten dadurch besser werden.
+Das zeigt erst `/api/probe` nach dem Einspielen.
+
+## Runde 233 — Neues Formi-Fenster und mehr Formi in der ganzen App (Etappe 2) (23.10.2026)
+
+**Aus dem Betrieb:**
+- „die ganze app hat viel zu wenig formi design wirklich“
+- „das hud sieht design technisch auch noch nicht all zu prickelnd aus“
+- Zur Ideenliste C (App) und D (Fenster): „alles davon … deutlich, mehr
+  formi“
+
+**Gebaut — das Fenster (D):**
+- **Bühne.**
+  - Farbe geht von der oberen Kante aus und läuft aus (Violett mittig,
+    Cyan links, Rosa rechts). Oben liegt Formis Ring als 2 px Linie.
+  - Formi ist auf dem Startschirm grösser (104 statt 76 px) und hat einen
+    Lichthof.
+- **Vorschläge als Karten.**
+  - Zwei Spalten, links ein Zeichen in der Farbe des Bereichs (dieselben
+    wie in den Mini-Fenstern), die Kante in derselben Farbe.
+  - Die Fragen selbst sind unverändert, die Durchläufe klicken sie.
+- **Sprechblasen.**
+  - Deine Frage steht rechts im Verlauf von Formis Farben, die Ecke unten
+    rechts ist spitz.
+  - Formis Antwort steht links aus Glas, die Ecke oben links ist spitz,
+    und eine Kante in Formis Ring läuft mit.
+  - Die Hologramm-Winkel aus dem grossen HUD fallen im kleinen Fenster
+    weg.
+- **Eingabe als eine Zeile:** Foto · Feld · Sprechen · Senden.
+  - Alle drei Knöpfe sind runde Zeichen-Knöpfe (`icon-btn`), die Namen
+    stehen in `aria-label`.
+  - Senden hat Formis Ring als Fläche und ein neues Zeichen `senden`
+    (Pfeil nach oben).
+  - Das Feld ist einzeilig und wächst. Der Platzhalter ist kurz („Frag
+    Formi …“), der lange brach bei 390 px um.
+  - Die IDs bleiben, alle Durchläufe greifen weiter.
+
+**Gebaut — die App (C):**
+- **Formi neben dem Gruss auf „Heute“** (44 px). Morgens vor 9 und
+  abends ab 19 Uhr sind die Augen halb zu. Die Figur macht beim
+  Eigenleben mit.
+- **Formi in jedem Hinweis unten** (Toast): Er freut sich über
+  Erledigtes und ist bei Fehlern verlegen. Der Text steht in einem
+  eigenen `<span>` und bleibt unverändert.
+- **Formi über leeren Listen:** zufrieden, die Augen als Bögen. Das
+  Zeichen des Bereichs schwebt klein daneben. „Frag Formi“ bleibt
+  darunter.
+- **Seitenwechsel:** ein leiser Wirbel aus der Kugel (Art `wechsel`,
+  650 ms, `transform`/`opacity`).
+- **Kanten:** Karten leuchten beim Erscheinen einmal in Formis Farben
+  auf (`::after`, nur `opacity`).
+- **Funken:** Hauptknöpfe (und Senden) sprühen beim Drücken sechs Funken
+  in Formis Farben.
+- Alles davon ist Schmuck: aria-hidden, keine Trefferfläche. Bei
+  „weniger Bewegung“ und „Gefühle aus“ ist es aus.
+
+**Entschieden und warum:**
+- *Kein Formi-Ring an der Navigation* (Idee C1). Der Ring gehört nur
+  Formi, so in Runde 186 entschieden und am 22.10. bestätigt
+  („2. ja“), und `test-formi-welt` prüft das. Stattdessen sitzt Formi
+  selbst an mehr Stellen: am Gruss, im Hinweis, in leeren Listen.
+- *Leuchtende Kanten über `opacity`, nicht über einen Lichtstreif.* Ein
+  Streif bräuchte `overflow:hidden` an der Karte. Das schnitte Menüs ab,
+  die aus Karten herausragen.
+
+**Nebenbei gefunden:** `var(--s14)` gibt es auf der Abstandsleiter nicht.
+Zwei Stellen verwiesen darauf und hatten damit 0 Abstand, eine davon die
+„Zeig mir wie“-Karte aus Runde 227. Beide stehen jetzt auf `--s16`
+bzw. `--s12`.
+
+**Geprüft:**
+- `tests/test-formi-app.js` (neu, 34 Zusicherungen):
+  - Karten mit Zeichen, Eingabe in einer Zeile, Senden mit Zeichen und
+    Wort, Sprechblasen
+  - Trefferflächen von Foto, Senden, Sprechen und Vorschlägen per
+    Hit-Test ≥ 44 × 44 bei 320 / 390 / 430 / 820 / 1280 / 1440 / 1920,
+    normal und kompakt
+  - Gruss-Formi, Formi im Hinweis, Formi über leeren Listen, Wirbel
+    beim Seitenwechsel, leuchtende Kanten, Funken
+  - „weniger Bewegung“
+- Grün: test-knoepfe (vorher und nachher), test-gestaltung,
+  test-abgeschnitten, test-quer, test-formi-eigenleben, -lebt, -ideen,
+  -physik, -kugel, -welt, -platz, -kumpel, -angedockt, -reihe, -zeigwie,
+  test-stil-formi, test-gehirn (330), test-uebersicht, test-tagesgruss,
+  test-neuigkeiten, test-block8, test-mitarbeiter, test-csp.
+- Funde unterwegs, alle im Code behoben, kein Test gelockert:
+  - **test-gestaltung:** Das Zeichen `senden` galt als ungenutzt. Es
+    stand nur im Fenster-Markup, das der Test als Skript liest. Jetzt
+    setzt `jarvisBinden` es über `ikon('senden')` ein.
+  - **test-formi-welt:** Der Kontrast des Hauptknopfs wird an einem
+    Knopf mit Text gemessen, und der runde Senden-Knopf hatte keinen.
+    Am Rechner (ab 1100 px) trägt Senden jetzt Pfeil und Wort in Formis
+    Verlauf, am Handy bleibt er rund.
+  - **test-gehirn:** Die Hologramm-Eckwinkel an Formis Antwort sind ein
+    Wunsch vom 20.10. („hologramme dinger“). Sie bleiben in der
+    Sprechblase, um 10 px nach innen gerückt.
+  - **test-formi-zeigwie:** Bei 320 × 568 passte die Karte nicht mehr
+    neben „Von“/„Bis“, weil der neue Abstand (`--s16` statt der
+    fehlenden `--s14`) sie höher machte. Neu: Passt sie weder darüber
+    noch darunter, holt der Rundgang das Ziel so weit hoch, dass sie
+    darunter passt. Auf niedrigen Bildschirmen ist die Karte kompakter.
+  - **test-neuigkeiten:** Die Kennung `formi-ueberall` gab es schon
+    (Runde 226). Sie heisst jetzt `formi-fenster-neu`.
+- **Nicht von dieser Runde:** test-formi-verdeckt ist bei 320 × 568 rot
+  („schulung: nicht freizuscrollen: button.sch-karte …“, alle drei
+  Rollen). Auf `origin/main` ist das genauso, gemessen. Die Ursache ist
+  nicht geändert.
+- **Eigener Fehler:** Einmal wurde `index.html` geändert, während
+  test-formi-verdeckt lief. Der Lauf wurde wiederholt.
+
+**Nicht geprüft:** echte Handys. Die Arbeit je Bild beim Seitenwechsel
+wurde nicht gemessen: ein Element, 650 ms, nur `transform`/`opacity`.
+
+## Runde 234 — Notbremse fürs KI-Tageskontingent (Worker 2.24, 23.10.2026)
+
+Aus dem Betrieb: „können wir die tageskontigenten nicht erhöhen
+irgendwie ?". Die Rückfrage war Paid-Plan oder gratis mit Notbremse. Die
+Antwort: „Gratis + Notbremse".
+
+**Anlass, gemessen:** Am 23.10. lieferte `/api/probe` ab etwa 12 Uhr nur
+noch „4006: you have used up your daily free allocation of 10,000
+neurons". Verbraucht hatten es vor allem die rund 700 Übungsfragen aus
+Runde 230/232 (Claude), dazu die Antworten mit gpt-oss-120b. Danach
+konnte Formi bis zum Neustart um 00:00 UTC niemandem antworten.
+
+**Rechnung (Preise laut developers.cloudflare.com, Stand 23.10.2026):**
+- Eine typische Antwort mit gpt-oss-120b hat rund 8.000 Tokens Eingabe
+  (Wissen, App-Lage, Beispiele) und 500 Tokens Ausgabe. Das sind etwa 290
+  Neuronen, also nur rund 34 Antworten am Tag, solange sonst nichts
+  verbraucht wird.
+- Gemma 4 26B kostet für dieselbe Antwort etwa 86 Neuronen. Mit weniger
+  Wissen im Gespräch ist es noch weniger.
+- Beide Werte sind aus den Tokens geschätzt; die echte Zahl zeigt nur
+  Cloudflare.
+
+**Geändert (Worker 2.24)**
+- `mitZaehler(env)` umhüllt jeden KI-Aufruf im Worker und bucht die
+  geschätzten Neuronen je UTC-Tag in die Tabelle `verbrauch`. Meldet
+  Cloudflare selbst 4006, springt der Zähler auf 10.000.
+- Drei Stufen:
+  - **normal** (unter 6.000): wie bisher.
+  - **spar** (ab 6.000):
+    - Nur noch Gemma, mit höchstens 4 Einträgen bzw. 5.000 Zeichen
+      Wissen, 3.000 Zeichen App-Lage, 2 Beispielen und 2 Gesprächszeilen.
+    - Kein teures Ersatzmodell.
+    - Kein Lernlauf, keine neuen Übungsfragen.
+  - **stopp** (ab 9.200): keine KI für Antworten. Formi gibt einen
+    Wissenseintrag zurück, der ein Suchwort der Frage enthält, mit dem
+    Satz „Ich spare heute Rechenzeit …". Passt keiner, wird die Frage wie
+    bisher gespeichert und geht an Semih.
+- Die Grenzen sind per Variable einstellbar: `NEURONEN_SPAR`,
+  `NEURONEN_STOPP`.
+- Leitstand → Übersicht: Karte „KI-Kontingent heute" mit Verbrauch,
+  Aufrufen und Stufe. `/api/statistik` liefert `verbrauch`, `/api/probe`
+  nimmt `spar: true` zum Vergleich.
+
+**Warum so**
+- 6.000 als Schwelle: Darüber bleiben rund 3.200 Neuronen, also mit Gemma
+  etwa 35 weitere Antworten bis zur Notbremse. Der Rest ab 9.200 ist der
+  Puffer für die Schätzfehler.
+- Ohne KI nur ein Eintrag mit gemeinsamem Suchwort: Die Suche nach
+  Bedeutung findet immer irgendetwas. Ohne Modell prüft aber niemand, ob
+  es passt.
+
+**Geprüft:** `test-formi-worker` 152 (mit Browser-Teil). Neu sind diese Fälle:
+- Normalbetrieb: gpt-oss, gebucht werden ≈ 289 Neuronen.
+- Ab 6.000 nur Gemma.
+- Ab 9.200 keine KI: Antwort aus dem Wissen, oder ohne passendes Wissen
+  wird die Frage gespeichert.
+- Kein Lernlauf im Sparmodus.
+- Bei 4006 steht der Zähler auf dem Kontingent.
+- Statistik, Stufen-Grenzen, Kostenschätzung und gekürztes Wissen.
+- Die Leitstand-Übersicht zeigt die Karte ohne Skriptfehler.
+
+**Nicht geprüft:** wie genau die Schätzung gegenüber Cloudflares echter
+Abrechnung ist. Ob gpt-oss `usage` mitliefert, ist nicht nachgesehen.
+Ohne `usage` schätzt der Worker aus der Textlänge, und das Nachdenken des
+Modells fehlt dann in der Rechnung. Abgleichen lässt es sich im
+Cloudflare-Dashboard unter Workers AI.
+
+## Runde 235 — Formi Etappe 3: Formulare und Formi meldet sich selbst (23.10.2026)
+
+Aus dem Betrieb, auf die Rückfragen zu Etappe 3:
+- Formulare: „Gerät defekt melden, Material nachbestellen, Urlaub/Frei
+  beantragen, Probetraining eintragen".
+- Melden bei: „Morgens: dein Tag, Fällig & überfällig, Fehlendes
+  Material/Defekt, Schichtende-Check".
+- Wie oft: „So oft wie nötig".
+
+**Formulare über Formi** (immer erst Vorschau, dann der Knopf; geschrieben
+mit den eigenen Rechten, in denselben Feldern wie das Formular)
+- Defekt und Urlaub/Frei gab es schon.
+- Neu „material":
+  - „nur noch 2 Westen M" setzt Ist auf 2.
+  - „es fehlen 3 Gurte" setzt bei gesetztem Soll Ist = Soll − 3, ohne
+    Soll die Fehl-Menge.
+  - Die Vorschau zeigt alt → neu.
+  - Geschrieben wird nur dieser Artikel: frisch gelesen, dann
+    gespeichert.
+- Neu „probe": Datum (heute oder bis 30 Tage zurück), Abschluss ja/nein,
+  Notiz ohne Kundennamen. Eingetragen auf die Person selbst, Felder wie
+  `speichereProbe`.
+- „Im Formular bearbeiten" öffnet das Material bzw. das
+  Probetraining-Fenster, schon ausgefüllt.
+
+**Formi meldet sich** (Art „Formi meldet sich" je Gerät, voreingestellt
+an)
+- 07:00 „dein Tag": an alle mit Dienst heute. Inhalt: Dienst, wie viele
+  Aufgaben überfällig bzw. heute fällig sind, offene Putzpunkte.
+- Alle 30 Minuten zwischen 7 und 21 Uhr „Frist vorbei": eine Aufgabe,
+  deren Frist gerade verstrichen ist. Sie geht an die zugewiesene Person,
+  sonst an die, die JETZT im Studio Dienst haben.
+- Alle 15 Minuten der Feierabend-Check: wessen Schicht gerade endete und
+  bei wem noch die Übergabe fehlt oder Putzpunkte offen sind. Ist alles
+  erledigt, kommt keine Meldung.
+- Sofort bei einer Defektmeldung und wenn bei einem Artikel jetzt mehr
+  fehlt als vorher: an die Leitung dieses Studios und den Chef. Wer
+  selbst gemeldet hat, bekommt nichts.
+
+**Warum so**
+- „So oft wie nötig" heisst: jeder Anlass genau einmal. Das sind der
+  Morgen, eine Frist im letzten Fenster, ein Schichtende und eine neue
+  Meldung. Eine Erinnerung, die alle halbe Stunde dasselbe sagt, schaltet
+  man ab.
+- Die Frist geht an die, die gerade da sind: Wer nicht im Dienst ist,
+  kann nichts tun. Ist niemand im Dienst, reicht die Morgenmeldung.
+- Der bestehende 07:30-Hinweis auf fällige Aufgaben (`dueTaskReminder`,
+  ans ganze Studio) bleibt. Wer an dem Tag Dienst hat, bekommt dadurch
+  zwei Morgenmeldungen. Das ist bewusst so stehen gelassen, bis es jemand
+  als zu viel meldet: Die Art „Neue Aufgaben" lässt sich getrennt
+  abschalten.
+- Nur Zeitpläne über `alleFirmen()`: Die Schichten und Aufgaben liegen
+  unter `firmen/<k>/`, flach gibt es sie nicht mehr
+  (`test-funktionen-pfade`).
+
+**Geprüft**
+- `test-gehirn-aktion` 139: material, probe, die Texte, Material-Vergleich,
+  Fristfenster, Schichtende-Fenster.
+- `rules/funktionen.test.js` 264 gegen den Emulator, für alle fünf
+  Meldungen, jeweils mit Gegenprobe:
+  - Gerät aus: keine Meldung.
+  - Ohne Dienst: keine Meldung.
+  - Schicht vorbei: keine Meldung.
+  - Alles erledigt: keine Meldung.
+  - Defekt „behoben": keine Meldung.
+  - Material aufgefüllt: keine Meldung.
+  - Fremde Leitung und der Meldende selbst bekommen nichts.
+- `test-formi-etappe3` 43:
+  - Vorschau schreibt nichts.
+  - Material ändert nur den einen Artikel.
+  - „fehlen 3" bei Soll 20 ergibt Ist 17.
+  - Probetraining mit den Feldern des Formulars.
+  - Der Schalter in den Mitteilungen ist da.
+  - Knöpfe treffen mit mindestens 44 × 44 und sind im Bild, bei 320 /
+    390 / 430 / 820 / 1280 / 1440 / 1920 px, normal und kompakt.
+- `test-funktionen-pfade` grün.
+
+**Nicht geprüft**
+- Ob die Meldungen auf einem echten Handy ankommen.
+- Wie die echte KI die neuen Sätze einordnet.
+## Runde 236 — Das neue Design für alle (23.10.2026)
 
 Aus dem Betrieb: „spiel das neue design für alle einfach aus, ist
 leichter“.

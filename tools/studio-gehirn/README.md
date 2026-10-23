@@ -70,9 +70,30 @@ Workers AI, **nicht** über GitHub Actions.
   Tageskontingent von Workers AI nicht, kommt „Kontingent aufgebraucht“ —
   dann hilft der Workers-Paid-Plan (5 $ im Monat).
 
+## Geprüfte Beispiele (ab 2.23)
+
+- Freigegebene Übungen (Leitstand → Übungen, „gut") gehen bei passenden
+  Fragen als Vorbild mit, höchstens drei. Mehr freigeben heißt: Formi
+  antwortet öfter im geprüften Wortlaut.
+- `POST /api/probe {frage}` zeigt unter `beispiele`, welche mitgingen;
+  `ohneBeispiele: true` zum Vergleich.
+
+## Notbremse fürs Tageskontingent (ab 2.24)
+
+- Workers AI gibt gratis 10.000 Neuronen je Tag (Neustart 00:00 UTC).
+  Der Worker zählt mit (geschätzt) und zeigt es im Leitstand unter
+  Übersicht.
+- Ab 6.000 Sparmodus (Gemma, weniger Wissen, kein nächtliches Lernen),
+  ab 9.200 Notbremse (keine KI für Antworten, passender Wissenseintrag
+  oder die Frage wird gespeichert).
+- Mehr Kontingent gibt es nur mit dem Workers-Paid-Plan (5 $/Monat, über
+  10.000 Neuronen 0,011 $ je 1.000). Dann die Grenzen per Variable hoch
+  setzen.
+
 ## Variablen
 
 | Name | Wofür |
 |---|---|
+| `NEURONEN_SPAR`, `NEURONEN_STOPP` | Grenzen für Sparmodus (6000) und Notbremse (9200), geschätzte Neuronen je UTC-Tag |
 | `WA_AKTIV` | `1` = WhatsApp senden. Ohne sie ist WhatsApp seit 2.10 aus (Meta sperrt noch). |
 | `LIMIT_PRO_TAG`, `LIMIT_STUDIOCHAT_TAG`, `AUFBEWAHRUNG_TAGE` | wie im Kopf von `worker.js` |

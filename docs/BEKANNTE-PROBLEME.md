@@ -624,7 +624,7 @@ waagerecht schieben lässt.
 | | |
 |---|---|
 | **Schweregrad** | **MITTEL**: Die Funktionen sind geprüft, aber in einem Aussehen, das niemand mehr standardmässig sieht |
-| **Seit** | 23.10.2026, Runde 230 (neues Design für alle) |
+| **Seit** | 23.10.2026, Runde 236 (neues Design für alle) |
 
 Diese Durchläufe kommen über die BISHERIGE Navigation an ihr Ziel, etwa
 über `.mobnav [data-group="g-chef"]` oder über Karten der alten

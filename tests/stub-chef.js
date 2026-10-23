@@ -500,6 +500,12 @@ var USERS = [
             /* Der Lieferant (Runde 137). Ohne __lieferant gibt es das
                Dokument NICHT — so steht jeder Betrieb da, bis die
                Geschäftsführung einen hinterlegt. */
+            /* Material: get() liefert dasselbe wie onSnapshot (Runde 235,
+               Formi liest den Bestand einmalig). */
+            if (path === 'inventory') {
+              var ivg = INVENTORY[id];
+              return Promise.resolve({ exists: !!ivg, id: id, data: function () { return ivg || { items: [] }; } });
+            }
             if (path === 'config' && id === 'lieferant') {
               var lf = window.__lieferant;
               return Promise.resolve({ exists: !!lf, id: id, data: function () { return lf || {}; } });

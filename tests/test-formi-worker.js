@@ -99,6 +99,10 @@ function ki(antworten) {
      und längere antworten"). */
   pruefe(/GEFÜHLE UND NÄHE/.test(sys) && /"stimmung"/.test(sys) && /80–200 Wörter/.test(sys) && /nenne nie IDs/.test(sys), 'Systemtext: Gefühle, Nähe, länger, keine IDs in der Antwort');
   pruefe(w.kiErgebnis({ antwort: 'x', art: 'frage', stimmung: 'begeistert', quellen: [] }, '', []).stimmung === 'begeistert' && w.kiErgebnis({ antwort: 'x', art: 'frage', stimmung: 'wütend', quellen: [] }, '', []).stimmung === null, 'Stimmung nur aus der festen Liste');
+  /* 2.22: live kam trotz Anweisung „(ID 7)" und „(vgl. ID 57)" in Antworten. */
+  pruefe(w.idsEntfernen('Lass ihn ausreden (ID 7). Trennen (vgl. ID 57). Siehe [ID 12, 13] bitte') === 'Lass ihn ausreden. Trennen. Siehe bitte' && w.idsEntfernen('Gerät Nr 5 piept') === 'Gerät Nr 5 piept', 'IDs in Klammern verschwinden, „Gerät Nr 5" bleibt');
+  pruefe(w.kiErgebnis({ antwort: 'Mach das so (ID 3).', art: 'frage', quellen: [] }, '', []).antwort === 'Mach das so.', 'die Antwort kommt ohne ID');
+  pruefe(/Kündige einen Witz nie an/.test(sys), 'Systemtext: Witze nicht ankündigen, bei Stress keiner');
   const kg = w.kiErgebnis({ antwort: 'x', art: 'frage', grundlage: 'erfunden', abgedeckt: false, quellen: [] }, '', []);
   pruefe(kg.grundlage === 'unsicher', 'unbekannte Grundlage → „unsicher" (lieber an Semih als still)');
   /* 2.11, live am 22.10.2026: „was kannst du alles" kam aus einem alten
@@ -356,6 +360,14 @@ function ki(antworten) {
     pruefe(Array.isArray(such.bedeutung) && such.bedeutung.length > 0 && typeof such.bedeutung[0].wert === 'number' && such.schwelle > 0 && such.ergebnis.some(x => x.id === weste), 'Suche-Diagnose: Wörter, Volltext, Ähnlichkeit ohne Schwelle, Ergebnis (' + JSON.stringify(such).slice(0, 160) + ')');
     const suchOhne = await w.default.fetch(new Request('https://x.test/api/suche?q=x', { headers: { 'x-studio-key': 'k' } }), env2, {});
     pruefe(suchOhne.status === 401, 'Suche-Diagnose nur im Leitstand');
+    /* 2.22: wer eine Übung geprüft hat, steht dabei und im Export. */
+    await w.trainingTabellen(env2);
+    env2.DB.roh.prepare("INSERT INTO uebung (wissen_id, frage, antwort, status, erstellt) VALUES (1, 'testfrage claude', 'testantwort', 'neu', 1)").run();
+    const uid = env2.DB.roh.prepare("SELECT id FROM uebung WHERE frage = 'testfrage claude'").get().id;
+    const ur = await (await post('/api/uebung/urteil', { id: uid, gut: true, von: 'Claude (für Semih)' }, { 'x-admin-key': 'admin' })).json();
+    pruefe(ur.ok && env2.DB.roh.prepare('SELECT geprueft_von FROM uebung WHERE id = ?').get(uid).geprueft_von === 'Claude (für Semih)', 'Übung: „geprüft von" wird gespeichert');
+    const ex2 = await (await w.default.fetch(new Request('https://x.test/api/training/export', { headers: { 'x-admin-key': 'admin' } }), env2, {})).text();
+    pruefe(/"geprueft_von":"Claude \(für Semih\)"/.test(ex2), 'Export nennt, wer geprüft hat');
 
     /* ── 2.19: gpt-oss zuerst, App-Lage im Gespräch, Grundlage ── */
     {
@@ -398,7 +410,77 @@ function ki(antworten) {
       const a4 = await frag('noch eine frage zum training');
       pruefe(eingaben[0] && eingaben[0].modell === w.MODELL_ANTWORT && eingaben[0].reasoning && eingaben[0].reasoning.effort === 'low', 'gpt-oss wird mit „low" gefragt');
       pruefe(eingaben[1] && eingaben[1].modell === w.MODELL_ANTWORT && !eingaben[1].reasoning && /Ohne reasoning/.test(a4.antwort), 'lehnt es den Parameter ab: dieselbe Frage ohne ihn, nicht gleich das schwächere Modell');
+
+      /* 2.23: freigegebene Übungen gehen als geprüfte Beispiele mit.
+         Aus dem Betrieb (23.10.2026): die 500 Trainingsfragen — „Ja" zur
+         Empfehlung, die freigegebenen Paare direkt in den Antworten zu nutzen. */
+      const ins = env2.DB.roh.prepare("INSERT INTO uebung (wissen_id, frage, antwort, status, erstellt) VALUES (?, ?, ?, ?, 1)");
+      ins.run(weste, 'Wie wasche ich die Westen richtig?', 'Schonprogramm, wenig Hitze, 3–4 Kappen Pflegespüler – Beispielantwort GUT.', 'gut');
+      ins.run(weste, 'Wie wasche ich die Westen nochmal?', 'NOCH NICHT GEPRÜFT – darf nicht mit.', 'neu');
+      ins.run(weste, 'Westen falsch gewaschen?', 'VERWORFEN – darf nicht mit.', 'verworfen');
+      ins.run(weste, 'Wer macht den Dienstplan?', 'PASST NICHT – kein gemeinsames Wort.', 'gut');
+      const bsp = [];
+      env2.AI.run = async (modell, e) => {
+        if (/bge-m3/.test(modell)) return { data: e.text.map(fake) };
+        bsp.push(JSON.stringify(e.messages || ''));
+        return { response: JSON.stringify({ antwort: 'Schonprogramm.', art: 'frage', grundlage: 'wissen', abgedeckt: true, quellen: [weste] }) };
+      };
+      await frag('Wie wasche ich die Westen?');
+      pruefe(/GEPRÜFTE BEISPIELE/.test(bsp[0] || '') && /Beispielantwort GUT/.test(bsp[0]), 'freigegebene Übung steht als geprüftes Beispiel im Gespräch mit der KI');
+      pruefe(!/NOCH NICHT GEPRÜFT|VERWORFEN/.test(bsp[0] || ''), 'ungeprüfte und verworfene Übungen gehen nicht mit');
+      pruefe(!/PASST NICHT/.test(bsp[0] || ''), 'Gegenprobe: ein freigegebenes Paar ohne gemeinsames Wort bleibt draussen');
+      bsp.length = 0;
+      await frag('Wer hat heute Dienst in Hürth?');
+      pruefe(bsp[0] !== undefined && !/Beispielantwort GUT/.test(bsp[0]), 'Gegenprobe: zu einer fremden Frage kein Westen-Beispiel');
+      const pr = await (await w.default.fetch(new Request('https://x.test/api/probe', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': 'admin' }, body: JSON.stringify({ frage: 'Wie wasche ich die Westen?' }) }), env2, { waitUntil() {} })).json();
+      pruefe(Array.isArray(pr.beispiele) && pr.beispiele.includes('Wie wasche ich die Westen richtig?'), 'Probe im Leitstand zeigt, welche Beispiele mitgingen');
+
+      /* 2.24 Notbremse. Aus dem Betrieb (23.10.2026): „können wir die
+         tageskontigenten nicht erhöhen irgendwie ?" → „Gratis + Notbremse". */
+      const tag = w.heuteUtc();
+      const setze = n => env2.DB.roh.prepare("INSERT INTO verbrauch (tag, neuronen, aufrufe) VALUES (?, ?, 0) ON CONFLICT(tag) DO UPDATE SET neuronen = excluded.neuronen").run(tag, n);
+      const stand = () => env2.DB.roh.prepare("SELECT neuronen FROM verbrauch WHERE tag = ?").get(tag).neuronen;
+      setze(0);
+      const modelle = [];
+      env2.AI.run = async (modell, e) => {
+        if (/bge-m3/.test(modell)) return { data: e.text.map(fake) };
+        modelle.push({ modell, text: JSON.stringify(e.messages || '') });
+        return { response: JSON.stringify({ antwort: 'Schonprogramm.', art: 'frage', grundlage: 'wissen', abgedeckt: true, quellen: [weste] }), usage: { prompt_tokens: 8000, completion_tokens: 500 } };
+      };
+      await frag('Wie wasche ich die Westen?');
+      const nachEiner = stand();
+      pruefe(modelle[0].modell === w.MODELL_ANTWORT && nachEiner > 280 && nachEiner < 320, 'normal: gpt-oss, und die Antwort wird gebucht (' + Math.round(nachEiner) + ' Neuronen für 8000 + 500 Tokens, erwartet ≈ 289)');
+      setze(7000); modelle.length = 0;
+      const sp = await frag('Wie wasche ich die Westen?');
+      pruefe(modelle.length === 1 && modelle[0].modell !== w.MODELL_ANTWORT && /gemma/.test(modelle[0].modell) && /Schonprogramm/.test(sp.antwort), 'ab 6.000: Sparmodus mit Gemma, kein gpt-oss (' + modelle.map(x => x.modell).join(', ') + ')');
+      setze(9500); modelle.length = 0;
+      const st = await frag('Wie wasche ich die Westen?');
+      pruefe(modelle.length === 0 && /spare heute/.test(st.antwort) && /Schonprogramm|Pflegespüler/.test(st.antwort) && !st.offenId, 'ab 9.200: keine KI, Antwort aus dem Wissen');
+      const offenVor2 = env2.DB.roh.prepare("SELECT COUNT(*) AS n FROM offen").get().n;
+      const st2 = await frag('Xylophon Quartett Zeppelin');
+      pruefe(modelle.length === 0 && st2.offenId && env2.DB.roh.prepare("SELECT COUNT(*) AS n FROM offen").get().n === offenVor2 + 1, 'ab 9.200 ohne passendes Wissen: keine KI, kein fremder Eintrag, die Frage wird gespeichert');
+      const ll = await w.lernlauf(w.mitZaehler(env2));
+      pruefe(ll.gespart && modelle.length === 0, 'kein Lernlauf, solange gespart wird');
+      setze(0);
+      env2.AI.run = async (modell, e) => { if (/bge-m3/.test(modell)) return { data: e.text.map(fake) }; throw new Error('4006: you have used up your daily free allocation of 10,000 neurons'); };
+      await frag('Wie wasche ich die Westen?');
+      pruefe(stand() >= w.KONTINGENT, 'meldet Cloudflare „aufgebraucht", steht der Zähler auf dem Kontingent (' + stand() + ')');
+      const sta = await (await w.default.fetch(new Request('https://x.test/api/statistik', { headers: { 'x-admin-key': 'admin' } }), env2, { waitUntil() {} })).json();
+      pruefe(sta.verbrauch && sta.verbrauch.stufe === 'stopp' && sta.verbrauch.kontingent === 10000, 'Statistik zeigt Verbrauch und Stufe (' + JSON.stringify(sta.verbrauch) + ')');
+      setze(0);
       env2.AI.run = altRun; global.fetch = altFetch3;
+    }
+    {
+      const viele = Array.from({ length: 6 }, (_, i) => ({ frage: 'Wie wasche ich die Westen ' + i + '?', antwort: 'a' + i }));
+      const gew = w.vorbilderWaehlen('Wie wasche ich die Westen?', viele.concat([{ frage: 'Wie wasche ich die Westen 0?', antwort: 'doppelt' }]));
+      pruefe(gew.length === w.MAX_VORBILDER && new Set(gew.map(x => x.frage)).size === gew.length, 'höchstens ' + w.MAX_VORBILDER + ' Beispiele, keine doppelte Frage');
+      pruefe(w.vorbilderWaehlen('', viele).length === 0 && w.vorbilderWaehlen('Wie wasche?', []).length === 0, 'leere Frage oder keine Paare: keine Beispiele');
+      pruefe(w.vorbilderText([{ frage: 'F1', antwort: 'x'.repeat(2000) }]).length < 800, 'ein langes Beispiel wird gekürzt');
+      pruefe(w.stufeVon(5999, {}) === 'normal' && w.stufeVon(6000, {}) === 'spar' && w.stufeVon(9200, {}) === 'stopp' && w.stufeVon(100, { NEURONEN_SPAR: '50' }) === 'spar', 'Stufen: 6.000 Sparmodus, 9.200 Notbremse, per Variable einstellbar');
+      pruefe(Math.round(w.neuronenSchaetzen('@cf/google/gemma-4-26b-a4b-it', {}, { usage: { prompt_tokens: 8000, completion_tokens: 500 } })) === 86, 'Gemma kostet für dieselbe Frage etwa ein Drittel (86 statt ≈ 289)');
+      pruefe(w.neuronenSchaetzen('@cf/openai/gpt-oss-120b', { messages: [{ content: 'x'.repeat(3500) }] }, { response: 'y'.repeat(350) }) > 30, 'ohne usage wird aus der Textlänge geschätzt');
+      pruefe(w.wissenPassend('Wie wasche ich die Westen?', [{ thema: 'Dusche', inhalt: 'Abfluss' }, { thema: 'Westen', inhalt: 'Schonprogramm' }]).thema === 'Westen' && !w.wissenPassend('Xylophon Zeppelin', [{ thema: 'Westen', inhalt: 'waschen' }]), 'Notbremse nimmt nur einen Eintrag mit gemeinsamem Suchwort');
+      pruefe(w.sparWissen(Array.from({ length: 8 }, (_, i) => ({ thema: 't' + i, inhalt: 'x'.repeat(2000) }))).length === 2 && w.sparWissen([{ thema: 'a', inhalt: 'x'.repeat(9000) }]).length === 1, 'Sparmodus: höchstens 4 Einträge und 5.000 Zeichen, ein langer Eintrag bleibt');
     }
 
     /* ── 2.16 Sammelfreigabe: „ja sind zu viele klicks" ── */
@@ -441,8 +523,12 @@ function ki(antworten) {
           route.fulfill({ status: antwort.status, headers: Object.fromEntries(antwort.headers), body: Buffer.from(await antwort.arrayBuffer()) });
         });
         await pg.addInitScript(() => { try { sessionStorage.setItem('sg-key', 'admin'); } catch (e) {} });
+        const seitenFehler = []; pg.on('pageerror', e => seitenFehler.push(e.message));
         await pg.goto('https://leitstand.test/leitstand');
         await pg.waitForTimeout(500);
+        /* 2.24: Übersicht zeigt das Kontingent */
+        const kk = await pg.waitForFunction(() => /KI-Kontingent heute/.test(document.body.innerText) && /von 10\.000 Neuronen/.test(document.body.innerText), null, { timeout: 5000 }).then(() => true).catch(() => false);
+        pruefe(kk && !seitenFehler.length, 'Leitstand-Übersicht zeigt „KI-Kontingent heute" ohne Skriptfehler' + (seitenFehler.length ? ' (' + seitenFehler.join(' | ') + ')' : ''));
         await pg.evaluate(() => { tab = 'vorschlaege'; start(); });
         await pg.waitForFunction(() => [...document.querySelectorAll('button')].some(b => /Knopftest/.test(b.textContent)), null, { timeout: 5000 });
         /* Ein fester Griff, kein Locator nach Text: der Text ändert sich beim

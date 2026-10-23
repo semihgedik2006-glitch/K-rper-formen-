@@ -1607,6 +1607,95 @@ const TAG = 86400000;
     }
   }
 
+  /* ══ Formi meldet sich selbst (Etappe 3, Runde 235) ══
+     Aus dem Betrieb (23.10.2026), Rückfragen zu Etappe 3: melden bei
+     „Morgens: dein Tag, Fällig & überfällig, Fehlendes Material/Defekt,
+     Schichtende-Check" — „So oft wie nötig". Zugestellt wird hier nichts;
+     abgefangen wird, an WELCHE Geräte es ginge und was drinsteht. */
+  {
+    const gesendet = [];
+    Object.defineProperty(admin, 'messaging', { configurable: true, writable: true,
+      value: () => ({ sendEachForMulticast: async (m) => {
+        gesendet.push(m); return { responses: m.tokens.map(() => ({ success: true })) }; } }) });
+    const sk = 's-formi';
+    const F = db.collection('firmen').doc('alpha');
+    const geraete = {
+      fLea:   { uid: 'fLea',   role: 'mitarbeiter', notify: { formi: true } },
+      fLeise: { uid: 'fLeise', role: 'mitarbeiter', notify: { formi: false } },
+      fFrei:  { uid: 'fFrei',  role: 'mitarbeiter', notify: {} },
+      fLeit:  { uid: 'fLeit',  role: 'leiter',      notify: {} },
+      fChef:  { uid: 'fChef',  role: 'chef',        notify: {}, studioKeys: [] },
+      fFremd: { uid: 'fFremd', role: 'leiter',      notify: {}, studioKeys: ['anderes'] },
+    };
+    const an = () => gesendet.flatMap((m) => m.tokens).sort();
+    try {
+      await db.doc('firmen/alpha').set({ name: 'Alpha', aktiv: true }, { merge: true });
+      await F.collection('config').doc('features').set({ todos: true, putzplan: true });
+      await F.collection('studios').doc(sk).set({ name: 'Hürth' });
+      for (const [id, g] of Object.entries(geraete)) {
+        await db.doc('pushTokens/tok-' + id).set({ uid: g.uid, firma: 'alpha', role: g.role, studioKeys: g.studioKeys || [sk], notify: g.notify });
+      }
+      const jetzt = Date.now();
+      const heute = new Date(jetzt).toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' });
+      const uhr = (ms) => new Date(ms).toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin', hour: '2-digit', minute: '2-digit' });
+      const S = F.collection('studios').doc(sk);
+      /* Lea und Leise haben heute Dienst; Lea endet vor 5 Minuten. */
+      await S.collection('shifts').doc('a').set({ date: heute, from: '00:00', to: uhr(jetzt - 5 * 60000), uid: 'fLea', name: 'Lea Test' });
+      await S.collection('shifts').doc('b').set({ date: heute, from: '00:00', to: '23:59', uid: 'fLeise', name: 'Leise Test' });
+      await S.collection('todos').doc('t1').set({ title: 'Briefkasten leeren', done: false, due: jetzt - 10 * 60000 });
+      await S.collection('todos').doc('t2').set({ title: 'Erledigt', done: true, due: jetzt - 10 * 60000 });
+      await S.collection('todos').doc('t3').set({ title: 'Später', done: false, due: jetzt + 60000 });
+      await S.collection('cleaning').doc('p1').set({ title: 'Spiegel', done: false });
+
+      await fns.formiMorgen.run({});
+      const m1 = (gesendet[0] || { data: {} }).data;
+      pruefe('FORMI MORGEN · genau ein Gerät: wer heute Dienst hat und Formi-Meldungen an (nicht abgeschaltet, nicht ohne Dienst)',
+        JSON.stringify(an()) === '["tok-fLea"]', JSON.stringify(an()));
+      pruefe('FORMI MORGEN · „dein Tag" mit Dienst, Überfälligem, heute Fälligem und Putzpunkten',
+        /dein Tag/.test(m1.title || '') && /Dienst 00:00–.* in Hürth/.test(m1.body || '') && /1 Aufgabe ist überfällig/.test(m1.body || '') &&
+        /1 Aufgabe ist heute fällig/.test(m1.body || '') && /1 Putzpunkte offen/.test(m1.body || ''), JSON.stringify(m1));
+      gesendet.length = 0;
+
+      /* Jetzt kommt Frei in den Dienst; Leas Schicht ist schon vorbei. */
+      await S.collection('shifts').doc('c').set({ date: heute, from: '00:00', to: '23:59', uid: 'fFrei', name: 'Frei Test' });
+      await fns.formiFaellig.run({});
+      pruefe('FORMI FRIST · die gerade verstrichene Frist geht an die, die JETZT Dienst haben (Frei) — nicht an Lea (Schicht vorbei), nicht an Leise (aus)',
+        JSON.stringify(an()) === '["tok-fFrei"]' && /Briefkasten leeren ist noch offen/.test((gesendet[0] || { data: {} }).data.body || ''), JSON.stringify(gesendet.map(m => [m.tokens, m.data])));
+      gesendet.length = 0;
+
+      await fns.formiSchichtende.run({});
+      const m3 = (gesendet[0] || { data: {} }).data;
+      pruefe('FORMI SCHICHTENDE · Lea (Schicht vor 5 Min. zu Ende): Übergabe fehlt, 1 Putzpunkt offen',
+        JSON.stringify(an()) === '["tok-fLea"]' && /Übergabe noch nicht geschrieben · 1 Putzpunkt offen/.test(m3.body || ''), JSON.stringify(m3));
+      gesendet.length = 0;
+      await S.collection('handovers').doc('h1').set({ text: 'Alles gut', uid: 'fLea', ts: jetzt });
+      await S.collection('cleaning').doc('p1').set({ title: 'Spiegel', done: true, doneAt: jetzt });
+      await fns.formiSchichtende.run({});
+      pruefe('FORMI SCHICHTENDE · Übergabe geschrieben, Putzplan durch → keine Meldung', gesendet.length === 0, JSON.stringify(gesendet.map(m => m.data)));
+
+      await fns.formiDefektF.run({ data: () => ({ art: 'defekt', devName: 'Gerät 2', text: 'piept dreimal', by: 'Leit Test', byUid: 'fLeit' }) },
+        { params: { firma: 'alpha', studioKey: sk, logId: 'x' } });
+      pruefe('FORMI DEFEKT · an den Chef — nicht an Mitarbeiter, nicht an fremde Leitung, nicht an den, der meldet',
+        JSON.stringify(an()) === '["tok-fChef"]' && /Gerät 2: piept dreimal/.test((gesendet[0] || { data: {} }).data.body || ''), JSON.stringify(an()));
+      gesendet.length = 0;
+      await fns.formiDefektF.run({ data: () => ({ art: 'behoben', devName: 'Gerät 2' }) }, { params: { firma: 'alpha', studioKey: sk, logId: 'y' } });
+      pruefe('FORMI DEFEKT · „behoben" meldet nichts', gesendet.length === 0);
+
+      const doc = (items) => ({ exists: true, data: () => ({ items }) });
+      await fns.formiMaterialF.run({ before: doc([{ name: 'Westen M', limit: 5, have: 5 }]), after: doc([{ name: 'Westen M', limit: 5, have: 2 }]) },
+        { params: { firma: 'alpha', studioKey: sk } });
+      pruefe('FORMI MATERIAL · Westen M fehlen jetzt 3 → Leitung des Studios und Chef',
+        JSON.stringify(an()) === '["tok-fChef","tok-fLeit"]' && /Westen M \(3\)/.test((gesendet[0] || { data: {} }).data.body || ''), JSON.stringify(an()));
+      gesendet.length = 0;
+      await fns.formiMaterialF.run({ before: doc([{ name: 'Westen M', limit: 5, have: 2 }]), after: doc([{ name: 'Westen M', limit: 5, have: 4 }]) },
+        { params: { firma: 'alpha', studioKey: sk } });
+      pruefe('FORMI MATERIAL · aufgefüllt → keine Meldung', gesendet.length === 0);
+    } finally {
+      delete admin.messaging;
+      for (const id of Object.keys(geraete)) await db.doc('pushTokens/tok-' + id).delete();
+    }
+  }
+
   console.log('\n══ Cloud Functions gegen den Emulator ══');
   protokoll.forEach(z => console.log(z));
   console.log('\n  ' + bestanden + ' bestanden, ' + gefallen + ' gefallen');
