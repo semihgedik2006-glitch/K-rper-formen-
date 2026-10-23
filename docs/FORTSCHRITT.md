@@ -21017,3 +21017,80 @@ an)
 **Nicht geprüft**
 - Ob die Meldungen auf einem echten Handy ankommen.
 - Wie die echte KI die neuen Sätze einordnet.
+
+## Runde 236 — Formi als echtes schwarzes Loch (Etappe 3) (23.10.2026)
+
+**Aus dem Betrieb:** „ich möchte noch das er vlt irgendwie noch extra
+schwarze loch eigenschaften hat und so gib mir dafür auch noch ideen“.
+Zu den zehn Ideen kam „alles davon“.
+
+**Gebaut:**
+1. **Sog am Ereignishorizont** (`formiSchlucken`, hängt an `burstAt`, also
+   an jedem Haken in Aufgaben und Putzplan): Der Titel des abgehakten
+   Punkts löst sich als Schriftzug und fällt in einer enger werdenden
+   Spirale zu Formi. Dabei wird er in der Länge gezogen und in der Höhe
+   gestaucht („Spaghettifizierung“, am Ende scaleX 3,2 / scaleY 0,1),
+   dann ist er weg und die Kugel saugt (Welle `sog`). Genommen wird nur
+   der Text des Titels selbst, ohne Abzeichen wie „überfällig“ oder
+   „1/3“.
+2. **Photonenring:** ein dünner, heller Lichtring direkt am Rand des
+   Lochs (Kugel und grosse Figur im Fenster).
+3. **Hawking-Strahlung:** gehört jetzt zum Eigenleben. Vier winzige
+   Teilchen entweichen vom Rand, erst zögernd, dann schneller.
+4. **Jets:** Beim grossen Jubel (`feiert`, zum Beispiel wenn der
+   Putzplan für heute fertig ist) schiesst Formi zwei Lichtstrahlen
+   senkrecht zur Scheibe.
+5. **Doppler-Leuchten:** gab es schon (Runde 226, die linke Seite der
+   Scheibe ist heller).
+6. **Gezeitenkräfte:** Kommt die Maus nah, wird Formi bis 4 px zu ihr
+   hingezogen und lässt los, wenn sie geht. Das läuft über die eigene
+   Eigenschaft `translate`, damit es sich nicht mit den Gefühlen auf
+   `transform` schlägt.
+7. **Gravitationswelle:** Beim Jubel läuft ein dünner Ring von Formi aus
+   durch die ganze App (Welle `grav`, 1,4 s).
+8. **Wurmloch:** Öffnet Formi eine Seite (`gehirnOeffne`), kommt sie
+   klein und gedreht aus seinem Loch und wächst auf.
+9. **Zeitdehnung:** Der Funke, den Formi fängt, kriecht kurz vor dem
+   Loch (langsames Ende, 2,6 s statt 2,2 s).
+10. **Masse:** Je mehr heute auf diesem Gerät abgehakt ist (ab 3, 8 und
+    15), desto heller und weiter strahlt Formi. Gezählt wird je Tag in
+    `kf_formi_masse`.
+
+**Entschieden und warum:**
+- *Sterne im App-Hintergrund nicht verbiegen.* Der Sternenhimmel ist ein
+  Hintergrundbild am `<body>`. Ihn um die Kugel zu krümmen hiesse, die
+  ganze Seite in jedem Bild neu zu malen. Der Photonenring zeigt
+  dasselbe Bild, die Lichtablenkung, und kostet nichts.
+- *Karten kippen beim Scrollen nicht zu Formi.* Das wäre Messen in jedem
+  Bild für jede Karte. Die Gezeiten wirken nur an Formi selbst.
+- Alles ist endlich, nur `transform`/`opacity` (Gezeiten: `translate`),
+  nicht klickbar und aus bei „weniger Bewegung“ und „Gefühle aus“.
+
+**Geprüft:**
+- `tests/test-formi-loch.js` (neu, 23 Zusicherungen, 1440 und 390 px):
+  - Sog: Ziel an der Kugel, scaleX > 2, am Ende weg, danach Sog
+  - Photonenring
+  - Hawking-Strahlung
+  - Jets und Gravitationswelle, danach ist alles weg
+  - Gezeiten: zieht hin und lässt los
+  - Wurmloch
+  - Masse-Stufen 0 bis 3
+  - Zeitdehnung
+  - „weniger Bewegung“
+- Grün vor dem Zusammenführen mit `main`: test-knoepfe,
+  test-gestaltung, test-abgeschnitten, test-quer, alle test-formi-*
+  (ausser -verdeckt), test-stil-formi, test-gehirn, test-uebersicht,
+  test-tagesgruss, test-neuigkeiten, test-block8, test-mitarbeiter,
+  test-csp.
+- Grün nach dem Zusammenführen (Runden 233 und 235 von `main`): test-csp,
+  test-neuigkeiten, test-formi-loch, -eigenleben, -app, -lebt, -physik,
+  test-gehirn, test-knoepfe, test-gestaltung.
+- Zwei Funde im eigenen Durchlauf, im Code behoben:
+  - Der Schriftzug nahm das ganze Titelelement mit Abzeichen
+    („überfällig1/3“). Jetzt nimmt er nur den Text.
+  - Er zielte mit der Breite der Zeile statt mit seiner eigenen und
+    landete 100 px neben der Kugel. Jetzt wird seine eigene Breite
+    einmal gelesen, bevor etwas animiert wird.
+
+**Nicht geprüft:** echte Handys und die Arbeit je Bild beim Sog (ein
+Element, 1,1 s, nur `transform`/`opacity`).
