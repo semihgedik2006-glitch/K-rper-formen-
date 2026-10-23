@@ -134,7 +134,7 @@ async function seite(b, stub, such, breite) {
        Nachrichten.
        Runde 222 (#281), aus dem Betrieb, 23.10.2026, auf „wohin mit den
        Zeiten?": „eigener knopf". Seitdem sechs: „Zeiten" direkt hinter
-       „Studio" (gestempelt wird jeden Tag). Nachgezogen in Runde 226 –
+       „Studio" (gestempelt wird jeden Tag). Nachgezogen in Runde 228 –
        #281 hatte test-navigation und test-p5-leiste angepasst, diesen
        Durchlauf nicht. */
     pruefe('unten stehen sechs Knöpfe', neu.reihe.length === 6, JSON.stringify(neu.reihe));
