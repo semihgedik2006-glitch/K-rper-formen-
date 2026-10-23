@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-+0DSfoeExKNFxFXXMHiJfiH6dhquaZAzZObO/gBjEd0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-cgnz2X6g5OM/CAtQuH/XpYKQvECtl+v0eyIziYc53LA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -12100,14 +12100,13 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             </div>
             <div class="vw-spalte vw-neben">
           <div data-vw="3" class="card" data-chef-only="1">
-            <h3 data-ikon="kontrast">Neues Design</h3>
-            <p class="hint">Probier es erst auf deinem Gerät aus. Erst wenn es
-              passt, veröffentlichst du es für alle — mit einem Klick, und
-              genauso zurück.</p>
+            <h3 data-ikon="kontrast">Design</h3>
+            <p class="hint">Seit dem 23.10.2026 sehen alle das neue Design.
+              Für eine Übergangszeit kann jede Person auf ihrem eigenen Gerät
+              zum bisherigen zurück.</p>
             <div id="designStand" class="setup-zeile" style="display:block"></div>
             <div class="btn-row" style="margin-top:12px">
               <button class="btn btn-ghost btn-sm" id="designGeraet">Auf diesem Gerät ausprobieren</button>
-              <button class="btn btn-primary btn-sm" id="designVeroeff">Für alle veröffentlichen</button>
             </div>
             <details class="nachfrage">
               <summary>Was ändert sich?</summary>
@@ -14100,7 +14099,7 @@ function applyPrefs(){
 (function initTheme(){
   loadPrefs(); applyPrefs();
   /* Vor allem anderen: Adresse, Gerät und Demo kennen die Antwort ohne
-     Datenbank. Später kommt der Firmenschalter dazu (designLaden). */
+     Datenbank. */
   designAnwenden();
   // Wenn „auto" gewählt ist, auf Systemwechsel reagieren
   try{
@@ -17172,24 +17171,16 @@ function featuresAnwenden(){
    heute im Studio läuft — kein neues CSS greift, kein neuer Zweig in
    der Navigation.
 
-   Vier Quellen, in dieser Reihenfolge. Die erste, die etwas sagt,
+   Drei Quellen, in dieser Reihenfolge. Die erste, die etwas sagt,
    gewinnt:
 
      1. ?neu=1 / ?neu=0 in der Adresse — zum Vergleichen nebeneinander,
         in zwei Tabs. Überschreibt alles andere.
-     2. Dieses Gerät (localStorage) — „für mich ausprobieren". Geht
-        niemanden sonst etwas an und überlebt kein anderes Handy.
-     3. Demo-Modus — dort IMMER an. Die Demo ist die Vorschau; sie hat
-        keine echten Nutzer, die etwas verlieren könnten.
-     4. config/design.neu — der eine Klick für alle. Chef schreibt,
-        alle lesen (firestore.rules: match /config/{doc}).
-
-   Warum der Firmen-Schalter nicht einfach in config/features liegt:
-   featuresSetzen() kopiert ausschliesslich bekannte FEATURES-Ids und
-   würde den Schlüssel stillschweigend wegwerfen. Ein eigener Doc ist
-   billiger als eine Ausnahme in einer Schleife, die davon nichts weiss. */
-var _designNeu = false;        // firmenweit veröffentlicht?
-var _designUnsub = null;
+     2. Dieses Gerät (localStorage) — „auf diesem Gerät zurück zum
+        bisherigen". Geht niemanden sonst etwas an.
+     3. Sonst: neu. Bis Runde 230 stand hier noch der Firmenschalter
+        config/design.neu („für alle veröffentlichen"); seit dem
+        23.10.2026 ist das neue Design für alle der Standard. */
 
 function designUrl(){
   var m=/[?&]neu=([01])/.exec(location.search);
@@ -17215,8 +17206,13 @@ function imDemo(){ return /[?&]demo(=|&|$)/.test(location.search); }
 function layoutNeu(){
   var u=designUrl();       if(u!==null) return u;
   var g=designGeraet();    if(g!==null) return g;
-  if(imDemo()) return true;
-  return !!_designNeu;
+  /* Runde 230, aus dem Betrieb, 23.10.2026: „spiel das neue design für
+     alle einfach aus, ist leichter". Seitdem ist neu der Standard für
+     jede Firma; der Firmenschalter (config/design) ist weg. Als
+     Übergang bleiben Adresse (?neu=0) und Gerät („Auf diesem Gerät
+     zurück zum bisherigen") – entfernt wird das Bisherige erst, wenn
+     es niemand mehr braucht. */
+  return true;
 }
 
 /* Umschalten heisst: Klasse setzen und alles neu zeichnen, was seine
@@ -17254,36 +17250,6 @@ function designAnwenden(){
   designSchalterZeigen();
 }
 
-function designLaden(){
-  /* try/catch um den AUFRUF, nicht nur .catch um das Versprechen: bricht
-     S() oder .doc() selbst ab, fliegt der Fehler synchron — und das
-     Promise.all beim Start würde mit ihm platzen, statt die App zu
-     zeigen. Eine App, die wegen eines Design-Schalters gar nicht erst
-     startet, wäre der teuerste denkbare Fehler an dieser Stelle. */
-  var p;
-  try{ p = S('config').doc('design').get(); }
-  catch(e){ console.warn('Design nicht lesbar:', e.message); return Promise.resolve(); }
-  return p
-    .then(function(doc){ _designNeu = !!(doc.exists && doc.data() && doc.data().neu); })
-    .catch(function(e){
-      /* Nicht lesbar heisst: beim Alten bleiben. Von den beiden
-         möglichen Fehlern ist das der harmlose — niemand bekommt
-         wegen eines Netzfehlers eine App, die er nicht kennt. */
-      console.warn('Design nicht lesbar:', e.message);
-    });
-}
-function listenDesign(){
-  if(_designUnsub) return;
-  try{
-    _designUnsub = S('config').doc('design').onSnapshot(function(doc){
-      var neu = !!(doc.exists && doc.data() && doc.data().neu);
-      if(neu===_designNeu) return;
-      _designNeu = neu;
-      designAnwenden();
-    }, function(e){ console.warn('Design:', e.message); });
-  }catch(e){ console.warn('Design:', e.message); }
-}
-
 /* Zeigt, was diese Person gerade sieht und woher das kommt. Ohne die
    Herkunft ist der Schalter nicht zu bedienen: wer auf dem Gerät „aus"
    gestellt hat und dann für alle veröffentlicht, sähe nichts und würde
@@ -17292,16 +17258,12 @@ function designSchalterZeigen(){
   var box=$('designStand'); if(!box) return;
   var g=designGeraet(), u=designUrl();
   var quelle = u!==null ? 'die Adresse (?neu=' + (u?'1':'0') + ')'
-    : (g!==null ? 'deine Einstellung auf diesem Gerät'
-    : (imDemo() ? 'den Demo-Modus' : (_designNeu ? 'die Veröffentlichung für alle' : 'die Voreinstellung')));
+    : (g!==null ? 'deine Einstellung auf diesem Gerät' : 'die Voreinstellung für alle');
   box.innerHTML =
     '<b>Du siehst gerade: '+(layoutNeu()?'das neue':'das bisherige')+' Design.</b>'+
-    '<br><span class="hint">Entschieden durch '+esc(quelle)+'.</span>'+
-    '<br><span class="hint">Für alle im Betrieb: <b>'+(_designNeu?'neu':'bisher')+'</b>.</span>';
+    '<br><span class="hint">Entschieden durch '+esc(quelle)+'.</span>';
   var k=$('designGeraet');
-  if(k) k.textContent = layoutNeu() ? 'Auf diesem Gerät zurück zum bisherigen' : 'Auf diesem Gerät ausprobieren';
-  var v=$('designVeroeff');
-  if(v) v.textContent = _designNeu ? 'Für alle zurücknehmen' : 'Für alle veröffentlichen';
+  if(k) k.textContent = layoutNeu() ? 'Auf diesem Gerät zurück zum bisherigen' : 'Auf diesem Gerät wieder das neue';
 }
 
 function designGeraetUmschalten(btn){
@@ -17508,29 +17470,6 @@ function kasseRueckweg(){
      Sekunden. Findet er es nicht, sorgt der Zuhörer auf config/zugriff
      dafür, dass es trotzdem ankommt — ohne Neuladen. */
   setTimeout(function(){ aboLaden().then(renderAboKarte); }, 4000);
-}
-
-function designVeroeffentlichen(btn){
-  var an = !_designNeu;
-  var frage = an
-    ? 'Das neue Design für ALLE im Betrieb einschalten?\n\n'+
-      'Jeder sieht es beim nächsten Öffnen — und sofort, wenn die App gerade offen ist. '+
-      'Du kannst es mit demselben Knopf wieder zurücknehmen.'
-    : 'Das neue Design für alle wieder zurücknehmen?\n\n'+
-      'Alle sehen dann wieder die bisherige Ansicht.';
-  if(!confirm(frage)) return;
-  withBusy(btn, function(){
-    return S('config').doc('design').set({ neu:an, ts:Date.now(), von:session?session.uid:'' }, {merge:true})
-      .then(function(){
-        _designNeu=an;
-        /* Der eigene Geräteschalter würde die Veröffentlichung sonst
-           überstimmen — dann drückt der Chef „für alle" und bei sich
-           ändert sich nichts. Also fällt er hier weg. */
-        designGeraetSetzen(null);
-        toast(an ? 'Neues Design ist für alle veröffentlicht.' : 'Zurückgenommen — alle sehen wieder das Bisherige.');
-      })
-      .catch(function(e){ fnFehler(e); });
-  });
 }
 
 /* Zeigt, was die Funktion zurueckgemeldet hat — Zahlen, keine Zusagen. */
@@ -20759,14 +20698,10 @@ function enterApp(uid, data){
      da, und das ist die harmlosere Richtung. */
   /* Farbe mit VOR showApp: sonst baut sich die App einmal in
      Himmelblau auf und springt dann um. */
-  /* designLaden gehört in dieselbe Runde: baut sich die Navigation
-     einmal im alten Schnitt auf und springt dann um, sieht das aus wie
-     ein Fehler — derselbe Grund, aus dem Abo und Funktionen hier
-     stehen. */
   /* zugriffLaden gehört aus demselben Grund in diese Runde: eine App,
      die erst offen aussieht und eine Sekunde später die Sperrleiste
      aufklappt, sieht nach einem Fehler aus. */
-  Promise.all([aboLaden(), featuresLaden(), markeLaden(), designLaden(),
+  Promise.all([aboLaden(), featuresLaden(), markeLaden(),
                zugriffLaden()]).then(showApp, showApp);
 }
 
@@ -21022,12 +20957,8 @@ function showApp(){
     var b = document.querySelector('#chefHome [data-cgo="system"]');
     if(b) b.click();
   });
-  /* Jetzt steht die Anmeldung — die Navigation kann gebaut werden, und
-     der Firmenschalter aus designLaden() ist da. Beobachten heisst
-     hier: der Chef drückt „für alle veröffentlichen", und auf den
-     Tablets im Studio ändert sich die Ansicht, ohne dass jemand
-     neu lädt. */
-  designAnwenden(); listenDesign();
+  /* Jetzt steht die Anmeldung — die Navigation kann gebaut werden. */
+  designAnwenden();
   /* Jede Rolle: das Impressum steht in jedem Bildschirm unten und muss
      die Angaben DIESER Firma zeigen, nicht die aus konfig.js. */
   rechtLaden();
@@ -53037,8 +52968,6 @@ function bindActions(){
 
   var dg=$('designGeraet');
   if(dg) dg.addEventListener('click', function(){ designGeraetUmschalten(dg); });
-  var dv=$('designVeroeff');
-  if(dv) dv.addEventListener('click', function(){ designVeroeffentlichen(dv); });
 
   /* Verwaltung → Zeiten gehört auch der Studioleitung. Diese fünf Zeilen
      standen bis zum 1.10.2026 im Block darunter, der nur für die
