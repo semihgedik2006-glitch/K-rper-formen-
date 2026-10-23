@@ -53,7 +53,11 @@ async function zumPutzplan(b, rolle, w, h) {
      bestehen"; die Raumnamen „passen"): der Raum heisst „Studio", nicht
      mehr „Aufgaben". Aufgaben sind sein erster Reiter, der Putzplan
      sein zweiter (kein eigener Knopf mehr). */
-  await p.evaluate(() => { const n = [...document.querySelectorAll('.mobnav button, .side button')].find(x => /^\s*Studio/.test(x.textContent) && x.getClientRects().length); n.click(); });
+  /* Runde 241: Mitarbeiter haben keinen Raum „Studio" mehr — der
+     Putzplan liegt für sie in der Schublade „Alles". */
+  await p.evaluate(() => { const n = [...document.querySelectorAll('.mobnav button, .side button')].find(x => /^\s*Studio/.test(x.textContent) && x.getClientRects().length);
+    (n || { click: () => { document.getElementById('bereichKopf').click();
+      document.querySelector('#allesLade [data-alles="putzplan"]').click(); } }).click(); });
   await p.waitForTimeout(600);
   await p.evaluate(() => { const s = document.querySelector('[data-subview="putzplan"]'); if (s) s.click(); });
   await p.waitForTimeout(900);

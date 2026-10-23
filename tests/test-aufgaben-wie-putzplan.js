@@ -120,7 +120,11 @@ async function zuDenAufgaben(p) {
   /* Wie test-all: über die Gruppe „Arbeit", dann den Reiter. Ein
      Knopf, auf dem nur „Aufgaben" steht, kann auch „Meine Aufgaben"
      sein. */
-  await p.evaluate(() => { const g = document.querySelector('.mobnav [data-group="g-arbeit"]'); if (g) g.click(); });
+  /* Runde 241: Mitarbeiter haben keinen Raum „Studio" mehr — sie gehen
+     über die Schublade „Alles". */
+  await p.evaluate(() => (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => {
+    document.getElementById('bereichKopf').click();
+    document.querySelector('#allesLade [data-alles="todos"]').click(); } }).click());
   await p.waitForTimeout(450);
   await p.evaluate(() => { const s = document.querySelector('[data-subview="todos"]'); if (s) s.click(); });
   await p.waitForTimeout(600);
