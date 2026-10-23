@@ -86,7 +86,17 @@ function ki(antworten) {
   pruefe(/Du bist NICHT Semih/.test(sys), 'Systemtext: KI ist nicht der Fragende');
   pruefe(!/mit dem Vornamen/.test(sys), 'Systemtext: kein „Einstieg mit dem Vornamen" mehr');
   pruefe(/Aufgaben und Ankündigungen anlegen/.test(sys), 'Systemtext: kennt das Anlegen (stand vorher „kann ich nicht")');
-  pruefe(/NICHTS erfinden/.test(sys), 'Systemtext: nichts Internes erfinden');
+  /* 2.19 (23.10.2026, aus dem Betrieb: „er soll eher so wie chat gpt sein
+     nur mit dem wissen von uns" — und auf die Rückfrage: „nur soll er es
+     betonen wenn es nicht geprüft ist aber trotzdem antworten"). Vorher
+     hiess die Regel „NICHTS erfinden" und Formi sagte oft nur „weiss ich
+     nicht". Jetzt: immer antworten, Ungeprüftes kennzeichnen — konkrete
+     Preise, Nummern und Namen bleiben tabu. */
+  pruefe(/Nicht geprüft:/.test(sys) && /Erfinde trotzdem nie konkrete Preise, Telefonnummern/.test(sys), 'Systemtext: immer antworten, Ungeprüftes kennzeichnen, keine erfundenen Preise/Nummern');
+  pruefe(/APP-LAGE/.test(sys) && /"grundlage"/.test(sys) && /wie ChatGPT/.test(sys), 'Systemtext: App-Lage, Grundlage, frei wie ChatGPT');
+  pruefe(!w.brauchtPruefung({ art: 'frage', abgedeckt: false, grundlage: 'allgemein' }) && !w.brauchtPruefung({ art: 'frage', abgedeckt: false, grundlage: 'app' }) && w.brauchtPruefung({ art: 'frage', abgedeckt: false, grundlage: 'unsicher' }), 'Nur Ungeprüftes über unser Studio geht an Semih — Allgemeines und App-Lage nicht');
+  const kg = w.kiErgebnis({ antwort: 'x', art: 'frage', grundlage: 'erfunden', abgedeckt: false, quellen: [] }, '', []);
+  pruefe(kg.grundlage === 'unsicher', 'unbekannte Grundlage → „unsicher" (lieber an Semih als still)');
   /* 2.11, live am 22.10.2026: „was kannst du alles" kam aus einem alten
      Wissenseintrag („Abläufe, Geräte, Hygiene …"), und „wie lege ich eine
      Aufgabe an" lautete „Das Studio-Wissen sagt leider nichts …". */
@@ -342,6 +352,39 @@ function ki(antworten) {
     pruefe(Array.isArray(such.bedeutung) && such.bedeutung.length > 0 && typeof such.bedeutung[0].wert === 'number' && such.schwelle > 0 && such.ergebnis.some(x => x.id === weste), 'Suche-Diagnose: Wörter, Volltext, Ähnlichkeit ohne Schwelle, Ergebnis (' + JSON.stringify(such).slice(0, 160) + ')');
     const suchOhne = await w.default.fetch(new Request('https://x.test/api/suche?q=x', { headers: { 'x-studio-key': 'k' } }), env2, {});
     pruefe(suchOhne.status === 401, 'Suche-Diagnose nur im Leitstand');
+
+    /* ── 2.19: gpt-oss zuerst, App-Lage im Gespräch, Grundlage ── */
+    {
+      const altRun = env2.AI.run, gesehen = [];
+      const antworten = [{ antwort: 'Heute offen in Hürth: Briefkasten leeren (überfällig).', art: 'frage', grundlage: 'app', abgedeckt: false, quellen: [] },
+        { antwort: 'Für Kniebeugen: Rücken gerade, Knie über den Fussspitzen.', art: 'frage', grundlage: 'allgemein', abgedeckt: false, quellen: [] }];
+      env2.AI.run = async (modell, e) => {
+        if (/bge-m3/.test(modell)) return { data: e.text.map(fake) };
+        gesehen.push({ modell, text: JSON.stringify(e.messages || '') });
+        return { response: JSON.stringify(antworten.shift() || {}) };
+      };
+      const altFetch3 = global.fetch; global.fetch = async () => ({ ok: true, status: 200, text: async () => '{}', json: async () => ({}) });
+      const frag = async (frage, lage) => (await (await w.default.fetch(new Request('https://x.test/api/frage', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-studio-key': 'k' },
+        body: JSON.stringify({ frage, name: 'Anna Test', studio: 'Hürth', vorname: 'Anna', lage }) }), env2, { waitUntil() {} })).json());
+      const offenVor = env2.DB.roh.prepare("SELECT COUNT(*) AS n FROM offen").get().n;
+      const a1 = await frag('was ist heute offen?', 'Offene Aufgaben Hürth: Briefkasten leeren (überfällig seit 21.10.)');
+      pruefe(gesehen[0] && gesehen[0].modell === w.MODELL_ANTWORT && /gpt-oss-120b/.test(w.MODELL_ANTWORT), 'Antwort kommt zuerst von gpt-oss-120b (' + (gesehen[0] || {}).modell + ')');
+      pruefe(/APP-LAGE/.test(gesehen[0].text) && /Briefkasten leeren/.test(gesehen[0].text), 'die App-Lage steht im Gespräch mit der KI');
+      pruefe(a1.grundlage === 'app' && /Briefkasten/.test(a1.antwort) && !a1.offenId, 'Antwort aus der App-Lage: keine offene Frage an Semih (' + JSON.stringify(a1).slice(0, 120) + ')');
+      pruefe(!JSON.stringify(env2.DB.roh.prepare("SELECT * FROM nachrichten ORDER BY id DESC LIMIT 3").all()).includes('überfällig seit 21.10'), 'die App-Lage wird nicht gespeichert');
+      const a2 = await frag('wie mache ich eine saubere kniebeuge?');
+      pruefe(a2.grundlage === 'allgemein' && /Allgemeines Wissen/.test(a2.antwort) && !a2.offenId, 'Allgemeines: freie Antwort mit Hinweis, keine offene Frage');
+      pruefe(env2.DB.roh.prepare("SELECT COUNT(*) AS n FROM offen").get().n === offenVor, 'Semih bekommt dafür keine offenen Fragen');
+      env2.AI.run = async (modell, e) => {
+        if (/bge-m3/.test(modell)) return { data: e.text.map(fake) };
+        gesehen.push({ modell, text: '' });
+        if (modell === w.MODELL_ANTWORT) throw new Error('5023: model overloaded');
+        return { response: JSON.stringify({ antwort: 'Ersatz antwortet.', art: 'frage', grundlage: 'allgemein', abgedeckt: false, quellen: [] }) };
+      };
+      const a3 = await frag('kurze frage zum training');
+      pruefe(/Ersatz antwortet/.test(a3.antwort), 'fällt gpt-oss aus, antwortet das bisherige Modell');
+      env2.AI.run = altRun; global.fetch = altFetch3;
+    }
 
     /* ── 2.16 Sammelfreigabe: „ja sind zu viele klicks" ── */
     const Q = 'Schulung „Hygiene“';

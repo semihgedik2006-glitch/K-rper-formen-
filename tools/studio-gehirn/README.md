@@ -53,6 +53,23 @@ Workers AI, **nicht** über GitHub Actions.
 - Die neuen Spalten der Tabelle `vorschlag` legt der Worker selbst an.
 - Ab 2.16: **Sammelfreigabe** — alle offenen Vorschläge einer Quelle (z. B. einer Schulung) auf einmal, im Leitstand oben unter „Vorschläge“ und in der App in der Karte. Je Aufruf 20; eigene Vorschläge bleiben für die vier Augen stehen.
 
+## Antworten wie ChatGPT, mit der Lage aus der App (ab 2.19)
+
+- Antworten schreibt `@cf/openai/gpt-oss-120b` (Workers AI, kein neuer
+  Schlüssel); fällt es aus, Llama 3.3 wie bisher.
+- Die App schickt mit jeder Frage die **APP-LAGE**: was die Person in der
+  App ohnehin sieht (Dienst, offene Aufgaben, Putzplan, Material,
+  Schulungsstand, Ankündigungen, Übergaben). Der Worker nutzt sie nur im
+  Gespräch mit der KI und speichert sie nicht. Keine Chats.
+- Formi antwortet immer und sagt, worauf die Antwort beruht (`grundlage`):
+  `wissen`, `app`, `allgemein` (Hinweis „Allgemeines Wissen“) oder
+  `unsicher` („Nicht geprüft“, geht als offene Frage an Semih).
+- `POST /api/probe` (nur Leitstand): Probefrage ohne Speichern — zeigt
+  Modell, Zeit, gefundenes Wissen und die Antwort.
+- Kosten: gpt-oss-120b braucht mehr Neuronen als Llama. Reicht das freie
+  Tageskontingent von Workers AI nicht, kommt „Kontingent aufgebraucht“ —
+  dann hilft der Workers-Paid-Plan (5 $ im Monat).
+
 ## Variablen
 
 | Name | Wofür |
