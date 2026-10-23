@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-NdMFzurjO0kaDkSNPoPB6mnV2Aq/TUdfYWtNJdwhJTY='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-8zO/AGZQL7VXTUdnuP0By14mnoNkXKS0OEq5KpnQgwA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -9087,15 +9087,15 @@ body.neu.light .heute-zeile.putz{--kat:#0B6A62;--kat-f:rgba(15,118,110,.18)}
 body.neu .hz-ikon{flex:0 0 auto;display:grid;place-items:center;
   width:26px;height:26px;color:var(--kat)}
 body.neu .hz-ikon svg{width:22px;height:22px}
-/* Runde 237: der Haken auf „Heute" (heuteZeile). Er liegt genau über dem
-   Zeichen links – die Zeile ändert ihr Bild nicht, nur das Zeichen wird
-   zum Kreis zum Antippen. Breite: Kante 5 + Innenabstand 16 + Zeichen 26
-   + halber Abstand 6 = 53 px, über die ganze Zeilenhöhe (≥ 64). */
-body.neu .hz-mit-haken{position:relative}
-body.neu .hz-mit-haken .hz-ikon{visibility:hidden}
-body.neu .hz-haken{position:absolute;left:0;top:0;bottom:0;width:53px;min-height:44px;z-index:1;
-  display:grid;place-items:center;padding:0 0 0 var(--s4);background:none;border:none;cursor:pointer;
-  border-radius:var(--r-md) 0 0 var(--r-md)}
+/* Runde 237: der Haken auf „Heute" (heuteZeile) steht als eigene Spalte
+   LINKS neben der Zeile, wie in jeder Checkliste. Erste Fassung lag er
+   absolut über dem Zeichen – dann überdeckte er 2 px der vergrösserten
+   Fläche von „alle 4 ›" darüber (test-p3-startseite, 44 × 42). Neben
+   der Zeile überdeckt er nichts. */
+body.neu .hz-mit-haken{display:flex;align-items:stretch;gap:var(--s4)}
+body.neu .hz-mit-haken > .heute-zeile{flex:1;min-width:0}
+body.neu .hz-haken{flex:0 0 44px;min-height:44px;display:grid;place-items:center;padding:0;
+  background:none;border:none;cursor:pointer;border-radius:var(--r-md)}
 body.neu .hz-kreis{width:24px;height:24px;border-radius:var(--r-rund);border:2px solid var(--text-3);
   transition:transform .14s var(--ease-ios),background-color .14s var(--ease-ios)}
 body.neu .hz-mit-haken:has(.dringend) .hz-kreis{border-color:var(--danger)}
@@ -37665,7 +37665,7 @@ function heuteHakenBinden(b){
 
    Der Haken ist ein EIGENER Knopf neben der Zeile, nicht in ihr: ein
    Knopf im Knopf ist ungültig, und der Tipp auf die Zeile soll weiter
-   öffnen. Er liegt über dem Zeichen links (44 × 44, wie jeder Haken). */
+   öffnen. Er steht links daneben (44 px breit, so hoch wie die Zeile). */
 function heuteZeile(k){
   if(k.band) return k.band;
   var zeile = heuteZeileKnopf(k);
@@ -38240,7 +38240,9 @@ function heutePasst(box){
         ueber -= vorher - Math.max(hoehe[0], hoehe[1]);
       } else ueber -= f;
     }
-    weg.forEach(function(z){ z.remove(); });
+    /* Mit Haken (Runde 237) steckt die Zeile in einer Hülle – die muss
+       mit, sonst bleibt der Haken allein stehen und nimmt weiter Platz. */
+    weg.forEach(function(z){ (z.closest('.hz-mit-haken') || z).remove(); });
     betroffen.forEach(heuteKopfAusgang);
   }
   function kandidaten(){
@@ -38269,7 +38271,7 @@ function heutePasst(box){
     });
     if(laengster){
       var z = zeilenVon(laengster);
-      z[z.length-1].remove();
+      (z[z.length-1].closest('.hz-mit-haken') || z[z.length-1]).remove();
       heuteKopfAusgang(laengster);
       continue;
     }

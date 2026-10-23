@@ -67,7 +67,9 @@ async function seite(b, stub, such, breite) {
      Die Gegenprobe zuerst. Wäre sie rot, wäre alles andere egal. */
   console.log('── Ohne Schalter: die App von heute ──');
   {
-    const page = await seite(b, 'stub-chef.js', '');
+    /* Seit Runde 236 ist das neue Design der Standard; das bisherige gibt
+       es im Übergang nur noch über ?neu=0. Diese Gegenprobe prüft es dort. */
+    const page = await seite(b, 'stub-chef.js', '?neu=0');
     const alt = await page.evaluate(() => {
       const zeile = document.getElementById('bereichZeile');
       const lade = document.getElementById('allesLade');
