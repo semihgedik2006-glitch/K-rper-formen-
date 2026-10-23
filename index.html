@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-QGyuQEBeDQPJLqqQWSDX0sFGW34JVvWSneSQn+r2/z8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-k4aLyg4Ve2TZ1OQ7kSKnn5lJiHEioCXsWP+NYZjZEEQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -21339,8 +21339,15 @@ function allesGruppen(){
      was:'Kanäle für das ganze Team'},
     {label:'Direktnachricht', view:'dm',   ikon:'dm',   zahl:z.dm,
      was:'Privat, zwei Personen unter sich'},
-    {label:'Aushänge',        view:'ann',  ikon:'ann',  punkt:unread.ann,
+    /* Runde 222: Die Zeile hiess „Aushänge", öffnete aber die Infos –
+       und die Aushänge (das frühere Brett) waren erst nach einem dritten
+       Tipp auf dem Umschalter zu sehen (tests/test-findewege.js). Jetzt
+       zwei Zeilen mit den Namen des Umschalters; `pin` setzt den Teil der
+       Pinnwand (Hörer auf [data-pin], Fangphase). */
+    {label:'Infos',           view:'ann',  ikon:'ann',  punkt:unread.ann, pin:'infos',
      was:'Neuigkeiten von der Leitung'},
+    {label:'Aushänge',        view:'ann',  ikon:'ann',  pin:'brett', feature:'brett',
+     was:'Was im Studio aushängt'},
   ]);
   gruppe('Meine Sachen', 'meine', [
     {label:'Meine Woche',   view:'ich', ichtab:'woche',    ikon:'ich',
@@ -21383,7 +21390,8 @@ function allesZielAttr(e){
     (e.vorfall ?' data-al-vorfall="1"':'')+
     (e.teamtab?' data-al-teamtab="'+esc(e.teamtab)+'"':'')+
     (e.ichtab ?' data-al-ichtab="'+esc(e.ichtab)+'"':'')+
-    (e.cgo    ?' data-al-cgo="'+esc(e.cgo)+'"':'');
+    (e.cgo    ?' data-al-cgo="'+esc(e.cgo)+'"':'')+
+    (e.pin    ?' data-pin="'+esc(e.pin)+'"':'');
 }
 function allesMarkup(){
   return allesGruppen().map(function(gr){

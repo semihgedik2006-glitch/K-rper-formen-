@@ -78,6 +78,10 @@ const zustand = (p) => p.evaluate(() => {
 const knoepfe = (p, SEL) => p.evaluate((SEL) => [...document.querySelectorAll(SEL)]
   .filter(e => e.getClientRects().length && e.checkVisibility() && getComputedStyle(e).display !== 'none')
   .map(e => {
+    /* Zeilen in „Alles" teilen sich die Ansicht (data-alles="ann" für
+       Infos UND Aushänge) – der Schlüssel nimmt die Zusätze mit. */
+    if (e.hasAttribute('data-alles')) return '[data-alles="' + e.getAttribute('data-alles') + '"]' +
+      [...e.attributes].filter(a => /^data-(pin|al-)/.test(a.name)).map(a => '[' + a.name + '="' + a.value + '"]').join('');
     const attrs = ['data-group', 'data-subview', 'data-umschalt', 'data-pinteil', 'data-chatart', 'data-alles', 'data-dmalle', 'id'];
     for (const a of attrs) if (e.getAttribute(a)) return '[' + a + '="' + e.getAttribute(a) + '"]';
     return null;
