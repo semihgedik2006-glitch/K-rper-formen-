@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-SggzZDpg3mf8+G+XFCZRSPBl97VV3d8VhFZ1OmyUvzE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-aP+u9C0df1V0JDyG/N1LmO0UJj3zwzhY9JrV6RfxG2A='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2167,6 +2167,11 @@ body.nurlesen .kopf-plus{display:none !important}
     z-index:1;transition:color .2s,transform .3s var(--spring)}
   .mobnav button:active{transform:scale(.9)}
   .mobnav button svg{width:22px;height:22px}
+  /* Runde 216: zwei Zeilen nur für die langen Wörter (navWort), nur
+     unter 360 px. Gemessen bei 320: Leiste 83 statt 68 px hoch. */
+  @media(max-width:359px){
+    body:not(.neu) .mobnav button > span:not(.badge):not(.ndot){text-align:center;line-height:var(--lh-eng)}
+  }
   .mobnav button.active{color:var(--accent);font-weight:700}
   /* ── Das Abzeichen sitzt NEBEN dem Symbol, nicht darauf ──
      Bis zum 21.9.2026 hiess es hier `right:50%; translateX(15px)`.
@@ -21260,6 +21265,17 @@ function navGruppen(){
     return sichtbareViews(g).length > 0;
   });
 }
+/* Runde 216: im bisherigen Aussehen stehen für die Leitung unten
+   sieben Knöpfe. Bei 320 px sind das 7 × 44 = 308 von 312 px — für
+   „Nachrichten" (61 px) und „Verwaltung" (56 px) blieb kein Platz, und
+   auch bei 85 % Schrift nicht (gemessen 52 bzw. 48 in 48 bzw. 44). Dort
+   dürfen die zwei langen Wörter deshalb an einer festen Stelle in die
+   zweite Zeile gehen. <wbr> statt eines weichen Trennstrichs: es ist
+   kein Zeichen, das Wort bleibt für Vorleser und Suche dasselbe. Wo
+   Platz ist, bricht nichts. */
+function navWort(t){
+  return esc(t).replace('Nachrichten','Nach<wbr>richten').replace('Verwaltung','Verwal<wbr>tung');
+}
 function navKnopf(g, art){
   var b=document.createElement('button');
   b.dataset.group=g.id;
@@ -21269,7 +21285,7 @@ function navKnopf(g, art){
     b.className='tab';
     b.innerHTML=gruppeSvg(g)+'<span>'+gruppeLabel(g)+'</span>'+badge;
   } else {
-    b.innerHTML=gruppeSvg(g)+'<span>'+gruppeLabel(g)+'</span>'+badge;
+    b.innerHTML=gruppeSvg(g)+'<span>'+navWort(gruppeLabel(g))+'</span>'+badge;
   }
   b.addEventListener('click',function(){ showView(g.views[0]); tick(8); });
   /* Am Rechner verrät der Hinweis beim Darüberfahren die Taste. */
