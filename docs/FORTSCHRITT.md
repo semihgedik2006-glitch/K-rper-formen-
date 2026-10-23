@@ -21512,3 +21512,51 @@ ohne dass etwas erfunden werden kann.
 
 **Nicht geprüft:** eine echte Benachrichtigung auf einem echten Handy (FCM
 geht hier nicht) und Safari.
+
+## Runde RUNDE_NR — Schichtplaner: Fragen in der App, Probe zurücknehmen, Öffnungszeiten an einer Stelle (23.10.2026)
+
+**Aus dem Betrieb:** „jap mach weiter dann“ — auf den Vorschlag, mit
+„Plan zurücknehmen“, der Einrichtung in der App und den Öffnungszeiten
+an einer Stelle anzufangen.
+
+**Was gebaut ist**
+- **„Veröffentlichung zurücknehmen“** im Kasten „Fertig?“, sobald ein
+  Monat veröffentlicht ist. Gelöscht wird, was der Planer geschrieben hat
+  (Merkmal `planer == Monat`), in allen Studios; von Hand eingetragene
+  Schichten tragen das Merkmal nicht und bleiben. Der Entwurf bleibt.
+  Vorher hiess eine Probe: jede Schicht einzeln löschen — so traut sich
+  niemand, es auszuprobieren.
+- **„Fragen zum Plan“**: die 24 Fragen aus dem PDF als Karte im Planer,
+  fünf Reiter (am Rechner mit Namen und „n offen“, am Handy Buchstaben),
+  je Frage die heutige Annahme, ein Feld und „passt“. Gespeichert beim
+  Verlassen des Feldes in `config/schichtplaner.antworten` (dieselbe
+  Regel wie die übrigen Einstellungen: lesen alle Aktiven, schreiben die
+  Geschäftsführung). Die Liste kommt aus `werkzeug/inhalt.py` — dieselbe
+  Quelle wie PDF und Excel; der Test vergleicht alle 24 Wortlaute.
+  Die Antworten sind Text; sie stellen den Planer (noch) nicht selbst
+  ein. Was davon Regeln werden, entscheidet sich, wenn sie da sind.
+- **Öffnungszeiten an einer Stelle**: Ist ein Studio unter Verwaltung →
+  Studios ohne Zeiten, nimmt die Besetzungs-Leiste die aus dem Excel-Blatt
+  „Studios“. Gelesen werden „10:00–12:00“, „10–12“, „10.00 – 12.00“ und
+  „zu“. Dazu lädt die Team-Seite `config/schichtplaner` einmal mit (das
+  brauchten die Schicht-Vorlagen im Blatt ohnehin).
+
+**Gefunden**
+- Die Demo-Datenbank gibt bei `get()` kein `d.ref` mit; Zurücknehmen
+  baut die Verweise deshalb über die Kennung. (Veröffentlichen nutzt noch
+  `d.ref` — in der echten Datenbank richtig, in der Demo scheitert nur ein
+  zweites Veröffentlichen. Nicht angefasst.)
+- Die erste Fassung der Gegenprobe im Test zählte nur die letzte Woche
+  und blieb mit abgeschaltetem Löschen grün. Jetzt zählt sie alle acht
+  Wochen: ohne Löschen 47 Planer-Schichten → rot; mit → grün.
+
+**Geprüft**
+- test-schichtplan-raster, Abschnitt 11 (10 Prüfungen neu, 102 gesamt):
+  Wortlaut der 24 Fragen = inhalt.py; „passt“ und eigene Antwort zählen
+  (0 → 2 von 24) und überstehen das Neuladen; Zurücknehmen erscheint nach
+  dem Veröffentlichen, nimmt 582 Schichten heraus, Zustand wieder
+  „Entwurf“, im Team-Plan keine Planer-Schicht mehr; Öffnungszeit nur aus
+  dem Excel → „Geöffnet 10–12 Uhr“ an allen sechs Tagen, „zu“ →
+  geschlossen.
+- test-schichtplaner (140), test-gestaltung, test-doppelte-namen, test-knoepfe,
+  test-abgeschnitten, test-team-woche, test-tausch: grün.
