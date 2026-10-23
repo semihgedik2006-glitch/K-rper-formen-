@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-UZK0wchgbiJHy18rXyxFtujxI9two7thAROFKCOqjxA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-lA3bNl1V8FvtE7hwB6iAE2tvrOjnPg4xjGSc5y74fe0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2174,6 +2174,9 @@ body.nurlesen .kopf-plus{display:none !important}
      unter 360 px. Gemessen bei 320: Leiste 83 statt 68 px hoch. */
   @media(max-width:359px){
     body:not(.neu) .mobnav button > span:not(.badge):not(.ndot){text-align:center;line-height:var(--lh-eng)}
+    /* Runde 228: die 15 px mehr Leiste hob die Kugel nicht mit – sie lag
+       3 px auf „Verwaltung" (test-formi-kugel, 320 px). */
+    body:not(.neu) .formi-kugel{bottom:calc(80px + var(--s16) + var(--sab))}
   }
   .mobnav button.active{color:var(--accent);font-weight:700}
   /* ── Das Abzeichen sitzt NEBEN dem Symbol, nicht darauf ──
@@ -8498,9 +8501,12 @@ body.neu .view-head .vh-line{justify-content:flex-end}
      (bei 88 % noch 56 px). Auf schmalen Handys richtet sich die Breite
      deshalb nach dem Wort: jeder mindestens 44 px, der Rest wird
      verteilt — bis 420 px (bei 375 waren es noch 61 für 64). Gemessen
-     bei 320 px: 5 × 44 + 68 = 288 von 312 px. */
+     bei 320 px: 5 × 44 + 68 = 288 von 312 px.
+     Runde 228: 48 statt 44. „Plan" (das kürzeste Wort) bekam genau
+     44 px, und der Hit-Test 21 px um die Mitte (test-neu-design) traf
+     am Rand den Nachbarn. 5 × 48 + 68 = 308 von 312 px – es passt. */
   @media(max-width:420px){
-    body.neu .mn-reihe button{flex:1 1 auto;min-width:44px}
+    body.neu .mn-reihe button{flex:1 1 auto;min-width:48px}
   }
   /* Die gleitende Füllung nimmt die Farbe des Bereichs an, in dem man
      gerade ist. Damit stimmt unten und oben dieselbe Aussage überein. */
@@ -21679,15 +21685,14 @@ function allesGruppen(){
      was:'Kanäle für das ganze Team'},
     {label:'Direktnachricht', view:'dm',   ikon:'dm',   zahl:z.dm,
      was:'Privat, zwei Personen unter sich'},
-    /* Runde 223: Die Zeile hiess „Aushänge", öffnete aber die Infos –
-       und die Aushänge (das frühere Brett) waren erst nach einem dritten
-       Tipp auf dem Umschalter zu sehen (tests/test-findewege.js). Jetzt
-       zwei Zeilen mit den Namen des Umschalters; `pin` setzt den Teil der
-       Pinnwand (Hörer auf [data-pin], Fangphase). */
+    /* Runde 223: Die Zeile hiess „Aushänge", öffnete aber die Infos.
+       Sie heisst jetzt wie der Teil, den sie öffnet; `pin` setzt ihn
+       (Hörer auf [data-pin], Fangphase). Zu den Aushängen führt
+       „Schwarzes Brett" unter „Wer arbeitet wann?" (teamtab brett,
+       pinnwandUmleiten). Runde 228: die in 223 dazugelegte zweite Zeile
+       „Aushänge" war eine Doppelung davon – wieder weg. */
     {label:'Infos',           view:'ann',  ikon:'ann',  punkt:unread.ann, pin:'infos',
      was:'Neuigkeiten von der Leitung'},
-    {label:'Aushänge',        view:'ann',  ikon:'ann',  pin:'brett', feature:'brett',
-     was:'Was im Studio aushängt'},
   ]);
   gruppe('Meine Sachen', 'meine', [
     {label:'Meine Woche',   view:'ich', ichtab:'woche',    ikon:'ich',
@@ -21804,6 +21809,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-23-leiste-schmal', datum:'23.10.2026', titel:'Kleine Handys: Knöpfe unten wieder gut zu treffen', wo:'home', punkte:[
+    'Seit „Zeiten" einen eigenen Knopf hat, stehen unten sechs Knöpfe. Auf sehr schmalen Handys war „Plan" dadurch knapp zu schmal – jetzt ist jeder Knopf mindestens 48 Punkte breit.',
+    'Im bisherigen Aussehen lag Formi auf sehr schmalen Handys ein kleines Stück auf der unteren Leiste. Er sitzt jetzt darüber.'
+  ]},
   { id:'2026-10-23-formi-zeigwie', datum:'23.10.2026', titel:'„Zeig mir wie": Formi führt dich durch die App', wo:'gehirn', punkte:[
     'Schreib Formi zum Beispiel „Zeig mir, wie ich eine Aufgabe anlege". Formi zeigt dir den Weg Schritt für Schritt auf den echten Seiten. Fragst du „Wie melde ich mich krank?", antwortet Formi wie gewohnt, und darunter steht „Zeig’s mir in der App ›".',
     'Um die Stelle, die gerade dran ist, liegt Formis bunter Ring, und ein kleiner Formi fliegt von Schritt zu Schritt. Unten steht „Schritt 2 von 4" mit „Weiter" und „Abbrechen".',
@@ -21831,8 +21840,8 @@ var NEUIGKEITEN = [
     'Ein Eintrag („Soll je Wochentag") stand doppelt in der Liste, einmal davon leer. Das ist bereinigt.',
     'Bei sieben Einträgen fehlte der Knopf „Zeigen ›" – jetzt führt jeder Eintrag dorthin, wo die Neuerung steht, auch ins Profil.'
   ]},
-  { id:'2026-10-23-alles-aushaenge', datum:'23.10.2026', titel:'„Alles": Infos und Aushänge getrennt', wo:'ann', punkte:[
-    'Unter „Alles" stand eine Zeile „Aushänge" – sie öffnete aber die Infos. Jetzt gibt es zwei Zeilen: „Infos" (Neuigkeiten von der Leitung) und „Aushänge" (was im Studio aushängt). Beide sind zwei Tipps entfernt.'
+  { id:'2026-10-23-alles-aushaenge', datum:'23.10.2026', titel:'„Alles": die Zeile „Infos" heisst jetzt so', wo:'ann', punkte:[
+    'Unter „Alles" stand eine Zeile „Aushänge" – sie öffnete aber die Infos der Leitung. Sie heisst jetzt „Infos". Die Aushänge selbst findest du wie bisher unter „Schwarzes Brett".'
   ]},
   { id:'2026-10-23-zeiten-bereich', datum:'23.10.2026', titel:'Zeiten mit eigenem Knopf: stempeln, Konto im Plus oder Minus, Resturlaub', wo:'zeit', punkte:[
     'Unten (am Rechner links) gibt es jetzt den Knopf „Zeiten". Dort stempelst du, siehst heute, die Woche und den Monat – alles, was vorher unter Heute → Ich → Zeiten stand.',
