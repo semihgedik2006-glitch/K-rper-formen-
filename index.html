@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Tq0P+Cd7QlIO7Tn4ylnpMM3m8Ammp/zb6pCyEtJvNYk='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-hCWeLQX861q8W/QdOvqU/ONFCs3s7atLRjeIVShKDPU='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -6424,7 +6424,7 @@ html.fk-still .fk-wirbel,html.fk-still .fk-innen{animation:none}
 /* Was ins Loch fällt (formiSchlucken). */
 .formi-schluck{position:fixed;left:0;top:0;z-index:1180;pointer-events:none;white-space:nowrap;transform-origin:50% 50%;will-change:transform;
   font-weight:700;font-size:var(--t-sm);color:#E8F8FF;text-shadow:0 0 10px rgba(182,156,255,.9)}
-/* ── Gezeitenstrom, Lichtkrümmung, Insel, Leuchtrand (Runde 244) ──────
+/* ── Gezeitenstrom, Lichtkrümmung, Insel, Leuchtrand (Runde 247) ──────
    Der Strom: jeder Buchstabe des Titels fällt einzeln (formiStrom). Beim
    Messen stehen sie in einer Zeile (.mass), danach einzeln frei. */
 .formi-strom .fs-zeile{position:absolute;left:0;top:0;white-space:pre}
@@ -13991,11 +13991,11 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
 <button type="button" class="formi-kugel" id="formiKugel" hidden aria-haspopup="dialog" aria-controls="jarvis"
   aria-label="Formi öffnen" title="Formi — frag mich oder sag, was ich tun soll"><span class="fk-koerper" aria-hidden="true"><span class="fk-scheibe hinten"><span class="fk-halb"><span class="fk-flach"><span class="fk-bahn"><i style="--w:20deg;--p:0.944"></i><i style="--w:140deg;--p:0.611"></i><i style="--w:260deg;--p:0.278"></i></span><span class="fk-bahn innen"><i style="--w:80deg;--p:0.778"></i><i style="--w:260deg;--p:0.278"></i></span></span></span></span><span class="fk-wirbel"></span><span class="fk-innen"></span><span class="fk-licht"></span><span class="fk-bogen"></span><span class="fk-geist a"></span><span class="fk-geist b"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-braue l"></i><i class="fk-braue r"></i><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i><i class="fk-froh l"></i><i class="fk-froh r"></i><i class="fk-backe l"></i><i class="fk-backe r"></i></span></span></span><span class="fk-scheibe vorn"><span class="fk-halb"><span class="fk-flach"><span class="fk-bahn"><i style="--w:20deg;--p:0.944"></i><i style="--w:140deg;--p:0.611"></i><i style="--w:260deg;--p:0.278"></i></span><span class="fk-bahn innen"><i style="--w:80deg;--p:0.778"></i><i style="--w:260deg;--p:0.278"></i></span></span></span></span></span><span class="fk-punkt" aria-hidden="true"></span></button>
 <span id="formiKugelHat" hidden>Formi hat etwas für dich</span>
-<!-- Lichtkrümmung ums Loch (Runde 244): ein eigener Kreis unter der Kugel —
+<!-- Lichtkrümmung ums Loch (Runde 247): ein eigener Kreis unter der Kugel —
      in der Kugel selbst sieht backdrop-filter in Chromium nichts von der
      Seite dahinter (nachgemessen). Keine Trefferfläche. -->
 <span class="formi-linse" id="formiLinseKreis" aria-hidden="true" hidden></span>
-<!-- Formi-Insel und Leuchtrand (Runde 244): schwarz wie das Loch, oben in
+<!-- Formi-Insel und Leuchtrand (Runde 247): schwarz wie das Loch, oben in
      der Mitte; der Rand leuchtet, solange Formi arbeitet. Schmuck ohne
      Trefferfläche — gesagt wird alles im Fenster. -->
 <div class="formi-insel" id="formiInsel" aria-hidden="true" hidden><span class="fi-ring"></span><span class="fi-flaeche"></span><span class="fi-klein"><span class="formi-figur"></span><span class="fi-t"></span></span><span class="fi-gross"><span class="formi-figur"></span><span class="fi-text"><small class="fi-was"></small><b class="fi-titel"></b></span><span class="fi-zeichen"><svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="12"/><path d="M8 14.5l4 4 8-9"/></svg></span></span></div>
@@ -28345,7 +28345,7 @@ function formiKugelZeigen(){
     }
     return;
   }
-  /* Runde 244: die Lichtkrümmung ums Loch (einmal gebaut). */
+  /* Runde 247: die Lichtkrümmung ums Loch (einmal gebaut). */
   formiLinseBauen();
   requestAnimationFrame(formiLinseLage);
   if(!k._gebunden){ k._gebunden=true; k.addEventListener('click', function(){ jarvisAuf(); }); formiLebtStart(); }
@@ -29401,7 +29401,7 @@ function formiKugelMitte(){
   var k=$('formiKugel'); if(!k || k.hidden || !k.getClientRects().length) return null;
   var r=k.getBoundingClientRect(); return { x:r.left+r.width/2, y:r.top+r.height/2 };
 }
-/* ── Gezeitenstrom (Runde 244) ────────────────────────────────────────
+/* ── Gezeitenstrom (Runde 247) ────────────────────────────────────────
    Aus dem Betrieb, nach Runde 242: „können wir fürs aufgaben einsaugen
    einen besseren effekt machen … und mehr verzerrung auch für den
    hintergrund und so ums loch herum".
@@ -29542,7 +29542,7 @@ function formiSchlucken(el){
   });
 }
 
-/* ── Lichtkrümmung ums Loch (Runde 244) ───────────────────────────────
+/* ── Lichtkrümmung ums Loch (Runde 247) ───────────────────────────────
    „liquid glas finde ich unnötig wenn überhaupt soll das den hintergrund
    verzerren etwas weils ja ein schwarzes loch ist" — und dann: „mehr
    verzerrung auch für den hintergrund und so ums loch herum".
@@ -29615,7 +29615,7 @@ function formiLinsePuls(ende){
   })(performance.now());
 }
 
-/* ── Formi-Insel und Leuchtrand (Runde 244) ───────────────────────────
+/* ── Formi-Insel und Leuchtrand (Runde 247) ───────────────────────────
    Aus dem Betrieb, zu den Apple-Entwürfen: „ich finde die insel und die
    widgets super krass falls das geht können wir das schonmal umsetzten
    … diesen leucht ring am rand find ich auch mega … am besten auch
@@ -30156,7 +30156,7 @@ window.__formiLebt = {
   lebenZuletzt: function(){ return _fl.lebenZuletzt||''; },
   /* Runde 242: „zuletzt da" für den Durchlauf setzen (test-formi-seit). */
   seit: function(ts){ _fsStand=ts; renderHeute(); },
-  /* Runde 244: Insel, Rand und Linse für die Durchläufe. */
+  /* Runde 247: Insel, Rand und Linse für die Durchläufe. */
   insel: function(){ var fi=$('formiInsel'), r=$('formiRand'); return { stand:_fi.stand, hidden:!fi || fi.hidden, klasse:fi ? fi.className : '', titel:fi ? fi.querySelector('.fi-titel').textContent : '', was:fi ? fi.querySelector('.fi-was').textContent : '', klein:fi ? fi.querySelector('.fi-t').textContent : '', rand:!!(r && !r.hidden && r.classList.contains('an')) }; },
   inselErgebnis: function(o){ formiInselErgebnis(o); },
   inselArbeit: function(t){ formiInselArbeit(t); },

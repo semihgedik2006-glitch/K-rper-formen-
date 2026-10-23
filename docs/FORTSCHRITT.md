@@ -21580,7 +21580,7 @@ Dokument bleiben unberührt (Gegenprobe im Test).
 - Ein echter Tipp auf eine echte Push-Nachricht auf einem Handy: hier
   nur mit der Attrappe des Service Workers.
 
-## Runde 244 — Formi-Insel, Leuchtrand, Lichtkrümmung und Gezeitenstrom (23.10.2026)
+## Runde 247 — Formi-Insel, Leuchtrand, Lichtkrümmung und Gezeitenstrom (23.10.2026)
 
 **Aus dem Betrieb**, zu den vier Apple-Entwürfen:
 - „ich finde die insel und die widgets super krass falls das geht können
