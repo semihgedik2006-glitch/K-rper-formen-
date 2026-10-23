@@ -86,7 +86,8 @@ async function seite(b, stub, such, breite) {
     });
     console.log('BISHER:', JSON.stringify(alt));
     pruefe('body trägt die Klasse „neu" NICHT', alt.klasse === false);
-    pruefe('die Leiste hat weiterhin alle Gruppen direkt', alt.knoepfe === 6, String(alt.knoepfe));
+    /* 7 seit Runde 222 (#281): „Zeiten" ist ein eigener Raum, siehe unten. */
+    pruefe('die Leiste hat weiterhin alle Gruppen direkt', alt.knoepfe === 7, String(alt.knoepfe));
     pruefe('es gibt keinen „Alles"-Knopf', alt.allesKnopf === false);
     pruefe('der Bereichskopf ist nicht zu sehen', alt.kopfDa === false);
     pruefe('die Schublade ist nicht zu sehen', alt.ladeDa === false);
@@ -130,10 +131,15 @@ async function seite(b, stub, such, breite) {
        Reiter unter „Studio". Die Reihenfolge folgt weiter der Nutzung
        (24.9.2026: „der am meisten benutzte Bereich [ist] der Aufgaben-
        und Putzplan-Bereich … aber der Chat eher wenig") — Studio vor
-       Nachrichten. */
-    pruefe('unten stehen fünf Knöpfe', neu.reihe.length === 5, JSON.stringify(neu.reihe));
-    pruefe('und zwar Heute, Studio, Plan, Nachrichten, Wissen',
-      neu.reihe.join('|') === 'Heute|Studio|Plan|Nachrichten|Wissen', JSON.stringify(neu.reihe));
+       Nachrichten.
+       Runde 222 (#281), aus dem Betrieb, 23.10.2026, auf „wohin mit den
+       Zeiten?": „eigener knopf". Seitdem sechs: „Zeiten" direkt hinter
+       „Studio" (gestempelt wird jeden Tag). Nachgezogen in Runde 226 –
+       #281 hatte test-navigation und test-p5-leiste angepasst, diesen
+       Durchlauf nicht. */
+    pruefe('unten stehen sechs Knöpfe', neu.reihe.length === 6, JSON.stringify(neu.reihe));
+    pruefe('und zwar Heute, Studio, Zeiten, Plan, Nachrichten, Wissen',
+      neu.reihe.join('|') === 'Heute|Studio|Zeiten|Plan|Nachrichten|Wissen', JSON.stringify(neu.reihe));
     pruefe('die Schublade ist beim Start zu', neu.ladeZu === true);
     pruefe('der Bereichskopf trägt einen sichtbaren Griff', neu.griff === true);
   }

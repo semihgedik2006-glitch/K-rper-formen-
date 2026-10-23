@@ -20190,3 +20190,63 @@ wie die anderen Schalter dort.
 `silent: true` umsetzt. iOS-Web-Push ignoriert `silent` nach heutigem
 Stand womöglich. Das ist nicht gemessen und muss auf einem iPhone
 nachgesehen werden.
+
+## Runde 226 — Gesamtlauf nach der Nacht: drei Brüche, ein eigener Messfehler (23.10.2026)
+
+In dieser Nacht haben mehrere Sitzungen parallel gemergt. Danach habe ich
+alle 221 Durchläufe in drei Strängen laufen lassen und jeden roten
+einzeln nachgeprüft, ohne Parallellast.
+
+**Behoben:**
+- **Untere Leiste bei 320 px** (`test-neu-design`). Seit dem Raum
+  „Zeiten“ (Runde 222, #281) stehen unten sechs Knöpfe. „Plan“, das
+  kürzeste Wort, bekam genau 44 px, und der Hit-Test 21 px um die Mitte
+  traf am Rand den Nachbarn. Die Mindestbreite ist jetzt 48 px:
+  5 × 48 + 72 = 312 px passen in 312. Nachgemessen bei 320, 360 und
+  390 px; `test-knoepfe`, `test-abgeschnitten` und `test-quer` sind grün.
+- **Kugel auf der Leiste** (`test-formi-kugel`, altes Aussehen, 320 px).
+  Seit #281 ist die Leiste dort zweizeilig und 83 statt 68 px hoch. Die
+  Kugel stand weiter bei 80 px und lag 3 px auf „Verwaltung“. Unter
+  360 px sitzt sie jetzt 16 px höher.
+- **Zwei Tests an #281 nachgezogen**, mit dem Zitat aus dem Betrieb
+  („eigener knopf“, 23.10.2026) im Test: `test-neu-design` erwartet sechs
+  Knöpfe mit „Zeiten“, `test-verwaltung-gruppen` keine Kachel „Zeiten“
+  mehr in der Verwaltung. #281 hatte `test-navigation` und
+  `test-p5-leiste` angepasst, diese beiden nicht.
+
+**Mein Messfehler aus Runde 223, offen korrigiert.** Die Aussage
+„Aushänge brauchten 3 Tipps“ stimmte nicht. Unter „Alles“ führte schon
+vorher „Schwarzes Brett“ (Gruppe „Wer arbeitet wann?“) in zwei Tipps
+dorthin. Mein Test bildete den Schlüssel einer Zeile damals nur aus
+`data-alles`. Alle Team-Zeilen hiessen deshalb `[data-alles="team"]`, und
+geklickt wurde immer nur die erste. In Runde 223 habe ich die
+Zusatzmerkmale (`data-al-*`, `data-pin`) zwar in den Schlüssel genommen,
+den Befund aber nicht nachgeprüft. Aufgefallen ist es erst bei der
+Gegenprobe gegen den Stand vor 223: Sie blieb grün, und der Test zeigt
+mit `ZEIGE=1` jetzt den gefundenen Weg.
+
+Folge:
+- Richtig war nur die Umbenennung: Die Zeile „Aushänge“ öffnete die Infos
+  und heisst jetzt „Infos“.
+- Die zweite Zeile „Aushänge“ aus Runde 223 war eine Doppelung von
+  „Schwarzes Brett“ und ist wieder weg.
+- Der NEUIGKEITEN-Eintrag ist entsprechend berichtigt.
+
+**Findewege unter 240 s.** Beide Geräte zusammen brauchten über 10
+Minuten; `tests/alle.sh` erlaubt 240 s je Datei.
+- Ab dem zweiten Tipp werden Räume und der ☰-Griff nicht mehr probiert.
+  Sie führen von überall dorthin, wohin sie auch von „Heute“ führen. Das
+  kann einen Weg nur länger messen, nie kürzer; die Grenze bleibt also
+  eine echte Obergrenze.
+- Drei Wege laufen gleichzeitig, jeder in einem eigenen Kontext.
+- Der Test ist aufgeteilt in `test-findewege` (Handy, 83 s) und
+  `test-findewege-rechner` (89 s).
+
+**Weiter rot, nicht von mir angefasst:**
+- `test-gleiten-rahmen`: Formis drehende Scheibe ist eine gewollte
+  Endlos-Animation (Runde 213/214) und wird in einer anderen Sitzung
+  gebaut.
+- `test-neu-design` und `test-navigation`: siehe P-19.
+- `test-gehirn` läuft unter Last in die Zeitgrenze.
+- Die fünf Funktionstests brauchen `firebase-functions`, das hier nicht
+  installiert ist.

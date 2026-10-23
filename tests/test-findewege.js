@@ -59,7 +59,7 @@ async function oeffne(b, w, h) {
   await p.addInitScript({ path: SP + '/stub-chef.js' });
   await p.goto(APP + '?neu=1', { waitUntil: 'domcontentloaded' });
   await p.waitForFunction(() => !!document.querySelector('#app.show'), null, { timeout: 15000 });
-  await p.waitForTimeout(900);
+  await p.waitForTimeout(600);
   p._ctx = ctx;
   return p;
 }
@@ -91,7 +91,11 @@ const knoepfe = (p, SEL) => p.evaluate((SEL) => [...document.querySelectorAll(SE
 (async () => {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
 
-  for (const [w, h, name] of [[390, 844, 'Handy'], [1440, 900, 'Rechner']]) {
+  /* Ein Gerät je Durchlauf (240 s je Datei in alle.sh): ohne Angabe das
+     Handy; test-findewege-rechner.js setzt GERAET=rechner. */
+  const GERAETE = [[390, 844, 'Handy'], [1440, 900, 'Rechner']]
+    .filter(g => g[2].toLowerCase() === (process.env.GERAET || 'handy'));
+  for (const [w, h, name] of GERAETE) {
     console.log('\n── ' + name + ' (' + w + ' px) ──');
     /* BFS: Pfade als Liste von Schlüsseln; jeder Pfad startet frisch auf „Heute". */
     const tiefe = { home: 0 };
@@ -107,9 +111,19 @@ const knoepfe = (p, SEL) => p.evaluate((SEL) => [...document.querySelectorAll(SE
           await p.waitForTimeout(350);
         }
         if (!ok) { await p._ctx.close(); continue; }
-        const kandidaten = await knoepfe(p, NAV_SEL);
+        /* Ab dem zweiten Tipp keine Räume und keinen ☰-Griff mehr: sie
+           stehen auf jeder Seite gleich da und führen dorthin, wohin sie
+           auch von „Heute" führen – das ist schon auf Ebene 1 gemessen.
+           Weglassen kann einen Weg nur LÄNGER messen, nie kürzer: die
+           Zusicherung bleibt eine echte Obergrenze. Ohne das lief der
+           Durchlauf 10 Minuten (alle.sh erlaubt 240 s). */
+        const kandidaten = (await knoepfe(p, NAV_SEL))
+          .filter(k => !pfad.length || !/^\[data-group=|^\[id="bereichKopf"\]$/.test(k));
         await p._ctx.close();
-        for (const k of kandidaten) {
+        /* Drei Wege gleichzeitig, jeder in seinem eigenen, frischen
+           Browser-Kontext – sie teilen nichts. Die Reihenfolge der
+           Ergebnisse bleibt die der Kandidaten (BFS bleibt eindeutig). */
+        const probe = async (k) => {
           const q = await oeffne(b, w, h);
           let geht = true;
           for (const x of pfad.concat([k])) {
@@ -119,8 +133,17 @@ const knoepfe = (p, SEL) => p.evaluate((SEL) => [...document.querySelectorAll(SE
           }
           const z = geht ? await zustand(q) : null;
           await q._ctx.close();
-          if (z && tiefe[z] === undefined) { tiefe[z] = d; naechste.push(pfad.concat([k])); }
-        }
+          return z;
+        };
+        const ergebnisse = new Array(kandidaten.length);
+        let naechsterIndex = 0;
+        await Promise.all([0, 1, 2].map(async () => {
+          while (naechsterIndex < kandidaten.length) { const i = naechsterIndex++; ergebnisse[i] = await probe(kandidaten[i]); }
+        }));
+        kandidaten.forEach((k, i) => {
+          const z = ergebnisse[i];
+          if (z && tiefe[z] === undefined) { tiefe[z] = d; naechste.push(pfad.concat([k])); if (process.env.ZEIGE) console.log('   ' + z + ' ← ' + pfad.concat([k]).join(' → ')); }
+        });
       }
       /* Nur weitersuchen, solange noch ein Ziel fehlt. */
       if (ZIELE.every(x => tiefe[x.ziel] !== undefined)) break;
@@ -128,6 +151,7 @@ const knoepfe = (p, SEL) => p.evaluate((SEL) => [...document.querySelectorAll(SE
     }
     for (const z of ZIELE) {
       const t = tiefe[z.ziel];
+      if (process.env.ZEIGE) console.log(JSON.stringify(tiefe));
       pruefe(name + ': ' + z.was + ' in ' + (t === undefined ? '>3' : t) + ' Tipp' + (t === 1 ? '' : 's') + ' (Grenze ' + z.max + ')', t !== undefined && t <= z.max, JSON.stringify(tiefe));
     }
   }
