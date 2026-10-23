@@ -21208,3 +21208,90 @@ und Mail zusammen. Es ist Schritt 6 aus `docs/ZEITERFASSUNG-PLAN.md`.
 - Ein Antippen der Push-Nachricht öffnet die App, aber nicht direkt die
   Seite „Zeiten" (der Service Worker kennt keine Ziele). Beim Öffnen sagt
   es Formi.
+
+---
+
+## Runde 239 — Systemschrift statt Barlow: der erste Schritt zum Apple-Stil (23.10.2026)
+
+**Aus dem Betrieb:** „das ganze wissen möchten wir auch nutzen sodass
+studio chat am ende wie eine app von apple selber wirkt". Dazu entstand
+das Dokument „Studio Chat wie von Apple – Richtlinien, Plan,
+Vorher/Nachher" (https://claude.ai/artifact/LG4stzk5F4fnL9S3jh8edH) mit
+Studienlage, Apples Vorgaben (HIG, WWDC), zwölf Richtlinien und einem
+Plan in sechs Runden. Probebilder vorher/nachher liegen im Projektordner
+`apple-probebilder/`. Entschieden: „Apple-Grundgerüst, Formi als Akzent"
+und, auf die Barlow-Frage, „ja so wie du empfohlen hast": überall die
+Systemschrift, Barlow nur noch im Schriftzug.
+
+**Gebaut:**
+- `--font-sys` / `--font-head` / `--font-body`: `-apple-system,
+  BlinkMacSystemFont, 'SF Pro …', 'Inter', 'Segoe UI', system-ui`.
+  Auf iPhone, iPad und Mac zeichnet das die SF Pro des Geräts, ohne
+  Datei. Überall sonst Inter (`schriften/inter-variabel.woff2`, SIL OFL,
+  48 KB, eine variable Datei für 100–900, Latin-Teilmenge wie Barlow).
+- **Warum Inter vor system-ui:** am Rechner — dem Hauptgerät — wäre
+  system-ui auf Windows Segoe UI, und die App sähe dort aus wie Windows.
+  Inter ist die freie Schrift, die SF am nächsten kommt; die Probebilder
+  waren damit gerendert und wurden so freigegeben.
+- `--font-marke` (Barlow Condensed) nur noch für den Schriftzug
+  STUDIOCHAT (`.tb-brand`, `.auth-brand`, `.sp-word`).
+- Überschriften in `--font-head` mit Stärke 800 stehen jetzt auf 700
+  (43 Stellen). Barlow Condensed 800 wirkte durch die schmale Form
+  leichter; in der breiten Systemschrift war 800 klobig, und Apple geht
+  bei Titeln nicht über Bold. Formi-Regeln sind nicht dabei (geprüft).
+- Die Grössenleiter bleibt. In „neu" liegt sie bei 11,8 / 13,3 / 14,9 /
+  16,5 / 19,2 / 23,2 / 29,6 px — höchstens gut einen Pixel neben Apples
+  11 / 13 / 15 / 17 / 20 / 22 / 28. Eine Verschiebung hätte die Regel
+  „Startseite auf einem Bildschirm" neu aufgerollt, ohne sichtbaren
+  Gewinn.
+
+**Was die breitere Schrift verschoben hat — gefunden und behoben:**
+- Untere Leiste bei 320 px: „Nachrichten" brach in zwei Zeilen um.
+  Unter 420 px jetzt einzeilig mit enger Laufweite (`--ls-eng`), wie
+  Apples Tab-Leiste.
+- Suche bei 320 px: das Eingabefeld hatte kein `min-width:0` und war
+  damit so breit wie 20 Zeichen der Schrift; mit Inter schob es den
+  Schliessen-Knopf 54 px aus dem Bild (test-abgeschnitten).
+- Suche bei 320 px, zweiter Fund: der Hinweis „Suchen oder Formi
+  fragen …" war 205 px breit im 198-px-Feld. Das „…" ist weg; Apples
+  Suchfelder tragen auch keins.
+- Schnellzugriffe in zwei Spalten (Seitenleiste am Rechner): „Meine
+  Woche" und „Mein Kalender" endeten mit „…". Sie dürfen jetzt auf zwei
+  Zeilen umbrechen.
+- Team, Leitung, 390 px: Die Seite rollte beim Öffnen 84–106 px, weil
+  „heute" knapp unter den Rand rutschte. Auf `main` lag der Tag schon
+  nur 2 px über der Grenze von `heuteInsBild()`. Zwei Zeilen waren in
+  der breiteren Schrift umgebrochen: die Plaketten „6 Schichten" /
+  „deine: 5 Std." (jetzt halbfett, engerer Rand) und die Zeile der
+  vergangenen Tage (jetzt „Mo 19.10.–Do 22.10." mit Bis-Strich ohne
+  Leerzeichen, und zu nur „›" — „Anzeigen" hört der Vorleser weiter).
+- Formis „?" und „z" an der Figur bleiben in Barlow: Formi wird in einem
+  anderen Thread gestaltet und soll sich hier nicht mitändern.
+- `test-p1-aufgaben` hat einen Haken bei 1280 px mit 44 × 36 gemeldet.
+  Der Haken lag 1 px über dem unteren Fensterrand, und seine unsichtbar
+  vergrösserte Trefferfläche wurde vom Fensterrand abgeschnitten. Gemessen
+  wurden bisher nur Knöpfe, deren Kasten ganz im Bild lag. Jetzt wird
+  jeder Knopf vor dem Messen in die Mitte geholt, also werden alle
+  gemessen und jeder ganz. Das ist strenger als vorher, nicht lockerer.
+  Alle sind ≥ 44 × 44.
+
+**Schon vor dieser Runde rot auf `main`** (mit `main` verglichen, nicht
+von hier): test-navigation („Startseite 2,19 Bildschirme", hier 2,24),
+test-neu-design (320 × 568 passt nicht ohne Scrollen), test-gleiten-rahmen
+(Formis Endlos-Animationen), test-formi-verdeckt, test-formi-zeigwie,
+test-gehirn, test-stripe-felder, sowie die Tests, denen hier
+`firebase-functions` bzw. `@firebase/rules-unit-testing` fehlen.
+
+**Tests:** `test-schriften` misst jetzt, dass die Grundschrift Inter ist
+(gleich breit wie Inter, nicht wie die Ersatzschrift), dass Inter aus
+`schriften/` geladen ist und dass die Kette mit `-apple-system` beginnt
+und Inter vor system-ui nennt. Gegenprobe auf `main`: zwei Zeilen rot.
+
+**Nicht geprüft:** Safari auf iPhone und Mac — dort sollte SF Pro
+erscheinen; hier gibt es kein Apple-Gerät. Der Anmeldeweg (Firebase lädt
+in dieser Umgebung nicht).
+
+**Als Nächstes (Plan aus dem Dokument):** Gruppen statt Einzelkarten und
+Titel statt Versalien-Marken, dann untere Leiste mit fünf Einträgen,
+dann Bewegung (drei Federn, Blätter mit Griff), dann Chat in Blasen.
+Formi selbst bleibt bei der anderen Sitzung.
