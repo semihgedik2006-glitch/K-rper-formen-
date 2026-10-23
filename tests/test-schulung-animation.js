@@ -104,7 +104,7 @@ async function oeffne(b, w, h, rolle, vorher) {
   await p.waitForTimeout(3200);
   await p.evaluate(() => {
     const k = document.querySelector('.mobnav [data-group="g-wissen"]') || document.querySelector('#side [data-group="g-wissen"]');
-    /* Runde 241: Mitarbeiter haben den Raum „Wissen“ nicht mehr – dann über „Alles“. */
+    /* Runde 245: Mitarbeiter haben den Raum „Wissen“ nicht mehr – dann über „Alles“. */
     if (k) k.click(); else { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="schulung"]').click(); }
   });
   await p.waitForTimeout(700);

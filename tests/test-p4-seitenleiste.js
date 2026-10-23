@@ -160,7 +160,7 @@ async function trefferSeite(p) {
     const a = await p.evaluate(LEISTE);
     if (rolle === 'mitarbeiter')
       // Runde 184: dieselben fünf Räume wie am Handy, ohne Verwaltung.
-      /* Runde 241, aus dem Betrieb 23.10.2026 auf „Mitarbeiter unten nur Heute, Zeiten, Plan, Nachrichten?": „ja". */
+      /* Runde 245, aus dem Betrieb 23.10.2026 auf „Mitarbeiter unten nur Heute, Zeiten, Plan, Nachrichten?": „ja". */
       pruefe('Mitarbeiter: Heute, Zeiten, Plan, Nachrichten',
         a.reihe.join('|') === 'Heute|Zeiten|Plan|Nachrichten', a.reihe.join('|'));
     for (const dichte of ['normal', 'kompakt']) {

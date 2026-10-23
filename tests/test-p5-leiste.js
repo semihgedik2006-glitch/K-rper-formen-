@@ -83,7 +83,7 @@ async function tippe(p, wort) {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
 
   {
-    /* Runde 241, aus dem Betrieb 23.10.2026 auf „Mitarbeiter unten nur Heute, Zeiten, Plan, Nachrichten?": „ja". Die Abläufe über „Studio" prüft
+    /* Runde 245, aus dem Betrieb 23.10.2026 auf „Mitarbeiter unten nur Heute, Zeiten, Plan, Nachrichten?": „ja". Die Abläufe über „Studio" prüft
        dieser Durchlauf deshalb mit der Studioleitung, die alle Räume hat;
        die vier Räume der Mitarbeiter stehen gleich darunter. */
     {
@@ -143,7 +143,7 @@ async function tippe(p, wort) {
     /* Seit Runde 222 liegt „Meine Zeiten" unten als eigener Knopf; als
        Schnellzugriff wäre es ein zweiter Weg an dieselbe Stelle (wie der
        Putzplan seit P5). An seinen Platz rückt „Mein Kalender". */
-    /* Seit Runde 241 läuft dieser Teil mit der Studioleitung; deren
+    /* Seit Runde 245 läuft dieser Teil mit der Studioleitung; deren
        Vorschlag ist Schichtplan · Anliegen · Meine Woche (SCHNELL_VORSCHLAG).
        Den der Mitarbeiter prüft der Block „Mitarbeiter" oben. */
     pruefe('der Schnellzugriff-Vorschlag (Studioleitung): Schichtplan, Anliegen, Meine Woche',

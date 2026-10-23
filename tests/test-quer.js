@@ -100,7 +100,7 @@ const MESSEN = erlaubt => {
         const gDa = await page.evaluate(([g, erste]) => {
           const k = document.querySelector('.mobnav [data-group="' + g + '"]');
           if (k) { k.click(); return true; }
-          /* Runde 241: „Alles" ist die Schublade am Bereichskopf; über sie
+          /* Runde 245: „Alles" ist die Schublade am Bereichskopf; über sie
              erreichen Mitarbeiter Studio und Wissen ohne Raum-Knopf. */
           const alles = document.getElementById('bereichKopf');
           if (!alles) return false;

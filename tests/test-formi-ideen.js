@@ -224,7 +224,7 @@ const LAEUFT_AN = (sel) => {
     console.log('\n── 4 Schulung ──');
     for (const [w, h, falsch] of [[1440, 900, false], [390, 844, true]]) {
       const p = await oeffne(b, w, h, { demo: 'mitarbeiter' });
-      await p.evaluate(() => { const k = document.querySelector('.mobnav [data-group="g-wissen"]') || document.querySelector('#side [data-group="g-wissen"]'); /* Runde 241: Mitarbeiter haben „Wissen“ nicht mehr – über „Alles“. */ if (k) k.click(); else { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="schulung"]').click(); } });
+      await p.evaluate(() => { const k = document.querySelector('.mobnav [data-group="g-wissen"]') || document.querySelector('#side [data-group="g-wissen"]'); /* Runde 245: Mitarbeiter haben „Wissen“ nicht mehr – über „Alles“. */ if (k) k.click(); else { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="schulung"]').click(); } });
       await p.waitForTimeout(700);
       await p.evaluate(() => { const t = [...document.querySelectorAll('[data-subview]')].find(x => /Schulung/.test(x.textContent)); if (t) t.click(); });
       await p.waitForTimeout(1600);

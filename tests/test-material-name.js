@@ -39,7 +39,7 @@ async function seite(b, stub) {
   await p.goto(APP, { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(2600);
   await p.evaluate(async () => {
-    /* Runde 241: Mitarbeiter haben keinen Raum „Studio" mehr — sie gehen
+    /* Runde 245: Mitarbeiter haben keinen Raum „Studio" mehr — sie gehen
        über die Schublade „Alles". */
     (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => {
       document.getElementById('bereichKopf').click();

@@ -51,7 +51,7 @@ function pruefe(was, bedingung, hinweis) {
 async function offeneLautListe(p) {
   await p.evaluate(() => {
     const g = document.querySelector('.mobnav [data-group="g-arbeit"]');
-    /* Runde 241: Mitarbeiter haben den Raum „Studio" nicht mehr — ohne
+    /* Runde 245: Mitarbeiter haben den Raum „Studio" nicht mehr — ohne
        Raum-Knopf geht der Weg über die Schublade „Alles". */
     if (g) g.click();
     else {
@@ -93,14 +93,14 @@ async function startseite(p) {
     const koepfe = [...document.querySelectorAll('.heute-block .hk-wort')]
       .map(x => x.textContent.trim());
     const offenKopf = koepfe.find(t => /^Offen/.test(t)) || '';
-    const m = /·\s*(\d+)/.exec(offenKopf);
-    /* Runde 241: Mitarbeiter haben keinen Raum „Studio" mehr (aus dem
+    const m = /(?:·\s*|\s)(\d+)$/.exec(offenKopf);
+    /* Runde 245: Mitarbeiter haben keinen Raum „Studio" mehr (aus dem
        Betrieb, 23.10.2026: „ja" zu „unten nur Heute, Zeiten, Plan,
        Nachrichten"); bei ihnen trägt „Heute" den Punkt. */
     const abz = document.querySelector('.mn-reihe [data-group="g-arbeit"] .badge') ||
                 document.querySelector('.mn-reihe [data-group="g-start"] .badge');
     const ueber = koepfe.find(t => /^Überfällig/.test(t)) || '';
-    const mu = /·\s*(\d+)/.exec(ueber);
+    const mu = /(?:·\s*|\s)(\d+)$/.exec(ueber);
     /* Seit dem 23.9.2026 kann „Offen" auch als Knopf unter „Ausserdem"
        stehen — dann, wenn der Bildschirm für den Block nicht mehr
        reicht (der Putzplan ist dazugekommen). */
@@ -260,7 +260,7 @@ async function startseite(p) {
        ein Mensch es täte. */
     await p.evaluate(() => {
       const g = document.querySelector('.mobnav [data-group="g-arbeit"]');
-      /* Runde 241: Mitarbeiter haben den Raum „Studio" nicht mehr — ohne
+      /* Runde 245: Mitarbeiter haben den Raum „Studio" nicht mehr — ohne
          Raum-Knopf geht der Weg über die Schublade „Alles". */
       if (g) g.click();
       else {

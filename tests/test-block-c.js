@@ -117,7 +117,7 @@ const FEDERN = () => document.getAnimations().filter(a => a.animationName === 'c
   /* ══ C1: Putzplan ══ */
   {
     const p = await seite(b, 'mitarbeiter');
-    /* Runde 241: Mitarbeiter haben keinen Raum „Studio" mehr — der
+    /* Runde 245: Mitarbeiter haben keinen Raum „Studio" mehr — der
        Putzplan liegt für sie in der Schublade „Alles". */
     await p.evaluate(() => (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => {
       document.getElementById('bereichKopf').click();
@@ -176,7 +176,12 @@ const FEDERN = () => document.getAnimations().filter(a => a.animationName === 'c
   {
     const p = await seite(b, 'chef');
     const f = await p.evaluate(() => {
-      const z = document.querySelector('#heuteListe .heute-zeile');
+      /* Runde 241 („Apple-Grundgerüst, Formi als Akzent“; zu den
+         Probebildern „genau so hab ichs mir vorgestellt“): die Zeilen
+         stehen in EINER Gruppe je Abschnitt, die Rundung trägt die
+         Gruppe. Gemessen wird deshalb die Inhaltsfläche, die man sieht —
+         dieselben 14 px wie vorher an der einzelnen Zeile. */
+      const z = document.querySelector('#heuteListe .heute-liste');
       const k = document.querySelector('#heuteListe .heute-rest-knopf');
       return { zeile: parseFloat(getComputedStyle(z).borderTopLeftRadius),
                knopf: k ? parseFloat(getComputedStyle(k).borderTopLeftRadius) : null,

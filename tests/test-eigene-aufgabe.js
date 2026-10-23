@@ -36,7 +36,7 @@ async function start(stub) {
   await page.goto(APP, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(3000);
   await page.evaluate(async () => {
-    /* Runde 241: Mitarbeiter haben keinen Raum „Studio" mehr — sie gehen
+    /* Runde 245: Mitarbeiter haben keinen Raum „Studio" mehr — sie gehen
        über die Schublade „Alles". */
     (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => {
       document.getElementById('bereichKopf').click();
