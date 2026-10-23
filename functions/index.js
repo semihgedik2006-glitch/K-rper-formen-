@@ -9149,7 +9149,132 @@ const _formiMaterialW = beideWelten('inventory/{studioKey}', _formiMaterial, 'on
 exports.formiMaterial = _formiMaterialW.flach;
 exports.formiMaterialF = _formiMaterialW.firma;
 
-exports.__intern = { formiTagText, formiSchichtendeText, formiMaterialNeu, formiFristVorbei, formiSchichtEndeIn, abschlussZeilenPruefen, monateVor, eigeneAbschlussZeile, eigeneRegel, antragUhrPruefen, ANTRAG_TAGE_MAX, erlaubteSchritte, schrittWaehlen, tagesStand, gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnStimmePruefen, GEHIRN_STIMMEN, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
+/* ══ STEMPEL-ERINNERUNG (Runde 238) ═══════════════════════════════════
+   Aus dem Betrieb, 23.10.2026: „mach die errinerungen und vlt auch in
+   kobi mit formi und einer mail oder so" — die Erinnerung aus dem Plan
+   (docs/ZEITERFASSUNG-PLAN.md, Schritt 6), wie bei Crewmeister.
+
+   Zwei Anlässe, je Person und Tag höchstens einmal:
+     kommen  15 min nach Schichtbeginn steht heute noch kein Stempel.
+             → Handy (und Formi in der App). Keine Mail: wer gerade
+             ankommt, liest sie ohnehin erst abends.
+     gehen   30 min nach Schichtende ist die Person noch eingestempelt;
+             ohne Schicht 10 h nach dem Kommen (§ 3 ArbZG: mehr als zehn
+             Stunden am Tag gibt es nicht). → Handy UND Mail (und Formi):
+             wer schon zu Hause ist, sieht die Mail, und der fehlende
+             Feierabend ist das, was am Monatsende fehlt.
+   Kein Anlass, wenn heute Urlaub oder Krankheit eingetragen ist.
+
+   „Höchstens einmal" ohne gespeicherten Stand: jeder Anlass hat einen
+   festen Zeitpunkt (Beginn + 15, Ende + 30, Kommen + 10 h), und der Lauf
+   alle 15 Minuten nimmt nur die, die seit dem letzten Lauf erreicht
+   wurden — wie Formis Feierabend-Check (formiSchichtendeFirma). Damit
+   entsteht keine neue Sammlung, die in beide Regel-Welten müsste.
+
+   Abschaltbar: Handy je Gerät (Meldungen → „Stempel-Erinnerung", Art
+   'stempel'), Mail je Konto (Mails → „Feierabend vergessen", mailAus). */
+const STEMPEL_ERINNERN_LAUF_MS = 15 * 60000;
+const STEMPEL_KOMMEN_NACH_MS = 15 * 60000;
+const STEMPEL_GEHEN_NACH_MS = 30 * 60000;
+const STEMPEL_OHNE_SCHICHT_MS = 10 * 3600000;
+/* Rein rechnerisch: wer wird JETZT woran erinnert?
+   schichten [{uid, from, to, studio}], stempel [{uid, art, ts, storno}],
+   abwesend [{uid, from, to, type, status}] — alles von heute. */
+function stempelErinnerungen(o) {
+  const jetzt = o.jetzt, heute = o.heute, von = jetzt - (o.laufMs || STEMPEL_ERINNERN_LAUF_MS);
+  const imFenster = (t) => t > von && t <= jetzt;
+  const zeit = (hhmm) => (/^\d{1,2}:\d{2}$/.test(String(hhmm || '')) ? berlinZuUtc(heute, hhmm).getTime() : null);
+  const uhr = (ts) => new Date(ts).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' });
+  const frei = {};
+  (o.abwesend || []).forEach((a) => {
+    if (!a || !a.uid || (a.type !== 'urlaub' && a.type !== 'krank')) return;
+    if (a.type === 'urlaub' && a.status && a.status !== 'genehmigt') return;
+    if (String(a.from || '') <= heute && String(a.to || a.from || '') >= heute) frei[a.uid] = true;
+  });
+  const proPerson = {};
+  (o.stempel || []).forEach((z) => { if (z && z.uid) (proPerson[z.uid] = proPerson[z.uid] || []).push(z); });
+  const schichtenVon = {};
+  (o.schichten || []).forEach((x) => { if (x && x.uid) (schichtenVon[x.uid] = schichtenVon[x.uid] || []).push(x); });
+  const raus = [];
+  const leute = new Set(Object.keys(schichtenVon).concat(Object.keys(proPerson)));
+  leute.forEach((uid) => {
+    if (frei[uid]) return;
+    const st = tagesStand(proPerson[uid] || [], jetzt);
+    const sch = (schichtenVon[uid] || []).map((x) => ({ x, ab: zeit(x.from), bis: zeit(x.to) }))
+      .filter((s) => s.ab !== null).sort((a, b) => a.ab - b.ab);
+    /* Nichts gestempelt — oder schon Feierabend, und eine ZWEITE Schicht
+       am selben Tag hat danach begonnen (geteilter Dienst). */
+    if (!st.letzteArt || st.letzteArt === 'gehen') {
+      const s = sch.find((v) => (!st.letzteArt || v.ab > st.seit) && imFenster(v.ab + STEMPEL_KOMMEN_NACH_MS));
+      if (s) raus.push({ uid, art: 'kommen', titel: '⏱️ Schon eingestempelt?',
+        text: 'Deine Schicht' + (s.x.studio ? ' in ' + s.x.studio : '') + ' hat um ' + s.x.from +
+          ' begonnen – bisher steht kein Stempel. Stempel am Terminal oder unter „Zeiten".' });
+      return;
+    }
+    const letzte = sch.filter((v) => v.bis !== null).pop();
+    if (letzte) {
+      if (imFenster(letzte.bis + STEMPEL_GEHEN_NACH_MS) && letzte.bis > st.beginn) {
+        raus.push({ uid, art: 'gehen', titel: '⏱️ Feierabend vergessen?',
+          text: 'Deine Schicht' + (letzte.x.studio ? ' in ' + letzte.x.studio : '') + ' endete um ' + letzte.x.to +
+            ' – du bist noch eingestempelt (seit ' + uhr(st.beginn || st.seit) + '). Bist du schon weg, ' +
+            'beantrage unter „Zeiten" eine Korrektur mit der richtigen Uhrzeit.' });
+      }
+      return;
+    }
+    if (st.beginn && imFenster(st.beginn + STEMPEL_OHNE_SCHICHT_MS)) {
+      raus.push({ uid, art: 'gehen', titel: '⏱️ Feierabend vergessen?',
+        text: 'Du bist seit 10 Stunden eingestempelt (seit ' + uhr(st.beginn) + '). Bist du schon weg, ' +
+          'beantrage unter „Zeiten" eine Korrektur mit der richtigen Uhrzeit.' });
+    }
+  });
+  return raus;
+}
+function stempelErinnernMail(e, name) {
+  return { betreff: e.titel.replace(/^⏱️ /, ''),
+    text: 'Hallo' + (name ? ' ' + String(name).split(' ')[0] : '') + ',\n\n' + e.text +
+      '\n\nDiese Erinnerung lässt sich in der App unter Einstellungen → Mails abschalten („Feierabend vergessen").' };
+}
+async function stempelErinnernFirma(firma, jetzt, opt) {
+  opt = opt || {};
+  const push = opt.push || sendPush;
+  const heute = tagBerlin(new Date(jetzt));
+  const F = W(firma);
+  const schichten = [], abwesend = [];
+  for (const ref of await F.collection('studios').listDocuments()) {
+    const name = await studioName(firma, ref.id);
+    (await formiSchichtenHeute(firma, ref.id, heute)).forEach((x) => schichten.push(Object.assign({ studio: name }, x)));
+    (await ref.collection('absences').where('to', '>=', heute).get()).docs.forEach((d) => abwesend.push(d.data() || {}));
+  }
+  const stempel = (await F.collection('zeiten').where('tag', '==', heute).get()).docs.map((d) => d.data() || {});
+  const liste = stempelErinnerungen({ schichten, stempel, abwesend, jetzt, heute });
+  const bericht = [];
+  for (const e of liste) {
+    const u = await db.collection('users').doc(String(e.uid)).get();
+    const ud = u.exists ? (u.data() || {}) : null;
+    if (!ud || ud.aktiv === false || !gehoertZu(ud, firma)) continue;
+    const tokens = await collectTokens((d) => d.uid === e.uid && willHaben(d, 'stempel'), null, firma);
+    if (tokens.length) await push(tokens, e.titel, e.text);
+    let mails = 0;
+    if (e.art === 'gehen') {
+      const m = stempelErinnernMail(e, ud.name);
+      mails = await teamMail(firma, [e.uid], m.betreff, m.text, 'stempel');
+    }
+    bericht.push({ uid: e.uid, art: e.art, push: tokens.length, mail: mails });
+  }
+  return bericht;
+}
+exports.stempelErinnern = region.runWith({ timeoutSeconds: 300, memory: '256MB' })
+  .pubsub.schedule('*/15 * * * *').timeZone('Europe/Berlin')
+  .onRun(async () => {
+    const jetzt = Date.now();
+    for (const f of await alleFirmen()) {
+      const b = await stempelErinnernFirma(f, jetzt).catch((e) => { console.error('stempelErinnern', f, e.message); return []; });
+      if (b.length) console.log('Stempel-Erinnerung (' + (f || 'flach') + '): ' + b.length);
+    }
+    return null;
+  });
+
+exports.__intern = { stempelErinnerungen, stempelErinnernMail, stempelErinnernFirma, formiTagText, formiSchichtendeText, formiMaterialNeu, formiFristVorbei, formiSchichtEndeIn, abschlussZeilenPruefen, monateVor, eigeneAbschlussZeile, eigeneRegel, antragUhrPruefen, ANTRAG_TAGE_MAX, erlaubteSchritte, schrittWaehlen, tagesStand, gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnStimmePruefen, GEHIRN_STIMMEN, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
                      gehirnVorschlagPruefen, gehirnBefehlPruefen, gehirnWeg, gehirnKontextText, lageberichtOhneKi,
                      geminiSperreAufheben: () => { _geminiAusBis = 0; }, geminiGesperrt: () => Date.now() < _geminiAusBis, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,
                      authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,

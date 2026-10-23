@@ -21053,3 +21053,290 @@ Umstellung gehalten und eingeordnet:
 Konten trifft und sich hier nicht prüfen lässt, bekommt einen Übergang.
 Entfernt wird das Bisherige in einem eigenen Schritt, wenn P-20
 abgearbeitet ist.
+
+## Runde 237 — Formi als echtes schwarzes Loch (Etappe 3) (23.10.2026)
+
+**Aus dem Betrieb:** „ich möchte noch das er vlt irgendwie noch extra
+schwarze loch eigenschaften hat und so gib mir dafür auch noch ideen“.
+Zu den zehn Ideen kam „alles davon“.
+
+**Gebaut:**
+1. **Sog am Ereignishorizont** (`formiSchlucken`, hängt an `burstAt`, also
+   an jedem Haken in Aufgaben und Putzplan): Der Titel des abgehakten
+   Punkts löst sich als Schriftzug und fällt in einer enger werdenden
+   Spirale zu Formi. Dabei wird er in der Länge gezogen und in der Höhe
+   gestaucht („Spaghettifizierung“, am Ende scaleX 3,2 / scaleY 0,1),
+   dann ist er weg und die Kugel saugt (Welle `sog`). Genommen wird nur
+   der Text des Titels selbst, ohne Abzeichen wie „überfällig“ oder
+   „1/3“.
+2. **Photonenring:** ein dünner, heller Lichtring direkt am Rand des
+   Lochs (Kugel und grosse Figur im Fenster).
+3. **Hawking-Strahlung:** gehört jetzt zum Eigenleben. Vier winzige
+   Teilchen entweichen vom Rand, erst zögernd, dann schneller.
+4. **Jets:** Beim grossen Jubel (`feiert`, zum Beispiel wenn der
+   Putzplan für heute fertig ist) schiesst Formi zwei Lichtstrahlen
+   senkrecht zur Scheibe.
+5. **Doppler-Leuchten:** gab es schon (Runde 226, die linke Seite der
+   Scheibe ist heller).
+6. **Gezeitenkräfte:** Kommt die Maus nah, wird Formi bis 4 px zu ihr
+   hingezogen und lässt los, wenn sie geht. Das läuft über die eigene
+   Eigenschaft `translate`, damit es sich nicht mit den Gefühlen auf
+   `transform` schlägt.
+7. **Gravitationswelle:** Beim Jubel läuft ein dünner Ring von Formi aus
+   durch die ganze App (Welle `grav`, 1,4 s).
+8. **Wurmloch:** Öffnet Formi eine Seite (`gehirnOeffne`), kommt sie
+   klein und gedreht aus seinem Loch und wächst auf.
+9. **Zeitdehnung:** Der Funke, den Formi fängt, kriecht kurz vor dem
+   Loch (langsames Ende, 2,6 s statt 2,2 s).
+10. **Masse:** Je mehr heute auf diesem Gerät abgehakt ist (ab 3, 8 und
+    15), desto heller und weiter strahlt Formi. Gezählt wird je Tag in
+    `kf_formi_masse`.
+
+**Entschieden und warum:**
+- *Sterne im App-Hintergrund nicht verbiegen.* Der Sternenhimmel ist ein
+  Hintergrundbild am `<body>`. Ihn um die Kugel zu krümmen hiesse, die
+  ganze Seite in jedem Bild neu zu malen. Der Photonenring zeigt
+  dasselbe Bild, die Lichtablenkung, und kostet nichts.
+- *Karten kippen beim Scrollen nicht zu Formi.* Das wäre Messen in jedem
+  Bild für jede Karte. Die Gezeiten wirken nur an Formi selbst.
+- Alles ist endlich, nur `transform`/`opacity` (Gezeiten: `translate`),
+  nicht klickbar und aus bei „weniger Bewegung“ und „Gefühle aus“.
+
+**Geprüft:**
+- `tests/test-formi-loch.js` (neu, 23 Zusicherungen, 1440 und 390 px):
+  - Sog: Ziel an der Kugel, scaleX > 2, am Ende weg, danach Sog
+  - Photonenring
+  - Hawking-Strahlung
+  - Jets und Gravitationswelle, danach ist alles weg
+  - Gezeiten: zieht hin und lässt los
+  - Wurmloch
+  - Masse-Stufen 0 bis 3
+  - Zeitdehnung
+  - „weniger Bewegung“
+- Grün vor dem Zusammenführen mit `main`: test-knoepfe,
+  test-gestaltung, test-abgeschnitten, test-quer, alle test-formi-*
+  (ausser -verdeckt), test-stil-formi, test-gehirn, test-uebersicht,
+  test-tagesgruss, test-neuigkeiten, test-block8, test-mitarbeiter,
+  test-csp.
+- Grün nach dem Zusammenführen (Runden 233 und 235 von `main`): test-csp,
+  test-neuigkeiten, test-formi-loch, -eigenleben, -app, -lebt, -physik,
+  test-gehirn, test-knoepfe, test-gestaltung.
+- Zwei Funde im eigenen Durchlauf, im Code behoben:
+  - Der Schriftzug nahm das ganze Titelelement mit Abzeichen
+    („überfällig1/3“). Jetzt nimmt er nur den Text.
+  - Er zielte mit der Breite der Zeile statt mit seiner eigenen und
+    landete 100 px neben der Kugel. Jetzt wird seine eigene Breite
+    einmal gelesen, bevor etwas animiert wird.
+
+**Nicht geprüft:** echte Handys und die Arbeit je Bild beim Sog (ein
+Element, 1,1 s, nur `transform`/`opacity`).
+
+**Nachtrag beim Zusammenführen mit Runde 236 („Das neue Design gilt für
+alle“):** Im neuen Design gibt es auf „Heute“ keinen Gruss mehr. Damit war
+Formi neben dem Gruss (Runde 233) verschwunden, test-formi-app meldete
+„da: false“. Formi sitzt jetzt im Bereichskopf rechts neben „Heute“, mit
+40 px und nur auf der Startseite (`body.auf-start`, gesetzt in
+`showView`). Im alten Design, das die Geschäftsführung übergangsweise
+behalten kann, bleibt Formi neben dem Gruss.
+
+**Eigener Fehler, zweimal:** `index.html` wurde geändert, während ein
+Gesamtdurchlauf lief. Beide Läufe sind verworfen und auf dem Endstand
+wiederholt.
+
+## Runde 238 — Stempel vergessen? Erinnerung aufs Handy, per Mail und mit Formi (23.10.2026)
+
+Aus dem Betrieb, 23.10.2026: „mach die errinerungen und vlt auch in kobi
+mit formi und einer mail oder so" — gelesen als „in Kombi": Handy, Formi
+und Mail zusammen. Es ist Schritt 6 aus `docs/ZEITERFASSUNG-PLAN.md`.
+
+### Was gebaut wurde
+
+- **Server, alle 15 Minuten** (`stempelErinnern`): zwei Anlässe, je
+  Person und Tag einmal.
+  - *Schon eingestempelt?* — 15 min nach Schichtbeginn kein Stempel:
+    **Handy**. Keine Mail: wer gerade ankommt, liest sie erst abends.
+  - *Feierabend vergessen?* — 30 min nach Schichtende noch eingestempelt
+    (auch in der Pause), ohne Schicht 10 h nach dem Kommen (§ 3 ArbZG):
+    **Handy und Mail**. Wer schon zu Hause ist, sieht die Mail; und der
+    fehlende Feierabend ist das, was am Monatsende fehlt.
+  - Nicht bei Urlaub (genehmigt) oder Krankheit; ein abgelehnter Urlaub
+    ist kein freier Tag. Geteilter Dienst: die zweite Schicht wird
+    wieder erinnert.
+- **Formi in der App**: dieselben Anlässe beim Öffnen, beim Zurückkehren
+  und alle 5 Minuten — einmal je Anlass, Tag und Gerät. Schweigt Formi
+  (Gefühle aus, sachlich, Formi nicht da), kommt dieselbe Zeile als
+  Meldung.
+- **Abschalten**: Meldungen → „Stempel-Erinnerung" (Handy und Formi, je
+  Gerät), Mails → „Feierabend vergessen" (je Konto, für jeden sichtbar).
+  Auf der Seite „Zeiten" steht ein Satz, dass es die Erinnerung gibt.
+
+### Warum so
+
+- **Kein gespeicherter Stand.** Jeder Anlass hat einen festen Zeitpunkt
+  (Beginn + 15, Ende + 30, Kommen + 10 h); der Lauf nimmt nur, was seit
+  dem letzten Lauf erreicht wurde — wie Formis „Feierabend-Check"
+  (Runde 235). Eine Sammlung „schon erinnert" hätte in beide
+  Regel-Welten gemusst, und ihr einziger Zweck wäre gewesen, sich an
+  etwas zu erinnern, das die Uhr ohnehin weiss. Preis: fällt ein Lauf
+  aus, fällt diese eine Erinnerung aus (Formi in der App fängt es auf,
+  sobald jemand die App öffnet).
+- **Eigene Art `stempel`, nicht `formi`.** Wer Formis Tagesmeldungen
+  abschaltet, will trotzdem wissen, dass der Feierabend fehlt.
+- **30 statt 60 Minuten** (der Plan sagte eine Stunde): Crewmeister
+  erinnert ebenfalls früh, und nach einer halben Stunde ist man oft noch
+  in der Nähe des Terminals.
+
+### Geprüft
+
+- `tests/rules/stempel-erinnerung.test.js` (29): die Rechnung mit
+  Gegenproben (vor/nach dem Fenster, gestempelt, storniert, Pause, Urlaub,
+  krank, abgelehnter Urlaub, geteilter Dienst) und ein ganzer Lauf im
+  Emulator: Push nur an das eigene Gerät, Mail an die eigene Adresse;
+  GEGENPROBEN Gerät aus / Mail abbestellt, deaktiviertes Konto, andere
+  Firma, der nächste Lauf erinnert nicht noch einmal.
+- `tests/test-stempel-erinnerung.js` (12): mit gestellter Uhr in der Demo
+  sagt Formi es genau einmal; GEGENPROBEN 14:16 (zu früh), Schalter aus,
+  Urlaub. Gegenprobe der Gegenprobe: ohne das Merken je Tag wird
+  „nicht noch einmal" rot.
+
+### Nicht geprüft
+
+- Echter Push-Versand und echte Mail: im Emulator wird beides
+  nachgestellt (Ersatz-Versender). Ob die Mail ankommt, hängt am
+  SMTP-Zugang der Firma — ohne ihn geht keine Mail, und der Lauf
+  behauptet auch keine.
+- Ein Antippen der Push-Nachricht öffnet die App, aber nicht direkt die
+  Seite „Zeiten" (der Service Worker kennt keine Ziele). Beim Öffnen sagt
+  es Formi.
+
+---
+
+## Runde 239 — Systemschrift statt Barlow: der erste Schritt zum Apple-Stil (23.10.2026)
+
+**Aus dem Betrieb:** „das ganze wissen möchten wir auch nutzen sodass
+studio chat am ende wie eine app von apple selber wirkt". Dazu entstand
+das Dokument „Studio Chat wie von Apple – Richtlinien, Plan,
+Vorher/Nachher" (https://claude.ai/artifact/LG4stzk5F4fnL9S3jh8edH) mit
+Studienlage, Apples Vorgaben (HIG, WWDC), zwölf Richtlinien und einem
+Plan in sechs Runden. Probebilder vorher/nachher liegen im Projektordner
+`apple-probebilder/`. Entschieden: „Apple-Grundgerüst, Formi als Akzent"
+und, auf die Barlow-Frage, „ja so wie du empfohlen hast": überall die
+Systemschrift, Barlow nur noch im Schriftzug.
+
+**Gebaut:**
+- `--font-sys` / `--font-head` / `--font-body`: `-apple-system,
+  BlinkMacSystemFont, 'SF Pro …', 'Inter', 'Segoe UI', system-ui`.
+  Auf iPhone, iPad und Mac zeichnet das die SF Pro des Geräts, ohne
+  Datei. Überall sonst Inter (`schriften/inter-variabel.woff2`, SIL OFL,
+  48 KB, eine variable Datei für 100–900, Latin-Teilmenge wie Barlow).
+- **Warum Inter vor system-ui:** am Rechner — dem Hauptgerät — wäre
+  system-ui auf Windows Segoe UI, und die App sähe dort aus wie Windows.
+  Inter ist die freie Schrift, die SF am nächsten kommt; die Probebilder
+  waren damit gerendert und wurden so freigegeben.
+- `--font-marke` (Barlow Condensed) nur noch für den Schriftzug
+  STUDIOCHAT (`.tb-brand`, `.auth-brand`, `.sp-word`).
+- Überschriften in `--font-head` mit Stärke 800 stehen jetzt auf 700
+  (43 Stellen). Barlow Condensed 800 wirkte durch die schmale Form
+  leichter; in der breiten Systemschrift war 800 klobig, und Apple geht
+  bei Titeln nicht über Bold. Formi-Regeln sind nicht dabei (geprüft).
+- Die Grössenleiter bleibt. In „neu" liegt sie bei 11,8 / 13,3 / 14,9 /
+  16,5 / 19,2 / 23,2 / 29,6 px — höchstens gut einen Pixel neben Apples
+  11 / 13 / 15 / 17 / 20 / 22 / 28. Eine Verschiebung hätte die Regel
+  „Startseite auf einem Bildschirm" neu aufgerollt, ohne sichtbaren
+  Gewinn.
+
+**Was die breitere Schrift verschoben hat — gefunden und behoben:**
+- Untere Leiste bei 320 px: „Nachrichten" brach in zwei Zeilen um.
+  Unter 420 px jetzt einzeilig mit enger Laufweite (`--ls-eng`), wie
+  Apples Tab-Leiste.
+- Suche bei 320 px: das Eingabefeld hatte kein `min-width:0` und war
+  damit so breit wie 20 Zeichen der Schrift; mit Inter schob es den
+  Schliessen-Knopf 54 px aus dem Bild (test-abgeschnitten).
+- Suche bei 320 px, zweiter Fund: der Hinweis „Suchen oder Formi
+  fragen …" war 205 px breit im 198-px-Feld. Das „…" ist weg; Apples
+  Suchfelder tragen auch keins.
+- Schnellzugriffe in zwei Spalten (Seitenleiste am Rechner): „Meine
+  Woche" und „Mein Kalender" endeten mit „…". Sie dürfen jetzt auf zwei
+  Zeilen umbrechen.
+- Team, Leitung, 390 px: Die Seite rollte beim Öffnen 84–106 px, weil
+  „heute" knapp unter den Rand rutschte. Auf `main` lag der Tag schon
+  nur 2 px über der Grenze von `heuteInsBild()`. Zwei Zeilen waren in
+  der breiteren Schrift umgebrochen: die Plaketten „6 Schichten" /
+  „deine: 5 Std." (jetzt halbfett, engerer Rand) und die Zeile der
+  vergangenen Tage (jetzt „Mo 19.10.–Do 22.10." mit Bis-Strich ohne
+  Leerzeichen, und zu nur „›" — „Anzeigen" hört der Vorleser weiter).
+- Formis „?" und „z" an der Figur bleiben in Barlow: Formi wird in einem
+  anderen Thread gestaltet und soll sich hier nicht mitändern.
+- `test-p1-aufgaben` hat einen Haken bei 1280 px mit 44 × 36 gemeldet.
+  Der Haken lag 1 px über dem unteren Fensterrand, und seine unsichtbar
+  vergrösserte Trefferfläche wurde vom Fensterrand abgeschnitten. Gemessen
+  wurden bisher nur Knöpfe, deren Kasten ganz im Bild lag. Jetzt wird
+  jeder Knopf vor dem Messen in die Mitte geholt, also werden alle
+  gemessen und jeder ganz. Das ist strenger als vorher, nicht lockerer.
+  Alle sind ≥ 44 × 44.
+
+**Schon vor dieser Runde rot auf `main`** (mit `main` verglichen, nicht
+von hier): test-navigation („Startseite 2,19 Bildschirme", hier 2,24),
+test-neu-design (320 × 568 passt nicht ohne Scrollen), test-gleiten-rahmen
+(Formis Endlos-Animationen), test-formi-verdeckt, test-formi-zeigwie,
+test-gehirn, test-stripe-felder, sowie die Tests, denen hier
+`firebase-functions` bzw. `@firebase/rules-unit-testing` fehlen.
+
+**Tests:** `test-schriften` misst jetzt, dass die Grundschrift Inter ist
+(gleich breit wie Inter, nicht wie die Ersatzschrift), dass Inter aus
+`schriften/` geladen ist und dass die Kette mit `-apple-system` beginnt
+und Inter vor system-ui nennt. Gegenprobe auf `main`: zwei Zeilen rot.
+
+**Nicht geprüft:** Safari auf iPhone und Mac — dort sollte SF Pro
+erscheinen; hier gibt es kein Apple-Gerät. Der Anmeldeweg (Firebase lädt
+in dieser Umgebung nicht).
+
+**Als Nächstes (Plan aus dem Dokument):** Gruppen statt Einzelkarten und
+Titel statt Versalien-Marken, dann untere Leiste mit fünf Einträgen,
+dann Bewegung (drei Federn, Blätter mit Griff), dann Chat in Blasen.
+Formi selbst bleibt bei der anderen Sitzung.
+
+## Runde 240 — Auf „Heute" direkt abhaken (23.10.2026)
+
+Aus dem Betrieb, 23.10.2026, auf meine Empfehlung „Aufbau nach Rolle und
+Aufgabe statt nach Bereich" und die Rückfragen:
+- „Mitarbeiter unten nur Heute, Zeiten, Plan, Nachrichten?": „ja";
+- „Eine Liste oder Blöcke nach Art?": „so wies leichter zu verstehen ist".
+  Meine Wahl dafür: Blöcke bleiben, weil man sie überfliegen kann.
+- „Wer testet?": „ich kann leider nur selber testen aktuell".
+
+Dagegen steht ein früherer Satz aus dem Betrieb (24.9.): „der am meisten
+benutzte Bereich [ist] der Aufgaben- und Putzplan-Bereich". Fällt
+„Studio" für Mitarbeiter weg, muss „Heute" deshalb das Abarbeiten
+übernehmen. Deshalb kommt dieser Schritt zuerst.
+
+**Gebaut.** Jede Aufgaben- und jede einzelne Putz-Zeile auf „Heute" trägt
+links einen Kreis als eigenen Knopf (`heuteZeile`, `heuteHakenBinden`).
+- Geschrieben wird über `gehirnAbhakenSchreiben()`, denselben Weg, den
+  Formi nimmt (Kürzel, Putzplan-Blatt).
+- Danach erscheint „Rückgängig", das wieder `done:false` schreibt.
+- Der Tipp auf die Zeile selbst öffnet sie weiter.
+
+**Unterwegs gefunden, beide behoben:**
+- *Erste Fassung, Haken über dem Zeichen (absolut):* Sie überdeckte 2 px
+  der vergrösserten Fläche von „alle 4 ›" darüber (test-p3-startseite:
+  44 × 42). Jetzt steht der Haken als Spalte links daneben und überdeckt
+  nichts.
+- *Kürzen auf einen Bildschirm (`heutePasst`):* Es entfernte nur die
+  Zeile, der Haken blieb allein stehen und drückte „Offen" nach
+  „Ausserdem". Jetzt geht die Hülle mit.
+
+**Gemessen.** `tests/test-heute-haken.js` hat 20 Zusicherungen:
+- Haken ≥ 44 × 44 bei 320, 390 und 1440 px, normal und kompakt;
+- `done:true` genau für diese Aufgabe, nach „Rückgängig" `done:false`;
+- Gegenprobe: Der Tipp auf die Zeile öffnet die Aufgaben und hakt nicht ab.
+
+Gegen `main` ist der Test rot. Grün sind ausserdem p3-startseite,
+startseite-putz, tagesband, formi-reihe, knoepfe, gestaltung, csp,
+neuigkeiten und formi-app.
+
+**Die vier Räume für Mitarbeiter sind gebaut, aber noch nicht
+ausgeliefert.** Im Gesamtlauf fielen damit rund 30 Durchläufe, die als
+Mitarbeiter über „Studio" oder „Wissen" an ihr Ziel gehen. Sie müssen auf
+den Weg über „Alles" umgestellt werden. Das kommt als eigener Schritt
+direkt danach, nicht halb in diesem.

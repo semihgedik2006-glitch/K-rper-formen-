@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-6redy6jmv4BNz9Uz4aMw4Jf1BujfHg/MZ4mtIYH3ldo='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-bsFu5cb0q5zgK3+oZG7AMAdr4Nuyvyuaz6iZRAwyyxE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -63,6 +63,11 @@
 @font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:600;font-display:swap;src:url(schriften/barlow-condensed-600.woff2) format('woff2')}
 @font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:700;font-display:swap;src:url(schriften/barlow-condensed-700.woff2) format('woff2')}
 @font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:800;font-display:swap;src:url(schriften/barlow-condensed-800.woff2) format('woff2')}
+/* Inter (SIL Open Font License, rsms/inter) als Ersatz für Apples SF Pro
+   auf Geräten, die SF nicht mitbringen — vor allem Windows-Rechner, das
+   Hauptgerät im Betrieb. Eine variable Datei für alle Stärken 100–900,
+   Latin-Teilmenge wie bei Barlow (48 KB). */
+@font-face{font-family:'Inter';font-style:normal;font-weight:100 900;font-display:swap;src:url(schriften/inter-variabel.woff2) format('woff2')}
 </style>
 <style>
 /* ══ Damit der Bereichswechsel gleitet statt zu springen ═════════════
@@ -215,8 +220,21 @@
      weil Größe und Gewicht den Unterschied tragen, nicht die
      Blässe. */
   --text:#F7F8FC;--text-2:#C6CAD8;--text-3:#B0B6C8;
-  --font-head:'Barlow Condensed',system-ui,sans-serif;
-  --font-body:'Barlow',system-ui,-apple-system,sans-serif;
+  /* ── Systemschrift wie bei Apple (Runde 239, Wunsch vom 23.10.2026:
+     „sodass studio chat am ende wie eine app von apple selber wirkt") ──
+     Auf iPhone, iPad und Mac zeichnet -apple-system die SF Pro des
+     Geräts — genau Apples Schrift, ohne dass eine Datei geladen wird.
+     Überall sonst (Windows, Android) greift Inter, die SF am nächsten
+     kommt. „Segoe UI" und system-ui stehen nur dahinter, falls die Datei
+     einmal nicht lädt.
+     Bewusst KEIN system-ui vor Inter: auf Windows wäre das Segoe UI,
+     und die App sähe dort wie Windows aus statt wie Apple.
+     Barlow Condensed bleibt nur noch als Marke (--font-marke): im
+     Schriftzug STUDIOCHAT. */
+  --font-sys:-apple-system,BlinkMacSystemFont,'SF Pro Text','Inter','Segoe UI',system-ui,sans-serif;
+  --font-head:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter','Segoe UI',system-ui,sans-serif;
+  --font-body:var(--font-sys);
+  --font-marke:'Barlow Condensed',system-ui,sans-serif;
   /* Rundungen. Feste Pixelwerte gehoeren nicht ins Stylesheet.
      Achtung: eine undefinierte Variable macht die ganze Angabe
      ungueltig — die Ecke ist dann rechtwinklig. */
@@ -471,7 +489,7 @@ body[data-dichte="kompakt"]{
 /* Überschriften tragen die Gliederung, nicht die Farbe. Enger gesetzt
    und eine Spur größer: so erfasst man beim Überfliegen sofort, was
    Titel ist und was Erklärung – auch wenn beides denselben Ton hat. */
-h1,h2,h3,h4{font-family:var(--font-head);font-weight:800;line-height:var(--lh-1)}
+h1,h2,h3,h4{font-family:var(--font-head);font-weight:700;line-height:var(--lh-1)}
 /* Versalien nur noch fuer die Seitenueberschrift.
    Vorher standen sie an dieser einen Regel und galten damit fuer ALLES:
    „EINRICHTUNG", „MEIN DIENST", „VON DER LEITUNG", „ÜBERGABE",
@@ -715,7 +733,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 @keyframes spDraw{to{stroke-dashoffset:0}}
 .sp-tail,.sp-sc{opacity:0;animation:spIn .5s ease .8s forwards}
 @keyframes spIn{to{opacity:1}}
-.sp-word{font-family:var(--font-head);font-weight:800;font-size:var(--t-2xl);letter-spacing:var(--ls-l);color:#fff;
+.sp-word{font-family:var(--font-marke);font-weight:800;font-size:var(--t-2xl);letter-spacing:var(--ls-l);color:#fff;
   opacity:0;transform:translateY(10px);animation:spWord .6s var(--ease-out) 1s forwards}
 .sp-word b{background:linear-gradient(110deg,#8B5CF6,#22D3EE,#EC4899);-webkit-background-clip:text;
   background-clip:text;-webkit-text-fill-color:transparent}
@@ -751,7 +769,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .auth-card{position:relative;z-index:1;width:100%;max-width:450px;margin:auto;background:var(--bg-2);
   border:1px solid var(--line-2);border-radius:var(--radius-lg);padding:clamp(24px,6vw,40px);
   box-shadow:var(--e3)}
-.auth-brand{font-family:var(--font-head);font-weight:800;font-size:var(--t-xl);letter-spacing:var(--ls-s);margin-bottom:var(--s4)}
+.auth-brand{font-family:var(--font-marke);font-weight:800;font-size:var(--t-xl);letter-spacing:var(--ls-s);margin-bottom:var(--s4)}
 .auth-brand b{color:var(--accent-d)}
 .auth-sub{color:var(--text-2);margin-bottom:var(--s20);font-size:var(--t-md);text-align:center}
 .auth-brand{text-align:center}
@@ -803,7 +821,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
    nur der Knopf hat einen Winkel, hebt sich beim Zeigen und liegt auf
    einer Farbfläche. */
 .zugang{margin-top:var(--s20);padding-top:var(--s20);border-top:1px solid var(--line)}
-.zugang-frage{font-family:var(--font-head);font-weight:800;font-size:var(--t-lg);
+.zugang-frage{font-family:var(--font-head);font-weight:700;font-size:var(--t-lg);
   text-transform:uppercase;letter-spacing:var(--ls-eng);margin-bottom:var(--s12)}
 .zugang-weg{display:flex;align-items:flex-start;gap:var(--s10);width:100%;text-align:left;
   padding:var(--s12);border-radius:var(--r-md);border:none;background:var(--auf-1);
@@ -929,7 +947,7 @@ html.demo #terminalSchirm{top:44px}
    margin:… -8px zieht die Trefferflaeche ueber den Schriftzug hinaus,
    ohne die Zeile hoeher zu machen: der Griff ist damit auf jedem Geraet
    ueber 44px hoch, obwohl der Text nur 20 misst. */
-.tb-brand{display:flex;align-items:center;gap:var(--s8);font-family:var(--font-head);font-weight:800;
+.tb-brand{display:flex;align-items:center;gap:var(--s8);font-family:var(--font-marke);font-weight:800;
   font-size:var(--t-lg);letter-spacing:var(--ls-s);
   background:none;border:0;color:inherit;cursor:pointer;text-align:left;
   padding:var(--s12) var(--s6);margin:calc(-1 * var(--s12)) calc(-1 * var(--s6));
@@ -950,7 +968,7 @@ html.demo #terminalSchirm{top:44px}
 .tb-who b{font-family:var(--font-head);font-size:var(--t-md);display:block}
 .tb-who span{font-size:var(--t-xs);color:var(--text-2)}
 .avatar{width:38px;height:38px;border-radius:var(--r-rund);flex-shrink:0;display:grid;place-items:center;
-  font-family:var(--font-head);font-weight:800;font-size:var(--t-sm);color:var(--on-accent);
+  font-family:var(--font-head);font-weight:700;font-size:var(--t-sm);color:var(--on-accent);
   background:var(--brand)}
 /* ── Die Kopfzeile: jeder Griff 44 × 44, auf JEDEM Gerät (24.9.2026) ──
    Bisher galt das nur bis 520 px. Am Rechner — dem Hauptgerät — waren
@@ -1337,7 +1355,7 @@ html.demo #terminalSchirm{top:44px}
 .at-item.on{background:rgba(var(--akz-rgb),.12)}
 .at-av{width:28px;height:28px;flex-shrink:0;border-radius:var(--r-rund);display:grid;place-items:center;
   background:linear-gradient(135deg,var(--accent),var(--accent-2));color:var(--on-accent);
-  font-family:var(--font-head);font-weight:800;font-size:var(--t-xs)}
+  font-family:var(--font-head);font-weight:700;font-size:var(--t-xs)}
 .at-nm{flex:1;font-size:var(--t-md);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .at-ro{flex-shrink:0;font-size:var(--t-2xs);color:var(--text-3)}
 
@@ -1423,7 +1441,7 @@ html.demo #terminalSchirm{top:44px}
    Ziffernbreite springt die Spalte bei jedem Wechsel. Der einzige Ort in
    der App, an dem das noch fehlte — gefunden mit einem Durchlauf ueber
    neun Ansichten, der gestapelte Zahlen sucht, nicht Zahlen ueberhaupt. */
-.pcount{font-family:var(--font-head);font-weight:800;font-size:var(--t-lg);white-space:nowrap;
+.pcount{font-family:var(--font-head);font-weight:700;font-size:var(--t-lg);white-space:nowrap;
   font-variant-numeric:tabular-nums}
 .todo{display:flex;gap:var(--s12);align-items:flex-start;padding:var(--s12);background:var(--bg-soft);
   border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:var(--s8)}
@@ -1960,7 +1978,7 @@ body.neu .scroll-area > .pp-leiste:first-child{margin-top:var(--s8)}
 .dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--s10);margin-bottom:var(--s16)}
 .dash-tile{background:var(--bg-2);border:none;box-shadow:var(--e1);
   border-radius:var(--r-md);padding:var(--s16) var(--s16)}
-.dash-tile .dn{font-family:var(--font-head);font-weight:800;font-size:var(--t-2xl);line-height:var(--lh-1);
+.dash-tile .dn{font-family:var(--font-head);font-weight:700;font-size:var(--t-2xl);line-height:var(--lh-1);
   background:linear-gradient(135deg,var(--accent-d),var(--accent-2));-webkit-background-clip:text;
   background-clip:text;-webkit-text-fill-color:transparent}
 .dash-tile .dn.warn{background:none;-webkit-text-fill-color:initial;color:var(--danger-tx)}
@@ -1981,7 +1999,14 @@ body.neu .scroll-area > .pp-leiste:first-child{margin-top:var(--s8)}
   box-shadow:var(--e3);overflow:hidden;max-height:78vh;display:flex;flex-direction:column}
 .search-bar{display:flex;align-items:center;gap:var(--s10);padding:var(--s12) var(--s12);border-bottom:1px solid var(--line)}
 .search-bar svg{width:20px;height:20px;color:var(--text-3);flex-shrink:0}
-.search-bar input{flex:1;background:none;border:none;color:var(--text);font-size:var(--t-md);outline:none}
+/* Runde 239: auf sehr schmalen Handys 2 px weniger Abstand je Seite —
+   sonst ist „Suchen oder Formi fragen" in der Systemschrift (unter
+   „neu" 16,5 px) 203 px breit im 198-px-Feld und endet abgeschnitten. */
+@media (max-width:360px){ .search-bar{gap:var(--s8);padding:var(--s12) var(--s10)} }
+/* min-width:0: sonst ist ein Eingabefeld mindestens so breit wie seine
+   Grundgrösse (20 Zeichen der Schrift). Mit der breiteren Systemschrift
+   (Runde 239) schob das den Schliessen-Knopf bei 320 px aus dem Bild. */
+.search-bar input{flex:1;min-width:0;background:none;border:none;color:var(--text);font-size:var(--t-md);outline:none}
 .search-bar button{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:var(--t-lg);padding:var(--s4)}
 #searchResults{overflow-y:auto;padding:var(--s6)}
 .sr{display:flex;align-items:center;gap:var(--s10);padding:var(--s10) var(--s12);border-radius:var(--r-sm);cursor:pointer}
@@ -2219,7 +2244,7 @@ body.neu .scroll-area > .pp-leiste:first-child{margin-top:var(--s8)}
   background:var(--bg-2);border:1px solid var(--line-2);
   border-radius:var(--r-lg);padding:var(--s16);box-shadow:var(--e3);
   transition:top .32s var(--ease-ios),left .32s var(--ease-ios)}
-#tourZahl{font-family:var(--font-head);font-weight:800;font-size:var(--t-2xs);
+#tourZahl{font-family:var(--font-head);font-weight:700;font-size:var(--t-2xs);
   text-transform:uppercase;letter-spacing:var(--ls-m);color:var(--accent-d);
   margin-bottom:var(--s4)}
 #tourTitel{font-size:var(--t-lg);margin-bottom:var(--s6)}
@@ -3241,10 +3266,10 @@ body.neu .scroll-area > .pp-leiste:first-child{margin-top:var(--s8)}
 #terminalSchirm.show{display:flex}
 .tm-kopf{display:flex;align-items:flex-start;justify-content:space-between;
   gap:var(--s12);flex-shrink:0;margin-bottom:var(--s16)}
-.tm-studio{font-family:var(--font-head);font-weight:800;font-size:var(--t-lg);
+.tm-studio{font-family:var(--font-head);font-weight:700;font-size:var(--t-lg);
   letter-spacing:var(--ls-s)}
 .tm-gerät{font-size:var(--t-xs);color:var(--text-3)}
-.tm-uhr{font-family:var(--font-head);font-weight:800;font-size:var(--t-2xl);
+.tm-uhr{font-family:var(--font-head);font-weight:700;font-size:var(--t-2xl);
   font-variant-numeric:tabular-nums;color:var(--accent-d);text-align:right}
 /* Der Code muss aus einem Meter Abstand lesbar sein — jemand tippt ihn
    vom Tablet auf dem eigenen Telefon ab. Deshalb Zifferabstand statt
@@ -3252,7 +3277,7 @@ body.neu .scroll-area > .pp-leiste:first-child{margin-top:var(--s8)}
 .tm-code{text-align:right;margin-top:var(--s4)}
 .tm-code-lab{display:block;font-size:var(--t-2xs);color:var(--text-3);
   letter-spacing:var(--ls-l);text-transform:uppercase}
-.tm-code b{font-family:var(--font-head);font-weight:800;font-size:var(--t-lg);
+.tm-code b{font-family:var(--font-head);font-weight:700;font-size:var(--t-lg);
   font-variant-numeric:tabular-nums;letter-spacing:var(--ls-l);color:var(--text)}
 /* 220px statt 150: auf einem Querformat-Tablet ergaben 150px sechs
    schmale Kacheln, in denen jeder zweite Name umbrach („Juna / Ritter").
@@ -3302,7 +3327,7 @@ body.neu .scroll-area > .pp-leiste:first-child{margin-top:var(--s8)}
   min-height:64px;padding:0 var(--s16);border:none;background:none;
   color:var(--accent-d);font-family:var(--font-body);font-weight:700;
   font-size:var(--t-md);cursor:pointer}
-.tm-wer{font-family:var(--font-head);font-weight:800;font-size:var(--t-xl)}
+.tm-wer{font-family:var(--font-head);font-weight:700;font-size:var(--t-xl)}
 .tm-was{font-size:var(--t-md);color:var(--text-2);font-weight:600}
 .tm-punkte{display:flex;gap:var(--s10);min-height:24px}
 .tm-punkte i{width:16px;height:16px;border-radius:var(--r-rund);
@@ -3312,7 +3337,7 @@ body.neu .scroll-area > .pp-leiste:first-child{margin-top:var(--s8)}
   width:min(320px,100%)}
 .tm-taste{min-height:64px;border-radius:var(--r-md);border:1px solid var(--line-2);
   background:var(--auf-1);color:var(--text);cursor:pointer;
-  font-family:var(--font-head);font-weight:800;font-size:var(--t-xl);
+  font-family:var(--font-head);font-weight:700;font-size:var(--t-xl);
   font-variant-numeric:tabular-nums;
   transition:transform .15s var(--spring),background .2s}
 .tm-taste:active{transform:scale(.94);background:var(--bg-2)}
@@ -3492,7 +3517,7 @@ button.ich-zeile:active{opacity:.7}
    ist nur, was darunter aufklappt. */
 .mz-summe{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--s8);
   margin:0 0 var(--s4)}
-.mz-summe b{font-family:var(--font-head);font-weight:800;font-size:var(--t-xl);
+.mz-summe b{font-family:var(--font-head);font-weight:700;font-size:var(--t-xl);
   font-variant-numeric:tabular-nums}
 .mz-summe span{font-size:var(--t-xs);color:var(--text-2)}
 .mz-neben{margin:0 0 var(--s10)}
@@ -3508,14 +3533,14 @@ button.ich-zeile:active{opacity:.7}
 .st-spalte{min-width:0}
 .st-stand{margin:0 0 var(--s10);font-size:var(--t-lg);font-weight:650;color:var(--text-2);
   line-height:var(--lh-eng)}
-.st-stand b{font-family:var(--font-head);font-weight:800;color:var(--text);
+.st-stand b{font-family:var(--font-head);font-weight:700;color:var(--text);
   font-variant-numeric:tabular-nums}
 .st-stand.an{color:var(--text)}
 .st-zahlen{display:grid;grid-template-columns:1fr 1fr;gap:var(--s10);margin:0 0 var(--s6)}
 .st-zahl{display:flex;flex-direction:column;gap:var(--s2);padding:var(--s10) var(--s12);
   border-radius:var(--r-md);background:var(--auf-1);border:1px solid var(--line)}
 .st-zahl span{font-size:var(--t-2xs);color:var(--text-3)}
-.st-zahl b{font-family:var(--font-head);font-weight:800;font-size:var(--t-xl);
+.st-zahl b{font-family:var(--font-head);font-weight:700;font-size:var(--t-xl);
   font-variant-numeric:tabular-nums}
 .st-schicht{margin:0 0 var(--s12)}
 .st-schicht:empty{display:none}
@@ -3528,7 +3553,7 @@ button.ich-zeile:active{opacity:.7}
    drei, aus denen sie entsteht. Ohne Statusfarbe — ein Minus ist kein
    Fehler, sondern ein Stand. */
 .st-konto-gross{display:flex;flex-direction:column;gap:var(--s2);margin:0 0 var(--s12)}
-.st-konto-zahl{font-family:var(--font-head);font-weight:800;font-size:var(--t-2xl);
+.st-konto-zahl{font-family:var(--font-head);font-weight:700;font-size:var(--t-2xl);
   line-height:var(--lh-eng);font-variant-numeric:tabular-nums;color:var(--text)}
 .st-konto-gross span{font-size:var(--t-sm);color:var(--text-2)}
 .st-konto-reihe{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:var(--s8);margin:0 0 var(--s10)}
@@ -3541,7 +3566,7 @@ button.ich-zeile:active{opacity:.7}
   letter-spacing:var(--ls-l);text-transform:uppercase}
 .st-urlaub p{margin:0}
 .st-urlaub p + p{margin-top:var(--s4)}
-.st-urlaub-rest{font-family:var(--font-head);font-weight:800;font-size:var(--t-xl);font-variant-numeric:tabular-nums}
+.st-urlaub-rest{font-family:var(--font-head);font-weight:700;font-size:var(--t-xl);font-variant-numeric:tabular-nums}
 .st-konto-verlauf{margin-top:var(--s4)}
 /* Zeiten des Teams: die Wege zu dem, was woanders eingerichtet wird. */
 .zt-einrichten[hidden]{display:none}
@@ -3685,7 +3710,7 @@ button.ich-zeile:active{opacity:.7}
 .spl-monat-text{flex:1;text-align:center;min-width:0}
 .spl-monat-text small{display:block;font-size:var(--t-2xs);font-weight:700;letter-spacing:var(--ls-m);
   text-transform:uppercase;color:var(--text-3)}
-.spl-monat-text b{display:block;font-family:var(--font-head);font-size:var(--t-xl);font-weight:800;line-height:var(--lh-eng)}
+.spl-monat-text b{display:block;font-family:var(--font-head);font-size:var(--t-xl);font-weight:700;line-height:var(--lh-eng)}
 .spl-los{width:100%;min-height:52px;font-size:var(--t-md)}
 .spl-schritte{list-style:none;margin:0;padding:0;display:grid;gap:var(--s8)}
 .spl-schritt{display:grid;grid-template-columns:32px minmax(0,1fr);gap:var(--s4) var(--s10);align-items:start;
@@ -3738,7 +3763,7 @@ button.ich-zeile:active{opacity:.7}
 @media (min-width:820px){ .spl-zahlen{grid-template-columns:repeat(4,minmax(0,1fr))} }
 .spl-zahl{background:var(--bg-2);border-radius:var(--r-md);padding:var(--s12);box-shadow:var(--e1);
   display:flex;flex-direction:column;gap:var(--s2)}
-.spl-zahl b{font-family:var(--font-head);font-size:var(--t-2xl);font-weight:800;line-height:var(--lh-1);font-variant-numeric:tabular-nums}
+.spl-zahl b{font-family:var(--font-head);font-size:var(--t-2xl);font-weight:700;line-height:var(--lh-1);font-variant-numeric:tabular-nums}
 .spl-zahl span{font-size:var(--t-xs);color:var(--text-2);font-weight:600}
 .spl-zahl.bad{box-shadow:var(--e1),inset 3px 0 0 var(--danger)}
 .spl-zahl.bad b{color:var(--danger-tx)}
@@ -3874,7 +3899,7 @@ button.ich-zeile:active{opacity:.7}
 @media (min-width:820px){ .spl-ausfall{flex-direction:row;align-items:center;justify-content:space-between} }
 /* Regeln & Sonderfälle */
 .spl-regeln > summary{cursor:pointer;min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:var(--s8);
-  font-family:var(--font-head);font-weight:800;font-size:var(--t-md);list-style:none}
+  font-family:var(--font-head);font-weight:700;font-size:var(--t-md);list-style:none}
 .spl-regeln > summary::-webkit-details-marker{display:none}
 .spl-regeln > summary span{display:inline-flex;align-items:center;gap:var(--s8)}
 .spl-regeln > summary span svg{width:20px;height:20px}
@@ -3943,7 +3968,7 @@ button.ich-zeile:active{opacity:.7}
 .zk-monat{min-width:9em;text-align:center;font-weight:700;font-size:var(--t-sm)}
 .zk-zeile.an{background:var(--auf-1)}
 .zk-inline{padding:var(--s10) var(--s12) var(--s16);border-left:2px solid var(--accent);margin:0 0 var(--s8)}
-.zk-titel{font-family:var(--font-head);font-weight:800;font-size:var(--t-lg);margin-bottom:var(--s2)}
+.zk-titel{font-family:var(--font-head);font-weight:700;font-size:var(--t-lg);margin-bottom:var(--s2)}
 .zk-sub{margin:0 0 var(--s8)}
 .zk-stempel{margin-left:0}
 .zk-form{margin-top:var(--s12)}
@@ -4891,7 +4916,7 @@ html{font-size:var(--fs,100%)}
   transition:transform .35s var(--ease-ios),border-color .25s,box-shadow .35s}
 .home-tile:active{transform:scale(.97)}
 @media (hover:hover){ .home-tile:hover{transform:translateY(-2px);box-shadow:var(--e2);border-color:var(--line-2)} }
-.home-tile .hn{font-family:var(--font-head);font-weight:800;font-size:var(--t-2xl);line-height:var(--lh-1);color:var(--accent)}
+.home-tile .hn{font-family:var(--font-head);font-weight:700;font-size:var(--t-2xl);line-height:var(--lh-1);color:var(--accent)}
 .home-tile .hl{font-size:var(--t-sm);color:var(--text-2);margin-top:var(--s4)}
 .home-tile.warn .hn{color:var(--danger-tx)}
 .home-tile.ok .hn{color:var(--ok-tx)}
@@ -5562,7 +5587,7 @@ html{font-size:var(--fs,100%)}
 .shop-row:first-child{border-top:none}
 .shop-h{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s10)}
 .shop-h b{font-weight:600;font-size:var(--t-md)}
-.shop-n{font-family:var(--font-head);font-weight:800;color:var(--warm-tx);
+.shop-n{font-family:var(--font-head);font-weight:700;color:var(--warm-tx);
   font-size:var(--t-lg);white-space:nowrap}
 .shop-s{color:var(--text-3);font-size:var(--t-xs);margin-top:var(--s2)}
 /* ── Bestellung (Runde 137) ──
@@ -5600,7 +5625,7 @@ html{font-size:var(--fs,100%)}
 .bs-pos input{width:20px;height:20px;flex:0 0 auto;accent-color:var(--accent)}
 .bs-pos-name{flex:1;min-width:0}
 .bs-pos-name small{display:block;color:var(--text-3);font-size:var(--t-xs)}
-.bs-pos-n{font-family:var(--font-head);font-weight:800;font-size:var(--t-md);white-space:nowrap;
+.bs-pos-n{font-family:var(--font-head);font-weight:700;font-size:var(--t-md);white-space:nowrap;
   font-variant-numeric:tabular-nums}
 .bs-pos.raus .bs-pos-name,.bs-pos.raus .bs-pos-n{color:var(--text-3);text-decoration:line-through}
 .bs-knoepfe{display:grid;gap:var(--s8)}
@@ -5693,7 +5718,7 @@ html{font-size:var(--fs,100%)}
   width:100%;min-height:44px;margin-bottom:var(--s8);padding:var(--s6) var(--s12);cursor:pointer;
   background:none;border:1px dashed var(--line-2);border-radius:var(--r-md);
   color:var(--text-2);font-family:var(--font-body);font-size:var(--t-sm);text-align:left}
-.shift-vergangen i{font-style:normal;font-weight:700;color:var(--accent-d);white-space:nowrap}
+.shift-vergangen i{font-style:normal;font-weight:600;color:var(--accent-d);white-space:nowrap}
 @media (hover:hover){ .shift-vergangen:hover{border-color:var(--accent)} }
 #shiftGrid .shift-day.vergangen{display:none}
 #shiftGrid.vergangen-auf .shift-day.vergangen{display:block}
@@ -5714,9 +5739,13 @@ html{font-size:var(--fs,100%)}
   #shiftGrid .shift-name{white-space:normal;overflow-wrap:break-word;flex:1 1 100%}
   #shiftGrid .wp-marke{flex:1 1 100%}
 }
-.shift-sum{display:flex;flex-wrap:wrap;gap:var(--s6);margin:0 0 var(--s10)}
+.shift-sum{display:flex;flex-wrap:wrap;gap:var(--s4);margin:0 0 var(--s10)}
 .shift-sum:empty{display:none}
-.shift-sum span{font-size:var(--t-xs);font-weight:700;padding:var(--s4) var(--s10);border-radius:var(--r-pille);
+/* Runde 239: 600 statt 700, 6 statt 10 px Rand und 4 statt 6 px Abstand — in der breiteren
+   Systemschrift brachen die zwei Plaketten bei 390 px sonst in zwei
+   Zeilen, der Kopf wuchs um 22 px, und „heute" rutschte unter den Rand
+   (test-team-woche). Apple setzt kleine Plaketten halbfett. */
+.shift-sum span{font-size:var(--t-xs);font-weight:600;padding:var(--s4) var(--s6);border-radius:var(--r-pille);
   background:var(--bg-soft);border:1px solid var(--line);color:var(--text-2)}
 .shift-sum span.tausch{background:var(--f-warn);border-color:var(--k-warn);color:var(--warm-tx)}
 /* Abwesend im Plan: neutrale Schraffur statt Bernstein/Rot (Runde 191).
@@ -5942,7 +5971,7 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
    ist — das Fenster ist kein zweites Programm. */
 .hilfe-kopf{display:flex;align-items:center;gap:var(--s12);flex-shrink:0;
   padding:var(--s16) var(--s20);background:var(--brand);color:var(--on-accent)}
-.hilfe-kopf h2{flex:1;min-width:0;font-family:var(--font-head);font-weight:800;
+.hilfe-kopf h2{flex:1;min-width:0;font-family:var(--font-head);font-weight:700;
   font-size:var(--t-lg);letter-spacing:var(--ls-s);line-height:var(--lh-1)}
 .hilfe-kopf .icon-btn{flex-shrink:0;color:var(--on-accent);background:none;border:none;
   /* 44 auch am Rechner — dort sind .icon-btn sonst 40 (nachgemessen
@@ -5950,7 +5979,7 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
   width:44px;height:44px}
 .hilfe-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
   padding:var(--s20)}
-.hilfe-frage{display:block;font-family:var(--font-head);font-weight:800;
+.hilfe-frage{display:block;font-family:var(--font-head);font-weight:700;
   font-size:var(--t-lg);margin-bottom:var(--s10);line-height:var(--lh-eng)}
 .hilfe-ueber{margin:var(--s24) 0 var(--s10);font-size:var(--t-2xs);
   text-transform:uppercase;letter-spacing:var(--ls-l);color:var(--text-3);
@@ -6016,7 +6045,7 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
 /* Ein einzelner Eintrag. Die Schritte sind nummeriert, weil die
    Reihenfolge trägt: „erst Stecker ziehen, dann öffnen" ist etwas
    anderes als andersherum. */
-.hilfe-eintrag h3{font-family:var(--font-head);font-weight:800;
+.hilfe-eintrag h3{font-family:var(--font-head);font-weight:700;
   font-size:var(--t-xl);line-height:var(--lh-eng);margin-bottom:var(--s6)}
 .hilfe-marken{display:flex;gap:var(--s6);flex-wrap:wrap;margin-bottom:var(--s16)}
 .hilfe-marke{display:inline-flex;align-items:center;gap:var(--s4);
@@ -6033,7 +6062,7 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
   font-size:var(--t-sm);line-height:var(--lh);color:var(--text)}
 .hilfe-schritt::before{counter-increment:hschritt;content:counter(hschritt);
   flex-shrink:0;width:24px;height:24px;border-radius:var(--r-rund);
-  display:grid;place-items:center;font-family:var(--font-head);font-weight:800;
+  display:grid;place-items:center;font-family:var(--font-head);font-weight:700;
   font-size:var(--t-2xs);font-variant-numeric:tabular-nums;
   background:var(--accent);color:var(--on-accent)}
 .hilfe-fuss{font-size:var(--t-2xs);color:var(--text-3);margin:var(--s16) 0 var(--s12);
@@ -6067,7 +6096,7 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
   radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 60%),
   radial-gradient(120% 140% at 100% 100%, color-mix(in srgb, var(--accent-2) 18%, transparent), transparent 60%),
   var(--bg-2);display:flex;gap:var(--s16);align-items:center}
-.gehirn-hero h3{font-family:var(--font-head);font-weight:800;font-size:var(--t-lg);margin:0 0 var(--s4)}
+.gehirn-hero h3{font-family:var(--font-head);font-weight:700;font-size:var(--t-lg);margin:0 0 var(--s4)}
 .gehirn-hero p{margin:0;color:var(--text-2);font-size:var(--t-sm);line-height:var(--lh)}
 /* Die Kugel: ein Leuchten beim Ankommen, ein ruhiges Pulsieren nur
    beim Nachdenken. */
@@ -6389,12 +6418,30 @@ html.fk-still .fk-wirbel,html.fk-still .fk-innen{animation:none}
 .formi-welle{position:fixed;left:0;top:0;width:900px;height:900px;margin:-450px 0 0 -450px;z-index:149;pointer-events:none;border-radius:var(--r-rund);opacity:0}
 .formi-welle.schub{background:radial-gradient(circle, rgba(255,255,255,0) 0 38%, rgba(255,246,230,.46) 46%, rgba(182,156,255,.26) 52%, rgba(255,255,255,0) 60%)}
 .formi-welle.sog{background:radial-gradient(circle, rgba(2,4,10,.5) 0, rgba(2,4,10,.22) 30%, rgba(2,4,10,0) 62%)}
+/* ── Runde 237: Schwarzes-Loch-Eigenschaften ── */
+/* Photonenring: ein dünner, heller Lichtring direkt am Rand des Lochs. */
+.formi-kugel .fk-pupille,.jv-start-figur .fk-pupille{box-shadow:0 0 0 1px rgba(255,236,214,.75), 0 0 6px 1px rgba(255,214,170,.45), 0 0 10px 3px rgba(2,4,10,.6)}
+/* Was ins Loch fällt (formiSchlucken). */
+.formi-schluck{position:fixed;left:0;top:0;z-index:1180;pointer-events:none;white-space:nowrap;transform-origin:50% 50%;
+  font-weight:700;font-size:var(--t-sm);color:#E8F8FF;text-shadow:0 0 10px rgba(182,156,255,.9)}
+/* Jets: entlang der Achse, senkrecht zur Scheibe. */
+.fk-jet{position:absolute;left:50%;width:8%;height:150%;margin-left:-4%;pointer-events:none;border-radius:var(--r-pille);opacity:0;z-index:0}
+.fk-jet.oben{bottom:50%;transform-origin:50% 100%;background:linear-gradient(0deg, rgba(255,255,255,.95), rgba(95,225,255,.6) 40%, rgba(182,156,255,0))}
+.fk-jet.unten{top:50%;transform-origin:50% 0;background:linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,143,200,.6) 40%, rgba(182,156,255,0))}
+/* Gravitationswelle: ein dünner Ring, der durch die ganze App läuft. */
+.formi-welle.grav{background:radial-gradient(circle, rgba(255,255,255,0) 0 44%, rgba(182,156,255,.35) 48%, rgba(95,225,255,.18) 51%, rgba(255,255,255,0) 55%)}
+/* Masse: je mehr heute erledigt, desto heller der Schein der Scheibe. */
+.formi-kugel.fk-masse-1 .fk-koerper{box-shadow:var(--e1), 0 0 18px rgba(182,156,255,.45)}
+.formi-kugel.fk-masse-2 .fk-koerper{box-shadow:var(--e1), 0 0 26px rgba(182,156,255,.6), 0 0 44px rgba(95,225,255,.25)}
+.formi-kugel.fk-masse-3 .fk-koerper{box-shadow:var(--e1), 0 0 34px rgba(255,236,214,.6), 0 0 64px rgba(182,156,255,.4)}
 /* Runde 233: Funken beim Drücken eines Hauptknopfs (formiFunken). */
 .formi-funken{position:fixed;left:0;top:0;z-index:1180;pointer-events:none}
 .formi-funken i{position:absolute;left:-3px;top:-3px;width:6px;height:6px;border-radius:var(--r-rund);background:var(--c);box-shadow:0 0 8px var(--c)}
 /* Formi neben dem Gruss: 44 px, morgens halb zu, abends müde. */
 .gruss-formi{--fg:44px;margin-right:var(--s12);align-self:center}
 .gruss-formi.gf-frueh .fk-auge,.gruss-formi.gf-abend .fk-auge{transform:scaleY(.6)}
+.gruss-formi.im-kopf{--fg:40px;margin:0 0 0 var(--s8)}
+body:not(.auf-start) .gruss-formi.im-kopf{display:none}
 /* Formi im Hinweis unten. */
 .toast{display:flex;align-items:center;gap:var(--s8)}
 .toast-formi{--fg:24px}
@@ -6542,7 +6589,9 @@ body[data-bereich="g-zeit"] .fk-wirbel::before{opacity:.7}
    grossen Gesicht (76 px) gleich sitzt. */
 .fk-zeichen{position:absolute;pointer-events:none;z-index:2;line-height:var(--lh-1);opacity:0}
 .fk-zeichen svg{display:block;width:100%;height:100%}
-.fk-zeichen b{display:block;font-weight:800;color:#E8F8FF;text-shadow:0 0 6px rgba(182,156,255,.9)}
+/* Runde 239: Formi behält seine Schrift — das ? und z an der Figur
+   bleiben Barlow, auch seit die App die Systemschrift zeichnet. */
+.fk-zeichen b{display:block;font-family:'Barlow',var(--font-sys);font-weight:800;color:#E8F8FF;text-shadow:0 0 6px rgba(182,156,255,.9)}
 body.light .fk-zeichen b{color:#4B2FB8;text-shadow:0 0 4px rgba(255,255,255,.95)}
 body.light .fk-zeichen.traene path{fill:#1E8FD0}
 body.light .fk-zeichen.herz path{fill:#D6468C}
@@ -7446,7 +7495,7 @@ body.jv-offen{overflow:hidden}
 /* ── Am Rechner zwei Spalten ── */
 .hilfe-leer{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;
   min-height:240px;padding:var(--s24);border:1px dashed var(--line-2);border-radius:var(--r-md)}
-.hilfe-leer-titel{font-family:var(--font-head);font-weight:800;font-size:var(--t-lg);margin-bottom:var(--s6)}
+.hilfe-leer-titel{font-family:var(--font-head);font-weight:700;font-size:var(--t-lg);margin-bottom:var(--s6)}
 @media (min-width:1100px){
   .hilfe-schale{max-width:1180px;height:88vh}
   .hilfe-body.zwei{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);
@@ -7507,7 +7556,7 @@ body.jv-offen{overflow:hidden}
   background:var(--brand);transition:width .35s var(--ease-ios)}
 .sch-zahl{flex:0 0 auto;font-size:var(--t-2xs);color:var(--text-3);
   font-variant-numeric:tabular-nums;font-weight:700}
-.sch-schritt h3{font-family:var(--font-head);font-weight:800;
+.sch-schritt h3{font-family:var(--font-head);font-weight:700;
   font-size:var(--t-xl);line-height:var(--lh-eng);margin-bottom:var(--s12)}
 .sch-schritt p{font-size:var(--t-md);line-height:var(--lh);color:var(--text-2);
   margin-bottom:var(--s16)}
@@ -7515,7 +7564,7 @@ body.jv-offen{overflow:hidden}
 .sch-rest{display:flex;flex-direction:column;gap:var(--s6);margin:0 0 var(--s12);
   padding:var(--s12) var(--s16);border-radius:var(--r-md);background:var(--bg-soft);border:1px solid var(--line)}
 .sch-rest-text{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--s4) var(--s10)}
-.sch-rest-text b{font-family:var(--font-head);font-weight:800;font-size:var(--t-md);font-variant-numeric:tabular-nums}
+.sch-rest-text b{font-family:var(--font-head);font-weight:700;font-size:var(--t-md);font-variant-numeric:tabular-nums}
 .sch-rest-text span{font-size:var(--t-sm);color:var(--text-2)}
 .sch-rest-balken{flex:none;display:block;width:100%}
 /* Der Platzhalter, solange kein Video da ist. Er sagt ausdrücklich,
@@ -7579,7 +7628,7 @@ body.jv-offen{overflow:hidden}
 }
 .sch-lesen-abschnitt{padding:var(--s16) 0;border-top:1px solid var(--line)}
 .sch-lesen-abschnitt:first-child{border-top:none;padding-top:0}
-.sch-lesen-abschnitt h4{font-family:var(--font-head);font-weight:800;
+.sch-lesen-abschnitt h4{font-family:var(--font-head);font-weight:700;
   font-size:var(--t-lg);line-height:var(--lh-eng);margin-bottom:var(--s8);text-wrap:balance}
 .sch-schritt .sch-lesen-abschnitt p{color:var(--text);margin-bottom:var(--s12)}
 .sch-schritt .sch-lesen-abschnitt p.sch-lesen-sagen{color:var(--text-2);font-size:var(--t-sm)}
@@ -7597,7 +7646,7 @@ body.jv-offen{overflow:hidden}
 .sch-haken span{font-size:var(--t-md);line-height:var(--lh)}
 /* Die Fragen. Eine je Bildschirm — vier Fragen untereinander laden
    zum Querlesen ein, und wer quer liest, lernt nichts. */
-.sch-frage,.sch-auf-frage{font-family:var(--font-head);font-weight:800;font-size:var(--t-lg);
+.sch-frage,.sch-auf-frage{font-family:var(--font-head);font-weight:700;font-size:var(--t-lg);
   line-height:var(--lh-eng);margin-bottom:var(--s16)}
 .sch-antworten{display:flex;flex-direction:column;gap:var(--s8);margin-bottom:var(--s16)}
 .sch-antwort{display:flex;align-items:flex-start;gap:var(--s12);width:100%;
@@ -7608,7 +7657,7 @@ body.jv-offen{overflow:hidden}
 @media (hover:hover){ .sch-antwort:hover:not(:disabled){border-color:var(--accent)} }
 .sch-antwort:disabled{cursor:default}
 .sch-antwort .sch-buchst{flex:0 0 auto;width:26px;height:26px;border-radius:var(--r-rund);
-  display:grid;place-items:center;font-family:var(--font-head);font-weight:800;
+  display:grid;place-items:center;font-family:var(--font-head);font-weight:700;
   font-size:var(--t-2xs);background:var(--bg-3);color:var(--text-3)}
 .sch-antwort.richtig{border-color:var(--k-ok);background:var(--f-ok-leise)}
 .sch-antwort.richtig .sch-buchst{background:var(--ok-tx);color:var(--on-accent)}
@@ -7620,9 +7669,9 @@ body.jv-offen{overflow:hidden}
    schiebt ihn ganz ins Freie. */
 #view-schulung .hilfe-zurueck,#schLauf > .sch-fortschritt{margin-top:var(--s8)}
 .sch-auf-zeile{margin:0 0 var(--s8);font-size:var(--t-sm);line-height:var(--lh);color:var(--text-2)}
-.sch-auf-zeile b{font-family:var(--font-head);font-weight:800;font-size:var(--t-md);color:var(--text)}
+.sch-auf-zeile b{font-family:var(--font-head);font-weight:700;font-size:var(--t-md);color:var(--text)}
 #schAuffrisch .hilfe-knoepfe{margin-top:var(--s8)}
-.sch-code-inp{font-family:var(--font-head);font-weight:800;letter-spacing:var(--ls-l);text-transform:uppercase}
+.sch-code-inp{font-family:var(--font-head);font-weight:700;letter-spacing:var(--ls-l);text-transform:uppercase}
 /* Eine verstrichene Frist ist ein Status — nur sie bekommt die Farbe. */
 .sch-frist.ueber{color:var(--warm-tx);font-weight:700}
 .sch-faellig-zeile .sch-frist{display:inline}
@@ -7720,14 +7769,14 @@ body.jv-offen{overflow:hidden}
 .sch-hinweis.sch-mit-formi{display:flex;gap:var(--s12);align-items:flex-start}
 .sch-hinweis.sch-mit-formi p{margin:0;min-width:0}
 .sch-hinweis-formi.formi-figur{--fg:40px;margin-top:var(--s2)}
-.sch-fertig h3{font-family:var(--font-head);font-weight:800;font-size:var(--t-2xl);
+.sch-fertig h3{font-family:var(--font-head);font-weight:700;font-size:var(--t-2xl);
   line-height:var(--lh-eng);margin-bottom:var(--s8)}
 .sch-fertig p{font-size:var(--t-md);color:var(--text-2);line-height:var(--lh)}
 .sch-zahlen{display:grid;gap:var(--s8);margin:var(--s24) 0;
   grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
 .sch-zahl-kachel{padding:var(--s12);border-radius:var(--r-md);
   background:var(--bg-soft);border:1px solid var(--line);text-align:center}
-.sch-zahl-kachel b{display:block;font-family:var(--font-head);font-weight:800;
+.sch-zahl-kachel b{display:block;font-family:var(--font-head);font-weight:700;
   font-size:var(--t-xl);font-variant-numeric:tabular-nums;color:var(--accent-d)}
 .sch-zahl-kachel span{display:block;font-size:var(--t-2xs);color:var(--text-3);margin-top:var(--s2)}
 /* Der Code, genau einmal sichtbar. Gross, mit Zifferabstand und zum
@@ -7735,7 +7784,7 @@ body.jv-offen{overflow:hidden}
    Datei. */
 .sch-codebox{padding:var(--s20);border-radius:var(--r-md);text-align:center;
   background:var(--tipp-1);border:1.5px solid var(--accent);margin:var(--s12) 0}
-.sch-codebox b{display:block;font-family:var(--font-head);font-weight:800;
+.sch-codebox b{display:block;font-family:var(--font-head);font-weight:700;
   font-size:var(--t-2xl);letter-spacing:var(--ls-l);color:var(--accent-d);
   word-break:break-all;margin-bottom:var(--s8)}
 .sch-codebox p{font-size:var(--t-xs);color:var(--text-2);line-height:var(--lh);margin-bottom:var(--s12)}
@@ -7766,7 +7815,7 @@ body.jv-offen{overflow:hidden}
 .sch-feld-kopf .icon-btn{flex:0 0 auto}
 .sch-feld-kopf .sch-hoch{transform:rotate(180deg)}
 .sch-feld-kopf select{min-width:0}
-.sch-feld-kopf b{font-family:var(--font-head);font-weight:800;color:var(--text-3);
+.sch-feld-kopf b{font-family:var(--font-head);font-weight:700;color:var(--text-3);
   min-width:22px}
 .sch-feld-luft{flex:1}
 /* „Video hochladen" im Schritt (29.9.2026). Der Knopf ist so breit
@@ -7809,7 +7858,7 @@ body.jv-offen{overflow:hidden}
 .sch-tn-zeile:first-child{border-top:none}
 .sch-tn-name{flex:1 1 120px;min-width:0;font-weight:600;font-size:var(--t-sm)}
 .sch-tn-name span{display:block;font-size:var(--t-2xs);color:var(--text-3);font-weight:400}
-.sch-kenn{font-family:var(--font-head);font-weight:800;letter-spacing:var(--ls-l);
+.sch-kenn{font-family:var(--font-head);font-weight:700;letter-spacing:var(--ls-l);
   font-size:var(--t-xs);color:var(--text-3);flex:0 0 auto}
 
 .chip{display:inline-flex;align-items:center;min-height:44px;
@@ -8658,6 +8707,10 @@ body.neu .view-head .vh-line{justify-content:flex-end}
      am Rand den Nachbarn. 5 × 48 + 68 = 308 von 312 px – es passt. */
   @media(max-width:420px){
     body.neu .mn-reihe button{flex:1 1 auto;min-width:48px}
+    /* Runde 239: Die Systemschrift ist breiter als Barlow; „Nachrichten"
+       brach bei 320 px in „Nach-richten" um. Apple setzt die Beschriftung
+       der Tab-Leiste eng und einzeilig — dasselbe hier. */
+    body.neu .mn-reihe button span:not(.badge):not(.ndot){white-space:nowrap;letter-spacing:var(--ls-eng)}
   }
   /* Die gleitende Füllung nimmt die Farbe des Bereichs an, in dem man
      gerade ist. Damit stimmt unten und oben dieselbe Aussage überein. */
@@ -9087,7 +9140,7 @@ body.neu.light .heute-zeile.putz{--kat:#0B6A62;--kat-f:rgba(15,118,110,.18)}
 body.neu .hz-ikon{flex:0 0 auto;display:grid;place-items:center;
   width:26px;height:26px;color:var(--kat)}
 body.neu .hz-ikon svg{width:22px;height:22px}
-/* Runde 237: der Haken auf „Heute" (heuteZeile) steht als eigene Spalte
+/* Runde 240: der Haken auf „Heute" (heuteZeile) steht als eigene Spalte
    LINKS neben der Zeile, wie in jeder Checkliste. Erste Fassung lag er
    absolut über dem Zeichen – dann überdeckte er 2 px der vergrösserten
    Fläche von „alle 4 ›" darüber (test-p3-startseite, 44 × 42). Neben
@@ -9190,7 +9243,12 @@ body.neu .side-schnell.viele .ss-anpassen{grid-column:1 / -1}
    Wort die ganze Spaltenbreite. Nebeneinander stand „Überbl…". */
 body.neu .side-schnell.viele .ss-knopf:not(.ss-anpassen){flex-direction:column;justify-content:center;
   gap:var(--s2);padding:var(--s4);font-size:var(--t-xs);line-height:var(--lh-eng);text-align:center;min-width:0}
-body.neu .side-schnell.viele .ss-knopf span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Runde 239: In der breiteren Systemschrift passten „Meine Woche" und
+   „Mein Kalender" nicht mehr in eine halbe Seitenleiste und endeten mit
+   „…". Jetzt dürfen sie auf zwei Zeilen umbrechen (wie Apples
+   Symbolbeschriftungen); erst die dritte wird abgeschnitten. */
+body.neu .side-schnell.viele .ss-knopf span{max-width:100%;overflow:hidden;display:-webkit-box;
+  -webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal}
 body.neu .side-schnell.viele .ss-knopf svg{width:16px;height:16px}
 body.neu .side-schnell.viele .ss-taste{display:none}
 body.neu .sz-knopf{display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -10258,6 +10316,9 @@ body.neu .kn-zeile{min-height:var(--zeile)}
                   <p class="hint mz-neben">Der Code wechselt alle 30 Sekunden.</p>
                 </div>
                 <p class="hint" id="stTerminalHinweis" hidden>Gestempelt wird am Terminal im Studio: Name, PIN, fertig.</p>
+                <!-- Runde 238: dass es die Erinnerung gibt, steht dort, wo
+                     man sie braucht — nicht nur in den Einstellungen. -->
+                <p class="hint st-erinnerung">Vergessen? Die App erinnert 15 Minuten nach Schichtbeginn und 30 Minuten nach Schichtende – abschaltbar unter Einstellungen → Meldungen.</p>
               </div>
               <!-- Mein Konto (Runde 222): „ihre eigenen stunden sehen ob plus
                    oder minus". Der laufende Monat ist vorläufig, bis die
@@ -13006,7 +13067,7 @@ body.neu .kn-zeile{min-height:var(--zeile)}
   <div class="search-box">
     <div class="search-bar">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      <input id="searchInput" type="search" placeholder="Suchen oder Formi fragen …" autocomplete="off" enterkeyhint="search" />
+      <input id="searchInput" type="search" placeholder="Suchen oder Formi fragen" autocomplete="off" enterkeyhint="search" />
       <button id="searchClose" aria-label="Schließen"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
     <div id="searchResults"></div>
@@ -13811,7 +13872,7 @@ var PREFS = {
   // Welche Meldungen dieses Gerät bekommen soll. Bewusst pro GERÄT und
   // nicht pro Person: der Push hängt am Gerät, und viele wollen am Handy
   // etwas anderes als am Rechner.
-  notify:{ chat:true, dm:true, ann:true, todos:true, mentions:true, formi:true }
+  notify:{ chat:true, dm:true, ann:true, todos:true, mentions:true, formi:true, stempel:true }
 };
 var NOTIFY_OPTS = [
   {id:'mentions', name:'Wenn ich erwähnt werde', hint:'@Name im Chat, in Übergaben und am Schwarzen Brett – empfohlen an'},
@@ -13820,6 +13881,10 @@ var NOTIFY_OPTS = [
   {id:'todos',    name:'Neue Aufgaben',          hint:'Wenn in deinem Studio eine Aufgabe angelegt wird'},
   /* Etappe 3 (Runde 235): Formi meldet sich selbst — „so oft wie nötig",
      aber jede Meldung hat genau einen Anlass. */
+  /* Runde 238: Stempel vergessen (stempelErinnern). Eigene Art und nicht
+     „formi": wer Formis Tagesmeldungen abschaltet, will trotzdem wissen,
+     dass der Feierabend fehlt — der fehlt sonst am Monatsende im Lohn. */
+  {id:'stempel',  name:'Stempel-Erinnerung',     hint:'15 Minuten nach Schichtbeginn ohne Stempel, 30 Minuten nach Schichtende noch eingestempelt'},
   {id:'formi',    name:'Formi meldet sich',      hint:'Morgens dein Tag, Frist vorbei, Feierabend-Check – als Leitung auch Defekte und fehlendes Material'},
   /* Runde 216: die Erinnerung ans Auffrischen (schulungAuffrischErinnern).
      Nur sichtbar, wenn die Schulung für die Firma an ist — ein Schalter
@@ -18095,6 +18160,8 @@ function fireConfetti(){
    Wird beim Abhaken einer Aufgabe am Häkchen ausgelöst. */
 function burstAt(el){
   if(!el) return;
+  /* Runde 237: was abgehakt wird, fliegt ins Loch. */
+  if(typeof formiSchlucken==='function') formiSchlucken(el);
   if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   var r=el.getBoundingClientRect();
   var b=document.createElement('div'); b.className='check-burst';
@@ -21166,6 +21233,7 @@ function showApp(){
   maybeShowNotifBanner();
   startPeriodWatcher();       // erkennt Tageswechsel/Intervall-Ablauf
   setTimeout(checkDueReminders, 6000);   // an heute/morgen fällige Aufgaben erinnern
+  stErinnerungStarten();      // Runde 238: Stempel vergessen? Formi sagt es
   startPresence();            // "ich bin online" melden
   startNutzung();             // anonyme Zählung: welche Funktion wird benutzt
   showView('home');
@@ -21920,6 +21988,26 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-23-heute-haken', datum:'23.10.2026', titel:'Auf „Heute" direkt abhaken', wo:'home', punkte:[
+    'Links neben jeder Aufgabe und jedem Putzpunkt auf „Heute" steht jetzt ein Kreis. Ein Tipp darauf hakt ab – ohne erst in „Studio" zu wechseln.',
+    'Aus Versehen? Unten erscheint „Rückgängig". Ein Tipp auf die Zeile selbst öffnet sie wie bisher.'
+  ]},
+  { id:'2026-10-23-systemschrift', datum:'23.10.2026', titel:'Neue Schrift: klarer, ruhiger, wie bei Apple', wo:'home', punkte:[
+    'Die ganze App schreibt jetzt in der Schrift deines Geräts: auf iPhone, iPad und Mac ist das Apples eigene Schrift, auf Windows-Rechnern und Android eine sehr ähnliche (Inter).',
+    'Überschriften sind nicht mehr so schmal und gedrängt, sondern gut lesbar, und etwas weniger fett.',
+    'Nur der Schriftzug „STUDIOCHAT" oben links bleibt in der alten, schmalen Schrift. Das ist der erste Schritt, damit sich die App mehr wie eine App von Apple anfühlt. Weitere folgen.'
+  ]},
+  { id:'2026-10-23-stempel-erinnerung', datum:'23.10.2026', titel:'Stempel vergessen? Die App erinnert dich – aufs Handy, per Mail und mit Formi', wo:'zeit', punkte:[
+    'Hat deine Schicht vor 15 Minuten begonnen und du hast noch nicht eingestempelt, kommt eine Erinnerung aufs Handy.',
+    'Ist deine Schicht seit 30 Minuten vorbei und du bist noch eingestempelt, kommt „Feierabend vergessen?" aufs Handy und als Mail. Ohne Schicht kommt sie nach 10 Stunden.',
+    'Ist die App offen, sagt es Formi. Wer Urlaub hat oder krank ist, bekommt nichts.',
+    'Abschalten: Einstellungen → Meldungen → „Stempel-Erinnerung" (Handy und Formi) und Einstellungen → Mails → „Feierabend vergessen".'
+  ]},
+  { id:'2026-10-23-formi-schwarzes-loch', datum:'23.10.2026', titel:'Formi ist jetzt ein echtes schwarzes Loch', wo:'todos', punkte:[
+    'Hakst du etwas ab, fliegt es als Schriftzug in einer Spirale zu Formi, wird dabei lang gezogen und verschwindet im Loch.',
+    'Je mehr du heute erledigst, desto heller strahlt Formi. Beim großen Jubel schießt es zwei Lichtstrahlen nach oben und unten, und eine Welle läuft durch die ganze App.',
+    'Kleinigkeiten: ein heller Lichtring am Rand des Lochs, ab und zu entweichen winzige Teilchen, kommt die Maus nah, wird Formi zu ihr hingezogen – und öffnet Formi eine Seite, kommt sie aus seinem Loch heraus.'
+  ]},
   { id:'2026-10-23-neues-design-fuer-alle', datum:'23.10.2026', titel:'Das neue Design gilt jetzt für alle', wo:'home', punkte:[
     'Alle sehen ab sofort das neue Design: unten die sechs Räume, oben links der Griff zu „Alles", auf „Heute" die Liste des Tages.',
     'Die Geschäftsführung kann es für eine Übergangszeit auf ihrem eigenen Gerät zurückstellen: Verwaltung → System → Design.',
@@ -24006,6 +24094,8 @@ function showView(id, fromKey, ausVerlauf){
   /* Für die Regeln „Chat auf kleinen Handys" (Runde 127): nur ein
      Klassenname, kein Messen. */
   document.body.classList.toggle('im-chat', id==='chat');
+  /* Runde 237: Formi im Bereichskopf nur auf der Startseite. */
+  document.body.classList.toggle('auf-start', id==='home');
   /* Die Farbe des Bereichs, bevor irgendetwas gezeichnet wird — sonst
      baut sich die Ansicht in der alten Farbe auf und springt danach.
      Bei jeder anderen Einstellung als „Lebendig" ändert der Aufruf
@@ -27985,6 +28075,7 @@ function gehirnSofort(v){
 function gehirnOeffne(s){
   function wechseln(){
     showView(s.ziel);
+    if(typeof formiWurmloch==='function') formiWurmloch();
     if(s.ziel==='team' && s.studioKey){
       var sel=$('teamStudio'); if(sel) sel.value=s.studioKey;
       loadTeam(s.studioKey);
@@ -28274,6 +28365,8 @@ function formiFuehlt(art){
   if(art==='feiert' || art==='erschrickt' || art==='staunt') formiKugelGlitch();
   if(art==='freut') formiAusbruch(false);
   if(art==='feiert' || art==='stolz') formiAusbruch(true);
+  /* Runde 237: beim grossen Jubel Jets und eine Gravitationswelle. */
+  if(art==='feiert'){ formiJets(t.k); formiGravWelle(); }
 }
 /* Die Bewegung eines Gefühls an einer Figur – an der Kugel oder an einem
    Gesicht im Fenster (gleicher Bau, formiFigurInnen). */
@@ -28694,14 +28787,16 @@ function formiUmgebung(el, art, verz){
       w.className='formi-welle '+art; w.setAttribute('aria-hidden', 'true');
       var x=Math.round(q.left+q.width/2), y=Math.round(q.top+q.height/2);
       document.body.appendChild(w);
-      var bild = art==='wechsel'
+      var bild = art==='grav'
+        ? [{ transform:'translate('+x+'px,'+y+'px) scale(.1)', opacity:.9 }, { transform:'translate('+x+'px,'+y+'px) scale(5)', opacity:0 }]
+        : art==='wechsel'
         ? [{ transform:'translate('+x+'px,'+y+'px) scale(.08) rotate(0deg)', opacity:.9 }, { transform:'translate('+x+'px,'+y+'px) scale(1.5) rotate(40deg)', opacity:0 }]
         : art==='schub'
         ? [{ transform:'translate('+x+'px,'+y+'px) scale(.12)', opacity:1 }, { transform:'translate('+x+'px,'+y+'px) scale(1.4)', opacity:.7, offset:.45 }, { transform:'translate('+x+'px,'+y+'px) scale(2.6)', opacity:0 }]
         : [{ transform:'translate('+x+'px,'+y+'px) scale(2.2)', opacity:0 }, { transform:'translate('+x+'px,'+y+'px) scale(.9)', opacity:1, offset:.6 }, { transform:'translate('+x+'px,'+y+'px) scale(.2)', opacity:0 }];
-      try{ w.animate(bild, { duration: art==='schub' ? 900 : art==='wechsel' ? 650 : 800, easing: art==='schub' ? 'cubic-bezier(.2,.7,.3,1)' : 'cubic-bezier(.6,0,.9,.4)' }).onfinish=function(){ if(w.parentNode) w.parentNode.removeChild(w); }; }
+      try{ w.animate(bild, { duration: art==='schub' ? 900 : art==='wechsel' ? 650 : art==='grav' ? 1400 : 800, easing: art==='schub' ? 'cubic-bezier(.2,.7,.3,1)' : 'cubic-bezier(.6,0,.9,.4)' }).onfinish=function(){ if(w.parentNode) w.parentNode.removeChild(w); }; }
       catch(e){ if(w.parentNode) w.parentNode.removeChild(w); }
-      setTimeout(function(){ if(w.parentNode) w.parentNode.removeChild(w); }, 1400);
+      setTimeout(function(){ if(w.parentNode) w.parentNode.removeChild(w); }, 1800);
     });
   }, verz||0);
 }
@@ -28973,6 +29068,15 @@ function formiPupillen(t, x, y){
 function formiNah(t, nah){
   if(nah===!!_fl.nah) return;
   _fl.nah=nah;
+  /* Runde 237, Gezeitenkräfte: kommt die Maus nah, wird Formi ein wenig
+     zu ihr hingezogen (über „translate", damit es sich nicht mit den
+     Gefühlen auf „transform" schlägt). */
+  if(_fl.gezeit) try{ _fl.gezeit.cancel(); }catch(e){}
+  _fl.gezeit=null;
+  if(nah && _fl.mitte){
+    var gx=Math.max(-1, Math.min(1, (_fl.x-_fl.mitte.x)/120)), gy=Math.max(-1, Math.min(1, (_fl.y-_fl.mitte.y)/120));
+    try{ _fl.gezeit=t.koerper.animate([{ translate:'0 0' }, { translate:(gx*4).toFixed(1)+'px '+(gy*4).toFixed(1)+'px' }], { duration:300, easing:'ease-out', fill:'forwards' }); }catch(e){}
+  }
   var alt=_fl.nahAnim||[];
   _fl.nahAnim = nah ? [].map.call(t.augen, function(a){
     try{ return a.animate([{ transform:'none' }, { transform:'scale(1.16)' }], { duration:220, easing:'ease-out', fill:'forwards' }); }catch(e){ return null; }
@@ -29026,7 +29130,7 @@ function formiSchnarchen(){
    nichts bei verborgener Kugel oder verborgenem Tab, nichts bei „Gefühle
    aus" oder „weniger Bewegung" (formiLebtAn). Dieselbe Kleinigkeit nie
    zweimal hintereinander. Ist das Fenster offen, lebt die Figur dort. */
-var FK_EIGENLEBEN=['summt','faengt','niest','zwinkert','kopfschief','huepft','umschauen'];
+var FK_EIGENLEBEN=['summt','faengt','niest','zwinkert','kopfschief','huepft','umschauen','hawking'];
 function formiEigenlebenPlanen(){
   clearTimeout(_fl.lebenUhr);
   if(_fl.uhrenAus) return;
@@ -29039,16 +29143,17 @@ function formiEigenleben(art){
   }
   _fl.lebenZuletzt=art;
   if(jarvisOffen()){
-    if(art==='faengt' || art==='umschauen') art='kopfschief';
+    if(art==='faengt' || art==='umschauen' || art==='hawking') art='kopfschief';
     if(formiFigurenAn()) [].forEach.call(document.querySelectorAll(FK_FENSTER_FIGUREN), function(f){ if(f.getClientRects().length && f.offsetWidth>40) formiFigurFuehlt(f, art); });
     return art;
   }
   if(!formiLebtAn() || _fl.schlaeft || _fl.muede) return '';
   [].forEach.call(document.querySelectorAll(FK_APP_FIGUREN), function(f){
-    if(art!=='umschauen' && art!=='faengt' && f.getClientRects().length) formiFigurFuehlt(f, art, true);
+    if(art!=='umschauen' && art!=='faengt' && art!=='hawking' && f.getClientRects().length) formiFigurFuehlt(f, art, true);
   });
   if(art==='umschauen'){ formiSchauNach(Math.random()*innerWidth, Math.random()*innerHeight*.9); setTimeout(function(){ formiSchauNach(Math.random()*innerWidth, Math.random()*innerHeight*.9); }, 900); return art; }
   if(art==='faengt'){ formiFaengt(); return art; }
+  if(art==='hawking'){ formiHawking(); return art; }
   formiFuehlt(art);
   return art;
 }
@@ -29083,12 +29188,16 @@ function formiFunken(x, y){
 /* Formi neben dem Gruss auf „Heute": schaut wie die Tageszeit (morgens
    verschlafen, abends müde) und blinzelt mit den anderen Figuren. */
 function formiGrussFigur(){
-  var h=$('homeGreet'); if(!h || $('formiGruss')) return;
-  var zeile=h.closest('.vh-line'); if(!zeile) return;
+  if($('formiGruss')) return;
   var f=document.createElement('span');
   f.id='formiGruss'; f.className='formi-figur gruss-formi'; f.setAttribute('aria-hidden', 'true');
   f.innerHTML=formiFigurInnen(true);
-  zeile.insertBefore(f, zeile.firstChild);
+  /* Im neuen Design (seit Runde 236 für alle) gibt es auf „Heute" keinen
+     Gruss mehr — Formi sitzt dort im Bereichskopf neben „Heute", nur auf
+     der Startseite (body.auf-start). Im alten Design neben dem Gruss. */
+  var bz=$('bereichZeile'), kopf=$('bereichKopf'), h=$('homeGreet');
+  if(typeof layoutNeu==='function' && layoutNeu() && bz && kopf){ f.classList.add('im-kopf'); kopf.insertAdjacentElement('afterend', f); }
+  else { var zeile=h && h.closest('.vh-line'); if(!zeile) return; zeile.insertBefore(f, zeile.firstChild); }
   formiGrussStimmung();
 }
 function formiGrussStimmung(){
@@ -29096,6 +29205,100 @@ function formiGrussStimmung(){
   var st=new Date().getHours();
   f.classList.toggle('gf-frueh', st<9);
   f.classList.toggle('gf-abend', st>=19);
+}
+/* ── Schwarzes-Loch-Eigenschaften (Runde 237, Etappe 3) ──────────────
+   Aus dem Betrieb: „ich möchte noch das er vlt irgendwie noch extra
+   schwarze loch eigenschaften hat" — auf die Ideenliste „alles davon".
+   Alles endlich, nur transform/opacity, aus bei „weniger Bewegung" und
+   „Gefühle aus". Gemessen wird im Bild, nie im Klick. */
+function formiKugelMitte(){
+  var k=$('formiKugel'); if(!k || k.hidden || !k.getClientRects().length) return null;
+  var r=k.getBoundingClientRect(); return { x:r.left+r.width/2, y:r.top+r.height/2 };
+}
+/* Sog am Ereignishorizont: was man abhakt, fliegt als Schriftzug in einer
+   enger werdenden Spirale zu Formi, wird dabei lang gezogen
+   („Spaghettifizierung") und verschwindet im Loch. */
+function formiSchlucken(el){
+  if(!el || _fl.gefuehleAus || gehirnWenigBewegung() || !document.body.animate) return;
+  var zeile=el.closest && el.closest('.pp-item, .todo'); if(!zeile) return;
+  var titel=zeile.querySelector('.t-title, .pp-title, .pp-name, b, strong') || zeile;
+  /* Nur der Titel selbst — ohne Abzeichen wie „überfällig" oder „1/3". */
+  var text=[].filter.call(titel.childNodes, function(n){ return n.nodeType===3; }).map(function(n){ return n.nodeValue; }).join(' ').trim() || String(titel.textContent||'').trim();
+  text=text.slice(0, 40); if(!text) return;
+  requestAnimationFrame(function(){
+    var ziel=formiKugelMitte(); if(!ziel || !titel.getClientRects().length) return;
+    var q=titel.getBoundingClientRect();
+    var g=document.createElement('span');
+    g.className='formi-schluck'; g.setAttribute('aria-hidden', 'true'); g.textContent=text;
+    g.style.transform='translate('+Math.round(q.left)+'px,'+Math.round(q.top)+'px)';
+    document.body.appendChild(g);
+    /* Die Breite des Schriftzugs (nicht die der Zeile) — einmal gelesen,
+       bevor etwas animiert wird. */
+    var gw=g.offsetWidth, gh=g.offsetHeight;
+    var x0=q.left, y0=q.top, dx=ziel.x-x0-gw/2, dy=ziel.y-y0-gh/2, bild=[];
+    for(var i=0;i<=10;i++){
+      var t=i/10, e=t*t*(3-2*t), dreh=(1-t)*1.2, rr=(1-e);
+      var px=x0+dx*e+Math.cos(dreh*6)*28*rr*t, py=y0+dy*e+Math.sin(dreh*6)*28*rr*t;
+      bild.push({ transform:'translate('+px.toFixed(1)+'px,'+py.toFixed(1)+'px) rotate('+(Math.atan2(dy,dx)*180/Math.PI*e).toFixed(1)+'deg) scale('+(1+2.2*t*t).toFixed(2)+','+(1-.9*t).toFixed(2)+')',
+        opacity: i===10 ? 0 : (i>7 ? .6 : 1), offset:t });
+    }
+    try{ g.animate(bild, { duration:1100, easing:'cubic-bezier(.5,0,.9,.6)' }).onfinish=function(){ if(g.parentNode) g.parentNode.removeChild(g); }; }catch(e){}
+    setTimeout(function(){ if(g.parentNode) g.parentNode.removeChild(g); var k=$('formiKugel'); if(k) formiUmgebung(k, 'sog'); }, 1150);
+  });
+}
+/* Jets: beim grossen Jubel schiesst Formi zwei Lichtstrahlen nach oben
+   und unten – entlang der Achse, senkrecht zur Scheibe. */
+function formiJets(figur){
+  if(!figur || _fl.gefuehleAus || gehirnWenigBewegung() || !document.body.animate) return;
+  ['oben','unten'].forEach(function(seite, i){
+    var j=document.createElement('span');
+    j.className='fk-jet '+seite; j.setAttribute('aria-hidden', 'true');
+    figur.appendChild(j);
+    try{ j.animate([{ transform:'scaleY(0)', opacity:0 }, { transform:'scaleY(1)', opacity:1, offset:.25 }, { transform:'scaleY(1.15)', opacity:.8, offset:.7 }, { transform:'scaleY(1.3)', opacity:0 }],
+      { duration:1300, delay:i*40, easing:'cubic-bezier(.2,.8,.3,1)' }); }catch(e){}
+    setTimeout(function(){ if(j.parentNode) j.parentNode.removeChild(j); }, 1500);
+  });
+}
+/* Hawking-Strahlung: ab und zu entweichen winzige Teilchen vom Rand des
+   Lochs — erst zögernd, dann immer schneller (sie entkommen dem Sog). */
+function formiHawking(){
+  var t=formiTeile(); if(!t || !t.koerper) return;
+  var box=formiTeilchen(t, 4, true);
+  t.koerper.appendChild(box);
+  [].forEach.call(box.children, function(el, i){
+    var w=Math.random()*Math.PI*2, r0=12, r1=40+Math.random()*16;
+    try{ el.animate([{ transform:'translate('+(Math.cos(w)*r0).toFixed(1)+'px,'+(Math.sin(w)*r0).toFixed(1)+'px) scale(.4)', opacity:0 },
+      { transform:'translate('+(Math.cos(w)*(r0+4)).toFixed(1)+'px,'+(Math.sin(w)*(r0+4)).toFixed(1)+'px) scale(.8)', opacity:1, offset:.35 },
+      { transform:'translate('+(Math.cos(w)*r1).toFixed(1)+'px,'+(Math.sin(w)*r1).toFixed(1)+'px) scale(.3)', opacity:0 }],
+      { duration:1600, delay:i*260, easing:'cubic-bezier(.7,0,.9,.5)', fill:'backwards' }); }catch(e){}
+  });
+  setTimeout(function(){ if(box.parentNode) box.parentNode.removeChild(box); }, 2600);
+}
+/* Gravitationswelle: bei grossen Momenten läuft ein Ring durch die ganze
+   App, ausgehend von Formi. */
+function formiGravWelle(){
+  var k=$('formiKugel');
+  if(k && !k.hidden && k.getClientRects().length) formiUmgebung(k, 'grav');
+}
+/* Wurmloch: öffnet Formi eine Seite, kommt sie aus Formis Loch heraus. */
+function formiWurmloch(){
+  if(_fl.gefuehleAus || gehirnWenigBewegung() || !document.body.animate) return;
+  requestAnimationFrame(function(){
+    var v=document.querySelector('.view.show'), m=formiKugelMitte(); if(!v || !m) return;
+    var r=v.getBoundingClientRect(), cx=r.left+Math.min(r.width, innerWidth)/2, cy=r.top+Math.min(r.height, innerHeight)/2;
+    try{ v.animate([{ transform:'translate('+Math.round(m.x-cx)+'px,'+Math.round(m.y-cy)+'px) scale(.15) rotate(-25deg)', opacity:0 },
+      { transform:'none', opacity:1 }], { duration:520, easing:'cubic-bezier(.2,.8,.2,1)' }); }catch(e){}
+  });
+}
+/* Masse: je mehr heute erledigt ist, desto schwerer und heller wird Formi
+   (ab 3, 8 und 15 Haken; je Gerät und Tag gezählt). */
+function formiMasse(dazu){
+  var tag=ymd(new Date()), n=0;
+  try{ var x=JSON.parse(localStorage.getItem('kf_formi_masse')||'{}'); n = x.tag===tag ? (+x.n||0) : 0; n+=dazu||0; localStorage.setItem('kf_formi_masse', JSON.stringify({ tag:tag, n:n })); }catch(e){}
+  var stufe = n>=15 ? 3 : n>=8 ? 2 : n>=3 ? 1 : 0;
+  var k=$('formiKugel'); if(!k) return stufe;
+  for(var i=1;i<=3;i++){ if(k.classList.contains('fk-masse-'+i)!==(stufe===i)) k.classList.toggle('fk-masse-'+i, stufe===i); }
+  return stufe;
 }
 /* Ein Funke löst sich aus der Scheibe, Formi schaut ihm nach – und
    schnappt ihn wieder ein (die Augen folgen dem Bogen). */
@@ -29107,7 +29310,7 @@ function formiFaengt(){
   try{
     el.animate([{ transform:'translate(28px,4px) scale(.6)', opacity:0 }, { transform:'translate(34px,-26px) scale(1)', opacity:1, offset:.25 },
       { transform:'translate(-6px,-46px) scale(1.1)', opacity:1, offset:.5 }, { transform:'translate(-30px,-22px) scale(1)', opacity:1, offset:.72 },
-      { transform:'translate(0,0) scale(.2)', opacity:0 }], { duration:2200, easing:'ease-in-out' });
+      { transform:'translate(0,0) scale(.2)', opacity:0 }], { duration:2600, easing:'cubic-bezier(.3,.1,.1,1)' });
   }catch(e){}
   var wege=[[.7,-.2],[.9,-.9],[0,-1],[-.9,-.6],[0,0]];
   wege.forEach(function(w, i){
@@ -29223,6 +29426,7 @@ function formiTagesgruss(){
 /* Zählt Haken; ab dem dritten binnen 20 s staunt Formi statt sich zu freuen. */
 function formiHaken(){
   var jetzt=Date.now();
+  formiMasse(1);
   _fl.haken=_fl.haken.filter(function(t){ return jetzt-t<20000; }); _fl.haken.push(jetzt);
   formiFuehlt(_fl.haken.length>=3 ? 'staunt' : 'freut');
   /* Runde 196: Formi sagt auch etwas — beim ersten Haken des Tages und
@@ -29316,6 +29520,7 @@ function formiLebtStart(){
   formiUmsehenPlanen();
   formiEigenlebenPlanen();
   formiGrussFigur();
+  formiMasse(0);
   document.addEventListener('pointerdown', function(e){
     var b=e.target && e.target.closest && e.target.closest('.btn-primary, .jv-senden');
     if(b && !b.disabled) formiFunken(e.clientX, e.clientY);
@@ -29387,6 +29592,9 @@ window.__formiLebt = {
   /* Runde 231: eine Kleinigkeit aus dem Eigenleben sofort (Durchlauf). */
   leben: function(a){ return formiEigenleben(a); },
   lebenZuletzt: function(){ return _fl.lebenZuletzt||''; },
+  schlucken: function(sel){ formiSchlucken(document.querySelector(sel)); },
+  wurmloch: function(){ formiWurmloch(); },
+  masse: function(n){ return formiMasse(n); },
   fehlerHinweis: function(t){ toast(t||'Hat nicht geklappt.', true); },
   /* Runde 226 */
   stempelt: function(a, wer){ formiStempelt(a, wer); }, pause: function(an){ formiPause(an); },
@@ -36883,9 +37091,15 @@ function wpTageHTML(tage, heute, ende){
     var von=kurz[0]+' '+ersterVergangen.toLocaleDateString('de-DE',o);
     var bis=kurz[vergangen-1]+' '+letzterVergangen.toLocaleDateString('de-DE',o);
     html+='<button type="button" class="shift-vergangen" data-shvergangen aria-expanded="'+(_shiftVergangenAuf?'true':'false')+'">'+
-      '<span>'+(vergangen===1 ? von : von+' – '+bis)+' · '+vergangenSchichten+
+      /* Bis-Strich ohne Leerzeichen, wie im Deutschen bei Zeiträumen
+         üblich — und so passt die Zeile bei 390 px auch in der breiteren
+         Systemschrift (Runde 239) auf eine Zeile. */
+      '<span>'+(vergangen===1 ? von : von+'–'+bis)+' · '+vergangenSchichten+
         (vergangenSchichten===1?' Schicht':' Schichten')+'</span>'+
-      '<i>'+(_shiftVergangenAuf ? 'Ausblenden' : 'Anzeigen ›')+'</i></button>';
+      /* Zu: nur der Pfeil, wie eine Zeile in Apples Listen — „Anzeigen"
+         hört der Vorleser trotzdem. Mit Wort brach die Zeile bei 390 px
+         in der Systemschrift um, und „heute" rutschte unter den Rand. */
+      '<i>'+(_shiftVergangenAuf ? 'Ausblenden' : '›<span class="nur-vorlesen"> Anzeigen</span>')+'</i></button>';
   }
   var darf=canManage();
   tage.forEach(function(t, i){
@@ -37651,7 +37865,7 @@ function heuteHakenBinden(b){
     });
   });
 }
-/* Runde 237: Abhaken direkt auf „Heute". Aus dem Betrieb, 23.10.2026:
+/* Runde 240: Abhaken direkt auf „Heute". Aus dem Betrieb, 23.10.2026:
    Mitarbeiter haben unten nur noch Heute, Zeiten, Plan, Nachrichten –
    und der meistbenutzte Bereich ist „Aufgaben und Putzplan" (24.9.).
    Also muss „Heute" das können, wofür man bisher ins Studio ging.
@@ -38233,7 +38447,7 @@ function heutePasst(box){
         ueber -= vorher - Math.max(hoehe[0], hoehe[1]);
       } else ueber -= f;
     }
-    /* Mit Haken (Runde 237) steckt die Zeile in einer Hülle – die muss
+    /* Mit Haken (Runde 240) steckt die Zeile in einer Hülle – die muss
        mit, sonst bleibt der Haken allein stehen und nimmt weiter Platz. */
     weg.forEach(function(z){ (z.closest('.hz-mit-haken') || z).remove(); });
     betroffen.forEach(heuteKopfAusgang);
@@ -41979,6 +42193,103 @@ function stLaden(neu){
   ichZeitenLaden();
   stAntraegeLaden();
   stKontoLaden();
+}
+
+/* ══ STEMPEL-ERINNERUNG IN DER APP (Runde 238) ══════════════════════
+   Aus dem Betrieb, 23.10.2026: „mach die errinerungen und vlt auch in
+   kobi mit formi und einer mail oder so". Handy und Mail schickt der
+   Server (stempelErinnern, alle 15 Minuten). Hier sagt es Formi, wenn die
+   App offen ist oder geöffnet wird — dieselben Anlässe:
+     · eine Schicht läuft seit 15 Minuten, und heute steht kein Stempel;
+     · die letzte Schicht ist seit 30 Minuten vorbei (ohne Schicht: seit
+       10 Stunden eingestempelt), und man ist noch eingestempelt.
+   Einmal je Anlass, Tag und Gerät. Schweigt Formi (Gefühle aus,
+   sachlicher Ton, Formi nicht da), kommt dieselbe Zeile als Meldung —
+   eine Erinnerung, die man abgeschaltet hat, ohne es zu wissen, wäre
+   keine. Abschaltbar mit demselben Schalter wie der Push („Stempel-
+   Erinnerung" unter Meldungen). */
+var _stErUhr=0;
+var ST_ER_KOMMEN_MIN=15, ST_ER_GEHEN_MIN=30, ST_ER_OHNE_SCHICHT_MIN=600;
+function stErinnerungStarten(){
+  if(_stErUhr || !session) return;
+  setTimeout(stErinnerungPruefen, 9000);
+  _stErUhr=setInterval(stErinnerungPruefen, 5*60000);
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState==='visible') setTimeout(stErinnerungPruefen, 1500);
+  });
+}
+function stErinnertSchon(art){
+  try{ return (JSON.parse(localStorage.getItem('kf_st_erinnert')||'[]')).indexOf(ymd(new Date())+':'+art)>=0; }
+  catch(e){ return false; }
+}
+function stErinnertMerken(art){
+  try{
+    var heute=ymd(new Date());
+    var l=(JSON.parse(localStorage.getItem('kf_st_erinnert')||'[]')).filter(function(x){ return x.indexOf(heute)===0; });
+    l.push(heute+':'+art);
+    localStorage.setItem('kf_st_erinnert', JSON.stringify(l));
+  }catch(e){}
+}
+/* Rein rechnerisch, damit es sich ohne Uhr prüfen lässt: was ist JETZT
+   vergessen? Gibt {art, text} oder null. */
+function stErinnerungRechnen(stempel, schichten, abwesend, jetzt){
+  var heute=ymd(new Date(jetzt)), nun=new Date(jetzt).getHours()*60+new Date(jetzt).getMinutes();
+  var frei=(abwesend||[]).some(function(a){
+    if(a.type!=='urlaub' && a.type!=='krank') return false;
+    if(a.type==='urlaub' && a.status && a.status!=='genehmigt') return false;
+    return a.from<=heute && (a.to||a.from)>=heute;
+  });
+  if(frei) return null;
+  var st=stStandVon(stempel);
+  var seitMin = st.seit ? new Date(st.seit).getHours()*60+new Date(st.seit).getMinutes() : -1;
+  var sch=(schichten||[]).map(function(x){ return { x:x, ab:stMin(x.from), bis:stMin(x.to) }; })
+    .filter(function(v){ return v.ab!==null; }).sort(function(a,b){ return a.ab-b.ab; });
+  if(!st.art || st.art==='gehen'){
+    var s=sch.filter(function(v){
+      return (!st.art || v.ab>seitMin) && nun>=v.ab+ST_ER_KOMMEN_MIN && (v.bis===null || nun<v.bis);
+    })[0];
+    return s ? { art:'kommen:'+s.x.from, text:'Deine Schicht hat um '+s.x.from+' begonnen – du bist noch nicht eingestempelt.' } : null;
+  }
+  var mitEnde=sch.filter(function(v){ return v.bis!==null; });
+  var letzte=mitEnde[mitEnde.length-1];
+  if(letzte){
+    return nun>=letzte.bis+ST_ER_GEHEN_MIN
+      ? { art:'gehen', text:'Deine Schicht endete um '+letzte.x.to+' – du bist noch eingestempelt. Feierabend vergessen?' } : null;
+  }
+  return (st.beginn && jetzt-st.beginn>=ST_ER_OHNE_SCHICHT_MIN*60000)
+    ? { art:'gehen', text:'Du bist seit über 10 Stunden eingestempelt. Feierabend vergessen?' } : null;
+}
+function stErinnerungPruefen(){
+  if(!session || document.hidden || (PREFS.notify && PREFS.notify.stempel===false)) return;
+  var heute=ymd(new Date()), keys=(session.studioKeys||[]);
+  Promise.all([
+    S('zeiten').where('uid','==',session.uid).where('tag','==',heute).get()
+      .then(function(sn){ return sn.docs.map(function(d){ return d.data()||{}; }); }),
+    featureAn('schicht') ? Promise.all(keys.map(function(sk){
+      return S('studios').doc(sk).collection('shifts').where('date','==',heute).get()
+        .then(function(sn){ return sn.docs.map(function(d){ return d.data()||{}; })
+          .filter(function(x){ return x.uid===session.uid; }); })
+        .catch(function(){ return []; });
+    })) : Promise.resolve([]),
+    Promise.all(keys.map(function(sk){
+      return S('studios').doc(sk).collection('absences').where('to','>=',heute).get()
+        .then(function(sn){ return sn.docs.map(function(d){ return d.data()||{}; })
+          .filter(function(a){ return a.uid===session.uid; }); })
+        .catch(function(){ return []; });
+    }))
+  ]).then(function(r){
+    var e=stErinnerungRechnen(r[0], [].concat.apply([], r[1]), [].concat.apply([], r[2]), Date.now());
+    if(!e || stErinnertSchon(e.art)) return;
+    var k=$('formiKugel');
+    if(k && !k.hidden && formiSprichtAn()){
+      /* Formi spricht höchstens alle 45 Sekunden — dann eben beim
+         nächsten Mal (in 5 Minuten), nicht gar nicht. */
+      if(formiSagt(e.text)) stErinnertMerken(e.art);
+      return;
+    }
+    toast(e.text);
+    stErinnertMerken(e.art);
+  }).catch(function(){});
 }
 
 /* ══ ZEITERFASSUNG ALS EIGENER BEREICH (Runde 222) ═══════════════════
@@ -51604,6 +51915,10 @@ function buildNotifyOptions(){
    echten Studios, nicht aus dem Text: ein Betrieb mit drei Studios las
    hier bisher von vierzehn. */
 var MAIL_OPTS = [
+  /* Runde 238: nur der vergessene Feierabend kommt auch per Mail —
+     wer schon zu Hause ist, sieht sie dort. Für jeden, nicht nur Chefs. */
+  { id:'stempel', name:'Feierabend vergessen',
+    hint:function(){ return 'Wenn deine Schicht seit einer halben Stunde vorbei ist und du noch eingestempelt bist.'; } },
   { id:'aufgabe', name:'Neue Aufgabe',
     hint:function(){ return 'Wenn dir eine Aufgabe zugewiesen wird oder in deinem Studio eine dazukommt.'; } },
   { id:'fertig',  name:'Studio fertig', chef:true,

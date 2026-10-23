@@ -1,4 +1,4 @@
-/* ══ „HEUTE" ZUM ABARBEITEN: DER HAKEN (Runde 237) ═══════════════════
+/* ══ „HEUTE" ZUM ABARBEITEN: DER HAKEN (Runde 240) ═══════════════════
    Aus dem Betrieb, 23.10.2026, auf die Rückfragen „Mitarbeiter unten nur
    Heute, Zeiten, Plan, Nachrichten?": „ja"; „eine Liste oder Blöcke nach
    Art?": „so wies leichter zu verstehen ist" (→ Blöcke bleiben).

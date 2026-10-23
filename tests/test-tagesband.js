@@ -196,7 +196,7 @@ const KONTRAST = (el) => {
   console.log('\n── 6. Abhaken mit Gewicht ──');
   {
     const p = await oeffne(b, 1440, 900, 'mitarbeiter', [11, 20]);
-    /* Runde 237: Mitarbeiter haben keinen Raum „Studio" mehr – die
+    /* Runde 240: Mitarbeiter haben keinen Raum „Studio" mehr – die
        Aufgaben liegen unter „Alles" (zwei Tipps). */
     await p.evaluate(async () => { document.getElementById('bereichKopf').click(); await new Promise(r => setTimeout(r, 300));
       [...document.querySelectorAll('#allesLade [data-alles="todos"]')].find(x => x.getClientRects().length).click(); });
