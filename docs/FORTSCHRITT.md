@@ -20585,3 +20585,40 @@ nannte „(vgl. ID 57)" in der Antwort.
 **Geprüft:** `test-formi-worker` 126, `test-formi-lage` 10 (Gegenprobe ohne
 den Aufruf: rot). **Nicht geprüft:** wie die echten Antworten klingen —
 nach dem Einspielen mit `/api/probe`.
+
+## Runde 230 — Das neue Design für alle (23.10.2026)
+
+Aus dem Betrieb: „spiel das neue design für alle einfach aus, ist
+leichter“.
+
+**Gebaut.** `layoutNeu()` liefert ohne Angabe `true`. Den Firmenschalter
+(`config/design`, „für alle veröffentlichen“) gibt es nicht mehr; Laden,
+Beobachten und Knopf sind entfernt. Als Übergang bleiben die Adresse
+(`?neu=0`) und der Geräteschalter in Verwaltung → System → Design.
+Erreichbar ist der für die Geschäftsführung, auf deren eigenem Gerät.
+
+**Was das an Tests bedeutete.** 114 Durchläufe luden die App ohne Angabe
+und prüften damit stillschweigend das alte Design. Gegen das neue waren
+38 davon zusätzlich rot. Ich habe jeden einzeln gegen den Stand vor der
+Umstellung gehalten und eingeordnet:
+- **33 kommen nur über die alte Navigation oder alte Startseiten-Karten
+  ans Ziel.** Sie laufen im Übergang mit `kf_neu=0` und tragen einen
+  Kommentar. Die Liste steht als P-20 in BEKANNTE-PROBLEME. Bevor das
+  Bisherige entfernt wird, müssen sie umgestellt sein.
+- **Echte Fehler im neuen Design, die ab jetzt alle gesehen hätten:**
+  - Die Trefferfläche der Reiter lag 3 px über der Studio-Wahl von
+    Aufgaben und Putzplan (150 × 41 in „kompakt“). Die Leiste hat jetzt
+    oben `--s8` Abstand, wie es Karten schon hatten.
+  - Bei 320 × 640 lag die Formi-Kugel mit offenem „Filter“ auf den Chips
+    und den „…“-Knöpfen. Solange gefiltert wird, tritt sie auf kleinen
+    Handys zur Seite.
+  - Der Chatverlauf bekam am Handy nur 49 % der Höhe. Der Kopf in
+    „Nachrichten“ ist jetzt schmal wie auf „Heute“; das ergibt 52 %. Die
+    Grenze liegt bei 55 % und bleibt dort. Der Rest steht als P-21.
+- **Offen, nicht in dieser Runde:** Ein Wisch am Verschiebe-Griff hakt im
+  neuen Design eine Aufgabe ab (P-21).
+
+**Warum der Geräteschalter bleibt.** Hausregel: Eine Änderung, die echte
+Konten trifft und sich hier nicht prüfen lässt, bekommt einen Übergang.
+Entfernt wird das Bisherige in einem eigenen Schritt, wenn P-20
+abgearbeitet ist.
