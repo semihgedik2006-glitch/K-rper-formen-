@@ -478,7 +478,9 @@ async function seite(b, stub, such, breite) {
           ohneAusgang: [...document.querySelectorAll('#heuteListe .heute-block')]
             .filter(bl => {
               const kopf = bl.querySelector('.heute-kopf');
-              const zahl = /·\s*(\d+)/.exec((kopf.textContent || ''));
+              /* Runde 241: die Zahl steht ohne „·“ leise neben dem Titel, und im
+                 Kopf steht jetzt auch „Alle N“ — gelesen wird nur der Titel. */
+              const zahl = /(?:·\s*|\s)(\d+)$/.exec(((kopf.querySelector('.hk-wort') || {}).textContent || '').trim());
               const gezeigt = bl.querySelectorAll('.heute-zeile').length;
               return zahl && +zahl[1] > gezeigt && !kopf.querySelector('.mini-link');
             }).length,

@@ -171,7 +171,12 @@ const FEDERN = () => document.getAnimations().filter(a => a.animationName === 'c
   {
     const p = await seite(b, 'chef');
     const f = await p.evaluate(() => {
-      const z = document.querySelector('#heuteListe .heute-zeile');
+      /* Runde 241 („Apple-Grundgerüst, Formi als Akzent“; zu den
+         Probebildern „genau so hab ichs mir vorgestellt“): die Zeilen
+         stehen in EINER Gruppe je Abschnitt, die Rundung trägt die
+         Gruppe. Gemessen wird deshalb die Inhaltsfläche, die man sieht —
+         dieselben 14 px wie vorher an der einzelnen Zeile. */
+      const z = document.querySelector('#heuteListe .heute-liste');
       const k = document.querySelector('#heuteListe .heute-rest-knopf');
       return { zeile: parseFloat(getComputedStyle(z).borderTopLeftRadius),
                knopf: k ? parseFloat(getComputedStyle(k).borderTopLeftRadius) : null,
