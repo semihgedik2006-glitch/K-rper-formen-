@@ -20083,3 +20083,32 @@ ohne abgeschnittene Beschriftung bei 320 / 390 / 430 / 820 / 1280 /
 „Meine Zeiten" ≥ 44 × 44 in denselben Breiten (`test-stempelseite`);
 „Zeiten → Team" bei der Leitung (`test-zeitkorrektur`). Am Rechner zwei
 Spalten, „Mein Konto" links bei „Jetzt", Taste Z (1280/1440/1920).
+## Runde 223 — Findewege gemessen; „Aushänge" in zwei Tipps (23.10.2026)
+
+Aus der Studienlage (`docs/design-vorbilder/studien-psychologie.md`,
+Folgerung 14: „Wirkung messen statt fragen … typische Aufgaben stoppen").
+Eine Stoppuhr mit Menschen gibt es hier nicht. Gemessen wird, was sich
+messen lässt: die kürzeste Zahl an Tipps von „Heute" bis zum Ziel, nur
+über sichtbare Navigation (Räume, Reiter, Umschalter, „Direkt", „Alles"),
+ohne Suche und ohne Formi.
+
+**Werkzeug:** `tests/test-findewege.js` sucht in die Breite. Jeder Weg
+startet frisch auf „Heute", jede Ansicht und jede offene Schublade „Alles"
+ist ein Zustand. Gemessen wird für zehn typische Aufgaben, bei 390 px und
+1440 px. Die Grenze kommt aus dem Hauswunsch „jedes Ziel in zwei Tipps
+über ‚Alles'": Aufgaben und Schichtplan in 1 Tipp, alles andere in 2.
+
+**Eigener Fehler unterwegs:** Die erste Fassung legte Zustände nur nach
+der Ansicht zusammen. Die Schublade „Alles" öffnet aber keine neue
+Ansicht, also verwarf die Suche jeden Weg über sie. Dadurch erschienen
+„Geräte" mit 3 Tipps, und ich hatte die Grenze auf 3 gesetzt. Beides ist
+korrigiert: Die Grenze steht wieder bei 2, und die Schublade zählt als
+eigener Zustand.
+
+**Befund:** Die „Aushänge" (das frühere Brett) brauchten an beiden
+Geräten 3 Tipps. In „Alles" stand zwar eine Zeile „Aushänge", sie
+öffnete aber die Pinnwand bei den **Infos**. Name und Ziel passten nicht
+zusammen. Jetzt gibt es zwei Zeilen mit den Namen des Umschalters:
+„Infos" und „Aushänge". Die zweite setzt den Teil der Pinnwand über das
+schon vorhandene `data-pin`. Ist das Brett abgeschaltet, gibt es die
+Zeile nicht (`feature:'brett'`).
