@@ -473,7 +473,7 @@ const ZUSTAND = () => {
   }
 
   console.log('\n── 11. Fragen zum Plan, Zurücknehmen, Öffnungszeiten aus dem Excel ──');
-  /* Runde 244 — aus dem Betrieb: „uns alle fragen stellen welche wir
+  /* Runde 245 — aus dem Betrieb: „uns alle fragen stellen welche wir
      beantworten müssen“ und „jap mach weiter dann“. */
   {
     const fs = require('fs'), path = require('path');

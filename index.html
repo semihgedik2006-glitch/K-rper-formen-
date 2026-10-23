@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-ZWf0JCWVoWa8k6DmzndkqQKZ0s4//aDxLBRf4GxZsTE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-12E2tnhzbLO7YW+1P3Krt7U36zZtN4CiuI9MqERx2BU='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -9619,6 +9619,54 @@ body.neu .zk-j-titel,body.neu .ich-zahl-klein,body.neu .wp-titel small,body.neu 
 body.neu .mail-kopf h4,body.neu .st-urlaub h4,body.neu .dm-section,
 body.neu #view-chef .chef-liste .chef-tab-gruppe{text-transform:none;letter-spacing:normal;
   font-size:var(--t-xs);font-weight:600}
+
+/* ── 9. Aufgaben und Putzplan in Gruppen (Runde 244, 23.10.2026) ─────
+   Aus dem Betrieb nach der Startseite: „mach weiter“. Dieselbe Sprache
+   wie auf „Heute“ (Abschnitt 8): die Aufgaben einer Gruppe („Heute“,
+   „Diese Woche“, „Täglich“ …) stehen in EINER gerundeten Fläche, nicht
+   als lose Karten mit Abstand. Aufgaben und Putzplan gleich — „GENAU so
+   wie der Putzplan“ (9.10.2026).
+
+   Die Zeilen bleiben einzelne Elemente (Wischen, Ziehen, Tastatur,
+   „eben abgehakt“ hängen an ihnen). Die Gruppe entsteht aus ihnen
+   selbst: Rand links und rechts an jeder Zeile, oben nur an der ersten,
+   unten nur an der letzten, dazwischen eine Haarlinie ab dem Innenrand.
+   Zustände bleiben sichtbar: erledigt blass, überfällig mit rotem Rand
+   links (Status), gewählt mit Rahmen. */
+body.neu .pp-gruppe > .todo,body.neu .pp-gruppe > .pp-item,
+body.neu .td-erledigt > .todo,body.neu .td-erledigt > .pp-item{margin-bottom:0;border-radius:0;
+  border-top-width:var(--zg-oben,0);border-bottom-width:var(--zg-unten,0);
+  border-top-left-radius:var(--zg-r-oben,0);border-top-right-radius:var(--zg-r-oben,0);
+  border-bottom-left-radius:var(--zg-r-unten,0);border-bottom-right-radius:var(--zg-r-unten,0)}
+/* Erste und letzte Zeile setzen nur ihre Werte; die Regel oben liest
+   sie. So steht jede Eigenschaft genau einmal da (test-gestaltung). */
+body.neu .pp-gruppe > .pg-kopf + *,body.neu .td-erledigt > summary + *{--zg-oben:1px;--zg-r-oben:var(--r-md)}
+body.neu .pp-gruppe > .todo:not(:has(+ .todo)),body.neu .pp-gruppe > .pp-item:not(:has(+ .pp-item)),
+body.neu .td-erledigt > .todo:last-child,body.neu .td-erledigt > .pp-item:last-child{--zg-unten:1px;--zg-r-unten:var(--r-md)}
+body.neu .pp-gruppe > .todo + .todo::after,body.neu .pp-gruppe > .pp-item + .pp-item::after,
+body.neu .td-erledigt > .todo + .todo::after,body.neu .td-erledigt > .pp-item + .pp-item::after{content:'';position:absolute;
+  top:0;left:var(--s12);right:0;height:1px;background:var(--line);pointer-events:none}
+/* In einer Gruppe hebt sich eine Zeile beim Zeigen nicht mehr ab — sie
+   würde aus der Fläche springen. Sie hellt sich auf, wie auf „Heute“. */
+@media (hover:hover){
+  body.neu .pp-gruppe > .pp-item:hover,body.neu .td-erledigt > .pp-item:hover{transform:none;background:var(--auf-1)}
+  body.neu .pp-gruppe > .todo:hover,body.neu .td-erledigt > .todo:hover{background:var(--auf-1)}
+}
+/* ── Ein gefüllter Hauptknopf je Ansicht (Runde 244) ──
+   Apple füllt genau EINEN Knopf je Ansicht: den, für den man gekommen
+   ist. Am Handy war das schon so — „+ Aufgabe“ unten in der Daumenzone
+   ist gefüllt (Abschnitt „Die Hauptaktion in Daumennähe“). Am Rechner
+   stand „+ Neu“ als umrandete Pille neben „Wer hakt ab?“, „Filter“ und
+   „Drucken“, die genauso aussahen — vier gleich laute Knöpfe. Jetzt
+   trägt „+ Neu“ dieselbe Fläche wie sein Gegenstück am Handy; die
+   anderen bleiben, was sie sind: Werkzeuge. */
+@media(min-width:821px){
+  body.neu .bereich-zeile .kopf-plus{border-color:transparent;background:var(--brand);color:var(--on-accent);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.28), var(--e1)}
+}
+@media(min-width:821px) and (hover:hover){
+  body.neu .bereich-zeile .kopf-plus:hover{background:var(--brand);filter:brightness(1.08)}
+}
 </style>
 </head>
 <body>
@@ -11548,7 +11596,7 @@ body.neu #view-chef .chef-liste .chef-tab-gruppe{text-transform:none;letter-spac
             <section class="card spl-ausfaelle" id="spAusfaelle" hidden></section>
             <!-- Was die Chefin selbst festlegt. Zugeklappt: es ist einmal
                  eingerichtet und wird selten angefasst. -->
-            <!-- Die 24 Fragen (Runde 244) — dieselbe Liste wie in
+            <!-- Die 24 Fragen (Runde 245) — dieselbe Liste wie in
                  Schichtplaner-Fragen.pdf und im Blatt „Fragen“ der Vorlage
                  (Quelle: docs/schichtplaner/werkzeug/inhalt.py). Aus dem
                  Betrieb, 22.10.2026: „uns alle fragen stellen welche wir
@@ -11642,7 +11690,7 @@ body.neu #view-chef .chef-liste .chef-tab-gruppe{text-transform:none;letter-spac
                       <h3 data-ikon="hakenKreis">Fertig?</h3>
                       <button type="button" class="btn btn-primary" id="spVeroeffentlichen">Im Team-Schichtplan veröffentlichen</button>
                       <button type="button" class="btn btn-ghost" id="spLogx">Für LogX kopieren</button>
-                      <!-- Runde 244: eine Probe muss sich zurückholen lassen,
+                      <!-- Runde 245: eine Probe muss sich zurückholen lassen,
                            sonst traut sich niemand, es auszuprobieren. -->
                       <button type="button" class="btn btn-ghost spl-zurueck" id="spZurueck" hidden>Veröffentlichung zurücknehmen</button>
                       <p class="hint" id="spAktionHinweis">Kopiert eine Tabelle (Datum, Studio, Schicht, Zeit, Name) – in Excel oder LogX einfügen.</p>
@@ -22129,6 +22177,11 @@ var NEUIGKEITEN = [
     'Im Schichtplaner (Verwaltung) gibt es die Karte „Fragen zum Plan": dieselben 24 Fragen wie im PDF, in fünf Reitern. Bei jeder steht, was die App heute annimmt – ein Tipp auf „passt" genügt, sonst eine eigene Antwort. Oben steht, wie viele schon beantwortet sind.',
     'Nach dem Veröffentlichen gibt es „Veröffentlichung zurücknehmen": Die Schichten des Monats verschwinden wieder aus dem Team-Plan, der Entwurf im Planer bleibt. So lässt sich gefahrlos ausprobieren. Von Hand eingetragene Schichten bleiben stehen.',
     'Öffnungszeiten, die nur in der Excel-Vorlage (Blatt „Studios") stehen, zählen jetzt auch für die Besetzungs-Leiste unter Plan → Schichten.' ] },
+  { id:'2026-10-23-aufgaben-gruppen', datum:'23.10.2026', titel:'Aufgaben und Putzplan als ruhige Gruppen', wo:'todos', punkte:[
+    'Unter „Studio" stehen die Aufgaben und der Putzplan jetzt genauso wie auf der Startseite: jede Gruppe (z. B. Täglich, Wöchentlich) ist eine gerundete Fläche, die Zeilen darin trennt nur eine feine Linie.',
+    'Am Rechner ist „+ Neu" oben rechts jetzt der eine gefüllte Knopf der Ansicht. Filter, Drucken und „Wer hakt ab?" bleiben daneben als ruhige Umrandung.',
+    'Abhaken, Wischen und das Menü „…" funktionieren wie bisher.'
+  ]},
   { id:'2026-10-23-erinnerung-tipp', datum:'23.10.2026', titel:'Ein Tipp auf die Stempel-Erinnerung öffnet „Zeiten"', wo:'zeit', punkte:[
     'Tippst du auf die Erinnerung „Feierabend vergessen?" oder „Schon eingestempelt?" auf dem Handy, öffnet die App jetzt direkt die Seite „Zeiten" – dort stempelst du oder beantragst eine Korrektur.',
     'Für die Geschäftsführung: Entfernst du unter Verwaltung → Team einen Zugang, verschwinden mit ihm auch das Soll je Wochentag, der Urlaubsanspruch und die DATEV-Personalnummer dieser Person. Stempelzeiten und Monatsabschlüsse bleiben, wie es die Aufbewahrungsfrist verlangt.'
@@ -37370,7 +37423,7 @@ function wpOeffnung(key){
   var o=st && st.oeffnung;
   var wt=new Date(key+'T12:00:00').getDay();
   if(!o){
-    /* Runde 244: nicht unter Verwaltung → Studios gepflegt? Dann
+    /* Runde 245: nicht unter Verwaltung → Studios gepflegt? Dann
        zählt das Blatt „Studios“ der Schichtplaner-Excel. Vorher gab es
        zwei Stellen, und die Leiste las nur eine. */
     var ex=_sp && _sp.conf && _sp.conf.studios && _sp.conf.studios[_teamStudioKey];
@@ -46234,7 +46287,7 @@ function spVeroeffentlichen(btn){
   });
 }
 
-/* ══ Veröffentlichung zurücknehmen (Runde 244) ═══════════════════
+/* ══ Veröffentlichung zurücknehmen (Runde 245) ═══════════════════
    Holt alle Schichten dieses Monats, die der Planer geschrieben hat
    (Merkmal planer == Monat), aus dem Team-Schichtplan. Von Hand
    eingetragene Schichten bleiben — sie tragen das Merkmal nicht. */
@@ -46264,7 +46317,7 @@ function spZuruecknehmen(btn){
   });
 }
 
-/* ══ Fragen zum Plan (Runde 244) ═════════════════════════════════
+/* ══ Fragen zum Plan (Runde 245) ═════════════════════════════════
    Dieselben 24 Fragen wie im PDF und im Excel (Quelle: inhalt.py; der
    Test vergleicht beide Listen). Antworten liegen in
    config/schichtplaner.antworten — dort, wo die Excel-Datei auch die
