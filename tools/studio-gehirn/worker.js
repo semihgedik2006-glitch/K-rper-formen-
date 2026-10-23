@@ -1,5 +1,5 @@
 /**
- * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.22)
+ * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.23)
  * Cloudflare Worker: WhatsApp (Text + Sprachnachrichten), Studio-Chat-Schnittstelle,
  * Leitstand-Webseite, Speicher in D1, Antworten über Workers AI.
  *
@@ -427,6 +427,7 @@ WISSEN (2.19: du antwortest IMMER — und sagst ehrlich, worauf die Antwort beru
 - Allgemeine Fragen (Training, EMS-Grundlagen, Anatomie, Ernährung allgemein, Verkauf, Kundengespräch, Texte, Mails, Social Media, Excel, Organisation …): antworte frei und gut wie ChatGPT, "grundlage" "allgemein".
 - Fragen zu UNSEREM Studio, die weder im Wissen noch in der APP-LAGE stehen (unsere Abläufe, Zuständigkeiten, Verträge, Öffnungszeiten): gib trotzdem deine beste, vernünftige Antwort, aber beginne mit "Nicht geprüft:" und sag, dass die Frage an Semih geht. "grundlage" "unsicher", "abgedeckt" false.
 - Erfinde trotzdem nie konkrete Preise, Telefonnummern, Mailadressen, Namen von Personen oder Firmen. Sag dann, wo man es erfährt.
+- GEPRÜFTE BEISPIELE (falls mitgeschickt) sind Fragen aus dem Team, deren Antwort Semih freigegeben hat. Passt eines zur Nachricht: übernimm seine Fakten und Schritte und antworte in deinem Ton, nicht wörtlich abgeschrieben. Passt keins, beachte sie nicht. Widerspricht ein Beispiel dem STUDIO-WISSEN, gilt das Wissen.
 - Sprich nie vom "Studio-Wissen", der "APP-LAGE", einer Schulung oder einem Video als Quelle, und nenne nie IDs oder Nummern von Einträgen in der Antwort. Gib die Antwort einfach.
 
 GESUNDHEIT UND DATENSCHUTZ
@@ -466,13 +467,14 @@ async function beantworteFrage(env, { kanal, absender, studio, text, nachrichtId
     return { text: antwort, abgedeckt: false, offenId: null, quellen: [] };
   }
   const wissen = await findeWissen(env, text);
+  const vorbilder = await vorbilderLaden(env, text, wissen);
   const verlauf = await env.DB.prepare(
     "SELECT text, antwort FROM nachrichten WHERE absender = ? AND typ IN ('text','sprache','smalltalk') AND antwort != '' AND id != ? AND erstellt > ? ORDER BY id DESC LIMIT 5"
   ).bind(absender, nachrichtId, Date.now() - 2 * 60 * 60 * 1000).all();
 
   let ergebnis;
   try {
-    ergebnis = await frageKI(env, { text, studio, wissen, verlauf: (verlauf.results || []).reverse(), vorname, ton, kanal: k, lage });
+    ergebnis = await frageKI(env, { text, studio, wissen, verlauf: (verlauf.results || []).reverse(), vorname, ton, kanal: k, lage, vorbilder });
   } catch (e) {
     console.error("KI:", e && e.stack || e);
     const kontingent = istKontingentFehler(e);
@@ -508,9 +510,59 @@ async function beantworteFrage(env, { kanal, absender, studio, text, nachrichtId
   return { text: antwort, abgedeckt: ergebnis.abgedeckt, offenId, quellen, grundlage: ergebnis.grundlage || null, stimmung: ergebnis.stimmung || null };
 }
 
+/* ── Geprüfte Beispiele (2.23, 23.10.2026) ─────────────────────────────
+   Aus dem Betrieb: „lass ihn im leitstand fragen erstellen und beantworte
+   diese … bis die 500 fragen durch sind" — und danach, auf die Empfehlung,
+   die freigegebenen Paare direkt in den Antworten zu nutzen: „Ja".
+   Zu jeder Frage holen wir die freigegebenen Übungen (status 'gut') der
+   gefundenen Wissenseinträge und geben die bis zu drei ähnlichsten der KI
+   als Vorbild mit. Kein neues Modell, kein Fingerabdruck: die Paare hängen
+   schon am Wissenseintrag, die Ähnlichkeit sind gemeinsame Suchwörter.
+   Warum nicht alle: jedes Beispiel kostet Platz im Gespräch und lenkt ab,
+   wenn es nicht passt — deshalb nur mit mindestens einem gemeinsamen Wort. */
+export const MAX_VORBILDER = 3;
+const MAX_VORBILD_ZEICHEN = 700;
+
+export function vorbilderWaehlen(text, paare, n) {
+  const such = suchbegriffe(text, 20);
+  if (!such.length) return [];
+  const bewertet = [];
+  for (const p of paare || []) {
+    const worte = new Set(suchbegriffe(p.frage, 30));
+    let treffer = 0;
+    for (const w of such) if (worte.has(w)) treffer++;
+    if (treffer) bewertet.push({ p, punkte: treffer / Math.sqrt(worte.size || 1) });
+  }
+  bewertet.sort((a, b) => b.punkte - a.punkte);
+  const gesehen = new Set(), raus = [];
+  for (const { p } of bewertet) {
+    const schluessel = String(p.frage).toLowerCase().trim();
+    if (gesehen.has(schluessel)) continue;
+    gesehen.add(schluessel);
+    raus.push({ frage: p.frage, antwort: p.antwort });
+    if (raus.length >= (n || MAX_VORBILDER)) break;
+  }
+  return raus;
+}
+
+export function vorbilderText(vorbilder) {
+  return (vorbilder || []).map(v => `F: ${kuerze(v.frage, 200)}\nA: ${kuerze(v.antwort, MAX_VORBILD_ZEICHEN)}`).join("\n\n");
+}
+
+async function vorbilderLaden(env, text, wissen) {
+  const ids = (wissen || []).map(w => Number(w.id)).filter(Number.isFinite).slice(0, 8);
+  if (!ids.length) return [];
+  try {
+    const paare = rows(await env.DB.prepare(
+      `SELECT frage, antwort FROM uebung WHERE status = 'gut' AND wissen_id IN (${ids.map(() => "?").join(",")}) ORDER BY id DESC LIMIT 80`
+    ).bind(...ids).all());
+    return vorbilderWaehlen(text, paare, MAX_VORBILDER);
+  } catch (e) { return []; /* Tabelle gibt es noch nicht: ohne Beispiele */ }
+}
+
 function istKontingentFehler(e) { return /4006|neuron|allocation|quota/i.test(String(e && e.message || e)); }
 
-async function frageKI(env, { text, studio, wissen, verlauf, vorname, ton, kanal, lage }) {
+async function frageKI(env, { text, studio, wissen, verlauf, vorname, ton, kanal, lage, vorbilder }) {
   const wissensText = wissen.length
     ? wissen.map(w => `[ID ${w.id}] ${w.thema}\n${w.inhalt}`).join("\n\n")
     : "(Zu dieser Nachricht steht nichts im Studio-Wissen.)";
@@ -520,7 +572,8 @@ async function frageKI(env, { text, studio, wissen, verlauf, vorname, ton, kanal
   /* 2.19: Die Lage aus der App (nur, was diese Person ohnehin sieht) —
      nur im Gespräch mit der KI, nie gespeichert. */
   const lageText = lage ? kuerze(String(lage), MAX_LAGE_ZEICHEN) : "";
-  const user = `JETZT: ${jetztText()}\n\nSTUDIO-WISSEN:\n${wissensText}\n\n${lageText ? "APP-LAGE (live aus der App, nur was " + v + " sehen darf):\n" + lageText + "\n\n" : ""}${verlaufText ? "BISHERIGES GESPRÄCH (darauf kann sich die Nachricht beziehen):\n" + verlaufText + "\n\n" : ""}NACHRICHT von ${v} (Studio ${studio || "unbekannt"}):\n${text}`;
+  const beispielText = vorbilderText(vorbilder);
+  const user = `JETZT: ${jetztText()}\n\nSTUDIO-WISSEN:\n${wissensText}\n\n${beispielText ? "GEPRÜFTE BEISPIELE (so haben wir ähnliche Fragen beantwortet):\n" + beispielText + "\n\n" : ""}${lageText ? "APP-LAGE (live aus der App, nur was " + v + " sehen darf):\n" + lageText + "\n\n" : ""}${verlaufText ? "BISHERIGES GESPRÄCH (darauf kann sich die Nachricht beziehen):\n" + verlaufText + "\n\n" : ""}NACHRICHT von ${v} (Studio ${studio || "unbekannt"}):\n${text}`;
   const messages = [{ role: "system", content: system }, { role: "user", content: user }];
 
   // Gemma 4 denkt vor der Antwort nach; mit zu wenig Tokens bleibt die
@@ -1805,10 +1858,11 @@ async function api(request, env, url) {
       const t0 = Date.now();
       _denkenAus = !!b.ohneDenken;
       const wissen = await findeWissen(env, q);
+      const vorbilder = b.ohneBeispiele ? [] : await vorbilderLaden(env, q, wissen);
       try {
-        const e = await frageKI(env, { text: q, studio: "", wissen, verlauf: [], vorname: "Semih", ton: b.ton === "sachlich" ? "sachlich" : "locker", kanal: "app", lage: b.lage ? String(b.lage) : "" });
+        const e = await frageKI(env, { text: q, studio: "", wissen, verlauf: [], vorname: "Semih", ton: b.ton === "sachlich" ? "sachlich" : "locker", kanal: "app", lage: b.lage ? String(b.lage) : "", vorbilder });
         _denkenAus = false;
-        return json({ ms: Date.now() - t0, modell: _letztesModell, denken: b.ohneDenken ? "standard" : "low", wissen: wissen.map(w => ({ id: w.id, thema: w.thema })), ergebnis: e });
+        return json({ ms: Date.now() - t0, modell: _letztesModell, denken: b.ohneDenken ? "standard" : "low", wissen: wissen.map(w => ({ id: w.id, thema: w.thema })), beispiele: vorbilder.map(v => v.frage), ergebnis: e });
       } catch (e) { _denkenAus = false; return json({ ms: Date.now() - t0, modell: _letztesModell, fehler: String(e && e.message || e).slice(0, 200) }, 502); }
     }
     if (pfad === "/api/vektoren") {

@@ -410,7 +410,38 @@ function ki(antworten) {
       const a4 = await frag('noch eine frage zum training');
       pruefe(eingaben[0] && eingaben[0].modell === w.MODELL_ANTWORT && eingaben[0].reasoning && eingaben[0].reasoning.effort === 'low', 'gpt-oss wird mit „low" gefragt');
       pruefe(eingaben[1] && eingaben[1].modell === w.MODELL_ANTWORT && !eingaben[1].reasoning && /Ohne reasoning/.test(a4.antwort), 'lehnt es den Parameter ab: dieselbe Frage ohne ihn, nicht gleich das schwächere Modell');
+
+      /* 2.23: freigegebene Übungen gehen als geprüfte Beispiele mit.
+         Aus dem Betrieb (23.10.2026): die 500 Trainingsfragen — „Ja" zur
+         Empfehlung, die freigegebenen Paare direkt in den Antworten zu nutzen. */
+      const ins = env2.DB.roh.prepare("INSERT INTO uebung (wissen_id, frage, antwort, status, erstellt) VALUES (?, ?, ?, ?, 1)");
+      ins.run(weste, 'Wie wasche ich die Westen richtig?', 'Schonprogramm, wenig Hitze, 3–4 Kappen Pflegespüler – Beispielantwort GUT.', 'gut');
+      ins.run(weste, 'Wie wasche ich die Westen nochmal?', 'NOCH NICHT GEPRÜFT – darf nicht mit.', 'neu');
+      ins.run(weste, 'Westen falsch gewaschen?', 'VERWORFEN – darf nicht mit.', 'verworfen');
+      ins.run(weste, 'Wer macht den Dienstplan?', 'PASST NICHT – kein gemeinsames Wort.', 'gut');
+      const bsp = [];
+      env2.AI.run = async (modell, e) => {
+        if (/bge-m3/.test(modell)) return { data: e.text.map(fake) };
+        bsp.push(JSON.stringify(e.messages || ''));
+        return { response: JSON.stringify({ antwort: 'Schonprogramm.', art: 'frage', grundlage: 'wissen', abgedeckt: true, quellen: [weste] }) };
+      };
+      await frag('Wie wasche ich die Westen?');
+      pruefe(/GEPRÜFTE BEISPIELE/.test(bsp[0] || '') && /Beispielantwort GUT/.test(bsp[0]), 'freigegebene Übung steht als geprüftes Beispiel im Gespräch mit der KI');
+      pruefe(!/NOCH NICHT GEPRÜFT|VERWORFEN/.test(bsp[0] || ''), 'ungeprüfte und verworfene Übungen gehen nicht mit');
+      pruefe(!/PASST NICHT/.test(bsp[0] || ''), 'Gegenprobe: ein freigegebenes Paar ohne gemeinsames Wort bleibt draussen');
+      bsp.length = 0;
+      await frag('Wer hat heute Dienst in Hürth?');
+      pruefe(bsp[0] !== undefined && !/Beispielantwort GUT/.test(bsp[0]), 'Gegenprobe: zu einer fremden Frage kein Westen-Beispiel');
+      const pr = await (await w.default.fetch(new Request('https://x.test/api/probe', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': 'admin' }, body: JSON.stringify({ frage: 'Wie wasche ich die Westen?' }) }), env2, { waitUntil() {} })).json();
+      pruefe(Array.isArray(pr.beispiele) && pr.beispiele.includes('Wie wasche ich die Westen richtig?'), 'Probe im Leitstand zeigt, welche Beispiele mitgingen');
       env2.AI.run = altRun; global.fetch = altFetch3;
+    }
+    {
+      const viele = Array.from({ length: 6 }, (_, i) => ({ frage: 'Wie wasche ich die Westen ' + i + '?', antwort: 'a' + i }));
+      const gew = w.vorbilderWaehlen('Wie wasche ich die Westen?', viele.concat([{ frage: 'Wie wasche ich die Westen 0?', antwort: 'doppelt' }]));
+      pruefe(gew.length === w.MAX_VORBILDER && new Set(gew.map(x => x.frage)).size === gew.length, 'höchstens ' + w.MAX_VORBILDER + ' Beispiele, keine doppelte Frage');
+      pruefe(w.vorbilderWaehlen('', viele).length === 0 && w.vorbilderWaehlen('Wie wasche?', []).length === 0, 'leere Frage oder keine Paare: keine Beispiele');
+      pruefe(w.vorbilderText([{ frage: 'F1', antwort: 'x'.repeat(2000) }]).length < 800, 'ein langes Beispiel wird gekürzt');
     }
 
     /* ── 2.16 Sammelfreigabe: „ja sind zu viele klicks" ── */

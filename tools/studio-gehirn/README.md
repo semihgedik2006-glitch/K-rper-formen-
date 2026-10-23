@@ -70,6 +70,14 @@ Workers AI, **nicht** über GitHub Actions.
   Tageskontingent von Workers AI nicht, kommt „Kontingent aufgebraucht“ —
   dann hilft der Workers-Paid-Plan (5 $ im Monat).
 
+## Geprüfte Beispiele (ab 2.23)
+
+- Freigegebene Übungen (Leitstand → Übungen, „gut") gehen bei passenden
+  Fragen als Vorbild mit, höchstens drei. Mehr freigeben heißt: Formi
+  antwortet öfter im geprüften Wortlaut.
+- `POST /api/probe {frage}` zeigt unter `beispiele`, welche mitgingen;
+  `ohneBeispiele: true` zum Vergleich.
+
 ## Variablen
 
 | Name | Wofür |
