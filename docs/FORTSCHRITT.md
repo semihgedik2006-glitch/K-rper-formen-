@@ -21746,6 +21746,267 @@ super“. Seit 15:18 läuft der Plan ohne Zwischenfrage durch.
 
 **Als Nächstes:** Bewegung — drei Federn, Seitenwechsel.
 
+## Runde 247 — Drei Federn statt vieler Kurven (23.10.2026)
+
+Fünfter Bauschritt aus dem Plan „Studio Chat wie von Apple“ (Bewegung),
+nach Empfehlung 1 der Recherche „Bewegung, Psychologie und Formi“. Aus
+dem Betrieb, 15:18: „es soll einfach den ganzen plan erledigen“.
+
+**Was gebaut wurde**
+
+- Drei Federn als Eigenschaften an `:root`, gerechnet als echte
+  gedämpfte Schwingung und in `linear()` abgetastet (29 Punkte):
+  `--feder-fest` (bounce 0, Dämpfung 1), `--feder-weich` (bounce 0,15,
+  Dämpfung 0,85, 0,6 % Überschwingen), `--feder-formi` (bounce 0,3,
+  4,6 %) — die letzte nur angelegt, nicht benutzt.
+- `--ease-ios` und `--ease-out` zeigen auf `--feder-fest`, `--spring` auf
+  `--feder-weich`. Damit bewegen sich alle ~225 Stellen der App, die eine
+  der drei Kurven benutzen, als Feder — ohne eine einzige davon
+  umzuschreiben.
+- Formi bleibt unverändert: an Formis Wurzeln (`[class*="formi"]` ausser
+  `body`, `[id*="formi"]`, `#view-gehirn`, `.jarvis`) werden die drei
+  alten Kurven wieder gesetzt; sie erben in alles darunter. Die rund 50
+  festen `cubic-bezier(…)` in Formis eigenen Regeln und im Skript sind
+  nicht angefasst.
+- Ohne `linear()` (Safari < 17.2) bleibt alles bei den alten Kurven
+  (`@supports`).
+
+**Warum so**
+
+- Apple beschreibt Bewegung als Feder mit „bounce“, nicht als Kurve.
+  Eine Feder ohne Anfangsgeschwindigkeit setzt weich an und läuft lang
+  aus; zur Hälfte der Dauer ist `--feder-fest` bei 96 %, so wie
+  `--ease-ios` vorher.
+- Die Rechnung: Dämpfung ζ = 1 − bounce. Für ζ = 1 gilt
+  x(t) = 1 − (1 + ωt)·e^(−ωt), ω so gewählt, dass x(1) = 0,999
+  (ω ≈ 9,23). Für ζ < 1 gilt x(t) = 1 − e^(−ζωt)·(cos ω_d t +
+  ζω/ω_d · sin ω_d t) mit ω_d = ω√(1−ζ²) und ζω = 6,9 (Hülle 0,1 % bei
+  t = 1). Abgetastet bei t = (i/28)^1,6, damit der Anfang dichter liegt.
+- Verweise statt Umschreiben: über 200 Stellen zu ändern hätte nichts
+  verbessert, nur den Unterschied in der Versionsgeschichte verdeckt.
+- `linear()` läuft wie `cubic-bezier` auf dem Compositor: in einer
+  leeren Seite 0 Stil-Neuberechnungen in 1 s für beide (nachgemessen).
+
+**Was dabei gefunden wurde — Arbeit je Bild beim Seitenwechsel**
+
+- Gemessen am Hauptfaden, CPU ÷4, 450 ms nach dem Tipp (der Aufbau der
+  Seite selbst nicht mitgezählt): schon auf `main` 13,8–14,8 ms je Bild
+  bei 390 px und 18,5–20,1 ms bei 1440 px — über der Grenze von 8,3 ms.
+  Mit den Federn 13,9–17,3 bzw. 15,5–20,5 ms; im direkten Vergleich in
+  derselben Seite 13,9 gegen 12,7 und 15,5 gegen 15,0 ms (Streuung
+  zwischen Läufen ±3 ms).
+- Der grösste Posten ist Stil-Neuberechnung (`UpdateLayoutTree`, 900 ms
+  in 5 × 450 ms). Was in diesen Bildern auf dem Hauptfaden läuft:
+  Formis `formiDoppler` an zehn `<i>` (Deckkraft, nicht auf dem
+  Compositor), `formiBahn`/`formiScheibe`; Übergänge von Farbe, Fläche
+  und Schatten an den Knöpfen der Kopfzeile, wenn die Bereichsfarbe
+  wechselt; die gleitende Füllung der unteren Leiste mit `width` und
+  `height` (gegen die Regel „keine Übergänge auf width“); in der Demo
+  die angemeldeten Farben an `.demo-bar`. Formi gehört einer anderen
+  Sitzung; der Rest ist ein eigener Schritt, nicht diese Runde.
+
+**Tests**
+
+- Neu: `tests/test-federn.js`, 30 Zusicherungen: die Federn (Form,
+  Überschwingen), die Verweise, Formis Kurven in Kugel und auf seiner
+  Seite unverändert, GEGENPROBE `body.formi` behält die Federn, die
+  Seiteneinblendung läuft mit `linear()` in Formi/Dunkel/Hell bei 390
+  und 1440 px, weniger Bewegung schaltet ab, und die Arbeit je Bild mit
+  Federn gegen alte Kurven in derselben Seite.
+- Gegen `main`: 6 von 24 falsch.
+- Im Parallellauf (vier Browser) waren akzent, formi-kugel und
+  gruppen-aufgaben einmal rot, allein alle grün. gruppen-aufgaben traf
+  unter Last eine Zeile mitten im Einblenden (44 × 40); der Test wartet
+  jetzt, bis die Zeile steht — die Grenze bleibt 44 × 44.
+
+**Nicht getestet:** wie es sich am iPhone und am Mac anfühlt —
+Chromium ohne Bildschirm taktet mit 60 Hz.
+
+**Als Nächstes:** Chat-Blasen und Kontextmenü.
+
+## Runde 248 — Schulung: die eigene Bescheinigung zum Drucken; Erinnerung nicht an Stillgelegte (23.10.2026)
+
+Aus dem Betrieb, 23.10.2026: „jo mach weiter" — die nächste
+Schulungs-Runde.
+
+### 1. „Bescheinigung drucken" für jede und jeden
+
+Unter Wissen → Schulung steht im Kasten „Schon geschafft" (bisher „Was
+du schon gemacht hast") rechts oben ein Drucker-Zeichen: „Bescheinigung
+drucken". Es druckt ein Blatt „Schulungsnachweis" mit Name, Firma und
+Datum. Darauf:
+
+- je Modul der **jüngste bestandene** Durchlauf mit Datum samt Jahr,
+  Ergebnis, Dauer und „Gültig bis" (bei Modulen mit Wiederholung;
+  abgelaufen steht „wieder fällig" daneben);
+- darunter, was **als Pflicht noch offen** ist;
+- eine Zeile, auf der die Studioleitung unterschreibt.
+
+Den Nachweis je Modul gab es bisher nur für die Leitung (Runde 211).
+Wer ein Blatt für sich selbst brauchte (Bewerbung, eigener Ordner), musste
+fragen. Lernplattformen machen das so: Moodle hat Kursbescheinigungen,
+LinkedIn Learning hat Abschlusszertifikate. Übernommen ist nur das Muster
+„was ich geschafft habe, auf einem Blatt". Eine Studie, die zeigt, dass
+das beim Lernen hilft, habe ich nicht gesucht und nenne keine.
+
+**Warum so entschieden:**
+- **Testläufe stehen nie darauf**, und ohne bestandene Schulung gibt es
+  den Knopf nicht. Dieselbe Regel gilt beim Nachweis der Leitung.
+- **Das Offene steht mit darauf.** Ein Blatt, das nur das Erledigte
+  zeigt, sähe vollständiger aus, als es ist.
+- **Keine Unterschrift der App.** Das Blatt ist aus den eigenen
+  Durchläufen erstellt, und die Fusszeile sagt, dass die App nicht prüft,
+  ob es eine Vorschrift erfüllt. Bestätigen tut ein Mensch.
+- **Ein Zeichen im Kopf, keine eigene Zeile.** Der erste Bau setzte
+  Knopf und Satz unter die Liste. `test-auffrischen` wurde rot: Am
+  390er Telefon begann die Modulliste bei 1.370 px statt bei 1.272 px,
+  und die Grenze liegt bei 1.290 px. Den Test zu lockern kam nicht in
+  Frage. Das Zeichen sitzt jetzt mit negativen Rändern in der
+  Kopfzeile: Die Trefferfläche bleibt 44 × 44, die Liste beginnt wieder
+  bei 1.272 px. Damit Überschrift und Zeichen in eine Zeile passen,
+  heisst die Karte „Schon geschafft". Der alte Text brauchte 302 px, der
+  Platz neben dem Zeichen ist 267 px. Die alte Überschrift war kein
+  Zitat aus dem Betrieb.
+- **Kein neuer Datenweg.** Das Blatt liest nur `_schMeine`, die eigenen
+  Durchläufe, die die Regeln jedem ohnehin zeigen.
+
+### 2. Die Auffrisch-Erinnerung prüft den Teilnehmer (Fehler aus Runde 216)
+
+Der Lernplan merkt sich die `uid` vom Zeitpunkt der ersten Runde. Die
+Erinnerung um 9:40 Uhr las nur diesen Plan. Auch eine **stillgelegte**
+Person bekam deshalb weiter „Kurz auffrischen" aufs Handy, ebenso ein
+Konto, von dem die Leitung den Teilnehmer inzwischen gelöst hatte.
+`schulungAuffrischen` selbst hat beides immer abgewiesen; nur der
+Zeitplan nicht.
+
+Jetzt liest der Zeitplan den Teilnehmer mit
+(`auffrischTeilnehmerGilt`): Der Teilnehmer muss da sein, darf nicht
+stillgelegt sein und muss mit **diesem** Konto verknüpft sein.
+
+### 3. Teilnehmer gelöscht → Lernplan weg
+
+Das stand seit Runde 201 als „Offen". Ein neuer Auslöser
+`onSchulungTeilnehmerWeg` (flach und unter `firmen/<k>/`) löscht den
+Lernplan, sobald das Teilnehmer-Dokument verschwindet. In der App gibt es
+nur „Stilllegen"; gelöscht wird ein Teilnehmer in der Konsole oder mit
+der ganzen Firma. Die **Durchläufe bleiben**: Sie sind der Nachweis der
+Unterweisung.
+
+### Geprüft
+
+- `tests/test-schulung-bescheinigung.js` (30, neu): das Zeichen im Kopf
+  (Überschrift einzeilig, Zeichen auf ihrer Höhe),
+  Druck, Kopf mit Name, Firma und Stand, Spalten, die Notfall-Zeile mit
+  „Gültig bis" (12 Monate), das Angefangene nicht in der Tabelle, das
+  Offene darunter, Druckbild nur mit dem Blatt.
+  - GEGENPROBEN, geändert in den Demo-Daten (der Quelle der App):
+    abgelaufen → „wieder fällig" und unter „offen"; nur ein Testlauf →
+    kein Knopf; nicht bestanden → Liste ja, Knopf nein.
+  - Fingerziele ≥ 44 × 44 per Hit-Test bei 320 / 390 / 430 / 820 / 1280
+    / 1440 / 1920 px, normal und kompakt; nichts ragt hinaus.
+  - Gegenprobe am Code: Ohne den Testlauf-Filter wird der Durchlauf rot.
+- `tests/rules/funktionen.test.js` (272, fünf neu): keine Erinnerung an
+  Stillgelegte oder ein umgehängtes Konto; die Regel als Rechnung; der
+  Lernplan ist nach dem Löschen weg, auf beiden Pfaden; der Plan eines
+  anderen und der Durchlauf bleiben.
+  - Gegenprobe: Ohne die neue Prüfung im Zeitplan fallen drei Prüfungen.
+- Grün außerdem: alle `test-schulung*`, test-auffrischen, test-knoepfe,
+  test-gestaltung, test-abgeschnitten, test-quer, test-csp,
+  test-neuigkeiten, test-pc-*.
+
+### Nicht geprüft
+
+- Der echte Druck auf Papier. Geprüft ist das Druckbild (`media print`)
+  im Test-Browser.
+- Der Auslöser beim Löschen im echten Projekt. Geprüft ist er im Emulator
+  mit `.run()`, so wie die anderen Auslöser in diesem Test.
+## Runde 249 — Chat wie iMessage, Menü an der Nachricht (23.10.2026)
+
+Sechster Bauschritt aus dem Plan „Studio Chat wie von Apple“. Vorbild
+ist das Probebild `3-chat-handy.png` (unter
+`/mnt/project-files/apple-probebilder/`), zu dem es aus dem Betrieb
+hiess: „genau so hab ichs mir vorgestellt“. Seit 15:18: „es soll
+einfach den ganzen plan erledigen“.
+
+**Was gebaut wurde**
+
+- **Blasen:** ohne Rahmen und Schatten, `--r-lg` rund. Fremde in
+  `--bg-3`, eigene in `--accent` mit `--on-accent` — dasselbe Paar wie
+  der Hauptknopf, das test-akzent für jede Akzentfarbe misst. In der
+  eigenen Blase zeigen Text-, Link- und Akzentfarben der Kinder auf
+  `--on-accent`, sonst verschwänden Links, Zitat und Erwähnung in der
+  Fläche.
+- **Kopf über der Blase:** „Name · Studio  Uhrzeit“ klein und leise
+  über der fremden Blase statt Name, VERSALIEN-Pille und Zeit darin.
+- **Eigene:** Uhrzeit und Häkchen unter der Blase, auf dem Hintergrund.
+  Bei einer Folge nur unter der letzten; an den anderen stehen sie
+  weiter im Dokument (test-gelesen-haken liest sie).
+- **Folgen:** Nachrichten derselben Person innerhalb von fünf Minuten
+  rücken auf 2 px zusammen; die Ecken zur Absenderseite werden klein.
+- **Menü an der Nachricht:** Ein Tipp öffnet das Menü dort, wo die
+  Nachricht steht — Reaktionen als Kapsel oben, die Nachricht als
+  Vorschau, die Einträge als gerundete Gruppe mit Haarlinien, Symbol
+  rechts. Am Rechner auch per rechter Maustaste, am Zeiger (auf Bild,
+  Link oder markiertem Text bleibt das Menü des Browsers). Hinaus:
+  daneben tippen oder Esc; „Abbrechen“ ist ausgeblendet.
+- Formis Sprechblase lag über dem Menü — sie wird, wie die Kugel schon,
+  ausgeblendet, solange das Menü offen ist. Formi selbst ist nicht
+  verändert.
+
+**Warum so**
+
+- Uhrzeit und Häkchen der eigenen Nachrichten UNTER statt IN der Blase:
+  in der Akzentfläche wären die Häkchen-Farben (grau/blau, „Jeder,
+  genau wie bei WhatsApp“, 27.9.2026) nicht mehr zu unterscheiden. Auf
+  dem Hintergrund bleiben sie, was sie waren.
+- Nur unter der letzten einer Folge: „gelesen“ heisst bis dahin
+  gelesen, der Stand der letzten gilt für die davor mit. Genau steht es
+  unter „Gelesen von …“ im Menü.
+- Umfragen und Sprachnachrichten in eigener Blase behalten die getönte
+  Fläche: ihre Balken und Knöpfe sind selbst Akzentfarbe.
+- Gemessen wird im nächsten Bild und gebündelt (`msgBlattPlatzieren`):
+  erst beide Rechtecke lesen, dann zwei Werte schreiben — im Klick wird
+  nichts vermessen.
+- `:has(a, b)` ist als `:has(a)` / `:has(b)` geschrieben: der
+  Gestaltungstest zerlegt Selektoren an jedem Komma.
+
+**Was dabei gefunden wurde**
+
+- Bei 320 × 568 schwebt Formis Kugel über der untersten eigenen Blase
+  (rechts unten, fest). Der Kontrast wird deshalb links im Innenabstand
+  der Blase gemessen. Formi gehört einer anderen Sitzung.
+- **Die Federn aus Runde 247 kosteten doch etwas.** Mit mehr Messungen
+  (Median aus je vier Runden, Reihenfolge A-B-B-A) lagen die Federn
+  beim Seitenwechsel durchgehend 0,2–2,2 ms je Bild über den alten
+  Kurven. Ursache: jede Stilneuberechnung setzt `var(--ease-ios)` neu
+  ein und liest eine `linear()`-Liste mit 29 Punkten. Jetzt nur so
+  viele Punkte, dass die Kurve höchstens 1 % abweicht (fest 10, formi
+  11) bzw. 0,5 % (weich 17, damit das Nachschwingen bleibt). Danach:
+  14,2 gegen 16,2 und 16,7 gegen 16,4 ms bei 390 px, 18,2 gegen 20,2
+  und 21,0 gegen 19,6 ms bei 1440 px — im Rauschen. test-federn
+  vergleicht jetzt Mediane aus A-B-B-A-Runden.
+- test-chat-bereich3 ist schon auf `main` rot („Langer Text drückt den
+  Verlauf auf 264 px“, 52 % der Ansicht) — nicht von dieser Runde.
+
+**Tests**
+
+- Neu: `tests/test-chat-blasen.js`, 226 Zusicherungen. Stil Formi bei
+  320 / 390 / 430 / 820 / 1280 / 1440 / 1920 px, Dunkel und Hell bei
+  390 / 1440. Schrift auf der eigenen Blase an Bildpunkten 9,9 : 1
+  (Formi/Dunkel) und 5,5 : 1 (Hell), Name über der Blase 7,3–9,7 : 1.
+  Reaktionen und Einträge im Menü ≥ 44 × 44 per Hit-Test in „normal“
+  und „kompakt“; Menü ganz im Bild; rechte Maustaste am Rechner;
+  GEGENPROBE altes Aussehen: Blatt von unten. Gegen `main`: 72 von 226
+  falsch.
+- Grün: chat, chat-antworten, gelesen-haken, block5, block8, ui,
+  dialoge, design-107, sprachabspieler, datum, zusammengelegt,
+  gestaltung, csp, knoepfe, fingerziele, abgeschnitten, quer, akzent.
+
+**Nicht getestet:** echtes iPhone; lange Nachrichten mit vielen Zeilen im
+Menü (die Vorschau ist auf vier Zeilen begrenzt).
+
+**Als Nächstes:** Formi-Gefühle auf der Startseite leichter.
+
 ## Runde 250 — Formi-Insel, Leuchtrand, Lichtkrümmung und Gezeitenstrom (23.10.2026)
 
 **Aus dem Betrieb**, zu den vier Apple-Entwürfen:
