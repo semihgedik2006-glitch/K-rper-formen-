@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-rC16IQ8j1v5I71VbVx8FoMYjMY1yQ1tVRWbq82fY6n0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-YpJmVuxb0aLKcbFZ8Fe0mpK1jY5FB+H3DgaIKX2eimQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5947,14 +5947,18 @@ html{font-size:var(--fs,100%)}
 }
 /* Ein offenes Blatt ist oben — die Formi-Kugel (z-index 150) lag am
    Handy über seinem ersten Knopf (gemessen am Schicht-Blatt bei 390 px;
-   dasselbe galt für jedes .msg-sheet). */
-body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
+   dasselbe galt für jedes .msg-sheet). Runde 251: über Geschwister statt
+   „body:has(…)" — ein :has am <body> liess JEDE Änderung irgendwo im
+   Dokument die ganze Seite neu berechnen (~650 Elemente, 9 ms am Rechner,
+   gemessen). Die Blätter stehen im Dokument vor der Kugel. */
+body > .msg-sheet.show ~ .formi-kugel{visibility:hidden}
 /* Runde 236: Auf kleinen Handys (320 × 640) bleibt mit offenem „Filter"
    über Aufgaben oder Putzplan so wenig Fläche, dass die Kugel mitten auf
    den Chips und den „…" lag (test-aufgaben-wie-putzplan, kompakt). Für
-   die Dauer des Filterns tritt sie zur Seite; zu → sie ist wieder da. */
+   die Dauer des Filterns tritt sie zur Seite; zu → sie ist wieder da.
+   Runde 251: die Klasse setzt ppAufklappen (kein :has am <body>). */
 @media(max-width:820px) and (max-height:700px){
-  body:has(.pp-werkzeuge:not([hidden])) .formi-kugel{visibility:hidden}
+  body.pp-filter-auf .formi-kugel{visibility:hidden}
 }
 /* Am Rechner: Studio-Auswahl und Reiter in EINER Zeile — vorher zwei
    Zeilen (gemessen: die Woche begann bei 1440 × 900 erst bei y = 547). */
@@ -6787,9 +6791,10 @@ body.light .fk-zeichen.tropfen path{fill:#1E8FD0}
    Runde 103). Die Kugel lag genau darauf und deckte das Wort ab. Wo es
    den Knopf gibt, rückt sie eine Knopfhöhe nach oben. :has statt
    Messen: kein Layout im Klick, und ohne Unterstützung bleibt es wie
-   bisher (dann deckt sie, wie vor dieser Runde). */
+   bisher (dann deckt sie, wie vor dieser Runde). Runde 251: statt :has
+   die Klasse hat-daumen, die kopfPlusUmhaengen genau dann setzt. */
 @media(max-width:820px){
-  body:has(#daumenDock:not([hidden]) .kopf-plus) .formi-kugel{bottom:calc(80px + 68px + var(--sab))}
+  body.hat-daumen .formi-kugel{bottom:calc(80px + 68px + var(--sab))}
 }
 /* ── Am Rechner wohnt Formi unten in der Seitenleiste (Runde 198) ──
    Aus dem Betrieb, 22.10.2026, auf die Frage „Platz für Formi": „a".
@@ -6836,9 +6841,10 @@ body.light .fk-zeichen.tropfen path{fill:#1E8FD0}
 @media(max-width:820px){ body.formi-kugel-an .view:not(#view-home) .scroll-area{padding-bottom:calc(var(--s24) + 58px + var(--s16))} }
 /* Rückgängig-Leiste und Hinweis sitzen unten mittig — am Handy reichen
    sie bis unter die Kugel. Solange eins davon steht, weicht die Kugel
-   nach oben aus (gemessen: Leiste 51 px hoch, 72 px Abstand reichen). */
+   nach oben aus (gemessen: Leiste 51 px hoch, 72 px Abstand reichen).
+   Runde 251: Geschwister statt „body:has(…)" (beide stehen vor der Kugel). */
 @media(max-width:820px){
-  body:has(.undobar.show) .formi-kugel,body:has(.toast.show) .formi-kugel{transform:translateY(-72px)}
+  body > .undobar.show ~ .formi-kugel,body > .toast.show ~ .formi-kugel{transform:translateY(-72px)}
 }
 /* Kleines Gesicht im Kopf des kompakten Fensters — dieselbe Kugel. */
 /* Runde 205: im Kopf steht dieselbe Figur wie die Kugel, mit Gesicht
@@ -8255,8 +8261,9 @@ body.gast .sich-feld{display:none}
 .zf-pflicht{position:fixed;inset:0;z-index:880;display:grid;place-items:center;padding:var(--s16);
   background:var(--bg);overflow-y:auto}
 .zf-pflicht[hidden]{display:none}
-/* Das Einrichten-Fenster liegt sonst (z-index 210) UNTER der Sperre. */
-body:has(#zfPflicht:not([hidden])) #zfModal{z-index:890}
+/* Das Einrichten-Fenster liegt sonst (z-index 210) UNTER der Sperre.
+   Runde 251: Geschwister statt „body:has(…)", gleiche Spezifität. */
+body > #zfPflicht:not([hidden]) ~ #zfModal{z-index:890}
 /* Das Fenster wird auch AUS den Profil-Einstellungen geöffnet („Einrichten",
    „Weiteres Gerät"). Mit derselben Ebene wie das Profilfenster lag es
    darunter — der Knopf war zu sehen und nicht zu treffen (gefunden
@@ -9682,8 +9689,11 @@ body.neu .heute-liste > :last-child > .heute-zeile{border-bottom-right-radius:va
 body.neu .heute-liste > :last-child,
 body.neu .heute-liste > :last-child > .hz-haken{border-bottom-left-radius:var(--r-md)}
 /* Die Trennlinie beginnt beim Text: Rand 16 + Zeichen 26 + Abstand 12,
-   mit Haken davor zusätzlich dessen 44 px und 4 px Abstand. */
-body.neu .heute-liste > * + *::before{content:'';position:absolute;top:0;right:0;z-index:1;
+   mit Haken davor zusätzlich dessen 44 px und 4 px Abstand.
+   Runde 251: „:not(:first-child)" statt „* + *" — dasselbe, aber ein
+   Geschwister-Selektor mit * am Ende liess Chromium beim Entfernen
+   irgendeines Elements die ganze Seite neu berechnen (gemessen). */
+body.neu .heute-liste > :not(:first-child)::before{content:'';position:absolute;top:0;right:0;z-index:1;
   left:calc(var(--s16) + 26px + var(--s12));height:1px;background:var(--line);pointer-events:none}
 body.neu .heute-liste > .hz-mit-haken::before{left:calc(44px + var(--s4) + var(--s16) + 26px + var(--s12))}
 /* Der Pfeil ist ein Versprechen, keine Farbe: grau wie bei Apple. */
@@ -9743,7 +9753,9 @@ body.neu .td-erledigt > .todo,body.neu .td-erledigt > .pp-item{margin-bottom:0;b
   border-bottom-left-radius:var(--zg-r-unten,0);border-bottom-right-radius:var(--zg-r-unten,0)}
 /* Erste und letzte Zeile setzen nur ihre Werte; die Regel oben liest
    sie. So steht jede Eigenschaft genau einmal da (test-gestaltung). */
-body.neu .pp-gruppe > .pg-kopf + *,body.neu .td-erledigt > summary + *{--zg-oben:1px;--zg-r-oben:var(--r-md)}
+/* Runde 251: die Zeilen beim Namen statt „+ *" (siehe .heute-liste). */
+body.neu .pp-gruppe > .pg-kopf + .todo,body.neu .pp-gruppe > .pg-kopf + .pp-item,
+body.neu .td-erledigt > summary + .todo,body.neu .td-erledigt > summary + .pp-item{--zg-oben:1px;--zg-r-oben:var(--r-md)}
 body.neu .pp-gruppe > .todo:not(:has(+ .todo)),body.neu .pp-gruppe > .pp-item:not(:has(+ .pp-item)),
 body.neu .td-erledigt > .todo:last-child,body.neu .td-erledigt > .pp-item:last-child{--zg-unten:1px;--zg-r-unten:var(--r-md)}
 body.neu .pp-gruppe > .todo + .todo::after,body.neu .pp-gruppe > .pp-item + .pp-item::after,
@@ -9866,8 +9878,8 @@ body.neu .msg-sheet.am-ort .ms-info{background:var(--bg-2);border:1px solid var(
   padding:var(--s8) var(--s12);box-shadow:var(--e3)}
 body.neu .msg-sheet.am-ort #msSheetClose{display:none}
 /* Formis Sprechblase liegt sonst über dem Menü (die Kugel selbst wird
-   schon versteckt, siehe „body:has(.msg-sheet.show) .formi-kugel"). */
-body:has(.msg-sheet.show) .formi-blase{visibility:hidden}
+   schon versteckt, siehe „.msg-sheet.show ~ .formi-kugel"). */
+body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
 </style>
 </head>
 <body>
@@ -22400,6 +22412,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-23-fluessiger', datum:'23.10.2026', titel:'Alles reagiert schneller, Formi jubelt ohne Ruckeln', wo:'home', punkte:[
+    'Die App rechnet bei jeder kleinen Änderung nicht mehr die ganze Seite neu. Seitenwechsel und Tippen fühlen sich dadurch spürbar flüssiger an, besonders auf älteren Handys.',
+    'Wenn Formi sich freut oder jubelt (zum Beispiel nach einer erledigten Aufgabe), läuft das jetzt ohne Hänger. Formi sieht genau so aus wie vorher.'
+  ]},
   { id:'2026-10-23-formi-insel', datum:'23.10.2026', titel:'Formi bei der Arbeit zusehen: Insel, Leuchtrand und ein echter Sog', wo:'home', punkte:[
     'Wenn Formi etwas für dich tut, erscheint oben eine schwarze Insel wie beim iPhone: Darin steht, was er gerade macht. Ist er fertig, wird sie grösser und zeigt das Ergebnis, zum Beispiel „Abgehakt · Hürth – Spiegel putzen".',
     'Solange Formi arbeitet, leuchtet der ganze Bildschirmrand in seinen Farben, das Licht kreist um den Rand. Ist er fertig, flammt es kurz auf und geht aus.',
@@ -49625,6 +49641,8 @@ function ppAufklappen(knopfId, bereichId){
   var auf=b.hidden;
   b.hidden=!auf;
   k.setAttribute('aria-expanded', auf?'true':'false');
+  /* Runde 251: statt „body:has(.pp-werkzeuge:not([hidden]))" im CSS. */
+  document.body.classList.toggle('pp-filter-auf', !!document.querySelector('.pp-werkzeuge:not([hidden])'));
   tick(6);
   if(auf){
     var f=b.querySelector('input'); if(f && bereichId==='ppWerZeile') try{ f.focus(); }catch(e){}
