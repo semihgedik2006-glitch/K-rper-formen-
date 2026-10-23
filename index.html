@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-b0vKuxTByPdk0rBIWKsHQaBlIfimk9x/NFr3X4cgblM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-a7Wcd4eA+K8eMl4GANdRHcla8KHRUVqX1bBRM6A5QRI='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -6378,6 +6378,33 @@ html.fk-still .fk-wirbel,html.fk-still .fk-innen{animation:none}
 .formi-welle{position:fixed;left:0;top:0;width:900px;height:900px;margin:-450px 0 0 -450px;z-index:149;pointer-events:none;border-radius:var(--r-rund);opacity:0}
 .formi-welle.schub{background:radial-gradient(circle, rgba(255,255,255,0) 0 38%, rgba(255,246,230,.46) 46%, rgba(182,156,255,.26) 52%, rgba(255,255,255,0) 60%)}
 .formi-welle.sog{background:radial-gradient(circle, rgba(2,4,10,.5) 0, rgba(2,4,10,.22) 30%, rgba(2,4,10,0) 62%)}
+/* Runde 233: Funken beim Drücken eines Hauptknopfs (formiFunken). */
+.formi-funken{position:fixed;left:0;top:0;z-index:1180;pointer-events:none}
+.formi-funken i{position:absolute;left:-3px;top:-3px;width:6px;height:6px;border-radius:var(--r-rund);background:var(--c);box-shadow:0 0 8px var(--c)}
+/* Formi neben dem Gruss: 44 px, morgens halb zu, abends müde. */
+.gruss-formi{--fg:44px;margin-right:var(--s12);align-self:center}
+.gruss-formi.gf-frueh .fk-auge,.gruss-formi.gf-abend .fk-auge{transform:scaleY(.6)}
+/* Formi im Hinweis unten. */
+.toast{display:flex;align-items:center;gap:var(--s8)}
+.toast-formi{--fg:24px}
+/* Leere Listen: Formi zufrieden, das Zeichen des Bereichs klein daneben. */
+.leer-figur{position:relative;display:block;width:64px;height:64px;margin:0 auto var(--s12)}
+.leer-figur .formi-figur{--fg:64px;display:block}
+.leer-zufrieden .fk-auge{opacity:0}
+.leer-zufrieden .fk-froh{opacity:1}
+.empty .leer-zeichen{position:absolute;right:-18px;top:-6px;display:grid;place-items:center;width:28px;height:28px;border-radius:var(--r-rund);
+  background:var(--bg-3);border:1px solid var(--line-2);color:var(--text-2)}
+.empty .leer-zeichen svg{width:16px;height:16px;margin:0;opacity:.9}
+/* Kanten der Karten leuchten beim Erscheinen einmal in Formis Farben. */
+body.formi:not(.light) .view.show .card{position:relative}
+body.formi:not(.light) .view.show .card::after{content:"";position:absolute;inset:-1px;border-radius:var(--radius);pointer-events:none;
+  box-shadow:0 0 0 1px rgba(182,156,255,.55), 0 0 22px rgba(95,225,255,.35);opacity:0;animation:formiKanteAuf 1.1s ease-out backwards}
+@keyframes formiKanteAuf{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){ body.formi:not(.light) .view.show .card::after{animation:none} .formi-funken{display:none} }
+html.fk-still .formi-funken{display:none}
+html.fk-still body.formi:not(.light) .view.show .card::after{animation:none}
+/* Runde 233: beim Seitenwechsel ein leiser Wirbel aus der Kugel. */
+.formi-welle.wechsel{background:radial-gradient(circle, rgba(255,255,255,0) 0 40%, rgba(95,225,255,.26) 47%, rgba(182,156,255,.18) 53%, rgba(255,255,255,0) 60%)}
 /* Die Frage auf dem Weg ins Loch (formiFrageFliegt). */
 .formi-flug{position:fixed;inset:0;z-index:1200;pointer-events:none;overflow:hidden}
 .formi-flug i{position:absolute;left:0;top:0;font-style:normal;font-weight:700;font-size:var(--t-md);color:#E8F8FF;
@@ -6730,11 +6757,14 @@ body.light .fk-zeichen.tropfen path{fill:#1E8FD0}
   transition:transform .32s var(--ease-ios)}
 #fwTitel{font-size:var(--t-lg);margin-bottom:var(--s6)}
 #fwText{font-size:var(--t-sm);line-height:var(--lh);color:var(--text-2)}
-.fw-zeile{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s8);margin-top:var(--s14)}
+.fw-zeile{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s8);margin-top:var(--s16)}
 #fwZahl{flex:1 1 auto;margin:0;font-family:var(--font-head);font-weight:800;font-size:var(--t-2xs);
   text-transform:uppercase;letter-spacing:var(--ls-m);color:var(--text-2)}
 .fw-zeile .btn{flex:0 0 auto;min-height:44px;min-width:44px}
 @media (max-width:400px){ #fwZahl{flex-basis:100%} .fw-zeile .btn{flex:1 1 0} }
+/* Niedrige Bildschirme (gemessen 320 × 568): die Karte passte unter
+   „Von"/„Bis" um ein paar Pixel nicht mehr und lag darauf. Kompakter. */
+@media (max-height:700px){ .fw-karte{padding:var(--s12)} #fwTitel{font-size:var(--t-md);margin-bottom:var(--s4)} .fw-zeile{margin-top:var(--s8)} }
 .ga-wie{flex-wrap:wrap}
 @media (prefers-reduced-motion:reduce){ .fw-karte{transition:none} }
 @media (prefers-reduced-motion:reduce){ .formi-kugel{transition:none} .jarvis.jv-kompakt.jv-z-denkt .formi-gesicht .fk-wirbel,
@@ -7027,6 +7057,77 @@ body.jv-offen{overflow:hidden}
 @media (prefers-reduced-motion:reduce){ .jarvis.jv-boot .jv-brief li,.jarvis.jv-boot .jv-kl{animation:none} .jv-kl{transition:none} }
 /* Leerer Verlauf: Begrüssung und Vorschläge zum Antippen */
 .jv-leer{margin:auto 0;padding:var(--s16) 0;text-align:center}
+/* ── Formi-Fenster neu (Runde 233) ───────────────────────────────────
+   Aus dem Betrieb: „das hud sieht design technisch auch noch nicht all
+   zu prickelnd aus" und zur Ideenliste D „alles davon": eine Bühne für
+   Formi, Vorschläge als Karten mit Zeichen, das Gespräch als
+   Sprechblasen, die Eingabe als EINE Zeile. Farbe geht von der oberen
+   Kante aus (Formis Ring) und läuft aus. Nur das kleine Fenster. */
+.jarvis.jv-kompakt{background:
+    radial-gradient(90% 46% at 50% -6%, rgba(182,156,255,.30), transparent 70%),
+    radial-gradient(60% 40% at 0% 0%, rgba(95,225,255,.20), transparent 70%),
+    radial-gradient(60% 40% at 100% 0%, rgba(255,143,200,.18), transparent 70%),
+    linear-gradient(180deg, #070C1C 0%, #03060F 100%)}
+.jarvis.jv-kompakt::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--formi-ring);opacity:.9;pointer-events:none;z-index:1}
+/* Die Bühne: Formi gross, ein Lichthof dahinter. */
+.jarvis.jv-kompakt .jv-start-figur{--fg:104px;margin:var(--s8) auto var(--s20)}
+.jarvis.jv-kompakt .jv-leer{position:relative}
+.jarvis.jv-kompakt .jv-leer::before{content:"";position:absolute;left:50%;top:0;width:240px;height:200px;margin-left:-120px;pointer-events:none;
+  background:radial-gradient(closest-side, rgba(95,225,255,.22), rgba(182,156,255,.12) 55%, transparent);z-index:-1}
+.jarvis.jv-kompakt .jv-gruss{font-size:var(--t-2xl)}
+/* Vorschläge als Karten: zwei Spalten, links das Zeichen in der Farbe
+   des Bereichs, eine Kante in derselben Farbe. */
+.jarvis.jv-kompakt .jv-chips{display:grid;grid-template-columns:1fr 1fr;gap:var(--s8);text-align:left}
+.jarvis.jv-kompakt .jv-chip{display:flex;align-items:center;gap:var(--s10);min-height:56px;padding:var(--s10) var(--s12);
+  border-radius:var(--r-md);border:1px solid rgba(var(--gm-rgb),.35);line-height:var(--lh-eng);text-align:left;
+  background:linear-gradient(90deg, rgba(var(--gm-rgb),.16), rgba(var(--gm-rgb),.04) 70%), rgba(8,18,34,.7);
+  box-shadow:var(--e1), inset 3px 0 0 rgba(var(--gm-rgb),.9)}
+.jarvis.jv-kompakt .jv-chip:hover{background:linear-gradient(90deg, rgba(var(--gm-rgb),.26), rgba(var(--gm-rgb),.08) 70%), rgba(8,18,34,.7);border-color:rgba(var(--gm-rgb),.7)}
+.jv-chip-z{flex:0 0 auto;display:grid;place-items:center;width:30px;height:30px;border-radius:var(--r-rund);
+  color:rgb(var(--gm-rgb));background:rgba(var(--gm-rgb),.14)}
+.jv-chip-z svg{width:17px;height:17px}
+/* Das Gespräch als Sprechblasen: deine rechts im Verlauf von Formis
+   Farben, Formis links aus Glas mit einer leuchtenden Kante. Die
+   Hologramm-Winkel aus dem grossen HUD fallen hier weg. */
+.jarvis.jv-kompakt .gehirn-frage{border:0;border-radius:var(--r-lg) var(--r-lg) var(--r-xs) var(--r-lg);padding:var(--s10) var(--s12);
+  background:linear-gradient(135deg, rgba(95,225,255,.30), rgba(182,156,255,.30) 60%, rgba(255,143,200,.26));color:#F4FCFF;
+  box-shadow:var(--e1), 0 0 18px rgba(182,156,255,.18)}
+.jarvis.jv-kompakt .gehirn-antwort{border:1px solid rgba(var(--jv-rgb),.22);border-radius:var(--r-xs) var(--r-lg) var(--r-lg) var(--r-lg);
+  /* Die Eckwinkel bleiben (20.10.2026: „hologramme dinger") — nach
+     innen gerückt, damit die runde Ecke sie nicht abschneidet. */
+  background:
+    linear-gradient(var(--jv-cyan),var(--jv-cyan)) right 10px top 10px / 12px 2px no-repeat,
+    linear-gradient(var(--jv-cyan),var(--jv-cyan)) right 10px top 10px / 2px 12px no-repeat,
+    linear-gradient(var(--jv-cyan),var(--jv-cyan)) right 10px bottom 10px / 12px 2px no-repeat,
+    linear-gradient(var(--jv-cyan),var(--jv-cyan)) right 10px bottom 10px / 2px 12px no-repeat,
+    linear-gradient(180deg, rgba(95,225,255,.08), transparent 40%), rgba(8,20,36,.82);
+  box-shadow:var(--e1), 0 0 22px rgba(var(--jv-rgb),.08)}
+.jarvis.jv-kompakt .gehirn-antwort::before{width:2px;top:var(--s12);bottom:var(--s12);border-radius:var(--r-rund);background:var(--formi-ring)}
+.jarvis.jv-kompakt .gehirn-antwort .ga-kopf{font-family:var(--font-head);letter-spacing:var(--ls-m)}
+/* Die Eingabe als eine Zeile: [Foto] [Feld] [Sprechen] [Senden]. */
+.jarvis.jv-kompakt .jv-eingabe{display:grid;grid-template-columns:auto 1fr auto auto;align-items:end;gap:var(--s6);
+  padding:var(--s6);border-radius:var(--r-lg);border:1px solid rgba(var(--jv-rgb),.3);
+  background:rgba(4,12,24,.9);box-shadow:var(--e1), 0 0 24px rgba(var(--jv-rgb),.1)}
+.jarvis.jv-kompakt .jv-eingabe:focus-within{border-color:rgba(var(--jv-rgb),.7);box-shadow:var(--e1), 0 0 0 3px rgba(var(--jv-rgb),.18)}
+.jarvis.jv-kompakt .jv-ein-knoepfe{display:contents}
+.jarvis.jv-kompakt #jarvisFoto{order:0;grid-column:1}
+.jarvis.jv-kompakt #jarvisFeld{order:1;grid-column:2;min-height:44px;max-height:132px;padding:var(--s10) var(--s8);border:0;background:transparent;box-shadow:none;resize:none}
+.jarvis.jv-kompakt #jarvisFeld:focus{box-shadow:none}
+.jarvis.jv-kompakt #jarvisMic{order:2;grid-column:3}
+.jarvis.jv-kompakt #jarvisSenden{order:3;grid-column:4}
+.jv-ein{width:44px;height:44px;border-radius:var(--r-rund);color:var(--jv-cyan)}
+.jv-ein.jv-senden svg{width:20px;height:20px;stroke-width:2.6;flex:0 0 auto}
+/* Senden: am Handy rund mit Pfeil, am Rechner eine Pille mit Pfeil und
+   Wort — Formis Verlauf wie jeder Hauptknopf, dunkle Schrift. */
+.jv-ein.jv-senden{display:inline-flex;align-items:center;justify-content:center;gap:var(--s6);min-width:44px;min-height:44px;padding:0;
+  color:#0A0D18;background:var(--formi-lin);border:0;box-shadow:var(--e1), 0 0 14px rgba(182,156,255,.45)}
+.jv-senden-wort{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (min-width:1100px){
+  .jarvis.jv-kompakt .jv-ein.jv-senden{width:auto;padding:0 var(--s16) 0 var(--s12);border-radius:var(--r-pille)}
+  .jarvis.jv-kompakt .jv-senden-wort{position:static;width:auto;height:auto;overflow:visible;clip:auto}
+}
+.jv-ein.jv-senden:disabled{opacity:.5}
+.jv-ein.jv-senden:active{transform:scale(.92)}
 /* Runde 209 — das Formi-Fenster aufgeräumt: ein grosses Gesicht statt
    „Hallo" allein, die Lage nicht doppelt, im Kopf drei Knöpfe statt fünf. */
 .jv-start-figur{--fg:76px;display:none;margin:0 auto var(--s12)}
@@ -13624,13 +13725,15 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
       <div class="jv-gespraeche jv-persona" id="jarvisPersona" hidden role="region" aria-label="Persönlichkeit und Stimme"></div>
       <div class="jv-eingabe">
         <label class="nur-vorlesen" for="jarvisFeld">Frage oder Auftrag</label>
-        <textarea class="inp" id="jarvisFeld" rows="2" maxlength="2000"
-          placeholder="z. B. „Öffne den Putzplan", „Wer hat heute Dienst?" oder „Klo ist sauber"></textarea>
-        <div class="gehirn-knoepfe">
-          <button type="button" class="btn btn-ghost btn-sm gehirn-mic" id="jarvisMic" data-ikon="mikrofon" style="display:none" aria-pressed="false">Sprechen</button>
-          <button type="button" class="btn btn-ghost btn-sm" id="jarvisFoto" data-ikon="foto" title="Defekt mit Foto melden — bitte nur das Gerät fotografieren">Foto</button>
+        <textarea class="inp" id="jarvisFeld" rows="1" maxlength="2000"
+          placeholder="Frag Formi …"></textarea>
+        <!-- Runde 233: eine Zeile — Foto links, Feld, Sprechen und Senden
+             rechts, alle drei als runde Zeichen-Knöpfe (Namen über aria-label). -->
+        <div class="gehirn-knoepfe jv-ein-knoepfe">
+          <button type="button" class="icon-btn gehirn-mic jv-ein" id="jarvisMic" data-ikon="mikrofon" style="display:none" aria-pressed="false" aria-label="Sprechen" title="Sprechen — gedrückt halten oder einmal tippen"></button>
+          <button type="button" class="icon-btn jv-ein" id="jarvisFoto" data-ikon="foto" aria-label="Foto" title="Defekt mit Foto melden — bitte nur das Gerät fotografieren"></button>
           <input type="file" id="jarvisFotoDatei" accept="image/*" capture="environment" hidden>
-          <button type="button" class="btn btn-primary btn-sm" id="jarvisSenden">Senden</button>
+          <button type="button" class="btn btn-primary jv-ein jv-senden" id="jarvisSenden" title="Senden"><span class="jv-senden-wort">Senden</span></button>
         </div>
       </div>
     </div>
@@ -14745,6 +14848,8 @@ var IKONEN = {
                '<path d="m5.6 5.6 4 4M18.4 5.6l-4 4M18.4 18.4l-4-4M5.6 18.4l4-4"/>',
   werkzeug:    '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z"/>',
   hochladen:   '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 8 5-5 5 5"/><path d="M12 3v12"/>',
+  /* Runde 233: Senden im Formi-Fenster — ein Pfeil nach oben. */
+  senden:      '<path d="m5 12 7-7 7 7"/><path d="M12 19V5"/>',
   herz:        '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1L12 21l7.7-7.6 1.1-1a5.5 5.5 0 0 0 0-7.8z"/>',
   hantel:      '<path d="M6 7v10M18 7v10M3 9v6M21 9v6M6 12h12"/>',
   /* Studio-Gehirn: eine Glühbirne — „eine Idee haben" und „Bescheid
@@ -18252,7 +18357,12 @@ function fmtStand(ts){
 }
 var _toastTimer;
 function toast(msg, isErr){
-  var t=$('toast'); t.textContent=msg;
+  var t=$('toast');
+  /* Runde 233: in jedem Hinweis sitzt ein kleiner Formi — freut sich
+     über Erledigtes, ist bei Fehlern verlegen. */
+  t.innerHTML='<span class="formi-figur mini toast-formi" aria-hidden="true">'+formiFigurInnen()+'</span><span class="toast-text"></span>';
+  t.lastChild.textContent=msg;
+  if(typeof formiFigurFuehlt==='function') setTimeout(function(){ formiFigurFuehlt(t.firstChild, isErr ? 'verlegen' : 'freut', true); }, 120);
   if(isErr && typeof formiFuehlt==='function'){ formiFuehlt('erschrickt'); setTimeout(function(){ formiFuehlt('verlegen'); }, 650); }
   if(typeof formiSchauHin==='function') formiSchauHin(t);
   t.style.borderColor = isErr ? 'var(--danger)' : 'var(--accent-d)';
@@ -21844,6 +21954,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-23-formi-fenster-neu', datum:'23.10.2026', titel:'Formi-Fenster neu und mehr Formi in der ganzen App', wo:'gehirn', punkte:[
+    'Das Formi-Fenster ist neu: oben eine Bühne mit großem Formi, die Vorschläge sind Karten mit Symbol, das Gespräch steht in Sprechblasen, und unten gibt es nur noch eine Zeile: Foto, Feld, Sprechen und ein runder Senden-Knopf mit Pfeil.',
+    'Formi ist überall dabei: neben deinem Gruß auf „Heute", in jedem Hinweis unten, zufrieden über leeren Listen.',
+    'Beim Seitenwechsel wirbelt es kurz aus der Kugel, Karten leuchten beim Erscheinen einmal in Formis Farben auf, und Hauptknöpfe sprühen beim Drücken kleine Funken.'
+  ]},
   { id:'2026-10-23-formi-geprueft', datum:'23.10.2026', titel:'Formi hat für euch gelernt', wo:'gehirn', punkte:[
     'Formi hat rund 450 typische Fragen aus dem Studioalltag mit geprüften Antworten geübt: Gerät defekt, Kunde mit Attest, Einwände im Beratungsgespräch, Westen waschen und vieles mehr.',
     'Fragst du etwas Ähnliches, antwortet Formi jetzt mit denselben geprüften Schritten – nur in seinem eigenen Ton.'
@@ -23903,6 +24018,8 @@ function showView(id, fromKey, ausVerlauf){
      dem Neuladen auf einer Seite, die es für ihn nicht mehr gibt, und
      die untere Leiste zeigt nirgendwo hin. */
   if(!ansichtAn(id) && id!=='home'){ id='home'; ausVerlauf=true; }
+  /* Runde 233: wechselt die Seite, wirbelt es kurz aus Formis Kugel. */
+  if(id!==currentView && typeof formiSeitenwechsel==='function') formiSeitenwechsel();
   currentView=id;
   /* Für die Regeln „Chat auf kleinen Handys" (Runde 127): nur ein
      Klassenname, kein Messen. */
@@ -27097,6 +27214,9 @@ function gehirnRein(obj, feld){
   return { k:' rein', s:' style="--rein:'+(-alt)+'ms"' };
 }
 var JV_VORSCHLAEGE=['Wer hat heute Dienst?','Was ist heute offen?','Öffne den Putzplan','Wie wasche ich die Westen?'];
+/* Runde 233: jede Karte mit Zeichen und der Farbe ihres Bereichs
+   (dieselben wie in den Mini-Fenstern, nie Rot/Grün/Bernstein). */
+var JV_VORSCHLAG_ART={ 'Wer hat heute Dienst?':'team', 'Was ist heute offen?':'todos', 'Öffne den Putzplan':'putzplan', 'Wie wasche ich die Westen?':'wissen' };
 /* ── Lage: Morgen-Briefing und „Heute im Studio" (20.10.2026) ────────
    Gerechnet im Gerät aus dem, was die App ohnehin geladen hat; nur
    Dienst und defekte Geräte werden gelesen (höchstens 6 Studios, alle
@@ -27199,7 +27319,9 @@ function jvLeerHTML(){
      darunter (CSS: .jarvis.jv-kompakt .jv-brief). */
   return '<div class="jv-leer"><span class="formi-figur jv-start-figur" aria-hidden="true">'+formiFigurInnen(true, true)+'</span><p class="jv-gruss">'+esc(jvGruss()+(vorname ? ', '+vorname : ''))+'.</p>'+brief+
     '<p class="jv-unter">'+(jvPersona().ton==='sachlich' ? 'Ich bin '+esc(jvPersona().name)+'. ' : esc(formiLageSatz())+' ')+'Frag mich etwas oder gib mir einen Auftrag — ich erledige es in der App und zeige dir jeden Schritt.</p>'+
-    '<div class="jv-chips">'+JV_VORSCHLAEGE.map(function(t){ return '<button type="button" class="jv-chip" data-jvbefehl="'+esc(t)+'">'+esc(t)+'</button>'; }).join('')+'</div></div>';
+    '<div class="jv-chips">'+JV_VORSCHLAEGE.map(function(t){
+      var c=GEHIRN_MINI[JV_VORSCHLAG_ART[t]] || { rgb:'182,156,255', ikon:'gehirn' };
+      return '<button type="button" class="jv-chip" data-jvbefehl="'+esc(t)+'" style="--gm-rgb:'+c.rgb+'"><span class="jv-chip-z" aria-hidden="true">'+ikon(c.ikon)+'</span><span>'+esc(t)+'</span></button>'; }).join('')+'</div></div>';
 }
 function gehirnZeichnenIn(box, tippen){
   if(!box) return;
@@ -28583,10 +28705,12 @@ function formiUmgebung(el, art, verz){
       w.className='formi-welle '+art; w.setAttribute('aria-hidden', 'true');
       var x=Math.round(q.left+q.width/2), y=Math.round(q.top+q.height/2);
       document.body.appendChild(w);
-      var bild = art==='schub'
+      var bild = art==='wechsel'
+        ? [{ transform:'translate('+x+'px,'+y+'px) scale(.08) rotate(0deg)', opacity:.9 }, { transform:'translate('+x+'px,'+y+'px) scale(1.5) rotate(40deg)', opacity:0 }]
+        : art==='schub'
         ? [{ transform:'translate('+x+'px,'+y+'px) scale(.12)', opacity:1 }, { transform:'translate('+x+'px,'+y+'px) scale(1.4)', opacity:.7, offset:.45 }, { transform:'translate('+x+'px,'+y+'px) scale(2.6)', opacity:0 }]
         : [{ transform:'translate('+x+'px,'+y+'px) scale(2.2)', opacity:0 }, { transform:'translate('+x+'px,'+y+'px) scale(.9)', opacity:1, offset:.6 }, { transform:'translate('+x+'px,'+y+'px) scale(.2)', opacity:0 }];
-      try{ w.animate(bild, { duration: art==='schub' ? 900 : 800, easing: art==='schub' ? 'cubic-bezier(.2,.7,.3,1)' : 'cubic-bezier(.6,0,.9,.4)' }).onfinish=function(){ if(w.parentNode) w.parentNode.removeChild(w); }; }
+      try{ w.animate(bild, { duration: art==='schub' ? 900 : art==='wechsel' ? 650 : 800, easing: art==='schub' ? 'cubic-bezier(.2,.7,.3,1)' : 'cubic-bezier(.6,0,.9,.4)' }).onfinish=function(){ if(w.parentNode) w.parentNode.removeChild(w); }; }
       catch(e){ if(w.parentNode) w.parentNode.removeChild(w); }
       setTimeout(function(){ if(w.parentNode) w.parentNode.removeChild(w); }, 1400);
     });
@@ -28734,6 +28858,8 @@ function formiFigurInnen(brauen, scheibe){
    Web Animation (kein style-Attribut), aus bei „weniger Bewegung" und
    „Gefühle der Kugel: Aus". */
 var FK_FENSTER_FIGUREN='#jarvis .jv-titel .formi-figur, #jarvis .jv-start-figur';
+/* Figuren ausserhalb der Kugel, die beim Eigenleben mitmachen (Runde 233). */
+var FK_APP_FIGUREN='#formiGruss';
 function formiFigurenAn(){ return jarvisOffen() && !_fl.gefuehleAus && !gehirnWenigBewegung(); }
 function formiFigurenSchauen(x, y){
   _fl.figX=x; _fl.figY=y;
@@ -28929,10 +29055,58 @@ function formiEigenleben(art){
     return art;
   }
   if(!formiLebtAn() || _fl.schlaeft || _fl.muede) return '';
+  [].forEach.call(document.querySelectorAll(FK_APP_FIGUREN), function(f){
+    if(art!=='umschauen' && art!=='faengt' && f.getClientRects().length) formiFigurFuehlt(f, art, true);
+  });
   if(art==='umschauen'){ formiSchauNach(Math.random()*innerWidth, Math.random()*innerHeight*.9); setTimeout(function(){ formiSchauNach(Math.random()*innerWidth, Math.random()*innerHeight*.9); }, 900); return art; }
   if(art==='faengt'){ formiFaengt(); return art; }
   formiFuehlt(art);
   return art;
+}
+/* ── Mehr Formi in der ganzen App (Runde 233) ─────────────────────────
+   Aus dem Betrieb: „die ganze app hat viel zu wenig formi design" und
+   zur Ideenliste C „alles davon … deutlich, mehr formi". Jedes Stück ist
+   Schmuck: aria-hidden, keine Trefferfläche, nur transform/opacity, aus
+   bei „weniger Bewegung" und „Gefühle aus". */
+function formiSeitenwechsel(){
+  if(!_fl.gestartet || _fl.gefuehleAus) return;
+  var k=$('formiKugel');
+  if(k && !k.hidden && k.getClientRects().length) formiUmgebung(k, 'wechsel');
+}
+/* Funken beim Drücken eines Hauptknopfs: sechs Teilchen in Formis
+   Farben stieben aus dem Druckpunkt. Gelesen wird nichts — der Punkt
+   kommt aus dem Ereignis. */
+function formiFunken(x, y){
+  if(_fl.gefuehleAus || gehirnWenigBewegung() || !document.body.animate) return;
+  var box=document.createElement('div');
+  box.className='formi-funken'; box.setAttribute('aria-hidden', 'true');
+  box.style.transform='translate('+Math.round(x)+'px,'+Math.round(y)+'px)';
+  var html=''; for(var i=0;i<6;i++) html+='<i style="--c:'+FK_FARBEN[i%4]+'"></i>';
+  box.innerHTML=html;
+  document.body.appendChild(box);
+  [].forEach.call(box.children, function(el, i){
+    var w=Math.PI*2*i/6+Math.random()*.6, r=26+Math.random()*16;
+    try{ el.animate([{ transform:'translate(0,0) scale(1)', opacity:1 }, { transform:'translate('+(Math.cos(w)*r).toFixed(1)+'px,'+(Math.sin(w)*r).toFixed(1)+'px) scale(.2)', opacity:0 }],
+      { duration:520, easing:'cubic-bezier(.2,.7,.3,1)' }); }catch(e){}
+  });
+  setTimeout(function(){ if(box.parentNode) box.parentNode.removeChild(box); }, 650);
+}
+/* Formi neben dem Gruss auf „Heute": schaut wie die Tageszeit (morgens
+   verschlafen, abends müde) und blinzelt mit den anderen Figuren. */
+function formiGrussFigur(){
+  var h=$('homeGreet'); if(!h || $('formiGruss')) return;
+  var zeile=h.closest('.vh-line'); if(!zeile) return;
+  var f=document.createElement('span');
+  f.id='formiGruss'; f.className='formi-figur gruss-formi'; f.setAttribute('aria-hidden', 'true');
+  f.innerHTML=formiFigurInnen(true);
+  zeile.insertBefore(f, zeile.firstChild);
+  formiGrussStimmung();
+}
+function formiGrussStimmung(){
+  var f=$('formiGruss'); if(!f) return;
+  var st=new Date().getHours();
+  f.classList.toggle('gf-frueh', st<9);
+  f.classList.toggle('gf-abend', st>=19);
 }
 /* Ein Funke löst sich aus der Scheibe, Formi schaut ihm nach – und
    schnappt ihn wieder ein (die Augen folgen dem Bogen). */
@@ -29152,6 +29326,11 @@ function formiLebtStart(){
   formiAtmenPlanen();
   formiUmsehenPlanen();
   formiEigenlebenPlanen();
+  formiGrussFigur();
+  document.addEventListener('pointerdown', function(e){
+    var b=e.target && e.target.closest && e.target.closest('.btn-primary, .jv-senden');
+    if(b && !b.disabled) formiFunken(e.clientX, e.clientY);
+  }, { passive:true, capture:true });
   formiTageszeit();
   formiAnlass();
   /* Kleinigkeit (Runde 195): wer mit dem Mausrad scrollt, dem schaut
@@ -29455,13 +29634,28 @@ function formiWieZeichnen(still){
     r=el.getBoundingClientRect();
   }
   var mit=sch.mit && document.querySelector(sch.mit);
-  if(formiWieSichtbar(mit)){
-    var m=mit.getBoundingClientRect(), l=Math.min(r.left, m.left), o=Math.min(r.top, m.top);
-    r={ left:l, top:o, width:Math.max(r.right, m.right)-l, height:Math.max(r.bottom, m.bottom)-o };
+  function vereint(q){
+    if(!formiWieSichtbar(mit)) return q;
+    var m=mit.getBoundingClientRect(), l=Math.min(q.left, m.left), o=Math.min(q.top, m.top);
+    return { left:l, top:o, width:Math.max(q.right, m.right)-l, height:Math.max(q.bottom, m.bottom)-o };
   }
+  r=vereint(r);
   var box=$('formiWie'), licht=box.querySelector('.fw-licht'), fig=box.querySelector('.fw-formi'), karte=box.querySelector('.fw-karte');
   var hoehe=innerHeight, breite=innerWidth, luft=6, rand=8;
   var kh=karte.offsetHeight||170, kw=karte.offsetWidth||320;
+  /* Passt die Karte weder über noch unter das Ziel (gemessen: 320 × 568,
+     „Von" und „Bis" untereinander, Karte 205 px), wird das Ziel so weit
+     hochgeholt, dass sie darunter Platz hat — aber nie unter den Kopf. */
+  if(!still && r.top-luft-14-kh <= rand && r.top+r.height+luft+14+kh >= hoehe-rand){
+    var soll=hoehe-rand-kh-14-luft-r.height-luft;
+    if(soll>=64){
+      var sc=el.parentElement;
+      while(sc && sc!==document.body){ var oy=getComputedStyle(sc).overflowY; if((oy==='auto' || oy==='scroll') && sc.scrollHeight>sc.clientHeight) break; sc=sc.parentElement; }
+      if(!sc || sc===document.body) sc=document.scrollingElement;
+      sc.scrollTop+=r.top-soll;
+      r=vereint(el.getBoundingClientRect());
+    }
+  }
   var x=Math.max(4, r.left-luft), y=Math.max(4, r.top-luft);
   var w=Math.max(12, Math.min(r.width+luft*2, breite-x-4)), h=Math.max(12, Math.min(r.height+luft*2, hoehe-y-4));
   /* Die Karte unter den Ring, wenn Platz ist, sonst darüber, sonst unten
@@ -30598,6 +30792,8 @@ function jarvisStatus(){
 }
 function jarvisBinden(){
   if(_jvGebunden) return; _jvGebunden=true;
+  /* Runde 233: der Pfeil im Senden-Knopf. */
+  var sk=$('jarvisSenden'); if(sk && !sk.querySelector('svg')) sk.insertAdjacentHTML('afterbegin', ikon('senden'));
   /* Runde 231: wer Formi im Fenster antippt, bringt es zum Kichern;
      dreimal schnell hintereinander, und ihm wird schwindelig. */
   var jvb=$('jarvis'); if(jvb) jvb.addEventListener('pointerdown', function(e){
@@ -46695,6 +46891,9 @@ function emptyHTML(h,s,iko,tat){
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">'+
     '<path d="M9 11l3 3L22 4"/>'+
     '<path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>';
+  /* Runde 233: über der leeren Liste sitzt Formi, zufrieden (Augen als
+     Bögen); das Zeichen des Bereichs schwebt klein daneben. */
+  if(typeof formiFigurInnen==='function') bild='<span class="leer-figur" aria-hidden="true"><span class="formi-figur leer-zufrieden">'+formiFigurInnen(true)+'</span><span class="leer-zeichen">'+bild+'</span></span>';
   /* Runde 209: wo eine Liste leer ist, sitzt Formi mit einem Angebot. Der
      Platz ist ohnehin leer — es wird nichts voller. */
   var formi = (typeof gehirnVerfuegbar==='function' && gehirnVerfuegbar())
