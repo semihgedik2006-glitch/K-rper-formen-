@@ -57,7 +57,7 @@ const ansicht = page => page.evaluate(() => {
         ' — erwartet ' + JSON.stringify(soll));
     }
 
-    await page.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
+    await page.evaluate(() => (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="todos"]').click(); } }).click());
     await page.waitForTimeout(600);
     const unter = await page.evaluate(() => [...document.querySelectorAll('[data-subview]')].map(s => s.textContent.trim()));
     console.log('STUDIO:', JSON.stringify(unter));
@@ -102,7 +102,7 @@ const ansicht = page => page.evaluate(() => {
       errs.push('Im Bestand fehlt der Umschalter Material | Geräte: ' + JSON.stringify(bestand));
     }
 
-    await page.evaluate(() => document.querySelector('.mobnav [data-group="g-wissen"]').click());
+    await page.evaluate(() => (document.querySelector('.mobnav [data-group="g-wissen"]') || { click: () => { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="docs"]').click(); } }).click());
     await page.waitForTimeout(600);
     const wissen = await page.evaluate(() => [...document.querySelectorAll('[data-subview]')].map(s => s.textContent.trim()));
     console.log('WISSEN:', JSON.stringify(wissen));
@@ -117,7 +117,7 @@ const ansicht = page => page.evaluate(() => {
 
     await page.evaluate(() => document.querySelector('.mobnav [data-group="g-komm"]').click());
     await page.waitForTimeout(550);
-    await page.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
+    await page.evaluate(() => (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="todos"]').click(); } }).click());
     await page.waitForTimeout(550);
     const hash = await page.evaluate(() => location.hash);
     console.log('ZURÜCK – Adresse nach zwei Wechseln:', hash, '| Ansicht:', await ansicht(page));

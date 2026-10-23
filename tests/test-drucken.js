@@ -78,7 +78,7 @@ const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linu
 
   /* ── 2: mit Vorlage ── */
   await page.emulateMedia({ media: 'screen' });
-  await page.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
+  await page.evaluate(() => (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="todos"]').click(); } }).click());
   await page.waitForTimeout(600);
   await page.evaluate(() => { const k = document.querySelector('[data-subview="putzplan"]'); if (k) k.click(); });
   await page.waitForTimeout(900);

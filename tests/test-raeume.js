@@ -214,7 +214,7 @@ const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel
   console.log('\n── 6 Formi-Kugel und „+ Aufgabe" am Handy ──');
   {
     const p = await oeffne(b, 390, 844, { touch: true });
-    await p.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
+    await p.evaluate(() => (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="todos"]').click(); } }).click());
     await p.waitForTimeout(800);
     const r = await p.evaluate(() => {
       const k = document.getElementById('formiKugel'), d = document.querySelector('#daumenDock .kopf-plus');

@@ -129,7 +129,7 @@ const reiter = page => page.evaluate(() => {
     }
 
     // ── „+ Neu" von der Aufgabenseite muss immer noch im Formular landen ──
-    await page.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
+    await page.evaluate(() => (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="todos"]').click(); } }).click());
     await page.waitForTimeout(900);
     await page.evaluate(() => document.getElementById('todoNew').click());
     await page.waitForTimeout(1100);

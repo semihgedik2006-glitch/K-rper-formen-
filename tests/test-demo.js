@@ -193,7 +193,7 @@ async function seite(b, url, errs, marke) {
   const vorher = daten.summe;
   const geschrieben = await page.evaluate(async () => {
     // Zu den Aufgaben und dort die erste offene abhaken.
-    document.querySelector('.mobnav [data-group="g-arbeit"]').click();
+    (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="todos"]').click(); } }).click();
     await new Promise(r => setTimeout(r, 400));
     const tb = document.querySelector('[data-subview="todos"]');
     if (tb) tb.click();
