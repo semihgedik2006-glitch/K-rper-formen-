@@ -21295,3 +21295,62 @@ in dieser Umgebung nicht).
 Titel statt Versalien-Marken, dann untere Leiste mit fünf Einträgen,
 dann Bewegung (drei Federn, Blätter mit Griff), dann Chat in Blasen.
 Formi selbst bleibt bei der anderen Sitzung.
+
+## Runde 240 — Ein Tipp auf die Erinnerung öffnet „Zeiten"; Lohn-Angaben gehen mit dem Zugang (23.10.2026)
+
+Aus dem Betrieb: „ja mach weiter" — auf die offenen Punkte am Ende von
+Runde 238 und 222. Zwei davon ließen sich ohne Rückfrage schließen.
+
+### 1. Ein Tipp auf die Meldung führt hin
+
+Vorher öffnete ein Tipp auf „Feierabend vergessen?" nur die App — man
+landete dort, wo man zuletzt war. Jetzt trägt die Push-Nachricht ein Ziel
+(`sendPush(…, ziel)`, Feld `data.ziel`):
+
+- **App zu** → der Service Worker öffnet `./index.html#zeit`. Den Weg
+  über die Adresse gab es schon (verlaufStarten, „wer einen Link bekommt,
+  soll dort landen").
+- **App offen** → kein zweites Fenster (das hieße: noch einmal laden),
+  sondern eine Nachricht `{typ:'ziel', ziel:'zeit'}` an die offene App,
+  die selbst wechselt.
+- Das Ziel ist nur ein Wort aus Kleinbuchstaben; alles andere wird im
+  Server UND im Service Worker verworfen, weil es Teil einer Adresse
+  wird. Die App lässt einen Mitarbeiter so nicht in die Verwaltung.
+- `sw.js` VERSION v33 → v34, damit die Geräte den neuen Service Worker
+  holen.
+
+Bisher trägt nur die Stempel-Erinnerung ein Ziel. Die anderen Meldungen
+öffnen weiter die App; sie lassen sich einzeln nachziehen.
+
+**Dabei gefunden:** `test-push-doppelt` liest `sendPush` im Quelltext und
+verlangt `data: {` — meine erste Fassung baute das Objekt vorher in einer
+Variable und fiel dort durch. Zurückgebaut auf die geprüfte Form, nicht
+den Test gelockert.
+
+### 2. Wer geht, nimmt seine Lohn-Angaben mit
+
+`zugangEntfernen` löscht jetzt auch `regeln.<uid>` in
+`lohnEinstellungen/zeitregeln` (Soll je Wochentag, Urlaubsanspruch) und
+`personalNr.<uid>` in `lohnEinstellungen/datev`. Das stand seit Runde 222
+im Löschkonzept als offen. Stempelzeiten und Monatsabschlüsse bleiben —
+für sie gilt die Aufbewahrungsfrist. Die anderen Einträge im selben
+Dokument bleiben unberührt (Gegenprobe im Test).
+
+### Geprüft
+
+- `tests/test-push-ziel.js` (13): der Service Worker in einer Attrappe —
+  Ziel in der Meldung, Tipp mit und ohne offene App; GEGENPROBEN ohne
+  Ziel, fremde Zeichen, alte Meldung ohne Daten. In der Demo: die
+  Nachricht wechselt zu „Zeiten"; GEGENPROBEN fremde Nachrichtenart,
+  unbekannte Ansicht, Mitarbeiter → Verwaltung.
+- `tests/rules/stempel-erinnerung.test.js` (30, eine neu): die Erinnerung
+  trägt das Ziel `zeit`.
+- `tests/rules/funktionen.test.js` (267, drei neu): Soll, Urlaub und
+  Personalnummer sind nach dem Entfernen weg, die der anderen bleiben.
+- Grün außerdem: test-push-doppelt, test-nachtruhe, test-sw-neuladen,
+  test-zwischenspeicher, test-csp, test-demo, test-stempel-erinnerung.
+
+### Nicht geprüft
+
+- Ein echter Tipp auf eine echte Push-Nachricht auf einem Handy: hier
+  nur mit der Attrappe des Service Workers.

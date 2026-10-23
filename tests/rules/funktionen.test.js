@@ -349,7 +349,25 @@ const TAG = 86400000;
       await db.doc('users/' + konto.uid).set({ name: 'Geht wieder', role: 'mitarbeiter',
         firma: 'alpha', email: mail });
 
+      /* Runde 240: Soll, Urlaubsanspruch und Personalnummer gehen mit. */
+      await db.doc('firmen/alpha/lohnEinstellungen/zeitregeln').set({ regeln: {
+        [konto.uid]: { 1: 480, u: 28 }, bleibt: { 2: 300, u: 20 } } });
+      await db.doc('firmen/alpha/lohnEinstellungen/datev').set({ beraterNr: '1', personalNr: {
+        [konto.uid]: '1001', bleibt: '1002' } });
+
       await fns.zugangEntfernen.run({ uid: konto.uid }, { auth: { uid: 'chefAlpha' } });
+
+      const zr = (await db.doc('firmen/alpha/lohnEinstellungen/zeitregeln').get()).data() || {};
+      const dv = (await db.doc('firmen/alpha/lohnEinstellungen/datev').get()).data() || {};
+      pruefe('Zugang entfernen: Soll je Wochentag und Urlaubsanspruch sind weg',
+        !(zr.regeln || {})[konto.uid], JSON.stringify(zr));
+      pruefe('Zugang entfernen: die DATEV-Personalnummer ist weg',
+        !(dv.personalNr || {})[konto.uid], JSON.stringify(dv));
+      pruefe('GEGENPROBE die Einträge der anderen bleiben (Soll, Urlaub, Nummer, Beraternummer)',
+        (zr.regeln || {}).bleibt && zr.regeln.bleibt.u === 20 && (dv.personalNr || {}).bleibt === '1002' && dv.beraterNr === '1',
+        JSON.stringify({ zr, dv }));
+      await db.doc('firmen/alpha/lohnEinstellungen/zeitregeln').delete();
+      await db.doc('firmen/alpha/lohnEinstellungen/datev').delete();
 
       pruefe('Zugang entfernen: das Profil ist weg',
         !(await db.doc('users/' + konto.uid).get()).exists);
