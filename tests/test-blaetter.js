@@ -82,7 +82,11 @@ const GRIFF = (id) => {
 async function ziehe(p, g, dy, schritte, pause) {
   await p.mouse.move(g.gx, g.gy);
   await p.mouse.down();
-  for (let i = 1; i <= schritte; i++) { await p.mouse.move(g.gx, g.gy + dy * i / schritte); if (pause) await p.waitForTimeout(pause); }
+  /* Ohne Pause in EINEM Aufruf: unter Last (Gesamtdurchlauf mit vier
+     Tests parallel) lagen zwischen einzelnen Aufrufen sonst bis zu
+     einige hundert ms — aus dem Schnippen wurde ein langsamer Zug. */
+  if (!pause) await p.mouse.move(g.gx, g.gy + dy, { steps: schritte });
+  else for (let i = 1; i <= schritte; i++) { await p.mouse.move(g.gx, g.gy + dy * i / schritte); await p.waitForTimeout(pause); }
   await p.mouse.up();
   await p.waitForTimeout(600);
 }
