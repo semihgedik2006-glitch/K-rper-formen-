@@ -80,7 +80,12 @@ const KUGEL_ANIM = () => {
      aus dem Betrieb: „er soll auch so die physik von einem schwarzen loch
      haben". Sie ist der einzige gewollte Dauerlauf und wird eigens
      geprüft (Abschnitt „Akkretionsscheibe"); hier zählt alles andere. */
-  const a = k.getAnimations({ subtree: true }).filter(x => x.playState === 'running' && x.animationName !== 'formiScheibe');
+  /* Runde 226 — aus dem Betrieb: „nur die akkretionsscheibe fehlt mir
+     irgendwie noch". Die flache Scheibe hat Bahnen (formiBahn) und
+     Klumpen, die links heller leuchten (formiDoppler): derselbe gewollte
+     Dauerlauf wie formiScheibe, eigens geprüft in test-formi-physik. */
+  const DAUER = ['formiScheibe', 'formiBahn', 'formiDoppler'];
+  const a = k.getAnimations({ subtree: true }).filter(x => x.playState === 'running' && !DAUER.includes(x.animationName));
   const eig = new Set();
   a.forEach(x => (x.effect && x.effect.getKeyframes ? x.effect.getKeyframes() : []).forEach(f =>
     Object.keys(f).forEach(n => { if (!['offset', 'easing', 'composite', 'computedOffset'].includes(n)) eig.add(n); })));
@@ -178,10 +183,16 @@ const KUGEL_ANIM = () => {
         const t = [...k.querySelectorAll('.fk-teilchen i')];
         const klick = t.every(i => getComputedStyle(i).pointerEvents === 'none');
         const wege = t.map(i => { const f = i.getAnimations()[0].effect.getKeyframes(); return [f[0].transform, f[f.length - 1].transform]; });
-        return { weiss, n: t.length, klick, rein: wege.every(w => /translate\(0(px)?, ?0(px)?\)/.test(w[1])) };
+        /* Runde 226 — aus dem Betrieb: „es verhält sich auch nicht
+           physikalisch wie ein schwarzes loch so wirklich". Von draussen
+           gesehen kommt nichts in der Mitte an: es friert am Horizont ein
+           (Rand des Lochs, 15 px) und erlischt dort. Geprüft wird darum
+           „zurück am Horizont, erloschen" statt „in der Mitte". */
+        const amRand = (f) => { const m = /translate\((-?[\d.]+)px, ?(-?[\d.]+)px\)/.exec(f.transform || ''); if (!m) return false; const r = Math.hypot(+m[1], +m[2]); return r >= 14 && r <= 17 && +f.opacity === 0; };
+        return { weiss, n: t.length, klick, rein: t.every(i => { const f = i.getAnimations()[0].effect.getKeyframes(); return amRand(f[f.length - 1]); }) };
       });
       pruefe(`Freude: das Loch wird weiss und wieder schwarz (${JSON.stringify(aus.weiss[0])})`, aus.weiss.length === 1 && aus.weiss[0].includes('1') && String(aus.weiss[0][0]) === '0' && String(aus.weiss[0].slice(-1)[0]) === '0', JSON.stringify(aus.weiss));
-      pruefe(`… ${aus.n} Teilchen fliegen raus und landen wieder in der Mitte, alle lassen Tipps durch`, aus.n === 12 && aus.rein && aus.klick, JSON.stringify(aus));
+      pruefe(`… ${aus.n} Teilchen fliegen raus und fallen zurück bis an den Horizont, wo sie erlöschen; alle lassen Tipps durch`, aus.n === 12 && aus.rein && aus.klick, JSON.stringify(aus));
       await p.evaluate(() => window.__formiLebt.fuehlt('feiert'));
       pruefe('Feiern: mehr Teilchen (22)', await p.evaluate(() => document.querySelectorAll('#formiKugel .fk-teilchen i').length) >= 22);
       await p.waitForTimeout(2600);
@@ -430,13 +441,16 @@ const KUGEL_ANIM = () => {
         const a = z.map(i => i.getAnimations()[0]).filter(Boolean);
         const kopf = document.querySelector('#jarvis .jv-titel .formi-gesicht').getBoundingClientRect();
         const ende = a.length ? a[0].effect.getKeyframes().slice(-1)[0].transform : '';
-        return { n: z.length, text: z.map(i => i.textContent).join(''), endlos: a.some(x => x.effect.getTiming().iterations === Infinity),
+        const kopfR = kopf.width * .26;
+        return { n: z.length, kopfR, text: z.map(i => i.textContent).join(''), endlos: a.some(x => x.effect.getTiming().iterations === Infinity),
           eig: [...new Set(a.flatMap(x => x.effect.getKeyframes().flatMap(f => Object.keys(f))))].filter(n => !['offset', 'easing', 'composite', 'computedOffset'].includes(n)),
           stationen: a.length ? a[0].effect.getKeyframes().length : 0, ende, kopf: [Math.round(kopf.left + kopf.width / 2), Math.round(kopf.top + kopf.height / 2)] };
       });
       const em = /translate\((-?[\d.]+)px, ?(-?[\d.]+)px\)/.exec(flug.ende || '');
       pruefe(`Frage: ${flug.n} Buchstaben lösen sich aus dem Feld und fliegen in ${flug.stationen} Stationen spiralig ins Gesicht im Kopf`,
-        flug.n === frage.length && flug.text.replace(/\u00a0/g, ' ') === frage && flug.stationen >= 8 && em && Math.abs(+em[1] - flug.kopf[0]) < 3 && Math.abs(+em[2] - flug.kopf[1]) < 3, JSON.stringify(flug));
+        /* Runde 226 (Zitat oben bei den Teilchen): der Buchstabe endet am
+           Rand des Lochs im Kopf – im Gesicht, aber nicht in der Mitte. */
+        flug.n === frage.length && flug.text.replace(/\u00a0/g, ' ') === frage && flug.stationen >= 8 && em && Math.abs(Math.hypot(+em[1] - flug.kopf[0], +em[2] - flug.kopf[1]) - flug.kopfR) < 2, JSON.stringify(flug));
       pruefe('… endlich, nur transform/opacity', !flug.endlos && flug.eig.every(n => n === 'transform' || n === 'opacity'), JSON.stringify(flug.eig));
       await p.waitForFunction(() => /30 Grad/.test((document.getElementById('jarvisVerlauf') || {}).textContent || ''), null, { timeout: 6000 });
       const spuck = await p.evaluate(() => ({ weiss: document.querySelector('#jarvis .jv-titel .formi-gesicht .fk-weiss').getAnimations().length,
