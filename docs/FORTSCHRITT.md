@@ -21746,7 +21746,7 @@ super“. Seit 15:18 läuft der Plan ohne Zwischenfrage durch.
 
 **Als Nächstes:** Bewegung — drei Federn, Seitenwechsel.
 
-## Runde 247 — Formi-Insel, Leuchtrand, Lichtkrümmung und Gezeitenstrom (23.10.2026)
+## Runde 250 — Formi-Insel, Leuchtrand, Lichtkrümmung und Gezeitenstrom (23.10.2026)
 
 **Aus dem Betrieb**, zu den vier Apple-Entwürfen:
 - „ich finde die insel und die widgets super krass falls das geht können

@@ -15,9 +15,9 @@ in der Insel, Glaskugel, Zeichen + Widget). Die Antwort aus dem Betrieb:
 
 | Entwurf | Stand |
 |---|---|
-| Insel | **gebaut (Runde 247)** — in der App, oben in der Mitte |
-| Leuchtrand | **gebaut (Runde 247)** — solange Formi arbeitet |
-| Hintergrund verzerren statt Glas | **gebaut (Runde 247)** — Lichtkrümmung um die Kugel (Chromium) |
+| Insel | **gebaut (Runde 250)** — in der App, oben in der Mitte |
+| Leuchtrand | **gebaut (Runde 250)** — solange Formi arbeitet |
+| Hintergrund verzerren statt Glas | **gebaut (Runde 250)** — Lichtkrümmung um die Kugel (Chromium) |
 | Widgets | **folgt mit der echten App** — siehe unten |
 | Licht-Kugel (Siri) | **nicht** — Formi bleibt ein schwarzes Loch |
 | Liquid Glass | **nicht** |
@@ -26,7 +26,7 @@ in der Insel, Glaskugel, Zeichen + Widget). Die Antwort aus dem Betrieb:
 
 - **Die echte Dynamic Island / Live-Aktivitäten** gibt es nur für Apps aus
   dem App Store (ActivityKit). Eine Web-App kann dort nichts anzeigen. Die
-  Insel in Runde 247 lebt deshalb IN der App.
+  Insel in Runde 250 lebt deshalb IN der App.
 - **Widgets auf dem Home-Bildschirm** (iOS WidgetKit, Android App
   Widgets) gibt es ebenfalls nur für installierte Apps. Eine Web-App
   bekommt keine.
