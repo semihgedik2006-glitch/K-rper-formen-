@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-bsFu5cb0q5zgK3+oZG7AMAdr4Nuyvyuaz6iZRAwyyxE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-6MITPZvxa0jjEczumP7mU9+0c37of+FGBymOQDLBmXA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -8981,8 +8981,8 @@ body.neu .heute-block{margin-bottom:var(--s20)}
    Trefferfläche richtet sich nicht nach der Dichte. */
 body.neu #heuteListe{padding-top:max(var(--s10),10px)}
 body.neu .heute-kopf{display:flex;align-items:center;gap:var(--s8);
-  margin:0 0 var(--s8);font-family:var(--font-head);font-weight:700;
-  font-size:var(--t-xs);letter-spacing:var(--ls-l);text-transform:uppercase;
+  margin:0 0 var(--s6);padding:0 var(--s4);font-family:var(--font-head);font-weight:600;
+  font-size:var(--t-lg);line-height:var(--lh-eng);letter-spacing:var(--ls-eng);
   color:var(--text-3)}
 /* Die Überschrift trägt dieselbe Farbe wie die Zeilen darunter — sonst
    wäre die Farbe ein Zufall je Zeile statt die Sprache der Kategorie.
@@ -8999,24 +8999,16 @@ body.neu.light .heute-kopf.tun{--kat:#5F1FC7}
    Ordnung". Dieselben Werte wie die Nachrichten-Gruppe in „Alles". */
 body.neu .heute-kopf.putz    {--kat:#4EE6D2}
 body.neu.light .heute-kopf.putz{--kat:#0B6A62}
-body.neu .heute-kopf .hk-punkt{width:8px;height:8px;border-radius:var(--r-pille);
-  background:var(--kat);flex:0 0 auto}
-/* Im Hellmodus tragen --warm und --accent-2 als TEXT nicht — sie sind
-   Flächenfarben. Die Überschrift bleibt deshalb ihr ruhiges Grau; nur
-   Punkt, Strich und Zeichen nehmen die Farbe. Dieselbe Trennung wie
-   bei --warm/--warm-tx in :root, und aus demselben Grund. */
-body.neu .heute-kopf .hk-wort{color:var(--text-3)}
-body.neu .heute-kopf.dringend .hk-wort{color:var(--danger-tx)}
+/* Runde 241: der Titel steht in Textfarbe, wie ein Abschnittstitel
+   bei Apple. Punkt und auslaufender Strich davor und dahinter sind weg
+   — der Titel ist gross genug, um den Abschnitt allein zu tragen. Die
+   Farbe der Kategorie (--kat) steht im Zeichen jeder Zeile. */
+body.neu .heute-kopf .hk-wort{color:var(--text)}
 /* Die Überschrift nennt die volle Zahl und trägt den Weg zur ganzen
    Liste. Nur so darf darunter gekürzt werden. */
 body.neu .heute-kopf .hk-wort{flex:0 0 auto}
-/* Der Strich läuft in der Farbe der Kategorie aus. Das ist derselbe
-   Übergang wie im Bereichskopf — Farbe, die von einer Kante ausgeht
-   und verschwindet, statt einer Linie, die man anmalt. */
-body.neu .heute-kopf i{flex:1;height:1px;display:block;
-  background:linear-gradient(90deg,var(--kat),var(--line) 40%)}
 body.neu .heute-kopf .mini-link{flex:0 0 auto}
-body.neu .heute-liste{display:flex;flex-direction:column;gap:var(--s8)}
+body.neu .heute-liste{display:flex;flex-direction:column;gap:0}
 /* ── Startseite am PC: zwei Spalten (Runde 103, P3) ──
    Links, was getan werden muss; rechts Stand und Neues. Die Spalten
    stehen oben bündig und laufen unabhängig — eine lange linke Spalte
@@ -9172,9 +9164,8 @@ body.neu .hz-pfeil{flex:0 0 auto;color:var(--text-3);font-size:var(--t-lg)}
    darf nicht lauter sein als die Zeilen darüber. */
 body.neu .heute-rest{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s8);
   margin-top:calc(-1 * var(--s8))}
-body.neu .heute-rest .hr-wort{font-family:var(--font-head);font-weight:700;
-  font-size:var(--t-xs);letter-spacing:var(--ls-l);text-transform:uppercase;
-  color:var(--text-3);margin-right:var(--s4)}
+body.neu .heute-rest .hr-wort{font-family:var(--font-head);font-weight:600;
+  font-size:var(--t-sm);color:var(--text-2);margin-right:var(--s4)}
 /* ── „Neu" im Bereichskopf und das Fenster „Was ist neu" (Runde 103) ──
    Die Pille sitzt rechts im Kopf der Startseite, wo auf anderen Seiten
    „+ Neu" steht — kein zusätzlicher Platz, auf PC und Handy dieselbe
@@ -9225,8 +9216,8 @@ body.neu .schnell[hidden]{display:none}
 body.neu .side{overflow-y:auto}
 body.neu .side-schnell{display:flex;flex-direction:column;gap:var(--s2);
   margin-top:var(--s16);padding-top:var(--s12);border-top:1px solid var(--line)}
-body.neu .ss-kopf{padding:0 var(--s12) var(--s6);font-family:var(--font-head);font-weight:700;
-  font-size:var(--t-2xs);letter-spacing:var(--ls-l);text-transform:uppercase;color:var(--text-3)}
+body.neu .ss-kopf{padding:0 var(--s12) var(--s6);font-family:var(--font-head);font-weight:600;
+  font-size:var(--t-xs);color:var(--text-3)}
 /* Wie die Einträge darüber, eine Stufe leiser: es sind Abkürzungen,
    keine Bereiche. Mindestens 44 px hoch, auch in der Dichte „kompakt". */
 body.neu .ss-knopf{display:flex;align-items:center;gap:var(--s10);min-height:44px;width:100%;
@@ -9499,6 +9490,110 @@ body.neu .kn-zeile:active{transform:translateY(1px)}
    „Weniger und grösser" gilt auch dort, wo schon Karten stehen. */
 body.neu .card{padding:clamp(20px,5vw,30px);margin-bottom:var(--s24)}
 body.neu .kn-zeile{min-height:var(--zeile)}
+
+/* ── 8. Gruppen und Titel wie bei Apple (Runde 241, 23.10.2026) ──────
+   Aus dem Betrieb, zu den Probebildern „Studio Chat wie von Apple“:
+   „ja das sieht sehr super aus genau so hab ichs mir vorgestellt“ —
+   und nach der Schrift-Runde: „sieht super aus kannst weiter machen“.
+   Entschieden war vorher „Apple-Grundgerüst, Formi als Akzent“.
+
+   Zwei Dinge ändern sich, beide in allen Stilen:
+
+   1. Abschnittsmarken werden Titel. „ÜBERFÄLLIG · 4“ in kleinen,
+      weit gesperrten Versalien mit einem Strich bis zum Rand war eine
+      Marke, die man entziffert. Apple schreibt Abschnitte als normales
+      Wort in Titelgrösse, die Zahl leise daneben, „Alle 4“ rechts als
+      Verweis — man liest sie, statt sie zu erkennen. Kleine Marken über
+      Navigationsgruppen (Seitenleiste, Kanäle, Verwaltung) bleiben
+      klein, aber in normaler Schreibung, wie in der Mac-Seitenleiste.
+
+   2. Auf der Startseite wird jeder Abschnitt EINE Gruppe. Vorher war
+      jede Zeile eine eigene Karte mit farbiger Kante und Schatten —
+      sechs Karten, sechs Flächen, die gleich laut rufen. Jetzt eine
+      gerundete Fläche je Abschnitt, die Zeilen darin durch eine
+      eingezogene Haarlinie getrennt (sie beginnt beim Text, nicht beim
+      Zeichen — wie in Einstellungen). Die Farbe der Art bleibt dort, wo
+      sie etwas meldet: im Zeichen und, bei „überfällig“, in der
+      Unterzeile. Statusfarben nur für Status.
+
+   Was NICHT angefasst wird: Formi selbst (die Figur, ihre Farben, ihre
+   Bewegung) — daran wird in einer anderen Sitzung gearbeitet. Im Stil
+   „Formi“ trägt die GRUPPE Formis schillernde Kante, nicht mehr jede
+   einzelne Zeile: eine Kante je Abschnitt statt sechs. */
+body.neu h1,body.neu h2{text-transform:none;letter-spacing:var(--ls-eng)}
+/* Die Titel der Startseite (Grösse und Farbe stehen oben in
+   Abschnitt 6, bei .heute-kopf): die Zahl leise daneben. */
+body.neu .heute-kopf .hk-zahl{color:var(--text-3);font-weight:400;
+  font-variant-numeric:tabular-nums}
+body.neu .heute-kopf .mini-link{margin-left:auto}
+/* „Alle N“ trägt eine 44 px hohe Trefferfläche, die unter die Zeile
+   ragt. Mit 6 px Abstand gewann die Gruppe darunter den Treffertest —
+   gemessen 44 × 40 bei 390 px (test-gruppen-titel). Mindestens 10 px,
+   auch in „kompakt“: die Trefferfläche richtet sich nicht nach der
+   Dichte. */
+body.neu .heute-kopf:has(.mini-link){margin-bottom:max(var(--s10),10px)}
+/* Die Gruppe. Haarlinie oben und ein ruhiger Schatten: sie liegt auf
+   der Seite, und was darin steht, ist anklickbar. */
+body.neu .heute-liste{border-radius:var(--r-md);background:var(--bg-2);
+  box-shadow:inset 0 1px 0 var(--kante), var(--e1)}
+body.neu .heute-liste .heute-zeile{background:transparent;
+  border:none;border-radius:0;box-shadow:none}
+/* Ein Glied der Gruppe ist eine Zeile oder, seit Runde 240, eine Zeile
+   mit dem Haken davor (.hz-mit-haken) — wie in Erinnerungen: der Kreis
+   steht in der Gruppe, links vor dem Zeichen. Die Ecken der Gruppe
+   tragen das erste und das letzte Glied, damit die Fläche beim Zeigen
+   und Drücken nicht über die Rundung hinausmalt. */
+body.neu .heute-liste > *{position:relative}
+body.neu .heute-liste .hz-mit-haken > .hz-haken{border-radius:0}
+body.neu .heute-liste > :first-child,
+body.neu .heute-liste > :first-child > .heute-zeile{border-top-right-radius:var(--r-md)}
+body.neu .heute-liste > :first-child,
+body.neu .heute-liste > :first-child > .hz-haken{border-top-left-radius:var(--r-md)}
+body.neu .heute-liste > :last-child,
+body.neu .heute-liste > :last-child > .heute-zeile{border-bottom-right-radius:var(--r-md)}
+body.neu .heute-liste > :last-child,
+body.neu .heute-liste > :last-child > .hz-haken{border-bottom-left-radius:var(--r-md)}
+/* Die Trennlinie beginnt beim Text: Rand 16 + Zeichen 26 + Abstand 12,
+   mit Haken davor zusätzlich dessen 44 px und 4 px Abstand. */
+body.neu .heute-liste > * + *::before{content:'';position:absolute;top:0;right:0;z-index:1;
+  left:calc(var(--s16) + 26px + var(--s12));height:1px;background:var(--line);pointer-events:none}
+body.neu .heute-liste > .hz-mit-haken::before{left:calc(44px + var(--s4) + var(--s16) + 26px + var(--s12))}
+/* Der Pfeil ist ein Versprechen, keine Farbe: grau wie bei Apple. */
+body.neu .heute-liste .heute-zeile .hz-pfeil{color:var(--text-3);opacity:1}
+@media (hover:hover){
+  body.neu .heute-liste .heute-zeile:hover{background:var(--auf-1);box-shadow:none}
+}
+/* Gedrückt gibt die Zeile nach: eine Stufe dunkler und der Schatten
+   nach innen — innerhalb der Gruppe, ohne aus ihr herauszurutschen. */
+body.neu .heute-liste .heute-zeile:active{background:var(--auf-2);transform:none;box-shadow:var(--e-tief)}
+/* Stil „Formi“: die schillernde Kante sitzt an der Gruppe. */
+body.formi:not(.light).neu .heute-liste{border:1px solid transparent;
+  background:linear-gradient(var(--formi-kern),var(--formi-kern)) padding-box,var(--formi-lin) border-box}
+body.formi:not(.light).neu .heute-liste .heute-zeile{border:none;background:transparent}
+@media (hover:hover){
+  body.formi:not(.light).neu .heute-liste .heute-zeile:hover{background:var(--auf-1);box-shadow:none}
+}
+body.formi:not(.light).neu .heute-liste .heute-zeile:active{background:var(--auf-2)}
+/* Abschnittstitel auf den anderen Seiten: dasselbe wie oben. */
+body.neu .sec-head span{text-transform:none;letter-spacing:var(--ls-eng);
+  font-size:var(--t-lg);font-weight:600;line-height:var(--lh-eng);color:var(--text)}
+body.neu .sec-head i{display:none}
+/* Der grössere Titel ist 4 px höher als die Marke vorher. Steht er
+   ganz oben in seinem Kasten, braucht er die 16 px Luft darüber nicht:
+   dort trennt er nichts. Ohne das rutschte im Team-Bereich (Leitung,
+   390 px) „heute“ 7 px unter die Grenze, und die Seite rollte beim
+   Öffnen wieder (P-12, test-team-woche). */
+body.neu .sec-head:first-child{margin-top:var(--s4)}
+body.neu .pg-kopf h4{text-transform:none;letter-spacing:var(--ls-eng);
+  font-size:var(--t-lg);font-weight:600;color:var(--text)}
+body.neu .td-ueber .pg-kopf h4{color:var(--danger-tx)}
+/* Kleine Marken über Navigationsgruppen und Spalten: klein und leise,
+   aber normal geschrieben — wie „Favoriten“ in der Mac-Seitenleiste. */
+body.neu .ks-gruppe,body.neu .ch-gruppe,body.neu .hilfe-ueber,
+body.neu .zk-j-titel,body.neu .ich-zahl-klein,body.neu .wp-titel small,body.neu .sort-lab,
+body.neu .mail-kopf h4,body.neu .st-urlaub h4,body.neu .dm-section,
+body.neu #view-chef .chef-liste .chef-tab-gruppe{text-transform:none;letter-spacing:normal;
+  font-size:var(--t-xs);font-weight:600}
 </style>
 </head>
 <body>
@@ -21988,6 +22083,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-23-gruppen-titel', datum:'23.10.2026', titel:'Startseite aufgeräumt: Abschnitte als ruhige Gruppen', wo:'home', punkte:[
+    'Auf der Startseite steht jeder Abschnitt (Überfällig, Heute, Putzplan …) jetzt in einer einzigen gerundeten Fläche. Die Zeilen darin sind nur noch durch eine feine Linie getrennt – keine einzelnen bunten Karten mehr.',
+    'Die Überschriften sind normale, gut lesbare Wörter statt kleiner GROSSBUCHSTABEN. Die Anzahl steht leise daneben, rechts geht es mit „Alle“ zur ganzen Liste.',
+    'Rot bleibt, wo etwas wirklich überfällig ist: im Zeichen und in der Zeile darunter. Auch die kleinen Überschriften in Aufgaben, Nachrichten, Verwaltung und in der Seitenleiste schreiben jetzt normal.'
+  ]},
   { id:'2026-10-23-heute-haken', datum:'23.10.2026', titel:'Auf „Heute" direkt abhaken', wo:'home', punkte:[
     'Links neben jeder Aufgabe und jedem Putzpunkt auf „Heute" steht jetzt ein Kreis. Ein Tipp darauf hakt ab – ohne erst in „Studio" zu wechseln.',
     'Aus Versehen? Unten erscheint „Rückgängig". Ein Tipp auf die Zeile selbst öffnet sie wie bisher.'
@@ -38186,9 +38286,7 @@ function renderHeuteJetzt(){
     html+='<div class="heute-block" data-btitel="'+esc(titel)+'" data-bzahl="'+n+'"'+
       ' data-bziel="'+esc(ziel)+'"'+(f?' data-bf="'+esc(f)+'"':'')+'>'+
       '<div class="heute-kopf '+art+(dringend?' dringend':'')+'">'+
-      '<span class="hk-punkt"></span>'+
-      '<span class="hk-wort">'+esc(titel)+(n>1?' · '+n:'')+'</span>'+
-      '<i></i>'+
+      '<span class="hk-wort">'+esc(titel)+(n>1?' <span class="hk-zahl">'+n+'</span>':'')+'</span>'+
       /* Der Ausgang steht da, sobald die Überschrift MEHR nennt, als
          darunter Zeilen stehen — nicht erst, wenn Zeilen weggelassen
          wurden. Beim Putzplan der Leitung ist das nicht dasselbe: eine
@@ -38197,7 +38295,7 @@ function renderHeuteJetzt(){
       /* Das Tagesband zeigt alle, die heute da sind — „alle N ›" wäre
          dort eine Verheissung ohne Inhalt. */
       (art!=='band' && (rest>0 || n>zeigen.length) ? '<button type="button" class="mini-link" data-heute="'+esc(ziel)+'"'+
-                (f?' data-hf="'+esc(f)+'"':'')+'>alle '+n+' ›</button>' : '')+
+                (f?' data-hf="'+esc(f)+'"':'')+'>Alle '+n+'</button>' : '')+
       '</div>'+(zusatz||'')+'<div class="heute-liste">'+zeigen.map(heuteZeile).join('')+'</div></div>';
     if(breit){
       var neu=html.slice(vorher.length); html=vorher;
@@ -38541,7 +38639,7 @@ function heuteKopfAusgang(blk){
   var n = Number(blk.getAttribute('data-bzahl') || 0);
   kopf.insertAdjacentHTML('beforeend',
     '<button type="button" class="mini-link" data-heute="'+esc(ziel)+'"'+
-    (f ? ' data-hf="'+esc(f)+'"' : '')+'>alle '+(n>1 ? n+' ' : '')+'›</button>');
+    (f ? ' data-hf="'+esc(f)+'"' : '')+'>Alle'+(n>1 ? ' '+n : '')+'</button>');
   heuteTippBinden(kopf.querySelector('.mini-link'));
 }
 

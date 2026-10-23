@@ -21340,3 +21340,90 @@ ausgeliefert.** Im Gesamtlauf fielen damit rund 30 Durchläufe, die als
 Mitarbeiter über „Studio" oder „Wissen" an ihr Ziel gehen. Sie müssen auf
 den Weg über „Alles" umgestellt werden. Das kommt als eigener Schritt
 direkt danach, nicht halb in diesem.
+
+## Runde 241 — Gruppen und Titel wie bei Apple (23.10.2026)
+
+Zweiter Bauschritt aus dem Plan „Studio Chat wie von Apple“. Aus dem
+Betrieb nach der Schrift-Runde: „sieht super aus kannst weiter machen“.
+Massstab sind die Probebilder, zu denen es hiess „genau so hab ichs mir
+vorgestellt“, und die Entscheidung „Apple-Grundgerüst, Formi als Akzent“.
+
+**Was gebaut wurde**
+
+- **Abschnittsmarken sind Titel.** „ÜBERFÄLLIG · 4“ in kleinen, weit
+  gesperrten Versalien mit Punkt davor und Strich bis zum Rand wird
+  „Überfällig 4“: ein normales Wort in `--t-lg`, halbfett, die Zahl leise
+  daneben (`.hk-zahl`), rechts „Alle 4“ statt „alle 4 ›“. Dasselbe für
+  `.sec-head` (Team, Brennpunkte, Defekte, Admin) und die Gruppen der
+  Aufgaben (`.pg-kopf h4`). Kleine Marken über Navigationsgruppen
+  (Schnellzugriffe, Kanäle, Verwaltung, Hilfe, Zeiten) bleiben klein, aber
+  in normaler Schreibung. Seitentitel `h1`/`h2` ohne Versalien.
+- **Die Startseite in Gruppen.** Jeder Abschnitt ist eine gerundete
+  Fläche (`.heute-liste`, `--r-md`), die Zeilen darin ohne eigene Fläche,
+  Kante und Schatten, getrennt durch eine Haarlinie, die beim Text
+  beginnt (wie in Einstellungen). Zeigen hellt die Zeile auf, Drücken
+  dunkelt sie ab und legt den Schatten nach innen — innerhalb der Gruppe.
+- **Status bleibt Status.** Die Farbe der Art steht im Zeichen der Zeile;
+  „überfällig“ zusätzlich in der Unterzeile. Die getönten Flächen und der
+  farbige Balken links sind weg.
+- **Stil „Formi“:** die schillernde Kante sitzt an der Gruppe, nicht mehr
+  an jeder Zeile. Formi selbst (Figur, Farben, Bewegung) ist nicht
+  angefasst — daran wird in einer anderen Sitzung gearbeitet.
+
+**Warum so**
+
+- Die Wunschliste in CLAUDE.md sagt „Farbe, die von einer Kante ausgeht
+  und ausläuft“ — das stand bisher an jeder Zeile. Die Entscheidung vom
+  23.10.2026 hat das ausdrücklich auf den Kopf der Seite und das aktive
+  Element verlegt („Formi-Farben als Akzent/Kopf-Schein“). Sechs farbige
+  Karten untereinander waren sechs Flächen, die gleich laut rufen; eine
+  Gruppe je Abschnitt ist das, was die Probebilder zeigten.
+- „Alles, was anklickbar ist, soll sich wie ein richtiger Knopf
+  anfühlen“: die Gruppe trägt Haarlinie und Schatten, die Zeile gibt beim
+  Drücken sichtbar nach. Ein Knopf-Gefühl je Zeile mit eigenem Schatten
+  hätte die Gruppe wieder in Karten zerlegt.
+- Die Zahl ohne „·“: bei Apple steht sie leise neben dem Titel. Drei
+  Tests lasen sie bisher über das „·“; sie lesen jetzt die Zahl am Ende
+  des Titels (nicht lockerer — dieselbe Zahl wird verlangt).
+
+**Gefunden und behoben**
+
+- „Alle 2“ traf am Handy (390 px) nur 44 × 40: die Trefferfläche ragt
+  unter den Titel, und bei 6 px Abstand gewann die Gruppe darunter. Mit
+  Verweis jetzt mindestens 10 px Abstand, auch in „kompakt“.
+- Team, Leitung, 390 px: der grössere Titel „Wartet auf deine
+  Entscheidung“ (4 px höher) schob „heute“ 7 px unter die Grenze von
+  `heuteInsBild()`, und die Seite rollte beim Öffnen wieder. Ein Titel
+  ganz oben in seinem Kasten trägt jetzt nur 4 statt 16 px Luft darüber.
+  Die Grenze ist weiterhin knapp; wer dort etwas höher macht, prüft mit
+  `test-team-woche`.
+- Parallel kam Runde 240 („Auf Heute direkt abhaken“) mit einem Kreis
+  vor jeder Aufgabe. Der Kreis steht jetzt in der Gruppe, links vor dem
+  Zeichen (wie in Erinnerungen); die Trennlinie beginnt dort entsprechend
+  später, und die Ecken der Gruppe trägt das erste bzw. letzte Glied.
+- `test-gestaltung` verlangt, dass ein Selektor eine Eigenschaft nur
+  einmal setzt. Die neuen Werte stehen deshalb in den alten Regeln
+  (Abschnitt 6), nicht in einer zweiten Regel darunter.
+
+**Tests:** neu `tests/test-gruppen-titel.js` (Stile Formi, Dunkel, Hell;
+390 und 1440 px): keine Versalien in Abschnittsmarken, Titel ≥ 18 px,
+Zahl leise und richtig, eine Gruppe je Abschnitt ohne Lücken und ohne
+Zeilenschatten, Trennlinie ab dem Text, Statusfarbe im Zeichen und in der
+Unterzeile (Gegenprobe: Fläche nicht getönt), Kontrast von Titel, Zahl und
+„Alle N“ an Bildpunkten ≥ 4,5 : 1, „Alle N“ ≥ 44 × 44 in normal und
+kompakt, andere Seiten ohne Versalien. Gegenprobe auf `main`: rot.
+`test-formi-welt` prüft die schillernde Kante jetzt an der Gruppe,
+`test-block-c` die 14 px Rundung (Runde 103, C2) an der Gruppe statt an
+der ersten Zeile — beide mit Zitat im Test, verlangt wird dasselbe.
+
+**Schon vorher rot auf `main`, unverändert:** test-navigation (bricht in
+Abschnitt 3 ab: die untere Leiste hat keinen Eintrag „Verwaltung“ mehr),
+test-neu-design (320 × 568 passt nicht ohne Scrollen; 343 statt 341 px).
+
+**Nicht geprüft:** Safari auf iPhone und Mac (kein Apple-Gerät hier), der
+Anmeldeweg.
+
+**Als Nächstes:** die Aufgabenliste in „Studio“ ebenfalls als Gruppen
+(dort tragen Zeilen eigene Zustände — erledigt, eben abgehakt —, das
+braucht eigene Sorgfalt), ein Hauptknopf je Ansicht und konzentrische
+Ecken, dann die untere Leiste mit fünf Einträgen.

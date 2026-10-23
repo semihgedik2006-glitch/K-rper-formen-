@@ -86,10 +86,10 @@ async function startseite(p) {
     const koepfe = [...document.querySelectorAll('.heute-block .hk-wort')]
       .map(x => x.textContent.trim());
     const offenKopf = koepfe.find(t => /^Offen/.test(t)) || '';
-    const m = /·\s*(\d+)/.exec(offenKopf);
+    const m = /(?:·\s*|\s)(\d+)$/.exec(offenKopf);
     const abz = document.querySelector('.mn-reihe [data-group="g-arbeit"] .badge');
     const ueber = koepfe.find(t => /^Überfällig/.test(t)) || '';
-    const mu = /·\s*(\d+)/.exec(ueber);
+    const mu = /(?:·\s*|\s)(\d+)$/.exec(ueber);
     /* Seit dem 23.9.2026 kann „Offen" auch als Knopf unter „Ausserdem"
        stehen — dann, wenn der Bildschirm für den Block nicht mehr
        reicht (der Putzplan ist dazugekommen). */
