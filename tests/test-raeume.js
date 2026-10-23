@@ -85,7 +85,8 @@ const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel
   for (const [stub, leitung] of [['stub-chef.js', true], ['stub-mitarbeiter.js', false]]) {
     const p = await oeffne(b, 1440, 900, { stub });
     const s = await leiste(p, '#side > [data-group]');
-    const soll = leitung ? RAEUME.concat('Verwaltung') : RAEUME;
+    /* Runde 241, aus dem Betrieb 23.10.2026 auf „Mitarbeiter unten nur Heute, Zeiten, Plan, Nachrichten?": „ja" – Studio und Wissen liegen für Mitarbeiter unter „Alles". */
+    const soll = leitung ? RAEUME.concat('Verwaltung') : RAEUME.filter(r => r !== 'Studio' && r !== 'Wissen');
     pruefe((leitung ? 'Leitung' : 'Mitarbeiter') + ': ' + s.join(' · '), JSON.stringify(s) === JSON.stringify(soll), JSON.stringify(s));
     const extra = await p.evaluate(() => ({ schnell: !!document.querySelector('#side .side-schnell'),
       putz: !!document.querySelector('#side [data-group="g-putz"]'), alles: !!document.querySelector('#side [data-group="g-alles"]') }));
