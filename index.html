@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-eSK8kXNzX08XuquiJqVU6SyJank7afdvfROP7OdMVj4='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-q2xNd0FkmbG83aF5kcZS5iIML0ucO8oUfBX0UgcxCI0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -22087,6 +22087,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-23-erinnerung-tipp', datum:'23.10.2026', titel:'Ein Tipp auf die Stempel-Erinnerung öffnet „Zeiten"', wo:'zeit', punkte:[
+    'Tippst du auf die Erinnerung „Feierabend vergessen?" oder „Schon eingestempelt?" auf dem Handy, öffnet die App jetzt direkt die Seite „Zeiten" – dort stempelst du oder beantragst eine Korrektur.',
+    'Für die Geschäftsführung: Entfernst du unter Verwaltung → Team einen Zugang, verschwinden mit ihm auch das Soll je Wochentag, der Urlaubsanspruch und die DATEV-Personalnummer dieser Person. Stempelzeiten und Monatsabschlüsse bleiben, wie es die Aufbewahrungsfrist verlangt.'
+  ]},
   { id:'2026-10-23-formi-seit-du-weg', datum:'23.10.2026', titel:'Formi sagt dir, was seit deiner letzten Schicht passiert ist', wo:'home', punkte:[
     'Warst du länger als 12 Stunden weg, steht auf „Heute" eine Zeile von Formi: „Seit Mittwoch: 3 Übergaben, 1 Ankündigung" – darunter das Wichtigste wörtlich, mit wem es geschrieben hat und wann. Ein Tipp öffnet die Übergaben.',
     'Benachrichtigungen, die die App selbst schickt (fällige Aufgaben, Erinnerungen, Nachweise, Formis Tagesmeldung), kommen jetzt als „Formi · …" mit Formis Gesicht. Nachrichten von Menschen sehen aus wie bisher.',
@@ -49906,6 +49910,20 @@ function letzteAnsichtHolen(){
 
 function verlaufStarten(){
   _verlaufBereit=true;
+
+  /* Runde 243: ein Tipp auf eine Meldung, während die App offen ist —
+     der Service Worker schickt das Ziel (sw.js, notificationclick). Nur
+     Ansichten, die es gibt und die diese Person sehen darf; showView
+     prüft das ohnehin noch einmal (ansichtAn). */
+  if(navigator.serviceWorker && navigator.serviceWorker.addEventListener){
+    navigator.serviceWorker.addEventListener('message', function(e){
+      var d=e && e.data;
+      if(!d || d.typ!=='ziel' || !/^[a-z]{2,20}$/.test(String(d.ziel||''))) return;
+      if(!document.getElementById('view-'+d.ziel)) return;
+      if((d.ziel==='chef' || d.ziel==='archive') && !canManage()) return;
+      showView(d.ziel);
+    });
+  }
 
   // Eine Adresse in der Zeile schlägt alles – wer einen Link bekommt, soll
   // dort landen. Danach erst die zuletzt offene Ansicht.
