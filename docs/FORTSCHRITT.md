@@ -20190,3 +20190,121 @@ wie die anderen Schalter dort.
 `silent: true` umsetzt. iOS-Web-Push ignoriert `silent` nach heutigem
 Stand womöglich. Das ist nicht gemessen und muss auf einem iPhone
 nachgesehen werden.
+
+
+## Runde 226 — Formi als echtes schwarzes Loch: flache Akkretionsscheibe, Physik von draussen, mehr Gefühle, die Scheibe zeigt den Tag (23.10.2026)
+
+**Aus dem Betrieb:** Auf die fünf Ideen (Stempeln, Scheibe zeigt den Tag,
+Anmeldeseite, heller Stil, Schulung): „ja können wir alles umsetzen, nur
+die akkretionsscheibe fehlt mir irgendwie noch und es verhält sich auch
+nicht physikalisch wie ein schwarzes loch so wirklich, und ich möchte mehr
+animationen (schlafen, langeweile, freude, trauer etc.)". Dazu drei
+Recherchen aus dem Projekt (Physik, Psychologie, Bewegung) und die
+Antworten auf deren offene Fragen: „1. ja auch offline und fehler 2.
+lieber genaue akkurate physik 3. wir haben mein laptop".
+
+Gebaut in zwei Paketen. Dieses ist Paket 1 (Scheibe, Physik, Gefühle,
+Idee 2). Paket 2 bringt Stempeln, Anmeldeseite, hellen Stil und Schulung.
+
+**Gebaut**
+- **Die flache Scheibe** (`.fk-scheibe`, `formiScheibeHTML`). Bis hierher
+  war die „Scheibe" der bunte Ring – von vorn gesehen ein Donut. Jetzt
+  liegt eine flache Scheibe schräg um das Loch, 1,5 × so breit wie die
+  Figur (am Handy 1,3 ×):
+  - zwei Hälften in je einem rechteckigen Ausschnitt; die hintere liegt
+    hinter Ring und Loch, die vordere läuft VOR dem Loch durch;
+  - innen heiss und weiss, aussen rosa und violett;
+  - Klumpen auf zwei Bahnen; links (auf uns zu) heller, rechts schwach
+    (Doppler) – je Klumpen eine Deckkraft-Animation mit der Dauer seiner
+    Bahn, um seinen Winkel versetzt;
+  - ein Linsenbogen (`.fk-bogen`): die Rückseite der Scheibe, über das
+    Loch gebogen, dünn und hell dicht über dem Rand, schwach darunter.
+  - Nur an Kugel, grossem Gesicht und Ladefigur; in den kleinen Figuren
+    (Kopf, Antworten, Suche) wäre sie ein Strich.
+- **Ein Gesetz für alle Umläufe** („lieber genaue akkurate physik"):
+  T ∝ r^1,5, gemessen am Radius in Anteilen der Figur – Ring aussen 6 s,
+  Innenscheibe 3,5 s, Klumpen 6 s und 8,3 s. Alles gegen den Uhrzeiger.
+  Vorher drehte der Ring im Uhrzeigersinn mit 9 s / 3,6 s ohne
+  gemeinsames Gesetz.
+- **Einfall, wie er von draussen aussieht** (`formiEinfall`): fällt erst
+  schneller werdend, kreist umso schneller, je näher, wird von den
+  Gezeiten in Fallrichtung lang gezogen, kriecht am Horizont immer
+  langsamer (Zeitdehnung), wird rot (eigene Ebene `::after`, nur Deckkraft)
+  und erlischt AM RAND – nie in der Mitte. Gilt für die Teilchen beim
+  Freuen, die Krümel beim Atmen und die Buchstaben der Frage.
+- **Ein Haken fällt ins Loch** (`formiSchluckt`, aus `burstAt`): drei
+  Funken fliegen vom Haken zur Kugel; die Scheibe flammt auf.
+- **Idee 2 – die Scheibe zeigt den Tag** (`formiTagesStand`, aus
+  `renderHome`): Stufe 0–4 nach dem Anteil, der heute erledigt ist
+  (Aufgaben + Putzplan). Die Scheibe wird heller und voller, das Loch
+  wächst über die Eigenschaft `scale` mit (bis +8 %) – die Gefühle
+  bewegen `transform`, beides stört sich nicht. Es ist der Fortschritt
+  des Teams, kein Vergleich zwischen Personen (Psychologie-Recherche:
+  Fortschritt sichtbar, keine Rangliste).
+- **Mehr Gefühle**: traurig (Träne; ein Haken wird zurückgenommen, Daumen
+  runter, offline), gelangweilt (nach 35 s Stille, einmal; Formi spielt
+  mit einem Krümel), verwirrt (Fragezeichen; nichts erkannt oder die
+  Antwort steht nicht im Studio-Wissen – „Formi sagt offen, wenn es
+  unsicher ist"), stolz, verliebt (Herzchen; „danke" an Formi, Daumen
+  hoch), schnarcht (im Schlaf alle 3 s ein Atemzug mit einem z).
+  Ist das Formi-Fenster offen, fühlt das Gesicht dort.
+- **Offline**: traurig, ein Satz, die Scheibe wird leise (`fk-offline`);
+  wieder online: Freude. Fehler: Formi erschrickt (seit Runde 186).
+
+**Warum so**
+- *Zwei Ausschnitte statt einer Maske.* Ein rechteckiger Ausschnitt
+  kostet nichts und lässt die Drehung dem Compositor. Die Hälften
+  überlappen um 1 px: an der schrägen Kante blieb sonst eine dunkle Naht
+  stehen (beim Ansehen gefunden).
+- *Die Funken enden genau am Horizont*, nicht 1–2 px davor: die letzte
+  Station liegt auf dem Rand, sonst hing es am Startabstand
+  (test-formi-physik fand 16,7 statt 15,1 px).
+- *Die Tagesstufe springt ohne Übergang* – genau dann, wenn die Funken
+  ankommen und die Scheibe aufflammt. Ein Übergang lief zudem als eigene
+  Animation in jede Zählung „läuft nichts mehr" hinein.
+
+**Gefunden und behoben: ein unsichtbares Gesicht, das sich drehte.**
+Der Nachtrag zu Runde 214 meldete 9,8 ms je Bild bei offenem Formi
+(1920 px, CPU ÷4). Gemessen nach Teilen: 4 ms davon kostete das kleine
+Gesicht im Fensterkopf, das unsichtbar ist, solange das grosse auf dem
+Startschirm steht – seine Scheibe drehte trotzdem. Jetzt steht sie dann.
+
+**Gemessen** (Arbeit je Bild, Hauptfaden, CPU ÷4, `test-formi-physik`)
+
+| | Kugel in Ruhe | Formi offen |
+|---|---|---|
+| Handy 390 | 4,8 ms | 5,8 ms |
+| Rechner 1440 | 5,3 ms | 5,3 ms |
+| Rechner 1920 | 5,8 ms | 5,0 ms |
+
+Zum Vergleich mit demselben Messweg der Stand vorher: offen 8,3–8,5 ms
+(1920), in Ruhe 4,0–4,5 ms (1440). Die Scheibe kostet in Ruhe also rund
+1 ms; offen ist es durch den Fund oben schneller als vorher.
+
+**Maus: gemessen, nicht geprüft.** Mit Mausbewegung über dem Inhalt
+misst dieser Weg 11–12 ms – aber auch der Stand VOR dieser Runde misst so
+9–10 ms. Die Spur zeigt, wofür: `UpdateLayoutTree` durch Hover-Regeln der
+Seite, 148 ms auf 40 Bewegungen, gleich viel mit und ohne Scheibe. Das ist
+ein eigener Befund für eine eigene Runde; der Test berichtet die Zahl,
+statt eine Grenze zu prüfen, die schon vorher nicht hielt.
+
+**Geprüft**
+- Neu: `tests/test-formi-physik.js` (55 Zusicherungen): Scheibe vor/hinter
+  dem Loch, Breite, Bahnen endlos und nur `transform`, Kepler-Folge,
+  Doppler an echten Lagen über eine Runde (links 0,84, rechts 0,33),
+  Kugel ≥ 44 × 44 per Hit-Test und Scheibe im Bild bei 320 … 1920 px in
+  beiden Dichten, kein Querlauf; Einfall (nie unter den Horizont,
+  schneller, dann langsamer, lang gezogen, erlischt); Funken vom Haken;
+  Tagesstufen; jedes neue Gefühl endlich, nur `transform`/`opacity`, mit
+  Zeichen, danach nichts übrig; Langeweile weckt nicht; Schlaf mit z,
+  das beim Aufwachen aufhört; Fenster offen; weniger Bewegung und
+  „Gefühle: Aus"; Leistung.
+- Angepasst, nicht gelockert (mit Zitat im Test): `test-formi-lebt` –
+  „landet in der Mitte" heisst jetzt „erlischt am Horizont", und
+  `formiBahn`/`formiDoppler` zählen wie `formiScheibe` als gewollter
+  Dauerlauf.
+- Grün: test-formi-lebt (169), test-formi-welt, test-formi-kumpel,
+  test-formi-platz, test-formi-angedockt, test-formi-verdeckt,
+  test-formi-lernt, test-stil-formi, test-gestaltung, test-knoepfe,
+  test-csp, test-abgeschnitten, test-quer, test-uebersicht,
+  test-leerzustand, test-block8, test-mitarbeiter.
