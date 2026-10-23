@@ -19921,7 +19921,7 @@ ein Mensch tun müsste; die Grenze bleibt 44 × 44, und der Knopf erfüllt sie.
 Inhalt; auf `main` 236 px Platz, jetzt 265 px — besser, aber nicht genug)
 und `test-navigation` (Startseite 2,19 Bildschirme).
 
-## Runde 218 — Formi schneller, weniger Dauerlob (Worker 2.20, 23.10.2026)
+## Runde 219 — Formi schneller, weniger Dauerlob (Worker 2.20, 23.10.2026)
 
 **Gemessen nach dem Einspielen von 2.19** (`/api/probe`, 4 Fragen):
 gpt-oss-120b antwortet richtig — „Westen waschen" aus dem Wissen, „was
