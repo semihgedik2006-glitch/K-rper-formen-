@@ -20936,3 +20936,84 @@ Abrechnung ist. Ob gpt-oss `usage` mitliefert, ist nicht nachgesehen.
 Ohne `usage` schätzt der Worker aus der Textlänge, und das Nachdenken des
 Modells fehlt dann in der Rechnung. Abgleichen lässt es sich im
 Cloudflare-Dashboard unter Workers AI.
+
+## Runde 235 — Formi Etappe 3: Formulare und Formi meldet sich selbst (23.10.2026)
+
+Aus dem Betrieb, auf die Rückfragen zu Etappe 3:
+- Formulare: „Gerät defekt melden, Material nachbestellen, Urlaub/Frei
+  beantragen, Probetraining eintragen".
+- Melden bei: „Morgens: dein Tag, Fällig & überfällig, Fehlendes
+  Material/Defekt, Schichtende-Check".
+- Wie oft: „So oft wie nötig".
+
+**Formulare über Formi** (immer erst Vorschau, dann der Knopf; geschrieben
+mit den eigenen Rechten, in denselben Feldern wie das Formular)
+- Defekt und Urlaub/Frei gab es schon.
+- Neu „material":
+  - „nur noch 2 Westen M" setzt Ist auf 2.
+  - „es fehlen 3 Gurte" setzt bei gesetztem Soll Ist = Soll − 3, ohne
+    Soll die Fehl-Menge.
+  - Die Vorschau zeigt alt → neu.
+  - Geschrieben wird nur dieser Artikel: frisch gelesen, dann
+    gespeichert.
+- Neu „probe": Datum (heute oder bis 30 Tage zurück), Abschluss ja/nein,
+  Notiz ohne Kundennamen. Eingetragen auf die Person selbst, Felder wie
+  `speichereProbe`.
+- „Im Formular bearbeiten" öffnet das Material bzw. das
+  Probetraining-Fenster, schon ausgefüllt.
+
+**Formi meldet sich** (Art „Formi meldet sich" je Gerät, voreingestellt
+an)
+- 07:00 „dein Tag": an alle mit Dienst heute. Inhalt: Dienst, wie viele
+  Aufgaben überfällig bzw. heute fällig sind, offene Putzpunkte.
+- Alle 30 Minuten zwischen 7 und 21 Uhr „Frist vorbei": eine Aufgabe,
+  deren Frist gerade verstrichen ist. Sie geht an die zugewiesene Person,
+  sonst an die, die JETZT im Studio Dienst haben.
+- Alle 15 Minuten der Feierabend-Check: wessen Schicht gerade endete und
+  bei wem noch die Übergabe fehlt oder Putzpunkte offen sind. Ist alles
+  erledigt, kommt keine Meldung.
+- Sofort bei einer Defektmeldung und wenn bei einem Artikel jetzt mehr
+  fehlt als vorher: an die Leitung dieses Studios und den Chef. Wer
+  selbst gemeldet hat, bekommt nichts.
+
+**Warum so**
+- „So oft wie nötig" heisst: jeder Anlass genau einmal. Das sind der
+  Morgen, eine Frist im letzten Fenster, ein Schichtende und eine neue
+  Meldung. Eine Erinnerung, die alle halbe Stunde dasselbe sagt, schaltet
+  man ab.
+- Die Frist geht an die, die gerade da sind: Wer nicht im Dienst ist,
+  kann nichts tun. Ist niemand im Dienst, reicht die Morgenmeldung.
+- Der bestehende 07:30-Hinweis auf fällige Aufgaben (`dueTaskReminder`,
+  ans ganze Studio) bleibt. Wer an dem Tag Dienst hat, bekommt dadurch
+  zwei Morgenmeldungen. Das ist bewusst so stehen gelassen, bis es jemand
+  als zu viel meldet: Die Art „Neue Aufgaben" lässt sich getrennt
+  abschalten.
+- Nur Zeitpläne über `alleFirmen()`: Die Schichten und Aufgaben liegen
+  unter `firmen/<k>/`, flach gibt es sie nicht mehr
+  (`test-funktionen-pfade`).
+
+**Geprüft**
+- `test-gehirn-aktion` 139: material, probe, die Texte, Material-Vergleich,
+  Fristfenster, Schichtende-Fenster.
+- `rules/funktionen.test.js` 264 gegen den Emulator, für alle fünf
+  Meldungen, jeweils mit Gegenprobe:
+  - Gerät aus: keine Meldung.
+  - Ohne Dienst: keine Meldung.
+  - Schicht vorbei: keine Meldung.
+  - Alles erledigt: keine Meldung.
+  - Defekt „behoben": keine Meldung.
+  - Material aufgefüllt: keine Meldung.
+  - Fremde Leitung und der Meldende selbst bekommen nichts.
+- `test-formi-etappe3` 43:
+  - Vorschau schreibt nichts.
+  - Material ändert nur den einen Artikel.
+  - „fehlen 3" bei Soll 20 ergibt Ist 17.
+  - Probetraining mit den Feldern des Formulars.
+  - Der Schalter in den Mitteilungen ist da.
+  - Knöpfe treffen mit mindestens 44 × 44 und sind im Bild, bei 320 /
+    390 / 430 / 820 / 1280 / 1440 / 1920 px, normal und kompakt.
+- `test-funktionen-pfade` grün.
+
+**Nicht geprüft**
+- Ob die Meldungen auf einem echten Handy ankommen.
+- Wie die echte KI die neuen Sätze einordnet.
