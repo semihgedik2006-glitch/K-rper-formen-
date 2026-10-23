@@ -585,6 +585,40 @@ weiterhin die Geschäftsführung mit „Zuordnung reparieren".
   Zeit selbst druckt er nur aus, weil er neben einem zweiten Browser
   läuft.
 
+## P-19 · Formis Streifen kostet die Startseite am Handy eine Zeile
+
+| | |
+|---|---|
+| **Schweregrad** | **NIEDRIG** — nichts geht verloren, es wird nur gescrollt |
+| **Gemessen** | 23.10.2026, 03:40 Uhr, Stand nach Runde 221 |
+| **Tests** | `test-navigation` (alte Startseite) und `test-neu-design` (320 × 568) — beide rot, auf `main` genauso |
+
+Am Handy hält `.main` unter jeder Seite 146 px frei (Leiste 72 px +
+Kugel 58 px + Abstand), damit die Formi-Kugel nichts verdeckt. Auf der
+**neuen** Startseite sitzt Formi seit Runde 218 neben der
+Schnellzugriff-Reihe; dort ist der Streifen weg. Zwei Fälle bleiben:
+
+- **Alte Startseite** (ohne `?neu=1`, 390 × 844, Mitarbeiter): 1.110 px
+  Inhalt in 508 px Platz = 2,19 Bildschirme, erlaubt sind 1,9. Ohne den
+  Streifen wären es 582 px Platz — 1,91, also immer noch knapp darüber.
+  Der Streifen allein ist es nicht; die alte Startseite ist auch selbst
+  gewachsen (Formi-Zeile 102 px, Übergabe 211 px).
+- **Neue Startseite bei 320 × 568** (z. B. iPhone SE, 1. Generation):
+  341 px Inhalt in 265 px Platz. Die Schnellzugriff-Reihe ist bei dieser
+  Höhe ausgeblendet, also gibt es keine Reihe, neben der Formi sitzen
+  könnte. Ohne Streifen wären es 339 px Platz — 2 px zu wenig.
+
+**Warum nicht in der Nacht entschieden:** Beides heisst, etwas
+wegzunehmen oder Formi woanders hinzusetzen. Das ist eine
+Gestaltungsfrage für den Betrieb und keine Messkorrektur. Die
+Testgrenzen bleiben, wie sie sind.
+
+**Vorschlag:** Auf der alten Startseite ersetzt die Formi-Zeile oben die
+Kugel. Formi ist dort schon zu sehen, und ein Tipp auf das Gesicht
+öffnet Formi. Dazu wird die Übergabe auf zwei Zeilen gekürzt. Bei
+320 × 568 kommen die „Ausserdem“-Knöpfe in eine Zeile, die sich
+waagerecht schieben lässt.
+
 ---
 
 ## Behoben

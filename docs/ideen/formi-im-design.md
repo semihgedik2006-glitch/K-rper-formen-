@@ -527,9 +527,9 @@ welcher die app übernimmt“.
 sowie Glitch statt Lichtkante (Idee 5, als Glitch umgesetzt). Einzelheiten
 stehen in `docs/FORTSCHRITT.md`, Runde 186.
 
-**Gebaut in Runde 223:** „Zeig mir wie“ mit Formis Ring als Scheinwerfer
+**Gebaut in Runde 227:** „Zeig mir wie“ mit Formis Ring als Scheinwerfer
 (Idee 11). Es gibt fünf Rundgänge in der echten App. Formi erkennt sie
 ohne KI. Das Ziel bleibt antippbar, und die Karte liegt nie auf dem Ziel.
-Einzelheiten stehen in `docs/FORTSCHRITT.md`, Runde 223. Offen sind noch
+Einzelheiten stehen in `docs/FORTSCHRITT.md`, Runde 227. Offen sind noch
 Idee 8 („Seit deiner letzten Schicht“) und Idee 14 (Push mit Formis
 Stimme).
