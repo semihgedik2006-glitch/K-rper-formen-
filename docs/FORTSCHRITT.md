@@ -22202,3 +22202,51 @@ offen hier genannt).
 **Nicht getestet:** echtes iPhone, echtes Android. Die Messungen sind
 Chromium mit CPU ÷4 — wie viel es auf einem bestimmten Gerät bringt,
 steht hier nicht.
+
+## Runde 252 — Grosser Titel, der beim Scrollen schrumpft (23.10.2026)
+
+Achter Bauschritt aus dem Plan „Studio Chat wie von Apple“: „Grosser Titel
+34 px fett, links, schrumpft beim Scrollen in die Kopfleiste (wie in Mail
+und Einstellungen)“.
+
+**Was schon da war.** Der Bereichskopf rückte beim Scrollen bereits
+zusammen (`.eng`, Bewegung per FLIP in `bereichKopfEng`, kein Übergang auf
+Layout-Eigenschaften). Es fehlten die Grössen: oben 1,85rem (29,6 px)
+in normaler Stärke, gescrollt 1,2rem. Apples Leiter sagt 34 px fett für
+den grossen Titel und 17 px halbfett für den Titel in der Kopfleiste.
+
+**Geändert.**
+- Neue Stufe `--t-3xl: 2.125rem` (34 px) in der Leiter, nur für diesen Titel.
+- Titel oben 34 px, `font-weight:700`; gescrollt `--t-md` (16,5 px im
+  neuen Schnitt) mit 600. Dieselben Werte für „Heute“ und „Nachrichten“
+  am Handy, die von Anfang an schmal stehen (Runden 218/236 — dabei
+  bleibt es, der Platz gehört dem Tag und dem Verlauf).
+- Damit der Kopf nicht höher wird, oben 4 px und unten 2 px weniger
+  Rand: er bleibt bei 85 px. Das war die Falle aus Runde 241 (die
+  Team-Seite rollt bei 390 px, sobald oben etwas über 7 px wächst).
+- Bis 360 px bleibt der Titel bei 1,45rem — „Aufgaben“ in 34 px passt
+  dort nicht neben Griff, Zeichen und Plus.
+- Im Stil Formi bleibt der Titel im Verlauf (Formi-Farben als Akzent,
+  entschieden 23.10.); die Grösse ist Apples.
+
+**Nicht gemacht, mit Grund:** ein Schrumpfen, das stufenlos dem Finger
+folgt (iOS skaliert den Titel mit der Scroll-Lage). Im Browser ginge das
+mit scroll-gesteuerten Animationen — der Kopf liegt aber ausserhalb des
+Scroll-Bereichs, und eine Skalierung ändert seine Höhe nicht: der Platz,
+den der kleine Titel freigeben soll, käme erst mit einem Layout-Sprung.
+Das bestehende Umschalten mit FLIP ist ein Layout statt eines je Bild
+und lief bisher ohne Beschwerde.
+
+**Test:** neu `tests/test-grosser-titel.js`, 76 grün: in allen fünf
+Bereichen bei 320 / 390 / 430 / 820 / 1280 / 1440 / 1920 px oben 34 px
+fett (bis 360: 1,45rem), ganz zu lesen, Kopf ≤ 86 px; gescrollt 17 px
+halbfett und niedriger; zurück oben wieder gross. Der Plan springt beim
+Öffnen auf heute und steht darum zu Recht klein da (geprüft, dann nach
+oben). Im Chat am Handy hat der Verlauf seinen eigenen Kopf. Kopf als
+Knopf ≥ 44 × 44 per Hit-Test in normal und kompakt bei 320/390/820/1440.
+Am Rechner scrollen „Studio“ und „Plan“ in der Demo nicht weit genug zum
+Schrumpfen (unter 90 px Überhang — dann schrumpft er absichtlich nicht);
+dort ist es an „Zeiten“ geprüft.
+
+**Nicht getestet:** echtes iPhone; die Kontrastmessung des Titels im
+Verlauf ist unverändert gegenüber Runde 241 (Farben nicht angefasst).
