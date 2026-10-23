@@ -145,7 +145,9 @@ function punkte(s) {
 
      Geprüft wird der VERGLEICH in derselben Seite: einmal mit den
      Federn, einmal mit den alten Kurven (per Stilblock zurückgesetzt),
-     abwechselnd, je zweimal. Die Federn dürfen nicht mehr kosten.
+     abwechselnd A-B-B-A, je viermal, verglichen wird der Median. Die
+     Federn dürfen nicht mehr kosten (Spielraum 2 ms, die Streuung
+     zwischen zwei Läufen lag bei ±3 ms im Mittel).
 
      Die absolute Zahl liegt schon auf main über 8,3 ms (13,8–14,8 ms
      bei 390 px, 18,5–20,1 ms bei 1440 px, gemessen am 23.10.2026). Sie
@@ -185,10 +187,18 @@ function punkte(s) {
       return arbeit * 1000 / bilder;
     };
     const feder = [], alt = [];
-    for (let i = 0; i < 2; i++) { feder.push(await runde(false)); alt.push(await runde(true)); }
-    const mittel = (x) => Math.round(x.reduce((s, v) => s + v, 0) / x.length * 10) / 10;
+    /* Reihenfolge A-B-B-A: die erste Runde einer Seite ist teurer
+       (Caches kalt) — immer mit den Federn anzufangen hätte sie
+       benachteiligt. */
+    for (let i = 0; i < 2; i++) {
+      feder.push(await runde(false)); alt.push(await runde(true));
+      alt.push(await runde(true)); feder.push(await runde(false));
+    }
+    /* Median statt Mittel: ein einzelner Ausreisser (Speicherbereinigung,
+       ein Nachbarprozess) verschiebt das Mittel um mehrere ms. */
+    const mittel = (x) => { const y = [...x].sort((a, b) => a - b); return Math.round((y[1] + y[2]) / 2 * 10) / 10; };
     const mf = mittel(feder), ma = mittel(alt);
-    console.log('  · ' + w + ' px: Federn ' + mf + ' ms je Bild, alte Kurven ' + ma + ' ms (je 2 × 5 Wechsel; Grenze 8,3 ms — siehe Kommentar)');
+    console.log('  · ' + w + ' px: Federn ' + mf + ' ms je Bild, alte Kurven ' + ma + ' ms (Median aus je 4 × 5 Wechseln; Grenze 8,3 ms — siehe Kommentar)');
     pruefe(w + ' px: die Federn kosten nicht mehr als die alten Kurven (' + mf + ' gegen ' + ma + ', Spielraum 2 ms)', mf <= ma + 2);
     pruefe(w + ' px: ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await p._ctx.close();

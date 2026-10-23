@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-YMAWgiHBKXu2u2cmjbHRnz5wj+pv6COe56M+dcJ1TRw='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-yWYPZ5/feAeOFdltpUErraX3v8cvu3B5LNHH2CICUzE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -323,16 +323,20 @@
                           Formi gehört einer anderen Sitzung.
    Die Werte sind eine echte gedämpfte Schwingung, abgetastet in
    linear() (die Rechnung steht in docs/FORTSCHRITT.md, Runde 247):
-   eingeschwungen auf 0,1 % genau am Ende der Dauer. Browser ohne
+   eingeschwungen auf 0,1 % genau am Ende der Dauer. Runde 249: nur so
+   viele Stützpunkte, dass die Kurve höchstens 1 % (fest, formi) bzw.
+   0,5 % (weich, damit das Nachschwingen bleibt) abweicht — 10 / 17 / 11
+   statt 29. Jede Stilneuberechnung liest die Kurve neu ein; mit 29
+   Punkten kostete ein Seitenwechsel im Median 1–2 ms je Bild mehr. Browser ohne
    linear() (Safari < 17.2) behalten die alten Kurven.
 
    Die alten Namen bleiben als Verweise — über 200 Stellen umzuschreiben
    hätte nichts verbessert, nur den Unterschied verdeckt. */
 @supports (transition-timing-function:linear(0,1)){
   :root{
-    --feder-fest:linear(0, 0.001 0.5%, 0.008 1.5%, 0.028 2.8%, 0.064 4.4%, 0.117 6.4%, 0.186 8.5%, 0.266 10.9%, 0.353 13.5%, 0.443 16.3%, 0.531 19.3%, 0.613 22.4%, 0.687 25.8%, 0.752 29.3%, 0.808 33%, 0.853 36.8%, 0.89 40.8%, 0.919 45%, 0.942 49.3%, 0.958 53.8%, 0.971 58.4%, 0.98 63.1%, 0.986 68%, 0.991 73%, 0.994 78.1%, 0.996 83.4%, 0.997 88.8%, 0.998 94.3%, 1);
-    --feder-weich:linear(0, 0.001 0.5%, 0.007 1.5%, 0.023 2.8%, 0.053 4.4%, 0.099 6.4%, 0.161 8.5%, 0.236 10.9%, 0.322 13.5%, 0.414 16.3%, 0.507 19.3%, 0.597 22.4%, 0.681 25.8%, 0.756 29.3%, 0.82 33%, 0.873 36.8%, 0.916 40.8%, 0.948 45%, 0.971 49.3%, 0.987 53.8%, 0.997 58.4%, 1.003 63.1%, 1.005 68%, 1.006 73%, 1.006 78.1%, 1.005 83.4%, 1.004 88.8%, 1.003 94.3%, 1);
-    --feder-formi:linear(0, 0.001 0.5%, 0.01 1.5%, 0.034 2.8%, 0.078 4.4%, 0.145 6.4%, 0.233 8.5%, 0.339 10.9%, 0.456 13.5%, 0.575 16.3%, 0.69 19.3%, 0.793 22.4%, 0.88 25.8%, 0.948 29.3%, 0.997 33%, 1.027 36.8%, 1.042 40.8%, 1.046 45%, 1.042 49.3%, 1.034 53.8%, 1.024 58.4%, 1.016 63.1%, 1.008 68%, 1.003 73%, 1 78.1%, 0.998 83.4%, 0.998 88.8%, 0.998 94.3%, 1);
+    --feder-fest:linear(0, 0.02 2.3%, 0.082 5.1%, 0.462 16.9%, 0.637 23.4%, 0.766 30.1%, 0.861 37.5%, 0.93 46.9%, 0.971 58.6%, 1);
+    --feder-weich:linear(0, 0.006 1.4%, 0.023 2.9%, 0.095 6.2%, 0.187 9.3%, 0.511 19.4%, 0.607 22.8%, 0.688 26.1%, 0.756 29.3%, 0.814 32.6%, 0.863 36%, 0.903 39.6%, 0.938 43.6%, 0.965 48.1%, 0.997 58.6%, 1.006 72%, 1);
+    --feder-formi:linear(0, 0.027 2.5%, 0.111 5.5%, 0.591 16.7%, 0.783 22.1%, 0.916 27.5%, 0.999 33.2%, 1.035 38.4%, 1.046 44.6%, 1.003 72.9%, 1);
     --ease-ios:var(--feder-fest);
     --ease-out:var(--feder-fest);
     --spring:var(--feder-weich);
@@ -9712,6 +9716,104 @@ body.neu .td-erledigt > .todo + .todo::after,body.neu .td-erledigt > .pp-item + 
 @media(min-width:821px) and (hover:hover){
   body.neu .bereich-zeile .kopf-plus:hover{background:var(--brand);filter:brightness(1.08)}
 }
+/* ── 10. Chat wie iMessage (Runde 249, 23.10.2026) ────────────────
+   Plan „Studio Chat wie von Apple", Schritt Chat. Vorbild ist das
+   Probebild 3-chat-handy.png, zu dem es aus dem Betrieb hiess: „genau
+   so hab ichs mir vorgestellt". Seit 15:18: „es soll einfach den
+   ganzen plan erledigen".
+
+   - Blasen ohne Rahmen, rund (--r-lg); fremde grau, eigene in der
+     Akzentfarbe mit --on-accent (dasselbe Paar wie der Hauptknopf,
+     test-akzent misst es für jede Akzentfarbe).
+   - Name · Studio und Uhrzeit stehen ÜBER der Blase, klein und leise,
+     statt eines Kopfes mit Pille darin.
+   - Folgen Nachrichten derselben Person, rücken sie auf 2 px zusammen;
+     die Ecken zur Absenderseite werden klein, nur die letzte behält
+     die runde Ecke unten.
+   - Eigene Nachrichten: Uhrzeit und Häkchen UNTER der Blase, auf dem
+     Hintergrund — dort bleiben die Farben der Häkchen lesbar („Jeder,
+     genau wie bei WhatsApp", 27.9.2026). Bei mehreren eigenen
+     hintereinander nur unter der letzten: deren Stand gilt für die
+     davor mit (gelesen heisst bis dahin gelesen). Wer es genau wissen
+     will: „Gelesen von …" im Menü.
+   - Umfragen und Sprachnachrichten in eigener Blase behalten die
+     getönte Fläche: ihre Balken und Knöpfe sind selbst Akzentfarbe. */
+body.neu .chat-scroll .msg{border-color:transparent;background:var(--bg-3);border-radius:var(--r-lg);
+  box-shadow:none;padding:var(--s8) var(--s12)}
+body.neu .chat-scroll .msg.mine:not(:has(.poll-opt)):not(:has(.sp)){background:var(--accent);color:var(--on-accent)}
+body.neu .chat-scroll .msg.mine:not(:has(.poll-opt)):not(:has(.sp)) > :not(.meta):not(.meta-min){--text:var(--on-accent);--text-2:var(--on-accent);
+  --text-3:var(--on-accent);--accent:var(--on-accent);--accent-2:var(--on-accent);--accent-d:var(--on-accent)}
+body.neu .chat-scroll .msg.mine:not(:has(.poll-opt)):not(:has(.sp)) .mention{background:none;text-decoration:underline}
+body.neu .chat-scroll .msg.mine:has(.poll-opt),body.neu .chat-scroll .msg.mine:has(.sp){background:var(--tipp-2)}
+body.neu .chat-scroll .msg.mentioned{box-shadow:inset 0 0 0 2px var(--accent)}
+
+/* Name · Studio, Uhrzeit: über der Blase */
+body.neu .chat-scroll .msg:not(.mine):not(.grp){margin-top:calc(var(--s16) + var(--s4))}
+body.neu .chat-scroll .msg:not(.mine) > .meta{position:absolute;left:var(--s12);bottom:100%;margin:0 0 var(--s2);
+  width:max-content;max-width:calc(100vw - var(--rand) * 2 - var(--s12));flex-wrap:nowrap;gap:var(--s4)}
+body.neu .chat-scroll .msg > .meta .chat-author{font-family:var(--font-body);font-size:var(--t-xs);font-weight:500;
+  letter-spacing:normal;color:var(--text-3)}
+body.neu .chat-scroll .msg > .meta .tag{background:none;padding:0;text-transform:none;letter-spacing:normal;
+  font-weight:500;font-size:var(--t-xs);color:var(--text-3)}
+body.neu .chat-scroll .msg > .meta .tag::before{content:'· '}
+body.neu .chat-scroll .msg > .meta time{margin-left:var(--s6)}
+
+/* Eigene: Uhrzeit und Häkchen unter der Blase */
+body.neu .chat-scroll .msg.mine > .meta .chat-author,body.neu .chat-scroll .msg.mine > .meta .tag{display:none}
+body.neu .chat-scroll .msg.mine > .meta,body.neu .chat-scroll .msg.mine > .meta-min{position:absolute;right:var(--s4);top:100%;
+  margin:var(--s2) 0 0;width:max-content;flex-wrap:nowrap;justify-content:flex-end}
+body.neu .chat-scroll .msg.mine > .meta time{margin-left:0}
+body.neu .chat-scroll .msg.mine:not(:has(+ .msg.mine.grp)){margin-bottom:calc(var(--s16) + var(--s2))}
+body.neu .chat-scroll .msg.mine:has(+ .msg.mine.grp) > .meta,body.neu .chat-scroll .msg.mine:has(+ .msg.mine.grp) > .meta-min{display:none}
+
+/* Zusammenrücken, kleine Ecken zur Absenderseite */
+body.neu .chat-scroll .msg.grp{margin-top:calc(var(--s2) - var(--s8))}
+body.neu .chat-scroll .msg.grp:not(.mine){border-top-left-radius:var(--r-xs)}
+body.neu .chat-scroll .msg:not(.mine):has(+ .msg.grp:not(.mine)){border-bottom-left-radius:var(--r-xs)}
+body.neu .chat-scroll .msg.grp.mine{border-top-left-radius:var(--r-lg);border-top-right-radius:var(--r-xs)}
+body.neu .chat-scroll .msg.mine:has(+ .msg.mine.grp){border-bottom-right-radius:var(--r-xs)}
+
+/* ── Das Menü an der Nachricht wie ein Kontextmenü (Runde 249) ──
+   Bisher ein Blatt von unten, das die Nachricht nur als Textzeile
+   zeigte. Wie bei Apple steht es jetzt AN der Nachricht: oben die
+   Reaktionen als Kapsel, darunter die Nachricht, darunter die Einträge
+   als eine gerundete Gruppe mit Haarlinien. Am Rechner öffnet auch die
+   rechte Maustaste es, an der Stelle des Zeigers.
+   Hinaus: daneben tippen oder Esc (wie bisher). „Abbrechen" ist im
+   Dokument, aber ausgeblendet — Apples Kontextmenü hat keins.
+   Position: msgBlattPlatzieren() misst im nächsten Bild und schreibt
+   --ms-x / --ms-y; bis dahin ist die Karte unsichtbar. */
+body.neu .msg-sheet.am-ort{align-items:flex-start;justify-content:flex-start}
+body.neu .msg-sheet.am-ort .ms-card{position:absolute;left:var(--ms-x,0);top:var(--ms-y,0);width:min(300px, calc(100vw - var(--s12) * 2));
+  max-width:none;max-height:calc(100vh - var(--s12) * 2);display:flex;flex-direction:column;gap:var(--s8);
+  background:none;border:none;border-radius:0;box-shadow:none;padding:0;overflow:visible;
+  animation:none;transform-origin:var(--ms-ursprung,50% 0)}
+body.neu .msg-sheet.am-ort:not(.platziert) .ms-card{visibility:hidden}
+body.neu .msg-sheet.am-ort.platziert .ms-card{animation:msPop .32s var(--feder-weich, var(--spring)) backwards}
+@keyframes msPop{from{opacity:0;transform:scale(.9)}}
+body.neu .msg-sheet.am-ort .ms-react{order:-1;align-self:stretch;justify-content:space-between;gap:var(--s2);padding:var(--s4);
+  background:var(--bg-2);border:1px solid var(--line-2);border-radius:var(--r-pille);box-shadow:var(--e3)}
+body.neu .msg-sheet.am-ort .ms-emoji{flex:0 0 auto;width:44px;height:44px;min-height:0;padding:0;border-color:transparent;
+  background:none;border-radius:var(--r-rund)}
+body.neu .msg-sheet.am-ort .ms-emoji.on{background:rgba(var(--akz-rgb),.2)}
+body.neu .msg-sheet.am-ort .ms-head{padding:var(--s8) var(--s12);background:var(--bg-3);border:none;border-radius:var(--r-lg);
+  box-shadow:var(--e3)}
+body.neu .msg-sheet.am-ort .ms-head b{font-family:var(--font-body);font-size:var(--t-xs);font-weight:500;color:var(--text-3)}
+body.neu .msg-sheet.am-ort .ms-head p{white-space:normal;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;
+  color:var(--text);font-size:var(--t-md)}
+body.neu .msg-sheet.am-ort .ms-acts{padding:0;gap:0;background:var(--bg-2);border:1px solid var(--line-2);
+  border-radius:var(--r-md);box-shadow:var(--e3);overflow:hidden}
+body.neu .msg-sheet.am-ort .ms-act{min-height:44px;padding:0 var(--s16);border-radius:0;justify-content:space-between;
+  flex-direction:row-reverse;font-size:var(--t-md)}
+body.neu .msg-sheet.am-ort .ms-act + .ms-act{border-top:1px solid var(--line)}
+body.neu .msg-sheet.am-ort .ms-ico{width:auto;color:var(--text-2)}
+body.neu .msg-sheet.am-ort .ms-act.warn .ms-ico{color:inherit}
+body.neu .msg-sheet.am-ort .ms-info{background:var(--bg-2);border:1px solid var(--line-2);border-radius:var(--r-md);
+  padding:var(--s8) var(--s12);box-shadow:var(--e3)}
+body.neu .msg-sheet.am-ort #msSheetClose{display:none}
+/* Formis Sprechblase liegt sonst über dem Menü (die Kugel selbst wird
+   schon versteckt, siehe „body:has(.msg-sheet.show) .formi-kugel"). */
+body:has(.msg-sheet.show) .formi-blase{visibility:hidden}
 </style>
 </head>
 <body>
@@ -22235,6 +22337,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-23-chat-blasen', datum:'23.10.2026', titel:'Nachrichten sehen aus wie auf dem iPhone', wo:'chat', punkte:[
+    'Im Chat stehen die Nachrichten jetzt als runde Blasen ohne Rahmen: die der anderen grau, deine eigenen in deiner Akzentfarbe. Name, Studio und Uhrzeit stehen klein über der Blase.',
+    'Schreibt jemand mehrere Nachrichten hintereinander, rücken sie eng zusammen. Uhrzeit und Häkchen deiner eigenen Nachrichten stehen unter der letzten.',
+    'Tippst du auf eine Nachricht, öffnet sich das Menü direkt an ihr: oben die Reaktionen, darunter Antworten, Weiterleiten, Kopieren und mehr. Am Rechner geht es auch mit der rechten Maustaste.'
+  ]},
   { id:'2026-10-23-schulung-bescheinigung', datum:'23.10.2026', titel:'Schulung: deine eigene Bescheinigung zum Drucken', wo:'schulung', punkte:[
     'Unter Wissen → Schulung, im Kasten „Schon geschafft" (bisher „Was du schon gemacht hast"), steht rechts oben ein Drucker-Zeichen: „Bescheinigung drucken". Es druckt ein Blatt mit allen Schulungen, die du bestanden hast – mit Datum, Ergebnis, Dauer und bis wann sie gilt.',
     'Was als Pflicht noch offen ist, steht ehrlich darunter. Unten ist Platz, damit die Studioleitung unterschreibt.'
@@ -36844,7 +36951,7 @@ function atUebernehmen(i){
    Symbolknöpfe in der Kopfzeile der Blase wären 21 × 19 Pixel gross und
    unbeschriftet — weit unter dem, was ein Daumen sicher trifft. */
 var _blattMsg=null;
-function msgBlattOeffnen(m){
+function msgBlattOeffnen(m, anker){
   if(!m) return;
   _blattMsg=m;
   var blatt=$('msgSheet'); if(!blatt) return;
@@ -36878,9 +36985,48 @@ function msgBlattOeffnen(m){
       '<span class="ms-ico">'+e.ico+'</span><span>'+esc(e.txt)+'</span></button>';
   }).join('');
   blatt.classList.add('show');
+  msgBlattPlatzieren(blatt, anker, mine);
   tick(8);
 }
-function msgBlattSchliessen(){ var b=$('msgSheet'); if(b) b.classList.remove('show'); _blattMsg=null; }
+/* ── Das Menü AN der Nachricht (Runde 249) ──
+   Im neuen Aussehen steht das Menü wie Apples Kontextmenü dort, wo die
+   Nachricht ist: die Vorschau deckt die Blase, die Reaktionen stehen
+   darüber, die Einträge darunter. anker = {el} (Tipp auf die Blase)
+   oder {x, y} (rechte Maustaste am Rechner).
+   Gemessen wird im NÄCHSTEN Bild, gebündelt: erst beide Rechtecke
+   lesen, dann die zwei Werte schreiben (CLAUDE.md, „Flüssig heisst
+   konkret"). Bis dahin ist die Karte unsichtbar (.am-ort ohne
+   .platziert). Ohne Anker, im alten Aussehen oder ohne Platz bleibt es
+   das Blatt von unten. */
+function msgBlattPlatzieren(blatt, anker, mine){
+  blatt.classList.remove('platziert');
+  var amOrt = !!anker && layoutNeu();
+  blatt.classList.toggle('am-ort', amOrt);
+  if(!amOrt) return;
+  requestAnimationFrame(function(){
+    if(!blatt.classList.contains('show')) return;
+    var karte=blatt.querySelector('.ms-card'), reakt=$('msSheetReact');
+    var k=karte.getBoundingClientRect();
+    var rh=reakt && !reakt.hidden ? reakt.getBoundingClientRect().height : 0;
+    var r=anker.el ? anker.el.getBoundingClientRect() : null;
+    var B=window.innerWidth, H=window.innerHeight, rand=12, abstand=8;
+    var x, y;
+    if(r){
+      y = r.top - (rh ? rh + abstand : 0);
+      x = mine ? r.right - k.width : r.left;
+    } else {
+      x = anker.x; y = anker.y;
+    }
+    var maxX=Math.max(rand, B - k.width - rand), maxY=Math.max(rand, H - k.height - rand);
+    x=Math.min(Math.max(x, rand), maxX);
+    y=Math.min(Math.max(y, rand), maxY);
+    blatt.style.setProperty('--ms-x', Math.round(x)+'px');
+    blatt.style.setProperty('--ms-y', Math.round(y)+'px');
+    blatt.style.setProperty('--ms-ursprung', (mine ? '100% ' : '0 ') + (r ? Math.round(r.top - y + r.height/2) : 0) + 'px');
+    blatt.classList.add('platziert');
+  });
+}
+function msgBlattSchliessen(){ var b=$('msgSheet'); if(b) b.classList.remove('show','am-ort','platziert'); _blattMsg=null; }
 
 function msgBlattAktion(was){
   var m=_blattMsg; if(!m) return;
@@ -37038,7 +37184,22 @@ function bindMessageTools(box){
       var el=e.target.closest && e.target.closest('.msg');
       if(!el) return;
       var m=(_curMsgs||[]).filter(function(x){ return x.id===el.dataset.mid; })[0];
-      msgBlattOeffnen(m);
+      msgBlattOeffnen(m, {el:el});
+    });
+    /* Am Rechner: rechte Maustaste öffnet dasselbe Menü am Zeiger.
+       Auf Bild, Link oder markiertem Text bleibt das Menü des Browsers
+       (Bild speichern, Link kopieren, Text kopieren). */
+    box.addEventListener('contextmenu',function(e){
+      if(!layoutNeu()) return;
+      if(e.target.closest('img,a,audio,[data-sp]')) return;
+      var sel=window.getSelection && String(window.getSelection());
+      if(sel) return;
+      var el=e.target.closest && e.target.closest('.msg');
+      if(!el) return;
+      var m=(_curMsgs||[]).filter(function(x){ return x.id===el.dataset.mid; })[0];
+      if(!m) return;
+      e.preventDefault();
+      msgBlattOeffnen(m, {x:e.clientX, y:e.clientY});
     });
     chatWischen(box);
     chatAntwortKnopf(box);
