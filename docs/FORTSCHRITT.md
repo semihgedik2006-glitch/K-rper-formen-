@@ -19946,3 +19946,20 @@ dessen `sw.js` für das Update verändert wird: erstes Öffnen 1× geladen
 **Warum die anderen Tests das nicht sahen:** fast alle setzen
 `serviceWorkers:'block'`. Das ist für stabile Messungen richtig, verbirgt
 aber genau diesen Weg — deshalb der eigene Test ohne Sperre.
+
+## Runde 220 — Formi schneller, weniger Dauerlob (Worker 2.20, 23.10.2026)
+
+**Gemessen nach dem Einspielen von 2.19** (`/api/probe`, 4 Fragen):
+gpt-oss-120b antwortet richtig — „Westen waschen" aus dem Wissen, „was
+ist offen + welche Schulung fehlt" genau aus der App-Lage, eine
+Instagram-Caption frei, „Preis 12-Monats-Vertrag" ohne erfundenen
+Studiopreis. Aber: 5,7 / 10,1 / 15,6 / 17,6 s je Antwort, und an fast
+jede Antwort hängte Formi ein „Stark!".
+
+**Geändert**
+- gpt-oss wird mit `reasoning: { effort: "low" }` gefragt. Ob Workers AI
+  den Parameter so annimmt, steht nicht in der Doku; lehnt es ab, geht
+  dieselbe Frage ohne ihn noch einmal raus (nicht gleich ans schwächere
+  Modell). `/api/probe` kann mit `ohneDenken` vergleichen.
+- Lob nur noch, wenn jemand etwas geschafft hat. Keine Quellenhinweise
+  wie „im Video".
