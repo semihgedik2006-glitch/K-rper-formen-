@@ -1,4 +1,4 @@
-/* ── Mein Konto (Runde 216) ───────────────────────────────────────────
+/* ── Mein Konto (Runde 222) ───────────────────────────────────────────
    Aus dem Betrieb, 23.10.2026: „mitarbeiter können sich nur einstempeln
    und ihre eigenen stunden sehen ob plus oder minus und halt alles was
    sie sonst bräuchten".

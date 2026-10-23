@@ -48,7 +48,7 @@ const ansicht = page => page.evaluate(() => {
        Leitung die Verwaltung als sechster. „Ich" ist kein eigener Knopf
        mehr, sondern ein Reiter unter „Heute". Die Reihenfolge folgt der
        Nutzung: Studio (Putzplan und Aufgaben, täglich) vor Nachrichten.
-       Runde 216 (23.10.2026), auf die Rückfrage „eigener Knopf oder unter
+       Runde 222 (23.10.2026), auf die Rückfrage „eigener Knopf oder unter
        Alles?" für die Zeiterfassung: „eigener knopf" — „Zeiten" direkt
        hinter „Studio". */
     const soll = ['Heute', 'Studio', 'Zeiten', 'Plan', 'Nachrichten', 'Wissen', 'Verwaltung'];
@@ -174,7 +174,7 @@ const ansicht = page => page.evaluate(() => {
        die zeiten ändern kann falls jemand sich nicht ausgestempelt hat". */
     /* „Kennzahlen" seit dem 4.10.2026 (Runde 138): „Kennzahlen je
        Studio … geht fit". */
-    /* Seit Runde 216 ist „Zeiten" keine Kachel mehr, sondern ein eigener
+    /* Seit Runde 222 ist „Zeiten" keine Kachel mehr, sondern ein eigener
        Knopf mit dem Reiter „Team" — „eigener knopf" (23.10.2026). Dass
        es dort steht, prüfen test-raeume und test-zeiten-bereich. */
     const ERWARTET = ['Überblick', 'Erstellen', 'Team', 'Studios', 'Nachweise',

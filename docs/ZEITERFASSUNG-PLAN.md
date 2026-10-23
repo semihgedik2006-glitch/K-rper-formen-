@@ -427,7 +427,7 @@ Rückfragen vorgelegt, Antworten:
    das Lohnbüro. Der Export enthält nie `zeitPins` oder `terminalCodes`.
 6. **Erinnerung**, wenn eine Stunde nach Schichtende noch kein Feierabend
    gestempelt ist.
-7. ✅ **Eigener Bereich „Zeiten"** (Runde 216, Wunsch vom 23.10.2026:
+7. ✅ **Eigener Bereich „Zeiten"** (Runde 222, Wunsch vom 23.10.2026:
    „eine ganz neue seite … wo man alles managen kann und mitarbeiter
    können sich nur einstempeln und ihre eigenen stunden sehen ob plus
    oder minus"). Eigener Knopf unten bzw. links, darunter „Meine Zeiten"

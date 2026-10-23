@@ -30,7 +30,7 @@ const CHROME = process.env.CHROME ||
   '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 const SP = __dirname;
-/* Runde 216: ein sechster Raum, „Zeiten". Aus dem Betrieb, 23.10.2026,
+/* Runde 222: ein sechster Raum, „Zeiten". Aus dem Betrieb, 23.10.2026,
    auf die Rückfrage, ob die Zeiterfassung einen eigenen Knopf unten
    bekommt oder unter „Alles" liegt: „eigener knopf". Gestempelt wird
    jeden Tag zweimal — deshalb direkt hinter „Studio". Die Knöpfe treffen

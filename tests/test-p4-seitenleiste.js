@@ -99,7 +99,7 @@ async function trefferSeite(p) {
     const a = await p.evaluate(LEISTE);
     console.log('  ' + JSON.stringify(a));
     // Runde 184: „das problem mit dem zu viel bleibt immer noch bestehen" — fünf Räume plus Verwaltung.
-    /* Runde 216 (23.10.2026): „Zeiten" als eigener Raum direkt hinter
+    /* Runde 222 (23.10.2026): „Zeiten" als eigener Raum direkt hinter
        „Studio" — aus dem Betrieb auf die Rückfrage: „eigener knopf". */
     pruefe('Reihenfolge nach Nutzung: Heute, Studio, Zeiten, Plan, Nachrichten, Wissen, Verwaltung',
       a.reihe.join('|') === 'Heute|Studio|Zeiten|Plan|Nachrichten|Wissen|Verwaltung', a.reihe.join('|'));

@@ -155,7 +155,7 @@ async function starten(errs, frei, codeFehler, adresse) {
 }
 
 /* „Ich" war bis Runde 179 ein eigener Knopf unten (g-ich), danach ein
-   Reiter unter „Heute". Seit Runde 216 hat die Zeiterfassung einen
+   Reiter unter „Heute". Seit Runde 222 hat die Zeiterfassung einen
    eigenen Knopf (aus dem Betrieb, 23.10.2026: „eigener knopf") — die
    Karte steht dort. */
 async function zurIchKarte(page) {

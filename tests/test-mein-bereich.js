@@ -179,7 +179,7 @@ async function reiterOeffnen(p, tab) {
       ' statt an erster');
     /* In der Uebersicht liegen drei Reiter: Woche, Kalender, Ich.
        „Zeiten" kam in Runde 189 dazu („erstelle bitte noch eine session
-       nur für die stempel seite") und ist seit Runde 216 ein eigener
+       nur für die stempel seite") und ist seit Runde 222 ein eigener
        Knopf unten — aus dem Betrieb, 23.10.2026, auf die Rückfrage
        „eigener Knopf oder unter Alles?": „eigener knopf". Unter „Ich"
        steht deshalb KEIN Reiter „Zeiten" mehr; zwei Wege an dieselbe
@@ -189,7 +189,7 @@ async function reiterOeffnen(p, tab) {
       pruefe(ankunft.reiter.indexOf(t) >= 0, 'FEHLT: der Reiter „' + t + '"');
     });
     pruefe(ankunft.reiter.indexOf('zeiten') < 0,
-      'DOPPELT: „Zeiten" steht noch als Reiter unter „Ich" — es hat seit Runde 216 einen eigenen Knopf');
+      'DOPPELT: „Zeiten" steht noch als Reiter unter „Ich" — es hat seit Runde 222 einen eigenen Knopf');
     /* Und zwar GENAU diese drei. Ohne die Zahl waere „todo steht noch
        zusaetzlich drin" gruen — also der halbe Umzug. */
     pruefe(ankunft.reiter.length === 3,
@@ -870,7 +870,7 @@ async function reiterOeffnen(p, tab) {
      werden. */
   {
     await p.evaluate(() => {
-      // Runde 216: die PIN-Karte steht unter dem eigenen Knopf „Zeiten".
+      // Runde 222: die PIN-Karte steht unter dem eigenen Knopf „Zeiten".
       document.querySelector('.mobnav [data-group="g-zeit"]').click();
     });
     await p.waitForTimeout(1300);

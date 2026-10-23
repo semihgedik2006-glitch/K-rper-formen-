@@ -1347,7 +1347,7 @@
     legen(P('zeitAntraege'), liste);
   })();
 
-  /* Runde 216: ein abgeschlossener Monat (vor zwei Monaten), damit „Mein
+  /* Runde 222: ein abgeschlossener Monat (vor zwei Monaten), damit „Mein
      Konto" in der Vorführung einen Stand zeigt. Bewusst NICHT der
      Vormonat: den schliesst die Vorführung der Geschäftsführung selbst
      ab (test-zeiten-verwaltung). Die Zahlen sind erfunden und stehen
@@ -1980,7 +1980,7 @@
       melden(P('zeitAbschluesse'));
       return { ok: true, monat: m };
     },
-    /* Runde 216: wie der Server — nur die eigene Zeile, nur
+    /* Runde 222: wie der Server — nur die eigene Zeile, nur
        abgeschlossene Monate, das eigene Soll und der Urlaubsanspruch. */
     meinKonto: function () {
       var uid = ICH.id;

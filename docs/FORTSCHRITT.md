@@ -19790,3 +19790,296 @@ aber bei grossen Figuren Malarbeit je Bild. Nicht angefasst, weil es
 gerade in einer zweiten Sitzung gebaut wird — gemeldet.
 Ausserdem misst `test-gehirn` die Spalte bei 1440 px erst, wenn sie
 nicht mehr hereinspringt (sonst 2 px vom Rand, je nach Last).
+
+## Runde 216 — Kurz auffrischen: Erinnerung aufs Handy (23.10.2026)
+
+**Aus dem Betrieb:** „jo mach weitwr“ — auf den Vorschlag
+„Push-Erinnerungen für Leute mit Zugang“.
+
+**Was gebaut ist**
+- Neue geplante Cloud Function **`schulungAuffrischErinnern`**, täglich
+  9:40 Uhr (Berlin): Wer Fragen zum Auffrischen fällig hat, bekommt eine
+  Push-Nachricht „🔁 Kurz auffrischen — 3 Fragen aus deinen Schulungen
+  warten …“.
+  - nur Teilnehmer mit verknüpftem, aktivem Konto der eigenen Firma;
+  - höchstens alle **drei Tage** (`erinnertAm` am Lernplan);
+  - nur auf Geräte, auf denen „Kurz auffrischen“ unter Profil →
+    Meldungen an ist (ohne Angabe: an, wie bei allen Meldungen);
+  - nie für Testpläne der Leitung;
+  - „fällig“ rechnet dieselbe Funktion wie das Auffrischen selbst
+    (`auffrischRunde`), damit die Nachricht nichts verspricht, was die
+    App beim Öffnen nicht zeigt.
+- In der App ein neuer Schalter **„Kurz auffrischen“** unter Profil →
+  Meldungen, nur wenn die Schulung für die Firma an ist.
+
+**Entschieden, und warum**
+- **Drei Tage Abstand**: täglich wäre lästig, und wer etwas lästig findet,
+  schaltet es ab. Der Abstand ist gesetzt, nicht gemessen.
+- **Der Text spricht von Gewohnheit, nicht von Pflicht.** Duolingo
+  berichtet (eigener Blog, Herstellerangabe, nicht nachgeprüft), dass ein
+  Text über den Gewohnheitsaufbau mehr Zustimmung brachte als einer über
+  die Serie.
+- **Keine Push-Nachricht zu Fristen.** Welche Module Pflicht sind, steht
+  in der Datei `schulungen-basis.js`, die der Server nicht sieht. Die
+  Fristen stehen weiter auf der Startseite und bei der Leitung.
+
+**Nicht geprüft**
+- Ob die Nachricht auf einem echten Handy ankommt. Geprüft ist im
+  Emulator, AN WELCHE Geräte sie ginge (der Versand wird abgefangen).
+
+**Tests**
+- `tests/rules/funktionen.test.js` (+7, jetzt 255): genau ein Gerät von
+  fünf Leuten und einem Testplan (nicht bei Schalter aus, nicht zweimal in
+  drei Tagen, nicht ohne Fälliges, nicht inaktiv, nie ein Testplan);
+  Überschrift und Text; der Plan merkt sich den Zeitpunkt; Gegenprobe: ein
+  zweiter Lauf gleich danach schickt nichts. Gegenprobe im Code: ohne die
+  Prüfung des Schalters fallen 2 Zeilen.
+- `tests/test-auffrischen.js` (+5, jetzt 55): der Schalter ist da und an,
+  schaltet ab und wird gespeichert, ein zweiter Tipp schaltet wieder an,
+  Trefferfläche ≥ 44.
+
+## Runde 217 — Formi antwortet wie ChatGPT und kennt die App (Worker 2.19, 23.10.2026)
+
+Aus dem Betrieb: „er soll aber mehr integration haben und das wissen
+basiert wieder zu wenig auf kontent und er hat kaum richtige antworten er
+soll eher so wie chat gpt sein nur mit dem wissen von uns". Auf die
+Rückfragen: „Gratis bei Cloudflare bleiben"; frei antworten — „nur soll
+er es betonen wenn es nicht geprüft ist aber trotzdem antworten"; die
+App-Daten: alles, „jedes detail … und aus jedem chat am besten auch".
+
+**Woran es lag**
+- Die Antwort schrieb Llama 3.3 mit einer sehr strengen Regel („NICHTS
+  erfinden", 120 Wörter). Ausserhalb des Wissens kam fast immer „weiss
+  ich nicht".
+- Die App-Daten sah nur die Einordnung (Gemini, Befehl oder Frage), nie
+  die Antwort. „Was ist heute offen" ohne Schnellweg lief ins Leere.
+
+**Gebaut**
+- Worker 2.19: Antworten von `gpt-oss-120b` (Workers AI), Llama als
+  Ersatz. Neuer Systemtext: hilfreich und vollständig wie ChatGPT, bis
+  ca. 350 Wörter, wenn jemand etwas ausführlich will.
+- Feld `grundlage`: `wissen` / `app` / `allgemein` / `unsicher`. Nur
+  `unsicher` (unser Studio, aber nirgends belegt) geht als offene Frage an
+  Semih und beginnt mit „Nicht geprüft:". Allgemeines bekommt den Hinweis
+  „Allgemeines Wissen — nicht speziell für unser Studio geprüft".
+- Mehr Wissen je Frage: 8 statt 6 Einträge, 12.000 statt 6.000 Zeichen.
+- **APP-LAGE**: `gehirnLageText()` baut aus dem, was das Gerät schon
+  geladen hat, einen Text (Dienst 7 Tage, heute im Dienst, Tauschbörse,
+  je Studio offene Aufgaben mit Fristen, Putzplan, fehlendes Material,
+  defekte Geräte, Schulungsstand, Ankündigungen, Übergaben; höchstens
+  9000 Zeichen). Er geht mit jeder Frage über `gehirnAktion`/`gehirnFrage`
+  an den Worker, steht nur im Gespräch mit der KI und wird nicht
+  gespeichert. Beim Öffnen von Formi werden die Schulungen bereitgelegt.
+- `POST /api/probe` im Leitstand: Probefrage ohne Speichern.
+
+**Bewusst nicht**
+- *Chats und Direktnachrichten.* Gewünscht war „aus jedem chat … aber
+  verschlüsselt". Verschlüsseln hilft hier nicht: die KI muss den Text
+  lesen, um daraus zu antworten, und würde Privates aus Direktnachrichten
+  dann Leuten nacherzählen, die es nie lesen sollten. Seit 19.10.2026
+  gilt „keine Chats, keine Kundendaten" — das bleibt.
+- *Erfundene Preise, Telefonnummern, Namen* bleiben auch bei „frei"
+  verboten; Formi sagt dann, wo man es erfährt.
+
+**Geprüft:** `test-formi-worker` 122 (gpt-oss zuerst, Lage im Gespräch
+und nicht gespeichert, Allgemeines/App ohne offene Frage, Ersatzmodell),
+`test-gehirn-aktion` 121, `test-formi-lage` 9 (Lage aus der App, kein
+Chat-Satz darin, geht mit der Frage mit). **Nicht geprüft:** die echte
+Antwortqualität von gpt-oss-120b und wie lange es braucht — erst nach dem
+Einspielen, dann mit `/api/probe`.
+## Runde 218 — Handy-Startseite: schmaler Kopf, Formi in der Reihe (23.10.2026)
+
+Aus dem Betrieb, auf „schmaler Kopf und Formi in der Schnellzugriff-Reihe
+statt eigenem Streifen?": „a mach weiter und merge".
+
+**Was gebaut ist.** Am Handy (≤ 820 px, Höhe > 600) auf „Heute" setzt
+`kugelInReiheSetzen()` die Klasse `kugel-in-reihe`, sobald die
+Schnellzugriff-Reihe sichtbar ist. Die Reihe bekommt rechts Platz für die
+Kugel (drei Knöpfe + „Anpassen" als 44-px-Feld), und der reservierte
+Streifen unter `.main` (80 + 58 px) fällt weg. Der Kopf im Raum „Heute"
+ist schmal: kleineres Zeichen, kein Datum (das steht im Tagesband).
+
+**Gemessen** (`tests/test-formi-reihe.js`, 36 Zusicherungen): 390 px Chef
+drei Blöcke statt zwei, 430 px Mitarbeiter zusätzlich der Putzplan; jeder
+Knopf der Reihe und die Kugel treffen ≥ 44 × 44 per Hit-Test, normal und
+kompakt, auch bei 820 px. Gegen `main` laufen 18 der 36 Zusicherungen
+falsch — der Test unterscheidet.
+
+**Warum nur auf „Heute" und nur mit Reihe.** Auf anderen Seiten gibt es
+keine Reihe, neben der die Kugel sitzen könnte; ohne Streifen läge sie
+dort auf dem letzten Listeneintrag. Bei 320 × 568 blendet die Startseite
+die Reihe aus — dann bleibt der Streifen, damit die Kugel nicht auf
+„Ausserdem" liegt (Gegenprobe im Test). Am Rechner sitzt Formi seit Runde
+198 in der Seitenleiste, dort ändert sich nichts.
+
+**Nebenbei: `test-bestellung`** mass den Knopf „Ändern" beim Lieferanten,
+während die Karte „Einkaufsliste" eingeklappt war — also einen
+unsichtbaren Knopf (61 × 32). Der Test klappt die Karte jetzt auf, wie es
+ein Mensch tun müsste; die Grenze bleibt 44 × 44, und der Knopf erfüllt sie.
+
+**Weiter rot wie auf `main`:** `test-neu-design` bei 320 × 568 (341 px
+Inhalt; auf `main` 236 px Platz, jetzt 265 px — besser, aber nicht genug)
+und `test-navigation` (Startseite 2,19 Bildschirme).
+
+## Runde 219 — Erstes Öffnen: kein Neuladen durch den Service Worker (23.10.2026)
+
+**Gefunden** über `test-sicherung`, das seit Wochen rot war („Betreiber
+sieht Vollsicherung nicht", auf `main` genauso). Der Knopf war nicht weg:
+der Test öffnet einen frischen Browser **ohne** Service-Worker-Sperre, und
+nach rund zwei Sekunden lud sich die Seite selbst neu. Der Test fand dann
+eine App, die gerade wieder startete (Höhe 0).
+
+**Ursache.** `sw.js` ruft beim ersten Installieren `skipWaiting()` und
+`clients.claim()`. Die Seite hörte auf `controllerchange` und lud dann neu
+— gedacht für Updates. Beim allerersten Öffnen gibt es aber vorher keinen
+Service Worker; die Übernahme ist kein Update. Für Menschen hiess das: wer
+die App auf einem neuen Gerät öffnet und sofort die Anmeldung tippt,
+verliert die Eingabe.
+
+**Entschieden.** Neu geladen wird nur, wenn beim Seitenstart schon ein
+Service Worker steuerte (`hatteSteuerung`). Am Update-Weg ändert sich
+nichts. `tests/test-sw-neuladen.js` prüft beides mit einem eigenen Server,
+dessen `sw.js` für das Update verändert wird: erstes Öffnen 1× geladen
+(auf `main` 2× — Gegenprobe rot), Update genau 1× neu geladen.
+`test-sicherung`, `test-zwischenspeicher`, `test-csp` grün.
+
+**Warum die anderen Tests das nicht sahen:** fast alle setzen
+`serviceWorkers:'block'`. Das ist für stabile Messungen richtig, verbirgt
+aber genau diesen Weg — deshalb der eigene Test ohne Sperre.
+
+## Runde 220 — Formi schneller, weniger Dauerlob (Worker 2.20, 23.10.2026)
+
+**Gemessen nach dem Einspielen von 2.19** (`/api/probe`, 4 Fragen):
+gpt-oss-120b antwortet richtig — „Westen waschen" aus dem Wissen, „was
+ist offen + welche Schulung fehlt" genau aus der App-Lage, eine
+Instagram-Caption frei, „Preis 12-Monats-Vertrag" ohne erfundenen
+Studiopreis. Aber: 5,7 / 10,1 / 15,6 / 17,6 s je Antwort, und an fast
+jede Antwort hängte Formi ein „Stark!".
+
+**Geändert**
+- gpt-oss wird mit `reasoning: { effort: "low" }` gefragt. Ob Workers AI
+  den Parameter so annimmt, steht nicht in der Doku; lehnt es ab, geht
+  dieselbe Frage ohne ihn noch einmal raus (nicht gleich ans schwächere
+  Modell). `/api/probe` kann mit `ohneDenken` vergleichen.
+- Lob nur noch, wenn jemand etwas geschafft hat. Keine Quellenhinweise
+  wie „im Video".
+## Runde 221 — Ein Gruss für die ganze App (23.10.2026)
+
+**Gesehen** beim Nachmessen um 3 Uhr nachts (alte Startseite): oben
+„Guten Morgen, Lisa", daneben Formis Blase „Guten Abend, Lisa! Früh dran!
+Die Westen sind hoffentlich schon trocken." Drei Stellen rechneten die
+Tageszeit getrennt: der Kopf (`< 11` Morgen), Formis Gruss `jvGruss`
+(`< 5` Abend) und Formis Satz `formiLageSatz` (`< 9` „Früh dran").
+
+**Entschieden.** Der Kopf nimmt jetzt `jvGruss()` — eine Regel für alle.
+Zwischen 0 und 5 Uhr bleibt es „Guten Abend" (wer dann noch schaut, ist
+eher spät als früh dran), und Formi hat dafür die Satzart `nacht`
+(„Noch wach? …") statt „Früh dran". `tests/test-tagesgruss.js` stellt die
+Uhr des Browsers auf 3, 7, 14 und 20 Uhr (Mittwoch, Berliner Zeit): Kopf
+und Blase beginnen gleich, der Satz passt. Gegen `main` laufen die beiden
+3-Uhr-Zusicherungen falsch.
+
+## Runde 222 — Zeiten als eigener Bereich: stempeln, Konto im Plus oder Minus, Resturlaub (23.10.2026)
+
+Aus dem Betrieb, 22.10.2026: „wäre es auch eventuell nützlich eine ganz
+neue seite fürs terminal und für die chefs zu erstellen wo man alles
+managen kann und mitarbeiter können sich nur einstempeln und ihre eigenen
+stunden sehen ob plus oder minus und halt alles was sie sonst bräuchten".
+
+Empfohlen und angenommen: **keine zweite App**, sondern ein eigener
+Bereich in derselben App. Eine zweite Seite hätte Anmeldung, Regeln und
+Studiogrenze doppelt gebraucht — und genau diese Doppelung ist in diesem
+Projekt schon fünfmal die Lücke gewesen. Antworten auf die Rückfragen
+(23.10.2026): laufender Monat „vorläufig" — „ja"; ein Modus „nur
+Stempeln" für Aushilfen — „nur startknopf"; Resturlaub — „ja"; wohin —
+„eigener knopf".
+
+### Was gebaut wurde
+
+- **Knopf „Zeiten"** unten (Handy) bzw. links (Rechner), direkt hinter
+  „Studio": gestempelt wird jeden Tag. Bereichsfarbe Cyan — der einzige
+  der zehn Akzente, der noch keinem Bereich gehört und keine
+  Statusfarbe ist. Taste **Z**.
+- Darunter zwei Seiten: **„Meine Zeiten"** (jeder) und **„Team"** (die
+  Leitung). „Meine Zeiten" ist der bisherige Reiter Heute → Ich →
+  Zeiten, „Team" der bisherige Reiter Verwaltung → Zeiten — die Blöcke
+  sind umgezogen, nicht kopiert; alle IDs sind gleich geblieben. Alte
+  Wege (ein gespeicherter Schnellzugriff `ich:zeiten`/`chef:zeiten`, ein
+  Link auf den Reiter) führen auf die neue Stelle.
+- **Mein Konto**: eine grosse Zahl mit Vorzeichen („+2:15 h · im Plus"),
+  darunter Gearbeitet, Soll bis heute, Urlaub/Krank und der Monat. Ohne
+  Statusfarbe: ein Minus meldet keinen Fehler, sondern einen Stand.
+  Der laufende Monat heisst „vorläufig", bis die Geschäftsführung
+  abschliesst.
+- **Resturlaub** im Kalenderjahr, in Arbeitstagen: ein Tag zählt, an dem
+  Soll ist (Soll je Wochentag, sonst Mo–Fr); Feiertage nie; beantragt
+  zählt getrennt; überlappende Einträge zählen einmal. Den Anspruch trägt
+  die Geschäftsführung im Soll-Formular ein (neues Feld „Urlaub", Tage im
+  Jahr).
+- **„Einrichten"** unter Team (nur Geschäftsführung): Wege zu den
+  Terminals, zur Handy-Freigabe und zur Aufbewahrung.
+
+### Warum `meinKonto` und keine neue Sammlung
+
+Was die Person für ihr Konto braucht, liegt an drei Stellen, die sie
+nicht lesen darf und auch künftig nicht lesen soll: `zeitAbschluesse`
+(alle Konten nebeneinander), `lohnEinstellungen` (Soll und Urlaub aller),
+`planerTeam` (Vertragsstunden aller). Zwei Wege standen offen:
+
+1. eine neue Sammlung `zeitKonten/{uid}`, die beim Abschluss und bei
+   jeder Soll-Änderung mitgeschrieben wird — neue Regeln in BEIDEN
+   Welten, ein Schreibweg mehr, und eine Kopie, die neben dem Original
+   veralten kann (wer das Soll ändert, ohne dass der Spiegel nachzieht,
+   sieht ein falsches Konto);
+2. eine Funktion, die mit Serverrechten liest und **nur die eigene
+   Zeile** zurückgibt.
+
+Gewählt ist 2. Es gibt keinen Parameter „für wen" — wer `uid` mitschickt,
+bekommt trotzdem sein eigenes (geprüft). Den laufenden Monat rechnet die
+App selbst mit **derselben** Funktion wie die Geschäftsführung
+(`kontoRechnen`), aus den eigenen Stempeln und Abwesenheiten — sonst
+gäbe es zwei Rechnungen, die irgendwann auseinanderlaufen.
+
+### Was dabei gefunden wurde
+
+- Der Kalendertest fiel in der Nacht vor der Zeitumstellung (siehe
+  Nachtrag zu Runde 215) — nicht diese Runde, aber sie hielt die
+  Auslieferung von Runde 215 auf.
+- Ein Ich-Reiter „Zeiten" UND ein Knopf „Zeiten" wären zwei Wege an
+  dieselbe Stelle. Der Reiter ist weg; `test-mein-bereich` prüft jetzt,
+  dass er weg ist. Aus demselben Grund steht „Meine Zeiten" nicht mehr
+  im Vorschlag für die Schnellzugriffe (an seiner Stelle „Mein Kalender")
+  — wie beim Putzplan in Runde 103.
+
+### Was nicht geprüft ist
+
+- Der echte Anmeldeweg (Firebase-SDK lädt hier nicht): `meinKonto` ist im
+  Emulator geprüft (`tests/rules/mein-konto.test.js`), die Seite in der
+  Demo.
+- In der Demo ist der Vormonat absichtlich NICHT abgeschlossen (den
+  schliesst die Vorführung der Geschäftsführung selbst ab); das Konto
+  zeigt dort den Stand von vor zwei Monaten und sagt das dazu.
+- `test-navigation` meldet „Startseite ist 2,19 Bildschirme lang (erlaubt
+  1,9)". Das ist **nicht** diese Runde: auf `main` vor dem Zusammenführen
+  gemessen, derselbe Wert. Liegen gelassen, nicht die Grenze angehoben.
+
+### Was die Leiste dabei gelernt hat
+
+Sechs Knöpfe statt fünf. Am Handy im neuen Aussehen richtet sich die
+Breite bis 420 px nach dem Wort (jeder ≥ 44 px): gleich breit hatte
+„Nachrichten" bei 320 px 52 px für 59, bei 375 noch 61 für 64 — eine
+kleinere Schrift reichte nicht. Im bisherigen Aussehen stehen für die
+Leitung sieben Knöpfe; unter 360 px brechen dort „Nachrichten" und
+„Verwaltung" an einer festen Stelle (`<wbr>`) in die zweite Zeile, die
+Leiste wird 83 statt 68 px hoch. Am Rechner war die Seitenleiste bei
+1280 × 720 bis 104 px zu lang; bis 860 px Höhe teilen sich Formi-Kugel
+und „Tastenkürzel" jetzt eine Zeile.
+
+### Gemessen (Trefferfläche per elementFromPoint, normal und kompakt)
+
+Knopf „Zeiten" und jeder andere Knopf der Leiste ≥ 44 × 44, im Bild,
+ohne abgeschnittene Beschriftung bei 320 / 390 / 430 / 820 / 1280 /
+1440 / 1920 px (`test-zeiten-bereich`); alle Bedienelemente der Seite
+„Meine Zeiten" ≥ 44 × 44 in denselben Breiten (`test-stempelseite`);
+„Zeiten → Team" bei der Leitung (`test-zeitkorrektur`). Am Rechner zwei
+Spalten, „Mein Konto" links bei „Jetzt", Taste Z (1280/1440/1920).

@@ -43,7 +43,7 @@ async function oeffne(b, rolle, w, h) {
   await p.waitForTimeout(3200);
   return p;
 }
-/* Der Weg eines Menschen (Runde 216): der eigene Knopf „Zeiten" — aus
+/* Der Weg eines Menschen (Runde 222): der eigene Knopf „Zeiten" — aus
    dem Betrieb, 23.10.2026: „eigener knopf". Vorher Heute → Ich → Zeiten. */
 async function zurSeite(p) {
   return p.evaluate(async () => {

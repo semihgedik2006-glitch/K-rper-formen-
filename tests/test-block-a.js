@@ -101,7 +101,7 @@ async function leiste(p) {
     pruefe('drei Ziele und „Anpassen"', l && l.length === 4 && l[3].wort === 'Anpassen',
       JSON.stringify(l && l.map(x => x.wort)));
     /* Seit Runde 103, P5 steht der Putzplan unten in der Leiste; der
-       Vorschlag nennt an seiner Stelle „Meine Woche". Seit Runde 216
+       Vorschlag nennt an seiner Stelle „Meine Woche". Seit Runde 222
        haben auch die Zeiten einen eigenen Knopf unten („eigener knopf",
        23.10.2026) — als Schnellzugriff wären sie ein zweiter Weg an
        dieselbe Stelle, an ihren Platz rückt „Mein Kalender". */

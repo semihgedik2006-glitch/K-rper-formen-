@@ -264,7 +264,7 @@ const leiste = (p) => p.evaluate(() => { const l = document.getElementById('offl
       await firebase.firestore().collection('firmen/koerperformen/zeiten').add({ uid: 'demo-ich', name: 'Ich', studioKey: 'studio-0',
         art: 'kommen', ts: jetzt - 3 * 3600000, tag: tag, monat: tag.slice(0, 7), quelle: 'terminal', terminalName: 'Empfang',
         ohneNetz: true, empfangen: jetzt - 600000, offlineId: 'o-test' });
-      // Runde 216: eigener Knopf „Zeiten" statt Heute → Ich → Zeiten.
+      // Runde 222: eigener Knopf „Zeiten" statt Heute → Ich → Zeiten.
       const g = document.querySelector('.mobnav [data-group="g-zeit"]'); if (g) { g.click(); await w(1500); }
       const z = document.querySelector('#ichZeitenListe [data-ztag="' + tag + '"]');
       if (!z) return { fehlt: true };

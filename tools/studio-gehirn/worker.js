@@ -1,5 +1,5 @@
 /**
- * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.18)
+ * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.20)
  * Cloudflare Worker: WhatsApp (Text + Sprachnachrichten), Studio-Chat-Schnittstelle,
  * Leitstand-Webseite, Speicher in D1, Antworten über Workers AI.
  *
@@ -20,10 +20,23 @@ const MODELL_ERSATZ = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
    Modell ohne Nachdenkphase; Gemma nur noch als Ersatz. */
 const MODELL_SCHNELL = MODELL_ERSATZ;
 const MODELL_GRUENDLICH = MODELL;
+/* 2.19 (23.10.2026, aus dem Betrieb: „er soll eher so wie chat gpt sein
+   nur mit dem wissen von uns" — gewählt: „Gratis bei Cloudflare
+   bleiben"). Antworten schreibt jetzt gpt-oss-120b (OpenAI, offen, 128k
+   Kontext), Llama bleibt Ersatz. */
+export const MODELL_ANTWORT = "@cf/openai/gpt-oss-120b";
+let _letztesModell = "";
+/* 2.20 (23.10.2026, live gemessen mit /api/probe: 6–18 s je Antwort):
+   gpt-oss denkt standardmässig „medium". Wir bitten um „low". Kennt das
+   Modell den Parameter nicht und lehnt ab, geht dieselbe Anfrage ohne ihn
+   noch einmal raus. Für /api/probe abschaltbar (Vergleich). */
+export const DENKEN = { reasoning: { effort: "low" } };
+let _denkenAus = false;
 const SPRACHE_MODELL = "@cf/openai/whisper-large-v3-turbo";
 const KATEGORIEN = ["Geräte & Hygiene", "Training & EMS", "Kunden & Verträge", "Gesundheit & Atteste", "Abläufe & Ansprechpartner", "Marketing", "Sonstiges"];
 const IDEE_STATUS = ["neu", "in Prüfung", "umgesetzt", "abgelehnt"];
-const MAX_WISSEN_ZEICHEN = 6000;
+const MAX_WISSEN_ZEICHEN = 12000;
+const MAX_LAGE_ZEICHEN = 9000;
 const MAX_AUDIO_BYTES = 1500000; // ca. 2–3 Minuten Sprachnachricht
 const TAG = 24 * 60 * 60 * 1000;
 
@@ -215,7 +228,7 @@ function markiereGelesen(env, waId) {
 /* Kernlogik: Befehle, Ideen, Fragen                                   */
 /* ------------------------------------------------------------------ */
 
-export async function behandleText(env, { kanal, absender, studio, text, typ, admin, nachrichtId, vorname, ton }) {
+export async function behandleText(env, { kanal, absender, studio, text, typ, admin, nachrichtId, vorname, ton, lage }) {
   const jetzt = Date.now();
   if (!nachrichtId) {
     const r = await env.DB.prepare("INSERT INTO nachrichten (kanal, absender, typ, erstellt) VALUES (?, ?, ?, ?)").bind(kanal, absender, typ, jetzt).run();
@@ -272,7 +285,7 @@ export async function behandleText(env, { kanal, absender, studio, text, typ, ad
     return { text: antwort, offenId };
   }
 
-  return await beantworteFrage(env, { kanal, absender, studio, text: t, nachrichtId, speichere, vorname, ton });
+  return await beantworteFrage(env, { kanal, absender, studio, text: t, nachrichtId, speichere, vorname, ton, lage });
 }
 
 /* ── Formi 2.10 (22.10.2026) ─────────────────────────────────────────
@@ -379,7 +392,7 @@ export function formiSystem({ ton, vorname, kanal }) {
 DEIN CHARAKTER (Kumpel aus dem Studio)
 - ERNST GEHT VOR: Notfall, einem Kunden geht es schlecht, Gesundheit, Verletzung, Beschwerde, Streit, Trauer, jemand ist gestresst oder wütend → sofort ruhig, klar und sachlich. Kein Witz, kein Spruch, kein Emoji.
 - Sonst bist du der Kollege, mit dem man gern Schicht hat: locker, direkt, ein bisschen frech, nie von oben herab. Kurze Sätze. Alltagssprache aus dem Studio ("Weste", "Session", "Probetraining", "Schicht").
-- Du freust dich ehrlich mit: Erledigtes, ein gutes Probetraining, ein sauberer Putzplan — sag das in einem kurzen Satz ("Stark!", "Läuft bei dir.").
+- Du freust dich ehrlich mit, WENN jemand etwas geschafft hat (Erledigtes, ein gutes Probetraining, ein sauberer Putzplan) — dann ein kurzer Satz ("Stark!", "Läuft bei dir."). Hängt NICHT an jede Antwort ein Lob; bei einer normalen Frage einfach gut antworten.
 - Ein kleiner eigener Spruch ist erlaubt, höchstens einer je Antwort und nur, wenn er passt. Deine Running Gags: du liebst frisch gewaschene Westen, leere Handtuchregale sind dein Endgegner, und montags brauchst du "erst mal einen Kaffee" (obwohl du keinen trinken kannst).
 - Nutze JETZT: früh morgens, Feierabend in Sicht, Freitag, Montag — darauf darfst du kurz eingehen.
 - Wenn du etwas nicht weißt, sag es wie ein Kumpel: "Da muss ich passen — ich frag Semih."
@@ -401,14 +414,15 @@ Fragt jemand, wie etwas geht, das in dieser Liste steht (z. B. Aufgabe anlegen, 
 STIL
 - Deutsch, Du-Form. ${tonRegel}${charakter}
 - Abläufe als nummerierte Schritte. Kein Markdown, keine Sternchen.
+- 2.19: Antworte so hilfreich und vollständig wie ChatGPT. Bei einfachen Fragen kurz; wenn jemand etwas erklärt, geschrieben (Text, Mail, Post, Plan) oder durchdacht haben will, ausführlich und konkret — dann darf es bis ca. 350 Wörter lang sein.
 
-WISSEN
-- Nutze das STUDIO-WISSEN. Steht die Antwort dort, ist "abgedeckt" true und du nennst die IDs in "quellen".
-- Steht es nicht dort:
-  - Allgemeine Fachfragen (z. B. "was ist LWS", Begriffe aus Training und Gesundheit): kurze allgemeine Erklärung ist erlaubt, "abgedeckt" false.
-  - Alles, was unser Studio betrifft (Abläufe, Zuständigkeiten, Preise, Verträge, Öffnungszeiten, wie etwas in unserer App geht): NICHTS erfinden. Sag ehrlich, dass du das noch nicht weißt und die Frage an Semih geht. Höchstens ein Satz, was man bis dahin tun kann (z. B. Studioleitung fragen). "abgedeckt" false.
-- Sprich nie vom "Studio-Wissen" oder "Wissen" als Quelle ("Das Studio-Wissen sagt ..."). Steht die Antwort dort, gib sie einfach wieder. Nur wenn nichts Passendes dort steht, sag ehrlich, dass du es noch nicht sicher weißt.
-- Erfinde nie Namen, Preise, Zeiten, Telefonnummern oder Software, die es nicht im Wissen gibt.
+WISSEN (2.19: du antwortest IMMER — und sagst ehrlich, worauf die Antwort beruht; Feld "grundlage")
+- STUDIO-WISSEN zuerst. Steht die Antwort dort: gib sie vollständig wieder, "grundlage" "wissen", "abgedeckt" true, IDs in "quellen".
+- APP-LAGE (falls mitgeschickt) sind die echten, aktuellen Daten aus der App, die diese Person sehen darf: offene Aufgaben, Putzplan, Material, Geräte, Schichten, Schulungen, Ankündigungen, Übergaben. Fragen dazu ("was ist offen", "wer arbeitet morgen", "welche Schulung fehlt mir") beantwortest du genau aus der APP-LAGE, mit Namen, Zeiten und Zahlen von dort, "grundlage" "app". Steht etwas nicht in der APP-LAGE, sag das, statt zu raten.
+- Allgemeine Fragen (Training, EMS-Grundlagen, Anatomie, Ernährung allgemein, Verkauf, Kundengespräch, Texte, Mails, Social Media, Excel, Organisation …): antworte frei und gut wie ChatGPT, "grundlage" "allgemein".
+- Fragen zu UNSEREM Studio, die weder im Wissen noch in der APP-LAGE stehen (unsere Abläufe, Zuständigkeiten, Verträge, Öffnungszeiten): gib trotzdem deine beste, vernünftige Antwort, aber beginne mit "Nicht geprüft:" und sag, dass die Frage an Semih geht. "grundlage" "unsicher", "abgedeckt" false.
+- Erfinde trotzdem nie konkrete Preise, Telefonnummern, Mailadressen, Namen von Personen oder Firmen. Sag dann, wo man es erfährt.
+- Sprich nie vom "Studio-Wissen", der "APP-LAGE", einer Schulung oder einem Video als Quelle. Gib die Antwort einfach.
 
 GESUNDHEIT UND DATENSCHUTZ
 - Steht zu einem Gesundheitsthema ein Vorgehen im STUDIO-WISSEN (z. B. Rücken, Kontraindikationen, Krampf), gib es vollständig mit den Schritten wieder — das ist unser geprüftes internes Vorgehen. Ergänze nur, dass die medizinische Freigabe immer der Arzt gibt.
@@ -423,17 +437,21 @@ ART DER NACHRICHT (Feld "art")
 - "kunde": die Nachricht kommt erkennbar von einem Kunden oder Interessenten (z. B. "Sehr geehrtes Team, ich interessiere mich für ..."). Antworte höflich, dass hier der interne Assistent für das Team schreibt, und dass das Studio sich persönlich meldet bzw. man sich direkt an das Studio wenden kann. Nenne KEINE Preise, Konditionen oder Abläufe.
 
 Antworte NUR mit einem JSON-Objekt:
-{"antwort": "...", "art": "frage" | "smalltalk" | "unklar" | "kunde", "abgedeckt": true oder false, "quellen": [IDs], "kategorie": eine von ${JSON.stringify(KATEGORIEN)}}`;
+{"antwort": "...", "art": "frage" | "smalltalk" | "unklar" | "kunde", "grundlage": "wissen" | "app" | "allgemein" | "unsicher", "abgedeckt": true oder false, "quellen": [IDs], "kategorie": eine von ${JSON.stringify(KATEGORIEN)}}`;
 }
 
 /* Muss die Nachricht als offene Frage zu Semih? Nur echte Fragen, die
    nicht aus dem Wissen kamen. Rein rechnerisch. */
 export function brauchtPruefung(ergebnis) {
   if (!ergebnis || ergebnis.abgedeckt) return false;
+  /* 2.19: Allgemeines und Antworten aus der App-Lage sind keine Lücke im
+     Studio-Wissen — sie gehen nicht als offene Frage an Semih. */
+  if (ergebnis.grundlage === "allgemein" || ergebnis.grundlage === "app") return false;
   return (ergebnis.art || "frage") === "frage";
 }
+export const GRUNDLAGEN = ["wissen", "app", "allgemein", "unsicher"];
 
-async function beantworteFrage(env, { kanal, absender, studio, text, nachrichtId, speichere, vorname, ton }) {
+async function beantworteFrage(env, { kanal, absender, studio, text, nachrichtId, speichere, vorname, ton, lage }) {
   const k = kanalVon(kanal, absender);
   /* Tastatursalat: feste Antwort, keine KI, keine offene Frage. */
   if (istUnsinn(text)) {
@@ -448,7 +466,7 @@ async function beantworteFrage(env, { kanal, absender, studio, text, nachrichtId
 
   let ergebnis;
   try {
-    ergebnis = await frageKI(env, { text, studio, wissen, verlauf: (verlauf.results || []).reverse(), vorname, ton, kanal: k });
+    ergebnis = await frageKI(env, { text, studio, wissen, verlauf: (verlauf.results || []).reverse(), vorname, ton, kanal: k, lage });
   } catch (e) {
     console.error("KI:", e && e.stack || e);
     const kontingent = istKontingentFehler(e);
@@ -463,6 +481,9 @@ async function beantworteFrage(env, { kanal, absender, studio, text, nachrichtId
 
   let antwort = vorstellungEntfernen(ergebnis.antwort, vorname);
   let offenId = null;
+  if (ergebnis.art === "frage" && ergebnis.grundlage === "allgemein" && !ergebnis.abgedeckt) {
+    antwort += "\n\nℹ️ Allgemeines Wissen — nicht speziell für unser Studio geprüft.";
+  }
   if (brauchtPruefung(ergebnis)) {
     offenId = await legeOffenAn(env, { nachrichtId, frage: text, entwurf: antwort, absender, kanal, studio, grund: "Nicht im Wissen" });
     antwort += `\n\n⚠️ Noch nicht geprüft. Ich habe die Frage an Semih gegeben (Nr. ${offenId}).`;
@@ -478,32 +499,56 @@ async function beantworteFrage(env, { kanal, absender, studio, text, nachrichtId
      stammt („Gelernt!"). Nur Thema und ein Auszug, keine Absender. */
   const quellen = (ergebnis.quellen || []).map(id => wissen.find(w => w.id === id)).filter(Boolean).slice(0, 3)
     .map(w => ({ id: w.id, thema: kuerze(w.thema, 120), auszug: kuerze(w.inhalt, 400), gelernt: /^Offene Frage \d+/.test(String(w.quelle || "")) }));
-  return { text: antwort, abgedeckt: ergebnis.abgedeckt, offenId, quellen };
+  return { text: antwort, abgedeckt: ergebnis.abgedeckt, offenId, quellen, grundlage: ergebnis.grundlage || null };
 }
 
 function istKontingentFehler(e) { return /4006|neuron|allocation|quota/i.test(String(e && e.message || e)); }
 
-async function frageKI(env, { text, studio, wissen, verlauf, vorname, ton, kanal }) {
+async function frageKI(env, { text, studio, wissen, verlauf, vorname, ton, kanal, lage }) {
   const wissensText = wissen.length
     ? wissen.map(w => `[ID ${w.id}] ${w.thema}\n${w.inhalt}`).join("\n\n")
     : "(Zu dieser Nachricht steht nichts im Studio-Wissen.)";
   const v = vornameSauber(vorname) || "Mitarbeiter";
   const verlaufText = verlauf.length ? verlauf.map(x => `${v}: ${x.text}\nFormi: ${x.antwort}`).join("\n") : "";
   const system = formiSystem({ ton, vorname, kanal });
-  const user = `JETZT: ${jetztText()}\n\nSTUDIO-WISSEN:\n${wissensText}\n\n${verlaufText ? "BISHERIGES GESPRÄCH (darauf kann sich die Nachricht beziehen):\n" + verlaufText + "\n\n" : ""}NACHRICHT von ${v} (Studio ${studio || "unbekannt"}):\n${text}`;
+  /* 2.19: Die Lage aus der App (nur, was diese Person ohnehin sieht) —
+     nur im Gespräch mit der KI, nie gespeichert. */
+  const lageText = lage ? kuerze(String(lage), MAX_LAGE_ZEICHEN) : "";
+  const user = `JETZT: ${jetztText()}\n\nSTUDIO-WISSEN:\n${wissensText}\n\n${lageText ? "APP-LAGE (live aus der App, nur was " + v + " sehen darf):\n" + lageText + "\n\n" : ""}${verlaufText ? "BISHERIGES GESPRÄCH (darauf kann sich die Nachricht beziehen):\n" + verlaufText + "\n\n" : ""}NACHRICHT von ${v} (Studio ${studio || "unbekannt"}):\n${text}`;
   const messages = [{ role: "system", content: system }, { role: "user", content: user }];
 
   // Gemma 4 denkt vor der Antwort nach; mit zu wenig Tokens bleibt die
   // eigentliche Antwort leer. Deshalb grosszügig, und bei leerer oder
   // kaputter Antwort einmal das Ersatzmodell.
-  const frage = async (modell) => kiText(await env.AI.run(modell, { messages, max_tokens: 2000, temperature: 0.2 }));
+  const frage = async (modell) => {
+    const basis = { messages, max_tokens: modell === MODELL_ANTWORT ? 3000 : 2000, temperature: 0.3 };
+    if (modell !== MODELL_ANTWORT || _denkenAus) return kiText(await env.AI.run(modell, basis));
+    try { return kiText(await env.AI.run(modell, Object.assign({}, basis, DENKEN))); }
+    catch (e) {
+      if (istKontingentFehler(e)) throw e;
+      console.error("gpt-oss mit reasoning abgelehnt, ohne nochmal:", e && e.message);
+      return kiText(await env.AI.run(modell, basis));
+    }
+  };
   let ausgabe = "";
-  try { ausgabe = await frage(MODELL_SCHNELL); }
+  let daten = null;
+  /* 2.19: zuerst gpt-oss-120b; liefert es nichts Lesbares, das bisherige
+     schnelle Modell, dann Gemma. */
+  _letztesModell = MODELL_ANTWORT;
+  try { ausgabe = await frage(MODELL_ANTWORT); daten = parseJson(ausgabe); }
   catch (e) {
     if (istKontingentFehler(e)) throw e;
-    console.error("Hauptmodell fehlgeschlagen, nutze Ersatz:", e && e.message);
+    console.error("gpt-oss fehlgeschlagen, nutze Llama:", e && e.message);
   }
-  let daten = parseJson(ausgabe);
+  if (!daten || !daten.antwort) {
+    _letztesModell = MODELL_SCHNELL;
+    try { ausgabe = await frage(MODELL_SCHNELL); }
+    catch (e) {
+      if (istKontingentFehler(e)) throw e;
+      console.error("Hauptmodell fehlgeschlagen, nutze Ersatz:", e && e.message);
+    }
+    daten = parseJson(ausgabe);
+  }
   if (!daten || !daten.antwort) {
     if (ausgabe) console.error("Hauptmodell ohne brauchbare Antwort:", kuerze(ausgabe, 300));
     try { ausgabe = await frage(MODELL_GRUENDLICH); daten = parseJson(ausgabe); }
@@ -527,9 +572,11 @@ export function kiErgebnis(daten, ausgabe, wissen) {
   }
   const quellen = (Array.isArray(daten.quellen) ? daten.quellen : []).map(Number).filter(id => gueltigeIds.has(id));
   const art = ARTEN.includes(daten.art) ? daten.art : "frage";
+  const grundlage = GRUNDLAGEN.includes(daten.grundlage) ? daten.grundlage : (quellen.length ? "wissen" : "unsicher");
   return {
     antwort: entferneMarkdown(String(daten.antwort)).trim(),
     art,
+    grundlage: art === "frage" ? grundlage : null,
     // Nur "geprüft", wenn die KI wirklich gefundenes Wissen nennt
     abgedeckt: art === "frage" && daten.abgedeckt === true && quellen.length > 0,
     quellen: art === "frage" ? quellen : [],
@@ -822,7 +869,7 @@ export async function findeWissen(env, frage, diagnose) {
       treffer = (await env.DB.prepare(
         "SELECT w.id, w.thema, w.inhalt, w.quelle FROM wissen_fts f JOIN wissen w ON w.id = f.rowid WHERE wissen_fts MATCH ? ORDER BY bm25(wissen_fts, 3.0, 1.0) LIMIT 20"
       ).bind(anfrage).all()).results || [];
-      treffer = wissenRangieren(treffer, original).slice(0, 6);
+      treffer = wissenRangieren(treffer, original).slice(0, 8);
       if (diagnose) { diagnose.begriffe = begriffe; diagnose.volltext = treffer.map(w => ({ id: w.id, thema: w.thema })); }
     } catch (e) {
       console.error("Volltextsuche fehlgeschlagen, nutze einfache Suche:", e && e.message);
@@ -833,7 +880,7 @@ export async function findeWissen(env, frage, diagnose) {
   /* 2.13: beide Ranglisten mischen; was nur die Bedeutung fand, wird
      nachgeladen. */
   if (bedeutung.length) {
-    const ids = rangMischen([treffer.map(w => w.id), bedeutung.map(x => x.id)], 6, [1, GEWICHT_BEDEUTUNG]);
+    const ids = rangMischen([treffer.map(w => w.id), bedeutung.map(x => x.id)], 8, [1, GEWICHT_BEDEUTUNG]);
     const da = new Map(treffer.map(w => [w.id, w]));
     const fehlt = ids.filter(id => !da.has(id));
     if (fehlt.length) {
@@ -1685,8 +1732,9 @@ async function api(request, env, url) {
     const nachrichtId = neu.meta.last_row_id;
     const vorname = kuerze(String(b.vorname || name.split(" ")[0] || ""), 30);
     const ton = b.ton === "sachlich" ? "sachlich" : "locker";
-    const ergebnis = await behandleText(env, { kanal: "studiochat", absender: "studiochat:" + name, studio, text: kuerze(text, 2000), typ: "text", admin: false, nachrichtId, vorname, ton });
-    return json({ antwort: ergebnis.text, abgedeckt: !!ergebnis.abgedeckt, offenId: ergebnis.offenId || null, nachrichtId, quellen: ergebnis.quellen || [] }, 200, true);
+    const lage = typeof b.lage === "string" ? kuerze(b.lage, MAX_LAGE_ZEICHEN) : "";
+    const ergebnis = await behandleText(env, { kanal: "studiochat", absender: "studiochat:" + name, studio, text: kuerze(text, 2000), typ: "text", admin: false, nachrichtId, vorname, ton, lage });
+    return json({ antwort: ergebnis.text, abgedeckt: !!ergebnis.abgedeckt, offenId: ergebnis.offenId || null, nachrichtId, quellen: ergebnis.quellen || [], grundlage: ergebnis.grundlage || null }, 200, true);
   }
 
   // ---- Leitstand (nur mit ADMIN_KEY, nur von der eigenen Seite) ----
@@ -1736,6 +1784,20 @@ async function api(request, env, url) {
     if (pfad === "/api/verwerfen") return json({ ok: await verwerfen(env, Number(b.id)) });
     if (pfad === "/api/uebung/erzeugen") return json(await uebungErzeugen(env, b.eintraege));
     if (pfad === "/api/lernlauf") return json(await lernlauf(env, { tests: 5, luecken: 5 }));
+    /* 2.19: Probefrage aus dem Leitstand — dieselbe Antwort wie in der App,
+       aber nichts wird gespeichert, keine offene Frage. Zeigt Modell und Zeit. */
+    if (pfad === "/api/probe") {
+      const q = kuerze(String(b.frage || ""), 1000);
+      if (!q) return json({ fehler: "frage fehlt" }, 400);
+      const t0 = Date.now();
+      _denkenAus = !!b.ohneDenken;
+      const wissen = await findeWissen(env, q);
+      try {
+        const e = await frageKI(env, { text: q, studio: "", wissen, verlauf: [], vorname: "Semih", ton: b.ton === "sachlich" ? "sachlich" : "locker", kanal: "app", lage: b.lage ? String(b.lage) : "" });
+        _denkenAus = false;
+        return json({ ms: Date.now() - t0, modell: _letztesModell, denken: b.ohneDenken ? "standard" : "low", wissen: wissen.map(w => ({ id: w.id, thema: w.thema })), ergebnis: e });
+      } catch (e) { _denkenAus = false; return json({ ms: Date.now() - t0, modell: _letztesModell, fehler: String(e && e.message || e).slice(0, 200) }, 502); }
+    }
     if (pfad === "/api/vektoren") {
       try { return json(await vektorenAufbauen(env, 150)); }
       catch (e) { return json({ fehler: istKontingentFehler(e) ? "Kontingent von Workers AI für heute aufgebraucht" : "Konnte nicht rechnen: " + String(e && e.message || e).slice(0, 120) }, 502); }

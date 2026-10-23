@@ -83,7 +83,7 @@ async function tippe(p, wort) {
     const a = await p.evaluate(LAGE);
     console.log('  ' + JSON.stringify(a));
     // Runde 184: „das problem mit dem zu viel bleibt immer noch bestehen" — fünf Räume.
-    /* Runde 216 (23.10.2026): „Zeiten" bekommt einen eigenen Knopf —
+    /* Runde 222 (23.10.2026): „Zeiten" bekommt einen eigenen Knopf —
        aus dem Betrieb auf die Rückfrage: „eigener knopf". */
     pruefe('unten stehen Heute · Studio · Zeiten · Plan · Nachrichten · Wissen',
       a.reihe.join('|') === 'Heute|Studio|Zeiten|Plan|Nachrichten|Wissen', a.reihe.join('|'));
@@ -123,7 +123,7 @@ async function tippe(p, wort) {
     /* Schnellzugriffe: der Vorschlag für Mitarbeiter ist unverändert —
        Runde 184 hat die Wahl nicht angefasst, nur die Stelle. */
     const sz = await p.evaluate(() => [...document.querySelectorAll('#schnellLeiste .sz-wort')].map(x => x.textContent));
-    /* Seit Runde 216 liegt „Meine Zeiten" unten als eigener Knopf; als
+    /* Seit Runde 222 liegt „Meine Zeiten" unten als eigener Knopf; als
        Schnellzugriff wäre es ein zweiter Weg an dieselbe Stelle (wie der
        Putzplan seit P5). An seinen Platz rückt „Mein Kalender". */
     pruefe('der Schnellzugriff-Vorschlag: Meine Woche, Mein Kalender, Geräte',
@@ -162,7 +162,7 @@ async function tippe(p, wort) {
     await p.waitForTimeout(3200);
     const a = await p.evaluate(() => ({ neu: document.body.classList.contains('neu'),
       gruppen: [...document.querySelectorAll('.mobnav button')].map(x => x.dataset.group) }));
-    // Runde 184: auch im bisherigen Design dieselben Räume — seit Runde 216 sechs („eigener knopf").
+    // Runde 184: auch im bisherigen Design dieselben Räume — seit Runde 222 sechs („eigener knopf").
     pruefe('GEGENPROBE bisheriges Design: dieselben sechs Räume, kein Putzplan-Knopf',
       a.neu === false && a.gruppen.join('|') === 'g-start|g-arbeit|g-zeit|g-team|g-komm|g-wissen' &&
       a.gruppen.indexOf('g-putz') < 0, JSON.stringify(a));

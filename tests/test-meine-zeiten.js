@@ -167,7 +167,7 @@ async function starten(errs) {
 }
 
 async function zurKarte(page) {
-  /* Runde 216: die Zeiten haben einen eigenen Knopf unten (aus dem
+  /* Runde 222: die Zeiten haben einen eigenen Knopf unten (aus dem
      Betrieb, 23.10.2026: „eigener knopf"). Vorher: Heute → Ich → Zeiten. */
   await page.evaluate(() => document.querySelector('.mobnav [data-group="g-zeit"]').click());
   await page.waitForTimeout(1500);

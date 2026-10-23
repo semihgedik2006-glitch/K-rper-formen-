@@ -6,7 +6,7 @@
 
    Geprüft wird, in der Demo (dort laufen die Server-Funktionen nach):
 
-     1. Knopf „Zeiten" (Runde 216): Stand jetzt, heute gearbeitet, laut Plan.
+     1. Knopf „Zeiten" (Runde 222): Stand jetzt, heute gearbeitet, laut Plan.
      2. Mit Handy-Freigabe stehen die Knöpfe, die GERADE passen:
         Kommen → Pause + Feierabend → Zurück + Feierabend → Kommen.
         Jeder Knopf schickt, was er stempelt (art). Vorher gab es am
@@ -55,7 +55,7 @@ async function oeffne(b, rolle, w, h) {
   await p.waitForTimeout(3200);
   return p;
 }
-/* Der Weg eines Menschen (Runde 216): der eigene Knopf „Zeiten" — aus
+/* Der Weg eines Menschen (Runde 222): der eigene Knopf „Zeiten" — aus
    dem Betrieb, 23.10.2026: „eigener knopf". Vorher Heute → Ich → Zeiten. */
 async function zurSeite(p) {
   return p.evaluate(async () => {
@@ -215,7 +215,7 @@ async function zuVerwaltungZeiten(p) {
         const T = eval('(' + SRC + ')');
         const pane = document.getElementById('ichPaneZeiten');
         const els = [...pane.querySelectorAll('button, input, [data-ichtab]')].filter(e => e.offsetParent);
-        /* Runde 216: statt der Ich-Reiter der eigene Knopf „Zeiten" (unten
+        /* Runde 222: statt der Ich-Reiter der eigene Knopf „Zeiten" (unten
            bzw. links) und die Reiter darüber. Die Leiste unten ist fixed —
            offsetParent ist dort immer null, deshalb getClientRects. */
         const reiter = [...document.querySelectorAll('#subnav [data-subview], .mobnav [data-group="g-zeit"], #side [data-group="g-zeit"]')]

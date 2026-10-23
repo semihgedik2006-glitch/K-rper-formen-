@@ -57,7 +57,7 @@ async function oeffne(b, rolle, w, h) {
 }
 /* Der Weg, den ein Mensch geht: Verwaltung → Kachel „Zeiten". Am Handy
    liegt die Verwaltung unter „Alles". */
-/* Runde 216: die Zeiten des Teams stehen unter dem eigenen Knopf
+/* Runde 222: die Zeiten des Teams stehen unter dem eigenen Knopf
    „Zeiten" → Reiter „Team" (aus dem Betrieb, 23.10.2026: „eigener
    knopf"). Vorher Verwaltung → Zeiten. */
 async function zuZeiten(p) {
