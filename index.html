@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-eSK8kXNzX08XuquiJqVU6SyJank7afdvfROP7OdMVj4='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-h37GaO2WTmZMQmdqM9YLFy8GsW9MQ3jwqrP6U71Aq6M='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -6424,6 +6424,60 @@ html.fk-still .fk-wirbel,html.fk-still .fk-innen{animation:none}
 /* Was ins Loch fällt (formiSchlucken). */
 .formi-schluck{position:fixed;left:0;top:0;z-index:1180;pointer-events:none;white-space:nowrap;transform-origin:50% 50%;will-change:transform;
   font-weight:700;font-size:var(--t-sm);color:#E8F8FF;text-shadow:0 0 10px rgba(182,156,255,.9)}
+/* ── Gezeitenstrom, Lichtkrümmung, Insel, Leuchtrand (Runde 244) ──────
+   Der Strom: jeder Buchstabe des Titels fällt einzeln (formiStrom). Beim
+   Messen stehen sie in einer Zeile (.mass), danach einzeln frei. */
+.formi-strom .fs-zeile{position:absolute;left:0;top:0;white-space:pre}
+.formi-strom.mass i{position:static;display:inline-block}
+.formi-strom i{font:inherit;letter-spacing:inherit;color:#EAF9FF;text-shadow:0 0 8px rgba(95,225,255,.9), 0 0 2px rgba(255,255,255,.9);transform-origin:50% 50%;will-change:transform}
+.formi-strom i::after{font:inherit}
+.formi-strom i.spur{color:#B69CFF;text-shadow:0 0 10px rgba(182,156,255,.9)}
+.formi-strom i.spur::after{content:none}
+/* Die Linse: ein Kreis um die Kugel, der den Hintergrund krümmt. Nur wo
+   der Filter wirkt (html.linse-ok, Chromium). Keine Trefferfläche. */
+.formi-linse{display:none}
+.linse-ok .formi-linse:not([hidden]){display:block;position:fixed;left:0;top:0;z-index:149;width:192px;height:192px;
+  border-radius:var(--r-rund);pointer-events:none;backdrop-filter:url(#formiLinse)}
+.formi-linse-svg{position:absolute;width:0;height:0;overflow:hidden}
+/* Die Insel: schwarz wie das Loch, mit Photonenring. Die Form wechselt
+   über clip-path (Punkt → klein → gross), der Inhalt nur über opacity. */
+.formi-insel{position:fixed;left:50%;top:var(--s8);translate:-50% 0;z-index:1190;width:min(380px, calc(100vw - 32px));height:68px;
+  pointer-events:none;color:#F4F9FF}
+.formi-insel[hidden]{display:none}
+.fi-ring,.fi-flaeche{position:absolute;inset:0}
+.fi-ring{background:conic-gradient(from 200deg, #5FE1FF, #B69CFF, #FF8FC8, #5FE1FF);opacity:.9}
+.fi-flaeche{background:#000}
+.fi-klein,.fi-gross{position:absolute;display:flex;align-items:center;opacity:0;transition:opacity .18s ease}
+.fi-klein{left:50%;top:0;translate:-50% 0;width:min(300px, 100%);height:40px;gap:var(--s8);padding:0 var(--s16) 0 var(--s6)}
+.fi-gross{inset:0;gap:var(--s12);padding:0 var(--s16) 0 var(--s12)}
+.formi-insel.klein .fi-klein{opacity:1;transition-delay:.12s}
+.formi-insel.gross .fi-gross{opacity:1;transition-delay:.16s}
+.fi-klein .formi-figur{--fg:28px;flex:none}
+.fi-gross .formi-figur{--fg:46px;flex:none}
+.fi-t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:var(--t-sm);font-weight:600}
+.fi-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:var(--s2)}
+.fi-was{font-size:var(--t-xs);font-weight:600;color:rgba(244,249,255,.72)}
+.fi-titel{font-size:var(--t-md);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fi-zeichen{flex:none;width:28px;height:28px}
+.fi-zeichen svg{width:100%;height:100%;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.fi-zeichen circle{stroke:var(--ok)}
+.fi-zeichen path{stroke:var(--ok)}
+.formi-insel.fehler .fi-zeichen{display:none}
+/* Der Leuchtrand: vier Streifen, in denen das Licht gegen den Uhrzeiger
+   um den Bildschirm strömt (nur transform des ::before). */
+.formi-rand{--fr-b:24px;position:fixed;inset:0;z-index:1185;pointer-events:none;opacity:0;transition:opacity .5s ease}
+.formi-rand[hidden]{display:none}
+.formi-rand.an{opacity:.95}
+.formi-rand.blitz{opacity:1}
+.formi-rand i{position:absolute;overflow:hidden}
+.formi-rand .o{left:0;right:0;top:0;height:var(--fr-b);-webkit-mask-image:linear-gradient(180deg, #000, transparent);mask-image:linear-gradient(180deg, #000, transparent)}
+.formi-rand .u{left:0;right:0;bottom:0;height:var(--fr-b);-webkit-mask-image:linear-gradient(0deg, #000, transparent);mask-image:linear-gradient(0deg, #000, transparent)}
+.formi-rand .l{top:0;bottom:0;left:0;width:var(--fr-b);-webkit-mask-image:linear-gradient(90deg, #000, transparent);mask-image:linear-gradient(90deg, #000, transparent)}
+.formi-rand .r{top:0;bottom:0;right:0;width:var(--fr-b);-webkit-mask-image:linear-gradient(270deg, #000, transparent);mask-image:linear-gradient(270deg, #000, transparent)}
+.formi-rand i::before{content:"";position:absolute;left:0;top:0}
+.formi-rand .o::before,.formi-rand .u::before{width:200%;height:100%;background:linear-gradient(90deg, #5FE1FF, #B69CFF 25%, #FF8FC8 50%, #B69CFF 75%, #5FE1FF) 0 0 / 50% 100% repeat-x}
+.formi-rand .l::before,.formi-rand .r::before{width:100%;height:200%;background:linear-gradient(180deg, #5FE1FF, #B69CFF 25%, #FF8FC8 50%, #B69CFF 75%, #5FE1FF) 0 0 / 100% 50% repeat-y}
+@media (min-width:900px){ .formi-rand{--fr-b:34px} }
 /* Jets: entlang der Achse, senkrecht zur Scheibe. */
 .fk-jet{position:absolute;left:50%;width:8%;height:150%;margin-left:-4%;pointer-events:none;border-radius:var(--r-pille);opacity:0;z-index:0}
 .fk-jet.oben{bottom:50%;transform-origin:50% 100%;background:linear-gradient(0deg, rgba(255,255,255,.95), rgba(95,225,255,.6) 40%, rgba(182,156,255,0))}
@@ -13937,6 +13991,15 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
 <button type="button" class="formi-kugel" id="formiKugel" hidden aria-haspopup="dialog" aria-controls="jarvis"
   aria-label="Formi öffnen" title="Formi — frag mich oder sag, was ich tun soll"><span class="fk-koerper" aria-hidden="true"><span class="fk-scheibe hinten"><span class="fk-halb"><span class="fk-flach"><span class="fk-bahn"><i style="--w:20deg;--p:0.944"></i><i style="--w:140deg;--p:0.611"></i><i style="--w:260deg;--p:0.278"></i></span><span class="fk-bahn innen"><i style="--w:80deg;--p:0.778"></i><i style="--w:260deg;--p:0.278"></i></span></span></span></span><span class="fk-wirbel"></span><span class="fk-innen"></span><span class="fk-licht"></span><span class="fk-bogen"></span><span class="fk-geist a"></span><span class="fk-geist b"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-braue l"></i><i class="fk-braue r"></i><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i><i class="fk-froh l"></i><i class="fk-froh r"></i><i class="fk-backe l"></i><i class="fk-backe r"></i></span></span></span><span class="fk-scheibe vorn"><span class="fk-halb"><span class="fk-flach"><span class="fk-bahn"><i style="--w:20deg;--p:0.944"></i><i style="--w:140deg;--p:0.611"></i><i style="--w:260deg;--p:0.278"></i></span><span class="fk-bahn innen"><i style="--w:80deg;--p:0.778"></i><i style="--w:260deg;--p:0.278"></i></span></span></span></span></span><span class="fk-punkt" aria-hidden="true"></span></button>
 <span id="formiKugelHat" hidden>Formi hat etwas für dich</span>
+<!-- Lichtkrümmung ums Loch (Runde 244): ein eigener Kreis unter der Kugel —
+     in der Kugel selbst sieht backdrop-filter in Chromium nichts von der
+     Seite dahinter (nachgemessen). Keine Trefferfläche. -->
+<span class="formi-linse" id="formiLinseKreis" aria-hidden="true" hidden></span>
+<!-- Formi-Insel und Leuchtrand (Runde 244): schwarz wie das Loch, oben in
+     der Mitte; der Rand leuchtet, solange Formi arbeitet. Schmuck ohne
+     Trefferfläche — gesagt wird alles im Fenster. -->
+<div class="formi-insel" id="formiInsel" aria-hidden="true" hidden><span class="fi-ring"></span><span class="fi-flaeche"></span><span class="fi-klein"><span class="formi-figur"></span><span class="fi-t"></span></span><span class="fi-gross"><span class="formi-figur"></span><span class="fi-text"><small class="fi-was"></small><b class="fi-titel"></b></span><span class="fi-zeichen"><svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="12"/><path d="M8 14.5l4 4 8-9"/></svg></span></span></div>
+<div class="formi-rand" id="formiRand" aria-hidden="true" hidden><i class="o"></i><i class="r"></i><i class="u"></i><i class="l"></i></div>
 <!-- Formis Sprechblase (Runde 196): ein kurzer Satz, 4,5 s, dann weg.
      Keine Trefferfläche — sie verdeckt nie einen Knopf. -->
 <div class="formi-blase" id="formiBlase" role="status" aria-live="polite" hidden></div>
@@ -22087,6 +22150,13 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-23-formi-insel', datum:'23.10.2026', titel:'Formi bei der Arbeit zusehen: Insel, Leuchtrand und ein echter Sog', wo:'home', punkte:[
+    'Wenn Formi etwas für dich tut, erscheint oben eine schwarze Insel wie beim iPhone: Darin steht, was er gerade macht. Ist er fertig, wird sie grösser und zeigt das Ergebnis, zum Beispiel „Abgehakt · Hürth – Spiegel putzen".',
+    'Solange Formi arbeitet, leuchtet der ganze Bildschirmrand in seinen Farben, das Licht kreist um den Rand. Ist er fertig, flammt es kurz auf und geht aus.',
+    'Was Formi abhakt, zerfällt in einzelne Buchstaben und fällt in Formi in der Insel. Was er anlegt, kommt Buchstabe für Buchstabe aus ihm heraus.',
+    'Auch was du selbst abhakst, zerfällt jetzt in Buchstaben, die sich als leuchtender Faden um Formi wickeln, bevor sie im Loch verschwinden.',
+    'Am Rechner und auf Android krümmt Formi das Bild um sich herum wie ein echtes schwarzes Loch – und wenn er etwas schluckt, wird die Krümmung kurz stärker.'
+  ]},
   { id:'2026-10-23-formi-seit-du-weg', datum:'23.10.2026', titel:'Formi sagt dir, was seit deiner letzten Schicht passiert ist', wo:'home', punkte:[
     'Warst du länger als 12 Stunden weg, steht auf „Heute" eine Zeile von Formi: „Seit Mittwoch: 3 Übergaben, 1 Ankündigung" – darunter das Wichtigste wörtlich, mit wem es geschrieben hat und wann. Ein Tipp öffnet die Übergaben.',
     'Benachrichtigungen, die die App selbst schickt (fällige Aufgaben, Erinnerungen, Nachweise, Formis Tagesmeldung), kommen jetzt als „Formi · …" mit Formis Gesicht. Nachrichten von Menschen sehen aus wie bisher.',
@@ -28271,6 +28341,9 @@ function formiKugelZeigen(){
     }
     return;
   }
+  /* Runde 244: die Lichtkrümmung ums Loch (einmal gebaut). */
+  formiLinseBauen();
+  requestAnimationFrame(formiLinseLage);
   if(!k._gebunden){ k._gebunden=true; k.addEventListener('click', function(){ jarvisAuf(); }); formiLebtStart(); }
   k.hidden=!(gehirnVerfuegbar() && !jarvisOffen() && currentView!=='gehirn' && currentView!=='chat');
   document.body.classList.toggle('formi-kugel-an', !k.hidden);
@@ -29324,9 +29397,133 @@ function formiKugelMitte(){
   var k=$('formiKugel'); if(!k || k.hidden || !k.getClientRects().length) return null;
   var r=k.getBoundingClientRect(); return { x:r.left+r.width/2, y:r.top+r.height/2 };
 }
-/* Sog am Ereignishorizont: was man abhakt, fliegt als Schriftzug in einer
-   enger werdenden Spirale zu Formi, wird dabei lang gezogen
-   („Spaghettifizierung") und verschwindet im Loch. */
+/* ── Gezeitenstrom (Runde 244) ────────────────────────────────────────
+   Aus dem Betrieb, nach Runde 242: „können wir fürs aufgaben einsaugen
+   einen besseren effekt machen … und mehr verzerrung auch für den
+   hintergrund und so ums loch herum".
+   Vorher flog der Titel als EIN Block. Jetzt wie bei einem Stern, der
+   einem Loch zu nahe kommt (Gezeitenzerriss): der Titel zerfällt in
+   seine Buchstaben, der dem Loch nächste reisst zuerst ab, die anderen
+   folgen — so entsteht ein Strom, der sich um Formi wickelt.
+   – Bahn: Spirale gegen den Uhrzeiger, Umlauf ∝ r^-1,5 (Kepler).
+   – Jeder Buchstabe wird erst zum Loch hin gestreckt (Gezeiten ∝ 1/r³),
+     nah am Loch schert ihn der schnellere Umlauf innen in die Bahn —
+     aus dem Buchstaben wird ein Lichtfaden.
+   – Am Horizont: kriechen (Zeitdehnung), röter (Rotverschiebung, eigene
+     Ebene ::after), erlöschen.
+   – Beim Schlucken zuckt das Loch, die Scheibe flammt, und die Krümmung
+     ums Loch (formiLinse) wird kurz stärker: es hat Masse dazubekommen.
+   Alles ist transform/opacity, je Buchstabe EINE Animation, die Bilder
+   einmal vorab gerechnet. Gemessen wird im nächsten Bild, nie im Klick. */
+function formiStromZiel(){
+  var fi=$('formiInsel');
+  if(fi && !fi.hidden && fi.classList.contains('gross')){
+    var f=fi.querySelector('.fi-gross .formi-figur');
+    if(f && f.getClientRects().length){ var r=f.getBoundingClientRect(); return { x:r.left+r.width/2, y:r.top+r.height/2, rH:Math.max(6, r.width*.26), figur:f, insel:true }; }
+  }
+  var k=$('formiKugel'); if(!k || k.hidden || !k.getClientRects().length) return null;
+  var q=k.getBoundingClientRect(); return { x:q.left+q.width/2, y:q.top+q.height/2, rH:13, figur:k };
+}
+/* Die Bahn EINES Buchstabens: Mitte (x0|y0) → Loch (zx|zy). Koordinaten
+   der Bilder relativ zu (ox|oy), Grösse des Buchstabens w × h. */
+function formiBahn(x0, y0, zx, zy, rH, w, h, ox, oy, runden, dreh){
+  var rx=x0-zx, ry=y0-zy, r0=Math.max(rH*2.5, Math.sqrt(rx*rx+ry*ry)), th0=Math.atan2(ry, rx), N=40;
+  var rr=[], gew=[0], zeit=[0];
+  for(var i=0;i<=N;i++){ var s=i/N; rr.push(rH+(r0-rH)*Math.pow(1-Math.pow(s, 1.15), 1.6)); }
+  /* Umlauf ∝ r^-1 (gedeckelt): die Bahn biegt schon von weitem ein, statt
+     gerade anzufliegen und erst am Loch zu kreisen. */
+  for(var j=1;j<=N;j++){ gew.push(gew[j-1]+Math.min(14, r0/rr[j])); zeit.push(zeit[j-1]+Math.min(4, 1/Math.sqrt(Math.max(.06, 1-rH/rr[j])))); }
+  /* Die Scheibe: nah am Loch läuft die Bahn in ihrer Ebene (flach, 9°). */
+  var rF=Math.max(70, rH*8), rT=Math.max(90, rH*7), runde=Math.PI*2*(runden||1.2), pkt=[];
+  for(var k=0;k<=N;k++){
+    var r=rr[k], th=th0-(dreh||1)*runde*gew[k]/gew[N];
+    var flach = r<rF ? .32+.68*Math.max(0, (r-rH)/(rF-rH)) : 1;
+    var ex=Math.cos(th)*r, ey=Math.sin(th)*r*flach, nz=-9*Math.PI/180*(1-flach)/.68;
+    pkt.push({ x:zx+ex*Math.cos(nz)-ey*Math.sin(nz), y:zy+ex*Math.sin(nz)+ey*Math.cos(nz), r:r });
+  }
+  var bild=[], alt=null;
+  bild.aussen=pkt.filter(function(q){ return q.x<8 || q.y<8 || q.x>innerWidth-8 || q.y>innerHeight-8; }).length;
+  for(var m=0;m<=N;m++){
+    var p=pkt[m], a=pkt[Math.max(0, m-1)], c=pkt[Math.min(N, m+1)];
+    /* Lage: der Faden zeigt in Flugrichtung (stetig weitergezählt), am
+       Anfang weich aus der Waagerechten. */
+    var wf=Math.atan2(c.y-a.y, c.x-a.x)*180/Math.PI;
+    if(alt!==null){ while(wf-alt>180) wf-=360; while(wf-alt<-180) wf+=360; } alt=wf;
+    /* Die Achse (0° ≡ 180°) so wählen, dass der Buchstabe am Anfang
+       aufrecht bleibt: Versatz einmal am ersten Bild bestimmt. */
+    if(m===0){ var a0=((wf%180)+180)%180; if(a0>90) a0-=180; var versatz=a0-wf; }
+    var auf=Math.min(1, m/(N*.12)), winkel=(wf+versatz)*auf;
+    /* Streckung: schneller = länger (v ∝ r^-½), dazu die Gezeiten ∝ 1/r³
+       nah am Loch. Quer dazu dünner (das Volumen bleibt). */
+    var streck=1+Math.min(10, .9*Math.pow(rT/p.r, 1.2)+Math.pow(rT/p.r, 3)*.35), quer=Math.max(.18, 1/Math.sqrt(streck));
+    var klein = p.r>rF ? 1 : .4+.6*Math.max(0, (p.r-rH)/(rF-rH));
+    var deck = p.r<rH*2.2 ? Math.max(0, (p.r-rH)/(rH*1.2)) : 1;
+    bild.push({ transform:'translate('+(p.x-ox-w/2).toFixed(1)+'px,'+(p.y-oy-h/2).toFixed(1)+'px) rotate('+winkel.toFixed(1)+'deg) scale('+(streck*klein).toFixed(2)+','+(quer*klein).toFixed(2)+')',
+      opacity:m===N ? 0 : +deck.toFixed(2), offset:+(zeit[m]/zeit[N]).toFixed(4) });
+  }
+  return bild;
+}
+/* Den Strom bauen: titel = das Element, dessen Text zerfällt. aus=true
+   dreht alles um (weisses Loch): die Buchstaben kommen aus Formi und
+   setzen sich zum Titel zusammen. */
+function formiStrom(titel, text, ziel, opt){
+  opt=opt||{};
+  var q=titel.getBoundingClientRect(), cs=getComputedStyle(titel);
+  var box=document.createElement('div'); box.className='formi-flug formi-strom mass'; box.setAttribute('aria-hidden', 'true');
+  var zeile=document.createElement('span'); zeile.className='fs-zeile';
+  zeile.style.font=cs.font; zeile.style.letterSpacing=cs.letterSpacing;
+  zeile.style.transform='translate('+Math.round(q.left)+'px,'+Math.round(q.top+(q.height-parseFloat(cs.lineHeight||q.height))/2)+'px)';
+  var html='';
+  for(var i=0;i<text.length;i++){ var zz=esc(text[i]===' ' ? '\u00a0' : text[i]); html+='<i data-z="'+zz+'">'+zz+'</i>'; }
+  zeile.innerHTML=html; box.appendChild(zeile); document.body.appendChild(box);
+  /* Erst alles lesen … */
+  var ox=Math.round(q.left), oy=Math.round(q.top+(q.height-parseFloat(cs.lineHeight||q.height))/2);
+  var lage=[].map.call(zeile.children, function(el){ return { el:el, x:el.offsetLeft, y:el.offsetTop, w:el.offsetWidth, h:el.offsetHeight }; });
+  /* … dann schreiben. */
+  box.classList.remove('mass');
+  var reihe=lage.map(function(l, i){ var cx=ox+l.x+l.w/2, cy=oy+l.y+l.h/2; return { i:i, d:Math.hypot(cx-ziel.x, cy-ziel.y) }; })
+    .sort(function(a, b){ return a.d-b.d; });
+  var rang=[]; reihe.forEach(function(r, n){ rang[r.i]=n; });
+  var dauer=1750, ende=0, start=opt.verz||0;
+  /* Umlaufsinn: wie die Scheibe gegen den Uhrzeiger — es sei denn, die
+     Bahn liefe so aus dem Bild (Kugel am Rand); dann andersherum. */
+  var n0=lage[reihe[0].i], dreh=1;
+  if(n0){
+    var px0=ox+n0.x+n0.w/2, py0=oy+n0.y+n0.h/2;
+    if(formiBahn(px0, py0, ziel.x, ziel.y, ziel.rH, 1, 1, 0, 0, 1.2, 1).aussen > formiBahn(px0, py0, ziel.x, ziel.y, ziel.rH, 1, 1, 0, 0, 1.2, -1).aussen) dreh=-1;
+  }
+  lage.forEach(function(l, i){
+    if(l.el.textContent==='\u00a0'){ l.el.style.display='none'; return; }
+    var bild=formiBahn(ox+l.x+l.w/2, oy+l.y+l.h/2, ziel.x, ziel.y, ziel.rH, l.w, l.h, ox, oy, 1.15+((i*7)%5)*.04, dreh);
+    var verz=start+(opt.aus ? (lage.length-1-rang[i]) : rang[i])*26;
+    if(opt.aus) bild=bild.slice().reverse().map(function(f){ var g=Object.assign({}, f); g.offset=+(1-f.offset).toFixed(4); g.opacity = f.opacity===0 ? 0 : 1; return g; });
+    else bild[0].opacity=1;
+    ende=Math.max(ende, verz+dauer+70);
+    try{ l.el.animate(bild, { duration:dauer, delay:verz, easing: opt.aus ? 'cubic-bezier(.2,.7,.3,1)' : 'linear', fill:'backwards' }); }catch(e){}
+    if(!opt.aus) formiRot(l.el, dauer, verz, .62);
+    /* Ein Nachleuchten folgt jedem Buchstaben 70 ms später, halb so hell —
+       aus Punkten wird ein Faden. */
+    var spur=document.createElement('i'); spur.className='spur'; spur.textContent=l.el.textContent;
+    zeile.appendChild(spur);
+    try{ spur.animate(bild.map(function(f){ var g=Object.assign({}, f); g.opacity=+(f.opacity*.45).toFixed(2); return g; }),
+      { duration:dauer, delay:verz+70, easing: opt.aus ? 'cubic-bezier(.2,.7,.3,1)' : 'linear', fill:'backwards' }); }catch(e){}
+  });
+  /* Das Original tritt zurück, solange sein Abbild zerfällt (oder
+     erscheint erst, wenn der Strom angekommen ist). */
+  try{
+    if(opt.aus) titel.animate([{ opacity:0 }, { opacity:0, offset:.88 }, { opacity:1 }], { duration:ende+120 });
+    else titel.animate([{ opacity:1 }, { opacity:.1, offset:Math.min(.3, (start+200)/ende) }, { opacity:.1, offset:.92 }, { opacity:opt.bleibtWeg ? .1 : 1 }], { duration:ende+150, fill:opt.bleibtWeg ? 'forwards' : 'none' });
+  }catch(e){}
+  setTimeout(function(){ if(box.parentNode) box.parentNode.removeChild(box); }, ende+120);
+  if(opt.aus) return ende;
+  setTimeout(function(){
+    var pu=ziel.figur && ziel.figur.querySelector('.fk-pupille');
+    if(pu) try{ pu.animate([{transform:'none'},{transform:'scale(.8)',offset:.35},{transform:'scale(1.07)',offset:.7},{transform:'none'}], { duration:420 }); }catch(e){}
+  }, ende-200);
+  formiUmgebung(ziel.figur, 'sog', Math.max(0, ende-650));
+  if(!ziel.insel) formiLinsePuls(ende);
+  return ende;
+}
 function formiSchlucken(el){
   if(!el || _fl.gefuehleAus || gehirnWenigBewegung() || !document.body.animate) return;
   /* Runde 242: auch der Haken direkt auf „Heute" (Runde 240, .hz-mit-haken). */
@@ -29336,60 +29533,276 @@ function formiSchlucken(el){
   var text=[].filter.call(titel.childNodes, function(n){ return n.nodeType===3; }).map(function(n){ return n.nodeValue; }).join(' ').trim() || String(titel.textContent||'').trim();
   text=text.slice(0, 40); if(!text) return;
   requestAnimationFrame(function(){
-    var ziel=formiKugelMitte(); if(!ziel || !titel.getClientRects().length) return;
-    var q=titel.getBoundingClientRect();
-    var g=document.createElement('span');
-    g.className='formi-schluck'; g.setAttribute('aria-hidden', 'true'); g.textContent=text;
-    g.style.transform='translate('+Math.round(q.left)+'px,'+Math.round(q.top)+'px)';
-    document.body.appendChild(g);
-    /* Die Breite des Schriftzugs (nicht die der Zeile) — einmal gelesen,
-       bevor etwas animiert wird. */
-    var gw=g.offsetWidth, gh=g.offsetHeight;
-    /* Runde 242 — aus dem Betrieb: „die erledigten aufgaben fliegen ganz
-       steif in formi rein statt gestreckt und drehend … keine
-       spagettifikation". Jetzt wie beim echten Loch:
-       – Bahn: eine Spirale um Formis Mitte, gegen den Uhrzeiger wie die
-         Scheibe. Je näher, desto schneller der Umlauf (Kepler, ω ∝ r^-1,5),
-         insgesamt gut eineinviertel Runden.
-       – Lage: der Schriftzug richtet sich zum Loch aus und dreht sich so
-         mit der Bahn — er „taumelt" hinein.
-       – Gezeitenkraft ∝ 1/r³: in Richtung Loch gestreckt, quer dazu
-         gestaucht (Spaghettifizierung), stark erst in der Nähe.
-       – Zeitdehnung: kurz vor dem Horizont kriecht er und verblasst
-         (die Bilder liegen dort zeitlich weiter auseinander).
-       Alles ist EIN transform je Bild, gerechnet einmal vorab. */
-    var cx0=q.left+gw/2, cy0=q.top+gh/2, rx=cx0-ziel.x, ry=cy0-ziel.y;
-    var r0=Math.max(40, Math.sqrt(rx*rx+ry*ry)), th0=Math.atan2(ry, rx), rH=13, N=30;
-    var rr=[], gew=[0];
-    for(var i=0;i<=N;i++){ var sI=i/N; rr.push(rH+(r0-rH)*Math.pow(1-sI, 1.6)); }
-    for(var j=1;j<=N;j++) gew.push(gew[j-1]+Math.min(60, Math.pow(r0/rr[j], 1.5)));
-    var runde=Math.PI*2*1.25, zeit=[0];
-    for(var m=1;m<=N;m++) zeit.push(zeit[m-1]+Math.min(4, 1/Math.sqrt(Math.max(.06, 1-rH/rr[m]))));
-    var bild=[];
-    for(var k2=0;k2<=N;k2++){
-      var r=rr[k2], th=th0-runde*gew[k2]/gew[N];
-      /* Nah am Loch schwenkt die Bahn in die Ebene der Scheibe ein: flach
-         (wie die Scheibe, schräg gesehen) und um 9° geneigt wie sie. */
-      var flach = r<140 ? .3+.7*Math.max(0,(r-rH)/(140-rH)) : 1;
-      var ex=Math.cos(th)*r, ey=Math.sin(th)*r*flach, nz=-9*Math.PI/180*(1-flach)/.7;
-      var px=ziel.x+ex*Math.cos(nz)-ey*Math.sin(nz)-gw/2, py=ziel.y+ex*Math.sin(nz)+ey*Math.cos(nz)-gh/2;
-      /* Zum Loch ausgerichtet; am Anfang weich aus der Waagerechten. */
-      /* Die Achse zeigt zum Loch; welche Richtung, ist gleich (180°
-         symmetrisch). Die Ausrichtung kommt weich dazu, der Umlauf dreht
-         voll mit. */
-      var a0=((th0*180/Math.PI+90)%180+180)%180-90;
-      var mix=Math.min(1, k2/(N*.2));
-      var rot=mix*a0+(th-th0)*180/Math.PI;
-      var streck=1+Math.min(6.5, Math.pow(95/r, 3)*.55), quer=1/Math.sqrt(streck);
-      var klein=.35+.65*(r-rH)/(r0-rH);
-      var deck = r<rH*2.4 ? Math.max(0, (r-rH)/(rH*1.4)) : 1;
-      bild.push({ transform:'translate('+px.toFixed(1)+'px,'+py.toFixed(1)+'px) rotate('+rot.toFixed(1)+'deg) scale('+(streck*klein).toFixed(2)+','+(quer*klein).toFixed(2)+')',
-        opacity: k2===N ? 0 : +deck.toFixed(2), offset:+(zeit[k2]/zeit[N]).toFixed(4) });
-    }
-    var dauer=1900;
-    try{ g.animate(bild, { duration:dauer, easing:'linear' }).onfinish=function(){ if(g.parentNode) g.parentNode.removeChild(g); }; }catch(e){}
-    setTimeout(function(){ if(g.parentNode) g.parentNode.removeChild(g); var k=$('formiKugel'); if(k) formiUmgebung(k, 'sog'); }, dauer+60);
+    var ziel=formiStromZiel(); if(!ziel || !titel.getClientRects().length) return;
+    formiStrom(titel, text, ziel);
   });
+}
+
+/* ── Lichtkrümmung ums Loch (Runde 244) ───────────────────────────────
+   „liquid glas finde ich unnötig wenn überhaupt soll das den hintergrund
+   verzerren etwas weils ja ein schwarzes loch ist" — und dann: „mehr
+   verzerrung auch für den hintergrund und so ums loch herum".
+   Ein Kreis um die Kugel krümmt, was dahinter liegt, wie eine
+   Gravitationslinse: ein Bildpunkt im Abstand θ zeigt, was bei
+   β = θ − θE²/θ liegt (Punktlinse, θE = Einstein-Radius). Nah am Loch
+   wird die Umgebung nach aussen gezogen und um das Loch gebogen.
+   Gebaut als backdrop-filter mit einer Verschiebungskarte (SVG
+   feDisplacementMap), die Karte einmal beim Start gerechnet. Nur in
+   Chromium (Rechner, Android): Safari und Firefox kennen SVG-Filter in
+   backdrop-filter nicht — dort bleibt der Kreis einfach durchsichtig. */
+var FL_LINSE={ n:192, e:36, s:120 };
+function formiLinseAn(){
+  var ua=navigator.userAgent||'';
+  return /Chrome\/\d/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
+}
+function formiLinseBauen(){
+  if(_fl.linse || !formiLinseAn()) return;
+  _fl.linse=true;
+  var n=FL_LINSE.n, R=n/2, E=FL_LINSE.e, S=FL_LINSE.s, url='';
+  try{
+    var c=document.createElement('canvas'); c.width=c.height=n;
+    var g=c.getContext('2d'), d=g.createImageData(n, n);
+    for(var y=0;y<n;y++) for(var x=0;x<n;x++){
+      var dx=x+.5-R, dy=y+.5-R, r=Math.sqrt(dx*dx+dy*dy), p=(y*n+x)*4;
+      var f=r>=R ? 0 : Math.pow(1-(r/R)*(r/R), 2);
+      /* zum Loch hin abtasten: β = θ − θE²/θ */
+      var m=E*E/Math.max(r, 16)*f, vx=r ? -m*dx/r : 0, vy=r ? -m*dy/r : 0;
+      d.data[p]=Math.max(0, Math.min(255, Math.round(128+vx/S*255)));
+      d.data[p+1]=Math.max(0, Math.min(255, Math.round(128+vy/S*255)));
+      d.data[p+2]=128; d.data[p+3]=255;
+    }
+    g.putImageData(d, 0, 0); url=c.toDataURL('image/png');
+  }catch(e){ return; }
+  var ns='http://www.w3.org/2000/svg', svg=document.createElementNS(ns, 'svg');
+  svg.setAttribute('class', 'formi-linse-svg'); svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('focusable', 'false');
+  svg.setAttribute('width', '0'); svg.setAttribute('height', '0');
+  svg.innerHTML='<filter id="formiLinse" x="0" y="0" width="'+n+'" height="'+n+'" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" color-interpolation-filters="sRGB">'+
+    '<feImage x="0" y="0" width="'+n+'" height="'+n+'" preserveAspectRatio="none" result="karte"/>'+
+    '<feDisplacementMap id="formiLinseD" in="SourceGraphic" in2="karte" scale="'+S+'" xChannelSelector="R" yChannelSelector="G"/></filter>';
+  svg.querySelector('feImage').setAttribute('href', url);
+  document.body.appendChild(svg);
+  document.documentElement.classList.add('linse-ok');
+  formiLinseLage();
+  window.addEventListener('resize', function(){ requestAnimationFrame(formiLinseLage); });
+  setInterval(function(){ if(!document.hidden) requestAnimationFrame(formiLinseLage); }, 1000);
+}
+/* Der Kreis folgt der Kugel: gelesen beim Zeigen, bei Grössenwechsel
+   und einmal je Sekunde (die Kugel wandert mit Ansicht und Leisten). */
+function formiLinseLage(){
+  var l=$('formiLinseKreis'); if(!l || !_fl.linse) return;
+  var k=$('formiKugel'), sicht=!!(k && !k.hidden && k.getClientRects().length && !jarvisOffen());
+  if(!sicht){ if(!l.hidden) l.hidden=true; return; }
+  var q=k.getBoundingClientRect(), n=FL_LINSE.n;
+  var t='translate('+Math.round(q.left+q.width/2-n/2)+'px,'+Math.round(q.top+q.height/2-n/2)+'px)';
+  if(l.style.transform!==t) l.style.transform=t;
+  if(l.hidden) l.hidden=false;
+}
+/* Schluckt Formi etwas, wird die Krümmung kurz stärker (mehr Masse). */
+function formiLinsePuls(ende){
+  var d=document.getElementById('formiLinseD'); if(!d || gehirnWenigBewegung()) return;
+  var t0=performance.now()+Math.max(0, (ende||0)-900), dauer=1300;
+  if(_fl.linseRaf) cancelAnimationFrame(_fl.linseRaf);
+  (function bild(jetzt){
+    var t=(jetzt-t0)/dauer;
+    if(t<0){ _fl.linseRaf=requestAnimationFrame(bild); return; }
+    var k = t>=1 ? 0 : Math.sin(Math.PI*Math.min(1, t))*(1-t*.3);
+    d.setAttribute('scale', (FL_LINSE.s*(1+.85*k)).toFixed(1));
+    if(t<1) _fl.linseRaf=requestAnimationFrame(bild); else _fl.linseRaf=0;
+  })(performance.now());
+}
+
+/* ── Formi-Insel und Leuchtrand (Runde 244) ───────────────────────────
+   Aus dem Betrieb, zu den Apple-Entwürfen: „ich finde die insel und die
+   widgets super krass falls das geht können wir das schonmal umsetzten
+   … diesen leucht ring am rand find ich auch mega … am besten auch
+   animationen und so wenn er was für uns in der app macht und man kann
+   das live sehen wie er eine aufgabe abhakt oder etwas anlegt" — und:
+   „es soll am ende immer noch ein schwarzes loch sein".
+   – Die Insel ist eine schwarze Fläche oben in der Mitte, wie Apples
+     „Dynamic Island" — hier ein zweites Loch mit Photonenring. Solange
+     Formi arbeitet, steht klein darin, was er tut; ist er fertig, wächst
+     sie und zeigt das Ergebnis. Was er abhakt, zerfällt und fällt in
+     Formi in der Insel; was er anlegt, kommt aus ihm heraus.
+   – Die echte Insel und Widgets auf dem Startbildschirm gibt es nur für
+     eine echte App, nicht für eine Web-App. Hier ist die Insel IN der
+     App; Widgets folgen mit der App (docs/ideen/formi-apple.md).
+   – Der Leuchtrand läuft um den ganzen Bildschirm, solange Formi
+     arbeitet — das Licht kreist gegen den Uhrzeiger wie seine Scheibe.
+   Beides ist Schmuck: aria-hidden, keine Trefferfläche, verdeckt nie
+   einen Knopf. Gesagt wird alles weiterhin im Fenster (Status). */
+var _fi={ stand:'weg', uhr:0, randUhr:0, plan:0, init:false, ani:[] };
+function formiInselDarf(){ return !(jarvisOffen() && !_jvKompakt); }
+function formiInselForm(art, plus){
+  plus=plus||0;
+  if(art==='gross') return 'inset('+(-plus)+'px round '+(34+plus)+'px)';
+  var halb = art==='klein' ? 'max(0px, calc(50% - '+(150+plus)+'px))' : 'calc(50% - '+(20+plus)+'px)';
+  return 'inset('+(-plus)+'px '+halb+' calc(100% - '+(40+plus)+'px) '+halb+' round '+(20+plus)+'px)';
+}
+function formiInselMorph(art){
+  var fi=$('formiInsel'); if(!fi) return;
+  [[fi.querySelector('.fi-ring'), 1.5], [fi.querySelector('.fi-flaeche'), 0]].forEach(function(t){
+    var el=t[0]; if(!el) return;
+    var ziel=formiInselForm(art, t[1]), von=el.style.clipPath || formiInselForm('punkt', t[1]);
+    el.style.clipPath=ziel;
+    if(von!==ziel && !gehirnWenigBewegung() && el.animate) try{
+      el.animate([{ clipPath:von }, { clipPath:ziel }], art==='punkt'
+        ? { duration:300, easing:'cubic-bezier(.5,0,.75,0)' }
+        : { duration:520, easing:'cubic-bezier(.32,1.28,.5,1)' });
+    }catch(e){}
+  });
+  fi.classList.toggle('klein', art==='klein');
+  fi.classList.toggle('gross', art==='gross');
+}
+/* Wohin die Insel kommt: in die Kopfleiste, wenn die Mitte dort frei
+   ist (Rechner), sonst knapp darunter (Handy). Gelesen, bevor sie
+   erscheint — nicht im Klick. */
+function formiInselLage(fi){
+  /* Mitte des sichtbaren App-Bereichs: ein angedocktes Formi-Fenster
+     rechts zählt nicht dazu. */
+  var links=0, rechts=innerWidth, j=$('jarvis');
+  if(jarvisOffen() && j && j.getClientRects().length){ var jr=j.getBoundingClientRect(); if(jr.left>innerWidth/2) rechts=jr.left; }
+  var W=Math.min(380, rechts-links-32), mitte=(links+rechts)/2, oben=8, kopf=document.querySelector('.topbar');
+  if(kopf && kopf.getClientRects().length){
+    var r=kopf.getBoundingClientRect(), l=mitte-W/2-12, re=mitte+W/2+12, frei=true;
+    [].forEach.call(kopf.querySelectorAll('button, a, .tb-wer, .tb-brand'), function(el){
+      if(!frei || !el.getClientRects().length) return;
+      var q=el.getBoundingClientRect(); if(q.width && q.right>l && q.left<re) frei=false;
+    });
+    oben = frei ? Math.max(6, r.top+(r.height-40)/2) : Math.max(8, r.bottom+8);
+  }
+  fi.style.top=Math.round(oben)+'px';
+  fi.style.left=Math.round(mitte)+'px';
+  fi.style.width=Math.round(W)+'px';
+}
+function formiInselZeigen(){
+  var fi=$('formiInsel'); if(!fi) return null;
+  clearTimeout(_fi.uhr);
+  [].forEach.call(fi.querySelectorAll('.formi-figur'), function(f){ if(!f.firstChild) f.innerHTML=formiFigurInnen(false, true); });
+  if(_fi.stand==='weg' || fi.hidden){
+    formiInselLage(fi);
+    [fi.querySelector('.fi-ring'), fi.querySelector('.fi-flaeche')].forEach(function(el, i){ if(el) el.style.clipPath=formiInselForm('punkt', i ? 0 : 1.5); });
+    fi.hidden=false;
+  }
+  return fi;
+}
+function formiInselArbeit(text){
+  formiRand(true);
+  if(!formiInselDarf()){ formiInselWeg(); return; }
+  var fi=formiInselZeigen(); if(!fi) return;
+  var t=fi.querySelector('.fi-klein .fi-t'); if(t && t.textContent!==text) t.textContent=text;
+  if(_fi.stand!=='klein') formiInselMorph('klein');
+  _fi.stand='klein';
+}
+/* o: { was, titel, ok, zeile (Element in der App), aus (es entsteht) } */
+function formiInselErgebnis(o){
+  formiRand(false, true);
+  if(!formiInselDarf()) return;
+  var fi=formiInselZeigen(); if(!fi) return;
+  fi.classList.toggle('fehler', o.ok===false);
+  var was=fi.querySelector('.fi-was'), b=fi.querySelector('.fi-titel');
+  if(was) was.textContent=o.was||'';
+  if(b){ b.getAnimations && b.getAnimations().forEach(function(a){ a.cancel(); }); b.textContent=o.titel||''; }
+  formiInselMorph('gross'); _fi.stand='gross';
+  var dauer=3400;
+  if(!_fl.gefuehleAus && !gehirnWenigBewegung() && document.body.animate && b && o.titel){
+    var text=String(o.titel).slice(0, 40);
+    /* Erst wenn die Insel steht (Feder 520 ms), dann der Strom. */
+    setTimeout(function(){
+      requestAnimationFrame(function(){
+        var ziel=formiStromZiel(); if(!ziel || !ziel.insel) return;
+        var quelle=o.zeile && document.contains(o.zeile) && o.zeile.getClientRects().length ? o.zeile : null;
+        var ende;
+        if(o.aus) ende=formiStrom(b, text, ziel, { aus:true });
+        else if(quelle){
+          var t=quelle.querySelector('.t-title, .pp-title, .pp-name, b, strong') || quelle;
+          ende=formiStrom(t, (t.textContent||text).trim().slice(0, 40), ziel);
+        } else ende=formiStrom(b, text, ziel, { verz:650, bleibtWeg:true });
+        if(ende){ clearTimeout(_fi.uhr); _fi.uhr=setTimeout(formiInselWeg, ende+1300); }
+      });
+    }, 360);
+  }
+  _fi.uhr=setTimeout(formiInselWeg, dauer);
+}
+function formiInselWeg(){
+  var fi=$('formiInsel'); clearTimeout(_fi.uhr);
+  if(!fi || _fi.stand==='weg'){ if(fi) fi.hidden=true; _fi.stand='weg'; return; }
+  _fi.stand='weg';
+  formiInselMorph('punkt');
+  _fi.uhr=setTimeout(function(){ if(_fi.stand==='weg') fi.hidden=true; }, gehirnWenigBewegung() ? 0 : 320);
+}
+/* Der Leuchtrand: an, solange Formi arbeitet; beim Ergebnis flammt er
+   einmal auf und erlischt. Das Licht strömt als transform (zusammen-
+   gesetzt, kein Neumalen); höchstens 30 s, dann aus. */
+function formiRand(an, fertig){
+  var r=$('formiRand'); if(!r) return;
+  clearTimeout(_fi.randUhr);
+  if(an){
+    if(!r.classList.contains('an')){
+      r.hidden=false;
+      _fi.ani.forEach(function(a){ try{ a.cancel(); }catch(e){} }); _fi.ani=[];
+      if(!gehirnWenigBewegung() && r.animate){
+        var wege={ o:['translateX(0)', 'translateX(-50%)'], l:['translateY(-50%)', 'translateY(0)'], u:['translateX(-50%)', 'translateX(0)'], r:['translateY(0)', 'translateY(-50%)'] };
+        [].forEach.call(r.children, function(s){
+          var w=wege[s.className]; if(!w) return;
+          try{ _fi.ani.push(s.animate([{ transform:w[0] }, { transform:w[1] }], { duration:2800, iterations:Infinity, pseudoElement:'::before' })); }catch(e){}
+        });
+      }
+      requestAnimationFrame(function(){ r.classList.add('an'); });
+    }
+    _fi.randUhr=setTimeout(function(){ formiRand(false); }, 30000);
+    return;
+  }
+  if(r.hidden) return;
+  if(fertig && r.classList.contains('an') && !gehirnWenigBewegung() && r.animate){
+    r.classList.add('blitz');
+    _fi.ani.forEach(function(a){ try{ a.playbackRate=3; }catch(e){} });
+  }
+  _fi.randUhr=setTimeout(function(){
+    r.classList.remove('an', 'blitz');
+    _fi.randUhr=setTimeout(function(){ _fi.ani.forEach(function(a){ try{ a.cancel(); }catch(e){} }); _fi.ani=[]; r.hidden=true; }, 700);
+  }, fertig ? 500 : 0);
+}
+/* Was Formi gerade tut, aus dem Verlauf gelesen. Gebündelt: mehrere
+   Aufrufe in einem Zug ergeben EINE Prüfung danach. */
+function formiInselPruefen(){
+  if(_fi.plan) return;
+  _fi.plan=setTimeout(function(){ _fi.plan=0; formiInselJetzt(); }, 0);
+}
+var FI_WAS={ aufgabe:'Aufgabe angelegt', ankuendigung:'Ankündigung gesendet', abwesenheit:'Eingetragen', uebergabe:'Übergabe eingetragen',
+  idee:'Idee gesendet', defekt:'Defekt gemeldet', material:'Material eingetragen', probe:'Eingetragen', mail:'Mail gesendet' };
+function formiZeileFinden(id){
+  if(!id) return null;
+  var sel='[data-id="'+String(id).replace(/["\\]/g, '')+'"]';
+  var z=document.querySelector('.view.show .pp-item'+sel+', .view.show .todo'+sel);
+  if(!z || !z.getClientRects().length) return null;
+  var q=z.getBoundingClientRect();
+  return q.bottom>0 && q.top<innerHeight ? z : null;
+}
+function formiInselAus(v){
+  if(v.erledigt){
+    var x=v.erledigt;
+    return { was:'Abgehakt · '+studioName(x.k), titel:x.t.title||x.t.text||'Eintrag', zeile:formiZeileFinden(x.t.id) };
+  }
+  var s=v.vorschlag||{}, typ=s.typ;
+  var titel=(typ==='aufgabe' && s.titel) || (typ==='ankuendigung' && (s.text||s.titel)) || v.angelegt;
+  return { was:FI_WAS[typ]||'Erledigt', titel:titel, aus:true };
+}
+function formiInselJetzt(){
+  if(!_fi.init){ _fi.init=true; _gVerlauf.forEach(function(v){ v._fiGemeldet=v.angelegt; }); }
+  var neu=null;
+  _gVerlauf.slice(-4).forEach(function(v){
+    if(v.angelegt && v._fiGemeldet!==v.angelegt){ v._fiGemeldet=v.angelegt; if(!/^Zurückgenommen/.test(v.angelegt)) neu=v; }
+  });
+  if(neu) return formiInselErgebnis(formiInselAus(neu));
+  var letzte=_gVerlauf[_gVerlauf.length-1];
+  if(_gLaeuft){
+    var l=(letzte && letzte.schritte) || [];
+    return formiInselArbeit(l.length ? l[l.length-1].t : 'Formi denkt nach …');
+  }
+  if(_fi.stand==='klein'){
+    clearTimeout(_fi.uhr);
+    _fi.uhr=setTimeout(function(){ if(!_gLaeuft && _fi.stand==='klein'){ formiInselWeg(); formiRand(false); } }, 900);
+  }
 }
 /* Jets: beim grossen Jubel schiesst Formi zwei Lichtstrahlen nach oben
    und unten – entlang der Achse, senkrecht zur Scheibe. */
@@ -29739,6 +30152,11 @@ window.__formiLebt = {
   lebenZuletzt: function(){ return _fl.lebenZuletzt||''; },
   /* Runde 242: „zuletzt da" für den Durchlauf setzen (test-formi-seit). */
   seit: function(ts){ _fsStand=ts; renderHeute(); },
+  /* Runde 244: Insel, Rand und Linse für die Durchläufe. */
+  insel: function(){ var fi=$('formiInsel'), r=$('formiRand'); return { stand:_fi.stand, hidden:!fi || fi.hidden, klasse:fi ? fi.className : '', titel:fi ? fi.querySelector('.fi-titel').textContent : '', was:fi ? fi.querySelector('.fi-was').textContent : '', klein:fi ? fi.querySelector('.fi-t').textContent : '', rand:!!(r && !r.hidden && r.classList.contains('an')) }; },
+  inselErgebnis: function(o){ formiInselErgebnis(o); },
+  inselArbeit: function(t){ formiInselArbeit(t); },
+  linsePuls: function(){ formiLinsePuls(0); },
   schlucken: function(sel){ formiSchlucken(document.querySelector(sel)); },
   wurmloch: function(){ formiWurmloch(); },
   masse: function(n){ return formiMasse(n); },
@@ -31165,6 +31583,7 @@ function gehirnMicBinden(knopfId, feldId){
    transform/opacity); der laufende trägt einen Punkt. */
 function gehirnSchritt(v, text, fertig){
   if(!v.schritte) v.schritte=[];
+  formiInselPruefen();
   v.schritte.forEach(function(x){ x.ok=true; });
   v.schritte.push({ t:text, ok:!!fertig, _ab:Date.now() });
   if(gehirnSichtbar()) gehirnZeichnen();
@@ -31497,6 +31916,7 @@ function jvZeichenBild(dt){
   _jvZ.liste=rest;
 }
 function jvZustand(){
+  formiInselPruefen();
   var j=$('jarvis'); if(!j) return;
   j.classList.toggle('jv-z-denkt', !!_gLaeuft);
   j.classList.toggle('jv-z-hoert', !!_gHoert && !_gLaeuft);
