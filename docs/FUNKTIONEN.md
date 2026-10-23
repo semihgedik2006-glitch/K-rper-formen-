@@ -304,8 +304,9 @@ Teams. Ein Durchlauf prüft das bei jedem Lauf mit.
 | IP-Adresse | **NICHT ERFASST** | |
 | Gerätefingerabdruck | **NICHT ERFASST** | nur welches registrierte Terminal |
 | Nachträglich ändern | **NICHT MÖGLICH** | `zeiten` steht auf `allow write: if false` — für **jeden**; überschrieben wird auch bei einer Korrektur nichts |
-| Korrekturweg | **VERIFIZIERT** (24.9.2026, seit Runde 215 nur die Geschäftsführung) | Verwaltung → Zeiten: die Geschäftsführung trägt einen Stempel nach oder markiert einen als ungültig, **nur mit Grund**; beides bleibt sichtbar, auch für die Person selbst. Mitarbeiter beantragen fehlende Stempel selbst (Runde 204) |
-| Eigene Zeiten einsehen | **VERIFIZIERT** | vollständig |
+| Korrekturweg | **VERIFIZIERT** (24.9.2026, seit Runde 215 nur die Geschäftsführung) | Zeiten → Team (bis Runde 215 Verwaltung → Zeiten): die Geschäftsführung trägt einen Stempel nach oder markiert einen als ungültig, **nur mit Grund**; beides bleibt sichtbar, auch für die Person selbst. Mitarbeiter beantragen fehlende Stempel selbst (Runde 204) |
+| Eigene Zeiten einsehen | **VERIFIZIERT** | vollständig; seit Runde 222 unter dem eigenen Knopf „Zeiten" |
+| Eigenes Stundenkonto und Resturlaub | **VERIFIZIERT** (Runde 222; nur Demo und Emulator) | `meinKonto` gibt aus Abschlüssen, Soll und Vertragsstunden **nur die eigene Zeile** heraus; der laufende Monat steht als „vorläufig" da. Mit echtem Firebase-SDK hier nicht prüfbar |
 | Automatische Löschfrist | **NICHT GEFUNDEN** | Stempelzeiten bleiben unbegrenzt liegen — offen, siehe `docs/RECHT.md` |
 | PIN zurücksetzen durch die Leitung | **NICHT MÖGLICH** | der Hash liegt an einem Ort, den die Regeln für **alle** sperren |
 

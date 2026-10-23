@@ -88,6 +88,12 @@ async function messen(p, wer, liste) {
         for (const s of sel) {
           const el = document.querySelector(s);
           if (!el || !el.offsetParent) { aus[s] = { w: -1, h: -1 }; continue; }
+          /* Liegt der Knopf in einer zugeklappten Karte (.card.zu), sieht ihn
+             niemand – gemessen wurde dann ein unsichtbarer Knopf (61×32 bei
+             320 px kompakt, Runde 217). Erst aufklappen wie ein Mensch, dann
+             messen: die Grenze bleibt 44 × 44. */
+          const zu = el.closest('.card.zu');
+          if (zu) { const kopf = zu.querySelector('.fold-head'); if (kopf) kopf.click(); await new Promise(r => setTimeout(r, 450)); }
           el.scrollIntoView({ block: 'center' });
           await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
           aus[s] = T(el);

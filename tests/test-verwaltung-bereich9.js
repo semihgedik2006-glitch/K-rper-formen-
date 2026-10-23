@@ -165,11 +165,23 @@ const reiter = page => page.evaluate(() => {
     /* Sieben seit „Kennzahlen" (4.10.2026, Runde 138): die Studioleitung
        trägt Mitglieder und Kündigungen IHRER Studios ein — „geht fit".
        Die Grenze steht in firestore.rules (tests/rules/kennzahlen.test.js). */
-    if (l.kacheln.length !== 7) errs.push('Leiter sieht ' + l.kacheln.length + ' statt 7 Kacheln');
+    /* Wieder sechs seit Runde 222: „Zeiten" ist keine Kachel der
+       Verwaltung mehr, sondern ein eigener Knopf mit dem Reiter „Team" —
+       aus dem Betrieb, 23.10.2026: „eigener knopf". Dass die Studioleitung
+       die Zeiten ihrer Studios dort weiter sieht, prüft der Block unten. */
+    if (l.kacheln.length !== 6) errs.push('Leiter sieht ' + l.kacheln.length + ' statt 6 Kacheln');
     if (!l.kacheln.some(k => /Kennzahlen/.test(k)))
       errs.push('Leiter sieht „Kennzahlen" nicht — dann kann sie die Monatszahlen nicht eintragen');
-    if (!l.kacheln.some(k => /Zeiten/.test(k)))
-      errs.push('Leiter sieht „Zeiten" nicht — dann kann sie keinen vergessenen Feierabend nachtragen');
+    if (l.kacheln.some(k => /Zeiten/.test(k)))
+      errs.push('„Zeiten" steht noch als Kachel in der Verwaltung — seit Runde 222 hat es einen eigenen Knopf');
+    const zt = await page.evaluate(async () => {
+      const g = [...document.querySelectorAll('.mobnav [data-group="g-zeit"], #side [data-group="g-zeit"]')].find(x => x.getClientRects().length);
+      if (!g) return { knopf: false };
+      g.click(); await new Promise(r => setTimeout(r, 700));
+      return { knopf: true, team: !!document.querySelector('#subnav [data-subview="zeitteam"]') };
+    });
+    if (!zt.knopf || !zt.team)
+      errs.push('Leiter erreicht „Zeiten → Team" nicht — dann sieht sie nicht, wer gestern nicht ausgestempelt hat: ' + JSON.stringify(zt));
     if (l.kacheln.some(k => /Team|Nachweise/.test(k))) errs.push('Leiter sieht einen Chef-Reiter');
     if (!l.kacheln.some(k => /Anliegen/.test(k)))
       errs.push('Leiter sieht „Anliegen" nicht — dann kommt an ihn Gerichtetes nie an');

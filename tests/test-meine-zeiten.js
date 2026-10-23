@@ -167,18 +167,10 @@ async function starten(errs) {
 }
 
 async function zurKarte(page) {
-  /* Runde 184 („das problem mit dem zu viel bleibt immer noch
-     bestehen"): „Ich" ist kein eigener Leistenknopf mehr, sondern ein
-     Reiter unter „Heute" (g-start). Erst der Raum, dann der Reiter. */
-  await page.evaluate(() => document.querySelector('.mobnav [data-group="g-start"]').click());
-  await page.waitForTimeout(500);
-  await page.evaluate(() => document.querySelector('#subnav [data-subview="ich"]').click());
-  await page.waitForTimeout(500);
-  await page.evaluate(() => {
-    const t = document.querySelector('[data-ichtab="zeiten"]');
-    if (t) t.click();
-  });
-  await page.waitForTimeout(1200);
+  /* Runde 222: die Zeiten haben einen eigenen Knopf unten (aus dem
+     Betrieb, 23.10.2026: „eigener knopf"). Vorher: Heute → Ich → Zeiten. */
+  await page.evaluate(() => document.querySelector('.mobnav [data-group="g-zeit"]').click());
+  await page.waitForTimeout(1500);
 }
 
 (async () => {

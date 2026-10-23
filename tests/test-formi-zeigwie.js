@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════════
-   „ZEIG MIR WIE" — FORMIS RUNDGÄNGE IN DER ECHTEN APP (Runde 217, 23.10.2026)
+   „ZEIG MIR WIE" — FORMIS RUNDGÄNGE IN DER ECHTEN APP (Runde 223, 23.10.2026)
 
    Aus dem Betrieb (Runde 177, Etappe 2): Formi soll „Zeig mir wie" können,
    in der echten App. Dazu Idee 11 aus docs/ideen/formi-im-design.md: um

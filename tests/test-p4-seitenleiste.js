@@ -20,7 +20,7 @@
    bleiben links, abgesetzt unter den Räumen.
 
    Was dieser Durchlauf festhält:
-     · Reihenfolge Heute, Studio, Plan, Nachrichten, Wissen, (Verwaltung)
+     · Reihenfolge Heute, Studio, Zeiten, Plan, Nachrichten, Wissen, (Verwaltung)
        — Studio vor Nachrichten, weiter nach Nutzung
      · „Studio" öffnet die Aufgaben und trägt die Marke; der Putzplan ist
        der Reiter daneben, und auch dort trägt „Studio" die Marke
@@ -99,8 +99,10 @@ async function trefferSeite(p) {
     const a = await p.evaluate(LEISTE);
     console.log('  ' + JSON.stringify(a));
     // Runde 184: „das problem mit dem zu viel bleibt immer noch bestehen" — fünf Räume plus Verwaltung.
-    pruefe('Reihenfolge nach Nutzung: Heute, Studio, Plan, Nachrichten, Wissen, Verwaltung',
-      a.reihe.join('|') === 'Heute|Studio|Plan|Nachrichten|Wissen|Verwaltung', a.reihe.join('|'));
+    /* Runde 222 (23.10.2026): „Zeiten" als eigener Raum direkt hinter
+       „Studio" — aus dem Betrieb auf die Rückfrage: „eigener knopf". */
+    pruefe('Reihenfolge nach Nutzung: Heute, Studio, Zeiten, Plan, Nachrichten, Wissen, Verwaltung',
+      a.reihe.join('|') === 'Heute|Studio|Zeiten|Plan|Nachrichten|Wissen|Verwaltung', a.reihe.join('|'));
     pruefe('Schnellzugriffe in der Seitenleiste (Vorschlag Chef) und „Anpassen"',
       a.schnell.join('|') === 'Überblick|Schichtplan|Anliegen|Anpassen', a.schnell.join('|'));
     const unten = await p.evaluate(() => {
@@ -153,8 +155,8 @@ async function trefferSeite(p) {
     const a = await p.evaluate(LEISTE);
     if (rolle === 'mitarbeiter')
       // Runde 184: dieselben fünf Räume wie am Handy, ohne Verwaltung.
-      pruefe('Mitarbeiter: Heute, Studio, Plan, Nachrichten, Wissen',
-        a.reihe.join('|') === 'Heute|Studio|Plan|Nachrichten|Wissen', a.reihe.join('|'));
+      pruefe('Mitarbeiter: Heute, Studio, Zeiten, Plan, Nachrichten, Wissen',
+        a.reihe.join('|') === 'Heute|Studio|Zeiten|Plan|Nachrichten|Wissen', a.reihe.join('|'));
     for (const dichte of ['normal', 'kompakt']) {
       await p.evaluate((d) => { document.body.dataset.dichte = d; }, dichte);
       await p.waitForTimeout(200);
@@ -193,7 +195,7 @@ async function trefferSeite(p) {
     /* Runde 184: auch im bisherigen Design dieselben fünf Räume (die
        untere Leiste und die Seitenleiste lesen dieselben NAVGROUPS). */
     pruefe('GEGENPROBE bisheriges Design: dieselben Räume, kein Putzplan-Knopf, keine Schnellzugriffe',
-      a.neu === false && a.reihe.join('|') === 'g-start|g-arbeit|g-team|g-komm|g-wissen' &&
+      a.neu === false && a.reihe.join('|') === 'g-start|g-arbeit|g-zeit|g-team|g-komm|g-wissen' &&
       a.reihe.indexOf('g-putz') < 0 && !a.schnell, JSON.stringify(a));
     await p.close();
   }

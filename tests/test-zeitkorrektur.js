@@ -57,23 +57,19 @@ async function oeffne(b, rolle, w, h) {
 }
 /* Der Weg, den ein Mensch geht: Verwaltung → Kachel „Zeiten". Am Handy
    liegt die Verwaltung unter „Alles". */
+/* Runde 222: die Zeiten des Teams stehen unter dem eigenen Knopf
+   „Zeiten" → Reiter „Team" (aus dem Betrieb, 23.10.2026: „eigener
+   knopf"). Vorher Verwaltung → Zeiten. */
 async function zuZeiten(p) {
   return p.evaluate(async () => {
     const warte = (ms) => new Promise(r => setTimeout(r, ms));
-    const g = document.querySelector('.mobnav [data-group="g-chef"], #side [data-group="g-chef"]');
-    if (g) { g.click(); await warte(700); }
-    else {
-      const a = document.querySelector('.mobnav [data-group="g-alles"]'); if (!a) return false;
-      a.click(); await warte(700);
-      const v = [...document.querySelectorAll('#view-alles button, #view-alles a')]
-        .find(x => /Verwaltung/.test(x.textContent));
-      if (!v) return false;
-      v.click(); await warte(700);
-    }
-    const c = document.querySelector('#chefHome [data-cgo="zeiten"]');
-    if (!c) return false;
-    c.click(); await warte(900);
-    return true;
+    const g = [...document.querySelectorAll('.mobnav [data-group="g-zeit"], #side [data-group="g-zeit"]')].find(x => x.getClientRects().length);
+    if (!g) return false;
+    g.click(); await warte(700);
+    const s = document.querySelector('#subnav [data-subview="zeitteam"]');
+    if (!s) return false;
+    s.click(); await warte(900);
+    return document.getElementById('view-zeitteam').classList.contains('show');
   });
 }
 async function studio(p, k) {
@@ -116,16 +112,20 @@ function stand(p) {
   console.log('\n── Wer den Reiter sieht ──');
   {
     const m = await oeffne(b, 'mitarbeiter', 390, 844);
-    const da = await m.evaluate(() => !!document.querySelector('#chefHome [data-cgo="zeiten"]') &&
-      !!document.querySelector('#chefHome [data-cgo="zeiten"]').offsetParent);
-    pruefe('ein Mitarbeiter hat keinen Reiter „Zeiten"', !da);
+    /* Den Knopf „Zeiten" hat jeder — den Reiter „Team" darunter nicht. */
+    const da = await m.evaluate(async () => {
+      const g = document.querySelector('.mobnav [data-group="g-zeit"]'); if (g) g.click();
+      await new Promise(r => setTimeout(r, 600));
+      return { team: !!document.querySelector('#subnav [data-subview="zeitteam"]'), knopf: !!g };
+    });
+    pruefe('ein Mitarbeiter hat keinen Reiter „Team" unter Zeiten (aber den Knopf)', !da.team && da.knopf, JSON.stringify(da));
     await m.close();
   }
 
   console.log('\n── Nachtragen (Chef, Handy) ──');
   {
     const p = await oeffne(b, 'chef', 390, 844);
-    pruefe('Verwaltung → Zeiten ist erreichbar', await zuZeiten(p));
+    pruefe('Zeiten → Team ist erreichbar', await zuZeiten(p));
     await studio(p, 'studio-6');
     await zumVergessenenMonat(p);
     let s = await stand(p);
@@ -349,7 +349,7 @@ function stand(p) {
       await p.evaluate((d) => { document.body.dataset.dichte = d; }, dichte);
       const k = await p.evaluate(async (SRC) => {
         const T = eval('(' + SRC + ')');
-        const pane = document.querySelector('.chef-pane[data-cpane="zeiten"]');
+        const pane = document.getElementById('zeitTeamPane');
         const els = [...pane.querySelectorAll('button, select, input')].filter(e => e.offsetParent)
           .slice(0, 14);
         const zu = [];

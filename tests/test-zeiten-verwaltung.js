@@ -43,36 +43,34 @@ async function oeffne(b, rolle, w, h) {
   await p.waitForTimeout(3200);
   return p;
 }
-/* Der Weg eines Menschen: Heute → Ich → Zeiten. */
+/* Der Weg eines Menschen (Runde 222): der eigene Knopf „Zeiten" — aus
+   dem Betrieb, 23.10.2026: „eigener knopf". Vorher Heute → Ich → Zeiten. */
 async function zurSeite(p) {
   return p.evaluate(async () => {
     const w = (ms) => new Promise(r => setTimeout(r, ms));
-    const g = document.querySelector('.mobnav [data-group="g-start"], #side [data-group="g-start"]');
-    if (g) { g.click(); await w(500); }
-    const s = document.querySelector('#subnav [data-subview="ich"]');
-    if (s) { s.click(); await w(500); }
-    const t = document.querySelector('[data-ichtab="zeiten"]');
-    if (!t) return false;
-    t.click(); await w(1500);
-    return getComputedStyle(document.getElementById('ichPaneZeiten')).display !== 'none';
+    const g = document.querySelector('.mobnav [data-group="g-zeit"], #side [data-group="g-zeit"]');
+    if (!g || !g.getClientRects().length) {
+      const h = document.querySelector('#side [data-group="g-zeit"]');
+      if (!h) return false;
+      h.click();
+    } else g.click();
+    await w(1500);
+    const v = document.getElementById('view-zeit');
+    return !!(v && v.classList.contains('show')) && getComputedStyle(document.getElementById('ichPaneZeiten')).display !== 'none';
   });
 }
+/* Die Zeiten des Teams: derselbe Knopf, dann der Reiter „Team". Vorher
+   Verwaltung → Zeiten. */
 async function zuVerwaltungZeiten(p) {
   return p.evaluate(async () => {
     const w = (ms) => new Promise(r => setTimeout(r, ms));
-    const g = document.querySelector('.mobnav [data-group="g-chef"], #side [data-group="g-chef"]');
-    if (g) { g.click(); await w(700); }
-    else {
-      const a = document.querySelector('.mobnav [data-group="g-alles"]'); if (!a) return false;
-      a.click(); await w(700);
-      const v = [...document.querySelectorAll('#view-alles button, #view-alles a')].find(x => /Verwaltung/.test(x.textContent));
-      if (!v) return false;
-      v.click(); await w(700);
-    }
-    const c = document.querySelector('#chefHome [data-cgo="zeiten"]');
-    if (!c) return false;
-    c.click(); await w(1500);
-    return true;
+    const g = [...document.querySelectorAll('.mobnav [data-group="g-zeit"], #side [data-group="g-zeit"]')].find(x => x.getClientRects().length);
+    if (!g) return false;
+    g.click(); await w(700);
+    const s = document.querySelector('#subnav [data-subview="zeitteam"]');
+    if (!s) return false;
+    s.click(); await w(1500);
+    return document.getElementById('view-zeitteam').classList.contains('show');
   });
 }
 
