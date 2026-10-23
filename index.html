@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-kYHs2U3pFASuJzqfP7cFVBmuFQEvpUTYcEdT8FUsdTQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-S51b47ZBKLIFetrAsyQoSbILEEE08840K9zeb7mIie0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -13780,13 +13780,16 @@ var PREFS = {
   // Welche Meldungen dieses Gerät bekommen soll. Bewusst pro GERÄT und
   // nicht pro Person: der Push hängt am Gerät, und viele wollen am Handy
   // etwas anderes als am Rechner.
-  notify:{ chat:true, dm:true, ann:true, todos:true, mentions:true }
+  notify:{ chat:true, dm:true, ann:true, todos:true, mentions:true, formi:true }
 };
 var NOTIFY_OPTS = [
   {id:'mentions', name:'Wenn ich erwähnt werde', hint:'@Name im Chat, in Übergaben und am Schwarzen Brett – empfohlen an'},
   {id:'dm',       name:'Direktnachrichten',      hint:'Persönliche Nachrichten an dich'},
   {id:'ann',      name:'Infos der Leitung',      hint:'Ankündigungen'},
   {id:'todos',    name:'Neue Aufgaben',          hint:'Wenn in deinem Studio eine Aufgabe angelegt wird'},
+  /* Etappe 3 (Runde 235): Formi meldet sich selbst — „so oft wie nötig",
+     aber jede Meldung hat genau einen Anlass. */
+  {id:'formi',    name:'Formi meldet sich',      hint:'Morgens dein Tag, Frist vorbei, Feierabend-Check – als Leitung auch Defekte und fehlendes Material'},
   /* Runde 216: die Erinnerung ans Auffrischen (schulungAuffrischErinnern).
      Nur sichtbar, wenn die Schulung für die Firma an ist — ein Schalter
      für etwas, das es nicht gibt, wäre ein Versprechen ohne Deckung. */
@@ -21954,6 +21957,12 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-23-formi-meldet-sich', datum:'23.10.2026', titel:'Formi trägt für dich ein – und meldet sich von selbst', wo:'gehirn', punkte:[
+    'Sag Formi z. B. „Nur noch 2 Westen M" oder „Hatte gerade ein Probetraining mit Abschluss" – Formi zeigt dir vorher, was eingetragen wird, und du bestätigst mit einem Tipp.',
+    'Morgens um 7 sagt Formi dir, was dein Tag bringt. Läuft eine Frist ab, während du Dienst hast, sagt Formi Bescheid – und am Schichtende, wenn die Übergabe oder Putzpunkte noch fehlen.',
+    'Die Leitung bekommt sofort Bescheid, wenn ein Gerät defekt gemeldet wird oder Material fehlt.',
+    'Zu viel? Profil → Mitteilungen → „Formi meldet sich" ausschalten.'
+  ]},
   { id:'2026-10-23-formi-spart', datum:'23.10.2026', titel:'Formi fällt nicht mehr den ganzen Tag aus', wo:'gehirn', punkte:[
     'Formi hat pro Tag nur ein begrenztes Rechenkontingent. Bisher war danach bis in die Nacht Schluss.',
     'Jetzt schaltet Formi rechtzeitig auf ein sparsameres Modell um und antwortet weiter – etwas knapper. Kurz vor der Grenze kommt die passende Antwort direkt aus unserem Wissen („Ich spare heute Rechenzeit …“).',
@@ -27764,6 +27773,8 @@ function gehirnVorschlagHTML(v, i){
   if(s.typ==='idee') return gehirnIdeeHTML(v, i);
   if(s.typ==='abhaken') return gehirnAbhakenHTML(v, i);
   if(s.typ==='defekt') return gehirnDefektHTML(v, i);
+  if(s.typ==='material') return gehirnMaterialHTML(v, i);
+  if(s.typ==='probe') return gehirnProbeHTML(v, i);
   var ank = s.typ==='ankuendigung';
   var studios = s.alle ? (ank ? 'Alle Mitarbeiter' : 'Alle Studios') : ((s.studioNamen||[]).join(', ') || '—');
   var teile=[], n=0;
@@ -27805,6 +27816,8 @@ function gehirnJetztAnlegen(i, btn){
   if(s.typ==='abwesenheit' || s.typ==='uebergabe') return gehirnEintragen(v, btn);
   if(s.typ==='idee') return gehirnIdeeSenden(v, btn);
   if(s.typ==='defekt') return gehirnDefektMelden(v, btn);
+  if(s.typ==='material') return gehirnMaterialMelden(v, btn);
+  if(s.typ==='probe') return gehirnProbeEintragen(v, btn);
   if(!canManage()) return;
   var darf=schreibStudios().filter(function(x){ return x.ok; });
   var darfKeys=darf.map(function(x){ return x.key; });
@@ -27847,6 +27860,8 @@ function gehirnVorschlagUebernehmen(v){
   if(!v || !v.vorschlag) return;
   var s=v.vorschlag;
   if(s.typ==='abwesenheit' || s.typ==='uebergabe') return gehirnInsTeam(s);
+  if(s.typ==='material'){ gehirnOeffne({ ziel:'material', studioKey:s.studioKey }); return; }
+  if(s.typ==='probe') return gehirnProbeFormular(s);
   if(!canManage()) return;
   showView('chef');
   setTimeout(function(){
@@ -27965,6 +27980,7 @@ function gehirnSofort(v){
     return r;
   }
   if(s.typ==='defekt'){ gehirnSchritt(v, 'Suche Gerät „'+s.geraet+'" in '+s.studioName+' …', true); return gehirnDefektSuchen(v); }
+  if(s.typ==='material'){ gehirnSchritt(v, 'Suche „'+s.artikel+'" im Material von '+s.studioName+' …', true); return gehirnMaterialSuchen(v); }
   if(s.typ==='rueckfrage'){ gehirnSchritt(v, 'Nicht ganz eindeutig — tipp an, was du meinst', true); return; }
   if(s.typ==='erinnerung'){ gehirnSchritt(v, 'Vorschau — „Erinnern" tippen, dann kommt sie als Push', true); return; }
   if(s.typ==='mail'){ gehirnSchritt(v, 'Entwurf — lies drüber, dann „Senden"', true); return; }
@@ -30595,6 +30611,7 @@ function gehirnAbhaken(v, x, btn){
 function gehirnWahl(i, j, btn){
   var v=_gVerlauf[i]; if(!v || !v.wahl || !v.wahl[j] || v.angelegt) return;
   if(v.vorschlag.typ==='defekt'){ v.geraet=v.wahl[j]; v.wahl=[v.geraet]; gehirnZeichnen(); return; }
+  if(v.vorschlag.typ==='material'){ v.artikel=v.wahl[j]; v.wahl=[v.artikel]; gehirnZeichnen(); return; }
   gehirnAbhaken(v, v.wahl[j], btn);
 }
 function gehirnAbhakenRueck(i, btn){
@@ -30632,6 +30649,120 @@ function gehirnAbhakenHTML(v, i){
    mit den Rechten der Person gelesen). Gemeldet wird wie im Geräte-
    Fenster: Verlauf, Zustand und — nur wo die Regel es erlaubt und noch
    keine offen ist — eine Aufgabe für die Leitung. */
+/* ── Etappe 3 (Runde 235, 23.10.2026): Material und Probetraining ──────
+   Aus dem Betrieb auf die Rückfrage, welche Formulare Formi ausfüllt:
+   „Gerät defekt melden, Material nachbestellen, Urlaub/Frei beantragen,
+   Probetraining eintragen". Defekt und Urlaub gab es schon.
+   Wie überall: Vorschau, Knopf, geschrieben mit den eigenen Rechten und
+   in denselben Feldern wie das Formular. */
+function gehirnMaterialNeu(it, s){
+  /* „nur noch 2" → Ist 2. „es fehlen 3" → bei gesetztem Soll Ist = Soll − 3,
+     sonst die Fehl-Menge direkt (wie in der Tabelle: Soll leer = von Hand). */
+  var neu={ name:it.name, have:it.have||0, need:it.need||0, limit:it.limit||0 };
+  if(s.ist!==null && s.ist!==undefined) neu.have=s.ist;
+  else if(neu.limit>0) neu.have=Math.max(0, neu.limit-s.fehlt);
+  else neu.need=s.fehlt;
+  return neu;
+}
+function gehirnMaterialListe(sk){
+  var gespeichert=(_invAll[sk]||[]).map(function(i){ return { name:i.name, have:i.have||0, need:i.need||0, limit:i.limit||0 }; });
+  var da={}; gespeichert.forEach(function(i){ da[i.name]=true; });
+  DEFAULT_MATERIALS.forEach(function(n){ if(!da[n]) gespeichert.push({ name:n, have:0, need:0, limit:0 }); });
+  return gespeichert;
+}
+function gehirnMaterialSuchen(v){
+  var s=v.vorschlag;
+  return S('inventory').doc(s.studioKey).get().then(function(doc){
+    var items=(doc.exists && Array.isArray(doc.data().items)) ? doc.data().items : [];
+    _invAll[s.studioKey]=items;
+    v.wahl=gehirnBeste(s.artikel, gehirnMaterialListe(s.studioKey), function(i){ return i.name||''; });
+    if(v.wahl.length===1) v.artikel=v.wahl[0];
+  }).catch(function(e){ v.wahl=[]; v.hinweis=errMsg(e); });
+}
+function gehirnKarteRahmen(v, kopf, inhalt, knoepfe, satz){
+  return '<p class="ga-text">'+(v.angelegt ? 'Erledigt:' : satz)+'</p>'+
+    '<div class="gv-karte'+(v.gezeigt ? '' : ' gv-neu')+(v.angelegt ? ' gv-fertig' : '')+(v.jetzt ? ' gv-jetzt' : '')+'">'+
+    '<div style="--gv-i:0" class="gv-kopf">'+kopf+'</div>'+inhalt+
+    (v.angelegt ? '<div style="--gv-i:3" class="gv-erfolg" role="status"><svg class="gv-haken" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="12"/>'+
+      '<path d="M8 14.5l4 4 8-9"/></svg><span>'+esc(v.angelegt)+'</span></div>' : '')+
+    '<div style="--gv-i:4" class="gv-knoepfe">'+knoepfe+'</div></div>';
+}
+function gehirnMaterialHTML(v, i){
+  var s=v.vorschlag;
+  if(v.hinweis && !v.angelegt) return '<p class="ga-text">'+gehirnText(v.hinweis)+'</p>';
+  if(!v.artikel){
+    if(v.wahl && v.wahl.length) return '<p class="ga-text">Welchen Artikel meinst du?</p><div class="gv-wahl">'+v.wahl.map(function(it, j){
+      return '<button type="button" class="btn btn-ghost btn-sm" data-gwahl="'+i+'|'+j+'">'+esc(it.name||'Artikel')+'</button>'; }).join('')+'</div>';
+    return '<p class="ga-text">„'+esc(s.artikel)+'" finde ich im Material von '+esc(s.studioName)+' nicht.</p>'+
+      '<div class="gehirn-ziele"><button type="button" class="btn btn-ghost btn-sm" data-gziel="material">Zum Material ›</button></div>';
+  }
+  var alt=v.artikel, neu=gehirnMaterialNeu(alt, s);
+  var zeile=function(it){ return 'Ist '+(it.have||0)+(it.limit>0 ? ' · Soll '+it.limit : '')+' · fehlt '+itemNeed(it); };
+  var inhalt='<div style="--gv-i:1" class="gv-titel">'+esc(alt.name)+'</div>'+
+    '<div style="--gv-i:2"><p class="gv-text">'+esc(zeile(alt))+' → <b>'+esc(zeile(neu))+'</b></p></div>';
+  var knoepfe = v.angelegt ? '<button type="button" class="btn btn-ghost btn-sm" data-gziel="material">Zum Material ›</button>' :
+    '<button type="button" class="btn btn-primary btn-sm" data-ganlegen="'+i+'">Jetzt eintragen</button>'+
+    '<button type="button" class="btn btn-ghost btn-sm" data-gvorschlag="'+i+'">Im Formular bearbeiten</button>';
+  return gehirnKarteRahmen(v, '<span class="gv-art">Material</span><span class="gv-chip">'+esc(s.studioName)+'</span>', inhalt, knoepfe, 'So würde ich es eintragen:');
+}
+function gehirnMaterialMelden(v, btn){
+  var s=v.vorschlag; if(!v.artikel || v.angelegt) return;
+  if(gehirnMeineKeys().indexOf(s.studioKey)<0){ toast('Für dieses Studio darfst du nichts eintragen.', true); return; }
+  var ref=S('inventory').doc(s.studioKey), name=v.artikel.name;
+  withBusy(btn, function(){
+    /* Frisch lesen und nur diesen Artikel ändern, die anderen bleiben, wie
+       sie gespeichert sind. Felder wie saveMaterialNow (das ebenfalls die
+       ganze Liste schreibt). */
+    return ref.get().then(function(doc){
+      var items=(doc.exists && Array.isArray(doc.data().items)) ? doc.data().items.slice() : [];
+      var at=-1; items.forEach(function(it, k){ if(it.name===name) at=k; });
+      var basis = at>=0 ? items[at] : { name:name, have:0, need:0, limit:0 };
+      var neu=gehirnMaterialNeu(basis, s);
+      if(at>=0) items[at]=neu; else items.push(neu);
+      return ref.set({ items:items, updatedAt:Date.now(), updatedBy:session.name }).then(function(){ return { items:items, neu:neu }; });
+    }).then(function(x){
+      try{ pushToSheets(s.studioKey, x.items); }catch(e){}
+      v.artikel=Object.assign({}, x.neu);
+      v.angelegt = itemNeed(x.neu)>0 ? 'Eingetragen — fehlt '+itemNeed(x.neu)+', die Leitung sieht es' : 'Eingetragen — nichts fehlt';
+      v.jetzt=!gehirnWenigBewegung(); tick(12); gehirnZeichnen();
+    }).catch(function(e){ toast(errMsg(e), true); });
+  });
+}
+function gehirnProbeHTML(v, i){
+  var s=v.vorschlag;
+  var inhalt='<div style="--gv-i:1" class="gv-titel">'+(s.abschluss ? 'Mit Abschluss ✓' : 'Ohne Abschluss')+' · '+esc(gehirnDatum(s.datum))+'</div>'+
+    (s.notiz ? '<div style="--gv-i:2"><p class="gv-text">'+esc(s.notiz)+'</p></div>' : '');
+  var knoepfe = v.angelegt ? '<button type="button" class="btn btn-ghost btn-sm" data-gziel="probe">Zum Probetraining ›</button>' :
+    '<button type="button" class="btn btn-primary btn-sm" data-ganlegen="'+i+'">Jetzt eintragen</button>'+
+    '<button type="button" class="btn btn-ghost btn-sm" data-gvorschlag="'+i+'">Im Formular bearbeiten</button>';
+  return gehirnKarteRahmen(v, '<span class="gv-art">Probetraining</span><span class="gv-chip">'+esc(s.studioName)+'</span><span class="gv-chip">'+esc(session.name||'')+'</span>',
+    inhalt, knoepfe, 'So würde ich es eintragen:');
+}
+function gehirnProbeEintragen(v, btn){
+  var s=v.vorschlag; if(v.angelegt) return;
+  if(gehirnMeineKeys().indexOf(s.studioKey)<0){ toast('Für dieses Studio darfst du nichts eintragen.', true); return; }
+  withBusy(btn, function(){
+    /* Dieselben Felder wie speichereProbe; Mittag statt Mitternacht. */
+    return S('probetrainings').add({ studioKey:s.studioKey, datum:new Date(s.datum+'T12:00:00').getTime(), abschluss:!!s.abschluss,
+      notiz:String(s.notiz||'').slice(0,200), vonUid:session.uid, vonName:String(session.name||'Unbekannt').slice(0,60),
+      erfasstVon:session.uid, erfasstVonName:session.name||'', ts:Date.now() })
+    .then(function(){
+      v.angelegt = s.abschluss ? 'Abschluss eingetragen — stark! 🎉' : 'Probetraining eingetragen';
+      v.jetzt=!gehirnWenigBewegung(); tick(12); gehirnZeichnen();
+    }).catch(function(e){ toast(errMsg(e), true); });
+  });
+}
+function gehirnProbeFormular(s){
+  if(!formiBleibtOffen()) jarvisZu();
+  oeffneProbe();
+  setTimeout(function(){
+    var st=$('pbStudio'); if(st && [].some.call(st.options, function(o){ return o.value===s.studioKey; })) st.value=s.studioKey;
+    var d=$('pbDatum'); if(d) d.value=s.datum;
+    var n=$('pbNotiz'); if(n) n.value=s.notiz||'';
+    _pbErgebnis = s.abschluss ? 1 : 0;
+    document.querySelectorAll('#pbErgebnis [data-pbe]').forEach(function(c){ c.classList.toggle('on', c.getAttribute('data-pbe')===String(_pbErgebnis)); });
+  }, 0);
+}
 function gehirnDefektSuchen(v){
   var s=v.vorschlag;
   return S('studios').doc(s.studioKey).collection('devices').get().then(function(sn){

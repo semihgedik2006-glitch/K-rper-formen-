@@ -8343,6 +8343,30 @@ function gehirnBefehlPruefen(roh, namen, erlaubt, rolle, heute) {
     if (!k) return null;
     return mitStudio({ typ: 'defekt', geraet, text }, k);
   }
+  /* Etappe 3 (23.10.2026), aus dem Betrieb auf die Rückfrage „Welche
+     Formulare soll Formi ausfüllen?": „Gerät defekt melden, Material
+     nachbestellen, Urlaub/Frei beantragen, Probetraining eintragen".
+     Defekt und Urlaub gab es schon; Material und Probetraining sind neu.
+     Wie bei „defekt" nennt die KI nur den Artikel in Worten — welcher
+     Eintrag das ist, sucht das Gerät in seiner eigenen Liste. */
+  if (r.typ === 'material') {
+    const artikel = kurz(r.artikel, 60);
+    const zahl = (x, min) => { const n = Math.round(Number(x)); return (x !== null && x !== '' && x !== undefined && isFinite(n) && n >= min && n <= 9999) ? n : null; };
+    const ist = zahl(r.ist, 0), fehlt = zahl(r.fehlt, 1);
+    if (!artikel || (ist === null && fehlt === null)) return null;
+    const k = studioVon(r.studio || r.studios) || (erlaubt || [])[0] || '';
+    if (!k) return null;
+    return mitStudio({ typ: 'material', artikel, ist, fehlt: ist === null ? fehlt : null }, k);
+  }
+  if (r.typ === 'probe') {
+    const datum = DATUM_RE.test(String(r.datum || '')) ? String(r.datum) : heute;
+    /* Eingetragen wird, was war: heute oder in den letzten 30 Tagen. */
+    const frueh = heute ? new Date(new Date(heute + 'T12:00:00Z').getTime() - 30 * 864e5).toISOString().slice(0, 10) : '';
+    if (!datum || (heute && (datum > heute || datum < frueh))) return null;
+    const k = studioVon(r.studio || r.studios) || (erlaubt || [])[0] || '';
+    if (!k) return null;
+    return mitStudio({ typ: 'probe', datum, abschluss: r.abschluss === true, notiz: kurz(r.notiz, 200) }, k);
+  }
   /* Etappe 4 (20.10.2026): Erinnerung und Schichttausch. */
   if (r.typ === 'erinnerung') {
     const m = /^(\d{4}-\d{2}-\d{2})[T ](\d{2}):(\d{2})$/.exec(String(r.wann || ''));
@@ -8418,6 +8442,8 @@ function gehirnAktionSystem(o) {
     '{"typ":"uebergabe","text":"...","studio":"Studioname oder leer"} — Notiz an die nächste Schicht. ' +
     '{"typ":"abhaken","bereich":"putzplan"|"aufgabe","was":"Stichwort, z. B. Westen waschen","studio":"Studioname oder leer"} — etwas als erledigt markieren. ' +
     '{"typ":"defekt","geraet":"Name oder Beschreibung des Geräts","text":"was los ist","studio":"Studioname oder leer"} — ein Gerät als defekt melden. ' +
+    '{"typ":"material","artikel":"Stichwort, z. B. Westen M","ist":Zahl oder null,"fehlt":Zahl oder null,"studio":"Studioname oder leer"} — Bestand melden: "ist" = wie viele noch da sind ("nur noch 2 Westen M"), "fehlt" = wie viele fehlen ("es fehlen 3 Gurte"). ' +
+    '{"typ":"probe","datum":"YYYY-MM-DD","abschluss":true|false,"notiz":"...","studio":"Studioname oder leer"} — ein Probetraining eintragen, das die Person gegeben hat (heute oder in den letzten 30 Tagen); "abschluss" true, wenn der Interessent unterschrieben hat. Notiz OHNE Kundennamen. ' +
     (verwaltet
       ? '{"typ":"aufgabe","titel":"...","text":"...","schritte":["..."],"frist":"YYYY-MM-DD oder leer","studios":["Studioname" oder "alle"]} — etwas, das im Studio erledigt und abgehakt wird. ' +
         '{"typ":"ankuendigung","text":"...","studios":["Studioname" oder "alle"],"wichtig":true|false} — Information an das Team. '
@@ -8457,7 +8483,7 @@ function gehirnVerlaufText(v) {
    besteht (z. B. Urlaub in der Vergangenheit) — sonst bekäme man auf
    „Ich will gestern Urlaub" eine Antwort aus dem Wissen; „hinweis" bei
    „keins" mit Begründung; sonst „aktion". */
-const GEHIRN_BEKANNT = ['navigation', 'abfrage', 'abwesenheit', 'uebergabe', 'abhaken', 'defekt', 'aufgabe', 'ankuendigung', 'idee', 'rueckfrage', 'erinnerung', 'tausch', 'mail'];
+const GEHIRN_BEKANNT = ['navigation', 'abfrage', 'abwesenheit', 'uebergabe', 'abhaken', 'defekt', 'aufgabe', 'ankuendigung', 'idee', 'rueckfrage', 'erinnerung', 'tausch', 'mail', 'material', 'probe'];
 /* Mehrere Aufträge in einem Satz (20.10.2026): „Klo ist sauber und die
    Handtücher sind leer". Höchstens drei; jeder einzeln geprüft wie
    sonst auch. Fragen und Verbotenes fallen heraus — eine Frage mitten
@@ -8956,7 +8982,174 @@ exports.gehirnWissen = region
     return json;
   });
 
-exports.__intern = { abschlussZeilenPruefen, monateVor, eigeneAbschlussZeile, eigeneRegel, antragUhrPruefen, ANTRAG_TAGE_MAX, erlaubteSchritte, schrittWaehlen, tagesStand, gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnStimmePruefen, GEHIRN_STIMMEN, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
+/* ══ Formi meldet sich selbst (Etappe 3, Runde 235, 23.10.2026) ═══════
+   Aus dem Betrieb auf die Rückfragen: melden bei „Morgens: dein Tag,
+   Fällig & überfällig, Fehlendes Material/Defekt, Schichtende-Check",
+   und wie oft: „So oft wie nötig".
+   Jede Meldung hat einen Anlass, den es genau einmal gibt (der Morgen,
+   eine Frist, die gerade verstrichen ist, ein Schichtende, eine neue
+   Meldung) — „so oft wie nötig" heisst nicht „immer wieder dasselbe".
+   Abschaltbar je Gerät unter der Art „formi" (Profil → Mitteilungen).
+   Inhalt nur, was die Person in der App ohnehin sieht; keine Chats. */
+
+/* Rein rechnerisch (__intern) — alles, was entscheidet, was gesagt wird. */
+function formiTagText(o) {
+  const teile = [];
+  (o.schichten || []).forEach(x => teile.push('Dienst ' + x.von + '–' + x.bis + ' in ' + x.studio));
+  if (o.ueberfaellig) teile.push(o.ueberfaellig + (o.ueberfaellig === 1 ? ' Aufgabe ist überfällig' : ' Aufgaben sind überfällig'));
+  if (o.heute) teile.push(o.heute + (o.heute === 1 ? ' Aufgabe ist heute fällig' : ' Aufgaben sind heute fällig'));
+  if (o.putz) teile.push(o.putz + ' Putzpunkte offen');
+  if (!teile.length) return null;
+  return teile.join(' · ') + '.';
+}
+function formiSchichtendeText(o) {
+  const fehlt = [];
+  if (!o.uebergabe) fehlt.push('Übergabe noch nicht geschrieben');
+  if (o.putz) fehlt.push(o.putz + (o.putz === 1 ? ' Putzpunkt offen' : ' Putzpunkte offen'));
+  if (!fehlt.length) return null;
+  return 'Deine Schicht in ' + o.studio + ' ist zu Ende: ' + fehlt.join(' · ') + '.';
+}
+/* Artikel, bei denen jetzt (mehr) fehlt als vorher. itemNeed wie in der App. */
+function formiMaterialNeu(vorher, nachher) {
+  const fehlt = it => (Number(it.limit) > 0) ? Math.max(0, Number(it.limit) - (Number(it.have) || 0)) : (Number(it.need) || 0);
+  const alt = {};
+  (Array.isArray(vorher) ? vorher : []).forEach(it => { if (it && it.name) alt[it.name] = fehlt(it); });
+  return (Array.isArray(nachher) ? nachher : [])
+    .filter(it => it && it.name && fehlt(it) > 0 && fehlt(it) > (alt[it.name] || 0))
+    .map(it => ({ name: String(it.name).slice(0, 60), fehlt: fehlt(it) }));
+}
+/* Offene Aufgaben, deren Frist zwischen von und bis verstrichen ist. */
+function formiFristVorbei(todos, von, bis) {
+  return (todos || []).filter(t => t && t.due && t.due > von && t.due <= bis && !t.archived && !erledigt(t));
+}
+/* Liegt die Uhrzeit (HH:MM, Berlin) am Tag im Fenster (von, bis]? */
+function formiSchichtEndeIn(datum, zeit, von, bis) {
+  if (!/^\d{1,2}:\d{2}$/.test(String(zeit || ''))) return false;
+  const t = berlinZuUtc(datum, zeit).getTime();
+  return t > von && t <= bis;
+}
+
+async function formiPush(firma, filter, titel, text) {
+  const tokens = await collectTokens(d => willHaben(d, 'formi') && filter(d), null, firma);
+  await sendPush(tokens, titel, text);
+  return tokens.length;
+}
+async function formiSchichtenHeute(firma, studioKey, heute) {
+  const sn = await W(firma).collection('studios').doc(studioKey).collection('shifts').where('date', '==', heute).get();
+  return sn.docs.map(d => d.data() || {}).filter(x => x.uid);
+}
+
+/* Morgens um 7: dein Tag — an alle, die heute Dienst haben. */
+async function formiMorgenFirma(firma) {
+  const heute = tagBerlin(new Date());
+  const ende = berlinZuUtc(heute, '23:59').getTime(), jetzt = Date.now();
+  const mitAufgaben = await featureAn(firma, 'todos'), mitPutz = await featureAn(firma, 'putzplan');
+  const proPerson = {};
+  for (const ref of await W(firma).collection('studios').listDocuments()) {
+    const schichten = await formiSchichtenHeute(firma, ref.id, heute);
+    if (!schichten.length) continue;
+    const name = await studioName(firma, ref.id);
+    const offen = mitAufgaben ? (await ref.collection('todos').get()).docs.map(d => d.data() || {}).filter(t => !t.archived && !erledigt(t)) : [];
+    const putz = mitPutz ? (await ref.collection('cleaning').get()).docs.map(d => d.data() || {}).filter(t => !t.archived && !erledigt(t)).length : 0;
+    for (const sch of schichten) {
+      const p = proPerson[sch.uid] || (proPerson[sch.uid] = { schichten: [], ueberfaellig: 0, heute: 0, putz: 0 });
+      p.schichten.push({ von: sch.from || '', bis: sch.to || '', studio: name });
+      const fuerMich = offen.filter(t => !t.assignedTo || t.assignedTo === sch.uid);
+      p.ueberfaellig += fuerMich.filter(t => t.due && t.due < jetzt).length;
+      p.heute += fuerMich.filter(t => t.due && t.due >= jetzt && t.due <= ende).length;
+      p.putz += putz;
+    }
+  }
+  let n = 0;
+  for (const uid of Object.keys(proPerson)) {
+    const text = formiTagText(proPerson[uid]);
+    if (text) n += await formiPush(firma, d => d.uid === uid, '☀️ Formi: dein Tag', text);
+  }
+  return n;
+}
+exports.formiMorgen = region.runWith({ timeoutSeconds: 300, memory: '256MB' })
+  .pubsub.schedule('0 7 * * *').timeZone('Europe/Berlin')
+  .onRun(async () => { for (const f of await alleFirmen()) await formiMorgenFirma(f).catch(e => console.error('formiMorgen', f, e.message)); return null; });
+
+/* Alle 30 Minuten (7–21 Uhr): Fristen, die gerade verstrichen sind —
+   an die zugewiesene Person, sonst an die, die jetzt im Studio Dienst
+   haben. Niemand im Dienst: keine Meldung (die Morgenmeldung reicht). */
+async function formiFaelligFirma(firma, jetzt) {
+  if (!(await featureAn(firma, 'todos'))) return 0;
+  const heute = tagBerlin(new Date(jetzt));
+  let n = 0;
+  for (const ref of await W(firma).collection('studios').listDocuments()) {
+    const todos = (await ref.collection('todos').get()).docs.map(d => d.data() || {});
+    const vorbei = formiFristVorbei(todos, jetzt - 30 * 60000, jetzt);
+    if (!vorbei.length) continue;
+    const imDienst = (await formiSchichtenHeute(firma, ref.id, heute))
+      .filter(x => berlinZuUtc(heute, x.from || '00:00').getTime() <= jetzt && berlinZuUtc(heute, x.to || '23:59').getTime() >= jetzt)
+      .map(x => x.uid);
+    for (const t of vorbei) {
+      const an = t.assignedTo ? [t.assignedTo] : imDienst;
+      if (!an.length) continue;
+      n += await formiPush(firma, d => an.indexOf(d.uid) >= 0, '⏰ Frist vorbei', String(t.title || 'Aufgabe').slice(0, 120) + ' ist noch offen.');
+    }
+  }
+  return n;
+}
+exports.formiFaellig = region.runWith({ timeoutSeconds: 300, memory: '256MB' })
+  .pubsub.schedule('*/30 7-21 * * *').timeZone('Europe/Berlin')
+  .onRun(async () => { const jetzt = Date.now(); for (const f of await alleFirmen()) await formiFaelligFirma(f, jetzt).catch(e => console.error('formiFaellig', f, e.message)); return null; });
+
+/* Alle 15 Minuten: wessen Schicht gerade zu Ende ging — Übergabe
+   geschrieben? Putzplan durch? Nur wenn etwas fehlt. */
+async function formiSchichtendeFirma(firma, jetzt) {
+  const heute = tagBerlin(new Date(jetzt));
+  const mitPutz = await featureAn(firma, 'putzplan');
+  const tagStart = berlinZuUtc(heute, '00:00').getTime();
+  let n = 0;
+  for (const ref of await W(firma).collection('studios').listDocuments()) {
+    const enden = (await formiSchichtenHeute(firma, ref.id, heute)).filter(x => formiSchichtEndeIn(heute, x.to, jetzt - 15 * 60000, jetzt));
+    if (!enden.length) continue;
+    const name = await studioName(firma, ref.id);
+    const putz = mitPutz ? (await ref.collection('cleaning').get()).docs.map(d => d.data() || {}).filter(t => !t.archived && !erledigt(t)).length : 0;
+    const uebergaben = (await ref.collection('handovers').where('ts', '>=', tagStart).get()).docs.map(d => (d.data() || {}).uid);
+    for (const sch of enden) {
+      const text = formiSchichtendeText({ studio: name, uebergabe: uebergaben.indexOf(sch.uid) >= 0, putz });
+      if (text) n += await formiPush(firma, d => d.uid === sch.uid, '👋 Formi: Feierabend-Check', text);
+    }
+  }
+  return n;
+}
+exports.formiSchichtende = region.runWith({ timeoutSeconds: 300, memory: '256MB' })
+  .pubsub.schedule('*/15 * * * *').timeZone('Europe/Berlin')
+  .onRun(async () => { const jetzt = Date.now(); for (const f of await alleFirmen()) await formiSchichtendeFirma(f, jetzt).catch(e => console.error('formiSchichtende', f, e.message)); return null; });
+
+/* Sofort: Defekt gemeldet, Material fehlt → die Leitung dieses Studios
+   und der Chef. Wer es selbst gemeldet hat, bekommt nichts. */
+const formiAnLeitung = (studioKey) => (d) => d.role === 'chef' || (d.role === 'leiter' && inStudio(d, studioKey));
+const _formiDefekt = async (snap, ctx) => {
+  const x = snap.data() || {};
+  if (x.art !== 'defekt') return null;
+  const firma = ctx.params.firma || null, sk = ctx.params.studioKey;
+  const tokens = await collectTokens(d => willHaben(d, 'formi') && formiAnLeitung(sk)(d), x.byUid || null, firma);
+  await sendPush(tokens, '🔧 Defekt gemeldet', String(x.devName || 'Gerät').slice(0, 60) + ': ' + String(x.text || 'defekt').slice(0, 140) + (x.by ? ' (' + String(x.by).split(' ')[0] + ')' : ''));
+  return null;
+};
+const _formiDefektW = beideWelten('studios/{studioKey}/deviceLog/{logId}', _formiDefekt);
+exports.formiDefekt = _formiDefektW.flach;
+exports.formiDefektF = _formiDefektW.firma;
+const _formiMaterial = async (change, ctx) => {
+  if (!change.after.exists) return null;
+  const neu = formiMaterialNeu((change.before.exists ? change.before.data() : {}).items, (change.after.data() || {}).items);
+  if (!neu.length) return null;
+  const firma = ctx.params.firma || null, sk = ctx.params.studioKey;
+  const tokens = await collectTokens(d => willHaben(d, 'formi') && formiAnLeitung(sk)(d), null, firma);
+  const liste = neu.slice(0, 4).map(x => x.name + ' (' + x.fehlt + ')').join(', ') + (neu.length > 4 ? ' und ' + (neu.length - 4) + ' weitere' : '');
+  await sendPush(tokens, '📦 Material fehlt', liste);
+  return null;
+};
+const _formiMaterialW = beideWelten('inventory/{studioKey}', _formiMaterial, 'onWrite');
+exports.formiMaterial = _formiMaterialW.flach;
+exports.formiMaterialF = _formiMaterialW.firma;
+
+exports.__intern = { formiTagText, formiSchichtendeText, formiMaterialNeu, formiFristVorbei, formiSchichtEndeIn, abschlussZeilenPruefen, monateVor, eigeneAbschlussZeile, eigeneRegel, antragUhrPruefen, ANTRAG_TAGE_MAX, erlaubteSchritte, schrittWaehlen, tagesStand, gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnStimmePruefen, GEHIRN_STIMMEN, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
                      gehirnVorschlagPruefen, gehirnBefehlPruefen, gehirnWeg, gehirnKontextText, lageberichtOhneKi,
                      geminiSperreAufheben: () => { _geminiAusBis = 0; }, geminiGesperrt: () => Date.now() < _geminiAusBis, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,
                      authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
