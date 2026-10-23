@@ -62,11 +62,16 @@ const EIG = (anims) => [...new Set(anims.flatMap(a => a.effect.getKeyframes().fl
         const c = document.querySelector('#todoArea .todo .check'); if (!c) return null;
         window.__formiLebt.schlucken('#todoArea .todo .check');
         await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-        const g = document.querySelector('.formi-schluck'); if (!g) return { g: false };
-        const a = g.getAnimations()[0], kf = a.effect.getKeyframes();
+        /* Runde 244 — „besseren effekt": der Titel zerfällt in Buchstaben
+           (.formi-strom). Gemessen wird der Buchstabe, der zuerst abreisst. */
+        const box = document.querySelector('.formi-strom'); if (!box) return { g: false };
+        const zeichen = [...box.querySelectorAll('i:not(.spur)')].filter(i => i.style.display !== 'none' && i.getAnimations().length);
+        const ani = i => i.getAnimations().find(x => !x.effect.pseudoElement);
+        const g = zeichen.sort((x, y) => ani(x).effect.getTiming().delay - ani(y).effect.getTiming().delay)[0];
+        const a = ani(g), kf = a.effect.getKeyframes();
         const k = document.getElementById('formiKugel').getBoundingClientRect();
         const m = /translate\((-?[\d.]+)px, ?(-?[\d.]+)px\).*scale\(([\d.]+), ?([\d.]+)\)/.exec(kf[kf.length - 1].transform);
-        const gr = g.getBoundingClientRect();
+        const zr = g.parentElement.getBoundingClientRect();
         /* Runde 242 — aus dem Betrieb: „fliegen ganz steif … statt gestreckt
            und drehend … keine spagettifikation". Gemessen aus den Bildern:
            wie weit er sich dreht, ob die Streckung zum Ende wächst und ob
@@ -75,18 +80,21 @@ const EIG = (anims) => [...new Set(anims.flatMap(a => a.effect.getKeyframes().fl
         const sx = kf.map(f => +((/scale\(([\d.]+),/.exec(f.transform) || [0, 1])[1]));
         const sy = kf.map(f => +((/scale\([\d.]+, ?([\d.]+)\)/.exec(f.transform) || [0, 1])[1]));
         const zeitAnteilEnde = 1 - kf[Math.floor(kf.length * .8)].offset;
-        return { g: true, text: g.textContent, gw: g.offsetWidth, gh: g.offsetHeight, drehung: Math.abs(rots[rots.length - 1] - rots[0]),
-          streckEnde: sx[kf.length - 2] / sy[kf.length - 2], streckMitte: sx[Math.floor(kf.length / 2)] / sy[Math.floor(kf.length / 2)], zeitAnteilEnde, klick: getComputedStyle(g).pointerEvents, endlich: a.effect.getTiming().iterations === 1, eig: Object.keys(kf[5]).filter(x => !['offset', 'easing', 'composite', 'computedOffset'].includes(x)),
-          ende: m ? { x: +m[1], y: +m[2], sx: +m[3], sy: +m[4] } : null, op: kf[kf.length - 1].opacity, kx: k.left + k.width / 2, ky: k.top + k.height / 2 };
+        const text = [...box.querySelectorAll('i:not(.spur)')].map(i => i.textContent).join('').replace(/\u00a0/g, ' ');
+        return { g: true, text, gw: g.offsetWidth, gh: g.offsetHeight, drehung: Math.abs(rots[rots.length - 1] - rots[0]),
+          streckEnde: sx[kf.length - 2] / sy[kf.length - 2], streckMitte: sx[Math.floor(kf.length / 2)] / sy[Math.floor(kf.length / 2)], zeitAnteilEnde, klick: getComputedStyle(box).pointerEvents, endlich: a.effect.getTiming().iterations === 1, eig: Object.keys(kf[5]).filter(x => !['offset', 'easing', 'composite', 'computedOffset'].includes(x)),
+          ende: m ? { x: zr.left + +m[1], y: zr.top + +m[2], sx: +m[3], sy: +m[4] } : null, op: kf[kf.length - 1].opacity, kx: k.left + k.width / 2, ky: k.top + k.height / 2 };
       });
       /* translate setzt die linke obere Ecke; die Mitte des Schriftzugs liegt eine halbe Breite weiter. */
       const nahAnKugel = s && s.ende && Math.hypot(s.ende.x + s.gw / 2 - s.kx, s.ende.y + s.gh / 2 - s.ky) < 40;
-      pruefe(`Abhaken: der Schriftzug fliegt zur Kugel, lang gezogen, am Ende weg („${s && s.text}")`, s && s.g && s.klick === 'none' && s.endlich && s.ende && s.ende.sx > 2 && s.ende.sy < .3 && +s.op === 0 && nahAnKugel, JSON.stringify(s));
+      pruefe(`Abhaken: der Titel zerfällt und fliegt zur Kugel, lang gezogen, am Ende weg („${s && s.text}")`, s && s.g && s.klick === 'none' && s.endlich && s.ende && s.ende.sx > 2 && s.ende.sy < .3 && +s.op === 0 && nahAnKugel, JSON.stringify(s));
       pruefe(`… er dreht sich mit der Bahn (${s && Math.round(s.drehung)}° insgesamt, gut eine Runde)`, s && s.drehung >= 360, JSON.stringify(s && s.drehung));
       pruefe(`… Spaghettifizierung: am Ende ${s && s.streckEnde.toFixed(1)}× länger als breit, mehr als in der Mitte (${s && s.streckMitte.toFixed(1)}×)`, s && s.streckEnde >= 10 && s.streckEnde > s.streckMitte * 2, JSON.stringify(s));
       pruefe(`… Zeitdehnung: das letzte Fünftel des Wegs dauert ${s && Math.round(s.zeitAnteilEnde * 100)} % der Zeit`, s && s.zeitAnteilEnde >= .3, JSON.stringify(s && s.zeitAnteilEnde));
-      await p.waitForTimeout(2100);
-      pruefe('… danach ist er weg und die Kugel saugt (Welle „sog")', await p.evaluate(() => !document.querySelector('.formi-schluck') && !!document.querySelector('.formi-welle.sog')));
+      /* Der Strom dauert je nach Länge des Titels; erst wenn er weg ist,
+         muss die Kugel saugen. */
+      await p.waitForFunction(() => !document.querySelector('.formi-strom'), null, { timeout: 6000 }).catch(() => {});
+      pruefe('… danach ist er weg und die Kugel saugt (Welle „sog")', await p.evaluate(() => !document.querySelector('.formi-strom') && !!document.querySelector('.formi-welle.sog')));
       await zeige(p, 'home'); await p.waitForTimeout(600);
       // 1b Auch der Haken direkt auf „Heute" (Runde 240) lässt den Punkt ins Loch fallen
       const hh = await p.evaluate(async () => {
@@ -94,8 +102,8 @@ const EIG = (anims) => [...new Set(anims.flatMap(a => a.effect.getKeyframes().fl
         const titel = b.closest('.hz-mit-haken').querySelector('.hz-txt b').textContent.trim();
         b.click();
         await new Promise(r => setTimeout(r, 120));
-        const g = document.querySelector('.formi-schluck');
-        return { titel, g: g ? g.textContent : null };
+        const box = document.querySelector('.formi-strom');
+        return { titel, g: box ? [...box.querySelectorAll('i:not(.spur)')].map(i => i.textContent).join('').replace(/\u00a0/g, ' ') : null };
       });
       pruefe(`Haken auf „Heute": „${hh.titel}" fällt ins Loch`, hh.fehlt || (hh.g && hh.titel.indexOf(hh.g.replace(/…$/, '')) === 0), JSON.stringify(hh));
       await p.waitForTimeout(2100);
@@ -144,7 +152,7 @@ const EIG = (anims) => [...new Set(anims.flatMap(a => a.effect.getKeyframes().fl
       await zeige(p, 'todos'); await p.waitForTimeout(400);
       const r = await p.evaluate(async () => { window.__formiLebt.schlucken('#todoArea .todo .check'); window.__formiLebt.wurmloch();
         await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-        return { schluck: document.querySelectorAll('.formi-schluck').length, wurm: document.querySelector('.view.show').getAnimations().filter(x => !x.animationName).length }; });
+        return { schluck: document.querySelectorAll('.formi-strom, .formi-schluck').length, wurm: document.querySelector('.view.show').getAnimations().filter(x => !x.animationName).length }; });
       pruefe('„weniger Bewegung": kein Sog, kein Wurmloch', r.schluck === 0 && r.wurm === 0, JSON.stringify(r));
       await p._ctx.close();
     }
