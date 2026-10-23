@@ -21650,7 +21650,24 @@ Dokument bleiben unberührt (Gegenprobe im Test).
   Rand nutzt nur Formis Cyan, Violett und Rosa.
 
 **Geprüft:**
-ERGEBNIS_HIER
+- Neu: `test-formi-insel` (60). Er prüft die Linse an echten Bildpunkten
+  (mit/ohne) und den Puls. Die Kugel bleibt trotz Linse bei 320–1920,
+  normal und kompakt, 58 × 58 treffbar. Der Strom: Buchstaben plus
+  Nachleuchten, Bahn ≥ 180° um Formi, Streckung ≥ 5-fach, nur
+  transform/opacity, danach weg; Gegenprobe „weniger Bewegung". Insel
+  und Rand: klein beim Denken, Rand strömt, weg nach einer blossen
+  Antwort, gross beim Abhaken, die Buchstaben enden höchstens 16 px von
+  Formis Mitte in der Insel, Anlegen kommt aus ihm; Gegenprobe „Mehr
+  Platz". Lage: im Bild, keine Trefferfläche, auf keinem Knopf der
+  Kopfleiste, bei allen sieben Breiten in beiden Dichten.
+- `test-formi-loch` auf den Strom umgestellt (gleiche Schwellen: Drehung
+  ≥ 360°, Streckung am Ende ≥ 10 und mehr als doppelt so viel wie in der
+  Mitte, Zeitdehnung ≥ 30 %), 31 grün.
+- Gesamtdurchlauf mit 36 Durchläufen: grün bis auf `test-formi-kugel`
+  bei 430 px (2 von 70) und `test-formi-verdeckt` (12 von 42, die Kugel
+  über „Nachrichten"/„Wissen" der unteren Leiste). Beide sind auf `main`
+  ohne diese Runde genauso rot, nachgemessen auf einem eigenen Stand von
+  `main`.
 
 **Nicht geprüft:** Safari und Firefox (dort ist die Linse absichtlich
 aus), echte Handys, die Arbeit je Bild beim Strom (bis 80 Elemente, nur
