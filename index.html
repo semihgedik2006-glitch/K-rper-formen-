@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-YpJmVuxb0aLKcbFZ8Fe0mpK1jY5FB+H3DgaIKX2eimQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-w9hhamVh3koT4HyqRRt/9GxlbtXaXleHts3x3mOisjI='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -258,6 +258,7 @@
   --t-lg:1.12rem;    /* Kartentitel */
   --t-xl:1.36rem;    /* Abschnittstitel */
   --t-2xl:1.75rem;   /* Seitentitel */
+  --t-3xl:2.125rem;  /* Grosser Titel oben (Apple „Large Title", 34 px) */
 
   /* Zeilenabstand: eng fuer Ueberschriften, normal fuer Text, weit fuer
      laengere Absaetze. --lh-1 ist der bewusste Reset auf 1. */
@@ -8699,7 +8700,7 @@ body.neu.light[data-bereich="g-alles"] {--ber:#3E4E6B;--ber-f:rgba(62,78,107,.16
    soll nicht gesucht werden müssen. */
 body.neu .bereich-kopf{display:flex;align-items:center;gap:var(--s10);
   flex:1 1 220px;min-width:0;text-align:left;cursor:pointer;
-  padding:var(--s16) var(--s8) var(--s12) var(--rand);
+  padding:var(--s12) var(--s8) var(--s10) var(--rand);
   background:none;border:none;color:inherit;font-family:var(--font-body)}
 /* ── Keine Übergänge auf Grösse und Abstand ─────────────────────────
    Bis zum 23.9.2026 glitten padding, width, height und font-size über
@@ -8727,7 +8728,12 @@ body.neu .bk-ikon{flex:0 0 auto;display:grid;place-items:center;
   transition:background-color .35s var(--ease-ios),color .35s var(--ease-ios)}
 body.neu .bk-ikon svg{width:22px;height:22px}
 body.neu .bk-txt{min-width:0;display:flex;flex-direction:column;gap:var(--s2)}
-body.neu .bk-txt b{font-family:var(--font-head);font-size:var(--t-2xl);
+/* Runde 252 (Plan „Studio Chat wie von Apple", Schritt 6): der Titel ist
+   ein grosser Titel wie in Mail und Einstellungen — 34 px fett, links.
+   Beim Scrollen schrumpft er auf 17 px halbfett, die Grösse der Titel in
+   Apples Kopfleiste (.eng unten, Bewegung per FLIP in bereichKopfEng).
+   Der Kopf wird dabei kaum höher: oben 4 px, unten 2 px weniger Rand. */
+body.neu .bk-txt b{font-family:var(--font-head);font-size:var(--t-3xl);font-weight:700;
   line-height:var(--lh-eng);letter-spacing:var(--ls-eng)}
 body.neu .bk-txt i{font-style:normal;font-size:var(--t-sm);color:var(--text-2);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -8737,7 +8743,7 @@ body.neu .bk-txt b,body.neu .bk-ikon{transform-origin:0 0}
 body.neu .bereich-kopf.eng{padding-top:var(--s8);padding-bottom:var(--s6)}
 body.neu .bereich-kopf.eng .bk-ikon{width:34px;height:34px}
 body.neu .bereich-kopf.eng .bk-ikon svg{width:20px;height:20px}
-body.neu .bereich-kopf.eng .bk-txt b{font-size:var(--t-lg)}
+body.neu .bereich-kopf.eng .bk-txt b{font-size:var(--t-md);font-weight:600}
 body.neu .bereich-kopf.eng .bk-txt i{display:none}
 /* Runde 218: im Raum „Heute" ist der Kopf am Handy von Anfang an schmal.
    Das Datum steht ohnehin auf der Startseite („Heute"), und die 33 px
@@ -8750,7 +8756,7 @@ body.neu .bereich-kopf.eng .bk-txt i{display:none}
   body.neu[data-bereich="g-start"] .bereich-kopf,body.neu[data-bereich="g-komm"] .bereich-kopf{padding-top:var(--s8);padding-bottom:var(--s6)}
   body.neu[data-bereich="g-start"] .bk-ikon,body.neu[data-bereich="g-komm"] .bk-ikon{width:34px;height:34px}
   body.neu[data-bereich="g-start"] .bk-ikon svg,body.neu[data-bereich="g-komm"] .bk-ikon svg{width:20px;height:20px}
-  body.neu[data-bereich="g-start"] .bk-txt b,body.neu[data-bereich="g-komm"] .bk-txt b{font-size:var(--t-lg)}
+  body.neu[data-bereich="g-start"] .bk-txt b,body.neu[data-bereich="g-komm"] .bk-txt b{font-size:var(--t-md);font-weight:600}
   body.neu[data-bereich="g-start"] .bk-txt i,body.neu[data-bereich="g-komm"] .bk-txt i{display:none}
 }
 /* Am Rechner NICHT. Dort steht die Seitenleiste links und nennt den
@@ -22412,6 +22418,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-23-grosser-titel', datum:'23.10.2026', titel:'Grosser Titel oben, wie in den iPhone-Apps', wo:'todos', punkte:[
+    'Oben auf jeder Seite steht der Name jetzt gross und fett, zum Beispiel „Studio" oder „Zeiten" – so wie bei Mail oder den Einstellungen auf dem iPhone.',
+    'Scrollst du nach unten, wird der Titel klein und macht Platz. Oben angekommen, ist er wieder gross.'
+  ]},
   { id:'2026-10-23-fluessiger', datum:'23.10.2026', titel:'Alles reagiert schneller, Formi jubelt ohne Ruckeln', wo:'home', punkte:[
     'Die App rechnet bei jeder kleinen Änderung nicht mehr die ganze Seite neu. Seitenwechsel und Tippen fühlen sich dadurch spürbar flüssiger an, besonders auf älteren Handys.',
     'Wenn Formi sich freut oder jubelt (zum Beispiel nach einer erledigten Aufgabe), läuft das jetzt ohne Hänger. Formi sieht genau so aus wie vorher.'
