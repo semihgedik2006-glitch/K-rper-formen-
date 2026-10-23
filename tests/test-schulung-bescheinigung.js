@@ -6,8 +6,8 @@
    mitnehmen kann (bisher nur der Nachweis je Modul für die Leitung).
 
    Geprüft wird, jeweils mit Gegenprobe:
-   1. Mitarbeitende sehen „Bescheinigung drucken" unter „Was du schon
-      gemacht hast"; das Blatt trägt Name, Firma und Stand.
+   1. Mitarbeitende sehen „Bescheinigung drucken" als Drucker-Zeichen im
+      Kopf von „Schon geschafft"; das Blatt trägt Name, Firma und Stand.
    2. Je Modul der jüngste bestandene Durchlauf mit Datum samt Jahr,
       Ergebnis, Dauer und „Gültig bis" (12 Monate bei Notfall).
    3. Darunter, was als Pflicht noch offen ist.
@@ -77,9 +77,18 @@ const DATUM = /^\d{2}\.\d{2}\.\d{4}$/;
   console.log('\n── Mitarbeiter (Demo-Konto) ──');
   const knopf = await p.evaluate(() => {
     const k = document.getElementById('schBescheinigung');
-    return { da: !!k && k.getClientRects().length > 0, inKarte: !!k && !!k.closest('#schMeineKarte') };
+    return { da: !!k && k.getClientRects().length > 0, inKarte: !!k && !!k.closest('#schMeineKarte .sch-meine-kopf'),
+      name: /Bescheinigung drucken/.test(k ? k.getAttribute('aria-label') || '' : '') };
   });
-  pruefe('„Bescheinigung drucken" steht sichtbar unter „Was du schon gemacht hast"', knopf.da && knopf.inKarte, JSON.stringify(knopf));
+  pruefe('„Bescheinigung drucken" steht als Zeichen sichtbar im Kopf von „Schon geschafft"', knopf.da && knopf.inKarte && knopf.name, JSON.stringify(knopf));
+  /* Das Zeichen sitzt in der Kopfzeile, damit die Modulliste nicht
+     tiefer rutscht (test-auffrischen: ≤ 1290 px am 390er Telefon). */
+  const kopf = await p.evaluate(() => {
+    const h = document.querySelector('#schMeineKarte h3').getBoundingClientRect();
+    const k = document.getElementById('schBescheinigung').getBoundingClientRect();
+    return { h3: Math.round(h.height), mitte: Math.abs((h.top + h.height / 2) - (k.top + k.height / 2)) <= 2 };
+  });
+  pruefe('Überschrift einzeilig, Zeichen auf ihrer Höhe', kopf.h3 <= 24 && kopf.mitte, JSON.stringify(kopf));
   let d = await drucke(p);
   pruefe('der Knopf öffnet den Druck', d.gedruckt === 1, String(d.gedruckt));
   pruefe('Titel, Name, Firma und Stand mit Jahr', /^Schulungsnachweis/.test(d.text) && /Demo-Mitarbeiter · .+ · Stand \d{2}\.\d{2}\.\d{4}/.test(d.text), d.text.slice(0, 200));
@@ -117,11 +126,11 @@ const DATUM = /^\d{2}\.\d{2}\.\d{4}$/;
     /wieder fällig/.test((d.zeilen[0] || [])[4] || '') && /noch offen:.*Wenn einem Kunden schlecht wird/.test(d.text), JSON.stringify(d.zeilen) + ' ' + d.text.slice(-200));
   /* Ein Testlauf zählt nicht; nur Testläufe → kein Knopf. */
   await p.evaluate(() => LAUF('lauf3').update({ test: true })); await p.waitForTimeout(500);
-  const ohne = await p.evaluate(() => ({ knopf: !!document.getElementById('schBescheinigung'),
+  const ohne = await p.evaluate(() => ({ knopf: document.getElementById('schBescheinigung').getClientRects().length > 0,
     karte: getComputedStyle(document.getElementById('schMeineKarte')).display }));
   pruefe('GEGENPROBE nur ein Testlauf bestanden → kein Knopf', !ohne.knopf, JSON.stringify(ohne));
   await p.evaluate(() => LAUF('lauf3').update({ test: false, bestanden: false })); await p.waitForTimeout(500);
-  const durchgefallen = await p.evaluate(() => ({ knopf: !!document.getElementById('schBescheinigung'),
+  const durchgefallen = await p.evaluate(() => ({ knopf: document.getElementById('schBescheinigung').getClientRects().length > 0,
     karte: getComputedStyle(document.getElementById('schMeineKarte')).display }));
   pruefe('GEGENPROBE nicht bestanden → Liste ja, Knopf nein', durchgefallen.karte !== 'none' && !durchgefallen.knopf, JSON.stringify(durchgefallen));
   pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));

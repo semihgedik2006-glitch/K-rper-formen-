@@ -21587,9 +21587,10 @@ Schulungs-Runde.
 
 ### 1. „Bescheinigung drucken" für jede und jeden
 
-Unter Wissen → Schulung, im Kasten „Was du schon gemacht hast", steht
-jetzt ein Knopf „Bescheinigung drucken". Er druckt ein Blatt
-„Schulungsnachweis" mit Name, Firma und Datum. Darauf:
+Unter Wissen → Schulung steht im Kasten „Schon geschafft" (bisher „Was
+du schon gemacht hast") rechts oben ein Drucker-Zeichen: „Bescheinigung
+drucken". Es druckt ein Blatt „Schulungsnachweis" mit Name, Firma und
+Datum. Darauf:
 
 - je Modul der **jüngste bestandene** Durchlauf mit Datum samt Jahr,
   Ergebnis, Dauer und „Gültig bis" (bei Modulen mit Wiederholung;
@@ -21612,6 +21613,16 @@ das beim Lernen hilft, habe ich nicht gesucht und nenne keine.
 - **Keine Unterschrift der App.** Das Blatt ist aus den eigenen
   Durchläufen erstellt, und die Fusszeile sagt, dass die App nicht prüft,
   ob es eine Vorschrift erfüllt. Bestätigen tut ein Mensch.
+- **Ein Zeichen im Kopf, keine eigene Zeile.** Der erste Bau setzte
+  Knopf und Satz unter die Liste. `test-auffrischen` wurde rot: Am
+  390er Telefon begann die Modulliste bei 1.370 px statt bei 1.272 px,
+  und die Grenze liegt bei 1.290 px. Den Test zu lockern kam nicht in
+  Frage. Das Zeichen sitzt jetzt mit negativen Rändern in der
+  Kopfzeile: Die Trefferfläche bleibt 44 × 44, die Liste beginnt wieder
+  bei 1.272 px. Damit Überschrift und Zeichen in eine Zeile passen,
+  heisst die Karte „Schon geschafft". Der alte Text brauchte 302 px, der
+  Platz neben dem Zeichen ist 267 px. Die alte Überschrift war kein
+  Zitat aus dem Betrieb.
 - **Kein neuer Datenweg.** Das Blatt liest nur `_schMeine`, die eigenen
   Durchläufe, die die Regeln jedem ohnehin zeigen.
 
@@ -21639,7 +21650,8 @@ Unterweisung.
 
 ### Geprüft
 
-- `tests/test-schulung-bescheinigung.js` (29, neu): Knopf im Kasten,
+- `tests/test-schulung-bescheinigung.js` (30, neu): das Zeichen im Kopf
+  (Überschrift einzeilig, Zeichen auf ihrer Höhe),
   Druck, Kopf mit Name, Firma und Stand, Spalten, die Notfall-Zeile mit
   „Gültig bis" (12 Monate), das Angefangene nicht in der Tabelle, das
   Offene darunter, Druckbild nur mit dem Blatt.
