@@ -174,8 +174,11 @@ const ansicht = page => page.evaluate(() => {
        die zeiten ändern kann falls jemand sich nicht ausgestempelt hat". */
     /* „Kennzahlen" seit dem 4.10.2026 (Runde 138): „Kennzahlen je
        Studio … geht fit". */
+    /* Seit Runde 216 ist „Zeiten" keine Kachel mehr, sondern ein eigener
+       Knopf mit dem Reiter „Team" — „eigener knopf" (23.10.2026). Dass
+       es dort steht, prüfen test-raeume und test-zeiten-bereich. */
     const ERWARTET = ['Überblick', 'Erstellen', 'Team', 'Studios', 'Nachweise',
-                      'Anliegen', 'Zeiten', 'Kennzahlen', 'Auswertung', 'System'];
+                      'Anliegen', 'Kennzahlen', 'Auswertung', 'System'];
     ERWARTET.forEach(function (w) {
       if (!uebersicht.kacheln.some(function (k) { return k.indexOf(w) >= 0; })) {
         errs.push('Kachel „' + w + '" fehlt in der Verwaltung');
