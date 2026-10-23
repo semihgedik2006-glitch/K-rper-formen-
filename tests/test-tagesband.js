@@ -196,7 +196,10 @@ const KONTRAST = (el) => {
   console.log('\n── 6. Abhaken mit Gewicht ──');
   {
     const p = await oeffne(b, 1440, 900, 'mitarbeiter', [11, 20]);
-    await p.evaluate(() => [...document.querySelectorAll('[data-group="g-arbeit"]')].find(x => x.getClientRects().length).click());
+    /* Runde 240: Mitarbeiter haben keinen Raum „Studio" mehr – die
+       Aufgaben liegen unter „Alles" (zwei Tipps). */
+    await p.evaluate(async () => { document.getElementById('bereichKopf').click(); await new Promise(r => setTimeout(r, 300));
+      [...document.querySelectorAll('#allesLade [data-alles="todos"]')].find(x => x.getClientRects().length).click(); });
     await p.waitForTimeout(900);
     const r = await p.evaluate(() => new Promise(res => {
       const zeile = [...document.querySelectorAll('#todoArea .todo:not(.done)')][0];

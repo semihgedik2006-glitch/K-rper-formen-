@@ -349,7 +349,7 @@ const TAG = 86400000;
       await db.doc('users/' + konto.uid).set({ name: 'Geht wieder', role: 'mitarbeiter',
         firma: 'alpha', email: mail });
 
-      /* Runde 240: Soll, Urlaubsanspruch und Personalnummer gehen mit. */
+      /* Runde 243: Soll, Urlaubsanspruch und Personalnummer gehen mit. */
       await db.doc('firmen/alpha/lohnEinstellungen/zeitregeln').set({ regeln: {
         [konto.uid]: { 1: 480, u: 28 }, bleibt: { 2: 300, u: 20 } } });
       await db.doc('firmen/alpha/lohnEinstellungen/datev').set({ beraterNr: '1', personalNr: {

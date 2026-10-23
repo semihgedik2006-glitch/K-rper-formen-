@@ -147,7 +147,7 @@ Wochentag und Urlaubsanspruch** je Person (seit 23.10.2026; nur die
 Geschäftsführung liest und ändert es, die Person sieht über „Mein
 Konto" nur ihre eigenen Werte. Entfernt die Geschäftsführung den
 Zugang (`zugangEntfernen`), gehen Soll, Urlaubsanspruch und die
-DATEV-Personalnummer mit — seit 23.10.2026, Runde 240) · **Anliegen** an die
+DATEV-Personalnummer mit — seit 23.10.2026, Runde 243) · **Anliegen** an die
 Leitung samt Antwort · **Schulungen**: Teilnehmer mit Name und
 Teilnahme-Code; je Durchlauf Modul, Zeitpunkt, Gerät, Studio, aktive
 Dauer, Versuche und falsch angeklickte Antworten je Frage, Ergebnis,

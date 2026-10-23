@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-LXC3oJgYCDbxDYvqLozrNDQPqxZRDLTH7Cr6uLZ0Bac='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-q2xNd0FkmbG83aF5kcZS5iIML0ucO8oUfBX0UgcxCI0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -6422,7 +6422,7 @@ html.fk-still .fk-wirbel,html.fk-still .fk-innen{animation:none}
 /* Photonenring: ein dünner, heller Lichtring direkt am Rand des Lochs. */
 .formi-kugel .fk-pupille,.jv-start-figur .fk-pupille{box-shadow:0 0 0 1px rgba(255,236,214,.75), 0 0 6px 1px rgba(255,214,170,.45), 0 0 10px 3px rgba(2,4,10,.6)}
 /* Was ins Loch fällt (formiSchlucken). */
-.formi-schluck{position:fixed;left:0;top:0;z-index:1180;pointer-events:none;white-space:nowrap;transform-origin:50% 50%;
+.formi-schluck{position:fixed;left:0;top:0;z-index:1180;pointer-events:none;white-space:nowrap;transform-origin:50% 50%;will-change:transform;
   font-weight:700;font-size:var(--t-sm);color:#E8F8FF;text-shadow:0 0 10px rgba(182,156,255,.9)}
 /* Jets: entlang der Achse, senkrecht zur Scheibe. */
 .fk-jet{position:absolute;left:50%;width:8%;height:150%;margin-left:-4%;pointer-events:none;border-radius:var(--r-pille);opacity:0;z-index:0}
@@ -8981,8 +8981,8 @@ body.neu .heute-block{margin-bottom:var(--s20)}
    Trefferfläche richtet sich nicht nach der Dichte. */
 body.neu #heuteListe{padding-top:max(var(--s10),10px)}
 body.neu .heute-kopf{display:flex;align-items:center;gap:var(--s8);
-  margin:0 0 var(--s8);font-family:var(--font-head);font-weight:700;
-  font-size:var(--t-xs);letter-spacing:var(--ls-l);text-transform:uppercase;
+  margin:0 0 var(--s6);padding:0 var(--s4);font-family:var(--font-head);font-weight:600;
+  font-size:var(--t-lg);line-height:var(--lh-eng);letter-spacing:var(--ls-eng);
   color:var(--text-3)}
 /* Die Überschrift trägt dieselbe Farbe wie die Zeilen darunter — sonst
    wäre die Farbe ein Zufall je Zeile statt die Sprache der Kategorie.
@@ -8999,24 +8999,16 @@ body.neu.light .heute-kopf.tun{--kat:#5F1FC7}
    Ordnung". Dieselben Werte wie die Nachrichten-Gruppe in „Alles". */
 body.neu .heute-kopf.putz    {--kat:#4EE6D2}
 body.neu.light .heute-kopf.putz{--kat:#0B6A62}
-body.neu .heute-kopf .hk-punkt{width:8px;height:8px;border-radius:var(--r-pille);
-  background:var(--kat);flex:0 0 auto}
-/* Im Hellmodus tragen --warm und --accent-2 als TEXT nicht — sie sind
-   Flächenfarben. Die Überschrift bleibt deshalb ihr ruhiges Grau; nur
-   Punkt, Strich und Zeichen nehmen die Farbe. Dieselbe Trennung wie
-   bei --warm/--warm-tx in :root, und aus demselben Grund. */
-body.neu .heute-kopf .hk-wort{color:var(--text-3)}
-body.neu .heute-kopf.dringend .hk-wort{color:var(--danger-tx)}
+/* Runde 241: der Titel steht in Textfarbe, wie ein Abschnittstitel
+   bei Apple. Punkt und auslaufender Strich davor und dahinter sind weg
+   — der Titel ist gross genug, um den Abschnitt allein zu tragen. Die
+   Farbe der Kategorie (--kat) steht im Zeichen jeder Zeile. */
+body.neu .heute-kopf .hk-wort{color:var(--text)}
 /* Die Überschrift nennt die volle Zahl und trägt den Weg zur ganzen
    Liste. Nur so darf darunter gekürzt werden. */
 body.neu .heute-kopf .hk-wort{flex:0 0 auto}
-/* Der Strich läuft in der Farbe der Kategorie aus. Das ist derselbe
-   Übergang wie im Bereichskopf — Farbe, die von einer Kante ausgeht
-   und verschwindet, statt einer Linie, die man anmalt. */
-body.neu .heute-kopf i{flex:1;height:1px;display:block;
-  background:linear-gradient(90deg,var(--kat),var(--line) 40%)}
 body.neu .heute-kopf .mini-link{flex:0 0 auto}
-body.neu .heute-liste{display:flex;flex-direction:column;gap:var(--s8)}
+body.neu .heute-liste{display:flex;flex-direction:column;gap:0}
 /* ── Startseite am PC: zwei Spalten (Runde 103, P3) ──
    Links, was getan werden muss; rechts Stand und Neues. Die Spalten
    stehen oben bündig und laufen unabhängig — eine lange linke Spalte
@@ -9140,6 +9132,27 @@ body.neu.light .heute-zeile.putz{--kat:#0B6A62;--kat-f:rgba(15,118,110,.18)}
 body.neu .hz-ikon{flex:0 0 auto;display:grid;place-items:center;
   width:26px;height:26px;color:var(--kat)}
 body.neu .hz-ikon svg{width:22px;height:22px}
+/* Runde 242: Formi statt Zeichen in „Seit deiner letzten Schicht". */
+body.neu .heute-zeile.formi-seit .hz-ikon .formi-figur{--fg:26px}
+body.neu .heute-zeile.formi-seit .hz-txt b{white-space:normal}
+body.neu .heute-zeile.formi-seit .hz-txt i{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* Runde 240: der Haken auf „Heute" (heuteZeile) steht als eigene Spalte
+   LINKS neben der Zeile, wie in jeder Checkliste. Erste Fassung lag er
+   absolut über dem Zeichen – dann überdeckte er 2 px der vergrösserten
+   Fläche von „alle 4 ›" darüber (test-p3-startseite, 44 × 42). Neben
+   der Zeile überdeckt er nichts. */
+body.neu .hz-mit-haken{display:flex;align-items:stretch;gap:var(--s4)}
+body.neu .hz-mit-haken > .heute-zeile{flex:1;min-width:0}
+body.neu .hz-haken{flex:0 0 44px;min-height:44px;display:grid;place-items:center;padding:0;
+  background:none;border:none;cursor:pointer;border-radius:var(--r-md)}
+body.neu .hz-kreis{width:24px;height:24px;border-radius:var(--r-rund);border:2px solid var(--text-3);
+  transition:transform .14s var(--ease-ios),background-color .14s var(--ease-ios)}
+body.neu .hz-mit-haken:has(.dringend) .hz-kreis{border-color:var(--danger)}
+body.neu .hz-haken:active .hz-kreis{transform:scale(.88)}
+@media (hover:hover){ body.neu .hz-haken:hover .hz-kreis{border-color:var(--accent)} }
+body.neu .hz-mit-haken.erledigt .hz-kreis{background:var(--ok);border-color:var(--ok)}
+body.neu .hz-mit-haken.erledigt .heute-zeile{opacity:.55}
+body.neu .hz-mit-haken.erledigt .hz-txt b{text-decoration:line-through}
 body.neu .hz-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:var(--s2)}
 body.neu .hz-txt b{font-size:var(--t-md);font-weight:700;line-height:var(--lh-eng);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -9155,9 +9168,8 @@ body.neu .hz-pfeil{flex:0 0 auto;color:var(--text-3);font-size:var(--t-lg)}
    darf nicht lauter sein als die Zeilen darüber. */
 body.neu .heute-rest{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s8);
   margin-top:calc(-1 * var(--s8))}
-body.neu .heute-rest .hr-wort{font-family:var(--font-head);font-weight:700;
-  font-size:var(--t-xs);letter-spacing:var(--ls-l);text-transform:uppercase;
-  color:var(--text-3);margin-right:var(--s4)}
+body.neu .heute-rest .hr-wort{font-family:var(--font-head);font-weight:600;
+  font-size:var(--t-sm);color:var(--text-2);margin-right:var(--s4)}
 /* ── „Neu" im Bereichskopf und das Fenster „Was ist neu" (Runde 103) ──
    Die Pille sitzt rechts im Kopf der Startseite, wo auf anderen Seiten
    „+ Neu" steht — kein zusätzlicher Platz, auf PC und Handy dieselbe
@@ -9208,8 +9220,8 @@ body.neu .schnell[hidden]{display:none}
 body.neu .side{overflow-y:auto}
 body.neu .side-schnell{display:flex;flex-direction:column;gap:var(--s2);
   margin-top:var(--s16);padding-top:var(--s12);border-top:1px solid var(--line)}
-body.neu .ss-kopf{padding:0 var(--s12) var(--s6);font-family:var(--font-head);font-weight:700;
-  font-size:var(--t-2xs);letter-spacing:var(--ls-l);text-transform:uppercase;color:var(--text-3)}
+body.neu .ss-kopf{padding:0 var(--s12) var(--s6);font-family:var(--font-head);font-weight:600;
+  font-size:var(--t-xs);color:var(--text-3)}
 /* Wie die Einträge darüber, eine Stufe leiser: es sind Abkürzungen,
    keine Bereiche. Mindestens 44 px hoch, auch in der Dichte „kompakt". */
 body.neu .ss-knopf{display:flex;align-items:center;gap:var(--s10);min-height:44px;width:100%;
@@ -9482,6 +9494,110 @@ body.neu .kn-zeile:active{transform:translateY(1px)}
    „Weniger und grösser" gilt auch dort, wo schon Karten stehen. */
 body.neu .card{padding:clamp(20px,5vw,30px);margin-bottom:var(--s24)}
 body.neu .kn-zeile{min-height:var(--zeile)}
+
+/* ── 8. Gruppen und Titel wie bei Apple (Runde 241, 23.10.2026) ──────
+   Aus dem Betrieb, zu den Probebildern „Studio Chat wie von Apple“:
+   „ja das sieht sehr super aus genau so hab ichs mir vorgestellt“ —
+   und nach der Schrift-Runde: „sieht super aus kannst weiter machen“.
+   Entschieden war vorher „Apple-Grundgerüst, Formi als Akzent“.
+
+   Zwei Dinge ändern sich, beide in allen Stilen:
+
+   1. Abschnittsmarken werden Titel. „ÜBERFÄLLIG · 4“ in kleinen,
+      weit gesperrten Versalien mit einem Strich bis zum Rand war eine
+      Marke, die man entziffert. Apple schreibt Abschnitte als normales
+      Wort in Titelgrösse, die Zahl leise daneben, „Alle 4“ rechts als
+      Verweis — man liest sie, statt sie zu erkennen. Kleine Marken über
+      Navigationsgruppen (Seitenleiste, Kanäle, Verwaltung) bleiben
+      klein, aber in normaler Schreibung, wie in der Mac-Seitenleiste.
+
+   2. Auf der Startseite wird jeder Abschnitt EINE Gruppe. Vorher war
+      jede Zeile eine eigene Karte mit farbiger Kante und Schatten —
+      sechs Karten, sechs Flächen, die gleich laut rufen. Jetzt eine
+      gerundete Fläche je Abschnitt, die Zeilen darin durch eine
+      eingezogene Haarlinie getrennt (sie beginnt beim Text, nicht beim
+      Zeichen — wie in Einstellungen). Die Farbe der Art bleibt dort, wo
+      sie etwas meldet: im Zeichen und, bei „überfällig“, in der
+      Unterzeile. Statusfarben nur für Status.
+
+   Was NICHT angefasst wird: Formi selbst (die Figur, ihre Farben, ihre
+   Bewegung) — daran wird in einer anderen Sitzung gearbeitet. Im Stil
+   „Formi“ trägt die GRUPPE Formis schillernde Kante, nicht mehr jede
+   einzelne Zeile: eine Kante je Abschnitt statt sechs. */
+body.neu h1,body.neu h2{text-transform:none;letter-spacing:var(--ls-eng)}
+/* Die Titel der Startseite (Grösse und Farbe stehen oben in
+   Abschnitt 6, bei .heute-kopf): die Zahl leise daneben. */
+body.neu .heute-kopf .hk-zahl{color:var(--text-3);font-weight:400;
+  font-variant-numeric:tabular-nums}
+body.neu .heute-kopf .mini-link{margin-left:auto}
+/* „Alle N“ trägt eine 44 px hohe Trefferfläche, die unter die Zeile
+   ragt. Mit 6 px Abstand gewann die Gruppe darunter den Treffertest —
+   gemessen 44 × 40 bei 390 px (test-gruppen-titel). Mindestens 10 px,
+   auch in „kompakt“: die Trefferfläche richtet sich nicht nach der
+   Dichte. */
+body.neu .heute-kopf:has(.mini-link){margin-bottom:max(var(--s10),10px)}
+/* Die Gruppe. Haarlinie oben und ein ruhiger Schatten: sie liegt auf
+   der Seite, und was darin steht, ist anklickbar. */
+body.neu .heute-liste{border-radius:var(--r-md);background:var(--bg-2);
+  box-shadow:inset 0 1px 0 var(--kante), var(--e1)}
+body.neu .heute-liste .heute-zeile{background:transparent;
+  border:none;border-radius:0;box-shadow:none}
+/* Ein Glied der Gruppe ist eine Zeile oder, seit Runde 240, eine Zeile
+   mit dem Haken davor (.hz-mit-haken) — wie in Erinnerungen: der Kreis
+   steht in der Gruppe, links vor dem Zeichen. Die Ecken der Gruppe
+   tragen das erste und das letzte Glied, damit die Fläche beim Zeigen
+   und Drücken nicht über die Rundung hinausmalt. */
+body.neu .heute-liste > *{position:relative}
+body.neu .heute-liste .hz-mit-haken > .hz-haken{border-radius:0}
+body.neu .heute-liste > :first-child,
+body.neu .heute-liste > :first-child > .heute-zeile{border-top-right-radius:var(--r-md)}
+body.neu .heute-liste > :first-child,
+body.neu .heute-liste > :first-child > .hz-haken{border-top-left-radius:var(--r-md)}
+body.neu .heute-liste > :last-child,
+body.neu .heute-liste > :last-child > .heute-zeile{border-bottom-right-radius:var(--r-md)}
+body.neu .heute-liste > :last-child,
+body.neu .heute-liste > :last-child > .hz-haken{border-bottom-left-radius:var(--r-md)}
+/* Die Trennlinie beginnt beim Text: Rand 16 + Zeichen 26 + Abstand 12,
+   mit Haken davor zusätzlich dessen 44 px und 4 px Abstand. */
+body.neu .heute-liste > * + *::before{content:'';position:absolute;top:0;right:0;z-index:1;
+  left:calc(var(--s16) + 26px + var(--s12));height:1px;background:var(--line);pointer-events:none}
+body.neu .heute-liste > .hz-mit-haken::before{left:calc(44px + var(--s4) + var(--s16) + 26px + var(--s12))}
+/* Der Pfeil ist ein Versprechen, keine Farbe: grau wie bei Apple. */
+body.neu .heute-liste .heute-zeile .hz-pfeil{color:var(--text-3);opacity:1}
+@media (hover:hover){
+  body.neu .heute-liste .heute-zeile:hover{background:var(--auf-1);box-shadow:none}
+}
+/* Gedrückt gibt die Zeile nach: eine Stufe dunkler und der Schatten
+   nach innen — innerhalb der Gruppe, ohne aus ihr herauszurutschen. */
+body.neu .heute-liste .heute-zeile:active{background:var(--auf-2);transform:none;box-shadow:var(--e-tief)}
+/* Stil „Formi“: die schillernde Kante sitzt an der Gruppe. */
+body.formi:not(.light).neu .heute-liste{border:1px solid transparent;
+  background:linear-gradient(var(--formi-kern),var(--formi-kern)) padding-box,var(--formi-lin) border-box}
+body.formi:not(.light).neu .heute-liste .heute-zeile{border:none;background:transparent}
+@media (hover:hover){
+  body.formi:not(.light).neu .heute-liste .heute-zeile:hover{background:var(--auf-1);box-shadow:none}
+}
+body.formi:not(.light).neu .heute-liste .heute-zeile:active{background:var(--auf-2)}
+/* Abschnittstitel auf den anderen Seiten: dasselbe wie oben. */
+body.neu .sec-head span{text-transform:none;letter-spacing:var(--ls-eng);
+  font-size:var(--t-lg);font-weight:600;line-height:var(--lh-eng);color:var(--text)}
+body.neu .sec-head i{display:none}
+/* Der grössere Titel ist 4 px höher als die Marke vorher. Steht er
+   ganz oben in seinem Kasten, braucht er die 16 px Luft darüber nicht:
+   dort trennt er nichts. Ohne das rutschte im Team-Bereich (Leitung,
+   390 px) „heute“ 7 px unter die Grenze, und die Seite rollte beim
+   Öffnen wieder (P-12, test-team-woche). */
+body.neu .sec-head:first-child{margin-top:var(--s4)}
+body.neu .pg-kopf h4{text-transform:none;letter-spacing:var(--ls-eng);
+  font-size:var(--t-lg);font-weight:600;color:var(--text)}
+body.neu .td-ueber .pg-kopf h4{color:var(--danger-tx)}
+/* Kleine Marken über Navigationsgruppen und Spalten: klein und leise,
+   aber normal geschrieben — wie „Favoriten“ in der Mac-Seitenleiste. */
+body.neu .ks-gruppe,body.neu .ch-gruppe,body.neu .hilfe-ueber,
+body.neu .zk-j-titel,body.neu .ich-zahl-klein,body.neu .wp-titel small,body.neu .sort-lab,
+body.neu .mail-kopf h4,body.neu .st-urlaub h4,body.neu .dm-section,
+body.neu #view-chef .chef-liste .chef-tab-gruppe{text-transform:none;letter-spacing:normal;
+  font-size:var(--t-xs);font-weight:600}
 </style>
 </head>
 <body>
@@ -21975,6 +22091,20 @@ var NEUIGKEITEN = [
     'Tippst du auf die Erinnerung „Feierabend vergessen?" oder „Schon eingestempelt?" auf dem Handy, öffnet die App jetzt direkt die Seite „Zeiten" – dort stempelst du oder beantragst eine Korrektur.',
     'Für die Geschäftsführung: Entfernst du unter Verwaltung → Team einen Zugang, verschwinden mit ihm auch das Soll je Wochentag, der Urlaubsanspruch und die DATEV-Personalnummer dieser Person. Stempelzeiten und Monatsabschlüsse bleiben, wie es die Aufbewahrungsfrist verlangt.'
   ]},
+  { id:'2026-10-23-formi-seit-du-weg', datum:'23.10.2026', titel:'Formi sagt dir, was seit deiner letzten Schicht passiert ist', wo:'home', punkte:[
+    'Warst du länger als 12 Stunden weg, steht auf „Heute" eine Zeile von Formi: „Seit Mittwoch: 3 Übergaben, 1 Ankündigung" – darunter das Wichtigste wörtlich, mit wem es geschrieben hat und wann. Ein Tipp öffnet die Übergaben.',
+    'Benachrichtigungen, die die App selbst schickt (fällige Aufgaben, Erinnerungen, Nachweise, Formis Tagesmeldung), kommen jetzt als „Formi · …" mit Formis Gesicht. Nachrichten von Menschen sehen aus wie bisher.',
+    'Was du abhakst, fällt jetzt wie in ein echtes schwarzes Loch: es kreist immer schneller um Formi, richtet sich zum Loch aus, wird lang gezogen, schwenkt in die Scheibe ein und verlangsamt kurz vor dem Rand.'
+  ]},
+  { id:'2026-10-23-gruppen-titel', datum:'23.10.2026', titel:'Startseite aufgeräumt: Abschnitte als ruhige Gruppen', wo:'home', punkte:[
+    'Auf der Startseite steht jeder Abschnitt (Überfällig, Heute, Putzplan …) jetzt in einer einzigen gerundeten Fläche. Die Zeilen darin sind nur noch durch eine feine Linie getrennt – keine einzelnen bunten Karten mehr.',
+    'Die Überschriften sind normale, gut lesbare Wörter statt kleiner GROSSBUCHSTABEN. Die Anzahl steht leise daneben, rechts geht es mit „Alle“ zur ganzen Liste.',
+    'Rot bleibt, wo etwas wirklich überfällig ist: im Zeichen und in der Zeile darunter. Auch die kleinen Überschriften in Aufgaben, Nachrichten, Verwaltung und in der Seitenleiste schreiben jetzt normal.'
+  ]},
+  { id:'2026-10-23-heute-haken', datum:'23.10.2026', titel:'Auf „Heute" direkt abhaken', wo:'home', punkte:[
+    'Links neben jeder Aufgabe und jedem Putzpunkt auf „Heute" steht jetzt ein Kreis. Ein Tipp darauf hakt ab – ohne erst in „Studio" zu wechseln.',
+    'Aus Versehen? Unten erscheint „Rückgängig". Ein Tipp auf die Zeile selbst öffnet sie wie bisher.'
+  ]},
   { id:'2026-10-23-systemschrift', datum:'23.10.2026', titel:'Neue Schrift: klarer, ruhiger, wie bei Apple', wo:'home', punkte:[
     'Die ganze App schreibt jetzt in der Schrift deines Geräts: auf iPhone, iPad und Mac ist das Apples eigene Schrift, auf Windows-Rechnern und Android eine sehr ähnliche (Inter).',
     'Überschriften sind nicht mehr so schmal und gedrängt, sondern gut lesbar, und etwas weniger fett.',
@@ -29203,8 +29333,9 @@ function formiKugelMitte(){
    („Spaghettifizierung") und verschwindet im Loch. */
 function formiSchlucken(el){
   if(!el || _fl.gefuehleAus || gehirnWenigBewegung() || !document.body.animate) return;
-  var zeile=el.closest && el.closest('.pp-item, .todo'); if(!zeile) return;
-  var titel=zeile.querySelector('.t-title, .pp-title, .pp-name, b, strong') || zeile;
+  /* Runde 242: auch der Haken direkt auf „Heute" (Runde 240, .hz-mit-haken). */
+  var zeile=el.closest && el.closest('.pp-item, .todo, .hz-mit-haken'); if(!zeile) return;
+  var titel=zeile.querySelector('.hz-txt b, .t-title, .pp-title, .pp-name, b, strong') || zeile;
   /* Nur der Titel selbst — ohne Abzeichen wie „überfällig" oder „1/3". */
   var text=[].filter.call(titel.childNodes, function(n){ return n.nodeType===3; }).map(function(n){ return n.nodeValue; }).join(' ').trim() || String(titel.textContent||'').trim();
   text=text.slice(0, 40); if(!text) return;
@@ -29218,15 +29349,50 @@ function formiSchlucken(el){
     /* Die Breite des Schriftzugs (nicht die der Zeile) — einmal gelesen,
        bevor etwas animiert wird. */
     var gw=g.offsetWidth, gh=g.offsetHeight;
-    var x0=q.left, y0=q.top, dx=ziel.x-x0-gw/2, dy=ziel.y-y0-gh/2, bild=[];
-    for(var i=0;i<=10;i++){
-      var t=i/10, e=t*t*(3-2*t), dreh=(1-t)*1.2, rr=(1-e);
-      var px=x0+dx*e+Math.cos(dreh*6)*28*rr*t, py=y0+dy*e+Math.sin(dreh*6)*28*rr*t;
-      bild.push({ transform:'translate('+px.toFixed(1)+'px,'+py.toFixed(1)+'px) rotate('+(Math.atan2(dy,dx)*180/Math.PI*e).toFixed(1)+'deg) scale('+(1+2.2*t*t).toFixed(2)+','+(1-.9*t).toFixed(2)+')',
-        opacity: i===10 ? 0 : (i>7 ? .6 : 1), offset:t });
+    /* Runde 242 — aus dem Betrieb: „die erledigten aufgaben fliegen ganz
+       steif in formi rein statt gestreckt und drehend … keine
+       spagettifikation". Jetzt wie beim echten Loch:
+       – Bahn: eine Spirale um Formis Mitte, gegen den Uhrzeiger wie die
+         Scheibe. Je näher, desto schneller der Umlauf (Kepler, ω ∝ r^-1,5),
+         insgesamt gut eineinviertel Runden.
+       – Lage: der Schriftzug richtet sich zum Loch aus und dreht sich so
+         mit der Bahn — er „taumelt" hinein.
+       – Gezeitenkraft ∝ 1/r³: in Richtung Loch gestreckt, quer dazu
+         gestaucht (Spaghettifizierung), stark erst in der Nähe.
+       – Zeitdehnung: kurz vor dem Horizont kriecht er und verblasst
+         (die Bilder liegen dort zeitlich weiter auseinander).
+       Alles ist EIN transform je Bild, gerechnet einmal vorab. */
+    var cx0=q.left+gw/2, cy0=q.top+gh/2, rx=cx0-ziel.x, ry=cy0-ziel.y;
+    var r0=Math.max(40, Math.sqrt(rx*rx+ry*ry)), th0=Math.atan2(ry, rx), rH=13, N=30;
+    var rr=[], gew=[0];
+    for(var i=0;i<=N;i++){ var sI=i/N; rr.push(rH+(r0-rH)*Math.pow(1-sI, 1.6)); }
+    for(var j=1;j<=N;j++) gew.push(gew[j-1]+Math.min(60, Math.pow(r0/rr[j], 1.5)));
+    var runde=Math.PI*2*1.25, zeit=[0];
+    for(var m=1;m<=N;m++) zeit.push(zeit[m-1]+Math.min(4, 1/Math.sqrt(Math.max(.06, 1-rH/rr[m]))));
+    var bild=[];
+    for(var k2=0;k2<=N;k2++){
+      var r=rr[k2], th=th0-runde*gew[k2]/gew[N];
+      /* Nah am Loch schwenkt die Bahn in die Ebene der Scheibe ein: flach
+         (wie die Scheibe, schräg gesehen) und um 9° geneigt wie sie. */
+      var flach = r<140 ? .3+.7*Math.max(0,(r-rH)/(140-rH)) : 1;
+      var ex=Math.cos(th)*r, ey=Math.sin(th)*r*flach, nz=-9*Math.PI/180*(1-flach)/.7;
+      var px=ziel.x+ex*Math.cos(nz)-ey*Math.sin(nz)-gw/2, py=ziel.y+ex*Math.sin(nz)+ey*Math.cos(nz)-gh/2;
+      /* Zum Loch ausgerichtet; am Anfang weich aus der Waagerechten. */
+      /* Die Achse zeigt zum Loch; welche Richtung, ist gleich (180°
+         symmetrisch). Die Ausrichtung kommt weich dazu, der Umlauf dreht
+         voll mit. */
+      var a0=((th0*180/Math.PI+90)%180+180)%180-90;
+      var mix=Math.min(1, k2/(N*.2));
+      var rot=mix*a0+(th-th0)*180/Math.PI;
+      var streck=1+Math.min(6.5, Math.pow(95/r, 3)*.55), quer=1/Math.sqrt(streck);
+      var klein=.35+.65*(r-rH)/(r0-rH);
+      var deck = r<rH*2.4 ? Math.max(0, (r-rH)/(rH*1.4)) : 1;
+      bild.push({ transform:'translate('+px.toFixed(1)+'px,'+py.toFixed(1)+'px) rotate('+rot.toFixed(1)+'deg) scale('+(streck*klein).toFixed(2)+','+(quer*klein).toFixed(2)+')',
+        opacity: k2===N ? 0 : +deck.toFixed(2), offset:+(zeit[k2]/zeit[N]).toFixed(4) });
     }
-    try{ g.animate(bild, { duration:1100, easing:'cubic-bezier(.5,0,.9,.6)' }).onfinish=function(){ if(g.parentNode) g.parentNode.removeChild(g); }; }catch(e){}
-    setTimeout(function(){ if(g.parentNode) g.parentNode.removeChild(g); var k=$('formiKugel'); if(k) formiUmgebung(k, 'sog'); }, 1150);
+    var dauer=1900;
+    try{ g.animate(bild, { duration:dauer, easing:'linear' }).onfinish=function(){ if(g.parentNode) g.parentNode.removeChild(g); }; }catch(e){}
+    setTimeout(function(){ if(g.parentNode) g.parentNode.removeChild(g); var k=$('formiKugel'); if(k) formiUmgebung(k, 'sog'); }, dauer+60);
   });
 }
 /* Jets: beim grossen Jubel schiesst Formi zwei Lichtstrahlen nach oben
@@ -29575,6 +29741,8 @@ window.__formiLebt = {
   /* Runde 231: eine Kleinigkeit aus dem Eigenleben sofort (Durchlauf). */
   leben: function(a){ return formiEigenleben(a); },
   lebenZuletzt: function(){ return _fl.lebenZuletzt||''; },
+  /* Runde 242: „zuletzt da" für den Durchlauf setzen (test-formi-seit). */
+  seit: function(ts){ _fsStand=ts; renderHeute(); },
   schlucken: function(sel){ formiSchlucken(document.querySelector(sel)); },
   wurmloch: function(){ formiWurmloch(); },
   masse: function(n){ return formiMasse(n); },
@@ -37827,8 +37995,97 @@ function tbUhrStarten(){
     if(j) j.style.left=((m-von)/(bis-von)*100).toFixed(2)+'%';
   }, 60000);
 }
+/* ── „Seit deiner letzten Schicht" (Idee 8, Runde 242) ──────────────
+   Wer länger als 12 Stunden weg war, sieht oben unter „Neu für dich"
+   EINE Zeile mit Formi: „Seit Dienstag: 2 Übergaben, 1 Ankündigung" und
+   darunter das Wichtigste — WÖRTLICH zitiert, mit Quelle („Übergabe von
+   Ben, 07:10"). Keine KI, keine Zusammenfassung: eine falsch
+   zusammengefasste Übergabe kann im Studio schaden (Risiko aus dem
+   Ideenpapier). Das Wichtigste ist, was nach Sicherheit, Gerät oder
+   Schlüssel klingt, sonst das Neueste. Gemerkt wird je Konto und Gerät,
+   wann die App zuletzt offen war. */
+var FORMI_SEIT_MS=12*3600*1000, _fsStand;
+var FORMI_SEIT_WICHTIG=/defekt|kaputt|sicherheit|notfall|unfall|verletz|feuer|brand|strom|wasser|tresor|schlüssel|schluessel|alarm|gerät|geraet|polizei|einbruch|achtung|wichtig/i;
+function formiSeitStand(){
+  if(_fsStand!==undefined || !session) return _fsStand||0;
+  var v=0; try{ var x=JSON.parse(localStorage.getItem('kf_zuletzt_da')||'{}'); if(x && x.uid===session.uid) v=+x.ts||0; }catch(e){}
+  _fsStand=v;
+  formiDaMerken(); setInterval(formiDaMerken, 60000);
+  document.addEventListener('visibilitychange', formiDaMerken);
+  return v;
+}
+function formiDaMerken(){
+  if(!session) return;
+  try{ localStorage.setItem('kf_zuletzt_da', JSON.stringify({ uid:session.uid, ts:Date.now() })); }catch(e){}
+}
+function formiSeitWann(ts){
+  var d=new Date(ts), h=new Date(); h.setHours(0,0,0,0);
+  var tage=Math.round((h-new Date(d.getFullYear(), d.getMonth(), d.getDate()))/86400000);
+  if(tage<=0) return 'heute früh';
+  if(tage===1) return 'gestern';
+  if(tage<7) return ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'][d.getDay()];
+  return d.toLocaleDateString('de-DE', { day:'numeric', month:'numeric' });
+}
+function formiSeitZeile(){
+  var seit=formiSeitStand(); if(!seit || Date.now()-seit<FORMI_SEIT_MS) return null;
+  var ho=(_myHo||[]).filter(function(h){ return (h.ts||0)>seit && h.text; });
+  var an=ansichtAn('ann') ? (_allAnns||[]).filter(function(a){
+    return (a.ts||0)>seit && a.text && (isChef()||!a.target||a.target==='all'||(session.studioKeys||[]).indexOf(a.target)>=0); }) : [];
+  if(!ho.length && !an.length) return null;
+  var teile=[];
+  if(ho.length) teile.push(ho.length===1 ? '1 Übergabe' : ho.length+' Übergaben');
+  if(an.length) teile.push(an.length===1 ? '1 Ankündigung' : an.length+' Ankündigungen');
+  var alle=ho.map(function(h){ return { text:h.text, quelle:'Übergabe von '+String(h.name||'jemandem').split(' ')[0], ts:h.ts||0 }; })
+    .concat(an.map(function(a){ return { text:a.text, quelle:'Ankündigung von '+String(a.from||'der Leitung').split(' ')[0], ts:a.ts||0 }; }))
+    .sort(function(a,b){ return b.ts-a.ts; });
+  var top=alle.filter(function(x){ return FORMI_SEIT_WICHTIG.test(x.text); })[0] || alle[0];
+  var zitat=String(top.text).replace(/\s+/g,' ').trim();
+  if(zitat.length>90) zitat=zitat.slice(0, 89)+'…';
+  var uhr=new Date(top.ts).toLocaleTimeString('de-DE', { hour:'2-digit', minute:'2-digit' });
+  return { art:'lesen formi-seit', ziel: ho.length ? 'team' : 'ann', teamtab: ho.length ? 'uebergabe' : '',
+    ikon:'<span class="formi-figur mini" aria-hidden="true">'+formiFigurInnen()+'</span>',
+    titel:'Seit '+formiSeitWann(seit)+': '+teile.join(', '), wann:formiSeitWann(seit), anzahl:teile.join(', '),
+    unter:'„'+zitat+'" — '+top.quelle+', '+uhr };
+}
+function heuteHakenBinden(b){
+  b.addEventListener('click', function(e){
+    e.stopPropagation();
+    var art=b.getAttribute('data-hhak'), sk=b.getAttribute('data-hhak-sk'), id=b.getAttribute('data-hhak-id');
+    var huelle=b.closest('.hz-mit-haken');
+    if(!art || !sk || !id || b.disabled) return;
+    b.disabled=true;
+    if(huelle) huelle.classList.add('erledigt');
+    burstAt(b); tick();
+    if(typeof formiHaken==='function') formiHaken();
+    gehirnAbhakenSchreiben(art, sk, { id:id }, true).then(function(){
+      offerUndo(art==='putz' ? 'Putzpunkt erledigt' : 'Aufgabe erledigt', function(){
+        return gehirnAbhakenSchreiben(art, sk, { id:id }, false);
+      });
+    }).catch(function(err){
+      b.disabled=false;
+      if(huelle) huelle.classList.remove('erledigt');
+      toast(errMsg(err), true);
+    });
+  });
+}
+/* Runde 240: Abhaken direkt auf „Heute". Aus dem Betrieb, 23.10.2026:
+   Mitarbeiter haben unten nur noch Heute, Zeiten, Plan, Nachrichten –
+   und der meistbenutzte Bereich ist „Aufgaben und Putzplan" (24.9.).
+   Also muss „Heute" das können, wofür man bisher ins Studio ging.
+
+   Der Haken ist ein EIGENER Knopf neben der Zeile, nicht in ihr: ein
+   Knopf im Knopf ist ungültig, und der Tipp auf die Zeile soll weiter
+   öffnen. Er steht links daneben (44 px breit, so hoch wie die Zeile). */
 function heuteZeile(k){
   if(k.band) return k.band;
+  var zeile = heuteZeileKnopf(k);
+  if(!k.hak) return zeile;
+  return '<div class="hz-mit-haken">'+
+    '<button type="button" class="hz-haken" data-hhak="'+esc(k.hak.b)+'" data-hhak-sk="'+esc(k.hak.sk)+'" data-hhak-id="'+esc(k.hak.id)+'"'+
+    ' aria-label="Erledigt: '+esc(k.titel)+'" title="Erledigt"><span class="hz-kreis" aria-hidden="true"></span></button>'+
+    zeile+'</div>';
+}
+function heuteZeileKnopf(k){
   return '<button type="button" class="heute-zeile '+k.art+'" data-heute="'+esc(k.ziel)+'"'+
     (k.f?' data-hf="'+esc(k.f)+'"':'')+(k.sk?' data-hsk="'+esc(k.sk)+'"':'')+
     (k.ichtab?' data-hichtab="'+esc(k.ichtab)+'"':'')+
@@ -37893,7 +38150,7 @@ function renderHeuteJetzt(){
     (cachedTodos[sk]||[]).forEach(function(t){
       if(isDone(t)||isArchived(t)) return;
       if(!t.due){
-        ohneFrist.push({ ts:t.ts||0, art:'tun', ziel:'todos', f:'offen',
+        ohneFrist.push({ ts:t.ts||0, art:'tun', ziel:'todos', f:'offen', hak:{ b:'aufgabe', sk:sk, id:t.id },
           ikon:ikon('hakenKreis'), titel:t.title||'(ohne Titel)',
           unter:(mehrereStudios?studioName(sk)+' · ':'')+'ohne Frist' });
         return;
@@ -37901,11 +38158,11 @@ function renderHeuteJetzt(){
       var wo = mehrereStudios ? studioName(sk) : '';
       if(jetzt>t.due){
         var d=tageSeit(t.due);
-        ueber.push({ due:t.due, art:'dringend', ziel:'todos', f:'faellig',
+        ueber.push({ due:t.due, art:'dringend', ziel:'todos', f:'faellig', hak:{ b:'aufgabe', sk:sk, id:t.id },
           ikon:ikon('warnung'), titel:t.title||'(ohne Titel)',
           unter:(wo?wo+' · ':'')+(d<=0?'seit heute':(d===1?'seit 1 Tag':'seit '+d+' Tagen')) });
       } else if(t.due<=endeHeute){
-        heute.push({ due:t.due, art:'heute', ziel:'todos',
+        heute.push({ due:t.due, art:'heute', ziel:'todos', hak:{ b:'aufgabe', sk:sk, id:t.id },
           ikon:ikon('uhr'), titel:t.title||'(ohne Titel)',
           unter:(wo?wo+' · ':'')+'bis '+new Date(t.due).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}) });
       }
@@ -37996,6 +38253,7 @@ function renderHeuteJetzt(){
                    .slice(0,2).join(' · ') });
     }
   }
+  var fseit=formiSeitZeile();
   var dmN=0; try{ dmN=dmUnreadCount(); }catch(e){}
   if(dmN && ansichtAn('dm')){
     lesen.push({ art:'lesen', ziel:'dm', ikon:ikon('mail'),
@@ -38065,7 +38323,7 @@ function renderHeuteJetzt(){
     } else if(putzJe.length){
       putzJe[0].liste.forEach(function(t){
         putz.push({ art:'putz', ziel:'putzplan', sk:putzJe[0].sk, ikon:allesIkon('putzplan'),
-          anzahl:1,
+          anzahl:1, hak:{ b:'putz', sk:putzJe[0].sk, id:t.id },
           titel:t.title||t.text||'Putzpunkt',
           unter:repLabelFor(t) || 'einmalig' });
       });
@@ -38132,9 +38390,7 @@ function renderHeuteJetzt(){
     html+='<div class="heute-block" data-btitel="'+esc(titel)+'" data-bzahl="'+n+'"'+
       ' data-bziel="'+esc(ziel)+'"'+(f?' data-bf="'+esc(f)+'"':'')+'>'+
       '<div class="heute-kopf '+art+(dringend?' dringend':'')+'">'+
-      '<span class="hk-punkt"></span>'+
-      '<span class="hk-wort">'+esc(titel)+(n>1?' · '+n:'')+'</span>'+
-      '<i></i>'+
+      '<span class="hk-wort">'+esc(titel)+(n>1?' <span class="hk-zahl">'+n+'</span>':'')+'</span>'+
       /* Der Ausgang steht da, sobald die Überschrift MEHR nennt, als
          darunter Zeilen stehen — nicht erst, wenn Zeilen weggelassen
          wurden. Beim Putzplan der Leitung ist das nicht dasselbe: eine
@@ -38143,7 +38399,7 @@ function renderHeuteJetzt(){
       /* Das Tagesband zeigt alle, die heute da sind — „alle N ›" wäre
          dort eine Verheissung ohne Inhalt. */
       (art!=='band' && (rest>0 || n>zeigen.length) ? '<button type="button" class="mini-link" data-heute="'+esc(ziel)+'"'+
-                (f?' data-hf="'+esc(f)+'"':'')+'>alle '+n+' ›</button>' : '')+
+                (f?' data-hf="'+esc(f)+'"':'')+'>Alle '+n+'</button>' : '')+
       '</div>'+(zusatz||'')+'<div class="heute-liste">'+zeigen.map(heuteZeile).join('')+'</div></div>';
     if(breit){
       var neu=html.slice(vorher.length); html=vorher;
@@ -38153,6 +38409,14 @@ function renderHeuteJetzt(){
   /* Am PC ist Höhe für mehr als eine Zeile je Block da; heutePasst()
      kürzt ohnehin, was nicht passt. Am Handy die bisherigen Zahlen. */
   function zeilen(handy, pc){ return breit ? pc : handy; }
+  /* Runde 242: „Seit du weg warst" — am PC oben in „Neu für dich"; am
+     Handy fiele dieser Block meist nach „Ausserdem", deshalb steht die
+     eine Zeile dort ganz oben. Sie ist das Erste, was man zum
+     Schichtbeginn braucht. */
+  if(fseit && breit) lesen.unshift(fseit);
+  /* Am Handy steht „Seit Mittwoch" in der Überschrift, die Zeile nennt
+     nur die Zahlen — sonst schnitt die schmale Zeile den Titel ab. */
+  if(fseit && !breit){ var fz=Object.assign({}, fseit, { titel:fseit.anzahl }); block('Seit '+fseit.wann, 'lesen', [fz], [fz], 'team'); }
   if(ansichtAn('todos')) block('Überfällig', 'dringend', ueber, ueber.slice(0,zeilen(3,5)), 'todos', 'faellig');
   block('Heute', 'heute', heute, heute.slice(0,zeilen(3,4)), 'todos');
   /* Direkt unter „Heute": wer eine Schicht abgibt, braucht die Antwort
@@ -38215,6 +38479,7 @@ function renderHeuteJetzt(){
   box.innerHTML=html;
 
   box.querySelectorAll('[data-heute]').forEach(heuteTippBinden);
+  box.querySelectorAll('[data-hhak]').forEach(heuteHakenBinden);
 
   heutePasst(box);
 }
@@ -38392,7 +38657,9 @@ function heutePasst(box){
         ueber -= vorher - Math.max(hoehe[0], hoehe[1]);
       } else ueber -= f;
     }
-    weg.forEach(function(z){ z.remove(); });
+    /* Mit Haken (Runde 240) steckt die Zeile in einer Hülle – die muss
+       mit, sonst bleibt der Haken allein stehen und nimmt weiter Platz. */
+    weg.forEach(function(z){ (z.closest('.hz-mit-haken') || z).remove(); });
     betroffen.forEach(heuteKopfAusgang);
   }
   function kandidaten(){
@@ -38421,7 +38688,7 @@ function heutePasst(box){
     });
     if(laengster){
       var z = zeilenVon(laengster);
-      z[z.length-1].remove();
+      (z[z.length-1].closest('.hz-mit-haken') || z[z.length-1]).remove();
       heuteKopfAusgang(laengster);
       continue;
     }
@@ -38464,6 +38731,7 @@ function heuteRestZeichnen(box, liste){
         (x.zahl>1?' · '+x.zahl:'')+' ›</button>';
     }).join('')+'</div>');
   box.querySelectorAll('.heute-rest [data-heute]').forEach(heuteTippBinden);
+  box.querySelectorAll('.heute-rest [data-hhak]').forEach(heuteHakenBinden);
 }
 
 /* Wurde in einem Block gekürzt, MUSS der Weg zum Rest dastehen. Eine
@@ -38483,7 +38751,7 @@ function heuteKopfAusgang(blk){
   var n = Number(blk.getAttribute('data-bzahl') || 0);
   kopf.insertAdjacentHTML('beforeend',
     '<button type="button" class="mini-link" data-heute="'+esc(ziel)+'"'+
-    (f ? ' data-hf="'+esc(f)+'"' : '')+'>alle '+(n>1 ? n+' ' : '')+'›</button>');
+    (f ? ' data-hf="'+esc(f)+'"' : '')+'>Alle'+(n>1 ? ' '+n : '')+'</button>');
   heuteTippBinden(kopf.querySelector('.mini-link'));
 }
 
@@ -39113,6 +39381,8 @@ function loadMyHandovers(force){
        stimmt die Grenze immer. */
     _myHo=alle.sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
     renderHomeLesen();
+    /* Runde 242: „Seit deiner letzten Schicht" braucht die Übergaben. */
+    if(typeof layoutNeu==='function' && layoutNeu() && currentView==='home') renderHeute();
   });
 }
 
@@ -49641,7 +49911,7 @@ function letzteAnsichtHolen(){
 function verlaufStarten(){
   _verlaufBereit=true;
 
-  /* Runde 240: ein Tipp auf eine Meldung, während die App offen ist —
+  /* Runde 243: ein Tipp auf eine Meldung, während die App offen ist —
      der Service Worker schickt das Ziel (sw.js, notificationclick). Nur
      Ansichten, die es gibt und die diese Person sehen darf; showView
      prüft das ohnehin noch einmal (ansichtAn). */

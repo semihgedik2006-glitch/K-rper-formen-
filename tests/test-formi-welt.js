@@ -5,9 +5,9 @@
    2. ja 3. alle vier".
 
    Geprüft wird, im Stil „Formi":
-    1. Flächen: Karten und Startseiten-Zeilen haben Formis schillernde
-       Kante (Verlauf als border-box) über einem schwarzen Kern; die
-       Statusfarbe der Zeile bleibt (eigene Schicht links).
+    1. Flächen: Karten und die Gruppen der Startseite haben Formis
+       schillernde Kante (Verlauf als border-box) über einem schwarzen
+       Kern. Seit Runde 241 an der Gruppe, nicht mehr an jeder Zeile.
     2. Wo man ist: aktiver Raum links mit Formis Verlauf, Strich unter dem
        offenen Reiter im Verlauf, Seitentitel im Verlauf.
     3. Der Ring bleibt Formi: das Zeichen im Seitenkopf ist ein Quadrat
@@ -64,21 +64,28 @@ function kontrast(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) +
   for (const [w, h] of [[1440, 900], [390, 844]]) {
     const p = await oeffne(b, w, h);
     const m = await p.evaluate(() => {
+      /* Runde 241 („Apple-Grundgerüst, Formi als Akzent“; zu den
+         Probebildern: „genau so hab ichs mir vorgestellt“): die Zeilen
+         stehen jetzt in EINER Gruppe je Abschnitt, und die schillernde
+         Kante sitzt an der Gruppe statt an jeder Zeile. Geprüft wird
+         dieselbe Kante — an der Fläche, die sie jetzt trägt. Die Farbe
+         der Art steht im Zeichen der Zeile (test-gruppen-titel). */
       const z = document.querySelector('#heuteListe .heute-zeile');
-      const cs = z ? getComputedStyle(z) : null;
+      const g = z ? z.closest('.heute-liste') : null;
+      const cs = g ? getComputedStyle(g) : null;
       const kopf = document.querySelector('.bk-ikon'), kr = kopf.getBoundingClientRect();
       const titel = getComputedStyle(document.getElementById('bkTitel'));
       const strich = getComputedStyle(document.getElementById('subnav'), '::before').backgroundImage;
       const aktiv = document.querySelector('#side .tab.active');
       return {
-        kante: cs ? /linear-gradient/.test(cs.backgroundImage) && (cs.backgroundImage.match(/gradient/g) || []).length >= 3 && cs.borderTopColor === 'rgba(0, 0, 0, 0)' : false,
+        kante: cs ? /linear-gradient/.test(cs.backgroundImage) && (cs.backgroundImage.match(/gradient/g) || []).length >= 2 && cs.borderTopColor === 'rgba(0, 0, 0, 0)' : false,
         titel: /gradient/.test(titel.backgroundImage) && titel.color === 'rgba(0, 0, 0, 0)',
         strich: /gradient/.test(strich),
         quadrat: parseFloat(getComputedStyle(kopf).borderTopLeftRadius) < kr.width / 2 - 2,
         aktiv: aktiv ? /gradient/.test(getComputedStyle(aktiv, '::before').backgroundImage) : null
       };
     });
-    pruefe(w + ' px: Zeilen mit schillernder Kante über schwarzem Kern, Statusschicht bleibt', m.kante, JSON.stringify(m));
+    pruefe(w + ' px: Gruppe der Startseite mit schillernder Kante über schwarzem Kern', m.kante, JSON.stringify(m));
     pruefe(w + ' px: Seitentitel und Reiter-Strich in Formis Verlauf', m.titel && m.strich, JSON.stringify(m));
     pruefe(w + ' px: das Zeichen im Seitenkopf ist ein Quadrat, kein Ring', m.quadrat, JSON.stringify(m));
     if (w > 820) pruefe(w + ' px: der aktive Raum links trägt Formis Verlauf', m.aktiv === true, JSON.stringify(m));
@@ -154,7 +161,7 @@ function kontrast(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) +
   console.log('\n── 9 Gegenprobe Stil „Hell" ──');
   {
     const p = await oeffne(b, 1440, 900, { prefs: JSON.stringify({ theme: 'light', stil2: true }) });
-    const m = await p.evaluate(() => { const z = document.querySelector('#heuteListe .heute-zeile'); return z ? getComputedStyle(z).backgroundImage : ''; });
+    const m = await p.evaluate(() => { const z = document.querySelector('#heuteListe .heute-zeile'); return z ? getComputedStyle(z).backgroundImage + ' ' + getComputedStyle(z.closest('.heute-liste')).backgroundImage : ''; });
     pruefe('GEGENPROBE Stil Hell: keine schillernde Kante', !/5fe1ff|95, 225, 255/i.test(m), m.slice(0, 120));
     await zu(p);
   }

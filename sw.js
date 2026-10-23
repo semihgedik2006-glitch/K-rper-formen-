@@ -2,7 +2,7 @@
    - Caching: HTML immer frisch (network-first), statische Dateien offline-fähig
    - Push: Firebase Cloud Messaging im Hintergrund
    Bei Code-Änderungen VERSION hochzählen. */
-const VERSION = 'v34';
+const VERSION = 'v35';
 const CACHE = 'studiochat-' + VERSION;
 /* loesungen-basis.js liegt mit im Vorrat: die 115 Einträge sind genau
    das, was jemand im Studio braucht, wenn das WLAN gerade der Grund
@@ -48,10 +48,13 @@ function einstLesen() {
 messaging.onBackgroundMessage(function (payload) {
   const d = (payload && payload.data) || {};
   const n = (payload && payload.notification) || {};
-  const titel = d.title || n.title || 'StudioChat';
+  /* Runde 242 (Idee 14): was die App selbst schickt, spricht Formi —
+     Name vorn, Formis Bild. Nachrichten von Menschen bleiben, wie sie sind. */
+  const formi = d.von === 'formi';
+  const titel = (formi ? 'Formi · ' : '') + (d.title || n.title || 'StudioChat');
   const text = d.body || n.body || '';
   return einstLesen().then(function (einst) { return self.registration.showNotification(titel, {
-    body: text, icon: 'icon.svg', badge: 'icon.svg', silent: nachtLautlos(einst, new Date()),
+    body: text, icon: formi ? 'formi-push.svg' : 'icon.svg', badge: 'icon.svg', silent: nachtLautlos(einst, new Date()),
     /* Die Marke haengt am INHALT, nicht an der Uhrzeit.
 
        Vorher stand hier Date.now() — damit war jede Marke einmalig und
@@ -60,7 +63,7 @@ messaging.onBackgroundMessage(function (payload) {
        Meldung die vorige, egal woher die zweite kam. Verschiedene
        Nachrichten stossen sich dabei nicht: sie haben andere Marken. */
     tag: 'kf-' + marke(titel + '|' + text),
-    /* Runde 240: wohin ein Tipp führt (z. B. 'zeit' bei der
+    /* Runde 243: wohin ein Tipp führt (z. B. 'zeit' bei der
        Stempel-Erinnerung). Fehlt es, öffnet die App wie bisher. */
     data: { ziel: zielPruefen(d.ziel) }
   }); });

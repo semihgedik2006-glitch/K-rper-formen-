@@ -109,7 +109,7 @@ function pruefe(name, bedingung, zusatz) {
     await db.doc('pushTokens/tok-dora').set({ uid: 'sr_dora', firma: 'fremdfirma' });
     const gepusht = [], gemailt = [];
     I.mailerFuerDurchlauf({ sendMail: async (x) => { gemailt.push(x); return { messageId: 'x' }; } });
-    const bericht = await I.stempelErinnernFirma('koerperformen', jetzt, { push: async (tokens, titel, text, ziel) => { gepusht.push({ tokens, titel, text, ziel }); } });
+    const bericht = await I.stempelErinnernFirma('koerperformen', jetzt, { push: async (tokens, titel, text, von, ziel) => { gepusht.push({ tokens, titel, text, von, ziel }); } });
     I.mailerFuerDurchlauf(null);
     const von = (uid) => bericht.find((b) => b.uid === uid);
     pruefe('Anna: „gehen" mit Push UND Mail', von('sr_anna') && von('sr_anna').art === 'gehen' && von('sr_anna').push === 1 && von('sr_anna').mail === 1, JSON.stringify(bericht));
@@ -117,6 +117,7 @@ function pruefe(name, bedingung, zusatz) {
       gemailt.length === 1 && gemailt[0].to === 'sr_anna@beispiel.test' && gemailt[0].subject === 'Feierabend vergessen?', JSON.stringify(gemailt.map((x) => [x.to, x.subject])));
     pruefe('… der Push geht nur an Annas Gerät', gepusht.length === 1 && JSON.stringify(gepusht[0].tokens) === '["tok-anna"]', JSON.stringify(gepusht));
     pruefe('… und ein Tipp darauf öffnet „Zeiten" (Ziel zeit)', gepusht[0] && gepusht[0].ziel === 'zeit', JSON.stringify(gepusht[0]));
+    pruefe('… und sie kommt als Formi (von formi, Runde 242)', gepusht[0] && gepusht[0].von === 'formi', JSON.stringify(gepusht[0]));
     pruefe('GEGENPROBE Ben (Push am Gerät aus, Mail abbestellt): erinnert, aber kein Push, keine Mail',
       von('sr_ben') && von('sr_ben').push === 0 && von('sr_ben').mail === 0, JSON.stringify(von('sr_ben')));
     pruefe('GEGENPROBE Cem (deaktiviert): nichts', !von('sr_cem'));

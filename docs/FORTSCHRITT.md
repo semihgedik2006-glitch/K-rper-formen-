@@ -21296,7 +21296,224 @@ Titel statt Versalien-Marken, dann untere Leiste mit fünf Einträgen,
 dann Bewegung (drei Federn, Blätter mit Griff), dann Chat in Blasen.
 Formi selbst bleibt bei der anderen Sitzung.
 
-## Runde 240 — Ein Tipp auf die Erinnerung öffnet „Zeiten"; Lohn-Angaben gehen mit dem Zugang (23.10.2026)
+## Runde 240 — Auf „Heute" direkt abhaken (23.10.2026)
+
+Aus dem Betrieb, 23.10.2026, auf meine Empfehlung „Aufbau nach Rolle und
+Aufgabe statt nach Bereich" und die Rückfragen:
+- „Mitarbeiter unten nur Heute, Zeiten, Plan, Nachrichten?": „ja";
+- „Eine Liste oder Blöcke nach Art?": „so wies leichter zu verstehen ist".
+  Meine Wahl dafür: Blöcke bleiben, weil man sie überfliegen kann.
+- „Wer testet?": „ich kann leider nur selber testen aktuell".
+
+Dagegen steht ein früherer Satz aus dem Betrieb (24.9.): „der am meisten
+benutzte Bereich [ist] der Aufgaben- und Putzplan-Bereich". Fällt
+„Studio" für Mitarbeiter weg, muss „Heute" deshalb das Abarbeiten
+übernehmen. Deshalb kommt dieser Schritt zuerst.
+
+**Gebaut.** Jede Aufgaben- und jede einzelne Putz-Zeile auf „Heute" trägt
+links einen Kreis als eigenen Knopf (`heuteZeile`, `heuteHakenBinden`).
+- Geschrieben wird über `gehirnAbhakenSchreiben()`, denselben Weg, den
+  Formi nimmt (Kürzel, Putzplan-Blatt).
+- Danach erscheint „Rückgängig", das wieder `done:false` schreibt.
+- Der Tipp auf die Zeile selbst öffnet sie weiter.
+
+**Unterwegs gefunden, beide behoben:**
+- *Erste Fassung, Haken über dem Zeichen (absolut):* Sie überdeckte 2 px
+  der vergrösserten Fläche von „alle 4 ›" darüber (test-p3-startseite:
+  44 × 42). Jetzt steht der Haken als Spalte links daneben und überdeckt
+  nichts.
+- *Kürzen auf einen Bildschirm (`heutePasst`):* Es entfernte nur die
+  Zeile, der Haken blieb allein stehen und drückte „Offen" nach
+  „Ausserdem". Jetzt geht die Hülle mit.
+
+**Gemessen.** `tests/test-heute-haken.js` hat 20 Zusicherungen:
+- Haken ≥ 44 × 44 bei 320, 390 und 1440 px, normal und kompakt;
+- `done:true` genau für diese Aufgabe, nach „Rückgängig" `done:false`;
+- Gegenprobe: Der Tipp auf die Zeile öffnet die Aufgaben und hakt nicht ab.
+
+Gegen `main` ist der Test rot. Grün sind ausserdem p3-startseite,
+startseite-putz, tagesband, formi-reihe, knoepfe, gestaltung, csp,
+neuigkeiten und formi-app.
+
+**Die vier Räume für Mitarbeiter sind gebaut, aber noch nicht
+ausgeliefert.** Im Gesamtlauf fielen damit rund 30 Durchläufe, die als
+Mitarbeiter über „Studio" oder „Wissen" an ihr Ziel gehen. Sie müssen auf
+den Weg über „Alles" umgestellt werden. Das kommt als eigener Schritt
+direkt danach, nicht halb in diesem.
+
+## Runde 241 — Gruppen und Titel wie bei Apple (23.10.2026)
+
+Zweiter Bauschritt aus dem Plan „Studio Chat wie von Apple“. Aus dem
+Betrieb nach der Schrift-Runde: „sieht super aus kannst weiter machen“.
+Massstab sind die Probebilder, zu denen es hiess „genau so hab ichs mir
+vorgestellt“, und die Entscheidung „Apple-Grundgerüst, Formi als Akzent“.
+
+**Was gebaut wurde**
+
+- **Abschnittsmarken sind Titel.** „ÜBERFÄLLIG · 4“ in kleinen, weit
+  gesperrten Versalien mit Punkt davor und Strich bis zum Rand wird
+  „Überfällig 4“: ein normales Wort in `--t-lg`, halbfett, die Zahl leise
+  daneben (`.hk-zahl`), rechts „Alle 4“ statt „alle 4 ›“. Dasselbe für
+  `.sec-head` (Team, Brennpunkte, Defekte, Admin) und die Gruppen der
+  Aufgaben (`.pg-kopf h4`). Kleine Marken über Navigationsgruppen
+  (Schnellzugriffe, Kanäle, Verwaltung, Hilfe, Zeiten) bleiben klein, aber
+  in normaler Schreibung. Seitentitel `h1`/`h2` ohne Versalien.
+- **Die Startseite in Gruppen.** Jeder Abschnitt ist eine gerundete
+  Fläche (`.heute-liste`, `--r-md`), die Zeilen darin ohne eigene Fläche,
+  Kante und Schatten, getrennt durch eine Haarlinie, die beim Text
+  beginnt (wie in Einstellungen). Zeigen hellt die Zeile auf, Drücken
+  dunkelt sie ab und legt den Schatten nach innen — innerhalb der Gruppe.
+- **Status bleibt Status.** Die Farbe der Art steht im Zeichen der Zeile;
+  „überfällig“ zusätzlich in der Unterzeile. Die getönten Flächen und der
+  farbige Balken links sind weg.
+- **Stil „Formi“:** die schillernde Kante sitzt an der Gruppe, nicht mehr
+  an jeder Zeile. Formi selbst (Figur, Farben, Bewegung) ist nicht
+  angefasst — daran wird in einer anderen Sitzung gearbeitet.
+
+**Warum so**
+
+- Die Wunschliste in CLAUDE.md sagt „Farbe, die von einer Kante ausgeht
+  und ausläuft“ — das stand bisher an jeder Zeile. Die Entscheidung vom
+  23.10.2026 hat das ausdrücklich auf den Kopf der Seite und das aktive
+  Element verlegt („Formi-Farben als Akzent/Kopf-Schein“). Sechs farbige
+  Karten untereinander waren sechs Flächen, die gleich laut rufen; eine
+  Gruppe je Abschnitt ist das, was die Probebilder zeigten.
+- „Alles, was anklickbar ist, soll sich wie ein richtiger Knopf
+  anfühlen“: die Gruppe trägt Haarlinie und Schatten, die Zeile gibt beim
+  Drücken sichtbar nach. Ein Knopf-Gefühl je Zeile mit eigenem Schatten
+  hätte die Gruppe wieder in Karten zerlegt.
+- Die Zahl ohne „·“: bei Apple steht sie leise neben dem Titel. Drei
+  Tests lasen sie bisher über das „·“; sie lesen jetzt die Zahl am Ende
+  des Titels (nicht lockerer — dieselbe Zahl wird verlangt).
+
+**Gefunden und behoben**
+
+- „Alle 2“ traf am Handy (390 px) nur 44 × 40: die Trefferfläche ragt
+  unter den Titel, und bei 6 px Abstand gewann die Gruppe darunter. Mit
+  Verweis jetzt mindestens 10 px Abstand, auch in „kompakt“.
+- Team, Leitung, 390 px: der grössere Titel „Wartet auf deine
+  Entscheidung“ (4 px höher) schob „heute“ 7 px unter die Grenze von
+  `heuteInsBild()`, und die Seite rollte beim Öffnen wieder. Ein Titel
+  ganz oben in seinem Kasten trägt jetzt nur 4 statt 16 px Luft darüber.
+  Die Grenze ist weiterhin knapp; wer dort etwas höher macht, prüft mit
+  `test-team-woche`.
+- Parallel kam Runde 240 („Auf Heute direkt abhaken“) mit einem Kreis
+  vor jeder Aufgabe. Der Kreis steht jetzt in der Gruppe, links vor dem
+  Zeichen (wie in Erinnerungen); die Trennlinie beginnt dort entsprechend
+  später, und die Ecken der Gruppe trägt das erste bzw. letzte Glied.
+- `test-gestaltung` verlangt, dass ein Selektor eine Eigenschaft nur
+  einmal setzt. Die neuen Werte stehen deshalb in den alten Regeln
+  (Abschnitt 6), nicht in einer zweiten Regel darunter.
+
+**Tests:** neu `tests/test-gruppen-titel.js` (Stile Formi, Dunkel, Hell;
+390 und 1440 px): keine Versalien in Abschnittsmarken, Titel ≥ 18 px,
+Zahl leise und richtig, eine Gruppe je Abschnitt ohne Lücken und ohne
+Zeilenschatten, Trennlinie ab dem Text, Statusfarbe im Zeichen und in der
+Unterzeile (Gegenprobe: Fläche nicht getönt), Kontrast von Titel, Zahl und
+„Alle N“ an Bildpunkten ≥ 4,5 : 1, „Alle N“ ≥ 44 × 44 in normal und
+kompakt, andere Seiten ohne Versalien. Gegenprobe auf `main`: rot.
+`test-formi-welt` prüft die schillernde Kante jetzt an der Gruppe,
+`test-block-c` die 14 px Rundung (Runde 103, C2) an der Gruppe statt an
+der ersten Zeile — beide mit Zitat im Test, verlangt wird dasselbe.
+
+**Schon vorher rot auf `main`, unverändert:** test-navigation (bricht in
+Abschnitt 3 ab: die untere Leiste hat keinen Eintrag „Verwaltung“ mehr),
+test-neu-design (320 × 568 passt nicht ohne Scrollen; 343 statt 341 px).
+
+**Nicht geprüft:** Safari auf iPhone und Mac (kein Apple-Gerät hier), der
+Anmeldeweg.
+
+**Als Nächstes:** die Aufgabenliste in „Studio“ ebenfalls als Gruppen
+(dort tragen Zeilen eigene Zustände — erledigt, eben abgehakt —, das
+braucht eigene Sorgfalt), ein Hauptknopf je Ansicht und konzentrische
+Ecken, dann die untere Leiste mit fünf Einträgen.
+
+## Runde 242 — Sog mit echter Physik, „Seit du weg warst“ (Idee 8), Formis Stimme in Benachrichtigungen (Idee 14) (23.10.2026)
+
+**Aus dem Betrieb:**
+- „mach weiter mit den restlichen ideen“
+- Mitten in der Runde: „die erledigten aufgaben fliegen ganz steif in
+  formi rein statt gestreckt und drehend also das ist physikalisch falsch
+  zumindest und da ist auch keine spagettifikation oder irgendwas“
+
+**1. Der Sog (`formiSchlucken`), neu gerechnet.** Die erste Fassung aus
+Runde 237 flog fast gerade hinein. Sie drehte sich nur auf das Ziel zu und
+wurde erst im letzten Fünftel kurz gestreckt, also zu Recht „steif“.
+Jetzt werden 31 Bilder einmal vorab gerechnet, jedes ist ein einziges
+`transform`:
+- **Bahn:** eine Spirale um Formis Mitte, gegen den Uhrzeiger wie die
+  Scheibe. Der Umlauf wird nach innen schneller (Kepler, ω ∝ r^-1,5),
+  insgesamt gut 1,25 Runden. Der Abstand schrumpft mit (1−s)^1,6.
+- **Lage:** Die lange Achse zeigt zum Loch. Damit dreht sich der
+  Schriftzug mit der Bahn und taumelt hinein. Am Anfang kommt die
+  Ausrichtung weich aus der Waagerechten.
+- **Gezeitenkraft ∝ 1/r³:** Er wird zum Loch hin gestreckt und quer dazu
+  gestaucht (Spaghettifizierung). Am Ende ist er über zehnmal so lang wie
+  breit, spürbar erst in der Nähe.
+- **Einschwenken in die Scheibe:** Unter 140 px wird die Bahn flach (bis
+  0,3) und um 9° geneigt, wie die schräg gesehene Scheibe.
+- **Zeitdehnung:** Die Bilder liegen kurz vor dem Horizont zeitlich
+  weiter auseinander (1/√(1−r_H/r), begrenzt). Er kriecht und verblasst.
+  Das letzte Fünftel des Wegs dauert mindestens 30 % der Zeit, insgesamt
+  1,9 s.
+- `test-formi-loch` misst das jetzt: Drehung mindestens 360°,
+  Streckung am Ende ≥ 10× und mehr als doppelt so stark wie in der
+  Mitte, Zeitdehnung ≥ 30 %. Gegen die alte Fassung wären alle drei rot
+  gewesen (Drehung unter 180°, Streckung 32× nur im letzten Bild,
+  gleichmässige Zeit).
+
+**2. „Seit du weg warst“ (Idee 8).**
+- Wer länger als 12 Stunden weg war (je Konto und Gerät gemerkt,
+  `kf_zuletzt_da`), sieht auf „Heute“ eine Zeile mit Formi, zum
+  Beispiel „Seit Mittwoch: 3 Übergaben, 1 Ankündigung“. Darunter steht
+  das Wichtigste **wörtlich** mit Quelle: „„Schlüssel … im Tresor.“ —
+  Übergabe von Ben, 07:10“.
+- Das Wichtigste ist, was nach Sicherheit, Gerät oder Schlüssel klingt.
+  Sonst ist es das Neueste.
+- Ein Tipp öffnet Team → Übergabe.
+- Am Rechner steht die Zeile oben in „Neu für dich“. Am Handy fiele
+  dieser Block meist nach „Ausserdem“, deshalb steht sie dort als eigener
+  Block „Seit Mittwoch“ ganz oben. Die Überschrift trägt den Tag, die
+  Zeile nur die Zahlen, sonst schnitt die schmale Zeile ab. Dafür rückt
+  am Handy ein anderer Block nach „Ausserdem“. Das ist bewusst so: Zum
+  Schichtbeginn ist das hier das Erste, was man braucht.
+
+**Entschieden und warum:** *Keine KI-Zusammenfassung.* Das Ideenpapier
+nannte das Risiko selbst: Eine falsch zusammengefasste Übergabe kann im
+Studio schaden. Gezählt wird ohne KI, zitiert wird wörtlich, und die
+Quelle steht immer dabei. Damit ist der Nutzen (was ist passiert?) da,
+ohne dass etwas erfunden werden kann.
+
+**3. Formis Stimme in Benachrichtigungen (Idee 14).**
+- `sendPush(…, von)` legt bei Meldungen, die die App selbst schickt,
+  `von:'formi'` in die Daten. Das sind: Aufgabe fällig, Erinnerung,
+  Nachweis(e), Kurz auffrischen, ⏰ Erinnerung, Formi meldet sich (Tag,
+  Frist, Feierabend), Defekt gemeldet, Material fehlt.
+- Der Service Worker zeigt sie als „Formi · …“ mit `formi-push.svg`
+  (Formis Gesicht).
+- Chat, Erwähnung, neue Aufgabe, „hat erledigt“ und Ankündigungen
+  bleiben, wie sie sind. „Das kommt von Formi“ ist etwas anderes als
+  „das kommt von der Chefin“.
+- `sw.js` steht auf v34. `formi-push.svg` steht in der Deploy-Liste.
+
+**Geprüft:**
+- `tests/test-formi-seit.js` (neu, 58 Zusicherungen):
+  - Push: Die neun Formi-Meldungen tragen `'formi'`, die fünf von
+    Menschen nicht.
+  - Der Service Worker wurde in einer nachgebauten Umgebung ausgeführt:
+    „Formi · Aufgabe fällig“ mit Formis Bild, Annas Nachricht
+    unverändert.
+  - „Seit du weg warst“ bei 320 bis 1920: Zitat wörtlich aus den Daten,
+    Quelle und Uhrzeit, richtiger Block je Gerät, Trefferfläche ≥ 44,
+    Tippen führt zu Übergabe, nach 2 Stunden keine Zeile, keine KI
+    gefragt.
+- `test-formi-loch` (31) mit der Physik, siehe oben.
+- Gesamtdurchlauf auf dem Stand mit Runde 240/241 (31 Durchläufe): 30 grün. `test-formi-kugel` 430 px (2 von 70) ist auf `main` schon so rot.
+
+**Nicht geprüft:** eine echte Benachrichtigung auf einem echten Handy (FCM
+geht hier nicht) und Safari.
+
+## Runde 243 — Ein Tipp auf die Erinnerung öffnet „Zeiten"; Lohn-Angaben gehen mit dem Zugang (23.10.2026)
 
 Aus dem Betrieb: „ja mach weiter" — auf die offenen Punkte am Ende von
 Runde 238 und 222. Zwei davon ließen sich ohne Rückfrage schließen.
@@ -21316,8 +21533,16 @@ landete dort, wo man zuletzt war. Jetzt trägt die Push-Nachricht ein Ziel
 - Das Ziel ist nur ein Wort aus Kleinbuchstaben; alles andere wird im
   Server UND im Service Worker verworfen, weil es Teil einer Adresse
   wird. Die App lässt einen Mitarbeiter so nicht in die Verwaltung.
-- `sw.js` VERSION v33 → v34, damit die Geräte den neuen Service Worker
+- `sw.js` VERSION v34 → v35, damit die Geräte den neuen Service Worker
   holen.
+
+**Beim Zusammenführen mit Runde 242:** Die Runde „Formis Stimme in
+Benachrichtigungen" hatte zur selben Zeit das vierte Argument von
+`sendPush` belegt (`von:'formi'`), und beide Seiten hatten `sw.js` auf
+v34 gezählt. Zusammengeführt als `sendPush(tokens, titel, text, von,
+ziel)`; die Stempel-Erinnerung kommt als Formi (die App schickt sie
+selbst) und öffnet „Zeiten". VERSION auf v35 — wer v34 von Runde 242
+schon hat, holte sonst den Service Worker mit dem Ziel nie.
 
 Bisher trägt nur die Stempel-Erinnerung ein Ziel. Die anderen Meldungen
 öffnen weiter die App; sie lassen sich einzeln nachziehen.

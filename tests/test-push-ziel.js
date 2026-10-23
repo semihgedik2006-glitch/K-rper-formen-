@@ -1,4 +1,4 @@
-/* ── Ein Tipp auf die Meldung führt hin (Runde 240) ───────────────────
+/* ── Ein Tipp auf die Meldung führt hin (Runde 243) ───────────────────
    Offen aus Runde 238: „Ein Tipp auf die Push-Nachricht öffnet die App,
    aber nicht direkt die Seite ‚Zeiten'." Jetzt trägt die Meldung ein Ziel.
 

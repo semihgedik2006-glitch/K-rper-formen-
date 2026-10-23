@@ -254,10 +254,20 @@ Drei Stufen, mehr nicht.
 | `--ls-eng` | `-.02em` | nur große Überschriften |
 | `--ls-s` | `.02em` | Knöpfe |
 | `--ls-m` | `.05em` | kleine Versalien |
-| `--ls-l` | `.12em` | Abschnittsmarken |
+| `--ls-l` | `.12em` | kleine Versalien in Abzeichen |
 
 Negative Laufweite nur bei großen Überschriften, weite nur bei Versalien —
 dort braucht das Auge die Luft wirklich.
+
+**Abschnitte heissen seit Runde 241 wie bei Apple** (23.10.2026): ein
+normales Wort in `--t-lg`, halbfett, `--ls-eng`, die Zahl leise daneben
+(`.hk-zahl`), „Alle N“ rechts — keine Versalien, kein Punkt, kein Strich
+bis zum Rand. Kleine Marken über Navigationsgruppen (Seitenleiste,
+Kanäle, Verwaltung) bleiben `--t-xs`, aber normal geschrieben. Auf der
+Startseite ist jeder Abschnitt **eine** Gruppe (`.heute-liste`): gerundet,
+Zeilen ohne eigene Fläche, getrennt durch eine Haarlinie, die beim Text
+beginnt. Die Farbe der Art steht im Zeichen, nicht auf der Fläche.
+Prüfung: `tests/test-gruppen-titel.js`.
 
 Die Schriftgröße ist über die Einstellungen in drei Stufen skalierbar –
 neue Größen deshalb **relativ** (`rem`), nie in Pixeln.
