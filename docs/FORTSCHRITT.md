@@ -21579,3 +21579,70 @@ Dokument bleiben unberührt (Gegenprobe im Test).
 
 - Ein echter Tipp auf eine echte Push-Nachricht auf einem Handy: hier
   nur mit der Attrappe des Service Workers.
+
+## Runde 244 — Aufgaben und Putzplan in Gruppen, ein Hauptknopf (23.10.2026)
+
+Dritter Bauschritt aus dem Plan „Studio Chat wie von Apple“. Aus dem
+Betrieb nach „Gruppen und Titel“ (Runde 241): „mach weiter“. Danach,
+15:18: „es soll einfach den ganzen plan erledigen und mir dann bescheid
+geben“ — die weiteren Runden folgen ohne Zwischenfrage.
+
+**Was gebaut wurde**
+
+- **Aufgaben und Putzplan unter „Studio“ als Gruppen.** Jede Gruppe
+  (`section.pp-gruppe`, z. B. Täglich, Wöchentlich, Heute, Diese Woche)
+  ist eine gerundete Fläche: die Zeilen stossen ohne Abstand aneinander,
+  nur die erste ist oben, nur die letzte unten gerundet, dazwischen eine
+  Haarlinie, die beim Text beginnt. Dasselbe in „Erledigt“
+  (`details.td-erledigt`). Zeigen hellt die Zeile auf, statt sie
+  anzuheben — eine angehobene Zeile in einer Gruppe reisst die Fläche auf.
+- **Ein gefüllter Hauptknopf je Ansicht (am Rechner).** „+ Neu“ in der
+  Bereichszeile trägt die Markenfläche; Filter, Drucken und „Wer hakt ab?“
+  bleiben Umrandung. Am Handy ist das schon die schwebende Plus-Taste.
+- Zustände bleiben: erledigt blass, überfällig mit dem breiteren Rand
+  links (Dunkel/Hell), Abhaken, Wischen und „…“ unverändert.
+
+**Warum so**
+
+- Die Ecken laufen über eigene Variablen (`--zg-oben`, `--zg-r-oben` …)
+  statt über `:is(…)`-Listen: der Gestaltungstest zerlegt Selektoren an
+  jedem Komma, auch innerhalb von `:is()`, und meldet dann doppelte
+  Eigenschaften. Die Variablen halten jede Eigenschaft an genau einer
+  Stelle.
+- Die letzte Zeile wird über `:not(:has(+ .todo))` erkannt, nicht über
+  `:last-child`: in einer Gruppe kann nach den Zeilen noch ein „mehr
+  zeigen“ oder „Erledigt“ folgen.
+- Der Hauptknopf nur ab 821 px: darunter gibt es die schwebende
+  Plus-Taste, zwei gefüllte Knöpfe wären zwei Hauptsachen.
+
+**Was dabei gefunden wurde**
+
+- Bei 320 × 568 liegt Formis Kugel (fest, rechts, y ≈ 339) genau dort,
+  wo eine in die Bildmitte gerollte Zeile ihr „…“ hat. Auf `main` ebenso;
+  die Kugel lässt sich wegrollen. Formi gehört einer anderen Sitzung,
+  daher nicht angefasst. Der Test rollt in diesem Fall die Zeile nach
+  oben, misst dort und schreibt die Zahl in die Zeile (5 von 10 im
+  Putzplan bei 320 px).
+- In Formi blenden die Zeilen gestaffelt mit Verschiebung ein; gemessen
+  wird die Lage (`offsetTop`), nicht das Bild, sonst erscheinen Lücken.
+
+**Tests**
+
+- Neu: `tests/test-gruppen-aufgaben.js` — 166 Zusicherungen, Stil Formi
+  bei 320 / 390 / 430 / 820 / 1280 / 1440 / 1920 px, Dunkel und Hell bei
+  390 / 1440. Haken und „…“ per Hit-Test ≥ 44 × 44 in „normal“ und
+  „kompakt“; „+ Neu“ an Bildpunkten 8,6 : 1 (Formi/Dunkel) und 5,5 : 1
+  (Hell). Gegen `main`: 68 von 166 falsch.
+- Grün: gestaltung, knoepfe, fingerziele, p1-aufgaben,
+  aufgaben-wie-putzplan, p2-putzplan, putzplan, putzplan-werkzeuge,
+  todos, eigene-aufgabe, abgeschnitten, quer, formi-welt, stil-formi,
+  gruppen-titel, heute-haken, neuigkeiten, csp, team-woche, block-c,
+  schnell-editor, neu-messlatte, akzent (im Parallellauf einmal rot an
+  der Zeitprobe des Farbwechsels, allein grün).
+- Schon auf `main` rot, nicht von dieser Runde: test-neu-design,
+  test-navigation (Abschnitt 3), test-rahmen.
+
+**Nicht getestet:** echtes Gerät (iPhone, Mac) — nur Chromium ohne
+Bildschirm; der Anmeldeweg (Firebase lädt hier nicht).
+
+**Als Nächstes:** untere Leiste mit fünf Einträgen („Wissen“ fällt weg).
