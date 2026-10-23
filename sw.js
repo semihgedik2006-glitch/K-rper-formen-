@@ -2,7 +2,7 @@
    - Caching: HTML immer frisch (network-first), statische Dateien offline-fähig
    - Push: Firebase Cloud Messaging im Hintergrund
    Bei Code-Änderungen VERSION hochzählen. */
-const VERSION = 'v33';
+const VERSION = 'v34';
 const CACHE = 'studiochat-' + VERSION;
 /* loesungen-basis.js liegt mit im Vorrat: die 115 Einträge sind genau
    das, was jemand im Studio braucht, wenn das WLAN gerade der Grund
@@ -48,10 +48,13 @@ function einstLesen() {
 messaging.onBackgroundMessage(function (payload) {
   const d = (payload && payload.data) || {};
   const n = (payload && payload.notification) || {};
-  const titel = d.title || n.title || 'StudioChat';
+  /* Runde 240 (Idee 14): was die App selbst schickt, spricht Formi —
+     Name vorn, Formis Bild. Nachrichten von Menschen bleiben, wie sie sind. */
+  const formi = d.von === 'formi';
+  const titel = (formi ? 'Formi · ' : '') + (d.title || n.title || 'StudioChat');
   const text = d.body || n.body || '';
   return einstLesen().then(function (einst) { return self.registration.showNotification(titel, {
-    body: text, icon: 'icon.svg', badge: 'icon.svg', silent: nachtLautlos(einst, new Date()),
+    body: text, icon: formi ? 'formi-push.svg' : 'icon.svg', badge: 'icon.svg', silent: nachtLautlos(einst, new Date()),
     /* Die Marke haengt am INHALT, nicht an der Uhrzeit.
 
        Vorher stand hier Date.now() — damit war jede Marke einmalig und

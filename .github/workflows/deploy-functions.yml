@@ -38,6 +38,7 @@ on:
       - 'manifest.json'
       - 'icon.png'
       - 'icon.svg'
+      - 'formi-push.svg'
       - '.github/workflows/deploy-functions.yml'
 
   # Und dieselbe Pruefung schon VOR dem Merge.
