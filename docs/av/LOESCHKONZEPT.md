@@ -142,7 +142,12 @@ Stempel tragen dazu, wer es war, wann und warum · **Korrekturanträge**
 der Beschäftigten (Tag, Uhrzeit, Art, Grund, Stand; nach der
 Entscheidung wer, wann und bei Ablehnung warum) · **Monatsabschlüsse**
 (Summen je Person: Stunden, Soll, Urlaub/Krank, Saldo, Konto; wer wann
-abgeschlossen und wieder geöffnet hat, mit Grund) · **Anliegen** an die
+abgeschlossen und wieder geöffnet hat, mit Grund) · **Soll je
+Wochentag und Urlaubsanspruch** je Person (seit 23.10.2026; nur die
+Geschäftsführung liest und ändert es, die Person sieht über „Mein
+Konto" nur ihre eigenen Werte. **Offen:** es bleibt stehen, bis die
+Geschäftsführung die Felder leert — ein Löschen, wenn jemand geht,
+gibt es dafür noch nicht) · **Anliegen** an die
 Leitung samt Antwort · **Schulungen**: Teilnehmer mit Name und
 Teilnahme-Code; je Durchlauf Modul, Zeitpunkt, Gerät, Studio, aktive
 Dauer, Versuche und falsch angeklickte Antworten je Frage, Ergebnis,
