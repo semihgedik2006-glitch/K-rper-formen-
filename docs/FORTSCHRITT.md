@@ -19837,3 +19837,115 @@ nicht mehr hereinspringt (sonst 2 px vom Rand, je nach Last).
 - `tests/test-auffrischen.js` (+5, jetzt 55): der Schalter ist da und an,
   schaltet ab und wird gespeichert, ein zweiter Tipp schaltet wieder an,
   Trefferfläche ≥ 44.
+
+## Runde 217 — „Zeig mir wie“: Formi führt mit seinem Ring durch die echte App (23.10.2026)
+
+**Aus dem Betrieb:** „mach weiter“, also mit den offenen Ideen aus
+`docs/ideen/formi-im-design.md`. „Zeig mir wie“ war schon in Runde 177
+ausdrücklich gewünscht (Etappe 2: „Können: … ‚Zeig mir wie‘ …“). Dazu kam
+Idee 11: Um das Ziel liegt Formis Ring, der Rest ist leicht abgedunkelt,
+unten steht „Schritt n von m · Weiter · Abbrechen“.
+
+**Gebaut:**
+- **Fünf Rundgänge** (`FORMI_WIE`):
+  - Aufgabe anlegen
+  - Krank oder Urlaub melden
+  - Übergabe schreiben
+  - Schichten ansehen und abgeben
+  - im Putzplan abhaken
+
+  Jeder hat 2 bis 5 Schritte auf den echten Seiten. Wo nötig, öffnet der
+  Rundgang den richtigen Reiter und klappt eine zugeklappte Karte auf.
+  Der letzte Schritt zeigt meist auf die Kugel: „Oder sag es mir“, mit
+  einem Satz, den Formi wirklich ohne KI versteht.
+- **Erkennen** in `gehirnSchnell`, noch vor allem anderen:
+  - „zeig mir (,) wie …“ oder „erklär mir wie …“ startet den Rundgang
+    sofort und ohne KI. Passt kein Rundgang, bietet Formi die Auswahl an.
+  - Eine Wie-Frage mit passendem Rundgang („wie melde ich mich krank“,
+    „wie lege ich eine Aufgabe an“) bleibt eine **Frage**. Sie geht wie
+    bisher an die KI und das Studio-Wissen, und unter der Antwort steht
+    „Zeig’s mir in der App ›“.
+  - „Wie wasche ich die Westen?“ (kein Rundgang) bleibt wie bisher.
+- **Gefundener Fehler:** „wie melde ich mich krank“ lief bisher in die
+  Regel „Selbst krank melden“ (krank + „ich“) und schlug eine Krankmeldung
+  für heute vor. Jetzt geht der Satz als Frage an die KI. „ich bin heute
+  krank“ bleibt die Krankmeldung.
+- **Der Scheinwerfer** (`#formiWie`):
+  - Ring: derselbe Verlauf wie an der Kugel (`--formi-ring`) mit Schein.
+  - Abdunklung: 50 % (Idee: „leicht“), als Schatten des Lichts.
+  - Mini-Formi: sitzt auf der Ecke des Rings und fliegt im Bogen zum
+    nächsten Ziel.
+  - Bewegung: Ring per FLIP, alles nur `transform`. Im Klick wird nichts
+    vermessen. Gelesen wird im nächsten Bild, dann geschrieben.
+  - Schritte: Nach jedem Schritt zieht der Ring einmal nach (380 ms),
+    weil die Kugel je Seite ihren Platz wechselt und Karten aufklappen.
+- **Die App bleibt bedienbar.** Nur die Karte fängt Klicks. Das Ziel im
+  Ring kann man sofort selbst antippen.
+  - Ein Rundgang schreibt nichts.
+  - Tasten: Escape bricht ab. Pfeil rechts geht weiter. Enter geht nur
+    dann weiter, wenn der Fokus in der Karte steht, damit ein Enter in
+    einem Formularfeld nicht weiterschaltet.
+- **Wo man ihn findet:**
+  - Satz an Formi
+  - neuer Vorschlag „Zeig mir, wie …“ im leeren Formi-Fenster
+  - Knopf „Nochmal zeigen ›“ an der Antwort
+  - Knopf „Zeig’s mir in der App ›“ unter der Antwort auf eine Wie-Frage
+
+**Entschieden und warum:**
+- *Wie-Fragen starten den Rundgang nicht von selbst.* Die erste Fassung
+  tat das. `test-gehirn` („Frage zur App: Knopf ‚Zu Aufgaben‘“) fiel
+  darauf: Die Antwort aus dem Studio-Wissen fehlte. Dort kann eine Regel
+  des Betriebs stehen, die die App nicht kennt, zum Beispiel wem man ein
+  Attest gibt. Der Test wurde nicht geändert. Stattdessen kommt der
+  Rundgang als Knopf zur Antwort dazu. Sofort startet er nur, wenn man
+  ausdrücklich „zeig mir, wie“ sagt.
+- *Eine eigene Mechanik statt der alten Führung (`#tour`).* Die Führung
+  bewegt ihr Licht über `top/left/width/height` mit Übergängen. Das
+  verbietet die Hausregel „Flüssig heisst konkret“. Außerdem sperrt sie
+  die App ab. Die Rechnung „Karte nie auf dem Ziel“ ist übernommen.
+- *Sichtgrenze statt fester Rand.* Gemessen: Kompakt am Handy lag „Von“
+  25 px unter dem Ende des Scrollbereichs. Elementtreffer: `.main`, nicht
+  das Feld. Deshalb wird die Unterkante aus den scrollenden Vorfahren
+  ermittelt und das Ziel bei Bedarf in die Mitte geholt
+  (`formiWieSichtUnten`). Dazu kommt ein Treffertest in der Mitte des
+  Ziels: Bei 320 × 568, kompakt, lag „Woche zurück“ unter dem klebenden
+  Seitenkopf (Treffer `H2`). Auch dann wird das Ziel in die Mitte geholt.
+- *Kein „Abhaken“-Schritt ohne Punkt.* Ist die Liste leer, fällt der
+  Schritt aus. Vorher zeigte er auf die ganze leere Liste. Bei 320 px war
+  sie 251 px hoch, und die Karte passte nicht mehr daneben.
+- *Ein Schritt ohne Ziel fällt aus.* Ein Schritt, dessen Ziel es für
+  diese Rolle oder diesen Betrieb nicht gibt, zeigt nicht ins Leere.
+  Beispiel: die Kugel, wo sie ausgeblendet ist.
+
+**Geprüft (gemessen, `tests/test-formi-zeigwie.js`):**
+- 78 Zusicherungen, alle grün. Erkennen: 12 Sätze. Über Formis Fenster
+  bei 1440 und 390: Wie-Frage mit Knopf, „Zeig mir, wie …“ ohne KI,
+  nichts geschrieben, Seite und Reiter, Fokus auf „Weiter“, Pfeil rechts,
+  Escape, Auswahl und ganzer Rundgang bis „Fertig“, nur
+  `transform`/`opacity` animiert.
+- **674 Schritte gemessen**: 3 Rollen × 7 Breiten (320 / 390 / 430 /
+  820 / 1280 / 1440 / 1920) × normal und kompakt × alle Rundgänge. Für
+  jeden Schritt gilt: Der Ring umschliesst das Ziel und liegt im Bild.
+  Das Ziel ist per `elementFromPoint` antippbar. Die Karte liegt im Bild
+  und nicht auf dem Ziel. „Weiter“ und „Abbrechen“ sind per Hit-Test
+  ≥ 44 × 44 und im Bild. Es gibt keinen Querlauf.
+- Ausserdem grün: test-gehirn (330), test-formi-lebt (169),
+  test-formi-kugel (70), test-formi-verdeckt (42), test-formi-angedockt,
+  -platz, -welt, -kumpel, test-uebersicht, test-gestaltung,
+  test-stil-formi, test-block8, test-mitarbeiter und test-csp.
+- **Zwei Funde:** test-gestaltung (feste Rundung, fester Abstand, feste
+  Schatten am Ring) und test-formi-lebt (`--formi-ring` an einem Wähler
+  ohne „formi“). Beides ist im Code behoben, die Tests sind unverändert.
+  In test-formi-zeigwie zählt „nichts geschrieben“ das Wochenarchiv
+  (`archives/<KW>`) nicht mit. Das schreibt die App nach dem Laden von
+  selbst, gemessen einmal in diesem Abschnitt.
+
+**Nicht geprüft:**
+- Die Arbeit je Bild während des Flugs wurde nicht gemessen. Bewegt wird
+  nur `transform`.
+- Echtes Handy, Anmeldeweg (das SDK lädt hier nicht).
+- Die KI kennt den neuen Typ `zeigwie` nicht. Erkannt wird nur im Gerät.
+
+**Offen:** weitere Rundgänge (Material bestellen, Gerät defekt melden,
+Zeiten stempeln), sobald gewünscht. Außerdem könnte die alte Führung
+(`#tour`) auf dieselbe Mechanik umziehen.
