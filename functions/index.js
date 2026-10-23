@@ -7703,7 +7703,12 @@ function gehirnAuftrag(daten, profil) {
      oder „locker". */
   const vorname = name.split(' ')[0].slice(0, 30);
   const ton = (daten || {}).ton === 'sachlich' ? 'sachlich' : 'locker';
-  const body = art === 'idee' ? { text, name, studio } : { frage: text, name, studio, vorname, ton };
+  /* Runde 217 (23.10.2026, „er soll mehr integration haben"): die Lage
+     aus der App — nur, was die Person dort ohnehin sieht; das Gerät baut
+     sie aus seinen eigenen Daten. Geht nur ins Gespräch mit der KI, der
+     Worker speichert sie nicht. Höchstens 9000 Zeichen. */
+  const lage = typeof (daten || {}).lage === 'string' ? daten.lage.slice(0, 9000) : '';
+  const body = art === 'idee' ? { text, name, studio } : Object.assign({ frage: text, name, studio, vorname, ton }, lage ? { lage } : {});
   return { art, text, body };
 }
 
@@ -7762,7 +7767,9 @@ async function gehirnFrageAusfuehren(auftrag, firma) {
         thema: String((q && q.thema) || '').slice(0, 120), auszug: String((q && q.auszug) || '').slice(0, 400), gelernt: !!(q && q.gelernt)
       })).filter(q => q.thema),
       /* Für den Daumen unter der Antwort (20.10.2026). */
-      nachricht: Number(json.nachrichtId) > 0 ? Number(json.nachrichtId) : null
+      nachricht: Number(json.nachrichtId) > 0 ? Number(json.nachrichtId) : null,
+      /* Runde 217: worauf die Antwort beruht (wissen/app/allgemein/unsicher). */
+      grundlage: ['wissen', 'app', 'allgemein', 'unsicher'].indexOf(json.grundlage) >= 0 ? json.grundlage : null
     };
 }
 
@@ -8422,7 +8429,7 @@ exports.gehirnAktion = region
       /* Mit Bezug („wie lange dauert das?") schickt die KI die Frage
          ausgeschrieben mit — das Studio-Wissen kennt den Verlauf nicht. */
       const voll = roh && typeof roh.frage === 'string' && roh.frage.trim() ? roh.frage.trim().slice(0, 1000) : auftrag;
-      const a = await gehirnFrageAusfuehren(gehirnAuftrag({ art: 'frage', text: voll }, profil), firma);
+      const a = await gehirnFrageAusfuehren(gehirnAuftrag({ art: 'frage', text: voll, ton: (data || {}).ton, lage: (data || {}).lage }, profil), firma);
       return Object.assign({ art: 'frage' }, a);
     }
     return {

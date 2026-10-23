@@ -19837,3 +19837,53 @@ nicht mehr hereinspringt (sonst 2 px vom Rand, je nach Last).
 - `tests/test-auffrischen.js` (+5, jetzt 55): der Schalter ist da und an,
   schaltet ab und wird gespeichert, ein zweiter Tipp schaltet wieder an,
   Trefferfläche ≥ 44.
+
+## Runde 217 — Formi antwortet wie ChatGPT und kennt die App (Worker 2.19, 23.10.2026)
+
+Aus dem Betrieb: „er soll aber mehr integration haben und das wissen
+basiert wieder zu wenig auf kontent und er hat kaum richtige antworten er
+soll eher so wie chat gpt sein nur mit dem wissen von uns". Auf die
+Rückfragen: „Gratis bei Cloudflare bleiben"; frei antworten — „nur soll
+er es betonen wenn es nicht geprüft ist aber trotzdem antworten"; die
+App-Daten: alles, „jedes detail … und aus jedem chat am besten auch".
+
+**Woran es lag**
+- Die Antwort schrieb Llama 3.3 mit einer sehr strengen Regel („NICHTS
+  erfinden", 120 Wörter). Ausserhalb des Wissens kam fast immer „weiss
+  ich nicht".
+- Die App-Daten sah nur die Einordnung (Gemini, Befehl oder Frage), nie
+  die Antwort. „Was ist heute offen" ohne Schnellweg lief ins Leere.
+
+**Gebaut**
+- Worker 2.19: Antworten von `gpt-oss-120b` (Workers AI), Llama als
+  Ersatz. Neuer Systemtext: hilfreich und vollständig wie ChatGPT, bis
+  ca. 350 Wörter, wenn jemand etwas ausführlich will.
+- Feld `grundlage`: `wissen` / `app` / `allgemein` / `unsicher`. Nur
+  `unsicher` (unser Studio, aber nirgends belegt) geht als offene Frage an
+  Semih und beginnt mit „Nicht geprüft:". Allgemeines bekommt den Hinweis
+  „Allgemeines Wissen — nicht speziell für unser Studio geprüft".
+- Mehr Wissen je Frage: 8 statt 6 Einträge, 12.000 statt 6.000 Zeichen.
+- **APP-LAGE**: `gehirnLageText()` baut aus dem, was das Gerät schon
+  geladen hat, einen Text (Dienst 7 Tage, heute im Dienst, Tauschbörse,
+  je Studio offene Aufgaben mit Fristen, Putzplan, fehlendes Material,
+  defekte Geräte, Schulungsstand, Ankündigungen, Übergaben; höchstens
+  9000 Zeichen). Er geht mit jeder Frage über `gehirnAktion`/`gehirnFrage`
+  an den Worker, steht nur im Gespräch mit der KI und wird nicht
+  gespeichert. Beim Öffnen von Formi werden die Schulungen bereitgelegt.
+- `POST /api/probe` im Leitstand: Probefrage ohne Speichern.
+
+**Bewusst nicht**
+- *Chats und Direktnachrichten.* Gewünscht war „aus jedem chat … aber
+  verschlüsselt". Verschlüsseln hilft hier nicht: die KI muss den Text
+  lesen, um daraus zu antworten, und würde Privates aus Direktnachrichten
+  dann Leuten nacherzählen, die es nie lesen sollten. Seit 19.10.2026
+  gilt „keine Chats, keine Kundendaten" — das bleibt.
+- *Erfundene Preise, Telefonnummern, Namen* bleiben auch bei „frei"
+  verboten; Formi sagt dann, wo man es erfährt.
+
+**Geprüft:** `test-formi-worker` 122 (gpt-oss zuerst, Lage im Gespräch
+und nicht gespeichert, Allgemeines/App ohne offene Frage, Ersatzmodell),
+`test-gehirn-aktion` 121, `test-formi-lage` 9 (Lage aus der App, kein
+Chat-Satz darin, geht mit der Frage mit). **Nicht geprüft:** die echte
+Antwortqualität von gpt-oss-120b und wie lange es braucht — erst nach dem
+Einspielen, dann mit `/api/probe`.

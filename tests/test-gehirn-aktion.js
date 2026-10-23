@@ -122,6 +122,15 @@ console.log('── Formi lernt: Leitung gibt frei (Runde 183, 22.10.2026) ─�
   pruefe('Sammelfreigabe ohne echte Quelle → nichts', WP({ art: 'entscheiden', quelle: ' a ' }) === null && WP({ art: 'entscheiden', quelle: 5 }) === null);
   pruefe('Kennung für vier Augen: stabil, nicht die uid', VI('abc') === VI('abc') && VI('abc') !== VI('abd') && !VI('abc').includes('abc') && VI('abc').length === 24);
 }
+console.log('── Lage aus der App (Runde 217) ──');
+{
+  const GA = __intern.gehirnAuftrag;
+  const f = GA({ art: 'frage', text: 'was ist offen', lage: 'Aufgaben: Briefkasten' }, { name: 'Anna Test', studio: 'Hürth' });
+  pruefe('Frage nimmt die Lage mit', f.body.lage === 'Aufgaben: Briefkasten');
+  pruefe('Lage höchstens 9000 Zeichen', GA({ art: 'frage', text: 'x', lage: 'a'.repeat(20000) }, {}).body.lage.length === 9000);
+  pruefe('ohne Lage kein Feld, Idee nie mit Lage', !('lage' in GA({ art: 'frage', text: 'x' }, {}).body) && !('lage' in GA({ art: 'idee', text: 'x', lage: 'y' }, {}).body));
+  pruefe('Lage nur als Text', !('lage' in GA({ art: 'frage', text: 'x', lage: { boese: 1 } }, {}).body));
+}
 console.log('── Vorschlag prüfen ──');
 pruefe('unbekannter Typ → kein Vorschlag', P({ typ: 'keins', titel: 'x' }, NAMEN, ALLE, 'chef', HEUTE) === null);
 pruefe('Aufgabe ohne Titel → kein Vorschlag', P({ typ: 'aufgabe', titel: '  ' }, NAMEN, ALLE, 'chef', HEUTE) === null);

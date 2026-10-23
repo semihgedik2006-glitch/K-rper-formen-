@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-wNqpTam/tvQdMljfBHz86fIcrOKkSIEonCRSpuQvkK8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-jKldoHqhfulW5i/O+b7fIEhp7TuDsU3/j2OK3Of4d38='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -21424,6 +21424,12 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-23-formi-wie-chatgpt', datum:'23.10.2026', titel:'Formi antwortet jetzt richtig – und kennt deine App', wo:'gehirn', punkte:[
+    'Formi hat ein stärkeres KI-Modell bekommen und antwortet so ausführlich wie ChatGPT: Training, Kundengespräch, Texte, Mails, Social Media – einfach fragen.',
+    'Formi kennt jetzt, was du in der App siehst: deinen Dienst, wer heute arbeitet, offene Aufgaben, Putzplan, fehlendes Material, deine Schulungen, die Ankündigungen und Übergaben. Frag z. B. „Was ist heute in Hürth noch offen?" oder „Welche Schulung fehlt mir?".',
+    'Ist etwas nicht von uns geprüft, sagt Formi das dazu („Nicht geprüft" oder „Allgemeines Wissen") – antwortet aber trotzdem.',
+    'Chats und Direktnachrichten liest Formi nicht.'
+  ]},
   { id:'2026-10-23-auffrischen-push', datum:'23.10.2026', titel:'Kurz auffrischen: Erinnerung aufs Handy', wo:'schulung', punkte:[
     'Wenn Fragen aus deinen Schulungen warten, kommt morgens eine kurze Nachricht aufs Handy – höchstens alle drei Tage, nur wenn dein Zugang mit deinem Schulungs-Eintrag verknüpft ist.',
     'Abschalten: Profil → Meldungen → „Kurz auffrischen".'
@@ -26507,6 +26513,7 @@ function gehirnZiele(frage){
   return raus;
 }
 function gehirnOeffnen(){
+  gehirnLageVorbereiten();
   gehirnGesprWiederholen();
   gehirnBinden();
   gehirnVorschlaegeZeichnen();
@@ -26909,12 +26916,14 @@ function gehirnSenden(art, feldId){
   }
   if(art==='auto') gehirnSchritt(v, 'Frage Formi …');
   var name = art==='auto' ? 'gehirnAktion' : 'gehirnFrage';
-  var daten = art==='auto' ? { text:text, kontext:gehirnKontext(), ton:gehirnTonfall(), verlauf:gehirnVerlaufKurz() } : { art:art, text:text, ton:gehirnTonfall() };
+  /* Runde 217: die Lage aus der App geht mit (nur für Fragen; Ideen nicht). */
+  var lage=''; try{ lage=gehirnLageText(); }catch(e){}
+  var daten = art==='auto' ? { text:text, kontext:gehirnKontext(), ton:gehirnTonfall(), verlauf:gehirnVerlaufKurz(), lage:lage } : (art==='idee' ? { art:art, text:text, ton:gehirnTonfall() } : { art:art, text:text, ton:gehirnTonfall(), lage:lage });
   firebase.app().functions(KONFIG.region).httpsCallable(name)(daten)
     .then(function(r){
       var d=(r && r.data) || {};
       if(art==='auto' && d.art==='frage'){ v.art='frage'; v.antwort=d.antwort||''; v.abgedeckt=!!d.abgedeckt; v.offen=d.offen||null; v.nachricht=d.nachricht||null; v.quellen=d.quellen||[];
-        gehirnSchritt(v, d.abgedeckt ? 'Im Studio-Wissen gefunden' : (d.offen ? 'Erste Einschätzung — die Frage geht an Semih' : 'Antwort'), true); return; }
+        gehirnSchritt(v, d.abgedeckt ? 'Im Studio-Wissen gefunden' : (d.offen ? 'Erste Einschätzung — die Frage geht an Semih' : (d.grundlage==='app' ? 'Aus deinen Daten in der App' : (d.grundlage==='allgemein' ? 'Allgemeines Wissen' : 'Antwort'))), true); return; }
       if(art==='auto'){ v.art='aktion'; v.vorschlag=d.vorschlag||null; v.hinweis=d.hinweis||'';
         var weitere=Array.isArray(d.weitere) ? d.weitere.slice(0,2) : [];
         gehirnSchritt(v, d.vorschlag ? 'Erkannt: '+gehirnArtName(d.vorschlag)+(weitere.length ? ' (1 von '+(weitere.length+1)+')' : '') : 'Nichts zum Ausführen gefunden', true);
@@ -29201,6 +29210,7 @@ function jarvisAuf(){
                     Object.assign({ transform:'translateX(-2px)', opacity:.7, offset:.6 }, FK_SCHRITT), { transform:'none', opacity:1 }], { duration:280 }); }catch(e){}
   }
   formiGesehen();
+  gehirnLageVorbereiten();
   var fb=$('formiBlase'); if(fb) fb.hidden=true;
   tick(8);
 }
@@ -30139,6 +30149,70 @@ function gehirnSchnell(text){
     if(was) return mitStudio({ typ:'abhaken', bereich:'beides', was:was||roh }, sk);
   }
   return null;
+}
+/* ── Die Lage aus der App für Formis Antworten (Runde 217, 23.10.2026) ──
+   Aus dem Betrieb: „er soll mehr integration haben" — und auf die
+   Rückfrage: Aufgaben, Putzplan, Material, Geräte, Schichtplan, Schulungen,
+   Ankündigungen, Übergaben, „ALLES jedes detail".
+   Gebaut wird NUR aus dem, was diese App auf diesem Gerät schon geladen
+   hat — also genau das, was die Person sehen darf (die Regeln haben es
+   ihr gegeben). Nichts wird dafür zusätzlich gelesen, nichts gespeichert:
+   der Text geht mit der Frage an Formi und ist danach weg.
+   Bewusst NICHT dabei: Chats und Direktnachrichten (privat, und Formi
+   würde sie sonst Leuten nacherzählen, die sie nie lesen sollten),
+   Kundendaten, Zeiten/PINs. Höchstens 9000 Zeichen. */
+function gehirnLageText(){
+  if(!session) return '';
+  var z=[], keys=gehirnMeineKeys(), jetzt=Date.now(), heute=ymd(new Date());
+  var morgen=new Date(); morgen.setDate(morgen.getDate()+1); morgen=ymd(morgen);
+  var tagTxt=function(d){ return d===heute ? 'heute' : (d===morgen ? 'morgen' : (d ? new Date(d+'T12:00:00').toLocaleDateString('de-DE',{ weekday:'short', day:'2-digit', month:'2-digit' }) : '')); };
+  var kurz=function(t, n){ t=String(t||'').replace(/\s+/g,' ').trim(); return t.length>n ? t.slice(0, n-1)+'…' : t; };
+  var rolle=isChef() ? 'Geschäftsführung' : (isLeiter() ? 'Studioleitung' : 'Mitarbeiter');
+  z.push('Ich: '+kurz(session.name, 40)+' ('+rolle+'), Studios: '+keys.map(studioName).join(', ')+'. Heute: '+new Date().toLocaleDateString('de-DE',{ weekday:'long', day:'2-digit', month:'long' })+'.');
+  // Mein Dienst (7 Tage)
+  var meine=(_myShifts||[]).slice(0, 10).map(function(x){ return tagTxt(x.date)+' '+(x.from||'')+'–'+(x.to||'')+' '+studioName(x.sk); });
+  if(meine.length) z.push('Mein Dienst: '+meine.join('; ')+'.');
+  // Wer heute arbeitet
+  var heuteAlle=(_studioHeute||[]).slice(0, 30).map(function(x){ return kurz(String(x.name||'').split(' ')[0], 20)+' '+(x.from||'')+'–'+(x.to||'')+' ('+studioName(x.sk)+')'; });
+  if(heuteAlle.length) z.push('Heute im Dienst: '+heuteAlle.join('; ')+'.');
+  if((_tauschAngebote||[]).length) z.push('Schichten zum Übernehmen: '+_tauschAngebote.slice(0, 6).map(function(x){ return tagTxt(x.date)+' '+(x.from||'')+'–'+(x.to||'')+' '+studioName(x.sk)+' (von '+kurz(String(x.name||'').split(' ')[0], 20)+')'; }).join('; ')+'.');
+  keys.forEach(function(k){
+    var teil=[];
+    var aufg=(cachedTodos[k]||[]).filter(function(t){ return !isDone(t) && !isArchived(t); }).slice(0, 25).map(function(t){
+      return kurz(t.title, 70)+(t.due ? (t.due<jetzt ? ' (überfällig seit '+new Date(t.due).toLocaleDateString('de-DE')+')' : ' (bis '+new Date(t.due).toLocaleDateString('de-DE')+')') : '');
+    });
+    if(aufg.length) teil.push('offene Aufgaben: '+aufg.join('; '));
+    var putz=(cachedClean[k]||[]).filter(function(t){ return !isDone(t) && !isArchived(t) && !ppPausiert(t); }).slice(0, 25).map(function(t){ return kurz(t.title||t.text, 50); });
+    if(putz.length) teil.push('Putzplan offen: '+putz.join('; '));
+    var mat=(_invAll[k]||[]).filter(function(it){ return itemNeed(it)>0; }).slice(0, 20).map(function(it){ return kurz(it.name||it.label, 40)+' (fehlen '+itemNeed(it)+')'; });
+    if(mat.length) teil.push('Material fehlt: '+mat.join('; '));
+    if(teil.length) z.push(studioName(k)+' — '+teil.join('. ')+'.');
+  });
+  if(_gLage && _gLage.defekt) z.push('Defekte Geräte in meinen Studios: '+_gLage.defekt+'.');
+  // Schulungen: mein Stand
+  try{
+    var sch=schModule().map(function(m){ var st=schStand(m); return { t:m.titel, p:!!m.pflicht, a:st.art }; });
+    var offen=sch.filter(function(x){ return x.a!=='fertig'; }), fertig=sch.filter(function(x){ return x.a==='fertig'; });
+    if(sch.length) z.push('Meine Schulungen — offen/fällig: '+(offen.length ? offen.map(function(x){ return kurz(x.t, 60)+(x.p ? ' (Pflicht)' : '')+(x.a==='faellig' ? ' (auffrischen fällig)' : ''); }).join('; ') : 'keine')+'. Erledigt: '+(fertig.length ? fertig.map(function(x){ return kurz(x.t, 40); }).join('; ') : 'noch keine')+'.');
+  }catch(e){}
+  // Ankündigungen der Leitung
+  var anns=(_allAnns||[]).slice(0, 10).map(function(a){ return (a.ts ? new Date(a.ts).toLocaleDateString('de-DE')+' ' : '')+kurz(a.from, 25)+': '+kurz(a.text, 220); });
+  if(anns.length) z.push('Ankündigungen der Leitung (neueste zuerst): '+anns.join(' | '));
+  // Übergaben (wenn geladen)
+  var ho=(typeof _handovers!=='undefined' && _handovers ? _handovers : []).slice(0, 10).map(function(h){ return (h.ts ? new Date(h.ts).toLocaleDateString('de-DE')+' ' : '')+kurz(String(h.name||'').split(' ')[0], 20)+': '+kurz(h.text, 200); });
+  if(ho.length) z.push('Übergaben ('+studioName(_teamStudioKey)+'): '+ho.join(' | '));
+  var t=z.join('\n');
+  return t.length>9000 ? t.slice(0, 8999)+'…' : t;
+}
+/* Für test-formi-lage: dieselbe Rechnung von aussen (liest nur, was das
+   Gerät schon hat). */
+window.__formiLage=function(){ return gehirnLageText(); };
+/* Beim Öffnen von Formi: die Schulungen bereitlegen (statische Datei und
+   die eigenen Durchläufe), damit „welche Schulung fehlt mir" eine echte
+   Antwort hat. Dieselben Listener wie auf der Schulungsseite — läuft
+   einer schon, passiert nichts. */
+function gehirnLageVorbereiten(){
+  try{ if(typeof featureAn==='function' && !featureAn('schulung')) return; schBasisLaden(); schEigeneLaden(); schMeineLaden(); }catch(e){}
 }
 /* Was die KI wissen darf (Freigabe 19.10.2026: auch Vornamen des Teams):
    offene Putzpunkte und Aufgaben der eigenen Studios, die Vornamen.
