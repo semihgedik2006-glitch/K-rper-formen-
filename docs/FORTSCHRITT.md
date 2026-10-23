@@ -20558,3 +20558,30 @@ Minuten; `tests/alle.sh` erlaubt 240 s je Datei.
 - `test-gehirn` läuft unter Last in die Zeitgrenze.
 - Die fünf Funktionstests brauchen `firebase-functions`, das hier nicht
   installiert ist.
+
+## Runde 229 — Formi persönlicher, mit Gefühlen, länger (Worker 2.21, 23.10.2026)
+
+Aus dem Betrieb: „gib formi nur noch mehr emotions und persönlichere und
+längere antworten falls das geht".
+
+**Vorher gemessen (2.20 live, `/api/probe`):** mit `reasoning: low` 3,7 s
+statt 9,6 s für dieselbe Frage („Westen waschen"), 6,4 s für eine
+Instagram-Caption. Der Parameter wird also angenommen. Dabei gesehen: Formi
+nannte „(vgl. ID 57)" in der Antwort.
+
+**Geändert**
+- Worker 2.21: Antworten meist 80–200 Wörter, bis drei Emojis; Block
+  „Gefühle und Nähe" (Freude, Neugier, Mitgefühl zeigen; auf die Stimmung
+  der Person eingehen; mit Namen ansprechen; auf das Gespräch und die
+  App-Lage Bezug nehmen; mit Rückfrage oder Angebot enden). Ernstes geht
+  weiter vor. Neues Feld `stimmung` (freut, begeistert, stolz, staunt,
+  mitfuehlend, verwirrt, ernst, ruhig). Keine IDs mehr in Antworten.
+- Formi merkt sich das Gespräch 2 Stunden und 5 Wechsel (vorher 30 Min,
+  3).
+- App: Das Gesicht im Formi-Fenster zeigt die Stimmung der Antwort, kurz
+  nach dem „Aha" (Gefühle aus Runde 226 der zweiten Sitzung:
+  begeistert → feiert, mitfuehlend → Träne, verwirrt → ?).
+
+**Geprüft:** `test-formi-worker` 126, `test-formi-lage` 10 (Gegenprobe ohne
+den Aufruf: rot). **Nicht geprüft:** wie die echten Antworten klingen —
+nach dem Einspielen mit `/api/probe`.

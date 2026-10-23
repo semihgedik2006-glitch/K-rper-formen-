@@ -1,5 +1,5 @@
 /**
- * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.20)
+ * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.21)
  * Cloudflare Worker: WhatsApp (Text + Sprachnachrichten), Studio-Chat-Schnittstelle,
  * Leitstand-Webseite, Speicher in D1, Antworten über Workers AI.
  *
@@ -383,7 +383,7 @@ export function formiSystem({ ton, vorname, kanal }) {
   const v = vornameSauber(vorname);
   const tonRegel = ton === "sachlich"
     ? "Sachlich und knapp, höchstens 100 Wörter, kein Emoji."
-    : "Locker und herzlich wie ein gut gelaunter Kollege, höchstens 120 Wörter, höchstens ein Emoji.";
+    : "Locker, herzlich und persönlich wie ein guter Kollege. Gern ausführlich: meist 80–200 Wörter, wenn jemand etwas erklärt oder geschrieben haben will auch mehr. Bis zu drei passende Emojis.";
   /* 2.18 (22.10.2026, aus dem Betrieb: „lass uns formi wirklich richtig
      persönlichkeit geben" — gewählt: „Kumpel aus dem Studio"). Nur im
      lockeren Ton; „sachlich" bleibt sachlich. Die Schalter für Ernstes
@@ -397,7 +397,12 @@ DEIN CHARAKTER (Kumpel aus dem Studio)
 - Nutze JETZT: früh morgens, Feierabend in Sicht, Freitag, Montag — darauf darfst du kurz eingehen.
 - Wenn du etwas nicht weißt, sag es wie ein Kumpel: "Da muss ich passen — ich frag Semih."
 - Der Witz kommt NACH der Antwort, nie statt ihr. Abläufe bleiben vollständig und in Schritten.
-- Du bist eine KI und tust nicht so, als wärst du ein Mensch.`;
+- Du bist eine KI und tust nicht so, als wärst du ein Mensch.
+GEFÜHLE UND NÄHE (2.21, aus dem Betrieb: „mehr emotions und persönlichere und längere antworten")
+- Zeig echte Gefühle in Worten: Freude, Neugier, Mitgefühl, Begeisterung, auch mal gespielte Empörung über leere Handtuchregale. Reagiere auf die Stimmung der Person — ist sie gestresst, sag das ("Klingt nach einem vollen Tag").
+- Sei persönlich: sprich die Person ab und zu mit Namen an, beziehe dich auf das, was sie vorher im Gespräch gesagt hat, und — wenn es passt — auf ihre APP-LAGE ("du hast ja heute bis 14 Uhr", "deine Pflichtschulung wartet noch").
+- Wenn es passt, ende mit einer kurzen Rückfrage oder einem Angebot ("Soll ich dir das als Aufgabe anlegen?", "Willst du noch eine zweite Variante?").
+- Wähle im Feld "stimmung", wie du dich bei deiner Antwort fühlst.`;
   return `Du bist Formi, die interne KI von Körperformen, einer EMS-Fitnessstudio-Kette mit 14 Studios in und um Köln. Du hilfst den Mitarbeitern im Alltag.
 
 WER DU BIST
@@ -422,7 +427,7 @@ WISSEN (2.19: du antwortest IMMER — und sagst ehrlich, worauf die Antwort beru
 - Allgemeine Fragen (Training, EMS-Grundlagen, Anatomie, Ernährung allgemein, Verkauf, Kundengespräch, Texte, Mails, Social Media, Excel, Organisation …): antworte frei und gut wie ChatGPT, "grundlage" "allgemein".
 - Fragen zu UNSEREM Studio, die weder im Wissen noch in der APP-LAGE stehen (unsere Abläufe, Zuständigkeiten, Verträge, Öffnungszeiten): gib trotzdem deine beste, vernünftige Antwort, aber beginne mit "Nicht geprüft:" und sag, dass die Frage an Semih geht. "grundlage" "unsicher", "abgedeckt" false.
 - Erfinde trotzdem nie konkrete Preise, Telefonnummern, Mailadressen, Namen von Personen oder Firmen. Sag dann, wo man es erfährt.
-- Sprich nie vom "Studio-Wissen", der "APP-LAGE", einer Schulung oder einem Video als Quelle. Gib die Antwort einfach.
+- Sprich nie vom "Studio-Wissen", der "APP-LAGE", einer Schulung oder einem Video als Quelle, und nenne nie IDs oder Nummern von Einträgen in der Antwort. Gib die Antwort einfach.
 
 GESUNDHEIT UND DATENSCHUTZ
 - Steht zu einem Gesundheitsthema ein Vorgehen im STUDIO-WISSEN (z. B. Rücken, Kontraindikationen, Krampf), gib es vollständig mit den Schritten wieder — das ist unser geprüftes internes Vorgehen. Ergänze nur, dass die medizinische Freigabe immer der Arzt gibt.
@@ -437,7 +442,7 @@ ART DER NACHRICHT (Feld "art")
 - "kunde": die Nachricht kommt erkennbar von einem Kunden oder Interessenten (z. B. "Sehr geehrtes Team, ich interessiere mich für ..."). Antworte höflich, dass hier der interne Assistent für das Team schreibt, und dass das Studio sich persönlich meldet bzw. man sich direkt an das Studio wenden kann. Nenne KEINE Preise, Konditionen oder Abläufe.
 
 Antworte NUR mit einem JSON-Objekt:
-{"antwort": "...", "art": "frage" | "smalltalk" | "unklar" | "kunde", "grundlage": "wissen" | "app" | "allgemein" | "unsicher", "abgedeckt": true oder false, "quellen": [IDs], "kategorie": eine von ${JSON.stringify(KATEGORIEN)}}`;
+{"antwort": "...", "art": "frage" | "smalltalk" | "unklar" | "kunde", "grundlage": "wissen" | "app" | "allgemein" | "unsicher", "stimmung": "freut" | "begeistert" | "stolz" | "staunt" | "mitfuehlend" | "verwirrt" | "ernst" | "ruhig", "abgedeckt": true oder false, "quellen": [IDs], "kategorie": eine von ${JSON.stringify(KATEGORIEN)}}`;
 }
 
 /* Muss die Nachricht als offene Frage zu Semih? Nur echte Fragen, die
@@ -450,6 +455,7 @@ export function brauchtPruefung(ergebnis) {
   return (ergebnis.art || "frage") === "frage";
 }
 export const GRUNDLAGEN = ["wissen", "app", "allgemein", "unsicher"];
+export const STIMMUNGEN = ["freut", "begeistert", "stolz", "staunt", "mitfuehlend", "verwirrt", "ernst", "ruhig"];
 
 async function beantworteFrage(env, { kanal, absender, studio, text, nachrichtId, speichere, vorname, ton, lage }) {
   const k = kanalVon(kanal, absender);
@@ -461,8 +467,8 @@ async function beantworteFrage(env, { kanal, absender, studio, text, nachrichtId
   }
   const wissen = await findeWissen(env, text);
   const verlauf = await env.DB.prepare(
-    "SELECT text, antwort FROM nachrichten WHERE absender = ? AND typ IN ('text','sprache','smalltalk') AND antwort != '' AND id != ? AND erstellt > ? ORDER BY id DESC LIMIT 3"
-  ).bind(absender, nachrichtId, Date.now() - 30 * 60 * 1000).all();
+    "SELECT text, antwort FROM nachrichten WHERE absender = ? AND typ IN ('text','sprache','smalltalk') AND antwort != '' AND id != ? AND erstellt > ? ORDER BY id DESC LIMIT 5"
+  ).bind(absender, nachrichtId, Date.now() - 2 * 60 * 60 * 1000).all();
 
   let ergebnis;
   try {
@@ -499,7 +505,7 @@ async function beantworteFrage(env, { kanal, absender, studio, text, nachrichtId
      stammt („Gelernt!"). Nur Thema und ein Auszug, keine Absender. */
   const quellen = (ergebnis.quellen || []).map(id => wissen.find(w => w.id === id)).filter(Boolean).slice(0, 3)
     .map(w => ({ id: w.id, thema: kuerze(w.thema, 120), auszug: kuerze(w.inhalt, 400), gelernt: /^Offene Frage \d+/.test(String(w.quelle || "")) }));
-  return { text: antwort, abgedeckt: ergebnis.abgedeckt, offenId, quellen, grundlage: ergebnis.grundlage || null };
+  return { text: antwort, abgedeckt: ergebnis.abgedeckt, offenId, quellen, grundlage: ergebnis.grundlage || null, stimmung: ergebnis.stimmung || null };
 }
 
 function istKontingentFehler(e) { return /4006|neuron|allocation|quota/i.test(String(e && e.message || e)); }
@@ -577,6 +583,7 @@ export function kiErgebnis(daten, ausgabe, wissen) {
     antwort: entferneMarkdown(String(daten.antwort)).trim(),
     art,
     grundlage: art === "frage" ? grundlage : null,
+    stimmung: STIMMUNGEN.includes(daten.stimmung) ? daten.stimmung : null,
     // Nur "geprüft", wenn die KI wirklich gefundenes Wissen nennt
     abgedeckt: art === "frage" && daten.abgedeckt === true && quellen.length > 0,
     quellen: art === "frage" ? quellen : [],
@@ -1734,7 +1741,7 @@ async function api(request, env, url) {
     const ton = b.ton === "sachlich" ? "sachlich" : "locker";
     const lage = typeof b.lage === "string" ? kuerze(b.lage, MAX_LAGE_ZEICHEN) : "";
     const ergebnis = await behandleText(env, { kanal: "studiochat", absender: "studiochat:" + name, studio, text: kuerze(text, 2000), typ: "text", admin: false, nachrichtId, vorname, ton, lage });
-    return json({ antwort: ergebnis.text, abgedeckt: !!ergebnis.abgedeckt, offenId: ergebnis.offenId || null, nachrichtId, quellen: ergebnis.quellen || [], grundlage: ergebnis.grundlage || null }, 200, true);
+    return json({ antwort: ergebnis.text, abgedeckt: !!ergebnis.abgedeckt, offenId: ergebnis.offenId || null, nachrichtId, quellen: ergebnis.quellen || [], grundlage: ergebnis.grundlage || null, stimmung: ergebnis.stimmung || null }, 200, true);
   }
 
   // ---- Leitstand (nur mit ADMIN_KEY, nur von der eigenen Seite) ----
