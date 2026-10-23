@@ -83,20 +83,8 @@ async function tippe(p, wort) {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
 
   {
-    /* Runde 237, aus dem Betrieb 23.10.2026 auf „Mitarbeiter unten nur Heute, Zeiten, Plan, Nachrichten?": „ja". Die Abläufe über „Studio" prüft
-       dieser Durchlauf deshalb mit der Studioleitung, die alle Räume hat;
-       die vier Räume der Mitarbeiter stehen gleich darunter. */
-    {
-      const pm = await start(b, 'mitarbeiter', 390, 844);
-      const m = await pm.evaluate(LAGE);
-      pruefe('Mitarbeiter: unten Heute · Zeiten · Plan · Nachrichten', m.reihe.join('|') === 'Heute|Zeiten|Plan|Nachrichten', m.reihe.join('|'));
-      const szm = await pm.evaluate(() => [...document.querySelectorAll('#schnellLeiste .sz-wort')].map(x => x.textContent));
-      pruefe('der Schnellzugriff-Vorschlag (Mitarbeiter): Meine Woche, Mein Kalender, Geräte',
-        szm.slice(0, 3).join('|') === 'Meine Woche|Mein Kalender|Geräte', szm.join('|'));
-      await pm.close();
-    }
-    console.log('\n── Handy 390 × 844, Studioleitung ──');
-    const p = await start(b, 'leiter', 390, 844);
+    console.log('\n── Handy 390 × 844, Mitarbeiter ──');
+    const p = await start(b, 'mitarbeiter', 390, 844);
     const a = await p.evaluate(LAGE);
     console.log('  ' + JSON.stringify(a));
     // Runde 184: „das problem mit dem zu viel bleibt immer noch bestehen" — fünf Räume.
@@ -143,11 +131,8 @@ async function tippe(p, wort) {
     /* Seit Runde 222 liegt „Meine Zeiten" unten als eigener Knopf; als
        Schnellzugriff wäre es ein zweiter Weg an dieselbe Stelle (wie der
        Putzplan seit P5). An seinen Platz rückt „Mein Kalender". */
-    /* Seit Runde 237 läuft dieser Teil mit der Studioleitung; deren
-       Vorschlag ist Schichtplan · Anliegen · Meine Woche (SCHNELL_VORSCHLAG).
-       Den der Mitarbeiter prüft der Block „Mitarbeiter" oben. */
-    pruefe('der Schnellzugriff-Vorschlag (Studioleitung): Schichtplan, Anliegen, Meine Woche',
-      sz.slice(0, 3).join('|') === 'Schichtplan|Anliegen|Meine Woche', sz.join('|'));
+    pruefe('der Schnellzugriff-Vorschlag: Meine Woche, Mein Kalender, Geräte',
+      sz.slice(0, 3).join('|') === 'Meine Woche|Mein Kalender|Geräte', sz.join('|'));
     pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await p.close();
   }

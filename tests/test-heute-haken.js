@@ -1,14 +1,13 @@
-/* ══ „HEUTE" ZUM ABARBEITEN; VIER RÄUME FÜR MITARBEITER (Runde 237) ══
+/* ══ „HEUTE" ZUM ABARBEITEN: DER HAKEN (Runde 237) ═══════════════════
    Aus dem Betrieb, 23.10.2026, auf die Rückfragen „Mitarbeiter unten nur
    Heute, Zeiten, Plan, Nachrichten?": „ja"; „eine Liste oder Blöcke nach
    Art?": „so wies leichter zu verstehen ist" (→ Blöcke bleiben).
    Dazu, vom 24.9.: „der am meisten benutzte Bereich [ist] der Aufgaben-
    und Putzplan-Bereich" – deshalb hakt man jetzt direkt auf „Heute" ab.
 
-   Geprüft wird:
-    1. Mitarbeiter: unten (390) und links (1440) genau Heute, Zeiten,
-       Plan, Nachrichten. GEGENPROBE Chef: weiter alle sechs Räume.
-    2. Studio und Wissen bleiben erreichbar: über „Alles" in zwei Tipps.
+   Geprüft wird (die vier Räume für Mitarbeiter folgen im nächsten
+   Schritt, zusammen mit den Durchläufen, die als Mitarbeiter über
+   „Studio" gehen):
     3. Jede Aufgaben-Zeile auf „Heute" trägt links einen Haken, der
        ≥ 44 × 44 trifft (320 / 390 / 1440, normal und kompakt).
     4. Ein Tipp auf den Haken schreibt done:true für genau diese Aufgabe,
@@ -54,37 +53,8 @@ async function oeffne(b, w, h, rolle) {
   p._ctx = ctx;
   return p;
 }
-const raeume = (p) => p.evaluate(() => [...document.querySelectorAll('#side > [data-group], .mn-reihe [data-group]')]
-  .filter(e => e.getClientRects().length).map(e => e.getAttribute('data-group')));
-
 (async () => {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-
-  console.log('\n── 1–2 Räume ──');
-  for (const [w, h] of [[390, 844], [1440, 900]]) {
-    const p = await oeffne(b, w, h, 'mitarbeiter');
-    const r = await raeume(p);
-    pruefe(w + ' px Mitarbeiter: Heute, Zeiten, Plan, Nachrichten', r.join('|') === 'g-start|g-zeit|g-team|g-komm', r.join('|'));
-    /* Studio und Wissen über „Alles": Griff, dann Eintrag. */
-    for (const [ziel, ansicht] of [['todos', 'view-todos'], ['putzplan', 'view-putzplan'], ['schulung', 'view-schulung']]) {
-      const z = await p.evaluate(async (ziel) => {
-        document.getElementById('bereichKopf').click(); await new Promise(r => setTimeout(r, 350));
-        const e = [...document.querySelectorAll('#allesLade [data-alles="' + ziel + '"]')].find(x => x.getClientRects().length);
-        if (!e) return 'nicht in Alles';
-        e.click(); await new Promise(r => setTimeout(r, 500));
-        return (document.querySelector('.view.show') || {}).id;
-      }, ziel);
-      pruefe(w + ' px Mitarbeiter: ' + ziel + ' in zwei Tipps über „Alles"', z === ansicht, z);
-    }
-    pruefe(w + ' px Mitarbeiter: ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
-    await p._ctx.close();
-  }
-  for (const [w, h] of [[390, 844], [1440, 900]]) {
-    const p = await oeffne(b, w, h, 'chef');
-    const r = await raeume(p);
-    pruefe('GEGENPROBE ' + w + ' px Chef: alle sechs Räume', r.slice(0, 6).join('|') === 'g-start|g-arbeit|g-zeit|g-team|g-komm|g-wissen', r.join('|'));
-    await p._ctx.close();
-  }
 
   console.log('\n── 3 Haken treffbar ──');
   for (const [w, h] of [[320, 640], [390, 844], [1440, 900]]) {
@@ -150,6 +120,6 @@ const raeume = (p) => p.evaluate(() => [...document.querySelectorAll('#side > [d
   await b.close();
   console.log(schlecht
     ? '\n✗ Heute zum Abarbeiten: ' + schlecht + ' von ' + (gut + schlecht) + ' Zusicherungen falsch'
-    : '\n✓ Heute zum Abarbeiten: vier Räume für Mitarbeiter, Haken auf „Heute", Rückgängig — ' + gut + ' Zusicherungen');
+    : '\n✓ Heute zum Abarbeiten: Haken auf „Heute", Rückgängig, die Zeile öffnet weiter — ' + gut + ' Zusicherungen');
   process.exit(schlecht ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });
