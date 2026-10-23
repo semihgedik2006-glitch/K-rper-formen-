@@ -22304,3 +22304,79 @@ keins; das Profil hat ab 621 px keinen.
 **Nicht getestet:** echtes iPhone mit Finger (gezogen wird im Test mit
 der Maus über dieselben Pointer-Ereignisse); das Gefühl der Federung ist
 eine Einschätzung, keine Messung.
+
+## Runde 254 — Glas für die untere Leiste, mit eigenem Schalter (23.10.2026)
+
+Zehnter Bauschritt aus dem Plan „Studio Chat wie von Apple“: „Glas
+(Unschärfe) nur bei Kopf- und unterer Leiste, nie hinter Text in Karten,
+immer mit einem Schalter ‚Transparenz reduzieren‘. Prüfung: Kontrast
+≥ 4,5 : 1 an echten Bildpunkten.“
+
+**Warum es mehr ist als ein Weichzeichner.** Seit dem 23.9. war die
+untere Leiste deckend, aus gutem Grund (an `.topbar` begründet): unter
+ihr scrollte nichts durch, ein Weichzeichner hätte nur den stehenden
+Hintergrund verwischt. Glas ohne Inhalt dahinter ist eine Farbe. Darum
+läuft der Inhalt jetzt unter die Leiste:
+- Das Polster von `.main` heisst jetzt `--main-unten` (Wert unverändert:
+  `--s72`, mit Formi-Kugel `80px + 58px + --s8`).
+- Der Scroll-Bereich hebt es mit einem negativen Rand auf und reicht bis
+  an den unteren Rand; ein Abstandhalter (`::after`) genau dieser Höhe
+  am Ende sorgt dafür, dass der letzte Eintrag ganz unten an **derselben
+  Stelle** steht wie vorher — über der Leiste und über Formi.
+- `scroll-padding-bottom` in derselben Höhe: was unter der Leiste liegt,
+  ist zu sehen, aber nicht „im Bild“. Ohne das richteten Fokus und
+  `scrollIntoView` ein Element am unteren Rand aus — also genau unter
+  der Leiste. Gefunden hat es test-formi-verdeckt (Schulung bei 320 ×
+  568, Notizen bei 820): Karten liessen sich dort nicht mehr neben die
+  Kugel holen. Mit dem Polster ist der Test ohne Änderung grün.
+- Die Leiste: Grund zu 74 % (`color-mix` mit `--bg`, hell `--bg-2`),
+  `blur(20px) saturate(1.8)`.
+
+**Wo nicht, mit Grund.**
+- Startseite: sie soll auf einen Bildschirm passen; unter der Leiste liegt
+  dort absichtlich nichts.
+- Kopf: er liegt über dem Scroll-Bereich, nicht auf ihm — wieder nichts
+  zu verwischen. Ihn über den Inhalt zu legen hiesse, den grossen Titel
+  aus Runde 252 neu zu bauen; das ist es nicht wert.
+- Am Rechner: neben der Seitenleiste scrollt nichts darunter.
+- Die Leiste schrumpft beim Scrollen NICHT (iOS 26 tut es): im Plan
+  steht unter „Was nicht übernommen wird“, dass nichts unerwartet Ort
+  oder Grösse ändert.
+
+**Der Schalter.** Safari meldet `prefers-reduced-transparency` nicht,
+also: Profil → Aussehen → „Untere Leiste am Handy“: Glas / Deckend
+(`PREFS.glas`, `body[data-glas]`), mit kleiner Vorschau wie bei der
+Dichte; „Zurücksetzen“ nimmt ihn mit. Wo der Browser „Transparenz
+reduzieren“ oder „Mehr Kontrast“ meldet (Chromium), ist die Leiste ohne
+Schalter deckend; wo er keinen Weichzeichner kann, ebenfalls — 74 %
+ohne Unschärfe wären unruhiger als beides. „Deckend“ im Stil Formi ist
+jetzt wirklich deckend: dieselbe Farbe (`--hud-glas`), aber auf `--bg`.
+
+**Test:** neu `tests/test-glas.js`, 69 grün. Glas bei 320 / 390 / 430 /
+820 in Formi, Dunkel, Hell; in Studio, Zeiten, Plan endet der
+Scroll-Bereich am unteren Rand und das letzte Element steht ganz unten
+über der Leiste; Startseite unverändert. Beschriftung der Leiste an
+echten Bildpunkten mit Inhalt darunter: schwächste 6,3 : 1 (Formi),
+5,3 : 1 (Dunkel), 5,7 : 1 (Hell). Schalter: beide Wahlen ≥ 44 × 44 per
+Hit-Test (normal und kompakt, 320/390/1440), Deckend wirkt, bleibt nach
+dem Neuladen, Zurücksetzen stellt Glas her. Transparenz reduzieren und
+Mehr Kontrast (per CDP gemeldet) machen deckend. Am Rechner (1280 /
+1440 / 1920) keine Leiste, kein negativer Rand.
+
+**Kosten, gemessen in dieser Umgebung** (390 px, CPU ÷ 4, Aufgabenliste
+2 s gescrollt, A-B-B-A): Hauptfaden mit Glas 13,2 ms je Bild, deckend
+13,0; Rastern 0,5 gegen 0,4 ms. Ohne Grafikkarte gerechnet: was eine
+echte Grafikkarte für die Unschärfe braucht, misst das **nicht**.
+Gefunden nebenbei: das Scrollen der Aufgabenliste liegt bei CPU ÷ 4
+schon deckend über 8,3 ms je Bild — das ist die Liste, nicht das Glas,
+und steht als offene Baustelle hier.
+
+**Gefunden nebenbei:** test-blaetter (Runde 253) schnippte mit zwei
+einzelnen Mausbewegungen; unter Last (vier Tests parallel) lagen
+dazwischen so viele ms, dass aus dem Schnippen ein langsamer Zug wurde
+und das Blatt — richtig — offen blieb. Jetzt in einem Aufruf ohne
+Pause; die Schwellen in der App sind unverändert.
+
+**Nicht getestet:** Safari und ein echtes iPhone (dort wirkt die
+Unschärfe über die Grafikkarte; Kontrast und Lesbarkeit sind hier nur in
+Chromium gemessen).

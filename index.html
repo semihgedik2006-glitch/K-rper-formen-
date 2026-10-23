@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-bdBTXr2mU36+m8tn2x3smiPPBavOP42FlG229Rr7/is='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-XW3H12foMcaSRUY9yHwzO+5WL0R6CfID8goqtJ4YlMs='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2182,7 +2182,7 @@ body.neu .scroll-area > .pp-leiste:first-child{margin-top:var(--s8)}
 .mobnav{display:none}
 @media(max-width:820px){
   .side{display:none}
-  .main{padding-bottom:var(--s72)}
+  .main{--main-unten:var(--s72);padding-bottom:var(--main-unten)}
   .mobnav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:30;
     /* Deckend, ohne Weichzeichner — Begründung an .topbar. Der
        Inhalt endet über der Leiste (.main trägt unten Abstand), unter
@@ -6847,10 +6847,10 @@ body.light .fk-zeichen.tropfen path{fill:#1E8FD0}
   body.neu.formi-kugel-an .side-schnell{margin-top:var(--s8);padding-top:var(--s8)}
 }
 /* Am Handy: so viel Luft unten, wie die Kugel braucht. */
-@media(max-width:820px){ body.formi-kugel-an .main{padding-bottom:calc(80px + 58px + var(--s8))} }
+@media(max-width:820px){ body.formi-kugel-an .main{--main-unten:calc(80px + 58px + var(--s8));padding-bottom:var(--main-unten)} }
 /* … ausser Formi sitzt in der Schnellzugriff-Reihe (Runde 218): dann
    nur die Leiste unten, wie ohne Kugel. */
-@media(max-width:820px){ body.formi-kugel-an.kugel-in-reihe .main{padding-bottom:var(--s72)} }
+@media(max-width:820px){ body.formi-kugel-an.kugel-in-reihe .main{--main-unten:var(--s72);padding-bottom:var(--main-unten)} }
 /* Runde 182 (aus dem Betrieb: „achte aber bitte darauf das der neue formi
    knopf nichts verdeckt"): am Handy scrollen die Ansichten in einem
    eigenen Bereich (.scroll-area), und dort lag der letzte Eintrag unter
@@ -9904,6 +9904,59 @@ body.neu .msg-sheet.am-ort #msSheetClose{display:none}
 /* Formis Sprechblase liegt sonst über dem Menü (die Kugel selbst wird
    schon versteckt, siehe „.msg-sheet.show ~ .formi-kugel"). */
 body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
+
+/* ══ GLAS FÜR DIE UNTERE LEISTE (Runde 254) ═══════════════════════════
+   Plan „Studio Chat wie von Apple", Schritt 8: „Glas (Unschärfe) nur bei
+   Kopf- und unterer Leiste, nie hinter Text in Karten, immer mit einem
+   Schalter ‚Transparenz reduzieren'". Safari meldet
+   prefers-reduced-transparency nicht — darum ein eigener Schalter unter
+   Profil → Aussehen → Leisten (data-glas="deckend").
+
+   Warum der Inhalt jetzt UNTER die Leiste läuft: seit 23.9. war die
+   Leiste deckend, weil unter ihr nichts durchscrollte — ein Weichzeichner
+   verwischte nur den stehenden Hintergrund (Begründung an .topbar). Glas
+   ohne Inhalt dahinter ist nur eine Farbe. Also endet der Scroll-Bereich
+   jetzt am unteren Rand (negativer Rand gegen das Polster von .main,
+   --main-unten), und ein Abstandhalter genau dieser Höhe am Ende sorgt
+   dafür, dass die letzte Zeile ganz unten an derselben Stelle steht wie
+   vorher — über der Leiste und über Formi (test-formi-verdeckt).
+   Nicht auf der Startseite: sie soll auf einen Bildschirm passen und
+   ist so gebaut, dass unter der Leiste nichts liegt.
+
+   „Deckend" ist wirklich deckend: im Stil Formi lag die Leiste bisher
+   zu 86 % über dem Grund (--hud-glas) — gezeichnet wird jetzt dieselbe
+   Farbe, aber auf --bg statt auf dem, was darunter scrollt.
+
+   Nicht für den Kopf: der liegt über, nicht auf dem Scroll-Bereich —
+   dort gäbe es wieder nichts zu verwischen. Nicht am Rechner: neben der
+   Seitenleiste scrollt nichts darunter.
+
+   Deckend bleibt die Leiste bei „Deckend", bei Transparenz reduzieren
+   oder Mehr Kontrast des Geräts (wo der Browser es meldet) und wo der
+   Browser keinen Weichzeichner kann — 74 % Deckung ohne Unschärfe wären
+   unruhiger als beides. */
+@media(max-width:820px){
+  body.neu:not([data-glas="deckend"]) .view:not(#view-home) > .scroll-area{margin-bottom:calc(-1 * var(--main-unten));
+    /* Was unter der Leiste liegt, ist zu sehen, aber nicht „im Bild":
+       Fokus und scrollIntoView richten sich nach dem Bereich darüber —
+       sonst landete ein angesprungenes Feld genau unter der Leiste
+       (test-formi-verdeckt fand das an der Schulung bei 320 × 568). */
+    scroll-padding-bottom:var(--main-unten)}
+  body.neu:not([data-glas="deckend"]) .view:not(#view-home) > .scroll-area::after{content:'';display:block;grid-column:1 / -1;
+    height:var(--main-unten);pointer-events:none}
+  body.neu:not([data-glas="deckend"]) .mobnav{background:color-mix(in srgb, var(--bg) 74%, transparent);
+    -webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8)}
+  body.neu.light:not([data-glas="deckend"]) .mobnav{background:color-mix(in srgb, var(--bg-2) 74%, transparent)}
+  body.neu.formi:not(.light)[data-glas="deckend"] .mobnav{background:linear-gradient(var(--hud-glas), var(--hud-glas)), var(--bg)}
+  @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+    body.neu:not([data-glas="deckend"]) .mobnav{background:var(--bg)}
+    body.neu.light:not([data-glas="deckend"]) .mobnav{background:var(--bg-2)}
+  }
+  @media (prefers-reduced-transparency:reduce), (prefers-contrast:more){
+    body.neu:not([data-glas="deckend"]) .mobnav{background:var(--bg);-webkit-backdrop-filter:none;backdrop-filter:none}
+    body.neu.light:not([data-glas="deckend"]) .mobnav{background:var(--bg-2)}
+  }
+}
 </style>
 </head>
 <body>
@@ -13583,6 +13636,11 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
       <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Dichte</label>
       <div class="opt-grid" id="dichteOpts"></div>
 
+      <!-- Leisten, Runde 254: Apples „Transparenz reduzieren" als eigener
+           Schalter, weil Safari die Einstellung des iPhones nicht meldet. -->
+      <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Untere Leiste am Handy</label>
+      <div class="opt-grid" id="glasOpts"></div>
+
       <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Akzentfarbe</label>
       <div class="opt-grid" id="accOpts"></div>
 
@@ -14300,6 +14358,7 @@ var PREFS = {
   accent:'bunt',    // 'bunt' oder ein Schlüssel aus ACCENTS
   fs:'100',         // Schriftgröße in Prozent
   dichte:'normal',  // normal | kompakt — siehe body[data-dichte]
+  glas:'glas',      // glas | deckend — untere Leiste am Handy (Runde 254)
   lieferantMail:'', // Adresse für die Bestellmail (bleibt auf diesem Gerät)
   folds:{},         // welche Abschnitte aufgeklappt sind (pro Gerät)
   sort:{},          // gewählte Sortierung je Liste (pro Gerät)
@@ -14766,6 +14825,7 @@ function applyPrefs(){
   akzentAnwenden();
   document.documentElement.style.setProperty('--fs', (PREFS.fs||100)+'%');
   document.body.setAttribute('data-dichte', PREFS.dichte||'normal');
+  document.body.setAttribute('data-glas', PREFS.glas==='deckend' ? 'deckend' : 'glas');
   /* Der Hintergrund der ganzen App, nicht nur des Chats. */
   document.body.setAttribute('data-appbg', PREFS.appbg||'keiner');
   // Farbe der Statusleiste mitziehen
@@ -22538,6 +22598,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-23-glas-leiste', datum:'23.10.2026', titel:'Die untere Leiste am Handy ist aus Glas', wo:'todos', punkte:[
+    'Beim Scrollen läuft die Liste jetzt unter der unteren Leiste weiter und schimmert weich verschwommen durch – wie bei den Apps auf dem iPhone. Ganz unten steht der letzte Eintrag wie bisher frei.',
+    'Lieber ohne Durchschimmern? Unter Profil → Aussehen → „Untere Leiste am Handy" auf „Deckend" stellen.'
+  ]},
   { id:'2026-10-23-blaetter', datum:'23.10.2026', titel:'Fenster von unten lassen sich ziehen', wo:'todos', punkte:[
     'Fenster, die am Handy von unten hochkommen (zum Beispiel „…" an einer Aufgabe oder dein Profil), haben oben einen kleinen Strich. Daran kannst du sie ziehen.',
     'Nach unten ziehen oder schnell wischen schliesst das Fenster. Bei langen Fenstern hält ein mittlerer Zug auf halber Höhe, nach oben wird es wieder ganz gross.',
@@ -53456,6 +53520,29 @@ function buildAppearanceOptions(){
     });
   }
 
+  // 3c) Leisten: Glas oder deckend (Runde 254)
+  var gl=$('glasOpts');
+  if(gl){
+    /* Die Vorschau zeigt den Unterschied: drei Streifen „Inhalt", über
+       denen die Leiste liegt — einmal durchscheinend, einmal deckend. */
+    var arten=[['glas','Glas','.74'],['deckend','Deckend','1']];
+    gl.innerHTML=arten.map(function(a){
+      var streifen='<i style="position:absolute;left:4px;right:4px;top:3px;height:4px;border-radius:2px;background:var(--text-3)"></i>'+
+        '<i style="position:absolute;left:4px;right:12px;top:10px;height:4px;border-radius:2px;background:var(--text-3)"></i>';
+      var leiste='<i style="position:absolute;left:0;right:0;bottom:0;height:11px;background:var(--bg-2);opacity:'+a[2]+';border-top:1px solid var(--line-2)"></i>';
+      return '<div class="opt'+((PREFS.glas||'glas')===a[0]?' on':'')+'" data-glas="'+a[0]+'">'+
+        '<div style="position:relative;width:34px;height:22px">'+streifen+leiste+'</div>'+
+        '<span>'+a[1]+'</span></div>';
+    }).join('');
+    gl.querySelectorAll('[data-glas]').forEach(function(el){
+      el.addEventListener('click',function(){
+        PREFS.glas=el.getAttribute('data-glas'); savePrefs(); applyPrefs();
+        gl.querySelectorAll('[data-glas]').forEach(function(x){ x.classList.remove('on'); });
+        el.classList.add('on'); tick(8);
+      });
+    });
+  }
+
   // 4) Hell / Dunkel / Automatisch
   var th=$('thOpts');
   if(th){
@@ -53499,13 +53586,14 @@ function buildAppearanceOptions(){
    „Entfernen" daneben. */
 function aussehenZuruecksetzen(){
   if(!confirm('Aussehen auf die Voreinstellung zurücksetzen?\n\n'+
-              'Modus, Schriftgröße, Dichte, Akzentfarbe und beide Hintergründe gehen '+
+              'Modus, Schriftgröße, Dichte, Leiste, Akzentfarbe und beide Hintergründe gehen '+
               'auf den Auslieferungsstand zurück. Dein Profil, deine '+
               'Meldungen und alle Daten bleiben unberührt.\n\n'+
               'Gilt nur auf diesem Gerät.')) return;
   PREFS.theme  = 'formi';
   PREFS.fs     = '100';
   PREFS.dichte = 'normal';
+  PREFS.glas   = 'glas';
   PREFS.accent = 'bunt';
   PREFS.chatbg = 'verlauf';
   PREFS.appbg  = 'raum';
