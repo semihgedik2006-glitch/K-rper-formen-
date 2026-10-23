@@ -19921,7 +19921,33 @@ ein Mensch tun müsste; die Grenze bleibt 44 × 44, und der Knopf erfüllt sie.
 Inhalt; auf `main` 236 px Platz, jetzt 265 px — besser, aber nicht genug)
 und `test-navigation` (Startseite 2,19 Bildschirme).
 
-## Runde 219 — Formi schneller, weniger Dauerlob (Worker 2.20, 23.10.2026)
+## Runde 219 — Erstes Öffnen: kein Neuladen durch den Service Worker (23.10.2026)
+
+**Gefunden** über `test-sicherung`, das seit Wochen rot war („Betreiber
+sieht Vollsicherung nicht", auf `main` genauso). Der Knopf war nicht weg:
+der Test öffnet einen frischen Browser **ohne** Service-Worker-Sperre, und
+nach rund zwei Sekunden lud sich die Seite selbst neu. Der Test fand dann
+eine App, die gerade wieder startete (Höhe 0).
+
+**Ursache.** `sw.js` ruft beim ersten Installieren `skipWaiting()` und
+`clients.claim()`. Die Seite hörte auf `controllerchange` und lud dann neu
+— gedacht für Updates. Beim allerersten Öffnen gibt es aber vorher keinen
+Service Worker; die Übernahme ist kein Update. Für Menschen hiess das: wer
+die App auf einem neuen Gerät öffnet und sofort die Anmeldung tippt,
+verliert die Eingabe.
+
+**Entschieden.** Neu geladen wird nur, wenn beim Seitenstart schon ein
+Service Worker steuerte (`hatteSteuerung`). Am Update-Weg ändert sich
+nichts. `tests/test-sw-neuladen.js` prüft beides mit einem eigenen Server,
+dessen `sw.js` für das Update verändert wird: erstes Öffnen 1× geladen
+(auf `main` 2× — Gegenprobe rot), Update genau 1× neu geladen.
+`test-sicherung`, `test-zwischenspeicher`, `test-csp` grün.
+
+**Warum die anderen Tests das nicht sahen:** fast alle setzen
+`serviceWorkers:'block'`. Das ist für stabile Messungen richtig, verbirgt
+aber genau diesen Weg — deshalb der eigene Test ohne Sperre.
+
+## Runde 220 — Formi schneller, weniger Dauerlob (Worker 2.20, 23.10.2026)
 
 **Gemessen nach dem Einspielen von 2.19** (`/api/probe`, 4 Fragen):
 gpt-oss-120b antwortet richtig — „Westen waschen" aus dem Wissen, „was
