@@ -21580,7 +21580,173 @@ Dokument bleiben unberührt (Gegenprobe im Test).
 - Ein echter Tipp auf eine echte Push-Nachricht auf einem Handy: hier
   nur mit der Attrappe des Service Workers.
 
-## Runde 244 — Schulung: die eigene Bescheinigung zum Drucken; Erinnerung nicht an Stillgelegte (23.10.2026)
+## Runde 244 — Aufgaben und Putzplan in Gruppen, ein Hauptknopf (23.10.2026)
+
+Dritter Bauschritt aus dem Plan „Studio Chat wie von Apple“. Aus dem
+Betrieb nach „Gruppen und Titel“ (Runde 241): „mach weiter“. Danach,
+15:18: „es soll einfach den ganzen plan erledigen und mir dann bescheid
+geben“ — die weiteren Runden folgen ohne Zwischenfrage.
+
+**Was gebaut wurde**
+
+- **Aufgaben und Putzplan unter „Studio“ als Gruppen.** Jede Gruppe
+  (`section.pp-gruppe`, z. B. Täglich, Wöchentlich, Heute, Diese Woche)
+  ist eine gerundete Fläche: die Zeilen stossen ohne Abstand aneinander,
+  nur die erste ist oben, nur die letzte unten gerundet, dazwischen eine
+  Haarlinie, die beim Text beginnt. Dasselbe in „Erledigt“
+  (`details.td-erledigt`). Zeigen hellt die Zeile auf, statt sie
+  anzuheben — eine angehobene Zeile in einer Gruppe reisst die Fläche auf.
+- **Ein gefüllter Hauptknopf je Ansicht (am Rechner).** „+ Neu“ in der
+  Bereichszeile trägt die Markenfläche; Filter, Drucken und „Wer hakt ab?“
+  bleiben Umrandung. Am Handy ist das schon die schwebende Plus-Taste.
+- Zustände bleiben: erledigt blass, überfällig mit dem breiteren Rand
+  links (Dunkel/Hell), Abhaken, Wischen und „…“ unverändert.
+
+**Warum so**
+
+- Die Ecken laufen über eigene Variablen (`--zg-oben`, `--zg-r-oben` …)
+  statt über `:is(…)`-Listen: der Gestaltungstest zerlegt Selektoren an
+  jedem Komma, auch innerhalb von `:is()`, und meldet dann doppelte
+  Eigenschaften. Die Variablen halten jede Eigenschaft an genau einer
+  Stelle.
+- Die letzte Zeile wird über `:not(:has(+ .todo))` erkannt, nicht über
+  `:last-child`: in einer Gruppe kann nach den Zeilen noch ein „mehr
+  zeigen“ oder „Erledigt“ folgen.
+- Der Hauptknopf nur ab 821 px: darunter gibt es die schwebende
+  Plus-Taste, zwei gefüllte Knöpfe wären zwei Hauptsachen.
+
+**Was dabei gefunden wurde**
+
+- Bei 320 × 568 liegt Formis Kugel (fest, rechts, y ≈ 339) genau dort,
+  wo eine in die Bildmitte gerollte Zeile ihr „…“ hat. Auf `main` ebenso;
+  die Kugel lässt sich wegrollen. Formi gehört einer anderen Sitzung,
+  daher nicht angefasst. Der Test rollt in diesem Fall die Zeile nach
+  oben, misst dort und schreibt die Zahl in die Zeile (5 von 10 im
+  Putzplan bei 320 px).
+- In Formi blenden die Zeilen gestaffelt mit Verschiebung ein; gemessen
+  wird die Lage (`offsetTop`), nicht das Bild, sonst erscheinen Lücken.
+
+**Tests**
+
+- Neu: `tests/test-gruppen-aufgaben.js` — 166 Zusicherungen, Stil Formi
+  bei 320 / 390 / 430 / 820 / 1280 / 1440 / 1920 px, Dunkel und Hell bei
+  390 / 1440. Haken und „…“ per Hit-Test ≥ 44 × 44 in „normal“ und
+  „kompakt“; „+ Neu“ an Bildpunkten 8,6 : 1 (Formi/Dunkel) und 5,5 : 1
+  (Hell). Gegen `main`: 68 von 166 falsch.
+- Grün: gestaltung, knoepfe, fingerziele, p1-aufgaben,
+  aufgaben-wie-putzplan, p2-putzplan, putzplan, putzplan-werkzeuge,
+  todos, eigene-aufgabe, abgeschnitten, quer, formi-welt, stil-formi,
+  gruppen-titel, heute-haken, neuigkeiten, csp, team-woche, block-c,
+  schnell-editor, neu-messlatte, akzent (im Parallellauf einmal rot an
+  der Zeitprobe des Farbwechsels, allein grün).
+- Schon auf `main` rot, nicht von dieser Runde: test-neu-design,
+  test-navigation (Abschnitt 3), test-rahmen.
+
+**Nicht getestet:** echtes Gerät (iPhone, Mac) — nur Chromium ohne
+Bildschirm; der Anmeldeweg (Firebase lädt hier nicht).
+
+**Als Nächstes:** untere Leiste mit fünf Einträgen („Wissen“ fällt weg).
+
+## Runde 245 — Schichtplaner: Fragen in der App, Probe zurücknehmen, Öffnungszeiten an einer Stelle (23.10.2026)
+
+**Aus dem Betrieb:** „jap mach weiter dann“ — auf den Vorschlag, mit
+„Plan zurücknehmen“, der Einrichtung in der App und den Öffnungszeiten
+an einer Stelle anzufangen.
+
+**Was gebaut ist**
+- **„Veröffentlichung zurücknehmen“** im Kasten „Fertig?“, sobald ein
+  Monat veröffentlicht ist. Gelöscht wird, was der Planer geschrieben hat
+  (Merkmal `planer == Monat`), in allen Studios; von Hand eingetragene
+  Schichten tragen das Merkmal nicht und bleiben. Der Entwurf bleibt.
+  Vorher hiess eine Probe: jede Schicht einzeln löschen — so traut sich
+  niemand, es auszuprobieren.
+- **„Fragen zum Plan“**: die 24 Fragen aus dem PDF als Karte im Planer,
+  fünf Reiter (am Rechner mit Namen und „n offen“, am Handy Buchstaben),
+  je Frage die heutige Annahme, ein Feld und „passt“. Gespeichert beim
+  Verlassen des Feldes in `config/schichtplaner.antworten` (dieselbe
+  Regel wie die übrigen Einstellungen: lesen alle Aktiven, schreiben die
+  Geschäftsführung). Die Liste kommt aus `werkzeug/inhalt.py` — dieselbe
+  Quelle wie PDF und Excel; der Test vergleicht alle 24 Wortlaute.
+  Die Antworten sind Text; sie stellen den Planer (noch) nicht selbst
+  ein. Was davon Regeln werden, entscheidet sich, wenn sie da sind.
+- **Öffnungszeiten an einer Stelle**: Ist ein Studio unter Verwaltung →
+  Studios ohne Zeiten, nimmt die Besetzungs-Leiste die aus dem Excel-Blatt
+  „Studios“. Gelesen werden „10:00–12:00“, „10–12“, „10.00 – 12.00“ und
+  „zu“. Dazu lädt die Team-Seite `config/schichtplaner` einmal mit (das
+  brauchten die Schicht-Vorlagen im Blatt ohnehin).
+
+**Gefunden**
+- Die Demo-Datenbank gibt bei `get()` kein `d.ref` mit; Zurücknehmen
+  baut die Verweise deshalb über die Kennung. (Veröffentlichen nutzt noch
+  `d.ref` — in der echten Datenbank richtig, in der Demo scheitert nur ein
+  zweites Veröffentlichen. Nicht angefasst.)
+- Die erste Fassung der Gegenprobe im Test zählte nur die letzte Woche
+  und blieb mit abgeschaltetem Löschen grün. Jetzt zählt sie alle acht
+  Wochen: ohne Löschen 47 Planer-Schichten → rot; mit → grün.
+
+**Geprüft**
+- test-schichtplan-raster, Abschnitt 11 (10 Prüfungen neu, 102 gesamt):
+  Wortlaut der 24 Fragen = inhalt.py; „passt“ und eigene Antwort zählen
+  (0 → 2 von 24) und überstehen das Neuladen; Zurücknehmen erscheint nach
+  dem Veröffentlichen, nimmt 582 Schichten heraus, Zustand wieder
+  „Entwurf“, im Team-Plan keine Planer-Schicht mehr; Öffnungszeit nur aus
+  dem Excel → „Geöffnet 10–12 Uhr“ an allen sechs Tagen, „zu“ →
+  geschlossen.
+- test-schichtplaner (140), test-gestaltung, test-doppelte-namen, test-knoepfe,
+  test-abgeschnitten, test-team-woche, test-tausch: grün.
+## Runde 246 — Unten fünf Knöpfe, „Wissen“ unter ☰ (23.10.2026)
+
+Vierter Bauschritt aus dem Plan „Studio Chat wie von Apple“. Die Frage,
+welcher Eintrag unten wegfällt, war am Morgen beantwortet: Vorschlag
+„Wissen“, aus dem Betrieb (08:07) „ja so wie du empfohlen hast klingt
+super“. Seit 15:18 läuft der Plan ohne Zwischenfrage durch.
+
+**Was gebaut wurde**
+
+- `NEU_LEISTE` ohne `g-wissen`: am Handy unten Heute · Studio · Zeiten ·
+  Plan · Nachrichten. „Wissen“ (Dokumente, Schulung, Formi) liegt unter
+  ☰ am Seitenkopf — zwei Tipps — und am Rechner unverändert links in
+  der Seitenleiste. Das bisherige Aussehen (ohne `body.neu`) ist nicht
+  angefasst.
+
+**Warum so**
+
+- Apples Tab-Leiste trägt höchstens fünf Einträge. Mit sechs war jeder
+  Knopf bei 320 px auf die Untergrenze gedrückt (Runde 228: 48 px), mit
+  fünf misst er 48–91 px, bei 390 px 61–105 px.
+- „Wissen“ öffnet man ein paarmal die Woche; alles andere unten mehrmals
+  am Tag.
+- Einen Ungelesen-Punkt verliert dadurch nichts: `updateNavMarkers`
+  kennt nur Chat und Ankündigungen, und beide bleiben unten.
+- Die Breite richtet sich auf schmalen Handys weiter nach dem Wort
+  (Runde 222): „Nachrichten“ braucht in der Systemschrift 68 px, gleich
+  breite Knöpfe wären bei 320 px nur 62 px.
+
+**Tests**
+
+- test-p5-leiste: fünf Knöpfe, jeder ≥ 44 × 44 per Hit-Test und im Bild
+  bei 320 / 390 / 430 / 820 px in „normal“ und „kompakt“; neu: „Wissen →
+  Dokumente“ in zwei Tipps über ☰ bei allen vier Breiten. 27 grün.
+- test-navigation: Gruppen unten sind fünf; „Wissen“ und die
+  Verwaltung über ☰ bzw. die Seitenleiste. Der Durchlauf war seit
+  Runde 222 rot (er suchte die Verwaltung unten) — jetzt grün.
+- test-neu-design: Abschnitt 2 auf fünf Knöpfe. Weiter rot wie auf
+  `main`: „320 × 568 passt ohne Scrollen“ (343 > 265), nicht von hier.
+- Grün: abgeschnitten, quer, findewege, zusammengelegt, zeiten-bereich,
+  formi-kugel, formi-reihe, paywall, startseite-offen, knoepfe,
+  fingerziele, neuigkeiten, csp, team-woche, gestaltung,
+  gruppen-aufgaben, gruppen-titel, heute-haken. akzent im Parallellauf
+  wieder an der Zeitprobe rot, allein grün. test-rahmen rot wie auf
+  `main`.
+- Rechner: die Seitenleiste ist nicht verändert; gemessen ist hier nur,
+  dass sie unverändert alle Bereiche zeigt (test-navigation über
+  `#side`).
+
+**Nicht getestet:** echtes iPhone.
+
+**Als Nächstes:** Bewegung — drei Federn, Seitenwechsel.
+
+## Runde 247 — Schulung: die eigene Bescheinigung zum Drucken; Erinnerung nicht an Stillgelegte (23.10.2026)
 
 Aus dem Betrieb, 23.10.2026: „jo mach weiter" — die nächste
 Schulungs-Runde.

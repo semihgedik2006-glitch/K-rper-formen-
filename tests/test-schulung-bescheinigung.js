@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════════
-   SCHULUNG: DIE EIGENE BESCHEINIGUNG ZUM DRUCKEN (Runde 244)
+   SCHULUNG: DIE EIGENE BESCHEINIGUNG ZUM DRUCKEN (Runde 247)
 
    Aus dem Betrieb, 23.10.2026: „jo mach weiter" — auf den Vorschlag,
    dass jede und jeder die eigenen bestandenen Schulungen auf einem Blatt

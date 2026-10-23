@@ -1516,7 +1516,7 @@ const TAG = 86400000;
          eNeulich   — Fragen fällig, aber vor 2 Tagen schon erinnert → nein
          eNichts    — nichts fällig (gerade bestanden)               → nein
          eAus       — Konto inaktiv                                  → nein
-         eStill     — Teilnehmer stillgelegt (Runde 244)             → nein
+         eStill     — Teilnehmer stillgelegt (Runde 247)             → nein
          eUmgehaengt — Teilnehmer inzwischen an einem anderen Konto  → nein
          und ein Testplan der Leitung                                → nein */
       const leute = {
@@ -1545,7 +1545,7 @@ const TAG = 86400000;
         JSON.stringify(alle));
       pruefe('ERINNERN · nicht bei „Kurz auffrischen" aus, nicht zweimal in drei Tagen, nicht ohne Fälliges, nicht inaktiv, nie ein Testplan',
         !alle.some((t) => /eLeise|eNeulich|eNichts|eAus/.test(t)) && gesendet.length === 1);
-      pruefe('ERINNERN · nicht an Stillgelegte, nicht an ein Konto, mit dem der Teilnehmer nicht mehr verknüpft ist (Runde 244)',
+      pruefe('ERINNERN · nicht an Stillgelegte, nicht an ein Konto, mit dem der Teilnehmer nicht mehr verknüpft ist (Runde 247)',
         !alle.some((t) => /eStill|eUmgehaengt/.test(t)), JSON.stringify(alle));
       const m0 = (gesendet[0] || { data: {} }).data;
       pruefe('ERINNERN · Überschrift „Kurz auffrischen", Text mit der Zahl der Fragen', /Kurz auffrischen/.test(m0.title || '') &&
@@ -1564,7 +1564,7 @@ const TAG = 86400000;
         !I.auffrischTeilnehmerGilt({ uid: 'a', gesperrt: true }, { uid: 'a' }) && !I.auffrischTeilnehmerGilt({ uid: 'b' }, { uid: 'a' }) &&
         !I.auffrischTeilnehmerGilt({ uid: null }, { uid: null }));
 
-      /* Teilnehmer gelöscht → sein Lernplan geht mit (Runde 244). Die
+      /* Teilnehmer gelöscht → sein Lernplan geht mit (Runde 247). Die
          Durchläufe bleiben: sie sind der Nachweis. */
       await F.collection('schulungTeilnehmer').doc('te-eFaellig').delete();
       await fns.onSchulungTeilnehmerWegF.run({ exists: false, data: () => ({ uid: 'eFaellig' }) },
