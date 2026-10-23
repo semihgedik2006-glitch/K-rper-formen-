@@ -6817,6 +6817,71 @@ exports.schulungAuffrischen = region.https.onCall(async (data, context) => {
   };
 });
 
+/* ══ AUFFRISCHEN: EINE ERINNERUNG AUFS HANDY (Runde 212) ══════════════
+   Aus dem Betrieb, 23.10.2026: „jo mach weitwr" — auf den Vorschlag
+   „Push-Erinnerungen für Leute mit Zugang".
+
+   Die Startseite sagt es schon (Runde 201) — aber nur, wer die App
+   öffnet, sieht sie. Deshalb um 9:40 eine Push-Nachricht, wenn
+   Fragen warten:
+   - nur an Teilnehmer mit verknüpftem, aktivem Konto (Leute ohne Zugang
+     haben kein Gerät in der App);
+   - höchstens alle DREI Tage (`erinnertAm` am Lernplan). Täglich wäre
+     lästig, und wer lästig findet, schaltet ab;
+   - nur auf Geräte, auf denen „Kurz auffrischen" unter Einstellungen →
+     Meldungen an ist (fehlt die Angabe, gilt sie als an — wie bei allen
+     Meldungen, sonst verstummten bestehende Geräte);
+   - der Text spricht von der Gewohnheit, nicht von einer Pflicht. Laut
+     Duolingo (eigener Blog, Herstellerangabe) brachte ein Text, der den
+     Gewohnheitsaufbau betont, mehr Zustimmung als einer über die Serie.
+   Fällig rechnet dieselbe Funktion wie das Auffrischen selbst
+   (auffrischRunde) — sonst meldete die Nachricht Fragen, die die App beim
+   Öffnen gar nicht zeigt. Gespeichert wird dabei nur `erinnertAm`. */
+const AUFFRISCH_ERINNERN_ABSTAND_MS = 3 * 86400000;
+function auffrischErinnernDarf(plan, jetzt) {
+  return !!plan && !!plan.uid && !plan.test &&
+    (jetzt - (plan.erinnertAm || 0)) >= AUFFRISCH_ERINNERN_ABSTAND_MS;
+}
+function auffrischErinnernText(offen) {
+  return offen === 1
+    ? 'Eine Frage aus deinen Schulungen wartet — dauert keine Minute.'
+    : offen + ' Fragen aus deinen Schulungen warten — etwa eine Minute. Kurz und regelmässig hält am längsten.';
+}
+async function auffrischErinnernFirma(firma, jetzt) {
+  const F = W(firma);
+  const plaene = await F.collection('schulungLernplan').get();
+  let gesendet = 0;
+  for (const doc of plaene.docs) {
+    const plan = doc.data() || {};
+    if (!auffrischErinnernDarf(plan, jetzt)) continue;
+    const u = await db.collection('users').doc(String(plan.uid)).get();
+    const ud = u.exists ? (u.data() || {}) : null;
+    if (!ud || ud.aktiv === false || !gehoertZu(ud, firma)) continue;
+    const lSnap = await F.collection('schulungLaeufe').where('teilnehmer', '==', doc.id).get();
+    const laeufe = lSnap.docs.map((d) => Object.assign({ id: d.id }, d.data() || {})).filter((l) => !l.test);
+    const r = auffrischRunde(laeufe, plan.karten || {}, jetzt, false);
+    if (!r.offen) continue;
+    const tokens = await collectTokens((d) => d.uid === plan.uid && willHaben(d, 'schulung'), null, firma);
+    if (!tokens.length) continue;
+    await sendPush(tokens, '🔁 Kurz auffrischen', auffrischErinnernText(r.offen));
+    await doc.ref.update({ erinnertAm: jetzt });
+    gesendet += tokens.length;
+  }
+  return gesendet;
+}
+exports.schulungAuffrischErinnern = region
+  .runWith({ timeoutSeconds: 300, memory: '256MB' })
+  .pubsub.schedule('40 9 * * *')
+  .timeZone('Europe/Berlin')
+  .onRun(async () => {
+    const jetzt = Date.now();
+    for (const firma of await alleFirmen()) {
+      const n = await auffrischErinnernFirma(firma, jetzt);
+      if (n) console.log('Auffrischen erinnert (' + (firma || 'flach') + '): ' + n + ' Geräte');
+    }
+    return null;
+  });
+
 
 /* ══════════════════════════════════════════════════════════════════════
    BEITRITT PER FIRMENCODE (Runde 117)
@@ -8806,6 +8871,7 @@ exports.__intern = { abschlussZeilenPruefen, antragUhrPruefen, ANTRAG_TAGE_MAX, 
                      schulungZeichen, schulungCodeNormal, SCHULUNG_ALPHABET,
                      SCHULUNG_TESTCODE, schulungTestErlaubt,
                      schulungOffenerLauf, auffrischRunde, auffrischWeiter, AUFFRISCH_STUFEN_TAGE,
+                     auffrischErinnernDarf, auffrischErinnernText, AUFFRISCH_ERINNERN_ABSTAND_MS,
                      AUFFRISCH_JE_MODUL, AUFFRISCH_JE_RUNDE, SCHULUNG_FORTSETZEN_MS,
                      wichtigFehlende, wichtigFaellig, wichtigTitel, wichtigText,
                      WICHTIG_AB_MS, WICHTIG_BIS_MS,

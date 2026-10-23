@@ -19790,3 +19790,50 @@ aber bei grossen Figuren Malarbeit je Bild. Nicht angefasst, weil es
 gerade in einer zweiten Sitzung gebaut wird — gemeldet.
 Ausserdem misst `test-gehirn` die Spalte bei 1440 px erst, wenn sie
 nicht mehr hereinspringt (sonst 2 px vom Rand, je nach Last).
+
+## Runde 212 — Kurz auffrischen: Erinnerung aufs Handy (23.10.2026)
+
+**Aus dem Betrieb:** „jo mach weitwr“ — auf den Vorschlag
+„Push-Erinnerungen für Leute mit Zugang“.
+
+**Was gebaut ist**
+- Neue geplante Cloud Function **`schulungAuffrischErinnern`**, täglich
+  9:40 Uhr (Berlin): Wer Fragen zum Auffrischen fällig hat, bekommt eine
+  Push-Nachricht „🔁 Kurz auffrischen — 3 Fragen aus deinen Schulungen
+  warten …“.
+  - nur Teilnehmer mit verknüpftem, aktivem Konto der eigenen Firma;
+  - höchstens alle **drei Tage** (`erinnertAm` am Lernplan);
+  - nur auf Geräte, auf denen „Kurz auffrischen“ unter Profil →
+    Meldungen an ist (ohne Angabe: an, wie bei allen Meldungen);
+  - nie für Testpläne der Leitung;
+  - „fällig“ rechnet dieselbe Funktion wie das Auffrischen selbst
+    (`auffrischRunde`), damit die Nachricht nichts verspricht, was die
+    App beim Öffnen nicht zeigt.
+- In der App ein neuer Schalter **„Kurz auffrischen“** unter Profil →
+  Meldungen, nur wenn die Schulung für die Firma an ist.
+
+**Entschieden, und warum**
+- **Drei Tage Abstand**: täglich wäre lästig, und wer etwas lästig findet,
+  schaltet es ab. Der Abstand ist gesetzt, nicht gemessen.
+- **Der Text spricht von Gewohnheit, nicht von Pflicht.** Duolingo
+  berichtet (eigener Blog, Herstellerangabe, nicht nachgeprüft), dass ein
+  Text über den Gewohnheitsaufbau mehr Zustimmung brachte als einer über
+  die Serie.
+- **Keine Push-Nachricht zu Fristen.** Welche Module Pflicht sind, steht
+  in der Datei `schulungen-basis.js`, die der Server nicht sieht. Die
+  Fristen stehen weiter auf der Startseite und bei der Leitung.
+
+**Nicht geprüft**
+- Ob die Nachricht auf einem echten Handy ankommt. Geprüft ist im
+  Emulator, AN WELCHE Geräte sie ginge (der Versand wird abgefangen).
+
+**Tests**
+- `tests/rules/funktionen.test.js` (+7, jetzt 255): genau ein Gerät von
+  fünf Leuten und einem Testplan (nicht bei Schalter aus, nicht zweimal in
+  drei Tagen, nicht ohne Fälliges, nicht inaktiv, nie ein Testplan);
+  Überschrift und Text; der Plan merkt sich den Zeitpunkt; Gegenprobe: ein
+  zweiter Lauf gleich danach schickt nichts. Gegenprobe im Code: ohne die
+  Prüfung des Schalters fallen 2 Zeilen.
+- `tests/test-auffrischen.js` (+5, jetzt 55): der Schalter ist da und an,
+  schaltet ab und wird gespeichert, ein zweiter Tipp schaltet wieder an,
+  Trefferfläche ≥ 44.
