@@ -210,8 +210,15 @@ Drei Stufen, mehr nicht.
 
 | Marke | Familie | Wofür |
 |---|---|---|
-| `--font-head` | Barlow Condensed, 500–800 | Überschriften, Zahlen, Marken |
-| `--font-body` | Barlow, 300–700 | alles andere |
+| `--font-head` | Systemschrift (SF Pro Display auf Apple, sonst Inter), bis 700 | Überschriften, Zahlen |
+| `--font-body` = `--font-sys` | Systemschrift (SF Pro Text auf Apple, sonst Inter) | alles andere |
+| `--font-marke` | Barlow Condensed | **nur** der Schriftzug STUDIOCHAT |
+
+> Seit Runde 239 (23.10.2026): Systemschrift statt Barlow, damit die App
+> wie eine App von Apple wirkt. Inter steht in der Kette **vor**
+> `system-ui` — sonst sähe die App auf Windows-Rechnern nach Segoe UI
+> aus. Überschriften nicht über 700: Apple geht bei Titeln nicht über
+> Bold. Hintergrund und Plan: `docs/FORTSCHRITT.md`, Runde 239.
 
 **Größen — sieben Stufen, jede mit einer Aufgabe:**
 

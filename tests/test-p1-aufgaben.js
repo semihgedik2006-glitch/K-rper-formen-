@@ -130,9 +130,24 @@ const LAGE = () => {
         const TREFFER = eval(SRC);
         document.body.dataset.dichte = dichte;
         await new Promise(r => setTimeout(r, 200));
-        return [...document.querySelectorAll('#todoArea .todo .t-edit, #todoArea .todo .t-del, #todoArea .todo .t-mehr, #todoArea .todo .check')]
-          .filter(x => x.getClientRects().length && x.getBoundingClientRect().bottom < innerHeight)
-          .map(x => ({ t: x.className, m: TREFFER(x) }));
+        /* Runde 239: Jeder Knopf wird vor dem Messen in die Mitte des
+           Fensters geholt. Vorher wurden nur die gemessen, deren Kasten
+           ganz im Bild lag — ein Haken, der 1 px über dem unteren Rand
+           endete, zählte mit, obwohl seine unsichtbar vergrösserte
+           Trefferfläche vom Fensterrand abgeschnitten war (44 × 36 bei
+           1280 px, sobald die breitere Systemschrift die Zeilen
+           verschob). Und alles darunter wurde gar nicht gemessen. Jetzt
+           zählt jeder Knopf der Liste, jeder vollständig: strenger, nicht
+           lockerer. */
+        const alle = [...document.querySelectorAll('#todoArea .todo .t-edit, #todoArea .todo .t-del, #todoArea .todo .t-mehr, #todoArea .todo .check')]
+          .filter(x => x.getClientRects().length);
+        const aus = [];
+        for (const x of alle) {
+          x.scrollIntoView({ block: 'center', behavior: 'instant' });
+          await new Promise(r => requestAnimationFrame(() => r()));
+          aus.push({ t: x.className, m: TREFFER(x) });
+        }
+        return aus;
       }, ['(' + TREFFER.toString() + ')', dichte]);
       pruefe(w + ' px, ' + dichte + ': Haken, Stift, Papierkorb, „…" ≥ 44 × 44',
         k.length >= 4 && k.every(x => x.m.w >= 44 && x.m.h >= 44), JSON.stringify(k.filter(x => x.m.w < 44 || x.m.h < 44)));

@@ -14,9 +14,15 @@
         draussen wird mitgeschrieben — auch die, die keiner erwartet.
      2. Kommen die Schriften wirklich an? document.fonts sagt es;
         eine @font-face-Regel allein sagt gar nichts.
-     3. Wird auch wirklich Barlow gezeichnet, oder steht dort die
-        Ersatzschrift? Gemessen an der Breite desselben Textes.
-     4. Sind alle neun Dateien da, und sind es Schriftdateien?
+     3. Wird auch wirklich die richtige Schrift gezeichnet, oder steht
+        dort die Ersatzschrift? Gemessen an der Breite desselben Textes.
+     4. Sind alle zehn Dateien da, und sind es Schriftdateien?
+
+   Seit Runde 239 (23.10.2026, „wie eine App von Apple") ist die
+   Grundschrift die Systemschrift: SF Pro auf Apple-Geräten, sonst Inter
+   aus schriften/inter-variabel.woff2. Barlow Condensed bleibt für den
+   Schriftzug STUDIOCHAT; Barlow selbst liegt weiter da, weil
+   marketing.html und werbung.html es benutzen.
    ───────────────────────────────────────────────────────────────────── */
 const { chromium } = require('playwright');
 const path = require('path');
@@ -51,7 +57,7 @@ function pruefe(name, bedingung, zusatz) {
     pruefe(f.padEnd(30) + (g / 1024).toFixed(1) + ' KB', kopf === 'wOF2', kopf);
   });
   console.log('  zusammen: ' + (summe / 1024).toFixed(1) + ' KB');
-  pruefe('neun Schnitte liegen im Ordner', dateien.length === 9,
+  pruefe('zehn Dateien liegen im Ordner (9 Barlow + Inter variabel)', dateien.length === 10,
     dateien.length + ' Dateien');
 
   // ══ 2. Die Regeln in der Datei ══
@@ -150,7 +156,7 @@ function pruefe(name, bedingung, zusatz) {
     !stand.some(f => f.stand === 'error'),
     JSON.stringify(stand.filter(f => f.stand === 'error')));
 
-  // ══ 4. Wird auch wirklich Barlow gezeichnet? ══
+  // ══ 4. Wird auch wirklich die richtige Schrift gezeichnet? ══
   /* GEGENPROBE, ohne die alles davor wertlos wäre: eine @font-face-Regel
      kann sauber geladen sein und die Seite trotzdem in der Ersatzschrift
      zeichnen — etwa wenn die font-family im Stylesheet anders heisst als
@@ -170,7 +176,24 @@ function pruefe(name, bedingung, zusatz) {
     }
     await document.fonts.load("600 48px 'Barlow'");
     await document.fonts.load("600 48px 'Barlow Condensed'");
+    await document.fonts.load("600 48px 'Inter'");
+    /* Was die App wirklich als Grundschrift zeichnet: ein Element mit
+       var(--font-body). Auf diesem Linux gibt es kein -apple-system,
+       also muss es Inter sein — und zwar die Datei aus schriften/,
+       nicht eine zufällig installierte (dafür document.fonts unten). */
+    const grund = (() => {
+      const s = document.createElement('span');
+      s.textContent = 'Handgemessen 123 — Grüße, Körperformen';
+      s.style.cssText = 'position:absolute;left:-9999px;top:0;' +
+        'font-size:48px;font-weight:600;white-space:nowrap;font-family:var(--font-body)';
+      document.body.appendChild(s);
+      const w = s.getBoundingClientRect().width; s.remove(); return Math.round(w);
+    })();
+    let interStand = [];
+    document.fonts.forEach(f => { if (/Inter/.test(f.family)) interStand.push(f.status); });
     return {
+      grund, interStand,
+      inter: messen("'Inter'"),
       barlow: messen("'Barlow'"),
       condensed: messen("'Barlow Condensed'"),
       ersatz: messen("'GibtEsNichtXYZ'"),
@@ -186,10 +209,23 @@ function pruefe(name, bedingung, zusatz) {
   console.log('  Breiten:', JSON.stringify(breiten));
   pruefe('Barlow wird gezeichnet, nicht die Ersatzschrift',
     breiten.barlow !== breiten.ersatz, JSON.stringify(breiten));
+  pruefe('die Grundschrift ist Inter (ohne SF Pro auf diesem Gerät)',
+    breiten.grund === breiten.inter && breiten.inter !== breiten.ersatz,
+    breiten.grund + ' vs Inter ' + breiten.inter);
+  pruefe('Inter kommt aus schriften/ und ist geladen',
+    breiten.interStand.indexOf('loaded') >= 0, JSON.stringify(breiten.interStand));
+  /* Reihenfolge der Kette: -apple-system zuerst (SF Pro auf Apple),
+     Inter VOR system-ui — sonst sähe die App auf Windows aus wie
+     Windows (Segoe UI). Geprüft am Text, nicht im Browser, weil dieser
+     Browser beides nicht hat. */
+  const kette = (/--font-sys:([^;]+);/.exec(html) || [])[1] || '';
+  pruefe('die Kette beginnt mit -apple-system und nennt Inter vor system-ui',
+    /^-apple-system/.test(kette) && kette.indexOf("'Inter'") >= 0 &&
+    kette.indexOf("'Inter'") < kette.indexOf('system-ui'), kette);
   /* Condensed ist schmaler — das ist der ganze Zweck des Schnitts.
      Damit ist auch gesagt, dass die zwei Familien nicht beide auf
      dieselbe Datei zeigen. */
-  pruefe('Barlow Condensed ist schmaler als Barlow',
+  pruefe('Barlow Condensed (Schriftzug) ist schmaler als Barlow',
     breiten.condensed < breiten.barlow,
     breiten.condensed + ' vs ' + breiten.barlow);
 
