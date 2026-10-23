@@ -22095,6 +22095,9 @@ Menü (die Vorschau ist auf vier Zeilen begrenzt).
   ohne Zeitlimit). Rot ist `test-mitarbeiter`: Er sucht „Wissen" in der
   unteren Leiste, das seit Runde 246 unter ☰ liegt. Er bricht auf `main`
   genauso ab, nachgemessen auf einem eigenen Stand von `main`.
+- Nach der Übernahme der Runden 247–249 noch einmal 15 Durchläufe, darunter
+  `test-federn`, `test-chat-blasen`, `test-gruppen-aufgaben` und alle
+  Formi-Durchläufe: alle grün.
 
 **Nicht geprüft:** Safari und Firefox (dort ist die Linse absichtlich
 aus), echte Handys, die Arbeit je Bild beim Strom (bis 80 Elemente, nur
