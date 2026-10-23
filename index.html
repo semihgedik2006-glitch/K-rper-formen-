@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-3OzuBAwCoikIbwG7rA+9IX2L3tsV/l4zitRtVC1MGKQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-UZK0wchgbiJHy18rXyxFtujxI9two7thAROFKCOqjxA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -6675,6 +6675,30 @@ body.light .fk-zeichen.herz path{fill:#D6468C}
 @keyframes formiTipp{from{transform:scale(.4);opacity:1}to{transform:scale(2.6);opacity:0}}
 /* Das Ziel leuchtet kurz auf. outline statt Rahmen: verschiebt nichts. */
 .formi-markiert{outline:2px solid #5FE1FF !important;outline-offset:2px}
+/* Runde 227 — „Zeig mir wie": Formis Ring als Scheinwerfer. Die Fläche
+   fängt keine Klicks (pointer-events:none), nur die Karte — das Ziel im
+   Ring bleibt antippbar. Bewegt wird nur transform (FLIP im Skript). */
+.formi-wie{position:fixed;inset:0;z-index:1150;pointer-events:none}
+.formi-wie[hidden]{display:none}
+.fw-licht{position:absolute;left:0;top:0;border-radius:var(--r-md);transform-origin:0 0;will-change:transform;
+  box-shadow:0 0 0 9999px rgba(3,6,14,.5)}
+.formi-wie .fw-licht::before{content:"";position:absolute;inset:-4px;border-radius:var(--r-lg);padding:var(--s4);background:var(--formi-ring);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.fw-licht::after{content:"";position:absolute;inset:-4px;border-radius:var(--r-lg);box-shadow:var(--e1), 0 0 18px 3px rgba(95,225,255,.5), 0 0 34px 6px rgba(182,156,255,.28)}
+.formi-wie .fw-formi{--fg:28px;position:absolute;left:0;top:0;margin:-14px 0 0 -14px;will-change:transform;box-shadow:var(--e1), 0 0 16px 4px rgba(95,225,255,.5)}
+.fw-karte{position:absolute;left:0;top:0;width:min(340px,calc(100vw - 32px));pointer-events:auto;will-change:transform;
+  background:linear-gradient(180deg, rgba(95,225,255,.12), rgba(182,156,255,0) 62%), var(--bg-2);
+  border:1px solid var(--line-2);border-radius:var(--r-lg);padding:var(--s16);box-shadow:var(--e3);
+  transition:transform .32s var(--ease-ios)}
+#fwTitel{font-size:var(--t-lg);margin-bottom:var(--s6)}
+#fwText{font-size:var(--t-sm);line-height:var(--lh);color:var(--text-2)}
+.fw-zeile{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s8);margin-top:var(--s14)}
+#fwZahl{flex:1 1 auto;margin:0;font-family:var(--font-head);font-weight:800;font-size:var(--t-2xs);
+  text-transform:uppercase;letter-spacing:var(--ls-m);color:var(--text-2)}
+.fw-zeile .btn{flex:0 0 auto;min-height:44px;min-width:44px}
+@media (max-width:400px){ #fwZahl{flex-basis:100%} .fw-zeile .btn{flex:1 1 0} }
+.ga-wie{flex-wrap:wrap}
+@media (prefers-reduced-motion:reduce){ .fw-karte{transition:none} }
 @media (prefers-reduced-motion:reduce){ .formi-kugel{transition:none} .jarvis.jv-kompakt.jv-z-denkt .formi-gesicht .fk-wirbel,
   .jarvis.jv-z-spricht .formi-gesicht .fk-mund{animation:none} }
 /* Die Themen. Farbe folgt dem Bereich wie in den Mini-Fenstern; Rot,
@@ -12771,6 +12795,20 @@ body.neu .kn-zeile{min-height:var(--zeile)}
      Das Licht ist EIN Element mit einem 9999px grossen Schatten nach
      aussen. So gibt es ein Loch im Dunkel, ohne vier Rechtecke zu
      rechnen, die bei jeder Drehung wieder falsch stehen. -->
+<!-- Runde 227: „Zeig mir wie" — Formis Ring über der echten App. -->
+<div id="formiWie" class="formi-wie" hidden>
+  <div class="fw-licht" aria-hidden="true"></div>
+  <span class="formi-figur fw-formi" aria-hidden="true"></span>
+  <div class="fw-karte" role="dialog" aria-modal="false" aria-labelledby="fwTitel" aria-describedby="fwText">
+    <h3 id="fwTitel"></h3>
+    <p id="fwText"></p>
+    <div class="fw-zeile">
+      <p id="fwZahl" aria-live="polite"></p>
+      <button type="button" class="btn btn-ghost btn-sm" id="fwWeg">Abbrechen</button>
+      <button type="button" class="btn btn-primary btn-sm" id="fwWeiter">Weiter</button>
+    </div>
+  </div>
+</div>
 <div id="tour" aria-live="polite">
   <div id="tourLicht"></div>
   <div id="tourKarte" role="dialog" aria-modal="true" aria-labelledby="tourTitel">
@@ -21766,6 +21804,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-23-formi-zeigwie', datum:'23.10.2026', titel:'„Zeig mir wie": Formi führt dich durch die App', wo:'gehirn', punkte:[
+    'Schreib Formi zum Beispiel „Zeig mir, wie ich eine Aufgabe anlege". Formi zeigt dir den Weg Schritt für Schritt auf den echten Seiten. Fragst du „Wie melde ich mich krank?", antwortet Formi wie gewohnt, und darunter steht „Zeig’s mir in der App ›".',
+    'Um die Stelle, die gerade dran ist, liegt Formis bunter Ring, und ein kleiner Formi fliegt von Schritt zu Schritt. Unten steht „Schritt 2 von 4" mit „Weiter" und „Abbrechen".',
+    'Du kannst dabei sofort selbst tippen, ein Rundgang trägt nichts ein. Es gibt fünf Rundgänge: Aufgabe anlegen, krank oder Urlaub melden, Übergabe schreiben, Schichten ansehen und abgeben, im Putzplan abhaken. Schreibst du Formi nur „Zeig mir, wie …", bekommst du alle zur Auswahl.'
+  ]},
   { id:'2026-10-23-formi-ueberall', datum:'23.10.2026', titel:'Formi beim Stempeln, bei der Anmeldung, im hellen Stil und in der Schulung', wo:'zeit', punkte:[
     'Stempeln: Beim Kommen begrüßt dich Formi, in der Pause ruht die Scheibe, beim Feierabend fliegt deine Tageszeit (z. B. „7:42 h") in das Loch, und Formi sagt sie dir. Am Terminal sagt Formi „Feierabend" mit deinem Vornamen.',
     'Anmeldung: Statt des Logos steht Formi über dem Formular. Die Augen folgen dem, was du bei der E-Mail tippst. Beim Passwort hält Formi die Augen zu, zeigst du das Passwort an, linst es mit einem Auge. Bei einem Fehler erschrickt es kurz.',
@@ -27138,6 +27181,10 @@ function gehirnZeichnenInRoh(box, tippen){
       antwort='<div class="gehirn-antwort">'+kopf+(v.spruch && !v.mini ? '<p class="ga-spruch">'+gehirnText(v.spruch)+'</p>' : '')+gehirnVorschlagHTML(v, i)+'</div>';
     } else {
       var ziele=gehirnZiele(v.text);
+      /* Runde 227: zu einer Wie-Frage, für die es einen Rundgang gibt,
+         antwortet die KI wie bisher — und Formi bietet an, es in der App
+         zu zeigen. */
+      var wz=formiWieErkennen(String(v.text||'').toLowerCase()), wie=wz && wz.id;
       antwort='<div class="gehirn-antwort" aria-live="polite">'+kopf+
         '<p class="ga-text" data-gtext="'+i+'">'+(v.getippt ? gehirnText(v.antwort) : '')+'</p>'+
         '<div class="hilfe-marken">'+
@@ -27152,7 +27199,9 @@ function gehirnZeichnenInRoh(box, tippen){
         gehirnGelerntHTML(v)+
         '</div>'+
         gehirnQuellenHTML(v)+
-        (ziele.length ? '<div class="gehirn-ziele">'+ziele.map(function(z){
+        (ziele.length || wie ? '<div class="gehirn-ziele">'+
+          (wie ? '<button type="button" class="btn btn-ghost btn-sm" data-gwie="'+esc(wie)+'">Zeig’s mir in der App ›</button>' : '')+
+          ziele.map(function(z){
           return '<button type="button" class="btn btn-ghost btn-sm" data-gziel="'+esc(z.view)+'">Zu '+esc(z.name)+' ›</button>';
         }).join('')+'</div>' : '')+
         gehirnDaumenHTML(v, i)+
@@ -27165,6 +27214,9 @@ function gehirnZeichnenInRoh(box, tippen){
   }).join('');
   box.querySelectorAll('[data-gziel]').forEach(function(b){
     b.addEventListener('click', function(){ if(!formiBleibtOffen()) jarvisZu(); showView(b.getAttribute('data-gziel')); tick(8); });
+  });
+  box.querySelectorAll('[data-gwie]').forEach(function(b){
+    b.addEventListener('click', function(){ formiWieStarten(b.getAttribute('data-gwie')); tick(8); });
   });
   box.querySelectorAll('[data-gvorschlag]').forEach(function(b){
     b.addEventListener('click', function(){ gehirnVorschlagUebernehmen(_gVerlauf[+b.getAttribute('data-gvorschlag')]); });
@@ -27507,6 +27559,7 @@ function gehirnVorschlagHTML(v, i){
       'Schreib es z. B. so: „Öffne den Putzplan", „Wer hat heute Dienst?" oder „Ich bin morgen krank".')+'</p>';
   }
   if(s.typ==='navigation') return v.mini ? gehirnMiniHTML(v, i) : gehirnNavHTML(v);
+  if(s.typ==='zeigwie') return gehirnZeigWieHTML(v, i);
   if(s.typ==='erinnerung') return gehirnErinnerungHTML(v, i);
   if(s.typ==='mail') return gehirnMailHTML(v, i);
   if(s.typ==='suche') return gehirnSucheHTML(v, i);
@@ -27705,6 +27758,12 @@ function gehirnSofort(v){
     /* Erst zeichnen (die Karte steht im Verlauf, wenn man zurückkommt),
        dann wechseln. */
     setTimeout(function(){ gehirnOeffne(s); }, gehirnWenigBewegung() ? 0 : 450);
+    return;
+  }
+  if(s.typ==='zeigwie'){
+    if(!s.id || !FORMI_WIE[s.id]){ gehirnSchritt(v, 'Such dir einen Rundgang aus', true); return; }
+    gehirnSchritt(v, 'Starte den Rundgang in der App …', true);
+    setTimeout(function(){ formiWieStarten(s.id); }, gehirnWenigBewegung() ? 0 : 450);
     return;
   }
   if(s.typ==='abfrage'){ v.spruch=gehirnSpruch('nachschauen'); gehirnSchritt(v, 'Schaue nach'+(s.studioName ? ' in '+s.studioName : ' in deinen Studios')+' …', true); return gehirnAbfrage(v); }
@@ -29029,6 +29088,256 @@ function formiZeiger(ziel){
     });
   });
 }
+/* ── „Zeig mir wie" (Runde 227, 23.10.2026) ──────────────────────────
+   Aus dem Betrieb (Runde 177, Etappe 2): Formi zeigt in der ECHTEN App,
+   wie etwas geht — nicht in einem Film, nicht in einem Text. Um das Ziel
+   liegt Formis eigener Ring (dieselbe Scheibe wie an der Kugel), der Rest
+   ist leicht abgedunkelt, und ein Mini-Formi fliegt von Ziel zu Ziel.
+
+   Die App bleibt dabei bedienbar: nur die Karte fängt Klicks, das Ziel
+   im Ring kann man sofort selbst antippen. Nichts wird geschrieben —
+   ein Rundgang zeigt, er erledigt nichts.
+
+   Ein Schritt: view (Seite), tab (Reiter im Team), auf (zugeklappte
+   Karte öffnen), ziel (Selektoren in REIHENFOLGE — der erste, der
+   wirklich gezeichnet ist, gilt), mit (zweites Element, das mit in den
+   Ring kommt, z. B. „Von" und „Bis"). */
+var FORMI_WIE={
+  aufgabe:{ name:'eine Aufgabe anlegen', an:function(){ return ansichtAn('todos'); },
+    woerter:/aufgabe|to-?do/, schritte:[
+    { view:'todos', ziel:['#todoNew'], titel:'Neue Aufgabe',
+      text:'Mit dem Plus oben legst du eine Aufgabe an: was zu tun ist, für welches Studio und bis wann.' },
+    { view:'todos', ziel:['#todoStudioWahl'], titel:'Welches Studio',
+      text:'Hier wählst du das Studio. Die Liste darunter zeigt dann nur dessen Aufgaben.' },
+    { view:'todos', ziel:['#todoArea .todo:not(.done) .check', '#todoArea .todo .check'], titel:'Abhaken',
+      text:'Erledigt? Ein Tipp auf das Kästchen. Wer abgehakt hat, steht danach an der Aufgabe.' }
+  ]},
+  abwesend:{ name:'Krank oder Urlaub melden', an:function(){ return ansichtAn('team'); },
+    woerter:/krank|urlaub|abwesen|fehl|frei (nehmen|haben)|freien tag/, schritte:[
+    { view:'team', tab:'abwesend', ziel:['[data-teamtab="abwesend"]'], titel:'Der Reiter „Abwesend"',
+      text:'Unter Team liegt alles, was zwischen zwei Schichten wichtig ist. Abwesenheiten stehen hier.' },
+    { view:'team', tab:'abwesend', auf:'[data-fold="abwmelden"]', ziel:['#abFrom'], mit:'#abTo', titel:'Von wann bis wann',
+      text:'Erster und letzter Tag. Für einen einzelnen Tag steht in beiden Feldern dasselbe Datum.' },
+    { view:'team', tab:'abwesend', auf:'[data-fold="abwmelden"]', ziel:['#abType'], titel:'Was ist es',
+      text:'Urlaub, krank oder frei.' },
+    { view:'team', tab:'abwesend', auf:'[data-fold="abwmelden"]', ziel:['#abAdd'], titel:'Melden',
+      text:'Ein Tipp auf „Melden", dann erscheint es im Schichtplan.' },
+    { ziel:['#formiKugel'], titel:'Oder sag es mir',
+      text:'Schreib mir einfach „Ich bin heute krank". Ich fülle es aus, und du tippst nur noch auf „Jetzt eintragen".' }
+  ]},
+  uebergabe:{ name:'eine Übergabe schreiben', an:function(){ return ansichtAn('team'); },
+    woerter:/übergabe|uebergabe|ubergabe|nächste schicht|naechste schicht/, schritte:[
+    { view:'team', tab:'uebergabe', ziel:['[data-teamtab="uebergabe"]'], titel:'Der Reiter „Übergabe"',
+      text:'Hier steht, was die nächste Schicht wissen muss. Ein Eintrag bleibt 7 Tage sichtbar.' },
+    { view:'team', tab:'uebergabe', ziel:['#hoNew'], mit:'#hoAdd', titel:'Schreiben und eintragen',
+      text:'Kurz hineinschreiben, was los war, und auf „+ Eintrag" tippen.' },
+    { ziel:['#formiKugel'], titel:'Oder sag es mir',
+      text:'Schreib mir „Übergabe: …", und ich lege den Eintrag für dich bereit.' }
+  ]},
+  schicht:{ name:'Schichten ansehen und abgeben', an:function(){ return ansichtAn('team'); },
+    woerter:/schicht|dienstplan|dienst|tausch/, schritte:[
+    { view:'team', tab:'schicht', ziel:['#shiftPrev'], mit:'#shiftNext', titel:'Woche blättern',
+      text:'Mit den Pfeilen gehst du eine Woche zurück oder vor.' },
+    { view:'team', tab:'schicht', ziel:['#wpMeine'], titel:'Nur meine',
+      text:'Ein Tipp, und der Plan zeigt nur deine eigenen Schichten.' },
+    { ziel:['#formiKugel'], titel:'Schicht abgeben',
+      text:'Du kannst an einem Tag nicht? Schreib mir „Kann jemand am Freitag für mich übernehmen?", dann frage ich im Team herum.' }
+  ]},
+  putzen:{ name:'im Putzplan abhaken', an:function(){ return ansichtAn('putzplan'); },
+    woerter:/putz|sauber|abhak|hake/, schritte:[
+    { view:'putzplan', ziel:['#ppStudio'], titel:'Welches Studio',
+      text:'Oben wählst du das Studio, dessen Putzplan du siehst.' },
+    { view:'putzplan', ziel:['#ppList .pp-item:not(.done) .check', '#ppList .pp-item .check'], titel:'Abhaken',
+      text:'Ein Tipp auf das Kästchen hakt ab. Wer abgehakt hat, steht am Punkt.' },
+    { ziel:['#formiKugel'], titel:'Oder sag es mir',
+      text:'Noch schneller: schreib mir „Klo ist sauber", dann hake ich es ab.' }
+  ]}
+};
+var FORMI_WIE_REIHE=['aufgabe','abwesend','uebergabe','schicht','putzen'];
+function formiWieListe(){ return FORMI_WIE_REIHE.filter(function(id){ return FORMI_WIE[id].an(); }); }
+/* Erkennen: „zeig mir, wie …", „erklär mir wie …" startet den Rundgang
+   gleich. Eine Wie-Frage („wie melde ich mich krank") ist eine Frage: sie
+   geht weiter an die KI und das Studio-Wissen (dort kann eine Regel des
+   Betriebs stehen), und die Antwort bekommt den Knopf zum Rundgang
+   (frage:true). Ohne passenden Rundgang bleibt alles wie bisher. */
+function formiWieErkennen(t){
+  var ausdruecklich=/^(formi[\s,]+)?(zeig\w*|erklär\w*|erklaer\w*)\s+(mir|uns)?[\s,]*(mal\s+|bitte\s+)*,?\s*wie\b/.test(t);
+  var wieFrage=/^(wie)\s+(kann|muss|soll|geht|funktioniert|mach\w*|leg\w*|meld\w*|trag\w*|hak\w*|schreib\w*|erstell\w*|tausch\w*|geb\w*|seh\w*|find\w*)\b/.test(t);
+  if(!ausdruecklich && !wieFrage) return null;
+  var liste=formiWieListe();
+  for(var i=0;i<liste.length;i++) if(FORMI_WIE[liste[i]].woerter.test(t)) return { typ:'zeigwie', id:liste[i], frage:!ausdruecklich };
+  return ausdruecklich && liste.length ? { typ:'zeigwie', id:'' } : null;
+}
+function gehirnZeigWieHTML(v, i){
+  var s=v.vorschlag, r=s.id && FORMI_WIE[s.id];
+  if(r){
+    return '<p class="ga-text">Ich zeig dir in der App, wie du '+esc(r.name)+' — '+r.schritte.length+' Schritte. Tipp jederzeit selbst mit, oder drück „Weiter".</p>'+
+      '<div class="ga-ziele"><button type="button" class="btn btn-ghost btn-sm" data-gwie="'+esc(s.id)+'">Nochmal zeigen ›</button></div>';
+  }
+  return '<p class="ga-text">Was soll ich dir zeigen?</p><div class="ga-ziele ga-wie" role="group" aria-label="Rundgänge">'+
+    formiWieListe().map(function(id){ return '<button type="button" class="btn btn-ghost btn-sm" data-gwie="'+id+'">Wie ich '+esc(FORMI_WIE[id].name)+'</button>'; }).join('')+'</div>';
+}
+var _fw={ an:false, id:'', i:0, schritte:[], vorher:null, alt:null, uhr:0, nach:0, ruhig:false, bild:0, gebunden:false };
+function formiWieStarten(id){
+  var r=FORMI_WIE[id]; if(!r || !r.an()) return false;
+  formiWieBinden();
+  if(_tour.an) tourEnde(false);
+  jarvisZu();
+  clearTimeout(_fw.uhr);
+  _fw.an=true; _fw.id=id; _fw.i=0; _fw.schritte=r.schritte.slice(); _fw.alt=null; _fw.vorher=document.activeElement;
+  var box=$('formiWie'); if(!box) return false;
+  var fig=box.querySelector('.fw-formi');
+  if(fig){ fig.className=formiFigurKlasse()+' fw-formi'; fig.innerHTML=formiFigurInnen(); }
+  box.hidden=false;
+  formiWieSchritt();
+  requestAnimationFrame(function(){ var w=$('fwWeiter'); if(w) try{ w.focus({ preventScroll:true }); }catch(e){} });
+  return true;
+}
+function formiWieSchritt(){
+  if(!_fw.an) return;
+  var sch=_fw.schritte[_fw.i]; if(!sch) return formiWieEnde(true);
+  var warten=60;
+  if(sch.view && currentView!==sch.view && ansichtAn(sch.view)){ showView(sch.view); warten=280; }
+  if(sch.tab){ var tb=document.querySelector('[data-teamtab="'+sch.tab+'"]'); if(tb && !tb.classList.contains('on')){ tb.click(); warten=Math.max(warten, 160); } }
+  if(sch.auf){ var k=document.querySelector(sch.auf); if(k && k.classList.contains('zu') && typeof foldSchalten==='function'){ foldSchalten(k); warten=Math.max(warten, 480); } }
+  /* ERST den Text, dann (im späteren Bild) messen — die Höhe der Karte
+     hängt am Text. */
+  $('fwZahl').textContent='Schritt '+(_fw.i+1)+' von '+_fw.schritte.length;
+  $('fwTitel').textContent=sch.titel;
+  $('fwText').textContent=sch.text;
+  $('fwWeiter').textContent=(_fw.i+1===_fw.schritte.length) ? 'Fertig' : 'Weiter';
+  clearTimeout(_fw.uhr); clearTimeout(_fw.nach); _fw.ruhig=false;
+  _fw.uhr=setTimeout(function(){ requestAnimationFrame(function(){
+    formiWieZeichnen(false);
+    /* Was sich nach dem Wechsel noch setzt (die Kugel rückt je Seite an
+       ihren Platz, eine Karte klappt auf), zieht der Ring einmal nach. */
+    _fw.nach=setTimeout(function(){ requestAnimationFrame(function(){ formiWieZeichnen(true); _fw.ruhig=true; }); }, 380);
+  }); }, warten);
+}
+function formiWieSichtbar(el){
+  if(!el || !el.getClientRects().length) return false;
+  var r=el.getBoundingClientRect(); return r.width>0 && r.height>0;
+}
+/* Wo der Scrollbereich des Ziels unten aufhört — am Handy endet er über
+   der Leiste, nicht am Bildrand. Gemessen: „Von" lag kompakt 25 px unter
+   dem Ende und war nicht antippbar. */
+function formiWieSichtUnten(el){
+  var u=innerHeight;
+  for(var e=el.parentElement; e && e!==document.body; e=e.parentElement){
+    var o=getComputedStyle(e).overflowY;
+    if(o==='auto' || o==='scroll' || o==='hidden') u=Math.min(u, e.getBoundingClientRect().bottom);
+  }
+  return u;
+}
+function formiWieZiel(sch){
+  for(var i=0;i<sch.ziel.length;i++){
+    var el=document.querySelector(sch.ziel[i]);
+    if(formiWieSichtbar(el)) return el;
+  }
+  return null;
+}
+/* Lesen, dann schreiben — alles in einem Bild. `still` beim Scrollen und
+   Drehen: dann nur nachziehen, ohne Flug, Ton und Glitch. */
+function formiWieZeichnen(still){
+  if(!_fw.an) return;
+  var sch=_fw.schritte[_fw.i]; if(!sch) return;
+  var el=formiWieZiel(sch);
+  if(!el){
+    /* Gibt es das Ziel hier nicht (Rolle, abgeschaltet, Kugel versteckt, Liste leer),
+       fällt der Schritt aus, statt ins Leere zu zeigen. */
+    if(still) return;
+    _fw.schritte.splice(_fw.i, 1);
+    return formiWieSchritt();
+  }
+  var r=el.getBoundingClientRect();
+  /* Was hinter dem Rand des Scrollbereichs (am Handy: die Leiste) oder
+     unter einem klebenden Seitenkopf steckt, wird in die Mitte geholt.
+     Kugel und Leiste selbst sind fest und bleiben, wo sie sind. Der
+     Treffertest sieht den Rundgang nicht — er fängt keine Klicks. */
+  var mitte=document.elementFromPoint(r.left+r.width/2, r.top+r.height/2);
+  var frei=!!mitte && (mitte===el || el.contains(mitte));
+  if(!still && (!frei || r.top<56 || r.bottom>innerHeight-56 || r.bottom>formiWieSichtUnten(el)-6)){
+    try{ el.scrollIntoView({ block:'center', behavior:'instant' }); }catch(e){ el.scrollIntoView(); }
+    r=el.getBoundingClientRect();
+  }
+  var mit=sch.mit && document.querySelector(sch.mit);
+  if(formiWieSichtbar(mit)){
+    var m=mit.getBoundingClientRect(), l=Math.min(r.left, m.left), o=Math.min(r.top, m.top);
+    r={ left:l, top:o, width:Math.max(r.right, m.right)-l, height:Math.max(r.bottom, m.bottom)-o };
+  }
+  var box=$('formiWie'), licht=box.querySelector('.fw-licht'), fig=box.querySelector('.fw-formi'), karte=box.querySelector('.fw-karte');
+  var hoehe=innerHeight, breite=innerWidth, luft=6, rand=8;
+  var kh=karte.offsetHeight||170, kw=karte.offsetWidth||320;
+  var x=Math.max(4, r.left-luft), y=Math.max(4, r.top-luft);
+  var w=Math.max(12, Math.min(r.width+luft*2, breite-x-4)), h=Math.max(12, Math.min(r.height+luft*2, hoehe-y-4));
+  /* Die Karte unter den Ring, wenn Platz ist, sonst darüber, sonst unten
+     an den Rand — sie liegt NIE auf dem Ziel. */
+  var abst=14, ky;
+  if(y+h+abst+kh < hoehe-rand) ky=y+h+abst;
+  else if(y-abst-kh > rand) ky=y-abst-kh;
+  else ky=(y+h/2 > hoehe/2) ? rand : hoehe-kh-rand;
+  var kx=Math.min(Math.max(rand*2, x+w/2-kw/2), breite-kw-rand*2);
+  if(breite<=kw+rand*4) kx=(breite-kw)/2;
+  /* Mini-Formi sitzt auf der Ecke des Rings, die zur Bildmitte zeigt. */
+  var fx=(x+w+22 < breite) ? x+w : x, fy=(y>30) ? y : y+h;
+  var T='translate('+Math.round(x)+'px,'+Math.round(y)+'px)';
+  var alt=_fw.alt;
+  licht.style.width=Math.round(w)+'px'; licht.style.height=Math.round(h)+'px'; licht.style.transform=T;
+  karte.style.transform='translate('+Math.round(kx)+'px,'+Math.round(ky)+'px)';
+  var FT='translate('+Math.round(fx)+'px,'+Math.round(fy)+'px)';
+  fig.style.transform=FT;
+  _fw.alt={ x:x, y:y, w:w, h:h, fx:fx, fy:fy };
+  if(still || gehirnWenigBewegung() || !licht.animate) return;
+  try{
+    if(alt){
+      /* FLIP: von der alten Lage in die neue — nur transform. */
+      licht.animate([{ transform:'translate('+Math.round(alt.x)+'px,'+Math.round(alt.y)+'px) scale('+(alt.w/w).toFixed(3)+','+(alt.h/h).toFixed(3)+')' }, { transform:T }],
+        { duration:360, easing:'cubic-bezier(.3,.7,.2,1)' });
+      fig.animate([{ transform:'translate('+Math.round(alt.fx)+'px,'+Math.round(alt.fy)+'px)' },
+        { transform:'translate('+Math.round((alt.fx+fx)/2)+'px,'+Math.round(Math.min(alt.fy, fy)-48)+'px)', offset:.45 }, { transform:FT }],
+        { duration:520, easing:'cubic-bezier(.3,.7,.2,1)' });
+    } else {
+      licht.animate([{ transform:T+' scale(1.12)', opacity:0 }, { transform:T, opacity:1 }], { duration:300, easing:'cubic-bezier(.3,.7,.2,1)' });
+      fig.animate([{ transform:FT+' scale(.4)', opacity:0 }, { transform:FT, opacity:1 }], { duration:360, easing:'cubic-bezier(.3,.7,.2,1)' });
+    }
+  }catch(e){}
+  jvTon('schritt');
+  formiGlitch(el);
+}
+function formiWieWeiter(){
+  if(!_fw.an) return;
+  if(_fw.i+1>=_fw.schritte.length) return formiWieEnde(true);
+  _fw.i++; tick(6); formiWieSchritt();
+}
+function formiWieEnde(fertig){
+  if(!_fw.an) return;
+  _fw.an=false; clearTimeout(_fw.uhr); clearTimeout(_fw.nach);
+  var box=$('formiWie'); if(box) box.hidden=true;
+  if(fertig){ toast('Fertig! Frag mich jederzeit: „Zeig mir, wie …"'); formiFuehlt('freut'); }
+  var zurueck=(_fw.vorher && document.contains(_fw.vorher) && formiWieSichtbar(_fw.vorher)) ? _fw.vorher : $('formiKugel');
+  if(zurueck && zurueck.focus) try{ zurueck.focus({ preventScroll:true }); }catch(e){}
+}
+function formiWieBinden(){
+  if(_fw.gebunden) return; _fw.gebunden=true;
+  var w=$('fwWeiter'), x=$('fwWeg');
+  if(w) w.addEventListener('click', formiWieWeiter);
+  if(x) x.addEventListener('click', function(){ formiWieEnde(false); });
+  document.addEventListener('keydown', function(e){
+    if(!_fw.an) return;
+    if(e.key==='Escape'){ e.preventDefault(); e.stopPropagation(); formiWieEnde(false); return; }
+    var inKarte=e.target && e.target.closest && e.target.closest('.fw-karte');
+    var tippt=e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName||'');
+    if((e.key==='ArrowRight' && !tippt) || (e.key==='Enter' && inKarte && e.target.id!=='fwWeg')){ e.preventDefault(); formiWieWeiter(); }
+  }, true);
+  function nachziehen(){ if(!_fw.an || _fw.bild) return; _fw.bild=requestAnimationFrame(function(){ _fw.bild=0; formiWieZeichnen(true); }); }
+  window.addEventListener('resize', nachziehen);
+  window.addEventListener('scroll', nachziehen, { passive:true, capture:true });
+}
+/* Für den Durchlauf (test-formi-zeigwie). Liest nur Formis eigenen Zustand. */
+window.__formiWie={ erkennen:function(t){ return formiWieErkennen(String(t||'').toLowerCase()); }, schnell:function(t){ return gehirnSchnell(t); },
+  starten:function(id){ showView('home'); return formiWieStarten(id); }, liste:formiWieListe,
+  ziel:function(){ var sch=_fw.an && _fw.schritte[_fw.i]; return sch ? formiWieZiel(sch) : null; },
+  stand:function(){ return { an:_fw.an, id:_fw.id, i:_fw.i, n:_fw.schritte.length, ruhig:!!_fw.ruhig }; } };
 /* ── Mini-Fenster (20.10.2026) ─────────────────────────────────────
    Was die Person ohnehin sehen darf, mit ihren Rechten gelesen — aus dem
    Speicher der App, wo er schon da ist; sonst einmal nachgeladen.
@@ -30021,7 +30330,7 @@ function gehirnSchritteHTML(v, laeuft){
   }).join('')+'</ol>';
 }
 var GEHIRN_ARTNAMEN={ mail:'Mail schreiben', erinnerung:'Erinnerung', suche:'Suche', abschluss:'Tagesabschluss', tausch:'Schicht abgeben', rueckfrage:'Rückfrage', navigation:'Fenster öffnen', abfrage:'nachschauen', abwesenheit:'Abwesenheit eintragen', uebergabe:'Übergabe schreiben',
-  abhaken:'abhaken', defekt:'Defekt melden', aufgabe:'Aufgabe anlegen', ankuendigung:'Ankündigung', idee:'Idee an die Leitung', frage:'Frage' };
+  abhaken:'abhaken', zeigwie:'Zeig mir wie', defekt:'Defekt melden', aufgabe:'Aufgabe anlegen', ankuendigung:'Ankündigung', idee:'Idee an die Leitung', frage:'Frage' };
 function gehirnArtName(s){ return GEHIRN_ARTNAMEN[(s&&s.typ)||''] || 'Auftrag'; }
 function gehirnSichtbar(){ return currentView==='gehirn' || jarvisOffen(); }
 
@@ -30942,6 +31251,12 @@ function gehirnVerlaufKurz(){
 function gehirnSchnell(text){
   var roh=String(text||'').trim(), t=roh.toLowerCase(), w=gehirnWoerter(t);
   if(!w.length || roh.length>160) return null;
+  /* Runde 227: „zeig mir, wie …" vor allem anderen — sonst nimmt „zeig"
+     als Verb den Weg zum Öffnen. Eine Wie-Frage mit passendem Rundgang
+     („wie melde ich mich krank") geht an die KI, die Antwort trägt dann
+     „Zeig's mir in der App" — vorher landete sie in der Krankmeldung. */
+  var zw=formiWieErkennen(t);
+  if(zw) return zw.frage ? null : zw;
   var sk=gehirnStudioIn(t), meine=gehirnMeineKeys(), std=sk||gehirnMeinStudio();
   var mehrere=gehirnAlleMeineKeys().length>1;
   function mitStudio(o, k){ o.studioKey=k||''; o.studioName=k ? studioName(k) : ''; return o; }
