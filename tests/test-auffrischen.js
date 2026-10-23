@@ -322,6 +322,38 @@ async function startZeilen(p) {
   pruefe('ohne Skriptfehler (Code-Weg)', !t._fehler.length, t._fehler.join(' | '));
   await t.close();
 
+  console.log('\n── Erinnerung aufs Handy: der Schalter (Runde 216) ──');
+  /* Aus dem Betrieb, 23.10.2026: „jo mach weitwr" — auf „Push-Erinnerungen
+     für Leute mit Zugang". Den Versand prüft tests/rules/funktionen.test.js
+     (ERINNERN); hier der Schalter, mit dem man ihn abstellt. */
+  const e = await oeffne(b, 390, 844);
+  await e.click('#uAvatar'); await e.waitForTimeout(400);
+  await e.evaluate(() => document.querySelector('[data-pmtab="melden"]').click()); await e.waitForTimeout(400);
+  const schVorher = await e.evaluate(() => {
+    const z = document.querySelector('#notifyOpts [data-nk="schulung"]');
+    return z ? { da: true, an: z.querySelector('.sw').classList.contains('on'), text: z.textContent } : { da: false };
+  });
+  pruefe('unter Meldungen: „Kurz auffrischen", von Haus aus an', schVorher.da && schVorher.an && /höchstens alle drei Tage/.test(schVorher.text), JSON.stringify(schVorher));
+  await e.click('#notifyOpts [data-nk="schulung"]'); await e.waitForTimeout(300);
+  const schNachher = await e.evaluate(() => ({
+    an: document.querySelector('#notifyOpts [data-nk="schulung"] .sw').classList.contains('on'),
+    gespeichert: (JSON.parse(localStorage.getItem('kf_prefs') || '{}').notify || {}).schulung
+  }));
+  pruefe('ein Tipp schaltet ab — und das Gerät merkt es sich (geht mit an den Geräte-Eintrag)', !schNachher.an && schNachher.gespeichert === false, JSON.stringify(schNachher));
+  await e.click('#notifyOpts [data-nk="schulung"]'); await e.waitForTimeout(300);
+  const wieder = await e.evaluate(() => (JSON.parse(localStorage.getItem('kf_prefs') || '{}').notify || {}).schulung);
+  pruefe('GEGENPROBE ein zweiter Tipp schaltet wieder an', wieder === true, String(wieder));
+  const schTreffer = await e.evaluate(async (SRC) => {
+    const T = eval('(' + SRC + ')');
+    const el = document.querySelector('#notifyOpts [data-nk="schulung"]');
+    el.scrollIntoView({ block: 'center' });
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    return T(el);
+  }, TREFFER.toString());
+  pruefe('die Zeile trifft ≥ 44 hoch', schTreffer.h >= 44 && schTreffer.w >= 44, JSON.stringify(schTreffer));
+  pruefe('ohne Skriptfehler (Schalter)', !e._fehler.length, e._fehler.join(' | '));
+  await e.close();
+
   await b.close();
   console.log('\n' + (schlecht
     ? '✗ ' + schlecht + ' Fehler, ' + gut + ' in Ordnung'
