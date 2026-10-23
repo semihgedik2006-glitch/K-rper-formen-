@@ -2,7 +2,7 @@
    - Caching: HTML immer frisch (network-first), statische Dateien offline-fähig
    - Push: Firebase Cloud Messaging im Hintergrund
    Bei Code-Änderungen VERSION hochzählen. */
-const VERSION = 'v32';
+const VERSION = 'v33';
 const CACHE = 'studiochat-' + VERSION;
 /* loesungen-basis.js liegt mit im Vorrat: die 115 Einträge sind genau
    das, was jemand im Studio braucht, wenn das WLAN gerade der Grund
@@ -29,13 +29,29 @@ const messaging = firebase.messaging();
    Der Rueckfall auf payload.notification bleibt: waehrend des Ausrollens
    liegen noch Nachrichten alter Form unterwegs, und eine PWA aktualisiert
    ihren Service Worker nicht in derselben Sekunde. */
+/* Nachts lautlos (Runde 225, Studienlage Folgerung 9: „Push … mit
+   Ruhezeiten"). Die Meldung kommt weiter an – nur ohne Ton und Vibration
+   zwischen 22 und 6 Uhr. Ganz weglassen geht nicht: ein Push ohne
+   sichtbare Meldung beantwortet Chrome mit einer eigenen, nichtssagenden.
+   Die Wahl legt die App in den Vorrat EINST (localStorage gibt es hier
+   nicht); fehlt sie, gilt „an". */
+const EINST = 'kf-einst';
+function nachtLautlos(einst, jetzt) {
+  if (einst && einst.nachtLautlos === false) return false;
+  const h = jetzt.getHours();
+  return h >= 22 || h < 6;
+}
+function einstLesen() {
+  return caches.open(EINST).then(function (c) { return c.match('einst.json'); })
+    .then(function (r) { return r ? r.json() : {}; }).catch(function () { return {}; });
+}
 messaging.onBackgroundMessage(function (payload) {
   const d = (payload && payload.data) || {};
   const n = (payload && payload.notification) || {};
   const titel = d.title || n.title || 'StudioChat';
   const text = d.body || n.body || '';
-  self.registration.showNotification(titel, {
-    body: text, icon: 'icon.svg', badge: 'icon.svg',
+  return einstLesen().then(function (einst) { return self.registration.showNotification(titel, {
+    body: text, icon: 'icon.svg', badge: 'icon.svg', silent: nachtLautlos(einst, new Date()),
     /* Die Marke haengt am INHALT, nicht an der Uhrzeit.
 
        Vorher stand hier Date.now() — damit war jede Marke einmalig und
@@ -44,7 +60,7 @@ messaging.onBackgroundMessage(function (payload) {
        Meldung die vorige, egal woher die zweite kam. Verschiedene
        Nachrichten stossen sich dabei nicht: sie haben andere Marken. */
     tag: 'kf-' + marke(titel + '|' + text)
-  });
+  }); });
 });
 /* Kurze, stabile Zahl aus einer Zeichenkette. Kein Sicherheitszweck —
    sie muss nur fuer denselben Text immer gleich herauskommen. */
@@ -77,7 +93,7 @@ self.addEventListener('install', function (e) {
 });
 self.addEventListener('activate', function (e) {
   e.waitUntil(caches.keys().then(function (ks) {
-    return Promise.all(ks.filter(function (k) { return k !== CACHE; }).map(function (k) { return caches.delete(k); }));
+    return Promise.all(ks.filter(function (k) { return k !== CACHE && k !== EINST; }).map(function (k) { return caches.delete(k); }));
   }).then(function () { return self.clients.claim(); }));
 });
 self.addEventListener('message', function (e) { if (e.data === 'SKIP_WAITING') self.skipWaiting(); });

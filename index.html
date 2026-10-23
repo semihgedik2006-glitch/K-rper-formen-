@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Xzi/SJ/yeNsvD7dkQRxvqBoTMjV/jkNWhk4cRhyKMxo='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-LCfxwVyhwRSvVgfNUbiD1PlZOQhszZ61F9wsYxnIM0M='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -13915,6 +13915,21 @@ function applyPrefs(){
   });
 })();
 
+/* Was der Service Worker von den Einstellungen wissen muss (Runde 225):
+   er kommt an localStorage nicht heran, also liegt es im Vorrat
+   „kf-einst". Beim Start und bei jeder Änderung neu geschrieben – so ist
+   es auch nach einem Update des Service Workers wieder da. */
+function einstNachSw(){
+  if(!('caches' in window)) return;
+  try{
+    caches.open('kf-einst').then(function(c){
+      return c.put('einst.json', new Response(JSON.stringify({ nachtLautlos: PREFS.nachtLautlos!==false }),
+        { headers:{ 'Content-Type':'application/json' } }));
+    }).catch(function(){});
+  }catch(e){}
+}
+einstNachSw();
+
 /* ── Service Worker (App-Start, Offline, Push) – holt HTML immer frisch ── */
 if('serviceWorker' in navigator && location.protocol!=='file:'){
   window.addEventListener('load',function(){
@@ -21590,6 +21605,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-23-nachts-lautlos', datum:'23.10.2026', titel:'Nachts lautlos', wo:'profil', punkte:[
+    'Meldungen aufs Handy kommen zwischen 22 und 6 Uhr ohne Ton und Vibration. Sie sind trotzdem da, wenn du morgens draufschaust.',
+    'Wer nachts doch einen Ton möchte: Profil → Meldungen → „Nachts lautlos" ausschalten. Die Wahl gilt für dieses Gerät.'
+  ]},
   { id:'2026-10-23-was-ist-neu-zeigen', datum:'23.10.2026', titel:'„Was ist neu": jeder Eintrag führt hin', wo:'home', punkte:[
     'Ein Eintrag („Soll je Wochentag") stand doppelt in der Liste, einmal davon leer. Das ist bereinigt.',
     'Bei sieben Einträgen fehlte der Knopf „Zeigen ›" – jetzt führt jeder Eintrag dorthin, wo die Neuerung steht, auch ins Profil.'
@@ -50022,7 +50041,19 @@ function buildNotifyOptions(){
     return '<label class="sw-row" data-nk="'+o.id+'">'+
       '<span class="sw-txt"><b>'+esc(o.name)+'</b><span>'+esc(o.hint)+'</span></span>'+
       '<span class="sw'+(an?' on':'')+'"><i></i></span></label>';
-  }).join('');
+  }).join('')+
+  /* Runde 225: keine Art von Meldung, sondern WANN sie laut sein darf –
+     deshalb eigene Zeile, nicht in PREFS.notify (das geht an den Server). */
+  '<label class="sw-row" data-nacht="1">'+
+    '<span class="sw-txt"><b>Nachts lautlos</b><span>Zwischen 22 und 6 Uhr ohne Ton und Vibration – die Meldung kommt trotzdem an</span></span>'+
+    '<span class="sw'+(PREFS.nachtLautlos!==false?' on':'')+'"><i></i></span></label>';
+  var nacht=box.querySelector('[data-nacht]');
+  if(nacht) nacht.addEventListener('click', function(e){
+    e.preventDefault();
+    PREFS.nachtLautlos = PREFS.nachtLautlos===false;
+    nacht.querySelector('.sw').classList.toggle('on', PREFS.nachtLautlos);
+    savePrefs(); einstNachSw(); tick(8);
+  });
   box.querySelectorAll('[data-nk]').forEach(function(el){
     el.addEventListener('click',function(e){
       e.preventDefault();
