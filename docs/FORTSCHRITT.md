@@ -22380,3 +22380,123 @@ Pause; die Schwellen in der App sind unverändert.
 **Nicht getestet:** Safari und ein echtes iPhone (dort wirkt die
 Unschärfe über die Grafikkarte; Kontrast und Lesbarkeit sind hier nur in
 Chromium gemessen).
+
+## Runde 255 — Wischen auf Listeneinträgen, wie in Mail (23.10.2026)
+
+Elfter Bauschritt aus dem Plan „Studio Chat wie von Apple“, mit der
+Richtlinie dazu: „Wischaktionen werden selten entdeckt (NN/g) — Wischen
+nur als Abkürzung, jede Aktion auch sichtbar.“
+
+**Was schon da war.** Nach rechts wischen (> 80 px) hakte Aufgaben und
+Putzplan-Zeilen ab (`bindSwipe`). Ob man weit genug war, sah man erst
+nach dem Loslassen.
+
+**Geändert.**
+- Nach rechts: über der Schwelle wächst der Haken (Klasse `swipe-ueber`)
+  und es tickt einmal — man sieht vor dem Loslassen, dass es abhakt.
+- Nach links: „Mehr“ und — wer darf — „Löschen“ schieben sich von rechts
+  mit herein und bleiben stehen (über die Hälfte des Felds oder schnell
+  geschnippt). Die Knöpfe drücken genau die vorhandenen (⋯ und
+  Papierkorb); „Löschen“ fragt also weiter nach. Ein Durchwischen ohne
+  Tipp löscht nichts: was nicht umkehrbar ist, braucht einen Tipp.
+- Ein Tipp auf die offene Zeile schliesst nur (öffnet nicht noch die
+  Aufgabe), ein Tipp woanders oder Scrollen schliesst, eine zweite Zeile
+  zu öffnen schliesst die erste.
+- Das Aktionsfeld entsteht erst beim ersten Wischen: die Liste zeichnet
+  sich oft neu, Hunderte unsichtbarer Knöpfe wären Arbeit für nichts
+  (und Zähler in den Knopf-Tests).
+- „Löschen“ auf `--danger` mit dunkler Schrift (5,7 : 1); weiss läge
+  darunter.
+- Pausierte Putzplan-Zeilen: nach links ja (Mehr, Löschen), abhaken nein.
+
+**Sichtbarer Weg:** jede Zeile trägt ⋯; am Handy stehen Bearbeiten und
+Löschen seit Runde 187 dort drin (der Test prüft, dass „Löschen“ im
+Blatt steht).
+
+**Test:** neu `tests/test-wischen.js`, 52 grün, mit echten
+Touch-Ereignissen (CDP) bei 320 / 390 / 430 / 820 an Aufgaben und
+Putzplan, Hit-Test der Knöpfe in normal und kompakt (76 px breit, so hoch
+wie die Zeile), Rechner: Maus-Ziehen öffnet nichts. Bei 320 deckt die
+Formi-Kugel die Mitte von „Löschen“ an einer hohen Zeile — der Test tippt
+oben in den Knopf; das ist der Platz der Kugel, kein Fehler des Felds.
+
+**Nicht getestet:** echtes iPhone mit Finger.
+
+## Runde 256 — Ziehen zum Aktualisieren (23.10.2026)
+
+Zwölfter Bauschritt aus dem Plan.
+
+**Was „aktualisieren“ hier ehrlich heisst.** Die Listen sind live mit
+der Datenbank verbunden; es gibt nichts nachzuladen, was nicht schon da
+wäre. Ein Zug nach unten tut darum zweierlei, und nur das:
+1. nach einer neuen Version der App suchen (`reg.update()`, sonst
+   höchstens einmal je Minute beim Zurückkommen) — findet er eine, lädt
+   die Seite wie bei jedem Update einmal neu;
+2. sagen, wie es steht: „Aktuell – Änderungen kommen live an“ oder
+   „Keine Verbindung – du siehst den letzten Stand“.
+Etwas anderes zu behaupten („12 neue Einträge geladen“) wäre erfunden.
+
+**Wie es sich anfühlt.** Nur ganz oben in einer Liste, nur senkrecht,
+nur mit dem Finger. Die Liste rückt den halben Weg mit (höchstens
+110 px), darüber füllt sich ein Kreis in der Bereichsfarbe; bei 72 px ist
+er voll und es tickt. Losgelassen hält die Liste bei 48 px, der Kreis
+dreht sich mindestens 0,6 s (eine Antwort nach 20 ms sähe aus, als wäre
+nichts passiert), dann federt sie zurück und die Rückmeldung kommt.
+Gemessen wird einmal je Zug, nicht je Bewegung. Im Chat nicht: dort
+heisst Ziehen „ältere Nachrichten“.
+
+**Test:** neu `tests/test-ziehen-aktualisieren.js`, 39 grün (320 / 390 /
+430 / 820 und am Rechner): kurzer Zug federt zurück und sucht nicht;
+weiter Zug füllt den Kreis, dreht, sucht genau einmal, meldet „Aktuell“;
+gescrollt, waagerecht und im Chat nichts; ohne Verbindung die ehrliche
+Meldung und keine Suche. Der Service Worker ist im Test gesperrt —
+gezählt wird der Aufruf von `update()`, nicht, ob ein echtes Update
+gefunden würde.
+
+## Runde 257 — Schriftgrösse wie am iPhone (23.10.2026)
+
+Dreizehnter Bauschritt aus dem Plan: „`font: -apple-system-body` folgt
+in Safari der eingestellten Textgrösse des iPhones.“
+
+**Wie.** Ein unsichtbares Probestück mit `font:-apple-system-body`; seine
+Grösse im Verhältnis zu 17 px (Standard am iPhone) wird `--fs`. Bei der
+Standardgrösse ändert sich also nichts — nur wer am iPhone grössere oder
+kleinere Schrift eingestellt hat, bekommt sie auch hier. Beim
+Zurückkommen aus dem Hintergrund wird neu gemessen.
+
+**Grenzen, mit Grund.**
+- Nur auf Touch-Geräten: Safari am Mac liefert 13 px (die Mac-Grösse) —
+  das hiesse dort „kleiner“, ohne dass jemand etwas eingestellt hat.
+- 90 bis 125 %: genau die Spanne der festen Stufen (Klein bis Sehr
+  gross), auf die die Ansichten geprüft sind. Die Bedienungshilfe-Grössen
+  des iPhones gehen bis 300 % und würden die Ansichten sprengen.
+- Chrome kennt `-apple-system-body` nicht: dort gibt es die Wahl nicht.
+
+**Voreinstellung.** Wo die App es lesen kann, ist „Wie am Gerät“ einmal
+je Gerät die Voreinstellung (`fs2`) — wer „Normal“ hatte, sieht bei
+Standardgrösse keinen Unterschied; Klein, Gross, Sehr gross bleiben.
+„Zurücksetzen“ führt dorthin zurück. Andere benutzen die App parallel:
+an einem iPhone mit Standardschrift ändert sich nichts, und das ist der
+häufigste Fall.
+
+**Test:** neu `tests/test-schrift-geraet.js`, 19 grün. Weil Chromium
+`-apple-system-body` nicht kennt, ist Safari nachgestellt (CSS.supports
+und die Grösse des Probestücks) — geprüft ist, was die App aus dem Wert
+macht, **nicht**, was ein echtes iPhone liefert. 17 → 100 %, 21 →
+123,5 %, 14 → 90 %, 40 → 125 %; eigene Wahl bleibt; neu messen beim
+Zurückkommen; ohne Unterstützung oder mit Maus keine neue Wahl; fünf
+Wahlen ≥ 44 × 44 (normal und kompakt); bei 125 % ragt bei 320 px auf
+Startseite und Studio nichts seitlich hinaus.
+
+**Nicht getestet:** Safari am iPhone. Das ist der eine Punkt dieser
+Runde, den nur ein Blick am echten Gerät bestätigt.
+
+**Gefunden nebenbei (Blätter, Runde 253):** test-blaetter wurde im
+Gesamtdurchlauf wieder rot — „schnell 80 px geschnippt → zu" bei 430 px —,
+allein grün. Der Grund lag diesmal in der App: das Tempo des Zugs wurde
+mit `performance.now()` beim Abarbeiten gemessen. Ist das Gerät
+beschäftigt, kommen die Bewegungen gebündelt an, und ein Schnippen sah aus
+wie ein langsamer Zug. Jetzt zählt `e.timeStamp` (wann der Finger dort
+war), und ein Zug unter 250 ms zählt mit seinem mittleren Tempo, wenn das
+höher ist. Das hilft auch auf einem langsamen Handy, nicht nur im Test.
+Die Schwellen sind unverändert.

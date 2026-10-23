@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-XW3H12foMcaSRUY9yHwzO+5WL0R6CfID8goqtJ4YlMs='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-iNE/XhtYY5PPa/ZoT+ocit6AtK2nZhZlJ9s6UI8x+n8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -6033,6 +6033,28 @@ body > .msg-sheet.show ~ .formi-kugel{visibility:hidden}
 .swipe-body{position:relative;display:flex;gap:var(--s12);align-items:flex-start;width:100%;
   transition:transform .38s var(--spring)}
 .swiping .swipe-body{transition:none}
+/* Runde 255: Über der Schwelle wächst der Haken — man sieht, dass
+   Loslassen jetzt abhakt, bevor man loslässt (wie in Mail). */
+.swipe-hint{transition:transform .2s var(--spring)}
+.swipe-ueber .swipe-hint{transform:scale(1.25);transform-origin:var(--s24) 50%}
+/* ── Nach links wischen: die Aktionen der Zeile (Runde 255) ──
+   Wie in Mail: die Knöpfe schieben sich von rechts mit herein und
+   bleiben stehen, bis man woanders tippt. Jede Aktion ist auch ohne
+   Wischen da (⋯ und Papierkorb an der Zeile) — Wischen ist nur der
+   kürzere Weg (Plan: „Wischen nur als Abkürzung, jede Aktion auch
+   sichtbar"). Gebaut wird das Feld erst beim ersten Wischen. */
+.swipe-akt{position:absolute;top:0;right:0;bottom:0;z-index:1;display:flex;visibility:hidden;
+  transform:translateX(100%);transition:transform .38s var(--spring)}
+.swipe-links .swipe-akt,.swipe-offen .swipe-akt{visibility:visible}
+.swiping .swipe-akt{transition:none}
+.swipe-k{width:76px;min-height:44px;border:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:var(--s4);font:inherit;font-size:var(--t-2xs);font-weight:600;cursor:pointer;
+  background:var(--bg-3);color:var(--text)}
+.swipe-k svg{width:20px;height:20px}
+/* --danger ist eine Fläche mit dunkler Schrift (siehe :root) —
+   weiss darauf läge unter 4,5 : 1. */
+.swipe-k.sk-weg{background:var(--danger);color:#2A0610}
+.swipe-k:active{filter:brightness(.88)}
 
 /* ── Schnellfilter-Chips (Aufgaben) ── */
 .chip-row{display:flex;gap:var(--s8);flex-wrap:wrap}
@@ -9956,6 +9978,28 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
     body.neu:not([data-glas="deckend"]) .mobnav{background:var(--bg);-webkit-backdrop-filter:none;backdrop-filter:none}
     body.neu.light:not([data-glas="deckend"]) .mobnav{background:var(--bg-2)}
   }
+}
+
+/* ══ ZIEHEN ZUM AKTUALISIEREN (Runde 256) ══════════════════════════════
+   Oben in einer Liste nach unten ziehen, wie in Mail. Die Liste rückt
+   mit dem Finger nach (halber Weg), darüber füllt sich ein Kreis; über
+   der Schwelle ist er voll. Loslassen: kurz dreht er sich, dann eine
+   Rückmeldung. Gebaut wird das Zeichen erst beim ersten Ziehen. */
+.ptr{position:fixed;left:50%;top:0;z-index:25;width:32px;height:32px;margin-left:-16px;
+  pointer-events:none;opacity:0;color:var(--ber, var(--accent));
+  transform:translateY(var(--ptr-y, 0px))}
+.ptr svg{width:100%;height:100%;display:block;transform:rotate(-90deg)}
+.ptr circle{fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;
+  stroke-dasharray:100;stroke-dashoffset:calc(100 - var(--ptr-p, 0) * 100)}
+.ptr.voll circle{stroke-width:3}
+.ptr.laeuft svg{animation:ptrDreh .8s linear infinite}
+.ptr.laeuft circle{stroke-dashoffset:30}
+@keyframes ptrDreh{to{transform:rotate(270deg)}}
+.ptr-zieht{transition:none}
+.ptr-zurueck{transition:transform .38s var(--feder-weich, var(--spring))}
+@media (prefers-reduced-motion:reduce){
+  .ptr.laeuft svg{animation:none}
+  .ptr-zurueck{transition:none}
 }
 </style>
 </head>
@@ -14792,6 +14836,16 @@ function loadPrefs(){
        Voreinstellung, keine Wahl. Wer ausdrücklich Hell oder Dunkel
        gewählt hat, behält es. Einmal je Gerät (stil2), danach gilt, was
        jemand unter Profil → Aussehen einstellt. */
+    /* Runde 257: Wo die App die Textgrösse des iPhones lesen kann, ist
+       „Wie am Gerät" die Voreinstellung — einmal je Gerät (fs2). Wer
+       „Normal" hatte, sieht bei der Standardgrösse des iPhones keinen
+       Unterschied; wer Klein, Gross oder Sehr gross gewählt hat, behält
+       das. */
+    if(!PREFS.fs2){
+      if(geraeteSchriftKann() && String(PREFS.fs||'100')==='100') PREFS.fs='geraet';
+      PREFS.fs2=true;
+      if(raw) savePrefs();
+    }
     if(!PREFS.stil2){
       if(PREFS.theme==='auto') PREFS.theme='formi';
       /* Derselbe Gedanke beim Hintergrund: 'keiner' war die alte
@@ -14805,6 +14859,51 @@ function loadPrefs(){
 function savePrefs(){
   try{ localStorage.setItem('kf_prefs', JSON.stringify(PREFS)); }catch(e){}
 }
+/* ── Schriftgrösse wie am Gerät (Runde 257) ──
+   Plan „Studio Chat wie von Apple", Schritt 11. Safari kennt
+   `font: -apple-system-body`: das ist die Textgrösse, die am iPhone unter
+   Einstellungen → Anzeige & Helligkeit → Textgrösse eingestellt ist
+   (Standard 17 px). Gemessen wird sie an einem unsichtbaren Probestück;
+   die App rechnet sie ins Verhältnis zu 17 px — bei der Standardgrösse
+   des iPhones ändert sich also NICHTS, nur wer am iPhone grössere oder
+   kleinere Schrift eingestellt hat, bekommt sie auch hier.
+
+   Nur auf Touch-Geräten: Safari am Mac liefert für -apple-system-body
+   13 px (die Mac-Grösse) — das hiesse dort „kleiner", obwohl niemand
+   etwas eingestellt hat.
+
+   Begrenzt auf 90 bis 125 % — genau die Spanne, die es als feste Stufen
+   schon gibt (Klein bis Sehr gross) und auf die alle Ansichten geprüft
+   sind. Die ganz grossen Bedienungshilfe-Grössen des iPhones (bis 300 %)
+   würden die Ansichten sprengen; dafür bleibt der Zoom des Browsers.
+   Chrome kennt -apple-system-body nicht: dort gibt es die Wahl nicht. */
+function geraeteSchriftKann(){
+  try{
+    return !!(window.CSS && CSS.supports && CSS.supports('font', '-apple-system-body')) &&
+      !!(window.matchMedia && matchMedia('(pointer:coarse)').matches);
+  }catch(e){ return false; }
+}
+function geraeteSchriftFaktor(){
+  if(!geraeteSchriftKann() || !document.body) return 0;
+  var probe=document.createElement('span');
+  probe.className='fs-probe'; probe.setAttribute('aria-hidden','true'); probe.textContent='Aa';
+  probe.style.cssText='position:absolute;left:-9999px;top:0;visibility:hidden;font:-apple-system-body';
+  document.body.appendChild(probe);
+  var px=parseFloat(getComputedStyle(probe).fontSize)||17;
+  probe.remove();
+  return Math.max(.9, Math.min(1.25, px/17));
+}
+function fsAnwenden(){
+  var fs=String(PREFS.fs||'100'), wert=fs+'%';
+  if(fs==='geraet'){ var f=geraeteSchriftFaktor(); wert = f ? (Math.round(f*1000)/10)+'%' : '100%'; }
+  document.documentElement.style.setProperty('--fs', wert);
+}
+/* Wer die Textgrösse am iPhone ändert, während die App im Hintergrund
+   liegt, sieht sie beim Zurückkommen. */
+document.addEventListener('visibilitychange', function(){
+  if(!document.hidden && String(PREFS.fs)==='geraet') fsAnwenden();
+});
+
 /* „auto" folgt der Systemeinstellung des Geräts */
 function systemPrefersLight(){
   return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
@@ -14823,7 +14922,7 @@ function applyPrefs(){
      Modus einen eigenen Wert. Dasselbe gilt für die Firmenfarbe — sie
      läuft seit dem 21.9. durch dieselbe Funktion. */
   akzentAnwenden();
-  document.documentElement.style.setProperty('--fs', (PREFS.fs||100)+'%');
+  fsAnwenden();
   document.body.setAttribute('data-dichte', PREFS.dichte||'normal');
   document.body.setAttribute('data-glas', PREFS.glas==='deckend' ? 'deckend' : 'glas');
   /* Der Hintergrund der ganzen App, nicht nur des Chats. */
@@ -19245,14 +19344,19 @@ function blattZiehenBinden(wrap, karte, g){
   g.addEventListener('pointerdown', function(e){
     if(!g.getClientRects().length || (e.button && e.button !== 0)) return;
     karte.getAnimations().forEach(function(a){ if(a.effect && a.effect.target === karte) a.finish(); });
-    z = { y0:e.clientY, y:e.clientY, t:performance.now(), v:0, dy:0, h:karte.getBoundingClientRect().height,
+    /* Zeit aus dem Ereignis (e.timeStamp: wann der Finger dort war),
+       nicht aus der Uhr beim Abarbeiten. Ist das Gerät gerade beschäftigt,
+       kommen die Bewegungen gebündelt an — mit performance.now() sah ein
+       Schnippen dann aus wie ein langsamer Zug (test-blaetter unter Last,
+       Runde 258). */
+    z = { y0:e.clientY, y:e.clientY, t0:e.timeStamp, t:e.timeStamp, v:0, dy:0, h:karte.getBoundingClientRect().height,
           halb: wrap.getAttribute('data-rast') === 'halb' };
     try{ g.setPointerCapture(e.pointerId); }catch(x){}
     e.preventDefault();
   });
   g.addEventListener('pointermove', function(e){
     if(!z) return;
-    var jetzt = performance.now(), dt = Math.max(1, jetzt - z.t);
+    var jetzt = e.timeStamp, dt = Math.max(1, jetzt - z.t);
     z.v = .7 * ((e.clientY - z.y) / dt) + .3 * z.v; z.y = e.clientY; z.t = jetzt;
     var dy = e.clientY - z.y0;
     /* Nach oben gibt es nur aus der halben Höhe Weg; sonst federt es
@@ -19262,7 +19366,12 @@ function blattZiehenBinden(wrap, karte, g){
   });
   function los(){
     if(!z) return;
-    var dy = z.dy, v = z.v, h = z.h, halb = z.halb; z = null;
+    var dy = z.dy, v = z.v, h = z.h, halb = z.halb;
+    /* Ein kurzer Zug (unter 250 ms) zählt mit seinem mittleren Tempo,
+       wenn das höher ist als das zuletzt gemessene. */
+    var dauer = z.t - z.t0;
+    if(dauer > 0 && dauer < 250){ var mittel = dy / dauer; if(Math.abs(mittel) > Math.abs(v)) v = mittel; }
+    z = null;
     var hoch = karte.scrollHeight > innerHeight * .62 || halb;
     if(halb){
       if(dy < -50 || v < -.45) return blattRast(wrap, karte, 'voll');
@@ -22598,6 +22707,18 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-23-schrift-wie-iphone', datum:'23.10.2026', titel:'Schriftgröße wie am iPhone', wo:'home', punkte:[
+    'Hast du am iPhone eine größere (oder kleinere) Schrift eingestellt, übernimmt die App sie jetzt – bis zur Stufe „Sehr groß".',
+    'Bei der normalen iPhone-Schrift ändert sich nichts. Unter Profil → Aussehen → Schriftgröße kannst du weiter eine feste Größe wählen.'
+  ]},
+  { id:'2026-10-23-ziehen-aktualisieren', datum:'23.10.2026', titel:'Oben nach unten ziehen zum Aktualisieren', wo:'todos', punkte:[
+    'Ganz oben in einer Liste nach unten ziehen, bis der Kreis voll ist, und loslassen: Die App sucht nach einer neuen Version und sagt dir, ob alles aktuell ist.',
+    'Die Listen selbst sind wie bisher immer live – Änderungen der anderen kommen auch ohne Ziehen an.'
+  ]},
+  { id:'2026-10-23-wischen', datum:'23.10.2026', titel:'Aufgaben wischen wie in Mail', wo:'todos', punkte:[
+    'Eine Aufgabe nach rechts wischen hakt sie ab – wenn der Haken größer wird, reicht Loslassen.',
+    'Nach links wischen zeigt „Mehr" und „Löschen". Das geht auch im Putzplan. Alles bleibt wie bisher auch über „⋯" erreichbar.'
+  ]},
   { id:'2026-10-23-glas-leiste', datum:'23.10.2026', titel:'Die untere Leiste am Handy ist aus Glas', wo:'todos', punkte:[
     'Beim Scrollen läuft die Liste jetzt unter der unteren Leiste weiter und schimmert weich verschwommen durch – wie bei den Apps auf dem iPhone. Ganz unten steht der letzte Eintrag wie bisher frei.',
     'Lieber ohne Durchschimmern? Unter Profil → Aussehen → „Untere Leiste am Handy" auf „Deckend" stellen.'
@@ -24008,6 +24129,100 @@ document.addEventListener('keydown', function(e){
     }
   }, {passive:true});
   document.addEventListener('touchend', function(){ x0=null; }, {passive:true});
+})();
+
+/* ── Ziehen zum Aktualisieren (Runde 256) ──
+   Plan „Studio Chat wie von Apple", Schritt 10. Was „aktualisieren" hier
+   ehrlich heisst: die Listen sind ohnehin live mit der Datenbank
+   verbunden — es gibt nichts nachzuladen, was nicht schon da wäre.
+   Was ein Zug nach unten wirklich tut:
+    1. nach einer neuen Version der App suchen (sonst höchstens einmal je
+       Minute beim Zurückkommen, siehe checkUpdate) — findet er eine,
+       lädt die Seite wie bei jedem Update einmal neu;
+    2. sagen, wie es steht: live verbunden, oder ohne Verbindung mit dem
+       letzten Stand.
+   Nur am Handy (Touch), nur ganz oben in einer Liste, nur senkrecht.
+   Im Chat nicht: dort heisst Ziehen nach oben „ältere Nachrichten". */
+(function ziehenZumAktualisieren(){
+  var SCHWELLE=72, MAX=110;
+  var flaeche=null, ind=null, x0=0, y0=0, dy=0, oben=0, aktiv=false, entschieden=false, laeuft=false, voll=false;
+  function zeichen(){
+    if(ind) return ind;
+    ind=document.createElement('div'); ind.className='ptr'; ind.setAttribute('aria-hidden','true');
+    ind.innerHTML='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" pathLength="100"/></svg>';
+    document.body.appendChild(ind);
+    return ind;
+  }
+  function setze(y){
+    flaeche.style.transform = y ? 'translateY('+y+'px)' : '';
+    var z=zeichen();
+    z.style.setProperty('--ptr-y', (oben + y/2 - 16)+'px');
+    z.style.setProperty('--ptr-p', Math.min(1, y/SCHWELLE).toFixed(3));
+    z.style.opacity = y>8 ? Math.min(1, y/40).toFixed(2) : '0';
+  }
+  function zurueck(){
+    var f=flaeche; if(!f) return;
+    f.classList.remove('ptr-zieht'); f.classList.add('ptr-zurueck');
+    f.style.transform='';
+    if(ind){ ind.style.opacity='0'; ind.classList.remove('laeuft','voll'); ind.style.setProperty('--ptr-p','0'); }
+    setTimeout(function(){ f.classList.remove('ptr-zurueck'); }, 400);
+  }
+  function aktualisieren(){
+    if(!navigator.onLine) return Promise.resolve({ text:'Keine Verbindung – du siehst den letzten Stand. Neues kommt, sobald du wieder online bist.', fehler:true });
+    var suche = ('serviceWorker' in navigator && navigator.serviceWorker.getRegistration)
+      ? navigator.serviceWorker.getRegistration().then(function(reg){ return reg && reg.update(); }).catch(function(){})
+      : Promise.resolve();
+    return suche.then(function(){ return { text:'✓ Aktuell – Änderungen kommen live an.' }; });
+  }
+  document.addEventListener('touchstart', function(e){
+    if(laeuft || !layoutNeu() || e.touches.length!==1) return;
+    var f=e.target.closest && e.target.closest('.view.show > .scroll-area');
+    if(!f || f.scrollTop>0){ aktiv=false; return; }
+    flaeche=f; aktiv=true; entschieden=false; dy=0; voll=false;
+    x0=e.touches[0].clientX; y0=e.touches[0].clientY;
+  }, {passive:true});
+  document.addEventListener('touchmove', function(e){
+    if(!aktiv) return;
+    var t=e.touches[0], mx=t.clientX-x0, my=t.clientY-y0;
+    if(!entschieden){
+      if(Math.abs(mx)<8 && Math.abs(my)<8) return;
+      /* Nur ein Zug nach unten, der deutlich senkrecht ist, und nur, wenn
+         die Liste wirklich oben steht. Alles andere ist Scrollen oder
+         Wischen auf einer Zeile. */
+      if(my<=0 || Math.abs(mx)>Math.abs(my) || flaeche.scrollTop>0){ aktiv=false; return; }
+      entschieden=true;
+      /* Einmal je Zug gelesen, nicht je Bewegung. */
+      oben=flaeche.getBoundingClientRect().top;
+      flaeche.classList.add('ptr-zieht');
+    }
+    /* Halber Weg, dann immer zäher. */
+    dy = my<=0 ? 0 : Math.min(MAX, my*.5);
+    var v = dy>=SCHWELLE;
+    if(v!==voll){ voll=v; zeichen().classList.toggle('voll', v); if(v) tick(6); }
+    setze(dy);
+  }, {passive:true});
+  function ende(){
+    if(!aktiv){ return; }
+    aktiv=false;
+    if(!entschieden){ return; }
+    flaeche.classList.remove('ptr-zieht');
+    if(dy<SCHWELLE){ zurueck(); return; }
+    laeuft=true;
+    flaeche.classList.add('ptr-zurueck');
+    setze(48);
+    var z=zeichen(); z.classList.add('laeuft');
+    var start=Date.now();
+    aktualisieren().then(function(r){
+      /* Mindestens kurz drehen: eine Antwort nach 20 ms sieht aus, als
+         hätte nichts stattgefunden. */
+      setTimeout(function(){
+        zurueck(); laeuft=false;
+        toast(r.text, !!r.fehler);
+      }, Math.max(0, 600-(Date.now()-start)));
+    });
+  }
+  document.addEventListener('touchend', ende, {passive:true});
+  document.addEventListener('touchcancel', ende, {passive:true});
 })();
 
 /* ── Gleitender Marker unter der aktiven Auswahl ──
@@ -45227,15 +45442,67 @@ function todoHTML(t,sk,chefView,mitStudio,ziehbar){
     '</div></div>';
 }
 
-/* ── Wischen zum Abhaken ──
+/* ── Wischen auf Listeneinträgen ──
    Nach rechts ziehen (> 80 px) löst dieselbe Aktion aus wie das Häkchen.
+   Seit Runde 255 auch nach links, wie in Mail: dahinter stehen „Mehr"
+   und — wer darf — „Löschen". Beides gibt es an der Zeile auch ohne
+   Wischen (⋯ und Papierkorb); die Knöpfe hier drücken genau diese.
+   Löschen fragt weiter nach (kein Löschen durch blosses Durchwischen:
+   was nicht umkehrbar ist, braucht einen Tipp).
    Funktioniert für Aufgaben und Putzplan-Zeilen. */
+var SWIPE_K = 76;          // Breite eines Knopfs im Aktionsfeld (CSS .swipe-k)
+var _swipeOffen = null;
+function swipeSchliessen(){
+  var n=_swipeOffen; if(!n) return;
+  _swipeOffen=null;
+  n.classList.remove('swipe-offen');
+  var b=n.querySelector('.swipe-body'), a=n.querySelector('.swipe-akt');
+  if(b) b.style.transform='';
+  if(a) a.style.transform='';
+}
+/* Ein Tipp woanders oder Scrollen schliesst die offene Zeile. */
+document.addEventListener('touchstart', function(e){
+  if(_swipeOffen && !_swipeOffen.contains(e.target)) swipeSchliessen();
+}, {passive:true, capture:true});
+document.addEventListener('scroll', function(){ if(_swipeOffen) swipeSchliessen(); }, {passive:true, capture:true});
 function bindSwipe(node, onDone){
   var body=node.querySelector('.swipe-body'); if(!body) return;
-  var x0=0, y0=0, dx=0, active=false, decided=false;
+  var x0=0, y0=0, dx=0, start=0, active=false, decided=false, ueber=false;
+  var akt=null, aktB=0, t0=0, xAlt=0, tAlt=0, v=0;
+  /* Das Aktionsfeld entsteht erst beim ersten Wischen nach links: die
+     Liste zeichnet sich oft neu, und Hunderte unsichtbarer Knöpfe
+     wären Arbeit für nichts. */
+  function aktionen(){
+    if(akt) return akt;
+    var mehr=node.querySelector('[data-tmehr], .pp-mehr'), weg=node.querySelector('[data-tdel], .pp-del');
+    if(!mehr && !weg) return null;
+    akt=document.createElement('div'); akt.className='swipe-akt'; akt.setAttribute('aria-hidden','true');
+    function knopf(cls, inhalt, wort, ziel){
+      var k=document.createElement('button'); k.type='button'; k.className='swipe-k '+cls; k.tabIndex=-1;
+      k.innerHTML=inhalt+'<span>'+wort+'</span>';
+      k.addEventListener('click', function(e){ e.stopPropagation(); swipeSchliessen(); ziel.click(); });
+      akt.appendChild(k);
+    }
+    if(mehr) knopf('sk-mehr', ikon('mehr'), 'Mehr', mehr);
+    if(weg) knopf('sk-weg', ikon('papierkorb'), 'Löschen', weg);
+    aktB=SWIPE_K*akt.children.length;
+    node.insertBefore(akt, body);
+    return akt;
+  }
+  function setze(x){
+    body.style.transform = x ? 'translateX('+x+'px)' : '';
+    if(akt) akt.style.transform = x<0 ? 'translateX('+(aktB + x)+'px)' : '';
+  }
+  /* Tippt man auf die offene Zeile selbst (nicht auf einen der Knöpfe),
+     schliesst sie nur — sonst öffnete derselbe Tipp noch die Aufgabe. */
+  node.addEventListener('click', function(e){
+    if(!node.classList.contains('swipe-offen') || e.target.closest('.swipe-akt')) return;
+    e.preventDefault(); e.stopPropagation(); swipeSchliessen();
+  }, true);
   node.addEventListener('touchstart',function(e){
-    if(node.classList.contains('done')) return;
-    var t=e.touches[0]; x0=t.clientX; y0=t.clientY; dx=0; active=true; decided=false;
+    var t=e.touches[0]; x0=t.clientX; y0=t.clientY; dx=0; active=true; decided=false; ueber=false;
+    start = node.classList.contains('swipe-offen') ? -aktB : 0;
+    t0=tAlt=e.timeStamp; xAlt=x0; v=0;
   }, {passive:true});
   node.addEventListener('touchmove',function(e){
     if(!active) return;
@@ -45246,15 +45513,43 @@ function bindSwipe(node, onDone){
       if(Math.abs(my)>Math.abs(mx)){ active=false; return; }
       if(Math.abs(mx)<8) return;
       decided=true; node.classList.add('swiping');
+      if(_swipeOffen && _swipeOffen!==node) swipeSchliessen();
     }
-    dx=Math.max(0, Math.min(140, mx));
-    body.style.transform='translateX('+dx+'px)';
+    if(e.timeStamp>tAlt){ v=(t.clientX-xAlt)/(e.timeStamp-tAlt); xAlt=t.clientX; tAlt=e.timeStamp; }
+    var roh=start+mx;
+    if(roh>0){
+      /* Erledigte nicht noch einmal abhaken, Pausierte gar nicht. */
+      dx = (node.classList.contains('done') || node.classList.contains('pausiert')) ? 0 : Math.min(140, roh);
+      var u = dx>80;
+      if(u!==ueber){ ueber=u; node.classList.toggle('swipe-ueber', u); if(u) tick(6); }
+      node.classList.remove('swipe-links');
+    } else {
+      if(!aktionen()){ dx=0; }
+      /* Über das Feld hinaus nur noch mit Widerstand. */
+      else dx = roh < -aktB ? -aktB + (roh + aktB) * .3 : roh;
+      node.classList.toggle('swipe-links', dx<0);
+      if(ueber){ ueber=false; node.classList.remove('swipe-ueber'); }
+    }
+    setze(dx);
   }, {passive:true});
   function end(){
-    if(!active){ node.classList.remove('swiping'); return; }
-    active=false; node.classList.remove('swiping');
-    body.style.transform='';
-    if(dx>80){ tick(14); onDone(); }
+    /* Ohne seitliche Bewegung war es ein Tipp: offen bleibt offen, damit
+       der Klick den Knopf im Feld noch trifft. */
+    if(!active || !decided){ active=false; node.classList.remove('swiping'); return; }
+    active=false; node.classList.remove('swiping', 'swipe-ueber');
+    if(dx>80){ setze(0); node.classList.remove('swipe-links'); tick(14); onDone(); dx=0; return; }
+    /* Offen bleibt es, wenn mehr als die Hälfte des Felds zu sehen ist
+       oder schnell nach links geschnippt wurde; ein Schnippen nach
+       rechts schliesst. */
+    var offen = dx<0 && akt && (dx < -aktB*.5 || v < -.4) && !(v > .4);
+    if(offen){
+      if(_swipeOffen && _swipeOffen!==node) swipeSchliessen();
+      _swipeOffen=node; node.classList.add('swipe-offen'); setze(-aktB);
+    } else {
+      if(_swipeOffen===node) _swipeOffen=null;
+      node.classList.remove('swipe-offen'); setze(0);
+    }
+    node.classList.remove('swipe-links');
     dx=0;
   }
   node.addEventListener('touchend', end);
@@ -50168,9 +50463,10 @@ function bindPutzplanClicks(box){
   box.querySelectorAll('.pp-item').forEach(function(node){
     var chk=node.querySelector('[data-check]');
     /* Pausierte nicht per Wischen abhaken: der Haken ist dort gar nicht
-       da, und eine Geste, die nichts tut, fuehlt sich kaputt an. */
-    if(node.classList.contains('pausiert')) return;
-    bindSwipe(node, function(){ if(chk && !node.classList.contains('done')) chk.click(); });
+       da, und eine Geste, die nichts tut, fuehlt sich kaputt an. Nach
+       links (Mehr, Löschen) geht es dort aber (Runde 255) — darum
+       bindSwipe auch hier, nur ohne Abhaken. */
+    bindSwipe(node, function(){ if(chk && !node.classList.contains('done') && !node.classList.contains('pausiert')) chk.click(); });
   });
   /* Pausieren und fortsetzen. Vier Wochen ist die Spanne, die im Studio
      wirklich vorkommt (Umbau, Geraet in Reparatur); wer laenger braucht,
@@ -53481,9 +53777,14 @@ function buildAppearanceOptions(){
   var fs=$('fsOpts');
   if(fs){
     var sizes=[['90','Klein'],['100','Normal'],['112','Groß'],['125','Sehr groß']];
+    /* Runde 257: zuerst „Wie am Gerät", wo die App es lesen kann. */
+    var gf=geraeteSchriftFaktor();
+    if(gf) sizes.unshift(['geraet','Wie am Gerät']);
     fs.innerHTML=sizes.map(function(v){
-      return '<div class="opt'+(String(PREFS.fs)===v[0]?' on':'')+'" data-fs="'+v[0]+'">'+
-        '<div style="font-weight:800;font-size:'+(v[0]/100*15)+'px;color:var(--text)">Aa</div>'+
+      var pr = v[0]==='geraet' ? Math.round(gf*100) : +v[0];
+      return '<div class="opt'+(String(PREFS.fs)===v[0]?' on':'')+'" data-fs="'+v[0]+'"'+
+        (v[0]==='geraet' ? ' title="Folgt der Textgrösse in den Einstellungen des iPhones (Anzeige &amp; Helligkeit)"' : '')+'>'+
+        '<div style="font-weight:800;font-size:'+(pr/100*15)+'px;color:var(--text)">Aa</div>'+
         '<span>'+v[1]+'</span></div>';
     }).join('');
     fs.querySelectorAll('[data-fs]').forEach(function(el){
@@ -53591,7 +53892,7 @@ function aussehenZuruecksetzen(){
               'Meldungen und alle Daten bleiben unberührt.\n\n'+
               'Gilt nur auf diesem Gerät.')) return;
   PREFS.theme  = 'formi';
-  PREFS.fs     = '100';
+  PREFS.fs     = geraeteSchriftKann() ? 'geraet' : '100';
   PREFS.dichte = 'normal';
   PREFS.glas   = 'glas';
   PREFS.accent = 'bunt';
