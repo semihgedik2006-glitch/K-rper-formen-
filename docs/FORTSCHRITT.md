@@ -20438,7 +20438,6 @@ unten steht „Schritt n von m · Weiter · Abbrechen“.
     einem Formularfeld nicht weiterschaltet.
 - **Wo man ihn findet:**
   - Satz an Formi
-  - neuer Vorschlag „Zeig mir, wie …“ im leeren Formi-Fenster
   - Knopf „Nochmal zeigen ›“ an der Antwort
   - Knopf „Zeig’s mir in der App ›“ unter der Antwort auf eine Wie-Frage
 
