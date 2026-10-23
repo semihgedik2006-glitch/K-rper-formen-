@@ -20142,3 +20142,51 @@ Gegen `main` sind 4 der 5 ersten Zusicherungen falsch.
 
 Mit diesem Test fällt eine verunglückte Zusammenführung künftig schon in
 der Runde auf, die sie anrichtet.
+
+## Runde 225 — Nachts lautlos (23.10.2026)
+
+Aus der Studienlage, Folgerung 9: „Push-Benachrichtigungen nur für mich
+betreffende Dinge, mit Ruhezeiten ausserhalb der Schicht.“ Der erste Teil
+war erledigt (Runde 198: „Alle Chat-Nachrichten“ auf neuen Geräten aus).
+Ruhezeiten fehlten.
+
+**Gebaut.** Zwischen 22 und 6 Uhr zeigt der Service Worker Meldungen mit
+`silent: true`, also ohne Ton und Vibration. Die Meldung selbst kommt an.
+Abschaltbar ist das unter Profil → Meldungen → „Nachts lautlos“, je Gerät
+wie die anderen Schalter dort.
+
+**Entschieden, und warum:**
+- *Lautlos statt weglassen.* Ein Web-Push ohne sichtbare Meldung
+  beantwortet Chrome mit einer eigenen, nichtssagenden Meldung. Damit wäre
+  nichts gewonnen.
+- *Feste Zeit statt „ausserhalb der Schicht“.* Dafür müsste der Service
+  Worker den Schichtplan kennen, oder der Server müsste filtern. Die
+  Server-Funktionen lassen sich hier nicht testen, und ein Fehler träfe
+  echte Geräte. 22–6 Uhr deckt den Fall ab, der weh tut: Schlaf.
+- *Standard „an“.* Ein Ton weniger in der Nacht schadet niemandem. Wer ihn
+  braucht, schaltet ihn mit einem Tipp wieder ein.
+- *Nicht in `PREFS.notify`.* Dieses Objekt geht an den Server
+  (`pushTokens`). „Wann laut“ ist keine Art von Meldung, und ein
+  unbekannter Schlüssel dort wäre eine unnötige Änderung an echten
+  Datensätzen.
+- *Weg zum Service Worker:* Er kommt an `localStorage` nicht heran. Die App
+  legt die Wahl deshalb in den Vorrat `kf-einst`, beim Start und bei jeder
+  Änderung. `activate` räumt diesen Vorrat bei einem Update nicht mehr weg.
+  `VERSION` v33.
+
+**Gemessen** mit `tests/test-nachtruhe.js` (21 Zusicherungen):
+- `sw.js` läuft in einer Attrappe mit gestellter Uhr: 23:00 und 5:59
+  lautlos, 6:00 und 12:00 mit Ton; abgeschaltet auch nachts laut; die Wahl
+  übersteht ein Update.
+- In der App bei 390 und 1440 px: Die Zeile steht da, ist an und trifft
+  98 px (kompakt 92). Abschalten landet im Vorrat und gilt nach dem
+  Neuladen weiter.
+- Gegen `main` sind die drei Nacht-Fälle, der Update-Fall und die ganze
+  Oberfläche falsch.
+- Grün sind ausserdem: push-doppelt, sw-neuladen, zwischenspeicher,
+  formi-platz, sicherung, csp, gestaltung.
+
+**Nicht geprüft und hier nicht prüfbar:** wie ein echtes Handy
+`silent: true` umsetzt. iOS-Web-Push ignoriert `silent` nach heutigem
+Stand womöglich. Das ist nicht gemessen und muss auf einem iPhone
+nachgesehen werden.
