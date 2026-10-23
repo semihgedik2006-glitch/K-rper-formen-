@@ -21427,3 +21427,88 @@ Anmeldeweg.
 (dort tragen Zeilen eigene Zustände — erledigt, eben abgehakt —, das
 braucht eigene Sorgfalt), ein Hauptknopf je Ansicht und konzentrische
 Ecken, dann die untere Leiste mit fünf Einträgen.
+
+## Runde 242 — Sog mit echter Physik, „Seit du weg warst“ (Idee 8), Formis Stimme in Benachrichtigungen (Idee 14) (23.10.2026)
+
+**Aus dem Betrieb:**
+- „mach weiter mit den restlichen ideen“
+- Mitten in der Runde: „die erledigten aufgaben fliegen ganz steif in
+  formi rein statt gestreckt und drehend also das ist physikalisch falsch
+  zumindest und da ist auch keine spagettifikation oder irgendwas“
+
+**1. Der Sog (`formiSchlucken`), neu gerechnet.** Die erste Fassung aus
+Runde 237 flog fast gerade hinein. Sie drehte sich nur auf das Ziel zu und
+wurde erst im letzten Fünftel kurz gestreckt, also zu Recht „steif“.
+Jetzt werden 31 Bilder einmal vorab gerechnet, jedes ist ein einziges
+`transform`:
+- **Bahn:** eine Spirale um Formis Mitte, gegen den Uhrzeiger wie die
+  Scheibe. Der Umlauf wird nach innen schneller (Kepler, ω ∝ r^-1,5),
+  insgesamt gut 1,25 Runden. Der Abstand schrumpft mit (1−s)^1,6.
+- **Lage:** Die lange Achse zeigt zum Loch. Damit dreht sich der
+  Schriftzug mit der Bahn und taumelt hinein. Am Anfang kommt die
+  Ausrichtung weich aus der Waagerechten.
+- **Gezeitenkraft ∝ 1/r³:** Er wird zum Loch hin gestreckt und quer dazu
+  gestaucht (Spaghettifizierung). Am Ende ist er über zehnmal so lang wie
+  breit, spürbar erst in der Nähe.
+- **Einschwenken in die Scheibe:** Unter 140 px wird die Bahn flach (bis
+  0,3) und um 9° geneigt, wie die schräg gesehene Scheibe.
+- **Zeitdehnung:** Die Bilder liegen kurz vor dem Horizont zeitlich
+  weiter auseinander (1/√(1−r_H/r), begrenzt). Er kriecht und verblasst.
+  Das letzte Fünftel des Wegs dauert mindestens 30 % der Zeit, insgesamt
+  1,9 s.
+- `test-formi-loch` misst das jetzt: Drehung mindestens 360°,
+  Streckung am Ende ≥ 10× und mehr als doppelt so stark wie in der
+  Mitte, Zeitdehnung ≥ 30 %. Gegen die alte Fassung wären alle drei rot
+  gewesen (Drehung unter 180°, Streckung 32× nur im letzten Bild,
+  gleichmässige Zeit).
+
+**2. „Seit du weg warst“ (Idee 8).**
+- Wer länger als 12 Stunden weg war (je Konto und Gerät gemerkt,
+  `kf_zuletzt_da`), sieht auf „Heute“ eine Zeile mit Formi, zum
+  Beispiel „Seit Mittwoch: 3 Übergaben, 1 Ankündigung“. Darunter steht
+  das Wichtigste **wörtlich** mit Quelle: „„Schlüssel … im Tresor.“ —
+  Übergabe von Ben, 07:10“.
+- Das Wichtigste ist, was nach Sicherheit, Gerät oder Schlüssel klingt.
+  Sonst ist es das Neueste.
+- Ein Tipp öffnet Team → Übergabe.
+- Am Rechner steht die Zeile oben in „Neu für dich“. Am Handy fiele
+  dieser Block meist nach „Ausserdem“, deshalb steht sie dort als eigener
+  Block „Seit Mittwoch“ ganz oben. Die Überschrift trägt den Tag, die
+  Zeile nur die Zahlen, sonst schnitt die schmale Zeile ab. Dafür rückt
+  am Handy ein anderer Block nach „Ausserdem“. Das ist bewusst so: Zum
+  Schichtbeginn ist das hier das Erste, was man braucht.
+
+**Entschieden und warum:** *Keine KI-Zusammenfassung.* Das Ideenpapier
+nannte das Risiko selbst: Eine falsch zusammengefasste Übergabe kann im
+Studio schaden. Gezählt wird ohne KI, zitiert wird wörtlich, und die
+Quelle steht immer dabei. Damit ist der Nutzen (was ist passiert?) da,
+ohne dass etwas erfunden werden kann.
+
+**3. Formis Stimme in Benachrichtigungen (Idee 14).**
+- `sendPush(…, von)` legt bei Meldungen, die die App selbst schickt,
+  `von:'formi'` in die Daten. Das sind: Aufgabe fällig, Erinnerung,
+  Nachweis(e), Kurz auffrischen, ⏰ Erinnerung, Formi meldet sich (Tag,
+  Frist, Feierabend), Defekt gemeldet, Material fehlt.
+- Der Service Worker zeigt sie als „Formi · …“ mit `formi-push.svg`
+  (Formis Gesicht).
+- Chat, Erwähnung, neue Aufgabe, „hat erledigt“ und Ankündigungen
+  bleiben, wie sie sind. „Das kommt von Formi“ ist etwas anderes als
+  „das kommt von der Chefin“.
+- `sw.js` steht auf v34. `formi-push.svg` steht in der Deploy-Liste.
+
+**Geprüft:**
+- `tests/test-formi-seit.js` (neu, 58 Zusicherungen):
+  - Push: Die neun Formi-Meldungen tragen `'formi'`, die fünf von
+    Menschen nicht.
+  - Der Service Worker wurde in einer nachgebauten Umgebung ausgeführt:
+    „Formi · Aufgabe fällig“ mit Formis Bild, Annas Nachricht
+    unverändert.
+  - „Seit du weg warst“ bei 320 bis 1920: Zitat wörtlich aus den Daten,
+    Quelle und Uhrzeit, richtiger Block je Gerät, Trefferfläche ≥ 44,
+    Tippen führt zu Übergabe, nach 2 Stunden keine Zeile, keine KI
+    gefragt.
+- `test-formi-loch` (31) mit der Physik, siehe oben.
+- Gesamtdurchlauf auf dem Stand mit Runde 240/241 (31 Durchläufe): 30 grün. `test-formi-kugel` 430 px (2 von 70) ist auf `main` schon so rot.
+
+**Nicht geprüft:** eine echte Benachrichtigung auf einem echten Handy (FCM
+geht hier nicht) und Safari.

@@ -127,12 +127,18 @@ function willHaben(d, art) {
    niemand als Fehler, sie nervt nur, und genau das war die Rueckmeldung.
 
    Datenfelder muessen Zeichenketten sein; alles andere weist FCM ab. */
-async function sendPush(tokens, title, body) {
+/* Runde 242 (Idee 14): Meldungen, die die App SELBST schickt (Fristen,
+   Erinnerungen, Nachweise, Formi meldet sich), tragen von:'formi' — der
+   Service Worker zeigt sie dann als „Formi · …" mit Formis Bild. Was ein
+   Mensch schreibt (Chat, Ankündigung, neue Aufgabe), bleibt unverändert:
+   „das kommt von Formi" ist etwas anderes als „das kommt von der Chefin". */
+async function sendPush(tokens, title, body, von) {
   if (!tokens.length) return;
   const message = {
     data: { title: String(title || 'StudioChat'), body: String(body || '') },
     tokens: tokens.slice(0, 500)
   };
+  if (von === 'formi') message.data.von = 'formi';
   const res = await admin.messaging().sendEachForMulticast(message);
   // Ungültige (abgemeldete) Tokens löschen
   const dead = [];
@@ -772,7 +778,7 @@ exports.dueTaskReminder = region.pubsub
       for (const t of zugewiesen) {
         const tk = await collectTokens(
           d => d.uid === t.assignedTo && willHaben(d, 'todos'), null, firma);
-        await sendPush(tk, 'Aufgabe fällig', t.title || '');
+        await sendPush(tk, 'Aufgabe fällig', t.title || '', 'formi');
       }
       if (offenFuerAlle.length) {
         const tk = await collectTokens(
@@ -780,7 +786,7 @@ exports.dueTaskReminder = region.pubsub
         const titel = offenFuerAlle.length === 1
           ? offenFuerAlle[0].title
           : offenFuerAlle.length + ' Aufgaben sind heute fällig';
-        await sendPush(tk, 'Erinnerung', titel);
+        await sendPush(tk, 'Erinnerung', titel, 'formi');
       }
     }
     }
@@ -837,7 +843,7 @@ exports.certExpiry = region
       if (!c.uid) continue;
       try {
         const tk = await collectTokens(d => d.uid === c.uid, null, firma);
-        await sendPush(tk, 'Nachweis ' + frist(c.tage), bezeichnung(c));
+        await sendPush(tk, 'Nachweis ' + frist(c.tage), bezeichnung(c), 'formi');
       } catch (e) { console.error('Nachweis-Push:', e); }
     }
 
@@ -854,7 +860,7 @@ exports.certExpiry = region
         const text = faellig.length === 1
           ? (faellig[0].name + ': ' + bezeichnung(faellig[0]) + ' ' + frist(faellig[0].tage))
           : (faellig.length + ' Nachweise laufen demnaechst ab');
-        await sendPush(tk, 'Nachweise', text);
+        await sendPush(tk, 'Nachweise', text, 'formi');
       }
     } catch (e) { console.error('Nachweis-Chefmeldung:', e); }
 
@@ -6950,7 +6956,7 @@ async function auffrischErinnernFirma(firma, jetzt) {
     if (!r.offen) continue;
     const tokens = await collectTokens((d) => d.uid === plan.uid && willHaben(d, 'schulung'), null, firma);
     if (!tokens.length) continue;
-    await sendPush(tokens, '🔁 Kurz auffrischen', auffrischErinnernText(r.offen));
+    await sendPush(tokens, '🔁 Kurz auffrischen', auffrischErinnernText(r.offen), 'formi');
     await doc.ref.update({ erinnertAm: jetzt });
     gesendet += tokens.length;
   }
@@ -7923,7 +7929,7 @@ async function gehirnErinnerungenFirma(firma, jetzt) {
     const e = doc.data() || {};
     try {
       const tokens = await collectTokens((d) => d.uid === e.uid, null, firma);
-      await sendPush(tokens, '⏰ Erinnerung', String(e.text || ''));
+      await sendPush(tokens, '⏰ Erinnerung', String(e.text || ''), 'formi');
       n++;
     } catch (err) { console.error('Erinnerung ' + doc.id + ':', err.message); }
     await doc.ref.delete().catch(() => {});
@@ -9031,7 +9037,7 @@ function formiSchichtEndeIn(datum, zeit, von, bis) {
 
 async function formiPush(firma, filter, titel, text) {
   const tokens = await collectTokens(d => willHaben(d, 'formi') && filter(d), null, firma);
-  await sendPush(tokens, titel, text);
+  await sendPush(tokens, titel, text, 'formi');
   return tokens.length;
 }
 async function formiSchichtenHeute(firma, studioKey, heute) {
@@ -9129,7 +9135,7 @@ const _formiDefekt = async (snap, ctx) => {
   if (x.art !== 'defekt') return null;
   const firma = ctx.params.firma || null, sk = ctx.params.studioKey;
   const tokens = await collectTokens(d => willHaben(d, 'formi') && formiAnLeitung(sk)(d), x.byUid || null, firma);
-  await sendPush(tokens, '🔧 Defekt gemeldet', String(x.devName || 'Gerät').slice(0, 60) + ': ' + String(x.text || 'defekt').slice(0, 140) + (x.by ? ' (' + String(x.by).split(' ')[0] + ')' : ''));
+  await sendPush(tokens, '🔧 Defekt gemeldet', String(x.devName || 'Gerät').slice(0, 60) + ': ' + String(x.text || 'defekt').slice(0, 140) + (x.by ? ' (' + String(x.by).split(' ')[0] + ')' : ''), 'formi');
   return null;
 };
 const _formiDefektW = beideWelten('studios/{studioKey}/deviceLog/{logId}', _formiDefekt);
@@ -9142,7 +9148,7 @@ const _formiMaterial = async (change, ctx) => {
   const firma = ctx.params.firma || null, sk = ctx.params.studioKey;
   const tokens = await collectTokens(d => willHaben(d, 'formi') && formiAnLeitung(sk)(d), null, firma);
   const liste = neu.slice(0, 4).map(x => x.name + ' (' + x.fehlt + ')').join(', ') + (neu.length > 4 ? ' und ' + (neu.length - 4) + ' weitere' : '');
-  await sendPush(tokens, '📦 Material fehlt', liste);
+  await sendPush(tokens, '📦 Material fehlt', liste, 'formi');
   return null;
 };
 const _formiMaterialW = beideWelten('inventory/{studioKey}', _formiMaterial, 'onWrite');
