@@ -18,6 +18,11 @@
    studioListeSetzen() alles weg, und der Durchlauf meldet dann Fehler in
    der App, die es nicht gibt.
    ───────────────────────────────────────────────────────────────────── */
+/* Runde 236: Seit dem 23.10.2026 ist das neue Design für alle der Standard.
+   Dieser Durchlauf prüft eine Funktion, kommt aber über die BISHERIGE
+   Navigation dorthin. Bis er auf die neue umgestellt ist, läuft er im
+   bisherigen Aussehen (kf_neu=0, der Geräteschalter des Übergangs).
+   Offen als P-20 in docs/BEKANNTE-PROBLEME.md. */
 const { chromium } = require('playwright');
 const path = require('path');
 
@@ -43,6 +48,7 @@ async function start(opt) {
     'window.__regKaputt = ' + (opt.regKaputt ? 'true' : 'false') + ';' +
     'window.__firma = ' + JSON.stringify(opt.firma || null) + ';');
   await page.addInitScript({ path: path.join(SP, opt.stub || 'stub-chef.js') });
+  await page.addInitScript(() => { try { localStorage.setItem('kf_neu', '0'); } catch (e) {} });
   await page.goto(APP, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(2800);
   return { b, page };

@@ -26,6 +26,11 @@
 
    Service-Worker sind gesperrt (siehe oeffne), wie in test-formi-kugel.
    ══════════════════════════════════════════════════════════════════ */
+/* Runde 236: Seit dem 23.10.2026 ist das neue Design für alle der Standard.
+   Dieser Durchlauf prüft eine Funktion, kommt aber über die BISHERIGE
+   Navigation dorthin. Bis er auf die neue umgestellt ist, läuft er im
+   bisherigen Aussehen (kf_neu=0, der Geräteschalter des Übergangs).
+   Offen als P-20 in docs/BEKANNTE-PROBLEME.md. */
 const { chromium } = require('playwright');
 const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
@@ -63,6 +68,7 @@ async function oeffne(b, w, h, opt) {
   await p.route('**script.google.com/**', r => r.fulfill({ status: 200, body: 'ok' }));
   if (opt.vorher) await p.addInitScript(opt.vorher);
   await p.addInitScript({ path: SP + '/stub-chef.js' });
+  await p.addInitScript(() => { try { localStorage.setItem('kf_neu', '0'); } catch (e) {} });
   await p.goto(APP + (opt.suche || ''), { waitUntil: 'domcontentloaded' });
   await p.waitForFunction(() => !!document.querySelector('#app.show'), null, { timeout: 15000 });
   await p.waitForTimeout(900);
