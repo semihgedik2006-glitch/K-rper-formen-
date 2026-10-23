@@ -47,8 +47,11 @@ const ansicht = page => page.evaluate(() => {
        ordnen); die Raumnamen „passen". Seitdem fünf Räume, für die
        Leitung die Verwaltung als sechster. „Ich" ist kein eigener Knopf
        mehr, sondern ein Reiter unter „Heute". Die Reihenfolge folgt der
-       Nutzung: Studio (Putzplan und Aufgaben, täglich) vor Nachrichten. */
-    const soll = ['Heute', 'Studio', 'Plan', 'Nachrichten', 'Wissen', 'Verwaltung'];
+       Nutzung: Studio (Putzplan und Aufgaben, täglich) vor Nachrichten.
+       Runde 216 (23.10.2026), auf die Rückfrage „eigener Knopf oder unter
+       Alles?" für die Zeiterfassung: „eigener knopf" — „Zeiten" direkt
+       hinter „Studio". */
+    const soll = ['Heute', 'Studio', 'Zeiten', 'Plan', 'Nachrichten', 'Wissen', 'Verwaltung'];
     if (JSON.stringify(gruppen) !== JSON.stringify(soll)) {
       errs.push('Gruppen stimmen nicht: ' + JSON.stringify(gruppen) +
         ' — erwartet ' + JSON.stringify(soll));
