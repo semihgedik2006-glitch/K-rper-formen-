@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-/UteCjin4claSaSgql50DZzxhwyl4FapdkLlFMw5ghY='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-YMAWgiHBKXu2u2cmjbHRnz5wj+pv6COe56M+dcJ1TRw='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5453,6 +5453,12 @@ html{font-size:var(--fs,100%)}
    wenn #printArea nichts enthaelt, und die zwei Wege nennt, die es
    wirklich gibt. */
 #printArea{display:none}
+/* Bescheinigung (Runde 248): das Zeichen rechts im Kopf. Die negativen
+   Ränder halten die Zeile so hoch wie die Überschrift — die Trefferfläche
+   bleibt 44 × 44 und ragt in den Innenabstand der Karte. */
+.sch-meine-kopf{display:flex;align-items:center;justify-content:space-between;gap:var(--s8)}
+.sch-meine-kopf h3{min-width:0}
+.sch-meine-kopf .icon-btn{width:44px;height:44px;flex-shrink:0;margin:-12px -6px -12px 0}
 #printHinweis{display:none}
 @media print{
   body{background:#fff!important;color:#000!important}
@@ -11860,7 +11866,14 @@ body.neu .td-erledigt > .todo + .todo::after,body.neu .td-erledigt > .pp-item + 
                  heimlichen Akte — und er steht deshalb ganz oben, nicht
                  versteckt im Ich-Bereich. -->
             <div class="card" id="schMeineKarte" style="display:none">
-              <h3 data-ikon="pokal">Was du schon gemacht hast</h3>
+              <!-- Runde 248: „Bescheinigung drucken" als Zeichen im Kopf —
+                   als eigene Zeile schob er die Modulliste am Telefon
+                   98 px nach unten (test-auffrischen). -->
+              <div class="sch-meine-kopf">
+                <h3 data-ikon="pokal">Schon geschafft</h3>
+                <button type="button" class="icon-btn" id="schBescheinigung" data-ikon="drucken" hidden
+                  aria-label="Bescheinigung drucken: alle bestandenen Schulungen auf einem Blatt" title="Bescheinigung drucken"></button>
+              </div>
               <div id="schMeine"></div>
             </div>
             </div>
@@ -22222,6 +22235,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-23-schulung-bescheinigung', datum:'23.10.2026', titel:'Schulung: deine eigene Bescheinigung zum Drucken', wo:'schulung', punkte:[
+    'Unter Wissen → Schulung, im Kasten „Schon geschafft" (bisher „Was du schon gemacht hast"), steht rechts oben ein Drucker-Zeichen: „Bescheinigung drucken". Es druckt ein Blatt mit allen Schulungen, die du bestanden hast – mit Datum, Ergebnis, Dauer und bis wann sie gilt.',
+    'Was als Pflicht noch offen ist, steht ehrlich darunter. Unten ist Platz, damit die Studioleitung unterschreibt.'
+  ]},
   { id:'2026-10-23-federn', datum:'23.10.2026', titel:'Bewegungen gleiten wie auf dem iPhone', wo:'home', punkte:[
     'Seitenwechsel, Blätter, Haken und Schalter bewegen sich jetzt wie echte Federn: Seiten gleiten ruhig aus, Haken und Schalter federn ganz leicht nach.',
     'Am deutlichsten siehst du es, wenn du unten zwischen Heute, Studio und Zeiten wechselst. Formi bewegt sich wie bisher.'
@@ -33552,6 +33569,57 @@ function schMeineZeichnen(){
       '<span class="sch-marke '+(l.bestanden?'fertig':'faellig')+'">'+
         (l.bestanden?'bestanden':'offen')+'</span></div>';
   }).join('');
+  var bb=$('schBescheinigung');
+  if(bb){
+    bb.hidden=!schBescheinigungLaeufe().length;
+    if(!bb._hat){ bb._hat=1; bb.addEventListener('click', schBescheinigungDrucken); }
+  }
+}
+/* ── Die eigene Bescheinigung (Runde 248) ─────────────────────────────
+   Aus dem Betrieb, 23.10.2026: „jo mach weiter" — auf den Vorschlag,
+   dass jede und jeder die eigenen Schulungen auf einem Blatt mitnehmen
+   kann. Den Nachweis je Modul gab es bisher nur für die Leitung
+   (Runde 211); wer ihn für sich selbst brauchte (Bewerbung, Ordner,
+   Krankenkasse), musste fragen.
+
+   Je Modul zählt der LETZTE bestandene Durchlauf, ohne Testläufe —
+   dieselbe Regel wie beim Nachweis der Leitung. Was als Pflicht noch
+   offen ist, steht darunter: ein Blatt, das nur das Erledigte zeigt,
+   sähe vollständiger aus, als es ist. */
+function schBescheinigungLaeufe(){
+  var juengst={};
+  _schMeine.forEach(function(l){
+    if(l.test || l.status!=='fertig' || !l.bestanden) return;
+    var j=juengst[l.modul];
+    if(!j || (l.ende||0)>(j.ende||0)) juengst[l.modul]=l;
+  });
+  return Object.keys(juengst).map(function(k){ return juengst[k]; })
+    .sort(function(a,b){ return (b.ende||0)-(a.ende||0); });
+}
+function schBescheinigungDrucken(){
+  var pa=$('printArea'); if(!pa) return;
+  var datum=function(ts){ return new Date(ts).toLocaleDateString('de-DE',{ day:'2-digit', month:'2-digit', year:'numeric' }); };
+  var laeufe=schBescheinigungLaeufe();
+  var offen=schModule().filter(function(m){ return m.pflicht && schStand(m).art!=='fertig'; })
+    .map(function(m){ return m.titel||''; });
+  pa.innerHTML='<h1>Schulungsnachweis</h1>'+
+    '<p class="p-sub">'+esc((session && session.name)||'')+' · '+esc(firmaAnzeige())+' · Stand '+esc(datum(Date.now()))+'</p>'+
+    (laeufe.length
+      ? '<table><tr><th>Schulung</th><th>Bestanden am</th><th>Ergebnis</th><th>Dauer</th><th>Gültig bis</th></tr>'+
+        laeufe.map(function(l){
+          var m=schModulVon(l.modul)||{};
+          var bis=m.gueltigMonate ? l.ende + m.gueltigMonate*30.4*86400000 : 0;
+          return '<tr><td>'+esc(m.titel||l.modulTitel||'')+(m.pflicht ? ' (Pflicht)' : '')+'</td>'+
+            '<td>'+esc(datum(l.ende))+'</td><td>'+(l.punkte||0)+' %</td>'+
+            '<td>'+esc(schDauerText(l.aktivMs))+'</td>'+
+            '<td>'+(bis ? esc(datum(bis))+(Date.now()>bis ? ' — wieder fällig' : '') : 'ohne Ablauf')+'</td></tr>';
+        }).join('')+'</table>'
+      : '<p class="p-note">Noch keine Schulung bestanden.</p>')+
+    (offen.length ? '<p class="p-note"><b>Als Pflicht noch offen:</b> '+esc(offen.join(', '))+'</p>' : '')+
+    '<p class="p-note">Bestätigt durch die Studioleitung: ______________________________ &nbsp; Datum: ____________</p>'+
+    '<p class="p-foot">'+esc(KONFIG.appName||'StudioChat')+' — erstellt aus den eigenen Schulungs-Durchläufen. '+
+      'Ob dieses Blatt eine bestimmte Vorschrift erfüllt, prüft die App nicht.</p>';
+  window.print();
 }
 
 /* ── 2. Der Code ───────────────────────────────────────────────── */

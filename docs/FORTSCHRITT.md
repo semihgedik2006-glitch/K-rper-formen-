@@ -21823,3 +21823,100 @@ dem Betrieb, 15:18: „es soll einfach den ganzen plan erledigen“.
 Chromium ohne Bildschirm taktet mit 60 Hz.
 
 **Als Nächstes:** Chat-Blasen und Kontextmenü.
+
+## Runde 248 — Schulung: die eigene Bescheinigung zum Drucken; Erinnerung nicht an Stillgelegte (23.10.2026)
+
+Aus dem Betrieb, 23.10.2026: „jo mach weiter" — die nächste
+Schulungs-Runde.
+
+### 1. „Bescheinigung drucken" für jede und jeden
+
+Unter Wissen → Schulung steht im Kasten „Schon geschafft" (bisher „Was
+du schon gemacht hast") rechts oben ein Drucker-Zeichen: „Bescheinigung
+drucken". Es druckt ein Blatt „Schulungsnachweis" mit Name, Firma und
+Datum. Darauf:
+
+- je Modul der **jüngste bestandene** Durchlauf mit Datum samt Jahr,
+  Ergebnis, Dauer und „Gültig bis" (bei Modulen mit Wiederholung;
+  abgelaufen steht „wieder fällig" daneben);
+- darunter, was **als Pflicht noch offen** ist;
+- eine Zeile, auf der die Studioleitung unterschreibt.
+
+Den Nachweis je Modul gab es bisher nur für die Leitung (Runde 211).
+Wer ein Blatt für sich selbst brauchte (Bewerbung, eigener Ordner), musste
+fragen. Lernplattformen machen das so: Moodle hat Kursbescheinigungen,
+LinkedIn Learning hat Abschlusszertifikate. Übernommen ist nur das Muster
+„was ich geschafft habe, auf einem Blatt". Eine Studie, die zeigt, dass
+das beim Lernen hilft, habe ich nicht gesucht und nenne keine.
+
+**Warum so entschieden:**
+- **Testläufe stehen nie darauf**, und ohne bestandene Schulung gibt es
+  den Knopf nicht. Dieselbe Regel gilt beim Nachweis der Leitung.
+- **Das Offene steht mit darauf.** Ein Blatt, das nur das Erledigte
+  zeigt, sähe vollständiger aus, als es ist.
+- **Keine Unterschrift der App.** Das Blatt ist aus den eigenen
+  Durchläufen erstellt, und die Fusszeile sagt, dass die App nicht prüft,
+  ob es eine Vorschrift erfüllt. Bestätigen tut ein Mensch.
+- **Ein Zeichen im Kopf, keine eigene Zeile.** Der erste Bau setzte
+  Knopf und Satz unter die Liste. `test-auffrischen` wurde rot: Am
+  390er Telefon begann die Modulliste bei 1.370 px statt bei 1.272 px,
+  und die Grenze liegt bei 1.290 px. Den Test zu lockern kam nicht in
+  Frage. Das Zeichen sitzt jetzt mit negativen Rändern in der
+  Kopfzeile: Die Trefferfläche bleibt 44 × 44, die Liste beginnt wieder
+  bei 1.272 px. Damit Überschrift und Zeichen in eine Zeile passen,
+  heisst die Karte „Schon geschafft". Der alte Text brauchte 302 px, der
+  Platz neben dem Zeichen ist 267 px. Die alte Überschrift war kein
+  Zitat aus dem Betrieb.
+- **Kein neuer Datenweg.** Das Blatt liest nur `_schMeine`, die eigenen
+  Durchläufe, die die Regeln jedem ohnehin zeigen.
+
+### 2. Die Auffrisch-Erinnerung prüft den Teilnehmer (Fehler aus Runde 216)
+
+Der Lernplan merkt sich die `uid` vom Zeitpunkt der ersten Runde. Die
+Erinnerung um 9:40 Uhr las nur diesen Plan. Auch eine **stillgelegte**
+Person bekam deshalb weiter „Kurz auffrischen" aufs Handy, ebenso ein
+Konto, von dem die Leitung den Teilnehmer inzwischen gelöst hatte.
+`schulungAuffrischen` selbst hat beides immer abgewiesen; nur der
+Zeitplan nicht.
+
+Jetzt liest der Zeitplan den Teilnehmer mit
+(`auffrischTeilnehmerGilt`): Der Teilnehmer muss da sein, darf nicht
+stillgelegt sein und muss mit **diesem** Konto verknüpft sein.
+
+### 3. Teilnehmer gelöscht → Lernplan weg
+
+Das stand seit Runde 201 als „Offen". Ein neuer Auslöser
+`onSchulungTeilnehmerWeg` (flach und unter `firmen/<k>/`) löscht den
+Lernplan, sobald das Teilnehmer-Dokument verschwindet. In der App gibt es
+nur „Stilllegen"; gelöscht wird ein Teilnehmer in der Konsole oder mit
+der ganzen Firma. Die **Durchläufe bleiben**: Sie sind der Nachweis der
+Unterweisung.
+
+### Geprüft
+
+- `tests/test-schulung-bescheinigung.js` (30, neu): das Zeichen im Kopf
+  (Überschrift einzeilig, Zeichen auf ihrer Höhe),
+  Druck, Kopf mit Name, Firma und Stand, Spalten, die Notfall-Zeile mit
+  „Gültig bis" (12 Monate), das Angefangene nicht in der Tabelle, das
+  Offene darunter, Druckbild nur mit dem Blatt.
+  - GEGENPROBEN, geändert in den Demo-Daten (der Quelle der App):
+    abgelaufen → „wieder fällig" und unter „offen"; nur ein Testlauf →
+    kein Knopf; nicht bestanden → Liste ja, Knopf nein.
+  - Fingerziele ≥ 44 × 44 per Hit-Test bei 320 / 390 / 430 / 820 / 1280
+    / 1440 / 1920 px, normal und kompakt; nichts ragt hinaus.
+  - Gegenprobe am Code: Ohne den Testlauf-Filter wird der Durchlauf rot.
+- `tests/rules/funktionen.test.js` (272, fünf neu): keine Erinnerung an
+  Stillgelegte oder ein umgehängtes Konto; die Regel als Rechnung; der
+  Lernplan ist nach dem Löschen weg, auf beiden Pfaden; der Plan eines
+  anderen und der Durchlauf bleiben.
+  - Gegenprobe: Ohne die neue Prüfung im Zeitplan fallen drei Prüfungen.
+- Grün außerdem: alle `test-schulung*`, test-auffrischen, test-knoepfe,
+  test-gestaltung, test-abgeschnitten, test-quer, test-csp,
+  test-neuigkeiten, test-pc-*.
+
+### Nicht geprüft
+
+- Der echte Druck auf Papier. Geprüft ist das Druckbild (`media print`)
+  im Test-Browser.
+- Der Auslöser beim Löschen im echten Projekt. Geprüft ist er im Emulator
+  mit `.run()`, so wie die anderen Auslöser in diesem Test.
