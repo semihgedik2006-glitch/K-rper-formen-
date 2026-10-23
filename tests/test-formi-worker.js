@@ -383,6 +383,17 @@ function ki(antworten) {
       };
       const a3 = await frag('kurze frage zum training');
       pruefe(/Ersatz antwortet/.test(a3.antwort), 'fällt gpt-oss aus, antwortet das bisherige Modell');
+      /* 2.20: „low" denken; lehnt das Modell den Parameter ab, ohne ihn nochmal. */
+      const eingaben = [];
+      env2.AI.run = async (modell, e) => {
+        if (/bge-m3/.test(modell)) return { data: e.text.map(fake) };
+        eingaben.push({ modell, reasoning: e.reasoning });
+        if (modell === w.MODELL_ANTWORT && e.reasoning) throw new Error('5006: unknown field reasoning');
+        return { response: JSON.stringify({ antwort: 'Ohne reasoning beantwortet.', art: 'frage', grundlage: 'allgemein', abgedeckt: false, quellen: [] }) };
+      };
+      const a4 = await frag('noch eine frage zum training');
+      pruefe(eingaben[0] && eingaben[0].modell === w.MODELL_ANTWORT && eingaben[0].reasoning && eingaben[0].reasoning.effort === 'low', 'gpt-oss wird mit „low" gefragt');
+      pruefe(eingaben[1] && eingaben[1].modell === w.MODELL_ANTWORT && !eingaben[1].reasoning && /Ohne reasoning/.test(a4.antwort), 'lehnt es den Parameter ab: dieselbe Frage ohne ihn, nicht gleich das schwächere Modell');
       env2.AI.run = altRun; global.fetch = altFetch3;
     }
 
