@@ -1,4 +1,4 @@
-/* ── Stempel-Erinnerung (Runde 237) ──────────────────────────────────
+/* ── Stempel-Erinnerung (Runde 238) ──────────────────────────────────
    Aus dem Betrieb, 23.10.2026: „mach die errinerungen und vlt auch in
    kobi mit formi und einer mail oder so".
 

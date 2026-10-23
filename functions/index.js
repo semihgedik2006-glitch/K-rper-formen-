@@ -9149,7 +9149,7 @@ const _formiMaterialW = beideWelten('inventory/{studioKey}', _formiMaterial, 'on
 exports.formiMaterial = _formiMaterialW.flach;
 exports.formiMaterialF = _formiMaterialW.firma;
 
-/* ══ STEMPEL-ERINNERUNG (Runde 237) ═══════════════════════════════════
+/* ══ STEMPEL-ERINNERUNG (Runde 238) ═══════════════════════════════════
    Aus dem Betrieb, 23.10.2026: „mach die errinerungen und vlt auch in
    kobi mit formi und einer mail oder so" — die Erinnerung aus dem Plan
    (docs/ZEITERFASSUNG-PLAN.md, Schritt 6), wie bei Crewmeister.

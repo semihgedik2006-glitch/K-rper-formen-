@@ -1,4 +1,4 @@
-/* ── Stempel-Erinnerung in der App (Runde 237) ────────────────────────
+/* ── Stempel-Erinnerung in der App (Runde 238) ────────────────────────
    Aus dem Betrieb, 23.10.2026: „mach die errinerungen und vlt auch in
    kobi mit formi und einer mail oder so". Handy und Mail schickt der
    Server (tests/rules/stempel-erinnerung.test.js). Hier: Formi sagt es in

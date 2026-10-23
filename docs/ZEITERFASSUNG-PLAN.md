@@ -425,7 +425,7 @@ Rückfragen vorgelegt, Antworten:
    dem Bau zu klären:** DATEV hat mehrere Formate (u. a. ASCII für
    Lohn und Gehalt, LODAS); welches das Lohnbüro einliest, entscheidet
    das Lohnbüro. Der Export enthält nie `zeitPins` oder `terminalCodes`.
-6. ✅ **Erinnerung** (Runde 237, „mach die errinerungen … in kobi mit
+6. ✅ **Erinnerung** (Runde 238, „mach die errinerungen … in kobi mit
    formi und einer mail"): 15 min nach Schichtbeginn ohne Stempel (Handy,
    Formi), 30 min nach Schichtende noch eingestempelt bzw. ohne Schicht
    nach 10 h (Handy, Mail, Formi). Nicht bei Urlaub oder Krankheit.
