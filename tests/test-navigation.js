@@ -47,8 +47,11 @@ const ansicht = page => page.evaluate(() => {
        ordnen); die Raumnamen „passen". Seitdem fünf Räume, für die
        Leitung die Verwaltung als sechster. „Ich" ist kein eigener Knopf
        mehr, sondern ein Reiter unter „Heute". Die Reihenfolge folgt der
-       Nutzung: Studio (Putzplan und Aufgaben, täglich) vor Nachrichten. */
-    const soll = ['Heute', 'Studio', 'Plan', 'Nachrichten', 'Wissen', 'Verwaltung'];
+       Nutzung: Studio (Putzplan und Aufgaben, täglich) vor Nachrichten.
+       Runde 222 (23.10.2026), auf die Rückfrage „eigener Knopf oder unter
+       Alles?" für die Zeiterfassung: „eigener knopf" — „Zeiten" direkt
+       hinter „Studio". */
+    const soll = ['Heute', 'Studio', 'Zeiten', 'Plan', 'Nachrichten', 'Wissen', 'Verwaltung'];
     if (JSON.stringify(gruppen) !== JSON.stringify(soll)) {
       errs.push('Gruppen stimmen nicht: ' + JSON.stringify(gruppen) +
         ' — erwartet ' + JSON.stringify(soll));
@@ -171,8 +174,11 @@ const ansicht = page => page.evaluate(() => {
        die zeiten ändern kann falls jemand sich nicht ausgestempelt hat". */
     /* „Kennzahlen" seit dem 4.10.2026 (Runde 138): „Kennzahlen je
        Studio … geht fit". */
+    /* Seit Runde 222 ist „Zeiten" keine Kachel mehr, sondern ein eigener
+       Knopf mit dem Reiter „Team" — „eigener knopf" (23.10.2026). Dass
+       es dort steht, prüfen test-raeume und test-zeiten-bereich. */
     const ERWARTET = ['Überblick', 'Erstellen', 'Team', 'Studios', 'Nachweise',
-                      'Anliegen', 'Zeiten', 'Kennzahlen', 'Auswertung', 'System'];
+                      'Anliegen', 'Kennzahlen', 'Auswertung', 'System'];
     ERWARTET.forEach(function (w) {
       if (!uebersicht.kacheln.some(function (k) { return k.indexOf(w) >= 0; })) {
         errs.push('Kachel „' + w + '" fehlt in der Verwaltung');

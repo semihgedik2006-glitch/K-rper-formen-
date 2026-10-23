@@ -5914,6 +5914,93 @@ exports.monatOeffnen = region.https.onCall(async (data, context) => {
 });
 
 /* ══════════════════════════════════════════════════════════════════════
+   MEIN KONTO (Runde 222)
+
+   Aus dem Betrieb, 23.10.2026: „mitarbeiter können sich nur einstempeln
+   und ihre eigenen stunden sehen ob plus oder minus und halt alles was
+   sie sonst bräuchten".
+
+   Was die Person dafür braucht, liegt an drei Stellen, die sie selbst
+   NICHT lesen darf — und das bleibt so:
+     · zeitAbschluesse   alle Konten eines Monats nebeneinander
+     · lohnEinstellungen Soll je Wochentag und Urlaubsanspruch aller
+     · planerTeam        die Vertragsstunden aller
+   Diese Funktion liest sie mit Serverrechten und gibt NUR die eigene
+   Zeile heraus. Eine neue Sammlung, die man in beiden Regel-Welten
+   nachziehen müsste, gibt es dafür nicht — und auch keine Kopie, die
+   neben dem Original veralten kann.
+
+   Den laufenden Monat rechnet die App selbst (eigene Stempel, eigene
+   Abwesenheiten, Feiertage) mit derselben Rechnung wie die
+   Geschäftsführung; er heisst dort „vorläufig", bis abgeschlossen ist.
+   ══════════════════════════════════════════════════════════════════════ */
+const KONTO_MONATE_MAX = 12;
+function monateVor(monat, n) {
+  const j = Number(monat.slice(0, 4)), m = Number(monat.slice(5, 7));
+  const liste = [];
+  for (let i = 1; i <= n; i++) {
+    const d = new Date(Date.UTC(j, m - 1 - i, 1));
+    liste.push(d.toISOString().slice(0, 7));
+  }
+  return liste;
+}
+/* Aus einem gespeicherten Abschluss die eine Zeile — nur Zahlen, kein
+   Name eines anderen. Ein offener (wieder geöffneter) Monat zählt
+   nicht: seine Zahlen gelten gerade nicht. */
+function eigeneAbschlussZeile(abschluss, uid) {
+  if (!abschluss || abschluss.abgeschlossen !== true) return null;
+  const z = (abschluss.zeilen || []).find((x) => x && x.uid === uid);
+  if (!z) return null;
+  const zahl = (x) => (Number.isFinite(Number(x)) ? Math.round(Number(x)) : 0);
+  return { monat: String(abschluss.monat || ''), ist: zahl(z.ist), soll: zahl(z.soll),
+    gutschrift: zahl(z.gutschrift), saldo: zahl(z.saldo), uebertrag: zahl(z.uebertrag),
+    konto: zahl(z.konto), am: zahl(abschluss.am) };
+}
+/* Soll je Wochentag (1 = Montag … 7 = Sonntag, Minuten) und der
+   Urlaubsanspruch im Jahr (Tage, Schlüssel u). */
+function eigeneRegel(regel) {
+  if (!regel || typeof regel !== 'object') return { tage: null, urlaubJahr: null };
+  const tage = {};
+  let hat = false;
+  for (let k = 1; k <= 7; k++) {
+    const v = Math.round(Number(regel[k]) || 0);
+    tage[k] = v > 0 && v <= 14 * 60 ? v : 0;
+    if (tage[k] > 0) hat = true;
+  }
+  const u = Number(regel.u);
+  return { tage: hat ? tage : null, urlaubJahr: Number.isFinite(u) && u > 0 && u <= 60 ? Math.round(u * 2) / 2 : null };
+}
+
+exports.meinKonto = region.https.onCall(async (data, context) => {
+  const { uid, firma } = await anruferProfil(context);
+  const monat = berlinDatum(new Date()).slice(0, 7);
+  const refs = monateVor(monat, KONTO_MONATE_MAX)
+    .map((m) => W(firma).collection('zeitAbschluesse').doc(m));
+  const [abschluesse, regelnSnap, teamSnap] = await Promise.all([
+    db.getAll(...refs),
+    W(firma).collection('lohnEinstellungen').doc('zeitregeln').get(),
+    W(firma).collection('planerTeam').where('uid', '==', uid).get()
+  ]);
+  const monate = abschluesse
+    .map((s) => (s.exists ? eigeneAbschlussZeile(Object.assign({ monat: s.id }, s.data() || {}), uid) : null))
+    .filter(Boolean)
+    .sort((a, b) => (a.monat < b.monat ? -1 : 1));
+  const regeln = (regelnSnap.exists && (regelnSnap.data() || {}).regeln) || {};
+  const regel = eigeneRegel(regeln[uid]);
+  /* Steht jemand in mehreren Studios im Planer, gilt der Eintrag mit
+     Vertragsstunden — wie in kontoRechnen(), wo der letzte gewinnt. */
+  let vertrag = { wocheStd: 0, maxMonatStd: 0, maxTageWoche: 0 };
+  teamSnap.docs.forEach((d) => {
+    const p = d.data() || {};
+    if (Number(p.wocheStd) > 0 || Number(p.maxMonatStd) > 0) {
+      vertrag = { wocheStd: Number(p.wocheStd) || 0, maxMonatStd: Number(p.maxMonatStd) || 0,
+        maxTageWoche: Number(p.maxTageWoche) || 0 };
+    }
+  });
+  return { ok: true, monat, monate, regel: regel.tage, urlaubJahr: regel.urlaubJahr, vertrag };
+});
+
+/* ══════════════════════════════════════════════════════════════════════
    DATENSCHUTZVORFALL MELDEN (P-02, Runde 113)
 
    Aus dem Betrieb, 25.9.2026:
@@ -8867,7 +8954,7 @@ exports.gehirnWissen = region
     return json;
   });
 
-exports.__intern = { abschlussZeilenPruefen, antragUhrPruefen, ANTRAG_TAGE_MAX, erlaubteSchritte, schrittWaehlen, tagesStand, gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnStimmePruefen, GEHIRN_STIMMEN, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
+exports.__intern = { abschlussZeilenPruefen, monateVor, eigeneAbschlussZeile, eigeneRegel, antragUhrPruefen, ANTRAG_TAGE_MAX, erlaubteSchritte, schrittWaehlen, tagesStand, gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnStimmePruefen, GEHIRN_STIMMEN, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
                      gehirnVorschlagPruefen, gehirnBefehlPruefen, gehirnWeg, gehirnKontextText, lageberichtOhneKi,
                      geminiSperreAufheben: () => { _geminiAusBis = 0; }, geminiGesperrt: () => Date.now() < _geminiAusBis, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,
                      authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,

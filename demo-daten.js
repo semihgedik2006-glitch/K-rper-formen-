@@ -1347,6 +1347,27 @@
     legen(P('zeitAntraege'), liste);
   })();
 
+  /* Runde 222: ein abgeschlossener Monat (vor zwei Monaten), damit „Mein
+     Konto" in der Vorführung einen Stand zeigt. Bewusst NICHT der
+     Vormonat: den schliesst die Vorführung der Geschäftsführung selbst
+     ab (test-zeiten-verwaltung). Die Zahlen sind erfunden und stehen
+     auch nur in der Demo. */
+  (function () {
+    var vv = new Date(); vv.setDate(1); vv.setMonth(vv.getMonth() - 2);
+    var m2 = vv.toLocaleDateString('sv-SE').slice(0, 7);
+    var zeilen = (DB[P('planerTeam')] || []).map(function (p, n) {
+      var soll = Math.round((p.wocheStd || 0) * 60 * 4.3);
+      var saldo = [135, -45, 270, 0, -90, 60][n % 6];
+      return { uid: p.uid, name: p.name, ist: soll + saldo, soll: soll, gutschrift: 0, saldo: saldo,
+        uebertrag: 0, konto: saldo, tage: 20, offen: 0 };
+    }).filter(function (z) { return z.soll > 0; });
+    legen(P('zeitAbschluesse'), [{ id: m2, monat: m2, abgeschlossen: true, zeilen: zeilen,
+      von: 'demo-chef', vonName: 'Demo-Geschäftsführung', am: Date.now() - 20 * 24 * STD }]);
+    var regeln = {};
+    zeilen.forEach(function (z) { regeln[z.uid] = { u: 28 }; });
+    legen(P('lohnEinstellungen'), [{ id: 'zeitregeln', regeln: regeln, geaendert: Date.now() - 30 * 24 * STD }]);
+  })();
+
   legen('firmen', [{ id: KENNUNG, name: 'Körperformen', aktiv: true, kennung: KENNUNG }]);
   /* ── Das Abo in der Demo ──
      Hier stand `stufe: 'A'` — ein Wert, den es im Abo-Modell gar nicht
@@ -1958,6 +1979,25 @@
       if (alt) Object.assign(alt, neu); else liste.push(neu);
       melden(P('zeitAbschluesse'));
       return { ok: true, monat: m };
+    },
+    /* Runde 222: wie der Server — nur die eigene Zeile, nur
+       abgeschlossene Monate, das eigene Soll und der Urlaubsanspruch. */
+    meinKonto: function () {
+      var uid = ICH.id;
+      var monate = holen(P('zeitAbschluesse')).filter(function (a) { return a.abgeschlossen === true; })
+        .map(function (a) {
+          var z = (a.zeilen || []).filter(function (x) { return x.uid === uid; })[0];
+          return z ? { monat: a.monat, ist: z.ist, soll: z.soll, gutschrift: z.gutschrift, saldo: z.saldo,
+            uebertrag: z.uebertrag, konto: z.konto, am: a.am } : null;
+        }).filter(Boolean).sort(function (a, b) { return a.monat < b.monat ? -1 : 1; });
+      var zr = holen(P('lohnEinstellungen')).filter(function (x) { return x.id === 'zeitregeln'; })[0];
+      var r = ((zr && zr.regeln) || {})[uid] || {};
+      var tage = {}, hat = false;
+      for (var k = 1; k <= 7; k++) { tage[k] = Math.round(+r[k] || 0); if (tage[k] > 0) hat = true; }
+      var p = holen(P('planerTeam')).filter(function (x) { return x.uid === uid; })[0] || {};
+      return { ok: true, monat: new Date().toLocaleDateString('sv-SE').slice(0, 7), monate: monate,
+        regel: hat ? tage : null, urlaubJahr: +r.u > 0 ? +r.u : null,
+        vertrag: { wocheStd: +p.wocheStd || 0, maxMonatStd: +p.maxMonatStd || 0, maxTageWoche: +p.maxTageWoche || 0 } };
     },
     monatOeffnen: function (d) {
       if (ICH.role !== 'chef') throw new Error('Den Monat öffnet die Geschäftsführung.');

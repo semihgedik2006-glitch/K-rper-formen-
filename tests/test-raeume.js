@@ -8,10 +8,10 @@
    streichen, nur neu ordnen. Die Raumnamen „passen".
 
    Geprüft wird:
-    1. Rechner: links genau Heute · Studio · Plan · Nachrichten · Wissen,
+    1. Rechner: links genau Heute · Studio · Zeiten · Plan · Nachrichten · Wissen,
        für die Leitung dazu Verwaltung. Kein Putzplan-Knopf, kein
        „Alles". Die Schnellzugriffe stehen abgesetzt UNTER den Räumen.
-    2. Handy (neues UND bisheriges Design): unten dieselben fünf, in
+    2. Handy (neues UND bisheriges Design): unten dieselben sechs, in
        derselben Reihenfolge.
     3. Jede Ansicht der App liegt in genau einem Raum und ist in höchstens
        zwei Tipps erreichbar (Raum, dann Reiter).
@@ -22,7 +22,7 @@
        auf „Heute" – dort passten nur drei, und die Startseite verlor
        81 px; test-schnell-editor und test-tagesband fanden das.)
     6. Am Handy liegt die Formi-Kugel nicht auf „+ Aufgabe".
-    7. Die fünf Knöpfe unten treffen ≥ 44 × 44 bei 320 / 390 / 430 px,
+    7. Die sechs Knöpfe unten treffen ≥ 44 × 44 bei 320 / 390 / 430 px,
        normal und kompakt; kein Querlauf.
    ══════════════════════════════════════════════════════════════════ */
 const { chromium } = require('playwright');
@@ -30,7 +30,12 @@ const CHROME = process.env.CHROME ||
   '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 const SP = __dirname;
-const RAEUME = ['Heute', 'Studio', 'Plan', 'Nachrichten', 'Wissen'];
+/* Runde 222: ein sechster Raum, „Zeiten". Aus dem Betrieb, 23.10.2026,
+   auf die Rückfrage, ob die Zeiterfassung einen eigenen Knopf unten
+   bekommt oder unter „Alles" liegt: „eigener knopf". Gestempelt wird
+   jeden Tag zweimal — deshalb direkt hinter „Studio". Die Knöpfe treffen
+   weiter ≥ 44 × 44 bei 320 px (Abschnitt 7). */
+const RAEUME = ['Heute', 'Studio', 'Zeiten', 'Plan', 'Nachrichten', 'Wissen'];
 
 let gut = 0, schlecht = 0;
 function pruefe(was, bedingung, hinweis) {
@@ -98,7 +103,7 @@ const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel
   for (const neu of [1, 0]) {
     const p = await oeffne(b, 390, 844, { neu, touch: true });
     const u = await leiste(p, '.mobnav [data-group]');
-    pruefe((neu ? 'neues' : 'bisheriges') + ' Design: ' + u.join(' · '), JSON.stringify(u.slice(0, 5)) === JSON.stringify(RAEUME), JSON.stringify(u));
+    pruefe((neu ? 'neues' : 'bisheriges') + ' Design: ' + u.join(' · '), JSON.stringify(u.slice(0, RAEUME.length)) === JSON.stringify(RAEUME), JSON.stringify(u));
     await zu(p);
   }
 
@@ -234,7 +239,7 @@ const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel
         return { n: k.length, klein: k.map(e => [e.textContent.trim(), f(e)]).filter(x => x[1].w < 44 || x[1].h < 44).map(x => x[0] + ' ' + x[1].w + '×' + x[1].h),
           quer: document.documentElement.scrollWidth - innerWidth };
       }, TREFFER.toString());
-      pruefe(dichte + ' ' + w + ' px: ' + m.n + ' Knöpfe ≥ 44 × 44, kein Querlauf', m.n === 5 && !m.klein.length && m.quer <= 0, JSON.stringify(m));
+      pruefe(dichte + ' ' + w + ' px: ' + m.n + ' Knöpfe ≥ 44 × 44, kein Querlauf', m.n === RAEUME.length && !m.klein.length && m.quer <= 0, JSON.stringify(m));
       await zu(p);
     }
   }

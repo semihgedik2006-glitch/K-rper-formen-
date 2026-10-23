@@ -1,4 +1,4 @@
-/* ══ FINDEWEGE: WIE VIELE TIPPS BIS ZUM ZIEL? (Runde 222) ════════════
+/* ══ FINDEWEGE: WIE VIELE TIPPS BIS ZUM ZIEL? (Runde 223) ════════════
    Aus der Studienlage (docs/design-vorbilder/studien-psychologie.md,
    Folgerung 14): „Wirkung messen statt fragen … je 5 typische Aufgaben
    stoppen". Eine Stoppuhr mit Menschen gibt es hier nicht – gemessen wird,

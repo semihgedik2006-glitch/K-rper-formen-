@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-VabLxG712pd+FcLh8FBUscXQixaMdrVPrDiA+aovmTs='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-7r7uIQ7mitAR6PLxOkGfI7RSKBTk6v72dVBuBiDnJrI='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2167,6 +2167,11 @@ body.nurlesen .kopf-plus{display:none !important}
     z-index:1;transition:color .2s,transform .3s var(--spring)}
   .mobnav button:active{transform:scale(.9)}
   .mobnav button svg{width:22px;height:22px}
+  /* Runde 222: zwei Zeilen nur für die langen Wörter (navWort), nur
+     unter 360 px. Gemessen bei 320: Leiste 83 statt 68 px hoch. */
+  @media(max-width:359px){
+    body:not(.neu) .mobnav button > span:not(.badge):not(.ndot){text-align:center;line-height:var(--lh-eng)}
+  }
   .mobnav button.active{color:var(--accent);font-weight:700}
   /* ── Das Abzeichen sitzt NEBEN dem Symbol, nicht darauf ──
      Bis zum 21.9.2026 hiess es hier `right:50%; translateX(15px)`.
@@ -3509,6 +3514,30 @@ button.ich-zeile:active{opacity:.7}
   gap:var(--s10);margin:0 0 var(--s6)}
 .st-knoepfe .btn{width:100%;min-height:52px}
 .st-tag.leer .ich-was{color:var(--text-3)}
+/* Mein Konto (Runde 222): eine grosse Zahl mit Vorzeichen, darunter die
+   drei, aus denen sie entsteht. Ohne Statusfarbe — ein Minus ist kein
+   Fehler, sondern ein Stand. */
+.st-konto-gross{display:flex;flex-direction:column;gap:var(--s2);margin:0 0 var(--s12)}
+.st-konto-zahl{font-family:var(--font-head);font-weight:800;font-size:var(--t-2xl);
+  line-height:var(--lh-eng);font-variant-numeric:tabular-nums;color:var(--text)}
+.st-konto-gross span{font-size:var(--t-sm);color:var(--text-2)}
+.st-konto-reihe{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:var(--s8);margin:0 0 var(--s10)}
+.st-konto-reihe .st-zahl b{font-size:var(--t-lg)}
+.st-konto-neben{margin:0 0 var(--s12)}
+.st-konto-leer{margin:0 0 var(--s10);color:var(--text-2)}
+.st-urlaub{padding:var(--s10) var(--s12);border-radius:var(--r-md);background:var(--auf-1);
+  border:1px solid var(--line);margin:0 0 var(--s10)}
+.st-urlaub h4{margin:0 0 var(--s4);font-size:var(--t-2xs);font-weight:700;color:var(--text-3);
+  letter-spacing:var(--ls-l);text-transform:uppercase}
+.st-urlaub p{margin:0}
+.st-urlaub p + p{margin-top:var(--s4)}
+.st-urlaub-rest{font-family:var(--font-head);font-weight:800;font-size:var(--t-xl);font-variant-numeric:tabular-nums}
+.st-konto-verlauf{margin-top:var(--s4)}
+/* Zeiten des Teams: die Wege zu dem, was woanders eingerichtet wird. */
+.zt-einrichten[hidden]{display:none}
+.zt-einrichten h3{margin:0 0 var(--s10)}
+.zt-wege{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--s8)}
+.zt-wege .btn{min-height:44px;width:100%}
 /* Jetzt im Studio, bei der Leitung. Am Rechner nebeneinander, am Handy
    untereinander — vier Gruppen, keine davon in einer Statusfarbe. */
 .zk-jetzt{margin:var(--s12) 0 var(--s16);padding:var(--s12) var(--s16);
@@ -3564,7 +3593,7 @@ button.ich-zeile:active{opacity:.7}
 .zk-regeln-liste{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr));gap:var(--s8) var(--s16)}
 .zk-regel-zeile{border:none;margin:0;padding:var(--s4) 0;min-width:0}
 .zk-regel-zeile legend{font-size:var(--t-sm);font-weight:600;padding:0;margin:0 0 var(--s4)}
-.zk-regel-zeile{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:var(--s4)}
+.zk-regel-zeile{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:var(--s4)}
 .zk-regel-tag{display:flex;flex-direction:column;align-items:stretch;gap:var(--s2);font-size:var(--t-2xs);color:var(--text-3);text-align:center}
 .zk-regel-tag .inp{min-height:44px;padding:0 var(--s2);text-align:center;min-width:0}
 /* Am schmalen Handy wären sieben Felder je 37 px breit — unter 44. Dann
@@ -6296,8 +6325,10 @@ body[data-bereich="g-wissen"] {--fk-ber:#BBA4FF}
 body[data-bereich="g-komm"]   {--fk-ber:#4EE6D2}
 body[data-bereich="g-arbeit"] {--fk-ber:#FFA85C}
 body[data-bereich="g-team"]   {--fk-ber:#FF8FC8}
+body[data-bereich="g-zeit"]   {--fk-ber:#67E8F9}
 body[data-bereich="g-start"] .fk-wirbel::before,body[data-bereich="g-wissen"] .fk-wirbel::before,body[data-bereich="g-komm"] .fk-wirbel::before,
-body[data-bereich="g-arbeit"] .fk-wirbel::before,body[data-bereich="g-team"] .fk-wirbel::before{opacity:.7}
+body[data-bereich="g-arbeit"] .fk-wirbel::before,body[data-bereich="g-team"] .fk-wirbel::before,
+body[data-bereich="g-zeit"] .fk-wirbel::before{opacity:.7}
 /* Abends (ab 19 Uhr) wird der Ring wärmer. */
 .fk-wirbel::after{content:"";position:absolute;inset:0;border-radius:var(--r-rund);opacity:0;transition:opacity 1s ease;
   background:radial-gradient(circle at 72% 86%, rgba(255,160,90,.5), rgba(255,160,90,0) 64%)}
@@ -6383,6 +6414,22 @@ body[data-bereich="g-arbeit"] .fk-wirbel::before,body[data-bereich="g-team"] .fk
 @media(min-width:821px){
   .formi-kugel{right:auto;left:calc((210px - 58px) / 2)}
   body.formi-kugel-an .side{padding-bottom:calc(var(--s16) + 58px + var(--s16))}
+}
+/* Runde 222: mit „Zeiten" steht in der Leiste ein Raum mehr. Auf
+   niedrigen Rechnerbildschirmen (1280 × 720, 1366 × 768, 1100 × 800)
+   war sie danach 24 bis 104 px zu lang, und „Tastenkürzel" rutschte
+   unter die Kugel (test-p4-seitenleiste). Dort teilen sich Kugel und
+   „Tastenkürzel" deshalb EINE Zeile: die Kugel rechts, links das
+   Zeichen mit „?" (das Wort steht im Hinweis und im Namen des Knopfs),
+   und die Überschrift über den Schnellzugriffe fällt weg — die Linie
+   trennt sie weiter. Ab 900 px Höhe bleibt alles, wie es war. */
+@media (hover:hover) and (min-width:1100px) and (max-height:860px){
+  body.formi-kugel-an .formi-kugel{left:calc(210px - 58px - var(--s12))}
+  body.formi-kugel-an .side{padding-bottom:calc(var(--s16) + (58px - 44px) / 2)}
+  body.formi-kugel-an .side-tasten{width:auto}
+  body.formi-kugel-an .side-tasten span{display:none}
+  body.neu.formi-kugel-an .ss-kopf{display:none}
+  body.neu.formi-kugel-an .side-schnell{margin-top:var(--s8);padding-top:var(--s8)}
 }
 /* Am Handy: so viel Luft unten, wie die Kugel braucht. */
 @media(max-width:820px){ body.formi-kugel-an .main{padding-bottom:calc(80px + 58px + var(--s8))} }
@@ -8108,6 +8155,7 @@ body.neu[data-bereich="g-wissen"]{--ber:#BBA4FF;--ber-f:rgba(var(--akz2-rgb),.27
 body.neu[data-bereich="g-komm"]  {--ber:#4EE6D2;--ber-f:rgba(45,212,191,.26)}
 body.neu[data-bereich="g-arbeit"]{--ber:#FFA85C;--ber-f:rgba(251,146,60,.26)}
 body.neu[data-bereich="g-team"]  {--ber:#FF8FC8;--ber-f:rgba(244,114,182,.26)}
+body.neu[data-bereich="g-zeit"]  {--ber:#67E8F9;--ber-f:rgba(34,211,238,.24)}
 body.neu[data-bereich="g-chef"]  {--ber:#AEBBCE;--ber-f:rgba(148,163,184,.24)}
 /* „Alles" hat keinen eigenen Bereich, sondern ist das Verzeichnis
    über alle. Trotzdem braucht es einen festen Ton: ohne ihn fiel es
@@ -8124,6 +8172,7 @@ body.neu.light[data-bereich="g-wissen"]{--ber:#5F1FC7;--ber-f:rgba(109,40,217,.1
 body.neu.light[data-bereich="g-komm"]  {--ber:#0B6A62;--ber-f:rgba(15,118,110,.17)}
 body.neu.light[data-bereich="g-arbeit"]{--ber:#AE3A0A;--ber-f:rgba(194,65,12,.17)}
 body.neu.light[data-bereich="g-team"]  {--ber:#A91453;--ber-f:rgba(190,24,93,.17)}
+body.neu.light[data-bereich="g-zeit"]  {--ber:#0E7490;--ber-f:rgba(14,116,144,.16)}
 body.neu.light[data-bereich="g-chef"]  {--ber:#3B4859;--ber-f:rgba(71,85,105,.16)}
 body.neu.light[data-bereich="g-alles"] {--ber:#3E4E6B;--ber-f:rgba(62,78,107,.16)}
 
@@ -8258,6 +8307,16 @@ body.neu .view-head .vh-line{justify-content:flex-end}
   body.neu .mn-reihe button{flex:1 1 0;min-width:0}
   body.neu .mobnav button svg{width:24px;height:24px}
   body.neu .mn-reihe button span:not(.badge):not(.ndot){font-size:var(--t-2xs)}
+  /* Runde 222: sechs Knöpfe. Gleich breit sind sie auf 320 px je 52 px,
+     und „Nachrichten" braucht 59 — es ragte 7 px über den Knopf
+     (test-abgeschnitten, test-quer). Eine kleinere Schrift reichte nicht
+     (bei 88 % noch 56 px). Auf schmalen Handys richtet sich die Breite
+     deshalb nach dem Wort: jeder mindestens 44 px, der Rest wird
+     verteilt — bis 420 px (bei 375 waren es noch 61 für 64). Gemessen
+     bei 320 px: 5 × 44 + 68 = 288 von 312 px. */
+  @media(max-width:420px){
+    body.neu .mn-reihe button{flex:1 1 auto;min-width:44px}
+  }
   /* Die gleitende Füllung nimmt die Farbe des Bereichs an, in dem man
      gerade ist. Damit stimmt unten und oben dieselbe Aussage überein. */
   body.neu .mobnav::before{background:var(--ber-f);box-shadow:inset 0 0 0 1px var(--ber)}
@@ -9605,7 +9664,6 @@ body.neu .kn-zeile{min-height:var(--zeile)}
           <div class="pm-tabs" id="ichTabs" style="margin:6px 0 14px">
             <button class="pm-tab on" data-ichtab="woche">Woche</button>
             <button class="pm-tab" data-ichtab="kalender">Kalender</button>
-            <button class="pm-tab" data-ichtab="zeiten">Zeiten</button>
             <button class="pm-tab" data-ichtab="daten">Ich</button>
           </div>
 
@@ -9706,128 +9764,6 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             </div>
           </div>
 
-          <!-- ── ZEITEN (Runde 189) ──
-               Aus dem Betrieb, 22.10.2026: „so wie crewmeister funktioniert
-               am besten". Oben der Stand JETZT und — mit Freigabe — die
-               Knöpfe, die gerade passen (Pause ODER Feierabend). Darunter
-               die Woche mit Plan neben Ist, rechts daneben der Monat.
-               Am Rechner zwei Spalten: „passt aufs Handy" ist nicht fertig. -->
-          <div id="ichPaneZeiten" class="st-raster" style="display:none">
-            <div class="st-spalte">
-              <div class="ich-blatt st-jetzt" id="stJetzt">
-                <div class="ich-kopf">
-                  <h3>Jetzt</h3>
-                  <span class="ich-zahl-klein" id="stJetztTag"></span>
-                </div>
-                <p class="st-stand" id="stStand" role="status">Wird geladen …</p>
-                <div class="st-zahlen">
-                  <div class="st-zahl"><span>Heute gearbeitet</span><b id="stHeuteIst">–</b></div>
-                  <div class="st-zahl"><span>Laut Plan</span><b id="stHeuteSoll">–</b></div>
-                </div>
-                <p class="hint st-schicht" id="stSchicht"></p>
-                <p class="st-pause-hinweis" id="stPauseHinweis" role="status" hidden></p>
-                <!-- Stempeln mit dem eigenen Handy. Steht nur da, wenn der
-                     Chef dieses Konto freigeschaltet hat — und braucht
-                     zusätzlich den Code vom Bildschirm im Studio. Das ist
-                     die Ortsbindung, ohne ein einziges Standortdatum. -->
-                <div class="st-handy" id="ichHandyKarte" style="display:none">
-                  <span class="ich-zahl-klein" id="ichHandyStand" hidden></span>
-                  <div class="field">
-                    <label for="ichHandyCode">Code vom Bildschirm im Studio</label>
-                    <input class="inp" id="ichHandyCode" type="text" inputmode="numeric"
-                           autocomplete="off" maxlength="7" placeholder="000 000" /></div>
-                  <div class="st-knoepfe" id="ichHandyKnoepfe">
-                    <button class="btn btn-primary" id="ichHandyBtn" data-handyart="kommen">Kommen</button>
-                  </div>
-                  <p class="hint mz-neben">Der Code wechselt alle 30 Sekunden.</p>
-                </div>
-                <p class="hint" id="stTerminalHinweis" hidden>Gestempelt wird am Terminal im Studio: Name, PIN, fertig.</p>
-              </div>
-              <div class="ich-blatt" id="stWocheKarte">
-                <div class="ich-kopf">
-                  <h3>Diese Woche</h3>
-                  <span class="ich-zahl-klein" id="stWocheSumme"></span>
-                </div>
-                <div id="stWoche"></div>
-              </div>
-              <!-- Korrekturantrag (Runde 204): die Person trägt ein, was fehlt;
-                   ein Stempel wird erst daraus, wenn die Geschäftsführung
-                   annimmt („nur geschäftsführung", 22.10.2026). -->
-              <div class="ich-blatt" id="stAntragKarte">
-                <div class="ich-kopf">
-                  <h3>Korrektur beantragen</h3>
-                  <span class="ich-zahl-klein" id="stAntragZahl"></span>
-                </div>
-                <p class="hint mz-neben">Fehlt ein Stempel? Die Geschäftsführung bestätigt ihn.</p>
-                <div class="st-antrag-reihe">
-                  <div class="field"><label for="stAntragTag">Tag</label>
-                    <input class="inp" id="stAntragTag" type="date" /></div>
-                  <div class="field"><label for="stAntragArt">Was fehlt</label>
-                    <select class="inp" id="stAntragArt">
-                      <option value="gehen">Feierabend</option>
-                      <option value="kommen">Kommen</option>
-                      <option value="pause">Pause</option>
-                      <option value="zurueck">Zurück</option>
-                    </select></div>
-                  <div class="field"><label for="stAntragUhr">Uhrzeit</label>
-                    <input class="inp" id="stAntragUhr" type="time" /></div>
-                </div>
-                <div class="field"><label for="stAntragGrund">Grund</label>
-                  <input class="inp" id="stAntragGrund" maxlength="200"
-                         placeholder="z. B. Feierabend vergessen, Schicht bis 17:30" /></div>
-                <button type="button" class="btn btn-primary st-antrag-los" id="stAntragBtn">Antrag stellen</button>
-                <div id="stAntraege"></div>
-              </div>
-                <!-- PIN für das Stempeln am Tablet. Steht hier und nicht in
-                     der Verwaltung: setzen darf sie nur die Person selbst.
-                     Es gibt bewusst keinen Weg, über den die Leitung eine
-                     PIN vergibt oder zurücksetzt — wer das kann, kann auch
-                     für jemanden stempeln. -->
-                <div class="ich-blatt" id="ichPinKarte">
-                  <div class="ich-kopf">
-                    <h3>Meine Stempel-PIN</h3>
-                    <span class="ich-zahl-klein" id="ichPinStand"></span>
-                  </div>
-                  <p class="hint" id="ichPinText" style="margin:0 0 10px">
-                    Mit dieser PIN stempelst du am Tablet im Studio.</p>
-                  <div class="field" id="ichPinAltWrap" style="display:none">
-                    <label for="ichPinAlt">Bisherige PIN</label>
-                    <input class="inp" id="ichPinAlt" type="password" inputmode="numeric"
-                           autocomplete="off" maxlength="6" placeholder="••••" /></div>
-                  <div class="field"><label for="ichPinNeu">Neue PIN (4 bis 6 Ziffern)</label>
-                    <input class="inp" id="ichPinNeu" type="password" inputmode="numeric"
-                           autocomplete="new-password" maxlength="6" placeholder="••••" /></div>
-                  <button class="btn btn-primary btn-sm" id="ichPinBtn"
-                          style="width:100%">PIN speichern</button>
-                </div>
-            </div>
-            <div class="st-spalte">
-                <!-- Die eigenen Stempelzeiten. NUR LESEN: aus dem Browser
-                     führt kein Schreibweg in `zeiten`, die Regeln sagen
-                     write:false für alle. Wer seine Zeit für falsch hält,
-                     bekommt hier deshalb keinen Stift — eine Korrektur mit
-                     Grund kommt später, und der ursprüngliche Eintrag bleibt
-                     dabei stehen. Eine Aufzeichnung, die sich nachträglich
-                     überschreiben lässt, ist als Nachweis nichts wert. -->
-                <div class="ich-blatt" id="ichZeitenKarte">
-                  <div class="ich-kopf">
-                    <h3>Meine Zeiten</h3>
-                    <div class="ich-monat-nav">
-                      <button class="ich-pfeil" id="ichZeitPrev" aria-label="Voriger Monat">‹</button>
-                      <button class="ich-pfeil" id="ichZeitHeute">Heute</button>
-                      <button class="ich-pfeil" id="ichZeitNext" aria-label="Nächster Monat">›</button>
-                    </div>
-                  </div>
-                  <div class="mz-summe">
-                    <b id="ichZeitSumme">–</b>
-                    <span id="ichZeitMonat"></span>
-                  </div>
-                  <p class="hint mz-neben" id="ichZeitNeben"></p>
-                  <div id="ichZeitenListe"></div>
-                </div>
-            </div>
-          </div>
-
 
           <!-- ── ICH: Nachweise, Stammdaten, eigene Zahlen ── -->
           <div id="ichPaneDaten" style="display:none">
@@ -9917,6 +9853,215 @@ body.neu .kn-zeile{min-height:var(--zeile)}
            NOCH NICHT DA: abhaken direkt aus der Wochenliste. Das
            gehoert zur naechsten Runde („Tagesbrille"), und bis dahin
            steht es nicht hier als Behauptung. -->
+      <!-- ══ ZEITERFASSUNG (Runde 222) ══════════════════════════════════
+           Aus dem Betrieb, 23.10.2026: „eine ganz neue seite fürs
+           terminal und für die chefs … wo man alles managen kann und
+           mitarbeiter können sich nur einstempeln und ihre eigenen
+           stunden sehen ob plus oder minus". Auf die Rückfragen: eigener
+           Knopf, der laufende Monat „vorläufig", Resturlaub dazu.
+           Zwei Seiten unter EINEM Knopf: „Meine Zeiten" für jeden,
+           „Team" für die Leitung. Das Terminal bleibt die Kiosk-Seite. -->
+      <section class="view" id="view-zeit">
+        <div class="view-head shrink"><h2>Meine Zeiten</h2>
+          <p>Stempeln, Stunden und Konto.</p></div>
+        <div class="scroll-area" data-shrinks="1">
+          <!-- ── ZEITEN (Runde 189) ──
+               Aus dem Betrieb, 22.10.2026: „so wie crewmeister funktioniert
+               am besten". Oben der Stand JETZT und — mit Freigabe — die
+               Knöpfe, die gerade passen (Pause ODER Feierabend). Darunter
+               die Woche mit Plan neben Ist, rechts daneben der Monat.
+               Am Rechner zwei Spalten: „passt aufs Handy" ist nicht fertig. -->
+          <div id="ichPaneZeiten" class="st-raster">
+            <div class="st-spalte">
+              <div class="ich-blatt st-jetzt" id="stJetzt">
+                <div class="ich-kopf">
+                  <h3>Jetzt</h3>
+                  <span class="ich-zahl-klein" id="stJetztTag"></span>
+                </div>
+                <p class="st-stand" id="stStand" role="status">Wird geladen …</p>
+                <div class="st-zahlen">
+                  <div class="st-zahl"><span>Heute gearbeitet</span><b id="stHeuteIst">–</b></div>
+                  <div class="st-zahl"><span>Laut Plan</span><b id="stHeuteSoll">–</b></div>
+                </div>
+                <p class="hint st-schicht" id="stSchicht"></p>
+                <p class="st-pause-hinweis" id="stPauseHinweis" role="status" hidden></p>
+                <!-- Stempeln mit dem eigenen Handy. Steht nur da, wenn der
+                     Chef dieses Konto freigeschaltet hat — und braucht
+                     zusätzlich den Code vom Bildschirm im Studio. Das ist
+                     die Ortsbindung, ohne ein einziges Standortdatum. -->
+                <div class="st-handy" id="ichHandyKarte" style="display:none">
+                  <span class="ich-zahl-klein" id="ichHandyStand" hidden></span>
+                  <div class="field">
+                    <label for="ichHandyCode">Code vom Bildschirm im Studio</label>
+                    <input class="inp" id="ichHandyCode" type="text" inputmode="numeric"
+                           autocomplete="off" maxlength="7" placeholder="000 000" /></div>
+                  <div class="st-knoepfe" id="ichHandyKnoepfe">
+                    <button class="btn btn-primary" id="ichHandyBtn" data-handyart="kommen">Kommen</button>
+                  </div>
+                  <p class="hint mz-neben">Der Code wechselt alle 30 Sekunden.</p>
+                </div>
+                <p class="hint" id="stTerminalHinweis" hidden>Gestempelt wird am Terminal im Studio: Name, PIN, fertig.</p>
+              </div>
+              <!-- Mein Konto (Runde 222): „ihre eigenen stunden sehen ob plus
+                   oder minus". Der laufende Monat ist vorläufig, bis die
+                   Geschäftsführung ihn abschliesst; das Konto davor kommt
+                   aus den Abschlüssen (meinKonto, nur die eigene Zeile). -->
+              <div class="ich-blatt st-konto" id="stKontoKarte">
+                <div class="ich-kopf">
+                  <h3>Mein Konto</h3>
+                  <span class="ich-zahl-klein" id="stKontoStand"></span>
+                </div>
+                <div id="stKonto"><p class="hint">Wird geladen …</p></div>
+              </div>
+              <div class="ich-blatt" id="stWocheKarte">
+                <div class="ich-kopf">
+                  <h3>Diese Woche</h3>
+                  <span class="ich-zahl-klein" id="stWocheSumme"></span>
+                </div>
+                <div id="stWoche"></div>
+              </div>
+              <!-- Korrekturantrag (Runde 204): die Person trägt ein, was fehlt;
+                   ein Stempel wird erst daraus, wenn die Geschäftsführung
+                   annimmt („nur geschäftsführung", 22.10.2026). -->
+              <div class="ich-blatt" id="stAntragKarte">
+                <div class="ich-kopf">
+                  <h3>Korrektur beantragen</h3>
+                  <span class="ich-zahl-klein" id="stAntragZahl"></span>
+                </div>
+                <p class="hint mz-neben">Fehlt ein Stempel? Die Geschäftsführung bestätigt ihn.</p>
+                <div class="st-antrag-reihe">
+                  <div class="field"><label for="stAntragTag">Tag</label>
+                    <input class="inp" id="stAntragTag" type="date" /></div>
+                  <div class="field"><label for="stAntragArt">Was fehlt</label>
+                    <select class="inp" id="stAntragArt">
+                      <option value="gehen">Feierabend</option>
+                      <option value="kommen">Kommen</option>
+                      <option value="pause">Pause</option>
+                      <option value="zurueck">Zurück</option>
+                    </select></div>
+                  <div class="field"><label for="stAntragUhr">Uhrzeit</label>
+                    <input class="inp" id="stAntragUhr" type="time" /></div>
+                </div>
+                <div class="field"><label for="stAntragGrund">Grund</label>
+                  <input class="inp" id="stAntragGrund" maxlength="200"
+                         placeholder="z. B. Feierabend vergessen, Schicht bis 17:30" /></div>
+                <button type="button" class="btn btn-primary st-antrag-los" id="stAntragBtn">Antrag stellen</button>
+                <div id="stAntraege"></div>
+              </div>
+                <!-- PIN für das Stempeln am Tablet. Steht hier und nicht in
+                     der Verwaltung: setzen darf sie nur die Person selbst.
+                     Es gibt bewusst keinen Weg, über den die Leitung eine
+                     PIN vergibt oder zurücksetzt — wer das kann, kann auch
+                     für jemanden stempeln. -->
+                <div class="ich-blatt" id="ichPinKarte">
+                  <div class="ich-kopf">
+                    <h3>Meine Stempel-PIN</h3>
+                    <span class="ich-zahl-klein" id="ichPinStand"></span>
+                  </div>
+                  <p class="hint" id="ichPinText" style="margin:0 0 10px">
+                    Mit dieser PIN stempelst du am Tablet im Studio.</p>
+                  <div class="field" id="ichPinAltWrap" style="display:none">
+                    <label for="ichPinAlt">Bisherige PIN</label>
+                    <input class="inp" id="ichPinAlt" type="password" inputmode="numeric"
+                           autocomplete="off" maxlength="6" placeholder="••••" /></div>
+                  <div class="field"><label for="ichPinNeu">Neue PIN (4 bis 6 Ziffern)</label>
+                    <input class="inp" id="ichPinNeu" type="password" inputmode="numeric"
+                           autocomplete="new-password" maxlength="6" placeholder="••••" /></div>
+                  <button class="btn btn-primary btn-sm" id="ichPinBtn"
+                          style="width:100%">PIN speichern</button>
+                </div>
+            </div>
+            <div class="st-spalte">
+                <!-- Die eigenen Stempelzeiten. NUR LESEN: aus dem Browser
+                     führt kein Schreibweg in `zeiten`, die Regeln sagen
+                     write:false für alle. Wer seine Zeit für falsch hält,
+                     bekommt hier deshalb keinen Stift — eine Korrektur mit
+                     Grund kommt später, und der ursprüngliche Eintrag bleibt
+                     dabei stehen. Eine Aufzeichnung, die sich nachträglich
+                     überschreiben lässt, ist als Nachweis nichts wert. -->
+                <div class="ich-blatt" id="ichZeitenKarte">
+                  <div class="ich-kopf">
+                    <h3>Meine Zeiten</h3>
+                    <div class="ich-monat-nav">
+                      <button class="ich-pfeil" id="ichZeitPrev" aria-label="Voriger Monat">‹</button>
+                      <button class="ich-pfeil" id="ichZeitHeute">Heute</button>
+                      <button class="ich-pfeil" id="ichZeitNext" aria-label="Nächster Monat">›</button>
+                    </div>
+                  </div>
+                  <div class="mz-summe">
+                    <b id="ichZeitSumme">–</b>
+                    <span id="ichZeitMonat"></span>
+                  </div>
+                  <p class="hint mz-neben" id="ichZeitNeben"></p>
+                  <div id="ichZeitenListe"></div>
+                </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-zeitteam">
+        <div class="view-head shrink"><h2>Zeiten des Teams</h2>
+          <p>Wer da ist, Anträge, Monat und Konto.</p></div>
+        <div class="scroll-area" data-shrinks="1">
+          <!-- Stempelzeiten des Teams (P-09, 24.9.2026). Korrigiert wird
+               nie durch Überschreiben: ein nachgetragener Stempel kommt
+               dazu, ein falscher wird als ungültig markiert und bleibt
+               stehen. Geschrieben wird nur über die Funktionen
+               zeitNachtragen und zeitStornieren. -->
+          <div id="zeitTeamPane">
+            <div class="card">
+              <div class="zk-kopf">
+                <select class="inp" id="zkStudio" aria-label="Studio"></select>
+                <div class="zk-monat-nav">
+                  <button type="button" class="ich-pfeil zk-pfeil" id="zkPrev" aria-label="Voriger Monat">‹</button>
+                  <span class="zk-monat" id="zkMonat"></span>
+                  <button type="button" class="ich-pfeil zk-pfeil" id="zkNext" aria-label="Nächster Monat">›</button>
+                </div>
+              </div>
+              <!-- Monat & Konto (Runde 208): nur die Geschäftsführung — darin
+                   stehen alle Konten nebeneinander, und die Vertragsstunden
+                   (planerTeam) liest ohnehin nur sie. -->
+              <div class="zk-ansicht" id="zkAnsicht" role="group" aria-label="Ansicht" hidden>
+                <button type="button" class="zk-ansicht-knopf an" data-zkansicht="tage">Tage</button>
+                <button type="button" class="zk-ansicht-knopf" data-zkansicht="konto">Monat &amp; Konto</button>
+              </div>
+              <!-- Jetzt im Studio (Runde 189): wer ist da, wer in der Pause,
+                   wer laut Plan erwartet wird und noch nicht gestempelt hat.
+                   Wie die „Live-Übersicht" bei Crewmeister — aber nur hier,
+                   bei der Leitung, und nicht mehr am Terminal am Tresen. -->
+              <section class="zk-jetzt" id="zkJetzt" aria-label="Jetzt im Studio"></section>
+              <button type="button" class="zk-vormonat" id="zkVormonat" hidden></button>
+              <!-- Korrekturanträge (Runde 204): nur bei der Geschäftsführung.
+                   UNTER dem Vormonats-Hinweis: darüber verschob der Block ihn
+                   so weit, dass er bei 320 px nach dem Dichtewechsel nur noch
+                   38 px hoch traf (test-zeitkorrektur). -->
+              <section class="zk-antraege" id="zkAntraege" aria-label="Korrekturanträge" hidden></section>
+              <section class="zk-konto" id="zkKonto" aria-label="Monat und Stundenkonto" hidden></section>
+              <p class="hint" id="zkStand"></p>
+              <div class="zk-wrap" id="zkWrap">
+                <div id="zkListe"></div>
+                <div id="zkDetail" class="zk-detail"></div>
+              </div>
+              <p class="hint zk-regel">Korrigiert wird nie durch Überschreiben:
+                ein nachgetragener Stempel kommt dazu, ein falscher wird als
+                ungültig markiert und bleibt sichtbar. Die Person sieht beides,
+                mit Grund, in „Meine Zeiten".</p>
+            </div>
+          </div>
+          <!-- Was zur Zeiterfassung gehört, aber woanders eingerichtet
+               wird — ein Tipp dorthin statt einer zweiten Ablage. -->
+          <div class="card zt-einrichten" id="ztEinrichten" hidden>
+            <h3>Einrichten</h3>
+            <div class="zt-wege">
+              <button type="button" class="btn btn-ghost" data-ztweg="standorte">Stempel-Terminals</button>
+              <button type="button" class="btn btn-ghost" data-ztweg="team">Handy-Stempeln freigeben</button>
+              <button type="button" class="btn btn-ghost" data-ztweg="system">Aufbewahrung der Stempel</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="view" id="view-persoenlich">
         <div class="view-head shrink"><h2>Persönlich</h2>
           <p id="persSub">Was nur dich betrifft.</p></div>
@@ -11600,51 +11745,6 @@ body.neu .kn-zeile{min-height:var(--zeile)}
             </details>
           </div>
 
-          <!-- Stempelzeiten des Teams (P-09, 24.9.2026). Korrigiert wird
-               nie durch Überschreiben: ein nachgetragener Stempel kommt
-               dazu, ein falscher wird als ungültig markiert und bleibt
-               stehen. Geschrieben wird nur über die Funktionen
-               zeitNachtragen und zeitStornieren. -->
-          <div class="chef-pane" data-cpane="zeiten" style="display:none">
-            <div class="card">
-              <div class="zk-kopf">
-                <select class="inp" id="zkStudio" aria-label="Studio"></select>
-                <div class="zk-monat-nav">
-                  <button type="button" class="ich-pfeil zk-pfeil" id="zkPrev" aria-label="Voriger Monat">‹</button>
-                  <span class="zk-monat" id="zkMonat"></span>
-                  <button type="button" class="ich-pfeil zk-pfeil" id="zkNext" aria-label="Nächster Monat">›</button>
-                </div>
-              </div>
-              <!-- Monat & Konto (Runde 208): nur die Geschäftsführung — darin
-                   stehen alle Konten nebeneinander, und die Vertragsstunden
-                   (planerTeam) liest ohnehin nur sie. -->
-              <div class="zk-ansicht" id="zkAnsicht" role="group" aria-label="Ansicht" hidden>
-                <button type="button" class="zk-ansicht-knopf an" data-zkansicht="tage">Tage</button>
-                <button type="button" class="zk-ansicht-knopf" data-zkansicht="konto">Monat &amp; Konto</button>
-              </div>
-              <!-- Jetzt im Studio (Runde 189): wer ist da, wer in der Pause,
-                   wer laut Plan erwartet wird und noch nicht gestempelt hat.
-                   Wie die „Live-Übersicht" bei Crewmeister — aber nur hier,
-                   bei der Leitung, und nicht mehr am Terminal am Tresen. -->
-              <section class="zk-jetzt" id="zkJetzt" aria-label="Jetzt im Studio"></section>
-              <button type="button" class="zk-vormonat" id="zkVormonat" hidden></button>
-              <!-- Korrekturanträge (Runde 204): nur bei der Geschäftsführung.
-                   UNTER dem Vormonats-Hinweis: darüber verschob der Block ihn
-                   so weit, dass er bei 320 px nach dem Dichtewechsel nur noch
-                   38 px hoch traf (test-zeitkorrektur). -->
-              <section class="zk-antraege" id="zkAntraege" aria-label="Korrekturanträge" hidden></section>
-              <section class="zk-konto" id="zkKonto" aria-label="Monat und Stundenkonto" hidden></section>
-              <p class="hint" id="zkStand"></p>
-              <div class="zk-wrap" id="zkWrap">
-                <div id="zkListe"></div>
-                <div id="zkDetail" class="zk-detail"></div>
-              </div>
-              <p class="hint zk-regel">Korrigiert wird nie durch Überschreiben:
-                ein nachgetragener Stempel kommt dazu, ein falscher wird als
-                ungültig markiert und bleibt sichtbar. Die Person sieht beides,
-                mit Grund, in „Meine Zeiten".</p>
-            </div>
-          </div>
           <!-- ── Kennzahlen je Studio (Runde 138) ──
                Am Rechner: Tabelle links, Eintragen rechts. Am Handy
                untereinander, die Tabelle zeigt dann nur den letzten
@@ -13556,6 +13656,7 @@ var BEREICH_FARBE = {
   'g-komm':   'tuerkis',   /* --ber #4EE6D2 / #0B6A62 */
   'g-arbeit': 'orange',    /* --ber #FFA85C / #AE3A0A */
   'g-team':   'pink',      /* --ber #FF8FC8 / #A91453 */
+  'g-zeit':   'cyan',      /* --ber #67E8F9 / #0E7490 (Runde 222) */
   'g-chef':   'schiefer',  /* --ber #AEBBCE / #3B4859 — die Einstellungsecke */
   'g-alles':  'schiefer'   /* --ber #8FA3C4 / #3E4E6B — das Verzeichnis */
 };
@@ -16765,6 +16866,10 @@ function ansichtAn(v){
   if(v==='gehirn') return gehirnVerfuegbar();
   /* Schichtplaner: nur der Chef (Frage 17 an die Geschäftsführung offen). */
   if(v==='planer') return isChef();
+  /* Runde 222: die Zeiten des Teams sieht die Leitung — wie vorher der
+     Reiter „Zeiten" in der Verwaltung. Korrigieren, Konto und Abschluss
+     bleiben dort drin der Geschäftsführung vorbehalten (zkDarf). */
+  if(v==='zeitteam') return canManage();
   /* „Lösungen" ist seit dem 22.9.2026 keine Seite mehr, sondern das
      Hilfe-Fenster in der Kopfzeile. Der Schalter bleibt (er schaltet
      jetzt den Rettungsring ab), aber als ANSICHT gibt es sie nicht
@@ -18009,6 +18114,7 @@ var AKTIONEN=[
   {id:'geraete',std:'g', t:'Geräte',                tun:function(){ showView('geraete', true); }},
   {id:'putz',   std:'p', t:'Putzplan',              tun:function(){ showView('putzplan', true); }},
   {id:'material',std:'m',t:'Material',              tun:function(){ showView('material', true); }},
+  {id:'zeiten', std:'z', t:'Meine Zeiten (stempeln, Konto)', tun:function(){ showView('zeit', true); }},
   {id:'direkt', std:'d', t:'Direktnachrichten',     tun:function(){ showView('dm', true); }},
   {id:'infos',  std:'i', t:'Infos der Leitung',     tun:function(){ showView('ann', true); }},
   {id:'neu',    std:'n', t:'Neue Aufgabe', manage:true, tun:function(){
@@ -21027,6 +21133,13 @@ var NAVGROUPS = [
    icon:'<path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/>'},
   {id:'g-arbeit', label:'Studio', views:['todos','putzplan','material','geraete','probe'],
    icon:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'},
+  /* Runde 222: die Zeiterfassung bekommt einen eigenen Knopf. Aus dem
+     Betrieb, 23.10.2026, auf die Rückfrage „eigener Knopf unten oder
+     unter Alles?": „eigener knopf". Zwei Seiten darunter — „Meine
+     Zeiten" für jeden, „Team" für die Leitung. Sie steht direkt hinter
+     „Studio": gestempelt wird jeden Tag, zweimal. */
+  {id:'g-zeit', label:'Zeiten', views:['zeit','zeitteam'],
+   icon:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'},
   {id:'g-team', label:'Plan', views:['team'],
    icon:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>'},
   {id:'g-komm', label:'Nachrichten', views:['chat','dm','ann'],
@@ -21082,7 +21195,7 @@ var NAVGROUPS = [
 
    Ist der Putzplan abgeschaltet, rückt „Nachrichten" an seine Stelle —
    ein Platz in dieser Leiste bleibt nie leer. */
-var NEU_LEISTE = ['g-start','g-arbeit','g-team','g-komm','g-wissen'];
+var NEU_LEISTE = ['g-start','g-arbeit','g-zeit','g-team','g-komm','g-wissen'];
 function neuLeisteGruppen(gruppen){
   var nach={};
   seitenGruppen(gruppen).forEach(function(g){ nach[g.id]=g; });
@@ -21107,6 +21220,8 @@ var NAV = [
   {id:'putzplan', label:'Putzplan', icon:'<path d="M3 21h18"/><path d="M9 21V9l6-4v16"/><path d="M15 9l4-2v14"/><path d="M9 13h.01M9 17h.01"/>'},
   {id:'geraete', label:'Geräte', icon:'<rect x="2" y="7" width="20" height="12" rx="2"/><path d="M6 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/><path d="M12 11v4M10 13h4"/>'},
   {id:'probe', label:'Probetraining', icon:'<path d="M6 7v10M18 7v10M3 9v6M21 9v6M6 12h12"/>'},
+  {id:'zeit', label:'Meine Zeiten', icon:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'},
+  {id:'zeitteam', label:'Team', icon:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 11.6-4"/><circle cx="17.5" cy="16.5" r="4.5"/><path d="M17.5 14.3v2.2l1.5 1"/>', manageOnly:true},
   {id:'team', label:'Team', icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'},
   {id:'docs', label:'Dokumente', icon:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/>'},
   /* Abspieldreieck im Rahmen: „hier wird etwas gezeigt". Bewusst nicht
@@ -21185,6 +21300,17 @@ function navGruppen(){
     return sichtbareViews(g).length > 0;
   });
 }
+/* Runde 222: im bisherigen Aussehen stehen für die Leitung unten
+   sieben Knöpfe. Bei 320 px sind das 7 × 44 = 308 von 312 px — für
+   „Nachrichten" (61 px) und „Verwaltung" (56 px) blieb kein Platz, und
+   auch bei 85 % Schrift nicht (gemessen 52 bzw. 48 in 48 bzw. 44). Dort
+   dürfen die zwei langen Wörter deshalb an einer festen Stelle in die
+   zweite Zeile gehen. <wbr> statt eines weichen Trennstrichs: es ist
+   kein Zeichen, das Wort bleibt für Vorleser und Suche dasselbe. Wo
+   Platz ist, bricht nichts. */
+function navWort(t){
+  return esc(t).replace('Nachrichten','Nach<wbr>richten').replace('Verwaltung','Verwal<wbr>tung');
+}
 function navKnopf(g, art){
   var b=document.createElement('button');
   b.dataset.group=g.id;
@@ -21194,12 +21320,12 @@ function navKnopf(g, art){
     b.className='tab';
     b.innerHTML=gruppeSvg(g)+'<span>'+gruppeLabel(g)+'</span>'+badge;
   } else {
-    b.innerHTML=gruppeSvg(g)+'<span>'+gruppeLabel(g)+'</span>'+badge;
+    b.innerHTML=gruppeSvg(g)+'<span>'+navWort(gruppeLabel(g))+'</span>'+badge;
   }
   b.addEventListener('click',function(){ showView(g.views[0]); tick(8); });
   /* Am Rechner verrät der Hinweis beim Darüberfahren die Taste. */
   if(art==='seite'){
-    var ak={'g-start':'home','g-komm':'chat','g-arbeit':'arbeit','g-team':'team','g-chef':'chef'}[g.id];
+    var ak={'g-start':'home','g-komm':'chat','g-arbeit':'arbeit','g-zeit':'zeiten','g-team':'team','g-chef':'chef'}[g.id];
     var a=ak && aktionById(ak);
     if(a && keyFor(a)) b.title=gruppeLabel(g)+' — Taste '+keyLabel(keyFor(a));
   }
@@ -21339,7 +21465,7 @@ function allesGruppen(){
      was:'Kanäle für das ganze Team'},
     {label:'Direktnachricht', view:'dm',   ikon:'dm',   zahl:z.dm,
      was:'Privat, zwei Personen unter sich'},
-    /* Runde 222: Die Zeile hiess „Aushänge", öffnete aber die Infos –
+    /* Runde 223: Die Zeile hiess „Aushänge", öffnete aber die Infos –
        und die Aushänge (das frühere Brett) waren erst nach einem dritten
        Tipp auf dem Umschalter zu sehen (tests/test-findewege.js). Jetzt
        zwei Zeilen mit den Namen des Umschalters; `pin` setzt den Teil der
@@ -21354,8 +21480,8 @@ function allesGruppen(){
      was:'Schichten und Aufgaben, die dich betreffen'},
     {label:'Mein Kalender', view:'ich', ichtab:'kalender', ikon:'kalender',
      was:'Eigene Termine und Notizen'},
-    {label:'Meine Zeiten',  view:'ich', ichtab:'zeiten',   ikon:'uhr',
-     was:'Stempeln, Woche und Monat, Plan neben Ist'},
+    {label:'Meine Zeiten',  view:'zeit', ikon:'uhr',
+     was:'Stempeln, Konto im Plus oder Minus, Urlaub'},
     /* Bis Runde 188 hiess dieser Schlüssel (ich:daten) „Meine Zeiten".
        Die Zeiten haben jetzt einen eigenen Reiter; was unter „Ich"
        bleibt, sind Nachweise, Stammdaten und die Auskunft. */
@@ -21370,6 +21496,8 @@ function allesGruppen(){
     var v=chefTabsFuerMich().map(function(t){
       return { label:t.label, view:'chef', cgo:t.id, roh:t.ico, was:t.was };
     });
+    v.unshift({ label:'Zeiten des Teams', view:'zeitteam', ikon:'uhr',
+             was: isChef() ? 'Wer da ist, Anträge, Konto, Abschluss, DATEV' : 'Wer da ist, Stempel deiner Studios' });
     v.push({ label:'Schichtplaner', view:'planer', ikon:'kalender',
              was:'Monatsplan für alle Studios, Ausfälle ersetzen, tauschen' });
     v.push({ label:'Archiv', view:'archive', ikon:'archive',
@@ -21465,6 +21593,14 @@ var NEUIGKEITEN = [
   { id:'2026-10-23-alles-aushaenge', datum:'23.10.2026', titel:'„Alles": Infos und Aushänge getrennt', wo:'ann', punkte:[
     'Unter „Alles" stand eine Zeile „Aushänge" – sie öffnete aber die Infos. Jetzt gibt es zwei Zeilen: „Infos" (Neuigkeiten von der Leitung) und „Aushänge" (was im Studio aushängt). Beide sind zwei Tipps entfernt.'
   ]},
+  { id:'2026-10-23-zeiten-bereich', datum:'23.10.2026', titel:'Zeiten mit eigenem Knopf: stempeln, Konto im Plus oder Minus, Resturlaub', wo:'zeit', punkte:[
+    'Unten (am Rechner links) gibt es jetzt den Knopf „Zeiten". Dort stempelst du, siehst heute, die Woche und den Monat – alles, was vorher unter Heute → Ich → Zeiten stand.',
+    'Neu ist „Mein Konto": eine große Zahl, ob du im Plus oder im Minus bist. Der laufende Monat heißt „vorläufig", bis die Geschäftsführung ihn abschließt. Darunter dein Resturlaub für dieses Jahr.',
+    'Für die Leitung steht unter „Zeiten" ein zweiter Reiter „Team": wer gerade da ist, Korrekturanträge, Monat & Konto, Abschluss, Excel und DATEV. Das ist der bisherige Reiter Verwaltung → Zeiten, jetzt an einem Ort.',
+    'Die Geschäftsführung trägt unter Team → Monat & Konto → „Soll je Wochentag" jetzt auch den Urlaubsanspruch im Jahr ein. Am Rechner führt die Taste Z direkt zu den eigenen Zeiten.'
+  ]},
+  { id:'2026-10-22-soll-wochentag', datum:'22.10.2026', titel:'Soll je Wochentag; Zeiten korrigiert nur die Geschäftsführung', wo:'zeitteam', punkte:[
+  ]},
   { id:'2026-10-23-ein-gruss', datum:'23.10.2026', titel:'Startseite und Formi grüssen gleich', wo:'home', punkte:[
     'Spät in der Nacht stand oben „Guten Morgen" und Formi sagte gleichzeitig „Guten Abend … Früh dran!". Jetzt grüssen beide gleich, und Formi hat für die Nacht eigene Sätze.'
   ]},
@@ -21490,7 +21626,7 @@ var NEUIGKEITEN = [
   { id:'2026-10-22-soll-wochentag', datum:'22.10.2026', titel:'Soll je Wochentag; Zeiten korrigiert nur die Geschäftsführung', wo:'chef:zeiten', punkte:[
     'Unter Verwaltung → Zeiten → Monat & Konto → „Soll je Wochentag" trägt die Geschäftsführung je Person ein, wie viele Stunden an welchem Tag geplant sind – auch samstags. Feiertage zählen automatisch mit 0. Urlaub und Krankheit schreiben genau die Stunden dieses Tages gut.',
     'Wer dort nichts eingetragen hat, für den rechnet das Konto weiter mit den Wochenstunden aus dem Schichtplaner.',
-    'Stempel nachtragen oder für ungültig erklären kann jetzt nur noch die Geschäftsführung. Die Studioleitung sieht die Zeiten ihres Studios weiter. Fehlt jemandem ein Stempel, beantragt er ihn selbst unter Heute → Ich → Zeiten.'
+    'Stempel nachtragen oder für ungültig erklären kann jetzt nur noch die Geschäftsführung. Die Studioleitung sieht die Zeiten ihres Studios weiter. Fehlt jemandem ein Stempel, beantragt er ihn selbst unter Zeiten (seit 23.10. eigener Knopf).'
   ]},
   { id:'2026-10-22-formi-ruhig', datum:'22.10.2026', titel:'Formi ohne großes HUD: ruhig, klar, schneller', wo:'gehirn', punkte:[
     'Das große Vollbild mit Leinwänden, Ringen und Uhr ist weg. Formi ist jetzt immer das ruhige Fenster – am Rechner die Spalte rechts, am Handy ein Blatt von unten.',
@@ -21513,7 +21649,7 @@ var NEUIGKEITEN = [
     'Bei Pflichtschulungen steht darunter, wer sie noch nicht hat. Testläufe mit dem Testcode stehen nicht darauf.',
     'Ob das Blatt eine bestimmte Vorschrift erfüllt, prüft die App nicht – das steht auch unten auf dem Blatt.'
   ]},
-  { id:'2026-10-22-datev', datum:'22.10.2026', titel:'Stunden als DATEV-Datei fürs Lohnbüro', wo:'chef:zeiten', punkte:[
+  { id:'2026-10-22-datev', datum:'22.10.2026', titel:'Stunden als DATEV-Datei fürs Lohnbüro', wo:'zeitteam', punkte:[
     'Für die Geschäftsführung: Verwaltung → Zeiten → Monat & Konto → „DATEV". Die Datei (LODAS) enthält je Person die Stunden des Monats und auf Wunsch die Urlaubstage – nur Nummern, keine Namen.',
     'Beim ersten Mal öffnen sich die DATEV-Einstellungen: Beraternummer, Mandantennummer, Lohnart für Stunden und die Personalnummern. Diese Nummern gibt euch das Lohnbüro. Sehen kann sie nur die Geschäftsführung.',
     'Bitte die erste Datei vom Lohnbüro prüfen lassen: Sie ist nach dem DATEV-Handbuch gebaut, aber noch nie in ein echtes DATEV eingespielt worden. Wer keine Personalnummer hat, steht nicht in der Datei – die App sagt, wer fehlt.'
@@ -21522,7 +21658,7 @@ var NEUIGKEITEN = [
     'Öffnest du Formi, begrüsst dich oben ein grosses Formi-Gesicht, das dir mit den Augen folgt. Die drei Zeilen „Aufgaben offen / Putzplan / Material" stehen dort nicht mehr – das zeigt schon die Formi-Zeile auf der Startseite.',
     'Oben im kleinen Formi-Fenster sind nur noch drei Knöpfe: „…", Gross und Schliessen. Hinter „…" findest du Einstellungen, gespeicherte Gespräche und den Ton.',
     'Ist eine Liste leer, sitzt dort Formi mit „Frag Formi". Beim Laden der App dreht sich Formis Ring, und vor jeder Antwort steht Formis Gesicht.' ] },
-  { id:'2026-10-22-stundenkonto', datum:'22.10.2026', titel:'Stundenkonto, Monatsabschluss und Export fürs Lohnbüro', wo:'chef:zeiten', punkte:[
+  { id:'2026-10-22-stundenkonto', datum:'22.10.2026', titel:'Stundenkonto, Monatsabschluss und Export fürs Lohnbüro', wo:'zeitteam', punkte:[
     'Für die Geschäftsführung: Verwaltung → Zeiten → oben „Monat & Konto". Je Person stehen dort die gestempelten Stunden (nach der Pausenregel), das Soll aus den Wochenstunden im Schichtplaner, Urlaub und Krankheit, der Saldo, der Übertrag aus dem Vormonat und das Konto.',
     '„Excel" und „CSV" laden den Monat für das Lohnbüro herunter – Stunden als Dezimalzahlen mit Komma, in Excel zusätzlich jeder Tag einzeln.',
     'Ist ein Monat vorbei, schliesst „Monat abschliessen" ihn ab. Danach lässt sich darin nichts mehr nachtragen, stornieren oder beantragen; sein Konto ist der Übertrag für den nächsten Monat. „Wieder öffnen …" geht nur mit Grund.'
@@ -21540,12 +21676,12 @@ var NEUIGKEITEN = [
     'Formi schaut hin, wo etwas passiert – zu einem Hinweis unten oder zur Glocke, wenn eine neue Meldung kommt. Nach einer Minute ohne Bedienung wird es müde, später schläft es ein.',
     'Dasselbe Gesicht steht jetzt auch oben im Formi-Fenster, links in der Formi-Zeile und fliegt als kleiner Formi los, wenn es eine Seite für dich öffnet. Denkt Formi nach, schauen die Augen nach oben; spricht es, bewegt sich der Mund.',
     'Der Ring schimmert in der Farbe des Bereichs, in dem du bist, und wird abends wärmer. Morgens gähnt Formi einmal.' ] },
-  { id:'2026-10-22-korrekturantrag', datum:'22.10.2026', titel:'Fehlenden Stempel selbst beantragen', wo:'ich:zeiten', punkte:[
+  { id:'2026-10-22-korrekturantrag', datum:'22.10.2026', titel:'Fehlenden Stempel selbst beantragen', wo:'zeit', punkte:[
     'Feierabend vergessen? Unter Heute → Ich → Zeiten gibt es „Korrektur beantragen": Tag, was fehlt, Uhrzeit und ein kurzer Grund. Bei einem Tag mit „Feierabend fehlt" reicht ein Tipp auf den Tag und dann auf „Feierabend beantragen" – Tag und Art sind schon eingetragen.',
     'Beantragen geht bis 31 Tage zurück. Darunter siehst du, ob dein Antrag noch wartet, angenommen oder abgelehnt wurde – mit Antwort. Solange er wartet, kannst du ihn zurückziehen.',
     'Für die Geschäftsführung: Verwaltung → Zeiten zeigt oben die offenen Anträge mit „Annehmen" und „Ablehnen …". Angenommen wird daraus ein Stempel mit dem Vermerk „nachgetragen"; abgelehnt nur mit kurzer Begründung. Den eigenen Antrag entscheidet jemand anderes.'
   ]},
-  { id:'2026-10-22-pausenregel', datum:'22.10.2026', titel:'Pausen wie bei Crewmeister, Hinweise zum Arbeitszeitgesetz', wo:'ich:zeiten', punkte:[
+  { id:'2026-10-22-pausenregel', datum:'22.10.2026', titel:'Pausen wie bei Crewmeister, Hinweise zum Arbeitszeitgesetz', wo:'zeit', punkte:[
     'Wer länger als 6 Stunden arbeitet, braucht 30 Minuten Pause, über 9 Stunden 45 Minuten. Hast du weniger gestempelt, wird nur der fehlende Teil abgezogen – an dem Tag steht dann „Pause +0:30". Deine Stempel selbst bleiben unverändert.',
     'Es wird nie mehr abgezogen, als nötig ist: Aus 6:10 Stunden ohne Pause werden 6:00 Stunden, nicht 5:40.',
     'An einem Tag stehen jetzt Hinweise, wenn er über 10 Stunden ging, wenn mehr als 6 Stunden am Stück ohne Pause gearbeitet wurde oder wenn seit dem letzten Feierabend weniger als 11 Stunden Ruhe lagen.',
@@ -21602,7 +21738,7 @@ var NEUIGKEITEN = [
     'In der Karte „Formi lernt" steht unter einem Vorschlag aus einer Schulung jetzt „Alle … übernehmen". Zweimal tippen, und alle Vorschläge aus dieser Schulung werden Wissen – statt jeden einzeln freizugeben.',
     'Was nicht passt, vorher einzeln verwerfen. Eigene Vorschläge bleiben stehen, bis jemand anderes aus der Leitung sie freigibt.'
   ]},
-  { id:'2026-10-22-stempelseite', datum:'22.10.2026', titel:'Stempeln wie bei Crewmeister: Pause oder Feierabend', wo:'ich:zeiten', punkte:[
+  { id:'2026-10-22-stempelseite', datum:'22.10.2026', titel:'Stempeln wie bei Crewmeister: Pause oder Feierabend', wo:'zeit', punkte:[
     'Feierabend lässt sich jetzt direkt stempeln – am Terminal und am Handy. Nach dem Kommen stehen zwei Knöpfe da: „Pause" und „Feierabend". Bisher ging am Terminal immer nur Pause und Zurück, der Feierabend musste von der Leitung nachgetragen werden.',
     'Am Terminal steht an den Namen nicht mehr, wer im Dienst ist. Name antippen, PIN, „Weiter" – dann siehst du deinen eigenen Stand („Im Dienst seit 08:26") und tippst, was du stempeln willst.',
     'Neu unter Heute → Ich → „Zeiten": oben dein Stand jetzt, wie lange du heute gearbeitet hast und was laut Schichtplan geplant ist. Darunter deine Woche mit Plan neben den gestempelten Stunden, daneben der Monat. Am Rechner steht beides nebeneinander.',
@@ -21832,9 +21968,9 @@ var NEUIGKEITEN = [
   { id:'2026-10-01-beitritt-qr', datum:'1.10.2026', titel:'Beitreten per QR-Code', wo:'chef:team', punkte:[
     'Unter Verwaltung → Team → „Wer darf sich anmelden" zeigt „QR-Code zum Beitreten" ein Bild für den Empfang. Wer es mit dem Handy scannt, landet auf „Konto anlegen", der Firmencode steht schon drin.',
     'Hinein kommt weiterhin nur, wen du freigibst.' ] },
-  { id:'2026-10-01-zeiten-vormonat', datum:'1.10.2026', titel:'Zeiten: Hinweis auf den Vormonat', wo:'chef:zeiten', punkte:[
+  { id:'2026-10-01-zeiten-vormonat', datum:'1.10.2026', titel:'Zeiten: Hinweis auf den Vormonat', wo:'zeitteam', punkte:[
     'Fehlt im letzten Monat noch ein Feierabend, steht das unter Verwaltung → Zeiten jetzt oben — gerade am Monatsersten, wenn die Abrechnung dran ist. Ein Tipp führt direkt hin.' ] },
-  { id:'2026-10-01-zeiten-leitung', datum:'1.10.2026', titel:'Zeiten korrigieren: Studioleitung kann blättern', wo:'chef:zeiten', punkte:[
+  { id:'2026-10-01-zeiten-leitung', datum:'1.10.2026', titel:'Zeiten korrigieren: Studioleitung kann blättern', wo:'zeitteam', punkte:[
     'Unter Verwaltung → Zeiten taten bei der Studioleitung die Monatspfeile und die Studio-Auswahl nichts. Jetzt geht beides, wie bei der Geschäftsführung.',
     'Tipp für den Monatsersten: Ein vergessener Feierabend von gestern steht im Vormonat — mit „‹" einen Monat zurück.' ] },
   { id:'2026-10-01-datenschutz-schulung', datum:'1.10.2026', titel:'Datenschutz: Stempelzeiten und Schulungen stehen jetzt drin', wo:'ich:daten', punkte:[
@@ -21973,7 +22109,7 @@ var NEUIGKEITEN = [
     'Am Rechner ist das Hilfe-Fenster jetzt breit und zweigeteilt: links suchst du oder blätterst eine Kategorie durch, rechts steht die Antwort.',
     'Die Liste bleibt dabei stehen — eine Antwort nach der anderen lesen, ohne jedes Mal zurückzugehen. Die geöffnete ist links markiert.',
     'Am Handy bleibt es, wie es ist: eine Seite nach der anderen.' ] },
-  { id:'2026-09-24-zeiten', datum:'24.9.2026', titel:'Vergessenen Feierabend nachtragen', wo:'chef:zeiten', punkte:[
+  { id:'2026-09-24-zeiten', datum:'24.9.2026', titel:'Vergessenen Feierabend nachtragen', wo:'zeitteam', punkte:[
     'Für die Leitung: Unter Verwaltung → Zeiten stehen die Stempelzeiten des Teams je Studio und Monat. Tage, an denen der Feierabend fehlt, stehen oben.',
     'Ein Tipp auf den Tag — dann Art, Uhrzeit und Grund eintragen und „Nachtragen". Ein falscher Stempel lässt sich als ungültig markieren.',
     'Überschrieben wird dabei nichts: der ursprüngliche Stempel bleibt sichtbar. Wer, wann und warum korrigiert hat, sieht auch die Person selbst in „Meine Zeiten".',
@@ -22285,7 +22421,7 @@ function schnellMax(){ return (_mobnavBreite && _mobnavBreite.matches) ? SCHNELL
 /* Welche Taste führt dorthin? Nur für Ziele, die eine eigene Aktion
    haben (AKTIONEN); Unterreiter haben keine. */
 var SCHNELL_TASTE = { home:'home', chat:'chat', todos:'arbeit', team:'team', chef:'chef',
-  geraete:'geraete', putzplan:'putz', material:'material', dm:'direkt', ann:'infos' };
+  geraete:'geraete', putzplan:'putz', material:'material', dm:'direkt', ann:'infos', zeit:'zeiten' };
 function schnellTaste(key){
   if(!key || key.indexOf(':')>=0) return '';
   var a=SCHNELL_TASTE[key] && aktionById(SCHNELL_TASTE[key]);
@@ -22298,10 +22434,11 @@ function schnellTaste(key){
    dieselbe Stelle; an seinen Platz rückt die Woche mit den eigenen
    Schichten. Wer selbst gewählt hat, behält seine Wahl. */
 var SCHNELL_VORSCHLAG = {
-  mitarbeiter: ['ich:woche', 'ich:zeiten', 'geraete'],
+  mitarbeiter: ['ich:woche', 'ich:kalender', 'geraete'],
   leiter:      ['team:schicht', 'chef:anliegen', 'ich:woche'],
   chef:        ['chef:ueberblick', 'team:schicht', 'chef:anliegen']
 };
+var SCHNELL_UMZUG = { 'ich:daten':'zeit', 'ich:zeiten':'zeit', 'chef:zeiten':'zeitteam' };
 function schnellSchluessel(e){
   var basis = e.hilfe ? 'hilfe' : (e.neu ? 'neu' : (e.vorfall ? 'vorfall' : (e.view||'')));
   var unter = e.teamtab || e.ichtab || e.cgo || '';
@@ -22327,7 +22464,10 @@ function schnellEigen(){
   /* Runde 189: wer „Meine Zeiten" gewählt hatte, hat es unter dem
      Schlüssel ich:daten gespeichert — der heisst jetzt „Meine Daten".
      Gemeint war die Zeit, also führt der Schnellzugriff dorthin. */
-  return alle[session.uid].map(function(k){ return k==='ich:daten' ? 'ich:zeiten' : k; })
+  /* Runde 222: die Zeiten haben einen eigenen Knopf. Wer sie als
+     Schnellzugriff hatte (unter ich:zeiten oder chef:zeiten), landet
+     auf der neuen Seite. */
+  return alle[session.uid].map(function(k){ return SCHNELL_UMZUG[k] || k; })
     .filter(function(k, i, l){ return l.indexOf(k)===i; });
 }
 /* Nur, was es für diese Person gerade gibt — in der gewählten Reihenfolge. */
@@ -22602,7 +22742,7 @@ function navAktivSetzen(){
 /* Runde 184: dieselben Räume wie unten, in derselben Reihenfolge. Kein
    eigener Putzplan-Knopf mehr (er ist Reiter unter „Studio“) und kein
    „Alles“ (es liegt hinter ☰ am Seitenkopf, auf jeder Seite). */
-var SEITE_REIHE = ['g-start','g-arbeit','g-team','g-komm','g-wissen','g-chef'];
+var SEITE_REIHE = ['g-start','g-arbeit','g-zeit','g-team','g-komm','g-wissen','g-chef'];
 function seitenGruppen(gruppen){
   if(!layoutNeu()) return gruppen;
   var nach={};
@@ -22641,6 +22781,7 @@ function buildNav(){
   var tk=document.createElement('button');
   tk.type='button'; tk.className='side-tasten';
   tk.innerHTML=ikon('tastatur')+'<span>Tastenkürzel</span><kbd>?</kbd>';
+  tk.setAttribute('aria-label','Tastenkürzel'); tk.title='Tastenkürzel (?)';
   tk.addEventListener('click', function(){ oeffneKeysModal(); tick(6); });
   fuss.appendChild(tk);
   side.appendChild(fuss);
@@ -22984,6 +23125,7 @@ function bereichUnterzeile(g){
   if(g.id==='g-team' && canManage() && STUDIOS.length>1) return STUDIOS.length+' Studios';
   if(g.id==='g-alles') return 'Alles, was die App kann';
   if(g.id==='g-wissen') return 'Hilfe, Dokumente, Schulung';
+  if(g.id==='g-zeit')   return zeitUnterzeile();
   if(g.id==='g-chef')  return 'Anlegen, Studios, Auswertung';
   return '';
 }
@@ -23551,6 +23693,8 @@ function showView(id, fromKey, ausVerlauf){
   if(id==='persoenlich') persoenlichOeffnen();
   if(id==='gehirn') gehirnOeffnen();
   if(id==='planer') spOeffnen();
+  if(id==='zeit') zeitOeffnen();
+  if(id==='zeitteam') zeitTeamOeffnen();
   jarvisKachel(id);
   /* Runde 177: Formi kompakt bleibt am Rechner offen, während die Seite
      wechselt — es wohnt IN der App. Am Handy deckt das Fenster die Seite
@@ -37392,8 +37536,11 @@ function renderMyShifts(){
 /* Zwei Ansichten, zwei Reiterreihen. Die Uebersicht ZEIGT das Eigene
    (in der Wochenliste, zum Abhaken), gepflegt wird es unter
    „Persoenlich". Deshalb steht todo/notizen nicht mehr hier. */
+/* Runde 222: „Zeiten" ist kein Reiter mehr, sondern ein eigener Knopf
+   unten (Ansicht 'zeit'). Ein alter Link auf den Reiter führt dorthin
+   (ichReiterZeigen). */
 var ICHPANES = { woche:'ichPaneWoche', kalender:'ichPaneKalender',
-                 zeiten:'ichPaneZeiten', daten:'ichPaneDaten' };
+                 daten:'ichPaneDaten' };
 var PERSPANES = { todo:'ichPaneTodo', notizen:'ichPaneNotizen',
                   ziele:'ichPaneZiele', wuensche:'ichPaneWuensche' };
 var _ichTab='woche';
@@ -39390,7 +39537,7 @@ function zkStempelZeile(z, knopf){
 var _zkStudio=null, _zkMonat=null, _zkRows=[], _zkWahl=null, _zkLaedt=0, _zkStorno=null;
 var _zkBreit = window.matchMedia ? window.matchMedia('(min-width:1100px)') : null;
 if(_zkBreit && _zkBreit.addEventListener) _zkBreit.addEventListener('change', function(){
-  if(currentView==='chef' && _chefTab==='zeiten') zkZeichnen();
+  if(currentView==='zeitteam') zkZeichnen();
 });
 
 function zkOeffnen(){
@@ -39701,7 +39848,7 @@ function regelnFormHTML(){
   var stunden=function(min){ return min>0 ? String(Math.round(min/60*100)/100).replace('.',',') : ''; };
   return '<details class="nachfrage zk-regeln"'+(_zkRegelnOffen?' open':'')+' id="zkRegeln">'+
     '<summary class="nachfrage-text">Soll je Wochentag</summary>'+
-    '<p class="hint">Stunden je Wochentag. Leer heisst: wie bisher aus den Wochenstunden. Feiertage (NRW) zählen mit 0.</p>'+
+    '<p class="hint">Stunden je Wochentag. Leer heisst: wie bisher aus den Wochenstunden. Feiertage (NRW) zählen mit 0. „Urlaub": Tage im Jahr – daraus sieht jede Person ihren Resturlaub.</p>'+
     '<div class="zk-regeln-liste">'+_zkKonto.zeilen.map(function(z){
       var r=_zkRegeln[z.uid]||{};
       return '<fieldset class="zk-regel-zeile"><legend>'+esc(z.name)+'</legend>'+
@@ -39709,7 +39856,13 @@ function regelnFormHTML(){
           var id='rg-'+esc(z.uid)+'-'+(i+1);
           return '<label class="zk-regel-tag" for="'+id+'"><span>'+t+'</span>'+
             '<input class="inp" id="'+id+'" data-rguid="'+esc(z.uid)+'" data-rgtag="'+(i+1)+'" inputmode="decimal" maxlength="5" value="'+esc(stunden(+r[i+1]))+'" /></label>';
-        }).join('')+'</fieldset>';
+        }).join('')+
+        /* Runde 222: der Urlaubsanspruch im Jahr, in Tagen. Daraus rechnet
+           „Meine Zeiten" den Resturlaub („ja", 23.10.2026). */
+        '<label class="zk-regel-tag zk-regel-urlaub" for="rg-'+esc(z.uid)+'-u"><span>Urlaub</span>'+
+          '<input class="inp" id="rg-'+esc(z.uid)+'-u" data-rguid="'+esc(z.uid)+'" data-rgtag="u" inputmode="decimal" maxlength="4" '+
+          'title="Urlaubstage im Jahr" value="'+esc(+r.u>0 ? String(r.u).replace('.',',') : '')+'" /></label>'+
+        '</fieldset>';
     }).join('')+'</div>'+
     '<button type="button" class="btn btn-primary" data-zkregelnsichern>Soll speichern</button>'+
   '</details>';
@@ -39725,6 +39878,11 @@ function regelnSichern(btn){
     var roh=String(f.value||'').trim().replace(',','.');
     if(!roh) return;
     var h=Number(roh);
+    if(tag==='u'){
+      if(!isFinite(h) || h<0 || h>60){ fehler='Der Urlaub stimmt nicht (0 bis 60 Tage).'; return; }
+      if(h>0) (neu[uid]=neu[uid]||{}).u=Math.round(h*2)/2;
+      return;
+    }
     if(!isFinite(h) || h<0 || h>14){ fehler='Ein Wert stimmt nicht (0 bis 14 Stunden).'; return; }
     (neu[uid]=neu[uid]||{})[tag]=Math.round(h*60);
   });
@@ -40306,7 +40464,196 @@ function stLaden(neu){
   ichPinLaden();
   ichZeitenLaden();
   stAntraegeLaden();
+  stKontoLaden();
 }
+
+/* ══ ZEITERFASSUNG ALS EIGENER BEREICH (Runde 222) ═══════════════════
+   Aus dem Betrieb, 23.10.2026: „mitarbeiter können sich nur einstempeln
+   und ihre eigenen stunden sehen ob plus oder minus und halt alles was
+   sie sonst bräuchten". Auf die Rückfragen: eigener Knopf, der laufende
+   Monat „vorläufig", Resturlaub dazu, und kein Sondermodus „nur
+   Stempeln" — ein Startknopf genügt (der Knopf unten und die Taste Z). */
+function zeitOeffnen(){ stLaden(); }
+function zeitTeamOeffnen(){
+  zkOeffnen();
+  var e=$('ztEinrichten'); if(e) e.hidden=!isChef();
+}
+/* Die Unterzeile am Bereichskopf: der Stand von heute, sobald er da
+   ist — sonst, was man hier findet. */
+function zeitUnterzeile(){
+  var st = (_stHeute && _stHeute.tag===ymd(new Date())) ? stStandVon(_stHeute.stempel) : null;
+  if(!st) return 'Stempeln, Konto, Urlaub';
+  if(!st.art) return 'Noch nicht eingestempelt';
+  if(st.art==='gehen') return 'Feierabend seit '+zeitUhr(st.seit);
+  if(st.art==='pause') return 'In der Pause seit '+zeitUhr(st.seit);
+  return 'Im Dienst seit '+zeitUhr(st.beginn||st.seit);
+}
+document.addEventListener('click', function(e){
+  var b=e.target.closest && e.target.closest('[data-ztweg]'); if(!b) return;
+  showView('chef'); showChefTab(b.getAttribute('data-ztweg')); tick(8);
+});
+
+/* ── Mein Konto ──
+   Plus oder Minus, so wie die Geschäftsführung es sieht: DIESELBE
+   Rechnung (kontoRechnen) mit den eigenen Stempeln, den eigenen
+   Abwesenheiten und dem eigenen Soll. Das Soll und das Konto aus den
+   abgeschlossenen Monaten kommen von meinKonto — die Person darf die
+   Sammlungen dahinter nicht lesen, und das bleibt so.
+
+   „Vorläufig", bis die Geschäftsführung den Monat abschliesst (aus dem
+   Betrieb, 23.10.2026: „ja"). Ein Plus ist nicht grün und ein Minus
+   nicht rot: beides meldet keinen Fehler, sondern einen Stand. */
+var _stKonto=null, _stKontoNr=0, _stKontoServer=null;
+var KONTO_SERVER_MS = 5*60000;
+function kontoPlus(min){
+  if(min===null || min===undefined) return '–';
+  var m=Math.round(min);
+  return m>0 ? '+'+kontoText(m) : (m<0 ? kontoText(m) : '±0:00');
+}
+function kontoMonatName(m, lang){
+  return new Date(m+'-15T12:00:00').toLocaleDateString('de-DE', lang ? {month:'long',year:'numeric'} : {month:'short',year:'numeric'});
+}
+function stKontoServer(){
+  var c=_stKontoServer;
+  if(c && c.uid===session.uid && Date.now()-c.ts<KONTO_SERVER_MS) return Promise.resolve(c.d);
+  return fnRuf('meinKonto', {}).then(function(d){
+    _stKontoServer={ uid:session.uid, ts:Date.now(), d:d };
+    return d;
+  });
+}
+function stKontoLaden(){
+  var box=$('stKonto'); if(!box || !session) return;
+  var nr=++_stKontoNr;
+  var heute=new Date(), j=heute.getFullYear();
+  var m=zeitMonatKey(new Date(j, heute.getMonth(), 1));
+  var erst=m+'-01', letzt=ymd(new Date(j, heute.getMonth()+1, 0));
+  Promise.all([
+    stKontoServer(),
+    S('zeiten').where('uid','==',session.uid).where('monat','==',m).get()
+      .then(function(sn){ return sn.docs.map(function(d){ return d.data()||{}; }); }),
+    /* Ab dem 1. Januar: dieselbe Liste rechnet den Monat UND den Urlaub
+       des Jahres. Ein Gleichheitsfilter ist es nicht, aber ein einziger
+       Bereichsfilter auf einem Feld — dafür braucht es keinen Index. */
+    Promise.all(((session.studioKeys)||[]).map(function(sk){
+      return S('studios').doc(sk).collection('absences').where('to','>=',j+'-01-01').get()
+        .then(function(sn){ return sn.docs.map(function(d){ return d.data()||{}; })
+          .filter(function(a){ return a.uid===session.uid; }); })
+        .catch(function(){ return []; });
+    })),
+    spLib().then(function(sp){ return sp.feiertageNRW(j); }).catch(function(){ return null; })
+  ]).then(function(r){
+    if(nr!==_stKontoNr) return;
+    _stKonto=stKontoRechnen(r[0], m, erst, letzt, r[1], [].concat.apply([], r[2]), r[3]);
+    stKontoZeichnen();
+  }).catch(function(e){
+    if(nr!==_stKontoNr) return;
+    box.innerHTML='<p class="hint">Das Konto lässt sich gerade nicht laden: '+esc(fnFehler(e))+'</p>';
+  });
+}
+function stKontoRechnen(mk, m, erst, letzt, zeiten, abwesend, feiertage){
+  mk=mk||{};
+  var uid=session.uid, monate=(mk.monate||[]).slice();
+  var letzter=monate.length ? monate[monate.length-1] : null;
+  var vorKey=zeitMonatKey(new Date(+m.slice(0,4), +m.slice(5,7)-2, 1));
+  var vorZu=!!(letzter && letzter.monat===vorKey);
+  var v=mk.vertrag||{};
+  var regeln={}; if(mk.regel) regeln[uid]=mk.regel;
+  var k=kontoRechnen(m, erst, letzt, zeiten,
+    [{ uid:uid, name:session.name||'', wocheStd:+v.wocheStd||0, maxMonatStd:+v.maxMonatStd||0, maxTageWoche:+v.maxTageWoche||0 }],
+    abwesend, null,
+    vorZu ? { abgeschlossen:true, zeilen:[{ uid:uid, konto:letzter.konto }] } : null,
+    regeln, feiertage);
+  return { monat:m, bis:k.bis, zeile:k.zeilen.filter(function(x){ return x.uid===uid; })[0] || null,
+           letzter:letzter, vorKey:vorKey, vorZu:vorZu, monate:monate, ohneFeiertage:!feiertage,
+           urlaub:stUrlaubRechnen(mk.urlaubJahr, abwesend, mk.regel||null, feiertage) };
+}
+/* Urlaub im Kalenderjahr, in Arbeitstagen: ein Tag zählt, an dem Soll
+   ist (Soll je Wochentag) — ohne Regel Montag bis Freitag. Feiertage
+   zählen nie. Überschneiden sich zwei Einträge, zählt der Tag einmal. */
+function stUrlaubRechnen(anspruch, abwesend, regel, feiertage){
+  var j=new Date().getFullYear(), heute=ymd(new Date());
+  var anf=j+'-01-01', ende=j+'-12-31', tage={};
+  var RANG={ genehmigt:2, offen:1 };
+  function zaehlt(key){
+    if(feiertage && feiertage[key]) return false;
+    var d=new Date(key+'T12:00:00');
+    if(regel) return (+regel[regelWochentag(d)]||0)>0;
+    var w=d.getDay(); return w>=1 && w<=5;
+  }
+  (abwesend||[]).forEach(function(a){
+    if(a.type!=='urlaub' || !a.from) return;
+    var st=a.status||'genehmigt'; if(!RANG[st]) return;
+    var von=a.from>anf ? a.from : anf, bis=(a.to||a.from)<ende ? (a.to||a.from) : ende;
+    for(var d=new Date(von+'T12:00:00'); ymd(d)<=bis; d.setDate(d.getDate()+1)){
+      var key=ymd(d);
+      if(zaehlt(key) && (RANG[tage[key]]||0)<RANG[st]) tage[key]=st;
+    }
+  });
+  var u={ jahr:j, anspruch:anspruch||null, genommen:0, geplant:0, beantragt:0, rest:null };
+  Object.keys(tage).forEach(function(key){
+    if(tage[key]==='offen') u.beantragt++;
+    else if(key<=heute) u.genommen++;
+    else u.geplant++;
+  });
+  if(u.anspruch) u.rest=u.anspruch-u.genommen-u.geplant;
+  return u;
+}
+function tageText(n){
+  var t=String(Math.round(n*2)/2).replace('.',',');
+  return t+(n===1 ? ' Tag' : ' Tage');
+}
+function stKontoZeichnen(){
+  var box=$('stKonto'); if(!box || !_stKonto) return;
+  var k=_stKonto, z=k.zeile, stand=$('stKontoStand');
+  var monatLang=kontoMonatName(k.monat, true);
+  if(stand) stand.textContent='vorläufig';
+  var html='';
+  if(!z || z.soll===null){
+    html+='<p class="st-konto-leer">Für dich ist noch kein Soll hinterlegt. Die Geschäftsführung trägt es ein '+
+      '(Wochenstunden im Schichtplaner oder Soll je Wochentag).</p>'+
+      (z ? '<p class="hint">'+esc(monatLang)+' bis heute gearbeitet: <b>'+kontoText(z.ist)+' h</b></p>' : '');
+  } else {
+    var gross = k.vorZu ? z.konto : z.saldo;
+    html+='<div class="st-konto-gross"><b class="st-konto-zahl" data-zeichen="'+(gross>0?'plus':(gross<0?'minus':'null'))+'">'+
+        esc(kontoPlus(gross))+' h</b>'+
+      '<span>'+(k.vorZu ? 'Stundenkonto' : esc(monatLang)+' bis heute')+
+        (gross>0 ? ' · im Plus' : (gross<0 ? ' · im Minus' : ''))+'</span></div>'+
+      '<div class="st-konto-reihe">'+
+        '<div class="st-zahl"><span>Gearbeitet</span><b>'+kontoText(z.ist)+'</b></div>'+
+        '<div class="st-zahl"><span>Soll bis heute</span><b>'+kontoText(z.soll)+'</b></div>'+
+        (z.gutschrift ? '<div class="st-zahl"><span>Urlaub/Krank</span><b>'+kontoText(z.gutschrift)+'</b></div>' : '')+
+        '<div class="st-zahl"><span>'+esc(monatLang.split(' ')[0])+'</span><b>'+esc(kontoPlus(z.saldo))+'</b></div>'+
+      '</div>';
+    var neben=[], mn=function(m){ return kontoMonatName(m, true).replace(' '+new Date().getFullYear(), ''); };
+    if(k.vorZu) neben.push('Bis Ende '+esc(mn(k.letzter.monat))+': '+esc(kontoPlus(k.letzter.konto))+' h, abgeschlossen.');
+    else if(k.letzter) neben.push('Konto bis Ende '+esc(mn(k.letzter.monat))+': <b>'+esc(kontoPlus(k.letzter.konto))+' h</b>, abgeschlossen. '+
+      esc(mn(k.vorKey))+' ist noch offen und zählt noch nicht mit.');
+    else neben.push('Noch kein Monat abgeschlossen.');
+    neben.push(esc(mn(k.monat))+' bleibt vorläufig, bis die Geschäftsführung abschliesst.');
+    if(z.offen) neben.push(z.offen+'× fehlt ein Feierabend – der Tag zählt erst nach einer Korrektur.');
+    if(k.ohneFeiertage) neben.push('Feiertage nicht ladbar – gerechnet ohne.');
+    html+='<p class="hint st-konto-neben">'+neben.join(' ')+'</p>';
+  }
+  var u=k.urlaub;
+  if(u){
+    html+='<div class="st-urlaub"><h4>Urlaub '+u.jahr+'</h4>'+
+      (u.anspruch
+        ? '<p><b class="st-urlaub-rest">'+esc(tageText(u.rest))+'</b> übrig von '+esc(String(u.anspruch).replace('.',','))+'</p>'
+        : '<p class="hint">Dein Urlaubsanspruch ist noch nicht eingetragen.</p>')+
+      '<p class="hint">Genommen '+esc(tageText(u.genommen))+' · geplant '+esc(tageText(u.geplant))+
+        (u.beantragt ? ' · beantragt '+esc(tageText(u.beantragt)) : '')+'</p></div>';
+  }
+  if(k.monate.length){
+    html+='<details class="nachfrage st-konto-verlauf"><summary class="nachfrage-text">Abgeschlossene Monate</summary>'+
+      '<div class="st-konto-tab">'+k.monate.slice(-6).reverse().map(function(x){
+        return '<div class="ich-zeile"><span class="ich-tag">'+esc(kontoMonatName(x.monat))+'</span>'+
+          '<span class="ich-was">'+kontoText(x.ist)+' von '+kontoText(x.soll)+' · Monat '+esc(kontoPlus(x.saldo))+'</span>'+
+          '<span class="ich-quelle">Konto '+esc(kontoPlus(x.konto))+'</span></div>';
+      }).join('')+'</div></details>';
+  }
+  box.innerHTML=html;
+}
+
 
 /* ── Korrekturantrag (Runde 204) ──
    Wie bei Crewmeister trägt die Person ein, was fehlt — bis 31 Tage
@@ -40675,6 +41022,8 @@ function ichBewegen(el, klasse){
 }
 
 function ichReiterZeigen(t){
+  if(t==='zeiten'){ showView('zeit'); return; }
+  if(!ICHPANES[t]) t='woche';
   _ichTab=t;
   document.querySelectorAll('[data-ichtab]').forEach(function(x){
     x.classList.toggle('on', x.getAttribute('data-ichtab')===t);
@@ -40693,8 +41042,6 @@ function ichReiterZeigen(t){
     renderIchKalender();
   }
   if(t==='daten') renderIchDaten();
-  if(t==='zeiten') stLaden();
-  else stUhrAus();
   foldAufbauen();
 }
 
@@ -42510,12 +42857,9 @@ var CHEFTABS=[
      sie braucht. */
   {id:'anliegen',   label:'Anliegen',   ico:ikon('mail'), gruppe:'tag',
    was:'Wünsche und Ziele, die jemand abgeschickt hat'},
-  /* Runde 106 (P-09): Stempelzeiten des Teams ansehen und einen
-     vergessenen Feierabend nachtragen. Für die ganze Leitung, nicht nur
-     den Chef — sie steht morgens im Studio und sieht, wer gestern nicht
-     ausgestempelt hat. */
-  {id:'zeiten',     label:'Zeiten',     ico:ikon('uhr'), gruppe:'tag',
-   was:'Stempelzeiten des Teams, vergessenen Feierabend nachtragen'},
+  /* Der Reiter „Zeiten" (Runde 106, P-09) steht seit Runde 222 unter
+     dem eigenen Knopf „Zeiten" → „Team" (Ansicht 'zeitteam'). Ein alter
+     Link auf den Reiter führt dorthin (showChefTab). */
   {id:'team',       label:'Team',       ico:ikon('leute'), chefOnly:true, gruppe:'leute',
    was:'Zugänge anlegen, Rollen ändern, Onboarding'},
   {id:'standorte',  label:'Studios',    ico:ikon('gebaeude'), chefOnly:true, gruppe:'leute',
@@ -42669,6 +43013,8 @@ function chefHomeZahlen(){
 }
 
 function showChefTab(id, keep){
+  /* Runde 222: „Zeiten" ist umgezogen (eigener Knopf → „Team"). */
+  if(id==='zeiten'){ showView('zeitteam'); return; }
   /* Gesperrt: Meldung statt Ansicht, und zwar BEVOR irgendetwas
      geladen wird. Sonst laufen im Hintergrund Abfragen für eine
      Ansicht, die niemand sehen darf — und in der Auswertung wären das
@@ -42721,7 +43067,6 @@ function showChefTab(id, keep){
   if(id==='firmen'){ listenFirmen(); renderFirmen(); renderFirmenArchiv(); firmenZahlenLaden(); abosLaden(); }
   if(id==='nachweise') renderCerts();
   if(id==='anliegen') anliegenLaden();
-  if(id==='zeiten') zkOeffnen();
   if(id==='kennzahlen') kzOeffnen();
   if(id==='report') renderReport();
   if(id==='system'){ renderFeatureListe(); fehlerLaden(); renderRechtForm(); renderMarkeWahl(); }
