@@ -20606,3 +20606,106 @@ Text und ein angekündigter Witz („Lustiger Seitenhieb: …").
 - Witze werden nicht angekündigt; bei Beschwerde, Stress, Ärger keiner.
 
 **Geprüft:** `test-formi-worker` 131.
+
+## Runde 231 — Formi bekommt ein süsseres Gesicht und ein Eigenleben (Etappe 1) (23.10.2026)
+
+**Aus dem Betrieb:**
+- „sein design hat sich aber nicht wirklich signifikant geändert ausser die
+  dünne scheibe, ich würde mir ein anderes gesicht wünschen was süsser
+  aussieht und das formi emotionen und reaktionen auch laufen lässt wenn
+  nichts getan wird“
+
+Drei Gesichter lagen zur Wahl, A (Kulleraugen), B (Leuchtaugen) und C
+(Knopfaugen). Gewünscht wurde die „Mischung aus A und B“. Von den zwei
+Mischungen kam M1, „leuchtende Kulleraugen“. Das Eigenleben soll „Mittel“
+lebhaft sein. Zur Ideenliste (A Eigenleben, B Reaktionen, C Formi in der
+ganzen App, D Formi-Fenster) kam „mir gefällt alles davon“, Formi soll
+„deutlich“ zu sehen sein. Dazu kam der Wunsch nach mehr echten
+Schwarzes-Loch-Eigenschaften. Geplant sind drei Etappen. Das hier ist
+Etappe 1.
+
+**Gebaut:**
+- **Gesicht M1.**
+  - Die Augen sind selbst aus Licht: ein Verlauf von fast Weiss zu Cyan
+    und ein Schein drumherum.
+  - Das `<b>`, früher die Pupille, ist jetzt der Glanzpunkt. Er wandert
+    mit dem Blick, ein zweiter kleiner Glanz sitzt unten.
+  - Neu sind zwei Bäckchen und zwei Bögen (`.fk-froh`): bei Freude ^ ^,
+    im Schlaf geschlossen.
+  - Die Brauen bleiben, klein und leise. Sie tragen Staunen und Sorge.
+  - Der Mund ist kleiner und leuchtet.
+  - Das gilt überall, wo die Figur steht: Kugel, Fensterkopf, die grosse
+    Figur im Fenster, die Formi-Zeile, der Zeiger, Laden und Anmeldung.
+    Die vier festen Kopien im HTML sind mitgezogen.
+- **Kein `mix-blend-mode:difference` mehr am Gesicht.** Auf dem weissen
+  Loch (Freude) wurden die Leuchtaugen damit braun. Bögen und Mund tragen
+  jetzt einen feinen dunklen Rand, der nur auf Weiss sichtbar ist.
+- **Freude** blendet die Augen aus und die Bögen ein (`opacity`), die
+  Bäckchen glühen. Das gilt für freut, feiert, stolz und kichert.
+- **Eigenleben** (`formiEigenlebenPlanen`): Etwa alle 8–20 s passiert eine
+  Kleinigkeit, nie zweimal dieselbe hintereinander:
+  - summt (Noten steigen auf)
+  - fängt einen Funken (die Augen folgen dem Bogen, danach Freude)
+  - niest (Sterne)
+  - zwinkert
+  - legt den Kopf schief
+  - hüpft
+  - schaut sich um
+
+  Das Eigenleben läuft über einen Zeitgeber, nicht als Endlos-Animation.
+  Es weckt nicht, Formi wird also trotzdem müde und schläft ein. Im
+  Schlaf, bei verborgenem Tab, „Gefühle aus“ und „weniger Bewegung“ läuft
+  es nicht. Ist das Fenster offen, macht die grosse Figur dort mit.
+- **Reaktionen:**
+  - Fehlerhinweis: erst erschrocken, dann verlegen mit Schweisstropfen.
+  - Neue Meldung (der Punkt erscheint): Formi staunt.
+  - Maus ganz nah: Die Bäckchen glühen.
+  - Wildes Scrollen (über 4.000 px in einer Sekunde, höchstens alle 30 s):
+    schwindelig, die Augen drehen sich, drei Sterne kreisen.
+  - Figur im Fenster antippen: Formi kichert. Dreimal schnell: schwindelig.
+  - Tippen ins Formi-Feld: Die Figuren im Fenster schauen aufs Feld und
+    wandern mit dem Text mit.
+
+**Entschieden und warum:**
+- *Bögen als eigene Elemente, keine Pseudo-Elemente.* Die Gefühle laufen
+  als Web Animations. Ein `::before` lässt sich damit nur über die
+  Option `pseudoElement` animieren, und darauf ist kein Verlass.
+- *Die Brauen bleiben.* M1 hatte keine. Ohne sie fehlt aber bei Sorge,
+  Staunen und Langeweile der halbe Ausdruck. Klein und halb durchsichtig
+  stören sie das süsse Gesicht nicht.
+- *Das Eigenleben weckt nicht* (`FK_LEISE`). Sonst würde Formi nie müde.
+
+**Geprüft:**
+- `tests/test-formi-eigenleben.js` (neu, 25 Zusicherungen):
+  - das Gesicht an Kugel, Fensterkopf und grosser Figur
+  - Freude mit Bögen
+  - Schlaf mit geschlossenen Bögen
+  - jede Kleinigkeit des Eigenlebens: endlich, nur `transform`/`opacity`,
+    mit Noten und Sternen
+  - der Planer: von selbst nach 9 s, ohne Bedienung
+  - Eigenleben weckt nicht, nichts im Schlaf, nichts bei „weniger
+    Bewegung“
+  - die Reaktionen: Fehler, Scrollen, Antippen, dreimal Antippen
+- Grün: test-formi-lebt, -ideen, -physik, -kugel, -welt, -platz, -kumpel,
+  -angedockt, -reihe, -zeigwie, test-gestaltung, test-stil-formi,
+  test-gehirn, test-uebersicht, test-tagesgruss, test-csp.
+- Zwei Funde, im Code behoben, die Tests sind unverändert:
+  - test-formi-ideen: Im hellen Stil war der Kern mit den grösseren,
+    dunklen Augen nur noch 0,62–0,66 hell statt über 0,7. Dort haben die
+    Augen jetzt die alte Grösse.
+  - test-gestaltung: `top` stand zweimal an `.fk-zeichen.kreis`.
+
+**Nicht geprüft:**
+- Die Arbeit je Bild beim Eigenleben wurde nicht gemessen. Es wird nur
+  `transform`/`opacity` animiert, und meist läuft eine Kleinigkeit alle
+  8–20 s.
+- Echte Handys.
+
+**Als Nächstes:**
+- Etappe 2: Formi in der ganzen App (Ring als Markenzeichen, leere
+  Listen, Seitenwechsel, Kanten, Formi-Knöpfe, Kopfzeile,
+  Erfolgsmeldungen) und das neue Formi-Fenster.
+- Etappe 3: Schwarzes-Loch-Eigenschaften (Sog am Ereignishorizont,
+  Lichtablenkung, Hawking-Strahlung, Jets, Doppler-Leuchten,
+  Gezeitenkräfte, Gravitationswellen, Wurmloch, Zeitdehnung, wachsende
+  Masse).
