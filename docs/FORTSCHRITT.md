@@ -19791,7 +19791,7 @@ gerade in einer zweiten Sitzung gebaut wird — gemeldet.
 Ausserdem misst `test-gehirn` die Spalte bei 1440 px erst, wenn sie
 nicht mehr hereinspringt (sonst 2 px vom Rand, je nach Last).
 
-## Runde 212 — Kurz auffrischen: Erinnerung aufs Handy (23.10.2026)
+## Runde 216 — Kurz auffrischen: Erinnerung aufs Handy (23.10.2026)
 
 **Aus dem Betrieb:** „jo mach weitwr“ — auf den Vorschlag
 „Push-Erinnerungen für Leute mit Zugang“.

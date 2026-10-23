@@ -322,7 +322,7 @@ async function startZeilen(p) {
   pruefe('ohne Skriptfehler (Code-Weg)', !t._fehler.length, t._fehler.join(' | '));
   await t.close();
 
-  console.log('\n── Erinnerung aufs Handy: der Schalter (Runde 212) ──');
+  console.log('\n── Erinnerung aufs Handy: der Schalter (Runde 216) ──');
   /* Aus dem Betrieb, 23.10.2026: „jo mach weitwr" — auf „Push-Erinnerungen
      für Leute mit Zugang". Den Versand prüft tests/rules/funktionen.test.js
      (ERINNERN); hier der Schalter, mit dem man ihn abstellt. */

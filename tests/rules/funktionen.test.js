@@ -1478,7 +1478,7 @@ const TAG = 86400000;
       s3.lauf !== s1.lauf && !s3.fortsetzen && s3.durchgang === s1.durchgang + 1, JSON.stringify(s3));
   }
 
-  /* ══ Auffrischen: eine Erinnerung aufs Handy (Runde 212) ══
+  /* ══ Auffrischen: eine Erinnerung aufs Handy (Runde 216) ══
      Aus dem Betrieb, 23.10.2026: „jo mach weitwr" — auf den Vorschlag
      „Push-Erinnerungen für Leute mit Zugang". Push lässt sich hier nicht
      zustellen; abgefangen wird, an WELCHE Geräte sie ginge. */

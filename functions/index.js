@@ -6817,7 +6817,7 @@ exports.schulungAuffrischen = region.https.onCall(async (data, context) => {
   };
 });
 
-/* ══ AUFFRISCHEN: EINE ERINNERUNG AUFS HANDY (Runde 212) ══════════════
+/* ══ AUFFRISCHEN: EINE ERINNERUNG AUFS HANDY (Runde 216) ══════════════
    Aus dem Betrieb, 23.10.2026: „jo mach weitwr" — auf den Vorschlag
    „Push-Erinnerungen für Leute mit Zugang".
 
