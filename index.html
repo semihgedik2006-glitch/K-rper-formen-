@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-12E2tnhzbLO7YW+1P3Krt7U36zZtN4CiuI9MqERx2BU='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-4FJZLvEroQKQtHQwf65De7c03wSOntetkULt0zVyuoY='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -21779,7 +21779,17 @@ var NAVGROUPS = [
 
    Ist der Putzplan abgeschaltet, rückt „Nachrichten" an seine Stelle —
    ein Platz in dieser Leiste bleibt nie leer. */
-var NEU_LEISTE = ['g-start','g-arbeit','g-zeit','g-team','g-komm','g-wissen'];
+/* ── Fünf statt sechs (Runde 246, 23.10.2026) ──
+   Plan „Studio Chat wie von Apple": Apples Tab-Leiste trägt höchstens
+   fünf Einträge, sonst wird jeder Knopf zu schmal für ein lesbares
+   Wort. Vorschlag war „Wissen" — das öffnet man ein paarmal die Woche,
+   nicht mehrmals am Tag. Aus dem Betrieb, 23.10.2026, 08:07, auf die
+   Empfehlungen: „ja so wie du empfohlen hast klingt super".
+   „Wissen" bleibt zwei Tipps entfernt (☰ → Wissen) und steht am
+   Rechner weiter in der Seitenleiste. Einen Ungelesen-Punkt verliert
+   es nicht: Dokumente, Schulung und Formi tragen keinen (updateNavMarkers
+   kennt nur Chat und Ankündigungen). */
+var NEU_LEISTE = ['g-start','g-arbeit','g-zeit','g-team','g-komm'];
 function neuLeisteGruppen(gruppen){
   var nach={};
   seitenGruppen(gruppen).forEach(function(g){ nach[g.id]=g; });
@@ -22173,6 +22183,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-23-leiste-fuenf', datum:'23.10.2026', titel:'Unten nur noch fünf Knöpfe', wo:'home', punkte:[
+    'Auf dem Handy stehen unten jetzt fünf Knöpfe: Heute, Studio, Zeiten, Plan und Nachrichten. Jeder ist dadurch breiter und leichter zu treffen.',
+    '„Wissen" (Dokumente, Schulung, Formi) findest du über die drei Striche oben links am Seitenkopf („Alles“), zwei Tipps. Am Rechner steht es weiter links in der Seitenleiste.'
+  ]},
   { id:'2026-10-23-schichtplaner-fragen-app', datum:'23.10.2026', titel:'Schichtplaner: Fragen in der App beantworten, Probe zurücknehmen', wo:'planer', punkte:[
     'Im Schichtplaner (Verwaltung) gibt es die Karte „Fragen zum Plan": dieselben 24 Fragen wie im PDF, in fünf Reitern. Bei jeder steht, was die App heute annimmt – ein Tipp auf „passt" genügt, sonst eine eigene Antwort. Oben steht, wie viele schon beantwortet sind.',
     'Nach dem Veröffentlichen gibt es „Veröffentlichung zurücknehmen": Die Schichten des Monats verschwinden wieder aus dem Team-Plan, der Entwurf im Planer bleibt. So lässt sich gefahrlos ausprobieren. Von Hand eingetragene Schichten bleiben stehen.',
@@ -23490,7 +23504,7 @@ function buildNav(){
     return;
   }
 
-  /* Vier Knöpfe, feste Reihenfolge aus NEU_LEISTE — nicht die von
+  /* Fünf Knöpfe, feste Reihenfolge aus NEU_LEISTE — nicht die von
      NAVGROUPS: dort steht „Ich" an zweiter Stelle, und „Nachrichten"
      wäre dadurch vor „Aufgaben" gelandet.
 

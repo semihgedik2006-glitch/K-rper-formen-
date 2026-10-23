@@ -21694,3 +21694,54 @@ an einer Stelle anzufangen.
   geschlossen.
 - test-schichtplaner (140), test-gestaltung, test-doppelte-namen, test-knoepfe,
   test-abgeschnitten, test-team-woche, test-tausch: grün.
+## Runde 246 — Unten fünf Knöpfe, „Wissen“ unter ☰ (23.10.2026)
+
+Vierter Bauschritt aus dem Plan „Studio Chat wie von Apple“. Die Frage,
+welcher Eintrag unten wegfällt, war am Morgen beantwortet: Vorschlag
+„Wissen“, aus dem Betrieb (08:07) „ja so wie du empfohlen hast klingt
+super“. Seit 15:18 läuft der Plan ohne Zwischenfrage durch.
+
+**Was gebaut wurde**
+
+- `NEU_LEISTE` ohne `g-wissen`: am Handy unten Heute · Studio · Zeiten ·
+  Plan · Nachrichten. „Wissen“ (Dokumente, Schulung, Formi) liegt unter
+  ☰ am Seitenkopf — zwei Tipps — und am Rechner unverändert links in
+  der Seitenleiste. Das bisherige Aussehen (ohne `body.neu`) ist nicht
+  angefasst.
+
+**Warum so**
+
+- Apples Tab-Leiste trägt höchstens fünf Einträge. Mit sechs war jeder
+  Knopf bei 320 px auf die Untergrenze gedrückt (Runde 228: 48 px), mit
+  fünf misst er 48–91 px, bei 390 px 61–105 px.
+- „Wissen“ öffnet man ein paarmal die Woche; alles andere unten mehrmals
+  am Tag.
+- Einen Ungelesen-Punkt verliert dadurch nichts: `updateNavMarkers`
+  kennt nur Chat und Ankündigungen, und beide bleiben unten.
+- Die Breite richtet sich auf schmalen Handys weiter nach dem Wort
+  (Runde 222): „Nachrichten“ braucht in der Systemschrift 68 px, gleich
+  breite Knöpfe wären bei 320 px nur 62 px.
+
+**Tests**
+
+- test-p5-leiste: fünf Knöpfe, jeder ≥ 44 × 44 per Hit-Test und im Bild
+  bei 320 / 390 / 430 / 820 px in „normal“ und „kompakt“; neu: „Wissen →
+  Dokumente“ in zwei Tipps über ☰ bei allen vier Breiten. 27 grün.
+- test-navigation: Gruppen unten sind fünf; „Wissen“ und die
+  Verwaltung über ☰ bzw. die Seitenleiste. Der Durchlauf war seit
+  Runde 222 rot (er suchte die Verwaltung unten) — jetzt grün.
+- test-neu-design: Abschnitt 2 auf fünf Knöpfe. Weiter rot wie auf
+  `main`: „320 × 568 passt ohne Scrollen“ (343 > 265), nicht von hier.
+- Grün: abgeschnitten, quer, findewege, zusammengelegt, zeiten-bereich,
+  formi-kugel, formi-reihe, paywall, startseite-offen, knoepfe,
+  fingerziele, neuigkeiten, csp, team-woche, gestaltung,
+  gruppen-aufgaben, gruppen-titel, heute-haken. akzent im Parallellauf
+  wieder an der Zeitprobe rot, allein grün. test-rahmen rot wie auf
+  `main`.
+- Rechner: die Seitenleiste ist nicht verändert; gemessen ist hier nur,
+  dass sie unverändert alle Bereiche zeigt (test-navigation über
+  `#side`).
+
+**Nicht getestet:** echtes iPhone.
+
+**Als Nächstes:** Bewegung — drei Federn, Seitenwechsel.
