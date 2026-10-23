@@ -19946,3 +19946,19 @@ dessen `sw.js` für das Update verändert wird: erstes Öffnen 1× geladen
 **Warum die anderen Tests das nicht sahen:** fast alle setzen
 `serviceWorkers:'block'`. Das ist für stabile Messungen richtig, verbirgt
 aber genau diesen Weg — deshalb der eigene Test ohne Sperre.
+
+## Runde 220 — Ein Gruss für die ganze App (23.10.2026)
+
+**Gesehen** beim Nachmessen um 3 Uhr nachts (alte Startseite): oben
+„Guten Morgen, Lisa", daneben Formis Blase „Guten Abend, Lisa! Früh dran!
+Die Westen sind hoffentlich schon trocken." Drei Stellen rechneten die
+Tageszeit getrennt: der Kopf (`< 11` Morgen), Formis Gruss `jvGruss`
+(`< 5` Abend) und Formis Satz `formiLageSatz` (`< 9` „Früh dran").
+
+**Entschieden.** Der Kopf nimmt jetzt `jvGruss()` — eine Regel für alle.
+Zwischen 0 und 5 Uhr bleibt es „Guten Abend" (wer dann noch schaut, ist
+eher spät als früh dran), und Formi hat dafür die Satzart `nacht`
+(„Noch wach? …") statt „Früh dran". `tests/test-tagesgruss.js` stellt die
+Uhr des Browsers auf 3, 7, 14 und 20 Uhr (Mittwoch, Berliner Zeit): Kopf
+und Blase beginnen gleich, der Satz passt. Gegen `main` laufen die beiden
+3-Uhr-Zusicherungen falsch.
