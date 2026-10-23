@@ -434,6 +434,40 @@ function ki(antworten) {
       pruefe(bsp[0] !== undefined && !/Beispielantwort GUT/.test(bsp[0]), 'Gegenprobe: zu einer fremden Frage kein Westen-Beispiel');
       const pr = await (await w.default.fetch(new Request('https://x.test/api/probe', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': 'admin' }, body: JSON.stringify({ frage: 'Wie wasche ich die Westen?' }) }), env2, { waitUntil() {} })).json();
       pruefe(Array.isArray(pr.beispiele) && pr.beispiele.includes('Wie wasche ich die Westen richtig?'), 'Probe im Leitstand zeigt, welche Beispiele mitgingen');
+
+      /* 2.24 Notbremse. Aus dem Betrieb (23.10.2026): „können wir die
+         tageskontigenten nicht erhöhen irgendwie ?" → „Gratis + Notbremse". */
+      const tag = w.heuteUtc();
+      const setze = n => env2.DB.roh.prepare("INSERT INTO verbrauch (tag, neuronen, aufrufe) VALUES (?, ?, 0) ON CONFLICT(tag) DO UPDATE SET neuronen = excluded.neuronen").run(tag, n);
+      const stand = () => env2.DB.roh.prepare("SELECT neuronen FROM verbrauch WHERE tag = ?").get(tag).neuronen;
+      setze(0);
+      const modelle = [];
+      env2.AI.run = async (modell, e) => {
+        if (/bge-m3/.test(modell)) return { data: e.text.map(fake) };
+        modelle.push({ modell, text: JSON.stringify(e.messages || '') });
+        return { response: JSON.stringify({ antwort: 'Schonprogramm.', art: 'frage', grundlage: 'wissen', abgedeckt: true, quellen: [weste] }), usage: { prompt_tokens: 8000, completion_tokens: 500 } };
+      };
+      await frag('Wie wasche ich die Westen?');
+      const nachEiner = stand();
+      pruefe(modelle[0].modell === w.MODELL_ANTWORT && nachEiner > 280 && nachEiner < 320, 'normal: gpt-oss, und die Antwort wird gebucht (' + Math.round(nachEiner) + ' Neuronen für 8000 + 500 Tokens, erwartet ≈ 289)');
+      setze(7000); modelle.length = 0;
+      const sp = await frag('Wie wasche ich die Westen?');
+      pruefe(modelle.length === 1 && modelle[0].modell !== w.MODELL_ANTWORT && /gemma/.test(modelle[0].modell) && /Schonprogramm/.test(sp.antwort), 'ab 6.000: Sparmodus mit Gemma, kein gpt-oss (' + modelle.map(x => x.modell).join(', ') + ')');
+      setze(9500); modelle.length = 0;
+      const st = await frag('Wie wasche ich die Westen?');
+      pruefe(modelle.length === 0 && /spare heute/.test(st.antwort) && /Schonprogramm|Pflegespüler/.test(st.antwort) && !st.offenId, 'ab 9.200: keine KI, Antwort aus dem Wissen');
+      const offenVor2 = env2.DB.roh.prepare("SELECT COUNT(*) AS n FROM offen").get().n;
+      const st2 = await frag('Xylophon Quartett Zeppelin');
+      pruefe(modelle.length === 0 && st2.offenId && env2.DB.roh.prepare("SELECT COUNT(*) AS n FROM offen").get().n === offenVor2 + 1, 'ab 9.200 ohne passendes Wissen: keine KI, kein fremder Eintrag, die Frage wird gespeichert');
+      const ll = await w.lernlauf(w.mitZaehler(env2));
+      pruefe(ll.gespart && modelle.length === 0, 'kein Lernlauf, solange gespart wird');
+      setze(0);
+      env2.AI.run = async (modell, e) => { if (/bge-m3/.test(modell)) return { data: e.text.map(fake) }; throw new Error('4006: you have used up your daily free allocation of 10,000 neurons'); };
+      await frag('Wie wasche ich die Westen?');
+      pruefe(stand() >= w.KONTINGENT, 'meldet Cloudflare „aufgebraucht", steht der Zähler auf dem Kontingent (' + stand() + ')');
+      const sta = await (await w.default.fetch(new Request('https://x.test/api/statistik', { headers: { 'x-admin-key': 'admin' } }), env2, { waitUntil() {} })).json();
+      pruefe(sta.verbrauch && sta.verbrauch.stufe === 'stopp' && sta.verbrauch.kontingent === 10000, 'Statistik zeigt Verbrauch und Stufe (' + JSON.stringify(sta.verbrauch) + ')');
+      setze(0);
       env2.AI.run = altRun; global.fetch = altFetch3;
     }
     {
@@ -442,6 +476,11 @@ function ki(antworten) {
       pruefe(gew.length === w.MAX_VORBILDER && new Set(gew.map(x => x.frage)).size === gew.length, 'höchstens ' + w.MAX_VORBILDER + ' Beispiele, keine doppelte Frage');
       pruefe(w.vorbilderWaehlen('', viele).length === 0 && w.vorbilderWaehlen('Wie wasche?', []).length === 0, 'leere Frage oder keine Paare: keine Beispiele');
       pruefe(w.vorbilderText([{ frage: 'F1', antwort: 'x'.repeat(2000) }]).length < 800, 'ein langes Beispiel wird gekürzt');
+      pruefe(w.stufeVon(5999, {}) === 'normal' && w.stufeVon(6000, {}) === 'spar' && w.stufeVon(9200, {}) === 'stopp' && w.stufeVon(100, { NEURONEN_SPAR: '50' }) === 'spar', 'Stufen: 6.000 Sparmodus, 9.200 Notbremse, per Variable einstellbar');
+      pruefe(Math.round(w.neuronenSchaetzen('@cf/google/gemma-4-26b-a4b-it', {}, { usage: { prompt_tokens: 8000, completion_tokens: 500 } })) === 86, 'Gemma kostet für dieselbe Frage etwa ein Drittel (86 statt ≈ 289)');
+      pruefe(w.neuronenSchaetzen('@cf/openai/gpt-oss-120b', { messages: [{ content: 'x'.repeat(3500) }] }, { response: 'y'.repeat(350) }) > 30, 'ohne usage wird aus der Textlänge geschätzt');
+      pruefe(w.wissenPassend('Wie wasche ich die Westen?', [{ thema: 'Dusche', inhalt: 'Abfluss' }, { thema: 'Westen', inhalt: 'Schonprogramm' }]).thema === 'Westen' && !w.wissenPassend('Xylophon Zeppelin', [{ thema: 'Westen', inhalt: 'waschen' }]), 'Notbremse nimmt nur einen Eintrag mit gemeinsamem Suchwort');
+      pruefe(w.sparWissen(Array.from({ length: 8 }, (_, i) => ({ thema: 't' + i, inhalt: 'x'.repeat(2000) }))).length === 2 && w.sparWissen([{ thema: 'a', inhalt: 'x'.repeat(9000) }]).length === 1, 'Sparmodus: höchstens 4 Einträge und 5.000 Zeichen, ein langer Eintrag bleibt');
     }
 
     /* ── 2.16 Sammelfreigabe: „ja sind zu viele klicks" ── */
@@ -484,8 +523,12 @@ function ki(antworten) {
           route.fulfill({ status: antwort.status, headers: Object.fromEntries(antwort.headers), body: Buffer.from(await antwort.arrayBuffer()) });
         });
         await pg.addInitScript(() => { try { sessionStorage.setItem('sg-key', 'admin'); } catch (e) {} });
+        const seitenFehler = []; pg.on('pageerror', e => seitenFehler.push(e.message));
         await pg.goto('https://leitstand.test/leitstand');
         await pg.waitForTimeout(500);
+        /* 2.24: Übersicht zeigt das Kontingent */
+        const kk = await pg.waitForFunction(() => /KI-Kontingent heute/.test(document.body.innerText) && /von 10\.000 Neuronen/.test(document.body.innerText), null, { timeout: 5000 }).then(() => true).catch(() => false);
+        pruefe(kk && !seitenFehler.length, 'Leitstand-Übersicht zeigt „KI-Kontingent heute" ohne Skriptfehler' + (seitenFehler.length ? ' (' + seitenFehler.join(' | ') + ')' : ''));
         await pg.evaluate(() => { tab = 'vorschlaege'; start(); });
         await pg.waitForFunction(() => [...document.querySelectorAll('button')].some(b => /Knopftest/.test(b.textContent)), null, { timeout: 5000 });
         /* Ein fester Griff, kein Locator nach Text: der Text ändert sich beim

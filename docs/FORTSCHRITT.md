@@ -20869,3 +20869,70 @@ bzw. `--s12`.
 
 **Nicht geprüft:** echte Handys. Die Arbeit je Bild beim Seitenwechsel
 wurde nicht gemessen: ein Element, 650 ms, nur `transform`/`opacity`.
+
+## Runde 234 — Notbremse fürs KI-Tageskontingent (Worker 2.24, 23.10.2026)
+
+Aus dem Betrieb: „können wir die tageskontigenten nicht erhöhen
+irgendwie ?". Die Rückfrage war Paid-Plan oder gratis mit Notbremse. Die
+Antwort: „Gratis + Notbremse".
+
+**Anlass, gemessen:** Am 23.10. lieferte `/api/probe` ab etwa 12 Uhr nur
+noch „4006: you have used up your daily free allocation of 10,000
+neurons". Verbraucht hatten es vor allem die rund 700 Übungsfragen aus
+Runde 230/232 (Claude), dazu die Antworten mit gpt-oss-120b. Danach
+konnte Formi bis zum Neustart um 00:00 UTC niemandem antworten.
+
+**Rechnung (Preise laut developers.cloudflare.com, Stand 23.10.2026):**
+- Eine typische Antwort mit gpt-oss-120b hat rund 8.000 Tokens Eingabe
+  (Wissen, App-Lage, Beispiele) und 500 Tokens Ausgabe. Das sind etwa 290
+  Neuronen, also nur rund 34 Antworten am Tag, solange sonst nichts
+  verbraucht wird.
+- Gemma 4 26B kostet für dieselbe Antwort etwa 86 Neuronen. Mit weniger
+  Wissen im Gespräch ist es noch weniger.
+- Beide Werte sind aus den Tokens geschätzt; die echte Zahl zeigt nur
+  Cloudflare.
+
+**Geändert (Worker 2.24)**
+- `mitZaehler(env)` umhüllt jeden KI-Aufruf im Worker und bucht die
+  geschätzten Neuronen je UTC-Tag in die Tabelle `verbrauch`. Meldet
+  Cloudflare selbst 4006, springt der Zähler auf 10.000.
+- Drei Stufen:
+  - **normal** (unter 6.000): wie bisher.
+  - **spar** (ab 6.000):
+    - Nur noch Gemma, mit höchstens 4 Einträgen bzw. 5.000 Zeichen
+      Wissen, 3.000 Zeichen App-Lage, 2 Beispielen und 2 Gesprächszeilen.
+    - Kein teures Ersatzmodell.
+    - Kein Lernlauf, keine neuen Übungsfragen.
+  - **stopp** (ab 9.200): keine KI für Antworten. Formi gibt einen
+    Wissenseintrag zurück, der ein Suchwort der Frage enthält, mit dem
+    Satz „Ich spare heute Rechenzeit …". Passt keiner, wird die Frage wie
+    bisher gespeichert und geht an Semih.
+- Die Grenzen sind per Variable einstellbar: `NEURONEN_SPAR`,
+  `NEURONEN_STOPP`.
+- Leitstand → Übersicht: Karte „KI-Kontingent heute" mit Verbrauch,
+  Aufrufen und Stufe. `/api/statistik` liefert `verbrauch`, `/api/probe`
+  nimmt `spar: true` zum Vergleich.
+
+**Warum so**
+- 6.000 als Schwelle: Darüber bleiben rund 3.200 Neuronen, also mit Gemma
+  etwa 35 weitere Antworten bis zur Notbremse. Der Rest ab 9.200 ist der
+  Puffer für die Schätzfehler.
+- Ohne KI nur ein Eintrag mit gemeinsamem Suchwort: Die Suche nach
+  Bedeutung findet immer irgendetwas. Ohne Modell prüft aber niemand, ob
+  es passt.
+
+**Geprüft:** `test-formi-worker` 152 (mit Browser-Teil). Neu sind diese Fälle:
+- Normalbetrieb: gpt-oss, gebucht werden ≈ 289 Neuronen.
+- Ab 6.000 nur Gemma.
+- Ab 9.200 keine KI: Antwort aus dem Wissen, oder ohne passendes Wissen
+  wird die Frage gespeichert.
+- Kein Lernlauf im Sparmodus.
+- Bei 4006 steht der Zähler auf dem Kontingent.
+- Statistik, Stufen-Grenzen, Kostenschätzung und gekürztes Wissen.
+- Die Leitstand-Übersicht zeigt die Karte ohne Skriptfehler.
+
+**Nicht geprüft:** wie genau die Schätzung gegenüber Cloudflares echter
+Abrechnung ist. Ob gpt-oss `usage` mitliefert, ist nicht nachgesehen.
+Ohne `usage` schätzt der Worker aus der Textlänge, und das Nachdenken des
+Modells fehlt dann in der Rechnung. Abgleichen lässt es sich im
+Cloudflare-Dashboard unter Workers AI.
