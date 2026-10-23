@@ -95,6 +95,10 @@ function ki(antworten) {
   pruefe(/Nicht geprüft:/.test(sys) && /Erfinde trotzdem nie konkrete Preise, Telefonnummern/.test(sys), 'Systemtext: immer antworten, Ungeprüftes kennzeichnen, keine erfundenen Preise/Nummern');
   pruefe(/APP-LAGE/.test(sys) && /"grundlage"/.test(sys) && /wie ChatGPT/.test(sys), 'Systemtext: App-Lage, Grundlage, frei wie ChatGPT');
   pruefe(!w.brauchtPruefung({ art: 'frage', abgedeckt: false, grundlage: 'allgemein' }) && !w.brauchtPruefung({ art: 'frage', abgedeckt: false, grundlage: 'app' }) && w.brauchtPruefung({ art: 'frage', abgedeckt: false, grundlage: 'unsicher' }), 'Nur Ungeprüftes über unser Studio geht an Semih — Allgemeines und App-Lage nicht');
+  /* 2.21 (23.10.2026, „gib formi nur noch mehr emotions und persönlichere
+     und längere antworten"). */
+  pruefe(/GEFÜHLE UND NÄHE/.test(sys) && /"stimmung"/.test(sys) && /80–200 Wörter/.test(sys) && /nenne nie IDs/.test(sys), 'Systemtext: Gefühle, Nähe, länger, keine IDs in der Antwort');
+  pruefe(w.kiErgebnis({ antwort: 'x', art: 'frage', stimmung: 'begeistert', quellen: [] }, '', []).stimmung === 'begeistert' && w.kiErgebnis({ antwort: 'x', art: 'frage', stimmung: 'wütend', quellen: [] }, '', []).stimmung === null, 'Stimmung nur aus der festen Liste');
   const kg = w.kiErgebnis({ antwort: 'x', art: 'frage', grundlage: 'erfunden', abgedeckt: false, quellen: [] }, '', []);
   pruefe(kg.grundlage === 'unsicher', 'unbekannte Grundlage → „unsicher" (lieber an Semih als still)');
   /* 2.11, live am 22.10.2026: „was kannst du alles" kam aus einem alten
