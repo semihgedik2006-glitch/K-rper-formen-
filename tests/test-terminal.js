@@ -41,6 +41,11 @@
    Datenbank. Was die Datenbank zulässt, steht in
    tests/rules/zeitpin.test.js und wird dort am Emulator gemessen.
    ───────────────────────────────────────────────────────────────────── */
+/* Runde 236: Seit dem 23.10.2026 ist das neue Design für alle der Standard.
+   Dieser Durchlauf prüft eine Funktion, kommt aber über die BISHERIGE
+   Navigation dorthin. Bis er auf die neue umgestellt ist, läuft er im
+   bisherigen Aussehen (kf_neu=0, der Geräteschalter des Übergangs).
+   Offen als P-20 in docs/BEKANNTE-PROBLEME.md. */
 const { chromium } = require('playwright');
 const SP = process.env.SP || __dirname;
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
@@ -130,6 +135,7 @@ async function starten(errs, vorbereiten) {
   await page.route('**fonts.googleapis.com/**', r => r.abort());
   await page.route('**script.google.com/**', r => r.fulfill({ status: 200, body: 'ok' }));
   await page.addInitScript({ path: SP + '/stub-chef.js' });
+  await page.addInitScript(() => { try { localStorage.setItem('kf_neu', '0'); } catch (e) {} });
   if (vorbereiten) await page.addInitScript({ content: vorbereiten });
   await page.addInitScript({ content: ZUSATZ });
   await page.goto(APP, { waitUntil: 'domcontentloaded' });
@@ -485,6 +491,7 @@ async function starten(errs, vorbereiten) {
         'window.__beendet=false; window.confirm=function(){ window.__beendet=true; return false; };'
     });
     await page.addInitScript({ path: SP + '/stub-mitarbeiter.js' });
+    await page.addInitScript(() => { try { localStorage.setItem('kf_neu', '0'); } catch (e) {} });
     await page.addInitScript({ content: ZUSATZ });
     await page.goto(APP, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(3200);

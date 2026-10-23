@@ -619,6 +619,53 @@ Kugel. Formi ist dort schon zu sehen, und ein Tipp auf das Gesicht
 320 × 568 kommen die „Ausserdem“-Knöpfe in eine Zeile, die sich
 waagerecht schieben lässt.
 
+## P-20 · 33 Durchläufe prüfen noch das bisherige Aussehen
+
+| | |
+|---|---|
+| **Schweregrad** | **MITTEL**: Die Funktionen sind geprüft, aber in einem Aussehen, das niemand mehr standardmässig sieht |
+| **Seit** | 23.10.2026, Runde 236 (neues Design für alle) |
+
+Diese Durchläufe kommen über die BISHERIGE Navigation an ihr Ziel, etwa
+über `.mobnav [data-group="g-chef"]` oder über Karten der alten
+Startseite. Im Übergang setzen sie `kf_neu=0`, also den Geräteschalter,
+den es noch gibt. Jeder trägt einen Kommentar mit Verweis hierher.
+
+all, beitritt, bericht, block3, chef, final, handy-stempeln,
+leerzustand, leiter, lizenzen, marker, nachladen, oeffnungszeiten,
+sicherung, standorte, terminal, trash, ueberblick, verwaltung-bereich9,
+wuensche, tausch, kopf-bericht, funktionen-schalter, sprachabspieler,
+startlesen, startuebergabe, formi-lebt, einrichtung, scrollkopf,
+recht-firma, block-a, p4-seitenleiste, p5-leiste.
+
+In block-a, p4 und p5 betrifft es nur die Gegenprobe „bisheriges Design“.
+Die übrigen Teile laufen über `?neu=1`, und die Adresse gewinnt.
+
+**Bevor das Bisherige entfernt wird**, muss jeder davon auf die neue
+Navigation umgestellt sein: Räume, „Alles“, Seitenleiste. Sonst prüft er
+danach nichts mehr. Einige prüfen Dinge, die es im neuen Design anders
+gibt. Die Einrichtung steht dort zum Beispiel als Zeile „Einrichtungs-
+schritte fehlen“ auf „Heute“ statt als Karte.
+
+## P-21 · Neues Design: zwei offene Messungen
+
+| | |
+|---|---|
+| **Schweregrad** | **NIEDRIG bis MITTEL** |
+| **Seit** | 23.10.2026, gefunden beim Umstellen auf das neue Design für alle |
+
+- **Chatverlauf am Handy nur 52 % der Ansicht** (`test-chat-bereich3`,
+  Grenze 55 %). Der Kopf in „Nachrichten“ ist schon schmal (49 → 52 %).
+  Bereichskopf und Reiter sind je 44 px hoch, kleiner geht es nicht. Was
+  noch helfen könnte: die Reihe „Studios | Gruppen“ und die Kanalreihe
+  zusammenlegen.
+- **Wisch am Verschiebe-Griff hakt eine Aufgabe ab**
+  (`test-eigene-reihenfolge`, Handy, nur im neuen Design). Der Griff
+  stoppt `touchstart`, trotzdem wird abgehakt. Gemessen: Der Finger
+  trifft den Griff bei x = 19. Die Ursache ist noch nicht gefunden. Im
+  Spiel ist vermutlich etwas, das nur das neue Design an der linken Kante
+  hört.
+
 ---
 
 ## Behoben
