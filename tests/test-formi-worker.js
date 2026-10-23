@@ -99,6 +99,10 @@ function ki(antworten) {
      und längere antworten"). */
   pruefe(/GEFÜHLE UND NÄHE/.test(sys) && /"stimmung"/.test(sys) && /80–200 Wörter/.test(sys) && /nenne nie IDs/.test(sys), 'Systemtext: Gefühle, Nähe, länger, keine IDs in der Antwort');
   pruefe(w.kiErgebnis({ antwort: 'x', art: 'frage', stimmung: 'begeistert', quellen: [] }, '', []).stimmung === 'begeistert' && w.kiErgebnis({ antwort: 'x', art: 'frage', stimmung: 'wütend', quellen: [] }, '', []).stimmung === null, 'Stimmung nur aus der festen Liste');
+  /* 2.22: live kam trotz Anweisung „(ID 7)" und „(vgl. ID 57)" in Antworten. */
+  pruefe(w.idsEntfernen('Lass ihn ausreden (ID 7). Trennen (vgl. ID 57). Siehe [ID 12, 13] bitte') === 'Lass ihn ausreden. Trennen. Siehe bitte' && w.idsEntfernen('Gerät Nr 5 piept') === 'Gerät Nr 5 piept', 'IDs in Klammern verschwinden, „Gerät Nr 5" bleibt');
+  pruefe(w.kiErgebnis({ antwort: 'Mach das so (ID 3).', art: 'frage', quellen: [] }, '', []).antwort === 'Mach das so.', 'die Antwort kommt ohne ID');
+  pruefe(/Kündige einen Witz nie an/.test(sys), 'Systemtext: Witze nicht ankündigen, bei Stress keiner');
   const kg = w.kiErgebnis({ antwort: 'x', art: 'frage', grundlage: 'erfunden', abgedeckt: false, quellen: [] }, '', []);
   pruefe(kg.grundlage === 'unsicher', 'unbekannte Grundlage → „unsicher" (lieber an Semih als still)');
   /* 2.11, live am 22.10.2026: „was kannst du alles" kam aus einem alten
@@ -356,6 +360,14 @@ function ki(antworten) {
     pruefe(Array.isArray(such.bedeutung) && such.bedeutung.length > 0 && typeof such.bedeutung[0].wert === 'number' && such.schwelle > 0 && such.ergebnis.some(x => x.id === weste), 'Suche-Diagnose: Wörter, Volltext, Ähnlichkeit ohne Schwelle, Ergebnis (' + JSON.stringify(such).slice(0, 160) + ')');
     const suchOhne = await w.default.fetch(new Request('https://x.test/api/suche?q=x', { headers: { 'x-studio-key': 'k' } }), env2, {});
     pruefe(suchOhne.status === 401, 'Suche-Diagnose nur im Leitstand');
+    /* 2.22: wer eine Übung geprüft hat, steht dabei und im Export. */
+    await w.trainingTabellen(env2);
+    env2.DB.roh.prepare("INSERT INTO uebung (wissen_id, frage, antwort, status, erstellt) VALUES (1, 'testfrage claude', 'testantwort', 'neu', 1)").run();
+    const uid = env2.DB.roh.prepare("SELECT id FROM uebung WHERE frage = 'testfrage claude'").get().id;
+    const ur = await (await post('/api/uebung/urteil', { id: uid, gut: true, von: 'Claude (für Semih)' }, { 'x-admin-key': 'admin' })).json();
+    pruefe(ur.ok && env2.DB.roh.prepare('SELECT geprueft_von FROM uebung WHERE id = ?').get(uid).geprueft_von === 'Claude (für Semih)', 'Übung: „geprüft von" wird gespeichert');
+    const ex2 = await (await w.default.fetch(new Request('https://x.test/api/training/export', { headers: { 'x-admin-key': 'admin' } }), env2, {})).text();
+    pruefe(/"geprueft_von":"Claude \(für Semih\)"/.test(ex2), 'Export nennt, wer geprüft hat');
 
     /* ── 2.19: gpt-oss zuerst, App-Lage im Gespräch, Grundlage ── */
     {
