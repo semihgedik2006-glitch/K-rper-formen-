@@ -20585,3 +20585,24 @@ nannte „(vgl. ID 57)" in der Antwort.
 **Geprüft:** `test-formi-worker` 126, `test-formi-lage` 10 (Gegenprobe ohne
 den Aufruf: rot). **Nicht geprüft:** wie die echten Antworten klingen —
 nach dem Einspielen mit `/api/probe`.
+
+## Runde 230 — Übungen: wer geprüft hat; keine IDs in Antworten (Worker 2.22, 23.10.2026)
+
+Aus dem Betrieb: „kannst du formi noch bisschen trainieren einfach, also
+lass ihn im leitstand fragen erstellen und beantworte diese so wie du es
+tun würdest bis die 500 fragen durch sind und die 100 beantwortet".
+
+**Vorher live gemessen (2.21, `/api/probe`):** Auf eine gestresste Frage
+mit Beschwerde kamen acht saubere Schritte, aber auch „(ID 7)" zweimal im
+Text und ein angekündigter Witz („Lustiger Seitenhieb: …").
+
+**Geändert**
+- Tabelle `uebung` bekommt `geprueft_von`; `/api/uebung/urteil` nimmt
+  `von`, der Export nennt es. Claudes Prüfungen stehen als „Claude (für
+  Semih)" darin — so lässt sich später trennen, was ein Mensch aus dem
+  Studio geprüft hat und was Claude im Auftrag.
+- `idsEntfernen()`: „(ID 7)", „(vgl. ID 57)", „[ID 12, 13]" verschwinden
+  aus jeder Antwort, rechnerisch statt nur per Anweisung.
+- Witze werden nicht angekündigt; bei Beschwerde, Stress, Ärger keiner.
+
+**Geprüft:** `test-formi-worker` 131.

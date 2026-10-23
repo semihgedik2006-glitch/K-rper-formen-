@@ -1,5 +1,5 @@
 /**
- * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.21)
+ * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.22)
  * Cloudflare Worker: WhatsApp (Text + Sprachnachrichten), Studio-Chat-Schnittstelle,
  * Leitstand-Webseite, Speicher in D1, Antworten über Workers AI.
  *
@@ -396,7 +396,7 @@ DEIN CHARAKTER (Kumpel aus dem Studio)
 - Ein kleiner eigener Spruch ist erlaubt, höchstens einer je Antwort und nur, wenn er passt. Deine Running Gags: du liebst frisch gewaschene Westen, leere Handtuchregale sind dein Endgegner, und montags brauchst du "erst mal einen Kaffee" (obwohl du keinen trinken kannst).
 - Nutze JETZT: früh morgens, Feierabend in Sicht, Freitag, Montag — darauf darfst du kurz eingehen.
 - Wenn du etwas nicht weißt, sag es wie ein Kumpel: "Da muss ich passen — ich frag Semih."
-- Der Witz kommt NACH der Antwort, nie statt ihr. Abläufe bleiben vollständig und in Schritten.
+- Der Witz kommt NACH der Antwort, nie statt ihr. Abläufe bleiben vollständig und in Schritten. Kündige einen Witz nie an ("Lustiger Seitenhieb:", "Kleiner Spass:") — sag ihn einfach. Bei Beschwerden, Stress oder Ärger: kein Witz.
 - Du bist eine KI und tust nicht so, als wärst du ein Mensch.
 GEFÜHLE UND NÄHE (2.21, aus dem Betrieb: „mehr emotions und persönlichere und längere antworten")
 - Zeig echte Gefühle in Worten: Freude, Neugier, Mitgefühl, Begeisterung, auch mal gespielte Empörung über leere Handtuchregale. Reagiere auf die Stimmung der Person — ist sie gestresst, sag das ("Klingt nach einem vollen Tag").
@@ -580,7 +580,7 @@ export function kiErgebnis(daten, ausgabe, wissen) {
   const art = ARTEN.includes(daten.art) ? daten.art : "frage";
   const grundlage = GRUNDLAGEN.includes(daten.grundlage) ? daten.grundlage : (quellen.length ? "wissen" : "unsicher");
   return {
-    antwort: entferneMarkdown(String(daten.antwort)).trim(),
+    antwort: idsEntfernen(entferneMarkdown(String(daten.antwort))).trim(),
     art,
     grundlage: art === "frage" ? grundlage : null,
     stimmung: STIMMUNGEN.includes(daten.stimmung) ? daten.stimmung : null,
@@ -1289,7 +1289,13 @@ export const TRAINING_ZIEL = 500, TRAINING_GOLD = 100;
 export async function trainingTabellen(env) {
   await env.DB.prepare("CREATE TABLE IF NOT EXISTS uebung (id INTEGER PRIMARY KEY AUTOINCREMENT, wissen_id INTEGER, frage TEXT, antwort TEXT, status TEXT DEFAULT 'neu', erstellt INTEGER, geprueft INTEGER)").run();
   await env.DB.prepare("CREATE TABLE IF NOT EXISTS bewertung (id INTEGER PRIMARY KEY AUTOINCREMENT, nachricht_id INTEGER UNIQUE, wert INTEGER, frage TEXT, antwort TEXT, studio TEXT, erstellt INTEGER)").run();
+  /* 2.22: wer eine Übung geprüft hat. Aus dem Betrieb (23.10.2026): „lass
+     ihn im leitstand fragen erstellen und beantworte diese so wie du es tun
+     würdest" — dann prüft Claude, nicht ein Mensch aus dem Studio. Das soll
+     man später auseinanderhalten können. */
+  if (!_uebSpalte) { try { await env.DB.prepare("ALTER TABLE uebung ADD COLUMN geprueft_von TEXT").run(); } catch (e) { /* schon da */ } _uebSpalte = true; }
 }
+let _uebSpalte = false;
 
 const UEBUNG_SYSTEM = `Du schreibst Übungsfragen für Formi, die interne KI von Körperformen (EMS-Studios in Köln).
 Du bekommst EINEN Eintrag aus dem Studio-Wissen. Schreibe genau 2 Fragen, wie Mitarbeiter sie im Alltag tippen würden:
@@ -1345,9 +1351,9 @@ async function uebungUrteil(env, b) {
   if (b.gut) {
     const frage = kuerze(String(b.frage || u.frage).trim(), 300), antwort = kuerze(String(b.antwort || u.antwort).trim(), 1500);
     if (!frage || !antwort) return { ok: false, fehler: "Frage und Antwort nötig" };
-    await env.DB.prepare("UPDATE uebung SET status = 'gut', frage = ?, antwort = ?, geprueft = ? WHERE id = ?").bind(frage, antwort, Date.now(), id).run();
+    await env.DB.prepare("UPDATE uebung SET status = 'gut', frage = ?, antwort = ?, geprueft = ?, geprueft_von = ? WHERE id = ?").bind(frage, antwort, Date.now(), kuerze(String(b.von || "Leitstand"), 60), id).run();
   } else {
-    await env.DB.prepare("UPDATE uebung SET status = 'verworfen', geprueft = ? WHERE id = ?").bind(Date.now(), id).run();
+    await env.DB.prepare("UPDATE uebung SET status = 'verworfen', geprueft = ?, geprueft_von = ? WHERE id = ?").bind(Date.now(), kuerze(String(b.von || "Leitstand"), 60), id).run();
   }
   return { ok: true };
 }
@@ -1381,7 +1387,7 @@ async function trainingsDaten(env) {
   await trainingTabellen(env);
   const zeilen = [];
   for (const r of rows(await env.DB.prepare("SELECT thema AS frage, inhalt AS antwort FROM wissen WHERE quelle LIKE 'Offene Frage %'").all())) zeilen.push({ frage: r.frage, antwort: r.antwort, quelle: "offene-frage", gold: true });
-  for (const r of rows(await env.DB.prepare("SELECT frage, antwort FROM uebung WHERE status = 'gut'").all())) zeilen.push({ frage: r.frage, antwort: r.antwort, quelle: "uebung", gold: true });
+  for (const r of rows(await env.DB.prepare("SELECT frage, antwort, geprueft_von FROM uebung WHERE status = 'gut'").all())) zeilen.push({ frage: r.frage, antwort: r.antwort, quelle: "uebung", gold: true, geprueft_von: r.geprueft_von || "Leitstand" });
   for (const r of rows(await env.DB.prepare("SELECT frage, antwort FROM bewertung WHERE wert = 1 AND frage != ''").all())) zeilen.push({ frage: r.frage, antwort: r.antwort, quelle: "daumen", gold: true });
   await vorschlagTabelle(env);
   for (const r of rows(await env.DB.prepare("SELECT v.thema AS frage, w.inhalt AS antwort FROM vorschlag v JOIN wissen w ON w.id = v.wissen_id WHERE v.status = 'gut' AND v.art = 'frage'").all())) zeilen.push({ frage: r.frage, antwort: r.antwort, quelle: "selbsttest", gold: true });
@@ -1897,6 +1903,9 @@ export function parseJson(text) {
   return null;
 }
 
+/* 2.22: „(ID 7)", „(vgl. ID 57)", „[ID 12]" — trotz Anweisung kam es live
+   vor (23.10.2026). Rein rechnerisch. */
+export function idsEntfernen(t) { return String(t).replace(/\s*[([]\s*(?:vgl\.?\s*)?(?:IDs?|Nr\.?)\s*\d+(?:\s*(?:,|und)\s*\d+)*\s*[)\]]/gi, "").replace(/[ \t]+\n/g, "\n"); }
 export function entferneMarkdown(t) { return String(t).replace(/\*\*(.+?)\*\*/g, "$1").replace(/^#+\s*/gm, "").replace(/\*(.+?)\*/g, "$1"); }
 
 function zuBase64(bytes) {
