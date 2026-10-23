@@ -21746,7 +21746,85 @@ super“. Seit 15:18 läuft der Plan ohne Zwischenfrage durch.
 
 **Als Nächstes:** Bewegung — drei Federn, Seitenwechsel.
 
-## Runde 247 — Schulung: die eigene Bescheinigung zum Drucken; Erinnerung nicht an Stillgelegte (23.10.2026)
+## Runde 247 — Drei Federn statt vieler Kurven (23.10.2026)
+
+Fünfter Bauschritt aus dem Plan „Studio Chat wie von Apple“ (Bewegung),
+nach Empfehlung 1 der Recherche „Bewegung, Psychologie und Formi“. Aus
+dem Betrieb, 15:18: „es soll einfach den ganzen plan erledigen“.
+
+**Was gebaut wurde**
+
+- Drei Federn als Eigenschaften an `:root`, gerechnet als echte
+  gedämpfte Schwingung und in `linear()` abgetastet (29 Punkte):
+  `--feder-fest` (bounce 0, Dämpfung 1), `--feder-weich` (bounce 0,15,
+  Dämpfung 0,85, 0,6 % Überschwingen), `--feder-formi` (bounce 0,3,
+  4,6 %) — die letzte nur angelegt, nicht benutzt.
+- `--ease-ios` und `--ease-out` zeigen auf `--feder-fest`, `--spring` auf
+  `--feder-weich`. Damit bewegen sich alle ~225 Stellen der App, die eine
+  der drei Kurven benutzen, als Feder — ohne eine einzige davon
+  umzuschreiben.
+- Formi bleibt unverändert: an Formis Wurzeln (`[class*="formi"]` ausser
+  `body`, `[id*="formi"]`, `#view-gehirn`, `.jarvis`) werden die drei
+  alten Kurven wieder gesetzt; sie erben in alles darunter. Die rund 50
+  festen `cubic-bezier(…)` in Formis eigenen Regeln und im Skript sind
+  nicht angefasst.
+- Ohne `linear()` (Safari < 17.2) bleibt alles bei den alten Kurven
+  (`@supports`).
+
+**Warum so**
+
+- Apple beschreibt Bewegung als Feder mit „bounce“, nicht als Kurve.
+  Eine Feder ohne Anfangsgeschwindigkeit setzt weich an und läuft lang
+  aus; zur Hälfte der Dauer ist `--feder-fest` bei 96 %, so wie
+  `--ease-ios` vorher.
+- Die Rechnung: Dämpfung ζ = 1 − bounce. Für ζ = 1 gilt
+  x(t) = 1 − (1 + ωt)·e^(−ωt), ω so gewählt, dass x(1) = 0,999
+  (ω ≈ 9,23). Für ζ < 1 gilt x(t) = 1 − e^(−ζωt)·(cos ω_d t +
+  ζω/ω_d · sin ω_d t) mit ω_d = ω√(1−ζ²) und ζω = 6,9 (Hülle 0,1 % bei
+  t = 1). Abgetastet bei t = (i/28)^1,6, damit der Anfang dichter liegt.
+- Verweise statt Umschreiben: über 200 Stellen zu ändern hätte nichts
+  verbessert, nur den Unterschied in der Versionsgeschichte verdeckt.
+- `linear()` läuft wie `cubic-bezier` auf dem Compositor: in einer
+  leeren Seite 0 Stil-Neuberechnungen in 1 s für beide (nachgemessen).
+
+**Was dabei gefunden wurde — Arbeit je Bild beim Seitenwechsel**
+
+- Gemessen am Hauptfaden, CPU ÷4, 450 ms nach dem Tipp (der Aufbau der
+  Seite selbst nicht mitgezählt): schon auf `main` 13,8–14,8 ms je Bild
+  bei 390 px und 18,5–20,1 ms bei 1440 px — über der Grenze von 8,3 ms.
+  Mit den Federn 13,9–17,3 bzw. 15,5–20,5 ms; im direkten Vergleich in
+  derselben Seite 13,9 gegen 12,7 und 15,5 gegen 15,0 ms (Streuung
+  zwischen Läufen ±3 ms).
+- Der grösste Posten ist Stil-Neuberechnung (`UpdateLayoutTree`, 900 ms
+  in 5 × 450 ms). Was in diesen Bildern auf dem Hauptfaden läuft:
+  Formis `formiDoppler` an zehn `<i>` (Deckkraft, nicht auf dem
+  Compositor), `formiBahn`/`formiScheibe`; Übergänge von Farbe, Fläche
+  und Schatten an den Knöpfen der Kopfzeile, wenn die Bereichsfarbe
+  wechselt; die gleitende Füllung der unteren Leiste mit `width` und
+  `height` (gegen die Regel „keine Übergänge auf width“); in der Demo
+  die angemeldeten Farben an `.demo-bar`. Formi gehört einer anderen
+  Sitzung; der Rest ist ein eigener Schritt, nicht diese Runde.
+
+**Tests**
+
+- Neu: `tests/test-federn.js`, 30 Zusicherungen: die Federn (Form,
+  Überschwingen), die Verweise, Formis Kurven in Kugel und auf seiner
+  Seite unverändert, GEGENPROBE `body.formi` behält die Federn, die
+  Seiteneinblendung läuft mit `linear()` in Formi/Dunkel/Hell bei 390
+  und 1440 px, weniger Bewegung schaltet ab, und die Arbeit je Bild mit
+  Federn gegen alte Kurven in derselben Seite.
+- Gegen `main`: 6 von 24 falsch.
+- Im Parallellauf (vier Browser) waren akzent, formi-kugel und
+  gruppen-aufgaben einmal rot, allein alle grün. gruppen-aufgaben traf
+  unter Last eine Zeile mitten im Einblenden (44 × 40); der Test wartet
+  jetzt, bis die Zeile steht — die Grenze bleibt 44 × 44.
+
+**Nicht getestet:** wie es sich am iPhone und am Mac anfühlt —
+Chromium ohne Bildschirm taktet mit 60 Hz.
+
+**Als Nächstes:** Chat-Blasen und Kontextmenü.
+
+## Runde 248 — Schulung: die eigene Bescheinigung zum Drucken; Erinnerung nicht an Stillgelegte (23.10.2026)
 
 Aus dem Betrieb, 23.10.2026: „jo mach weiter" — die nächste
 Schulungs-Runde.

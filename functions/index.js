@@ -6975,7 +6975,7 @@ async function auffrischErinnernFirma(firma, jetzt) {
     if (!auffrischErinnernDarf(plan, jetzt)) continue;
     /* Der Plan merkt sich die uid von damals. Gilt sie noch? Stillgelegt,
        gelöscht oder mit einem anderen Konto verknüpft heisst: keine
-       Nachricht (Runde 247 — bis dahin ging sie trotzdem raus). */
+       Nachricht (Runde 248 — bis dahin ging sie trotzdem raus). */
     const tn = await F.collection('schulungTeilnehmer').doc(doc.id).get();
     if (!auffrischTeilnehmerGilt(tn.exists ? tn.data() : null, plan)) continue;
     const u = await db.collection('users').doc(String(plan.uid)).get();
@@ -7007,8 +7007,8 @@ exports.schulungAuffrischErinnern = region
   });
 
 
-/* ── Teilnehmer gelöscht → Lernplan weg (Runde 247) ──────────────────
-   Bis Runde 246 blieb der Plan liegen (FORTSCHRITT, Runde 201: „Offen").
+/* ── Teilnehmer gelöscht → Lernplan weg (Runde 248) ──────────────────
+   Bis Runde 247 blieb der Plan liegen (FORTSCHRITT, Runde 201: „Offen").
    In der App gibt es nur „Stilllegen"; gelöscht wird ein Teilnehmer in
    der Konsole oder mit der ganzen Firma. Der Plan sagt dann über
    niemanden mehr etwas — also geht er mit. Die Durchläufe bleiben: sie

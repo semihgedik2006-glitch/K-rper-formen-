@@ -146,6 +146,11 @@ const LAGE = (SEL) => {
             for (const e of els) {
               e.scrollIntoView({ block: 'center', behavior: 'instant' });
               await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+              /* Die Zeile blendet mit einer Verschiebung ein (hudEin,
+                 rowIn). Unter Last ist sie beim Messen noch unterwegs und
+                 der Hit-Test trifft ihre Kante — erst warten, bis sie steht. */
+              const zeile = e.closest('.todo, .pp-item');
+              if (zeile) await Promise.race([Promise.all(zeile.getAnimations().map(a => a.finished.catch(() => {}))), new Promise(r => setTimeout(r, 1500))]);
               let m = T(e), kugel = false;
               /* Bei 320 px schwebt Formis Kugel (fest, rechts unten) genau
                  über der Bildmitte. Sie liegt über allem und lässt sich

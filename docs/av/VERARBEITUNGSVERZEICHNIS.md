@@ -162,7 +162,7 @@ auf welcher Stufe steht und wann sie wieder dran ist. Die gewählte
 Antwort selbst wird nicht gespeichert. Lesen kann den Plan im Browser
 niemand, auch die Leitung nicht; ihn liest und schreibt nur die Cloud
 Function `schulungAuffrischen`. Wird der Teilnehmer gelöscht, wird
-sein Lernplan mitgelöscht (seit Runde 247). Dazu eine Summe je Frage
+sein Lernplan mitgelöscht (seit Runde 248). Dazu eine Summe je Frage
 (`schulungFragenStat`): wie oft richtig, wie oft daneben — **ohne Namen
 und ohne Zeitpunkt**; die Leitung sieht sie erst ab drei Antworten je
 Frage. In einem sehr kleinen Team kann man aus einer Summe trotzdem auf
