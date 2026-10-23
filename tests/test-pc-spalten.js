@@ -61,7 +61,15 @@ async function oeffne(b, w, h, rolle) {
 async function zu(p, v) {
   /* Der Knopf, der im Bild ist: am Handy unten, am Rechner links. Ohne
      den Filter traf querySelector am Handy die verborgene Seitenleiste. */
-  await p.evaluate((g) => { const k = [...document.querySelectorAll('.mobnav [data-group="' + g + '"], #side [data-group="' + g + '"]')].find(e => e.offsetParent); if (k) k.click(); }, GRUPPE[v]);
+  /* Runde 241: Mitarbeiter haben die Räume „Studio" und „Wissen" nicht
+     mehr — fehlt der Raum-Knopf, geht der Weg über die Schublade „Alles". */
+  await p.evaluate(({ g, v }) => {
+    const k = [...document.querySelectorAll('.mobnav [data-group="' + g + '"], #side [data-group="' + g + '"]')].find(e => e.offsetParent);
+    if (k) { k.click(); return; }
+    document.getElementById('bereichKopf').click();
+    const a = document.querySelector('#allesLade [data-alles="' + v + '"]');
+    if (a) a.click();
+  }, { g: GRUPPE[v], v });
   await p.waitForTimeout(700);
   /* Runde 187: Material und Geräte sind EIN Reiter „Bestand“; Geräte
      erreicht man über den Umschalter in der Materialansicht. Aus dem

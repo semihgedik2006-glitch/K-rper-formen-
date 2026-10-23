@@ -40,11 +40,18 @@ async function start(stub) {
   /* Auf die Leiste warten statt auf die Uhr: die Attrappe des
      Mitarbeiters braucht laenger als die des Chefs, und eine feste
      Wartezeit ist entweder zu kurz oder verschenkt Zeit. */
-  await page.waitForSelector('.mobnav [data-group="g-arbeit"]', { timeout: 20000 });
+  /* Runde 241: Mitarbeiter haben den Raum „Studio" nicht mehr — gewartet
+     wird auf „Heute", den Raum, den jede Rolle hat; zum Probetraining
+     geht es ohne Raum-Knopf über die Schublade „Alles". */
+  await page.waitForSelector('.mobnav [data-group="g-start"]', { timeout: 20000 });
   await page.waitForTimeout(600);
   await page.evaluate(async () => {
     const g = document.querySelector('.mobnav [data-group="g-arbeit"]');
     if (g) g.click();
+    else {
+      document.getElementById('bereichKopf').click();
+      document.querySelector('#allesLade [data-alles="probe"]').click();
+    }
     await new Promise(r => setTimeout(r, 300));
     const t = document.querySelector('[data-subview="probe"]');
     if (t) t.click();
