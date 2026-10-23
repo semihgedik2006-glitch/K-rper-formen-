@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-+jAkado3J8DL9AT2++JMu43AZMkUeMHTT5jy0pjC+Ek='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-3OzuBAwCoikIbwG7rA+9IX2L3tsV/l4zitRtVC1MGKQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -757,6 +757,9 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .auth-brand{text-align:center}
 .auth-logo{display:flex;justify-content:center;margin-bottom:var(--s8)}
 .auth-logo svg{width:74px;height:74px;animation:scGlow 2.6s ease-in-out infinite}
+/* Runde 226: auf der Anmeldeseite steht Formi (formiAnmeldung). Gross
+   genug für Brauen, mit Scheibe; die Scheibe ragt seitlich, daher Luft. */
+.auth-formi.formi-figur{--fg:84px;display:block;margin:var(--s8) auto var(--s4)}
 .auth-logo .al-ring{stroke-dasharray:252;stroke-dashoffset:252;animation:scDraw 1.1s var(--ease-out) .2s forwards}
 @keyframes scDraw{to{stroke-dashoffset:0}}
 @keyframes scGlow{0%,100%{filter:drop-shadow(0 0 8px rgba(var(--akz-rgb),.4))}50%{filter:drop-shadow(0 0 18px rgba(236,72,153,.7))}}
@@ -6327,6 +6330,33 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
 .formi-lade .fk-bahn i{animation-delay:calc(var(--p) * -1.4s)}
 html.fk-still .fk-bahn,html.fk-still .fk-bahn i{animation:none}
 @media (prefers-reduced-motion:reduce){ .fk-bahn,.fk-bahn i{animation:none} }
+/* ── Im hellen Stil: das weisse Loch (Runde 226) ─────────────────────
+   Idee 4, aus dem Betrieb bestätigt („ja können wir alles umsetzen").
+   Auf hellem Grund verschwand die Scheibe: ihr heisser Innenrand ist
+   fast weiss, und weiss auf weiss sieht man nicht (beim Ansehen
+   gefunden). Darum im hellen Stil:
+   - der Kern wird hell – das weisse Loch, das Gegenstück zum schwarzen;
+     ein Rand in Violett hält ihn vom hellen Grund ab;
+   - die Scheibe behält die Reihenfolge der Farben (innen heiss, aussen
+     kühl), nur in satteren Tönen, die auf Weiss stehen;
+   - das Gesicht wird dunkel. Ohne mix-blend-mode: mit „difference" würden
+     die Augen auf dem hellen Kern schwarz mit heller Pupille.
+   Nur Farben – Bewegung, Grössen und Trefferfläche bleiben dieselben. */
+body.light .fk-pupille{background:radial-gradient(circle, #FFFFFF 0 46%, #F6F1FF 66%, #E6DCFF);
+  box-shadow:0 0 0 1px rgba(91,62,190,.55), 0 0 8px 2px rgba(255,255,255,.9)}
+body.light .formi-figur .fk-pupille{box-shadow:0 0 0 1px rgba(91,62,190,.55)}
+body.light .fk-innen{background:radial-gradient(circle, #FFFFFF 0 56%, rgba(255,255,255,0) 62%),
+    conic-gradient(from 30deg, rgba(232,150,40,.85), rgba(240,110,40,.25), rgba(214,70,140,.7), rgba(40,150,210,.25), rgba(232,150,40,.85))}
+body.light .fk-gesicht{mix-blend-mode:normal}
+body.light .fk-auge{background:#FFFFFF;box-shadow:inset 0 0 0 max(1px, calc(var(--fg, 58px) * .02)) #1B1433}
+body.light .fk-auge b{background:#1B1433}
+body.light .fk-braue{background:#1B1433}
+body.light .fk-mund{border-color:#1B1433}
+body.light .fk-flach{background:radial-gradient(14% 34% at 8% 50%, rgba(200,90,10,.85), rgba(200,90,10,0)),
+    radial-gradient(closest-side, rgba(220,120,20,0) 0 57%, rgba(220,120,20,.95) 61%, rgba(185,70,10,.95) 68%,
+      rgba(165,30,100,.95) 80%, rgba(85,45,180,.85) 91%, rgba(85,45,180,0) 100%)}
+body.light .fk-bogen{background:radial-gradient(closest-side, rgba(232,140,30,0) 0 82%, rgba(232,140,30,.95) 87%, rgba(214,70,140,.55) 92%, rgba(214,70,140,0) 97%)}
+body.light .fk-bahn i{background:radial-gradient(closest-side, rgba(240,120,30,.95), rgba(214,70,140,.5) 50%, rgba(214,70,140,0))}
 .ga-loch .fk-wirbel,.ga-loch .fk-innen,.leer-formi .fk-wirbel,.leer-formi .fk-innen,.fz-ring .fk-wirbel,.fz-ring .fk-innen,
 .sr-formi .fk-wirbel,.sr-formi .fk-innen,.formi-zeiger .fk-wirbel,.formi-zeiger .fk-innen,
 html.fk-still .fk-wirbel,html.fk-still .fk-innen{animation:none}
@@ -6357,6 +6387,9 @@ html.fk-still .fk-wirbel,html.fk-still .fk-innen{animation:none}
 .formi-kugel.fk-tag-1 .fk-scheibe{opacity:.6}
 .formi-kugel.fk-tag-2 .fk-scheibe{opacity:.75}
 .formi-kugel.fk-tag-3 .fk-scheibe{opacity:.88}
+/* In der Pause ruht Formi mit (formiPause): Scheibe leiser, Augen halb. */
+.formi-kugel.fk-pause .fk-scheibe{opacity:.5}
+.formi-kugel.fk-pause .fk-auge{transform:scaleY(.6)}
 /* Ohne Netz leise, egal wie weit der Tag ist (formiNetz). */
 .formi-kugel.fk-offline .fk-scheibe{opacity:.25}
 .formi-kugel.fk-offline .fk-gesicht{transform:translateY(8%)}
@@ -6442,6 +6475,9 @@ body[data-bereich="g-zeit"] .fk-wirbel::before{opacity:.7}
 .fk-zeichen{position:absolute;pointer-events:none;z-index:2;line-height:var(--lh-1);opacity:0}
 .fk-zeichen svg{display:block;width:100%;height:100%}
 .fk-zeichen b{display:block;font-weight:800;color:#E8F8FF;text-shadow:0 0 6px rgba(182,156,255,.9)}
+body.light .fk-zeichen b{color:#4B2FB8;text-shadow:0 0 4px rgba(255,255,255,.95)}
+body.light .fk-zeichen.traene path{fill:#1E8FD0}
+body.light .fk-zeichen.herz path{fill:#D6468C}
 .fk-zeichen.traene{left:33%;top:46%;width:10%;height:14%}
 .fk-zeichen.herz{left:39%;top:2%;width:22%;height:20%}
 .fk-zeichen.frage{left:42%;top:-28%;font-size:calc(var(--fg) * .34)}
@@ -7498,6 +7534,18 @@ body.jv-offen{overflow:hidden}
   margin:0 auto var(--s16);display:grid;place-items:center;
   background:var(--f-ok-leise);color:var(--ok-tx)}
 .sch-fertig .sch-kranz .sym{width:34px;height:34px}
+/* Runde 226, Idee 5: Formi steht über dem Ergebnis; der Status bleibt
+   als kleines Abzeichen an seiner Seite – Grün und Bernstein melden
+   etwas (bestanden / offen), Formi selbst ist keine Statusfarbe. */
+.sch-erg-formi{position:relative;width:104px;height:88px;margin:0 auto var(--s16);display:grid;place-items:center}
+.sch-erg-formi .formi-figur{--fg:72px}
+.sch-fertig .sch-erg-formi .sch-kranz{position:absolute;right:0;bottom:0;width:30px;height:30px;margin:0;
+  box-shadow:0 0 0 2px var(--bg-2)}
+.sch-fertig .sch-erg-formi .sch-kranz .sym{width:18px;height:18px}
+.sch-fertig .sch-erg-formi .sch-kranz.offen{background:var(--f-warn-leise);color:var(--warm-tx)}
+.sch-hinweis.sch-mit-formi{display:flex;gap:var(--s12);align-items:flex-start}
+.sch-hinweis.sch-mit-formi p{margin:0;min-width:0}
+.sch-hinweis-formi.formi-figur{--fg:40px;margin-top:var(--s2)}
 .sch-fertig h3{font-family:var(--font-head);font-weight:800;font-size:var(--t-2xl);
   line-height:var(--lh-eng);margin-bottom:var(--s8)}
 .sch-fertig p{font-size:var(--t-md);color:var(--text-2);line-height:var(--lh)}
@@ -9331,12 +9379,10 @@ body.neu .kn-zeile{min-height:var(--zeile)}
 <div class="auth-wrap" id="authWrap">
   <div class="auth-mesh" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></div>
   <div class="auth-card">
-    <div class="auth-logo">
-      <svg viewBox="0 0 120 120" aria-hidden="true">
-        <circle class="al-ring" cx="60" cy="56" r="40" fill="none" stroke="url(#scGrad)" stroke-width="6" stroke-linecap="round"/>
-        <path d="M38 88 q-3 13 -15 18 q15 0 25 -12 z" fill="url(#scGrad)"/>
-        <text x="60" y="57" font-family="Arial Black, Arial, sans-serif" font-size="44" font-weight="900" fill="url(#scGrad)" text-anchor="middle" dominant-baseline="central">SC</text>
-      </svg>
+    <!-- Runde 226 (Idee 3): Formi statt des „SC"-Zeichens. Die Augen
+         folgen dem, was man eintippt; beim Passwort hält Formi sie zu.
+         Die Marke STUDIOCHAT steht weiter darunter. -->
+    <div class="auth-logo"><span class="formi-figur auth-formi" id="authFormi" aria-hidden="true"><span class="fk-koerper"><span class="fk-scheibe hinten"><span class="fk-halb"><span class="fk-flach"><span class="fk-bahn"><i style="--w:20deg;--p:0.944"></i><i style="--w:140deg;--p:0.611"></i><i style="--w:260deg;--p:0.278"></i></span><span class="fk-bahn innen"><i style="--w:80deg;--p:0.778"></i><i style="--w:260deg;--p:0.278"></i></span></span></span></span><span class="fk-wirbel"></span><span class="fk-innen"></span><span class="fk-licht"></span><span class="fk-bogen"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-braue l"></i><i class="fk-braue r"></i><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i></span></span></span><span class="fk-scheibe vorn"><span class="fk-halb"><span class="fk-flach"><span class="fk-bahn"><i style="--w:20deg;--p:0.944"></i><i style="--w:140deg;--p:0.611"></i><i style="--w:260deg;--p:0.278"></i></span><span class="fk-bahn innen"><i style="--w:80deg;--p:0.778"></i><i style="--w:260deg;--p:0.278"></i></span></span></span></span></span></span>
     </div>
     <div class="auth-brand">STUDIO<b>CHAT</b></div>
     <p class="auth-sub" id="authSub">Team-Portal</p>
@@ -16618,6 +16664,7 @@ function terminalStempeln(btn, art){
       var zeit=new Date(d.ts||Date.now()).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
       toast(wort+' um '+zeit+' ✓ — '+(d.name||''));
       tick(12);
+      if(typeof formiStempelt==='function') formiStempelt(d.art, d.name||'');
       terminalPinSchliessen();
       renderTerminalListe();
     }).catch(function(e){
@@ -21719,6 +21766,12 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-23-formi-ueberall', datum:'23.10.2026', titel:'Formi beim Stempeln, bei der Anmeldung, im hellen Stil und in der Schulung', wo:'zeit', punkte:[
+    'Stempeln: Beim Kommen begrüßt dich Formi, in der Pause ruht die Scheibe, beim Feierabend fliegt deine Tageszeit (z. B. „7:42 h") in das Loch, und Formi sagt sie dir. Am Terminal sagt Formi „Feierabend" mit deinem Vornamen.',
+    'Anmeldung: Statt des Logos steht Formi über dem Formular. Die Augen folgen dem, was du bei der E-Mail tippst. Beim Passwort hält Formi die Augen zu, zeigst du das Passwort an, linst es mit einem Auge. Bei einem Fehler erschrickt es kurz.',
+    'Heller Stil: Formi ist dort ein weißes Loch – heller Kern, dunkles Gesicht, und die Scheibe in kräftigeren Farben, damit man sie auf Weiß sieht.',
+    'Schulung: Nach einer falschen Antwort steht Formi im Hinweis und grübelt mit („Formi denkt mit:"). Am Ende steht Formi über dem Ergebnis: bestanden stolz mit Konfetti, nicht bestanden guckt es mit – ohne Träne, du kannst es ja jederzeit noch einmal machen.'
+  ]},
   { id:'2026-10-23-formi-scheibe', datum:'23.10.2026', titel:'Formi hat jetzt eine echte Akkretionsscheibe – und viel mehr Gefühle', wo:'home', punkte:[
     'Um Formi liegt jetzt eine flache, schräge Scheibe wie bei Bildern echter schwarzer Löcher: Der vordere Teil läuft vor dem Gesicht vorbei, der hintere liegt dahinter, über dem Loch steht ein heller Lichtbogen. Innen kreist das Gas schneller als außen, und links leuchtet es heller, weil es dort auf dich zukommt.',
     'Was du abhakst, fällt als Funken ins Loch – kurz vor dem Rand werden die Funken langsamer, länger und röter und verlöschen dort. Genau so sieht es bei einem echten schwarzen Loch von außen aus. Die Scheibe flammt dabei auf.',
@@ -27967,14 +28020,20 @@ var FK_FENSTER_GEFUEHLE={ freut:1, staunt:1, feiert:1, erschrickt:1, traurig:1, 
 function formiFensterFuehlt(art){
   if(!formiFigurenAn() || !document.body.animate) return;
   [].forEach.call(document.querySelectorAll(FK_FENSTER_FIGUREN), function(f){
-    if(!f.getClientRects().length) return;
-    var t={ k:f, koerper:f.querySelector('.fk-koerper'), gesicht:f.querySelector('.fk-gesicht'), mund:f.querySelector('.fk-mund'),
-            augen:f.querySelectorAll('.fk-auge'), brauen:f.querySelectorAll('.fk-braue') };
-    formiGefuehlAuf(t, art);
-    if(art==='traurig') formiZeichen(f, 'traene');
-    if(art==='verwirrt') formiZeichen(f, 'frage');
-    if(art==='verliebt') formiZeichen(f, 'herz');
+    if(f.getClientRects().length) formiFigurFuehlt(f, art);
   });
+}
+/* Eine einzelne Figur fühlt (Runde 226) — das Fenster oben, die Schulung
+   unten. ohneZeichen: das Gesicht allein, ohne Träne & Co. */
+function formiFigurFuehlt(f, art, ohneZeichen){
+  if(!f || !document.body.animate || _fl.gefuehleAus || gehirnWenigBewegung()) return;
+  var t={ k:f, koerper:f.querySelector('.fk-koerper'), gesicht:f.querySelector('.fk-gesicht'), mund:f.querySelector('.fk-mund'),
+          augen:f.querySelectorAll('.fk-auge'), brauen:f.querySelectorAll('.fk-braue') };
+  formiGefuehlAuf(t, art);
+  if(ohneZeichen) return;
+  if(art==='traurig') formiZeichen(f, 'traene');
+  if(art==='verwirrt') formiZeichen(f, 'frage');
+  if(art==='verliebt') formiZeichen(f, 'herz');
 }
 /* ── Was zu einem Gefühl dazu fliegt (Runde 226) ──
    Ein kleines Zeichen an der Figur: eine Träne rollt aus dem linken Auge,
@@ -28174,6 +28233,164 @@ function formiTagesStand(keys, heuteFertig, offen){
   k.classList.add('fk-tag-'+stufe); _fl.tagStufe=stufe;
   return stufe;
 }
+/* ── Formi beim Stempeln (Runde 226, Idee 1) ─────────────────────────
+   Aus dem Betrieb: „ja können wir alles umsetzen". Wer stempelt, den
+   sieht Formi: beim Kommen freut es sich, in der Pause wird es ruhig
+   (die Scheibe leiser, die Augen halb – fk-pause, solange die Pause
+   läuft), beim Zurückkommen geht es weiter. Beim Feierabend fliegt die
+   Arbeitszeit des Tages ins Loch (formiTextFliegt, dieselbe Physik wie
+   die Frage), Formi ist stolz und sagt die Zahl. Gesagt wird mit „immer":
+   einen Stempel überspringt Formi nicht, nur weil vor 30 s etwas war. */
+function formiStempelt(art, wer){
+  if(typeof formiFuehlt!=='function') return;
+  var n = wer ? ', '+String(wer).split(' ')[0] : '';
+  if(art==='kommen'){ formiFuehlt('freut'); formiSagt((n ? 'Hallo'+n+'! ' : '')+formiZufall('kommen'), true); }
+  else if(art==='pause'){ formiFuehlt('gaehnt'); formiSagt(formiZufall('pause'), true); }
+  else if(art==='zurueck'){ formiFuehlt('freut'); formiSagt(formiZufall('weiter'), true); }
+  else if(art==='gehen'){
+    /* Die Zahl kommt erst mit dem neu geladenen Tag (stJetztZeichnen).
+       Am Terminal gibt es keinen eigenen Tag – dort reicht der Satz. */
+    if(wer){ formiFuehlt('stolz'); formiSagt('Feierabend'+n+'! Bis zum nächsten Mal.', true); }
+    else _fl.feierabend=Date.now();
+  }
+}
+/* Ruht die Scheibe in der Pause? Nur schreiben, wenn es sich ändert. */
+function formiPause(an){
+  var k=$('formiKugel'); if(!k || an===k.classList.contains('fk-pause')) return;
+  k.classList.toggle('fk-pause', an);
+}
+/* Feierabend: „7:42 h" fliegt vom Feld „Heute" ins Loch. */
+function formiFeierabend(feld, zeit){
+  _fl.feierabend=0;
+  formiTextFliegt(zeit, feld, function(){
+    formiFuehlt('stolz');
+    formiSagt('Feierabend! Heute '+zeit+'. Gut gemacht.', true);
+  });
+}
+/* Ein Text fällt in die Kugel – Buchstabe für Buchstabe, wie die Frage
+   ins Gesicht im Fensterkopf (formiFrageFliegt): schneller werdend, lang
+   gezogen, am Horizont eingefroren, rot, erloschen. Gemessen wird im
+   nächsten Bild. Ohne Kugel oder bei „weniger Bewegung" nur das Danach. */
+function formiTextFliegt(text, quelle, danach){
+  var k=$('formiKugel');
+  if(!formiLebtAn() || !quelle || !k){ if(danach) danach(); return; }
+  requestAnimationFrame(function(){
+    if(!quelle.getClientRects().length || !k.getClientRects().length){ if(danach) danach(); return; }
+    var f=quelle.getBoundingClientRect(), z=k.getBoundingClientRect();
+    var cx=z.left+z.width/2, cy=z.top+z.height/2, rH=z.width*.26;
+    var zeichen=String(text||'').slice(0, 16), box=document.createElement('div');
+    box.className='formi-flug'; box.setAttribute('aria-hidden', 'true');
+    var html='';
+    for(var i=0;i<zeichen.length;i++){ var zz=esc(zeichen[i]===' ' ? '\u00a0' : zeichen[i]); html+='<i data-z="'+zz+'">'+zz+'</i>'; }
+    box.innerHTML=html; document.body.appendChild(box);
+    var dreh=Math.random()<.5 ? 1 : -1, dauerMax=0, x0=f.left+f.width/2-zeichen.length*5, y0=f.top+f.height/2-10;
+    [].forEach.call(box.children, function(el, i){
+      var px=x0+i*10, bild=formiEinfall(px, y0, cx, cy, rH, dreh, 14);
+      bild[0].opacity=0; bild[0].transform='translate('+px.toFixed(1)+'px,'+y0.toFixed(1)+'px)';
+      var dauer=1700, verz=i*40; dauerMax=Math.max(dauerMax, dauer+verz);
+      try{ el.animate(bild, { duration:dauer, delay:verz, fill:'backwards' }); }catch(e){}
+      formiRot(el, dauer, verz, .55);
+    });
+    setTimeout(function(){ if(box.parentNode) box.parentNode.removeChild(box); if(danach) danach(); }, dauerMax+60);
+  });
+}
+/* ── Formi auf der Anmeldeseite (Runde 226, Idee 3) ──────────────────
+   Die Augen folgen dem, was man in die E-Mail tippt (ungefähr dort, wo
+   die Schreibmarke steht) und am Rechner der Maus. Beim Passwort hält
+   Formi die Augen zu und schaut weg – zeigt man das Passwort (Auge im
+   Feld), linst es mit einem Auge. Bei einer Fehlermeldung erschrickt es.
+   Nur transform/opacity, als Web Animations mit fill:forwards (gehalten,
+   nicht ins style-Attribut geschrieben). Gelesen wird im nächsten Bild.
+   Bei „weniger Bewegung" steht Formi still da. Der Anmeldeweg selbst
+   ist in dieser Umgebung nicht prüfbar (Firebase lädt nicht) – geprüft
+   wird mit der Attrappe ohne Anmeldung. */
+var _fa={ zu:null, blick:null };
+function formiAnmeldungTeile(){
+  var f=$('authFormi'); if(!f) return null;
+  return { k:f, koerper:f.querySelector('.fk-koerper'), loch:f.querySelector('.fk-loch'), gesicht:f.querySelector('.fk-gesicht'),
+           mund:f.querySelector('.fk-mund'), augen:f.querySelectorAll('.fk-auge'), brauen:f.querySelectorAll('.fk-braue'),
+           pupillen:f.querySelectorAll('.fk-auge b') };
+}
+function formiAnmeldungAn(){
+  var f=$('authFormi');
+  return !!(f && f.getClientRects().length && !gehirnWenigBewegung() && document.body.animate);
+}
+/* Blick auf einen Punkt: Pupillen bis 2,6 px, das Loch bis 3,6 px (wie
+   formiFigurenSchauen, in Anteilen der grösseren Figur). */
+function formiAnmeldungSchaut(x, y){
+  if(!formiAnmeldungAn() || _fa.zu) return;
+  var t=formiAnmeldungTeile(), q=t.k.getBoundingClientRect(), g=q.width/58;
+  var dx=x-(q.left+q.width/2), dy=y-(q.top+q.height/2), d=Math.sqrt(dx*dx+dy*dy)||1;
+  var pz='translate('+(dx/d*Math.min(1.8*g, d/70)).toFixed(1)+'px,'+(dy/d*Math.min(1.8*g, d/70)).toFixed(1)+'px)';
+  var lz='translate('+(dx/d*Math.min(2.5*g, d/80)).toFixed(1)+'px,'+(dy/d*Math.min(2.5*g, d/80)).toFixed(1)+'px)';
+  var alt=_fa.blick||[], neu=[];
+  try{
+    neu.push(t.loch.animate([{ transform:_fa.lz||'none' }, { transform:lz }], { duration:140, easing:'ease-out', fill:'forwards' }));
+    [].forEach.call(t.pupillen, function(b){ neu.push(b.animate([{ transform:_fa.pz||'none' }, { transform:pz }], { duration:110, easing:'ease-out', fill:'forwards' })); });
+  }catch(e){}
+  _fa.blick=neu; _fa.pz=pz; _fa.lz=lz;
+  alt.forEach(function(a){ try{ a.cancel(); }catch(e){} });
+}
+/* Augen zu (art 'zu') oder linsen ('linst'), oder wieder auf (null). */
+function formiAnmeldungAugen(art){
+  if(art===_fa.zu) return;
+  var t=formiAnmeldungTeile(); if(!t) return;
+  (_fa.zuAnim||[]).forEach(function(a){ try{ a.cancel(); }catch(e){} });
+  _fa.zu=art; _fa.zuAnim=[];
+  if(!art || !formiAnmeldungAn()) return;
+  try{
+    _fa.zuAnim.push(t.augen[0].animate([{ transform:'none' }, { transform:'scaleY(.08)' }], { duration:180, fill:'forwards' }));
+    _fa.zuAnim.push(t.augen[1].animate([{ transform:'none' }, { transform: art==='linst' ? 'scaleY(.55)' : 'scaleY(.08)' }], { duration:180, fill:'forwards' }));
+    _fa.zuAnim.push(t.gesicht.animate([{ transform:'none' }, { transform: art==='linst' ? 'translate(6%,-4%)' : 'translate(-10%,-6%) rotate(-8deg)' }], { duration:260, easing:'cubic-bezier(.3,.7,.2,1)', fill:'forwards' }));
+    [].forEach.call(t.brauen, function(b){ _fa.zuAnim.push(b.animate([{ transform:'none' }, { transform:'translateY(-60%)' }], { duration:260, fill:'forwards' })); });
+    _fa.zuAnim.push(t.mund.animate([{ transform:'none' }, { transform:'scale(.6,.5)' }], { duration:260, fill:'forwards' }));
+  }catch(e){}
+}
+function formiAnmeldungStart(){
+  if(_fa.gestartet || !$('authFormi')) return; _fa.gestartet=true;
+  function feldBlick(f){
+    requestAnimationFrame(function(){
+      if(!f.getClientRects().length) return;
+      var r=f.getBoundingClientRect(), n=String(f.value||'').length;
+      formiAnmeldungSchaut(r.left+14+Math.min(n*7.5, r.width-28), r.top+r.height/2);
+    });
+  }
+  function istPw(f){ return f && f.tagName==='INPUT' && /^(lgPw|rgPw|rgPw2)$/.test(f.id); }
+  function pwZustand(){
+    var f=document.activeElement;
+    if(!istPw(f)){ formiAnmeldungAugen(null); return; }
+    var auge=document.querySelector('.pw-auge[data-pw="'+f.id+'"]');
+    formiAnmeldungAugen(f.type==='text' || (auge && auge.getAttribute('aria-pressed')==='true') ? 'linst' : 'zu');
+  }
+  ['lgEmail', 'rgEmail', 'rgName'].forEach(function(id){
+    var f=$(id); if(!f) return;
+    f.addEventListener('input', function(){ feldBlick(f); });
+    f.addEventListener('focus', function(){ pwZustand(); feldBlick(f); });
+  });
+  document.addEventListener('focusin', function(e){ if(istPw(e.target) || _fa.zu) pwZustand(); });
+  document.addEventListener('focusout', function(){ setTimeout(pwZustand, 0); });
+  document.addEventListener('click', function(e){ if(e.target && e.target.closest && e.target.closest('.pw-auge')) setTimeout(pwZustand, 0); });
+  if(window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches){
+    /* Nach der Anmeldung kostet jede Mausbewegung nur einen Blick auf
+       eine Klasse – nichts, was die Seite vermessen müsste. */
+    var wrap=$('authWrap');
+    document.addEventListener('pointermove', function(e){
+      if(_fa.raf || !wrap || !wrap.classList.contains('show')) return; var x=e.clientX, y=e.clientY;
+      _fa.raf=requestAnimationFrame(function(){ _fa.raf=0; formiAnmeldungSchaut(x, y); });
+    }, { passive:true });
+  }
+  /* Eine Fehlermeldung unter dem Formular: Formi erschrickt. */
+  ['loginErr', 'regErr'].forEach(function(id){
+    var el=$(id); if(!el || !window.MutationObserver) return;
+    new MutationObserver(function(){
+      if(!String(el.textContent||'').trim() || !formiAnmeldungAn()) return;
+      var t=formiAnmeldungTeile(); formiAnmeldungAugen(null);
+      formiGefuehlAuf(t, 'erschrickt');
+    }).observe(el, { childList:true, characterData:true, subtree:true });
+  });
+}
+window.__formiAnmeldung={ start:formiAnmeldungStart, zustand:function(){ return { zu:_fa.zu }; } };
+formiAnmeldungStart();
 /* ── Die Umgebung reagiert (Runde 213) ───────────────────────────────
    „…und sich dann die umgebung in der app dementsprechen ändert". */
 function formiUmgebung(el, art, verz){
@@ -28538,7 +28755,11 @@ var FORMI_SAGT={
   freitag:['Freitag! Feierabend ist in Sicht.','Freitag — lass uns das Offene noch wegräumen.'],
   abend:['Endspurt für heute.','Gleich geschafft für heute.'],
   nacht:['Noch wach? Ich halte die Stellung.','Ganz schön spät – morgen ist auch noch ein Tag.'],
-  tag:['Schön, dass du da bist.','Auf geht’s.','Lass uns was wegschaffen.']
+  tag:['Schön, dass du da bist.','Auf geht’s.','Lass uns was wegschaffen.'],
+  /* Runde 226: beim Stempeln (formiStempelt). */
+  kommen:['Gute Schicht!','Eingestempelt. Ich bin auch schon wach.','Los geht’s – ich halte die Augen offen.'],
+  pause:['Gute Pause! Ich halte die Stellung.','Pause. Ich mach so lange langsam.','Kurz durchatmen – ich pass auf.'],
+  weiter:['Weiter geht’s.','Wieder da – schön.','Pause vorbei, auf geht’s.']
 };
 var _fs={ zuletzt:0, uhr:0 };
 function formiSprichtAn(){
@@ -28747,6 +28968,8 @@ window.__formiLebt = {
      „danach läuft nichts mehr" prüft, schaltet sie dafür ab. */
   uhrenAus: function(){ _fl.uhrenAus=true; clearTimeout(_fl.blinzelUhr); clearTimeout(_fl.atemUhr); clearTimeout(_fl.umsehUhr); clearTimeout(_fl.schnarchUhr); },
   /* Runde 226 */
+  stempelt: function(a, wer){ formiStempelt(a, wer); }, pause: function(an){ formiPause(an); },
+  feierabend: function(sel, zeit){ formiFeierabend(document.querySelector(sel), zeit); },
   langweilen: function(){ _fl.zuletzt=Date.now()-36000; _fl.gelangweilt=false; _fl.muede=false; formiSchlafPruefen(); return !!_fl.gelangweilt; },
   schluckt: function(sel){ var el=document.querySelector(sel); if(!el) return false; var r=el.getBoundingClientRect(); formiSchluckt(r.left+r.width/2, r.top+r.height/2); return true; },
   tagesStand: function(){ return { stufe:_fl.tagStufe, anteil:_fl.tagAnteil }; },
@@ -32362,7 +32585,8 @@ function schFrageMarkup(){
           '<span class="sch-buchst">'+buchst[i]+'</span><span>'+esc(t)+'</span></button>';
       }).join('')+
     '</div>'+
-    (_schOffenerHinweis ? '<div class="sch-hinweis">'+esc(_schOffenerHinweis)+'</div>' : '')+
+    (_schOffenerHinweis ? '<div class="sch-hinweis sch-mit-formi"><span class="formi-figur sch-hinweis-formi" aria-hidden="true">'+
+      formiFigurInnen(true)+'</span><p><b>Formi denkt mit:</b> '+esc(_schOffenerHinweis)+'</p></div>' : '')+
     ((a.richtig || a.fertig) ? '<div class="hilfe-knoepfe"><button type="button" class="btn btn-primary" '+
       'id="schWeiter">'+(function(){ var n=schFolgeNaechste();
         return !n ? 'Abschliessen' : n.art==='frage' ? 'Nächste Frage' : 'Weiter'; })()+
@@ -32789,6 +33013,11 @@ function schAntwort(i){
     }
   }
   schLaufZeichnen(); schLaufSichern();
+  /* Runde 226, Idee 5: Formi begleitet das Quiz. Daneben → es grübelt
+     mit (?), richtig nach einem Fehlversuch → es freut sich mit. Nur
+     das Gesicht im Hinweis, kein Ton, keine Kugel, die herumspringt. */
+  var hf=document.querySelector('#schLauf .sch-hinweis-formi');
+  if(hf) formiFigurFuehlt(hf, a.richtig ? 'freut' : 'verwirrt');
 }
 
 function schAbschliessen(){
@@ -32816,7 +33045,8 @@ function schErgebnisZeigen(punkte, bestanden, fragen){
   var box=$('schErgebnis'); if(!box) return;
   var fehl=fragen.reduce(function(s,f){ return s+Math.max(0,(f.versuche||1)-1); },0);
   box.innerHTML='<div class="card"><div class="sch-fertig">'+
-    '<div class="sch-kranz">'+ikon(bestanden?'hakenKreis':'warnung')+'</div>'+
+    '<div class="sch-erg-formi"><span class="formi-figur" aria-hidden="true">'+formiFigurInnen(true, true)+'</span>'+
+      '<span class="sch-kranz'+(bestanden ? '' : ' offen')+'">'+ikon(bestanden?'hakenKreis':'warnung')+'</span></div>'+
     '<h3>'+(bestanden?'Geschafft.':'Noch nicht ganz.')+'</h3>'+
     '<p>'+esc(_schLauf.name)+' · '+esc(_schModul.titel||'')+'<br/>'+
       (_schLauf.test
@@ -32835,6 +33065,14 @@ function schErgebnisZeigen(punkte, bestanden, fragen){
     '</div></div>';
   schZurueckBinden(box);
   _schLauf=null;
+  /* Bestanden: Formi ist stolz, und es regnet Konfetti. Nicht bestanden:
+     Formi guckt mit – traurig, aber ohne Träne; der Text daneben sagt,
+     dass es jederzeit noch einmal geht. */
+  var ef=box.querySelector('.sch-erg-formi .formi-figur');
+  setTimeout(function(){
+    formiFigurFuehlt(ef, bestanden ? 'stolz' : 'traurig', !bestanden);
+    if(bestanden) fireConfetti();
+  }, 250);
 }
 
 /* ── 5. Verwaltung: Teilnehmer, Codes, Auswertung ───────────────── */
@@ -40775,6 +41013,7 @@ function ichHandyStempeln(btn){
           .toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
         toast((TM_WORT[d.art]||d.art)+' um '+zeit+' ✓');
         tick(12);
+        if(typeof formiStempelt==='function') formiStempelt(d.art);
         /* Neu laden, damit der Stempel sofort oben und in „Meine Zeiten"
            steht. Ohne das müsste man den Reiter wechseln, um zu sehen,
            dass es geklappt hat — und genau das glaubt einem niemand. */
@@ -41174,6 +41413,10 @@ function stJetztZeichnen(){
     : st.art==='pause' ? 'In der Pause seit <b>'+esc(zeitUhr(st.seit))+'</b>'
     : 'Im Dienst seit <b>'+esc(zeitUhr(st.beginn||st.seit))+'</b>';
   var ist=$('stHeuteIst'); if(ist) ist.textContent = tag ? stundenText(tag.arbeit) : '0:00 h';
+  /* Runde 226: Formi ruht mit in der Pause; nach dem Feierabend-Stempel
+     (höchstens eine Minute her) fliegt die Zeit des Tages ins Loch. */
+  if(typeof formiPause==='function') formiPause(st.art==='pause');
+  if(_fl.feierabend && st.art==='gehen' && Date.now()-_fl.feierabend<60000 && ist && tag) formiFeierabend(ist, stundenText(tag.arbeit));
   /* § 4 ArbZG, solange es noch hilft: ab 5:30 h am Stück ein Hinweis,
      über 6 h steht er in Bernstein. Nach dem Feierabend sagen es die
      Marken an der Tageszeile. */
