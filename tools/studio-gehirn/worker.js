@@ -1,5 +1,5 @@
 /**
- * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.23)
+ * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.24)
  * Cloudflare Worker: WhatsApp (Text + Sprachnachrichten), Studio-Chat-Schnittstelle,
  * Leitstand-Webseite, Speicher in D1, Antworten über Workers AI.
  *
@@ -40,8 +40,107 @@ const MAX_LAGE_ZEICHEN = 9000;
 const MAX_AUDIO_BYTES = 1500000; // ca. 2–3 Minuten Sprachnachricht
 const TAG = 24 * 60 * 60 * 1000;
 
+/* ── Notbremse fürs Tageskontingent (2.24, 23.10.2026) ────────────────
+   Aus dem Betrieb: „können wir die tageskontigenten nicht erhöhen
+   irgendwie ?" — und auf die Rückfrage (Paid-Plan oder gratis mit
+   Notbremse): „Gratis + Notbremse".
+   Anlass: am 23.10. war das freie Kontingent (10.000 Neuronen je Tag,
+   Neustart 00:00 UTC) gegen Mittag weg — und Formi antwortete bis in die
+   Nacht niemandem mehr.
+   Jeder KI-Aufruf wird mitgezählt (geschätzt aus den Tokens, Preise laut
+   developers.cloudflare.com/workers-ai/platform/pricing). Drei Stufen:
+     normal  bis NEURONEN_SPAR (6.000): wie bisher, gpt-oss-120b.
+     spar    bis NEURONEN_STOPP (9.200): Gemma (rund 1/3 der Kosten je
+             Antwort) mit weniger Wissen im Gespräch; nachts kein
+             Lernlauf, keine neuen Übungsfragen.
+     stopp   darüber: keine KI mehr für Antworten. Steht etwas im Wissen,
+             kommt der passende Eintrag; sonst wird die Frage gespeichert.
+   Die Zahl ist eine Schätzung — die echte zeigt nur Cloudflare. Meldet
+   Cloudflare selbst „aufgebraucht" (4006), springt der Zähler auf das
+   Kontingent, damit nicht jede Frage erst scheitern muss. */
+export const KONTINGENT = 10000;
+export const NEURONEN_JE_M = {
+  "@cf/openai/gpt-oss-120b": [31818, 68182],
+  "@cf/meta/llama-3.3-70b-instruct-fp8-fast": [26668, 204805],
+  "@cf/google/gemma-4-26b-a4b-it": [9091, 27273],
+  "@cf/baai/bge-m3": [1075, 0],
+};
+const NEURONEN_UNBEKANNT = [30000, 80000];
+/* Sprache und Bild rechnet Cloudflare nicht nach Tokens ab — pauschal
+   geschätzt, lieber zu hoch. */
+const NEURONEN_PAUSCHAL = { "@cf/openai/whisper-large-v3-turbo": 60 };
+
+export function neuronenSchaetzen(modell, eingabe, antwort) {
+  if (NEURONEN_PAUSCHAL[modell]) return NEURONEN_PAUSCHAL[modell];
+  const [ein, aus] = NEURONEN_JE_M[modell] || NEURONEN_UNBEKANNT;
+  const u = antwort && antwort.usage;
+  let tEin = u && Number(u.prompt_tokens), tAus = u && Number(u.completion_tokens);
+  if (!(tEin >= 0)) {
+    const e = eingabe || {};
+    const roh = e.messages ? JSON.stringify(e.messages) : (e.text ? JSON.stringify(e.text) : String(e.prompt || ""));
+    tEin = Math.ceil(roh.length / 3.5) + (e.image ? 1500 : 0);
+  }
+  if (!(tAus >= 0)) tAus = Math.ceil(kiText(antwort).length / 3.5);
+  return (tEin * ein + tAus * aus) / 1e6;
+}
+
+export function stufeVon(neuronen, env) {
+  const spar = Number(env && env.NEURONEN_SPAR) || 6000;
+  const stopp = Number(env && env.NEURONEN_STOPP) || 9200;
+  return neuronen >= stopp ? "stopp" : (neuronen >= spar ? "spar" : "normal");
+}
+
+export function heuteUtc(jetzt) { return new Date(jetzt || Date.now()).toISOString().slice(0, 10); }
+
+async function verbrauchTabelle(env) {
+  await env.DB.prepare("CREATE TABLE IF NOT EXISTS verbrauch (tag TEXT PRIMARY KEY, neuronen REAL DEFAULT 0, aufrufe INTEGER DEFAULT 0)").run();
+}
+async function verbrauchBuchen(env, n, mindestens) {
+  try {
+    await verbrauchTabelle(env);
+    if (mindestens) {
+      await env.DB.prepare("INSERT INTO verbrauch (tag, neuronen, aufrufe) VALUES (?, ?, 1) ON CONFLICT(tag) DO UPDATE SET neuronen = MAX(neuronen, excluded.neuronen), aufrufe = aufrufe + 1")
+        .bind(heuteUtc(), mindestens).run();
+    } else {
+      await env.DB.prepare("INSERT INTO verbrauch (tag, neuronen, aufrufe) VALUES (?, ?, 1) ON CONFLICT(tag) DO UPDATE SET neuronen = neuronen + excluded.neuronen, aufrufe = aufrufe + 1")
+        .bind(heuteUtc(), n).run();
+    }
+  } catch (e) { console.error("Verbrauch buchen:", e && e.message); }
+}
+export async function verbrauchHeute(env) {
+  try {
+    await verbrauchTabelle(env);
+    const r = await env.DB.prepare("SELECT neuronen, aufrufe FROM verbrauch WHERE tag = ?").bind(heuteUtc()).first();
+    const n = r ? Number(r.neuronen) || 0 : 0;
+    return { tag: heuteUtc(), neuronen: Math.round(n), aufrufe: r ? r.aufrufe : 0, stufe: stufeVon(n, env), spar: Number(env.NEURONEN_SPAR) || 6000, stopp: Number(env.NEURONEN_STOPP) || 9200, kontingent: KONTINGENT };
+  } catch (e) { return { tag: heuteUtc(), neuronen: 0, aufrufe: 0, stufe: "normal", spar: 6000, stopp: 9200, kontingent: KONTINGENT }; }
+}
+
+/* env mit einem AI, das jeden Aufruf bucht. Object.create: alle anderen
+   Bindungen (DB, Schlüssel) bleiben dieselben. */
+export function mitZaehler(env) {
+  if (!env || !env.AI || env.__gezaehlt) return env;
+  const basis = env;
+  const e = Object.create(env);
+  e.__gezaehlt = true;
+  e.AI = {
+    run: async (modell, eingabe, opt) => {
+      let antwort;
+      try { antwort = await basis.AI.run(modell, eingabe, opt); }
+      catch (err) {
+        if (istKontingentFehler(err)) await verbrauchBuchen(basis, 0, KONTINGENT);
+        throw err;
+      }
+      await verbrauchBuchen(basis, neuronenSchaetzen(modell, eingabe, antwort));
+      return antwort;
+    },
+  };
+  return e;
+}
+
 export default {
   async fetch(request, env, ctx) {
+    env = mitZaehler(env);
     const url = new URL(request.url);
     try {
       if (url.pathname === "/webhook" && request.method === "GET") return verifiziereWebhook(url, env);
@@ -58,6 +157,7 @@ export default {
 
   // Täglicher Cron: alte Nachrichten löschen (Datensparsamkeit, DSGVO)
   async scheduled(event, env, ctx) {
+    env = mitZaehler(env);
     ctx.waitUntil(aufraeumen(env));
     /* 2.13: Formi lernt nachts selbst — Ergebnis sind Vorschläge, nichts
        wird ohne Freigabe Wissen (siehe lernlauf). */
@@ -468,13 +568,23 @@ async function beantworteFrage(env, { kanal, absender, studio, text, nachrichtId
   }
   const wissen = await findeWissen(env, text);
   const vorbilder = await vorbilderLaden(env, text, wissen);
+  const stufe = (await verbrauchHeute(env)).stufe;
   const verlauf = await env.DB.prepare(
     "SELECT text, antwort FROM nachrichten WHERE absender = ? AND typ IN ('text','sprache','smalltalk') AND antwort != '' AND id != ? AND erstellt > ? ORDER BY id DESC LIMIT 5"
   ).bind(absender, nachrichtId, Date.now() - 2 * 60 * 60 * 1000).all();
 
   let ergebnis;
   try {
-    ergebnis = await frageKI(env, { text, studio, wissen, verlauf: (verlauf.results || []).reverse(), vorname, ton, kanal: k, lage, vorbilder });
+    /* 2.24 stopp: keine KI. Der beste Wissenseintrag, sonst gespeichert. */
+    if (stufe === "stopp") {
+      const passend = wissenPassend(text, wissen);
+      if (!passend) throw new Error("4006: Notbremse — Tageskontingent fast aufgebraucht");
+      ergebnis = kiErgebnis(null, "", [passend]);
+      ergebnis.antwort = "Ich spare heute Rechenzeit, deshalb kurz aus unserem Wissen:\n\n" + ergebnis.antwort;
+      ergebnis.grundlage = "wissen";
+    } else {
+      ergebnis = await frageKI(env, { text, studio, wissen, verlauf: (verlauf.results || []).reverse(), vorname, ton, kanal: k, lage, vorbilder, spar: stufe === "spar" });
+    }
   } catch (e) {
     console.error("KI:", e && e.stack || e);
     const kontingent = istKontingentFehler(e);
@@ -560,9 +670,42 @@ async function vorbilderLaden(env, text, wissen) {
   } catch (e) { return []; /* Tabelle gibt es noch nicht: ohne Beispiele */ }
 }
 
+/* 2.24: Ohne KI prüft niemand, ob der Treffer wirklich passt. Deshalb nur
+   ein Eintrag, der mindestens ein Suchwort der Frage enthält (Wortanfang,
+   fünf Buchstaben: „wasche" findet „waschen"). Sonst lieber speichern
+   als etwas Fremdes antworten. */
+export function wissenPassend(text, wissen) {
+  const such = suchbegriffe(text).map(x => x.slice(0, 5));
+  if (!such.length) return null;
+  for (const w of wissen || []) {
+    const worte = suchbegriffe(String(w.thema || "") + " " + String(w.inhalt || ""), 400);
+    if (worte.some(x => such.some(s => x.startsWith(s)))) return w;
+  }
+  return null;
+}
+
+export const SPAR_WISSEN_ZEICHEN = 5000;
+export function sparWissen(wissen) {
+  const raus = [];
+  let z = 0;
+  for (const w of (wissen || []).slice(0, 4)) {
+    const l = String(w.thema || "").length + String(w.inhalt || "").length;
+    if (raus.length && z + l > SPAR_WISSEN_ZEICHEN) break;
+    raus.push(w); z += l;
+  }
+  return raus;
+}
+
 function istKontingentFehler(e) { return /4006|neuron|allocation|quota/i.test(String(e && e.message || e)); }
 
-async function frageKI(env, { text, studio, wissen, verlauf, vorname, ton, kanal, lage, vorbilder }) {
+async function frageKI(env, { text, studio, wissen, verlauf, vorname, ton, kanal, lage, vorbilder, spar }) {
+  /* 2.24 spar: weniger mitschicken — die Eingabe ist der grösste Posten. */
+  if (spar) {
+    wissen = sparWissen(wissen);
+    lage = lage ? kuerze(String(lage), 3000) : "";
+    vorbilder = (vorbilder || []).slice(0, 2);
+    verlauf = (verlauf || []).slice(-2);
+  }
   const wissensText = wissen.length
     ? wissen.map(w => `[ID ${w.id}] ${w.thema}\n${w.inhalt}`).join("\n\n")
     : "(Zu dieser Nachricht steht nichts im Studio-Wissen.)";
@@ -591,6 +734,14 @@ async function frageKI(env, { text, studio, wissen, verlauf, vorname, ton, kanal
   };
   let ausgabe = "";
   let daten = null;
+  /* 2.24 spar: nur Gemma. Liefert es nichts, nimmt kiErgebnis den besten
+     Wissenseintrag — kein teures Ersatzmodell im Sparmodus. */
+  if (spar) {
+    _letztesModell = MODELL_GRUENDLICH;
+    try { ausgabe = await frage(MODELL_GRUENDLICH); daten = parseJson(ausgabe); }
+    catch (e) { if (istKontingentFehler(e)) throw e; console.error("Spar-Modell fehlgeschlagen:", e && e.message); }
+    return kiErgebnis(daten, ausgabe, wissen);
+  }
   /* 2.19: zuerst gpt-oss-120b; liefert es nichts Lesbares, das bisherige
      schnelle Modell, dann Gemma. */
   _letztesModell = MODELL_ANTWORT;
@@ -1163,6 +1314,8 @@ async function kiJsonWorker(env, system, nutzer) {
 export async function lernlauf(env, opt) {
   const o = Object.assign({ tests: 3, luecken: 3, veraltet: 5, doppelt: 4 }, opt || {});
   const bericht = { vektoren: null, getestet: 0, nichtGefunden: 0, luecken: 0, veraltet: 0, doppelt: 0, kontingent: false, neu: 0 };
+  /* 2.24: Lernen ist nicht dringend — die Antworten fürs Team gehen vor. */
+  if ((await verbrauchHeute(env)).stufe !== "normal") { bericht.kontingent = true; bericht.gespart = true; return bericht; }
   await vorschlagTabelle(env);
   try { bericht.vektoren = await vektorenAufbauen(env, 60); }
   catch (e) { if (istKontingentFehler(e)) { bericht.kontingent = true; return bericht; } console.error("Lernlauf Vektoren:", e && e.message); }
@@ -1365,6 +1518,7 @@ export function uebungPaarePruefen(daten) {
 
 async function uebungErzeugen(env, eintraege) {
   await trainingTabellen(env);
+  if ((await verbrauchHeute(env)).stufe !== "normal") return { neu: 0, fehler: 0, kontingent: true, gespart: true };
   const n = Math.min(Math.max(Number(eintraege) || 5, 1), 8);
   /* Zuerst Einträge, zu denen es noch keine Übung gibt. */
   const wissen = rows(await env.DB.prepare(
@@ -1531,7 +1685,7 @@ async function statistik(env) {
     + await zahl("SELECT COUNT(*) AS n FROM bewertung WHERE wert = 1 AND erstellt > ?", vor14);
   const training = Object.assign(trainingsStand(ausWissen, goldOffen + goldUebung + goldDaumen + goldLernen, tempo), { goldOffen, goldUebung, goldDaumen, goldLernen, daumenRunter, uebungNeu });
   vektoren.gesamt = wissen.n;
-  return { fragen7: z.fragen || 0, abgedeckt7: z.abgedeckt || 0, sprache7: z.sprache || 0, fragenHeute: heute.n, offen: offen.n, wissen: wissen.n, ideen7: ideen.n, mitarbeiter: mitarbeiter.n, training, vorschlaege, vektoren };
+  return { fragen7: z.fragen || 0, abgedeckt7: z.abgedeckt || 0, sprache7: z.sprache || 0, fragenHeute: heute.n, offen: offen.n, wissen: wissen.n, ideen7: ideen.n, mitarbeiter: mitarbeiter.n, training, vorschlaege, vektoren, verbrauch: await verbrauchHeute(env) };
 }
 
 async function legeOffenAn(env, { nachrichtId, frage, entwurf, absender, kanal, studio, grund }) {
@@ -1860,7 +2014,7 @@ async function api(request, env, url) {
       const wissen = await findeWissen(env, q);
       const vorbilder = b.ohneBeispiele ? [] : await vorbilderLaden(env, q, wissen);
       try {
-        const e = await frageKI(env, { text: q, studio: "", wissen, verlauf: [], vorname: "Semih", ton: b.ton === "sachlich" ? "sachlich" : "locker", kanal: "app", lage: b.lage ? String(b.lage) : "", vorbilder });
+        const e = await frageKI(env, { text: q, studio: "", wissen, verlauf: [], vorname: "Semih", ton: b.ton === "sachlich" ? "sachlich" : "locker", kanal: "app", lage: b.lage ? String(b.lage) : "", vorbilder, spar: !!b.spar });
         _denkenAus = false;
         return json({ ms: Date.now() - t0, modell: _letztesModell, denken: b.ohneDenken ? "standard" : "low", wissen: wissen.map(w => ({ id: w.id, thema: w.thema })), beispiele: vorbilder.map(v => v.frage), ergebnis: e });
       } catch (e) { _denkenAus = false; return json({ ms: Date.now() - t0, modell: _letztesModell, fehler: String(e && e.message || e).slice(0, 200) }, 502); }
@@ -2123,6 +2277,16 @@ function uebersicht(v) {
     function box(z, t) { return el("div", { class: "card" }, el("div", { class: "num", text: z }), el("div", { class: "s", text: t })); }
     v.replaceChildren(el("div", { class: "grid" }, box(s.vorschlaege || 0, "Vorschläge von Formi"), box(s.offen, "offene Fragen"), box(s.fragenHeute, "Fragen heute"), box(s.fragen7, "Fragen in 7 Tagen"), box(s.abgedeckt7, "davon aus dem Wissen"), box(s.sprache7, "per Sprachnachricht"), box(s.wissen, "Wissenseinträge"), box(s.ideen7, "Ideen in 7 Tagen"), box(s.mitarbeiter, "freigeschaltet")));
     var vk = s.vektoren || { mit: 0, gesamt: 0 };
+    var vb = s.verbrauch;
+    if (vb) {
+      var stufeText = { normal: "Normalbetrieb – großes Modell", spar: "Sparmodus – kleineres Modell, nachts kein Lernen", stopp: "Notbremse – Antworten nur aus dem Wissen, Rest wird gespeichert" }[vb.stufe] || vb.stufe;
+      var p = Math.min(100, Math.round(vb.neuronen / vb.kontingent * 100));
+      v.append(el("div", { class: "card" },
+        el("div", { class: "t", text: "KI-Kontingent heute" }),
+        el("div", { class: "s", text: "ca. " + vb.neuronen.toLocaleString("de-DE") + " von " + vb.kontingent.toLocaleString("de-DE") + " Neuronen (geschätzt) · " + vb.aufrufe + " KI-Aufrufe · " + stufeText }),
+        el("div", { style: "height:10px;border-radius:6px;background:var(--line);overflow:hidden;margin:6px 0 2px" }, el("div", { style: "height:100%;width:" + p + "%;background:var(--brand)" })),
+        el("div", { class: "s", text: "Sparmodus ab " + vb.spar.toLocaleString("de-DE") + ", Notbremse ab " + vb.stopp.toLocaleString("de-DE") + ". Neustart um 00:00 UTC (2 Uhr deutsche Sommerzeit, 1 Uhr Winterzeit)." })));
+    }
     v.append(el("div", { class: "card" },
       el("div", { class: "t", text: "Formi lernt selbst" }),
       el("div", { class: "s", text: "Nachts testet sich Formi selbst, entwirft Antworten aus vorhandenem Wissen und sucht Doppeltes und Veraltetes. Daraus werden Vorschläge — Wissen wird es erst, wenn du es freigibst." }),
