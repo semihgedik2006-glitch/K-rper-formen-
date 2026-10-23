@@ -21829,11 +21829,11 @@ super“. Seit 15:18 läuft der Plan ohne Zwischenfrage durch.
 - `test-formi-loch` auf den Strom umgestellt (gleiche Schwellen: Drehung
   ≥ 360°, Streckung am Ende ≥ 10 und mehr als doppelt so viel wie in der
   Mitte, Zeitdehnung ≥ 30 %), 31 grün.
-- Gesamtdurchlauf mit 36 Durchläufen: grün bis auf `test-formi-kugel`
-  bei 430 px (2 von 70) und `test-formi-verdeckt` (12 von 42, die Kugel
-  über „Nachrichten"/„Wissen" der unteren Leiste). Beide sind auf `main`
-  ohne diese Runde genauso rot, nachgemessen auf einem eigenen Stand von
-  `main`.
+- Gesamtdurchlauf mit 36 Durchläufen auf dem Stand mit den Runden 244–246:
+  35 grün, darunter `test-formi-kugel` (70) und `test-formi-verdeckt` (42,
+  ohne Zeitlimit). Rot ist `test-mitarbeiter`: Er sucht „Wissen" in der
+  unteren Leiste, das seit Runde 246 unter ☰ liegt. Er bricht auf `main`
+  genauso ab, nachgemessen auf einem eigenen Stand von `main`.
 
 **Nicht geprüft:** Safari und Firefox (dort ist die Linse absichtlich
 aus), echte Handys, die Arbeit je Bild beim Strom (bis 80 Elemente, nur
