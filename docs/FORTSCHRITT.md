@@ -21579,3 +21579,79 @@ Dokument bleiben unberührt (Gegenprobe im Test).
 
 - Ein echter Tipp auf eine echte Push-Nachricht auf einem Handy: hier
   nur mit der Attrappe des Service Workers.
+
+## Runde 244 — Formi-Insel, Leuchtrand, Lichtkrümmung und Gezeitenstrom (23.10.2026)
+
+**Aus dem Betrieb**, zu den vier Apple-Entwürfen:
+- „ich finde die insel und die widgets super krass falls das geht können
+  wir das schonmal umsetzten sonst bauen wir das ein wenn wir die web app
+  zur normalen app machen"
+- „liquid glas finde ich unnötig wenn überhaupt soll das den hintergrund
+  verzerren etwas weils ja ein schwarzes loch ist"
+- „diesen leucht ring am rand find ich auch mega … am besten auch
+  animationen und so wenn er was für uns in der app macht und man kann
+  das live sehen wie er eine aufgabe abhakt oder etwas anlegt"
+- „nur die lichtkugel würde ich nicht wollen es soll am ende immer noch
+  ein schwarzes loch sein"
+- Mitten in der Runde: „können wir fürs aufgaben einsaugen einen besseren
+  effekt machen … und mehr verzerrung auch für den hintergrund und so ums
+  loch herum"
+
+**Gebaut:**
+1. **Gezeitenstrom** (`formiStrom`, `formiBahn`). Der Titel zerfällt in
+   seine Buchstaben. Der dem Loch nächste reisst zuerst ab, die anderen
+   folgen, so entsteht ein Faden, der sich um Formi wickelt. Die Bahn
+   biegt schon von weitem ein (Umlauf ∝ 1/r statt nur am Loch). Jeder
+   Buchstabe zeigt in Flugrichtung und wird mit der Geschwindigkeit und
+   nah am Loch mit den Gezeiten lang gezogen (gemessen bis über 30-fach).
+   Jeder Buchstabe hat ein Nachleuchten 70 ms dahinter. Am Horizont wird
+   er rot und erlischt. Läuft die Bahn aus dem Bild (Kugel am Rand), dreht
+   der Strom andersherum.
+2. **Lichtkrümmung** (`formiLinseBauen`). Ein Kreis von 192 px unter der
+   Kugel krümmt, was dahinter liegt, wie eine Gravitationslinse
+   (β = θ − θE²/θ). Gebaut ist er als `backdrop-filter` mit einer einmal
+   gerechneten Verschiebungskarte. Schluckt Formi etwas, wird die
+   Krümmung 1,3 s lang bis 1,85-fach stärker.
+3. **Formi-Insel.** Eine schwarze Fläche mit Photonenring, oben in der
+   Mitte. Klein steht darin, was Formi tut („Suche „Spiegel" …"). Gross
+   zeigt sie das Ergebnis („Abgehakt · Hürth – Spiegel putzen") mit
+   grünem Haken. Abgehaktes fällt als Strom in Formi IN der Insel, und
+   zwar aus der Zeile in der App, wenn sie zu sehen ist. Angelegtes kommt
+   aus ihm heraus (derselbe Strom rückwärts, weisses Loch). Am Rechner
+   sitzt die Insel in der Kopfleiste, wenn deren Mitte frei ist, sonst
+   knapp darunter.
+4. **Leuchtrand.** Vier Streifen am Bildschirmrand, in denen Formis
+   Farben gegen den Uhrzeiger kreisen, solange er arbeitet. Beim Ergebnis
+   flammt der Rand auf und erlischt. Er läuft höchstens 30 s.
+5. `docs/ideen/formi-apple.md`: was entschieden ist, was eine Web-App
+   nicht kann, und die Widgets für die echte App.
+
+**Entschieden und warum:**
+- *Die Insel lebt in der App.* Die echte Dynamic Island und Widgets gibt
+  es nur für installierte Apps. Das steht so in der Doku, damit es beim
+  Umstieg auf eine echte App nicht verloren geht.
+- *Keine Trefferfläche für Insel, Rand und Linse.* Die Insel liegt am
+  Handy kurz über dem Seitenkopf. Würde sie Klicks fangen, verdeckte sie
+  Knöpfe. Gesagt wird alles weiter im Fenster.
+- *Bei „Mehr Platz" keine Insel*, denn dort zeigt das Fenster selbst,
+  was Formi tut. Der Rand leuchtet trotzdem.
+- *Die Linse ist ein eigenes Element, nicht in der Kugel.* In der Kugel
+  sah `backdrop-filter` in Chromium nichts von der Seite dahinter
+  (nachgemessen: weder Unschärfe noch Krümmung). Als eigenes Element
+  direkt unter der Kugel geht es. Es folgt der Kugel beim Zeigen, bei
+  Grössenwechseln und einmal je Sekunde.
+- *Die Linse nur in Chromium* (Rechner, Android). Safari und Firefox
+  kennen SVG-Filter in `backdrop-filter` nicht. Dort bleibt der Kreis
+  durchsichtig, statt etwas Kaputtes zu zeigen.
+- *Die Form der Insel wechselt über `clip-path`*, nicht über
+  `width`/`height`. Das löst kein Layout aus. Neu gemalt wird nur die
+  Insel selbst.
+- *Kein Bernstein im Leuchtrand.* Bernstein ist eine Statusfarbe; der
+  Rand nutzt nur Formis Cyan, Violett und Rosa.
+
+**Geprüft:**
+ERGEBNIS_HIER
+
+**Nicht geprüft:** Safari und Firefox (dort ist die Linse absichtlich
+aus), echte Handys, die Arbeit je Bild beim Strom (bis 80 Elemente, nur
+`transform`/`opacity`) und bei der Linse.
