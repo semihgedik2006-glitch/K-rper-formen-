@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════════
-   FORMI KENNT DIE APP (Runde 215, 23.10.2026)
+   FORMI KENNT DIE APP (Runde 217, 23.10.2026)
 
    Aus dem Betrieb: „er soll aber mehr integration haben … eher so wie
    chat gpt nur mit dem wissen von uns" — auf die Rückfrage: Aufgaben,

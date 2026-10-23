@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-dKFT7pdpuaz/JRwHLG3THasfHKgWZj6SeI1R4fs3LQU='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-jKldoHqhfulW5i/O+b7fIEhp7TuDsU3/j2OK3Of4d38='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -13324,6 +13324,11 @@ var NOTIFY_OPTS = [
   {id:'dm',       name:'Direktnachrichten',      hint:'Persönliche Nachrichten an dich'},
   {id:'ann',      name:'Infos der Leitung',      hint:'Ankündigungen'},
   {id:'todos',    name:'Neue Aufgaben',          hint:'Wenn in deinem Studio eine Aufgabe angelegt wird'},
+  /* Runde 216: die Erinnerung ans Auffrischen (schulungAuffrischErinnern).
+     Nur sichtbar, wenn die Schulung für die Firma an ist — ein Schalter
+     für etwas, das es nicht gibt, wäre ein Versprechen ohne Deckung. */
+  {id:'schulung', name:'Kurz auffrischen',       feature:'schulung',
+   hint:'Wenn Fragen aus deinen Schulungen warten – höchstens alle drei Tage'},
   /* Ein Schalter für ZWEI Kanäle, und das ist Absicht: der Toast in der
      offenen App und der Push aufs Handy sagen dasselbe, nur zu
      verschiedenen Zeitpunkten. Zwei Schalter dafür hiessen, jemanden
@@ -21425,6 +21430,10 @@ var NEUIGKEITEN = [
     'Ist etwas nicht von uns geprüft, sagt Formi das dazu („Nicht geprüft" oder „Allgemeines Wissen") – antwortet aber trotzdem.',
     'Chats und Direktnachrichten liest Formi nicht.'
   ]},
+  { id:'2026-10-23-auffrischen-push', datum:'23.10.2026', titel:'Kurz auffrischen: Erinnerung aufs Handy', wo:'schulung', punkte:[
+    'Wenn Fragen aus deinen Schulungen warten, kommt morgens eine kurze Nachricht aufs Handy – höchstens alle drei Tage, nur wenn dein Zugang mit deinem Schulungs-Eintrag verknüpft ist.',
+    'Abschalten: Profil → Meldungen → „Kurz auffrischen".'
+  ]},
   { id:'2026-10-22-soll-wochentag', datum:'22.10.2026', titel:'Soll je Wochentag; Zeiten korrigiert nur die Geschäftsführung', wo:'chef:zeiten', punkte:[
     'Unter Verwaltung → Zeiten → Monat & Konto → „Soll je Wochentag" trägt die Geschäftsführung je Person ein, wie viele Stunden an welchem Tag geplant sind – auch samstags. Feiertage zählen automatisch mit 0. Urlaub und Krankheit schreiben genau die Stunden dieses Tages gut.',
     'Wer dort nichts eingetragen hat, für den rechnet das Konto weiter mit den Wochenstunden aus dem Schichtplaner.',
@@ -26907,7 +26916,7 @@ function gehirnSenden(art, feldId){
   }
   if(art==='auto') gehirnSchritt(v, 'Frage Formi …');
   var name = art==='auto' ? 'gehirnAktion' : 'gehirnFrage';
-  /* Runde 215: die Lage aus der App geht mit (nur für Fragen; Ideen nicht). */
+  /* Runde 217: die Lage aus der App geht mit (nur für Fragen; Ideen nicht). */
   var lage=''; try{ lage=gehirnLageText(); }catch(e){}
   var daten = art==='auto' ? { text:text, kontext:gehirnKontext(), ton:gehirnTonfall(), verlauf:gehirnVerlaufKurz(), lage:lage } : (art==='idee' ? { art:art, text:text, ton:gehirnTonfall() } : { art:art, text:text, ton:gehirnTonfall(), lage:lage });
   firebase.app().functions(KONFIG.region).httpsCallable(name)(daten)
@@ -30141,7 +30150,7 @@ function gehirnSchnell(text){
   }
   return null;
 }
-/* ── Die Lage aus der App für Formis Antworten (Runde 215, 23.10.2026) ──
+/* ── Die Lage aus der App für Formis Antworten (Runde 217, 23.10.2026) ──
    Aus dem Betrieb: „er soll mehr integration haben" — und auf die
    Rückfrage: Aufgaben, Putzplan, Material, Geräte, Schichtplan, Schulungen,
    Ankündigungen, Übergaben, „ALLES jedes detail".
@@ -49577,7 +49586,9 @@ function buildNotifyOptions(){
   /* Dieselbe Regel wie bei den Mails: einen Schalter zeigen, der nichts
      bewirken kann, ist ein Versprechen ohne Deckung. „Erledigte
      Aufgaben" geht nur an Chef und Leiter. */
-  box.innerHTML=NOTIFY_OPTS.filter(function(o){ return !o.chef || canManage(); }).map(function(o){
+  box.innerHTML=NOTIFY_OPTS.filter(function(o){
+    return (!o.chef || canManage()) && (!o.feature || featureAn(o.feature));
+  }).map(function(o){
     var an = PREFS.notify[o.id]!==false;
     return '<label class="sw-row" data-nk="'+o.id+'">'+
       '<span class="sw-txt"><b>'+esc(o.name)+'</b><span>'+esc(o.hint)+'</span></span>'+
