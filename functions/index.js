@@ -7857,7 +7857,7 @@ async function gehirnFrageAusfuehren(auftrag, firma) {
       nachricht: Number(json.nachrichtId) > 0 ? Number(json.nachrichtId) : null,
       /* Runde 217: worauf die Antwort beruht (wissen/app/allgemein/unsicher). */
       grundlage: ['wissen', 'app', 'allgemein', 'unsicher'].indexOf(json.grundlage) >= 0 ? json.grundlage : null,
-      /* Runde 221: wie Formi sich bei der Antwort fühlt — für das Gesicht. */
+      /* Runde 229: wie Formi sich bei der Antwort fühlt — für das Gesicht. */
       stimmung: ['freut', 'begeistert', 'stolz', 'staunt', 'mitfuehlend', 'verwirrt', 'ernst', 'ruhig'].indexOf(json.stimmung) >= 0 ? json.stimmung : null
     };
 }

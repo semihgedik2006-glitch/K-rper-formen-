@@ -20559,7 +20559,7 @@ Minuten; `tests/alle.sh` erlaubt 240 s je Datei.
 - Die fünf Funktionstests brauchen `firebase-functions`, das hier nicht
   installiert ist.
 
-## Runde 221 — Formi persönlicher, mit Gefühlen, länger (Worker 2.21, 23.10.2026)
+## Runde 229 — Formi persönlicher, mit Gefühlen, länger (Worker 2.21, 23.10.2026)
 
 Aus dem Betrieb: „gib formi nur noch mehr emotions und persönlichere und
 längere antworten falls das geht".

@@ -70,7 +70,7 @@ function pruefe(was, bedingung, hinweis) {
     const s2 = await p.evaluate(() => document.getElementById('jarvisVerlauf').innerText);
     pruefe('Allgemeines: Schritt „Allgemeines Wissen"', /Allgemeines Wissen/.test(s2), s2.slice(-200));
 
-    /* Runde 221 („mehr emotions"): die Stimmung der Antwort zeigt sich im
+    /* Runde 229 („mehr emotions"): die Stimmung der Antwort zeigt sich im
        Gesicht — „verwirrt" lässt ein ? über Formi hüpfen. */
     await p.evaluate(() => { window.__antwort.gehirnAktion = (d) => Promise.resolve({ data: { art: 'frage', antwort: 'Hm, da bin ich unsicher.', abgedeckt: false, grundlage: 'unsicher', stimmung: 'verwirrt', nachricht: 7 } }); });
     await p.fill('#jarvisFeld', 'Wann genau kommt eigentlich der Techniker für die Beinpresse?');
