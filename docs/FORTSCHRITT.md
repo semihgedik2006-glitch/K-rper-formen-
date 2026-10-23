@@ -22102,3 +22102,103 @@ Menü (die Vorschau ist auf vier Zeilen begrenzt).
 **Nicht geprüft:** Safari und Firefox (dort ist die Linse absichtlich
 aus), echte Handys, die Arbeit je Bild beim Strom (bis 80 Elemente, nur
 `transform`/`opacity`) und bei der Linse.
+
+## Runde 251 — Eine Änderung rechnet nicht mehr die ganze Seite (23.10.2026)
+
+Siebter Bauschritt aus dem Plan „Studio Chat wie von Apple“: „Formi-Gefühle
+auf der Startseite leichter (Spur: ‚stolz‘ startet 52 Animationen;
+Formi-Aussehen nicht ändern)“. Formi selbst ist in dieser Runde nicht
+angefasst — am Aussehen und an den Gefühlen arbeitet eine andere Sitzung.
+
+**Gemessen, bevor etwas geändert wurde** (Startseite, Demo Chef, CPU ÷4,
+Formis Zeitgeber aus, Arbeit des Hauptfadens je Bild über 2,4 s):
+„feiert“ 12,9 ms, „freut“ 9,9, „stolz“ 9,2 — alle anderen Gefühle 3–4 ms.
+Die Spur „52 Animationen“ führte nicht zum Ziel: alle Animationen des
+Jubels laufen auf `transform`/`opacity` und auf dem Compositor (im Trace
+`compositeFailed = 0` für jede). Ein Ausbruch ohne Teilchen kostete
+gleich viel wie mit.
+
+**Was es wirklich war.** Im Trace fiel ein Muster auf: fünfmal je Jubel
+eine Stilberechnung über ~650 Elemente (gegen ~30 sonst), jedes Mal
+ausgelöst von einer ganz harmlosen Änderung — das Teilchen-Kästchen kommt
+in die Kugel, eine Welle an den `<body>`, und beides wieder weg. Eine
+Probe zeigte: **jede** Änderung irgendwo im Dokument, selbst ein
+Inline-Stil, kostete 8–14 ms am Rechner ohne Drosselung (×4 am Handy).
+Das betrifft die ganze App, nicht nur Formi.
+
+Zwei Ursachen, beide gefunden, indem Regeln einzeln herausgenommen wurden:
+
+1. **Sechs Regeln „body:has(…) .formi-kugel“** (und eine für das
+   Zwei-Faktor-Fenster). Ein `:has()` am `<body>` heisst für Chromium:
+   bei jeder Änderung darunter könnte der `<body>` jetzt anders passen.
+   Und weil Chromium alle `:has()`-Regeln in eine gemeinsame Menge legt,
+   in der auch Selektoren wie `.todo.done:has(…) .swipe-body > :not(.t-body)`
+   stehen, heisst „der body könnte sich ändern“: jedes Element neu.
+   Ohne diese sechs Regeln: 0,6 ms statt 9 ms.
+   Ersetzt durch:
+   - Geschwister: die vier Blätter, die Meldung (`#toast`), die
+     Rückgängig-Leiste und die Zwei-Faktor-Sperre stehen im Dokument vor
+     der Kugel bzw. vor `#zfModal` und werden nie umgehängt —
+     `body > .msg-sheet.show ~ .formi-kugel`. Das `body >` hält die
+     Spezifität gleich (0,3,1 wie vorher; bei `#zfModal` 2,1,1, was
+     weiter gegen `#zfModal.show` gewinnt).
+   - `body.hat-daumen` statt `body:has(#daumenDock:not([hidden]) .kopf-plus)`
+     — die Klasse setzt `kopfPlusUmhaengen` schon genau dann.
+   - `body.pp-filter-auf`, gesetzt in `ppAufklappen` (dem einzigen Ort,
+     der die Filter öffnet).
+2. **Geschwister-Selektoren, die auf `*` enden**: `.heute-liste > * + *::before`
+   und (aus Runde 244, von mir) `.pg-kopf + *`, `summary + *`. Beim
+   Entfernen eines Elements legt Chromium für `+ *` eine Ungültigkeit
+   über den ganzen Teilbaum des Elternteils — am `<body>` die ganze
+   Seite. Jetzt `:not(:first-child)::before` (dasselbe, weil `* + *`
+   jedes Kind ausser dem ersten trifft) und die Zeilen beim Namen
+   (`+ .todo`, `+ .pp-item`).
+
+**Nachher** (gleiche Messung, je Gefühl zwei Durchgänge, gegen `main`
+im selben Lauf; „längstes“ = längstes einzelnes Bild):
+
+| | Rechner 1440 | Handy 390 |
+|---|---|---|
+| feiert | 9,8–11,9 → 6,8–7,5 ms, längstes 83–183 → 50 ms | 11,0–12,1 → 6,8–7,6 ms, längstes 133–150 → 33 ms |
+| stolz | 7,6–9,0 → 6,1–7,7 ms, längstes 100–117 → 33 ms | 10,1–11,6 → 6,5–7,6 ms, längstes 67–100 → 33–50 ms |
+| freut | 6,8–7,5 → 4,9–5,4 ms, längstes 67 → 33 ms | 7,8–8,0 → 5,4–5,9 ms, längstes 50–83 → 17–33 ms |
+| Seitenwechsel (test-federn, nach Ursache 1) | 16,2 → 13,2 ms je Bild | 15,6 → 11,6 ms je Bild |
+| ein Element rein/raus | 8–14 ms → unter 1,3 ms (ohne Drosselung) | |
+
+Alle drei Gefühle liegen damit im Mittel unter der Grenze von 8,3 ms je
+Bild (120 Hz), auf beiden Geräten; einzelne Bilder darüber gibt es noch
+(Malen und Rastern der Teilchen und Wellen beim Start des Jubels). Die
+Zahlen schwanken zwischen Läufen um ±1 ms, die Richtung war in jedem Lauf
+dieselbe. Den Seitenwechsel drücken andere Dinge über 8,3 ms (siehe
+Runde 247) — die bleiben offen.
+
+**Gefunden nebenbei:** die Kugel gleitet bei Meldung und Rückgängig-Leiste
+mit einer 160-ms-Web-Animation hoch; ein Prüfen direkt nach dem Setzen
+von `.show` sieht deshalb noch die alte Lage (der Test wartet 300 ms).
+
+**Test:** neu `tests/test-ganze-seite.js`, 45 grün (gegen `main` 11 falsch):
+kein `:has` am `<body>`/`<html>`/`:root`, kein Geschwister-Selektor auf
+`*` (beide mit Gegenprobe); ein Element in die Kugel, an den `<body>`,
+ein Inline-Stil fassen < 120 Elemente an (gezählt im Trace, nicht
+gestoppt — 23–25 von ~7.000), mit eingeschleustem `body:has` wieder 419
+(Gegenprobe); „freut“, „stolz“, „feiert“ ohne Berechnung der ganzen
+Seite bei 390 und 1440 px, mit Gegenprobe, dass das Gefühl wirklich
+läuft; und dass die neuen Regeln tun, was die alten taten: Kugel und
+Sprechblase weg unter jedem der vier Blätter (390 und 1440), Kugel 72 px
+höher bei Meldung und Leiste, 68 px höher über „+ Aufgabe“, weg beim
+Filtern auf 320 × 640, Einrichten-Fenster über der Sperre (210 → 890),
+Trennlinien in „Heute“ und die obere Rundung der Gruppen unverändert.
+
+**Geändert an einem bestehenden Test:** `test-formi-verdeckt` hängte für
+„verdeckt die Rückgängig-Leiste die Kugel?“ eine Kopie von `.undobar.show`
+und `.toast.show` ans Ende des `<body>` — hinter die Kugel. Mit der neuen
+Geschwister-Regel weicht die Kugel dafür nicht aus (die Kopie steht nicht
+vor ihr). Die App hängt nie eine zweite Leiste an; der Test nimmt jetzt
+die echten Elemente `#undoBar` und `#toast`, setzt Text und `.show` und
+stellt sie danach wieder her. Die Frage und die Grenze sind dieselben —
+das ist keine Lockerung, sondern dieselbe Prüfung am echten Element (und
+offen hier genannt).
+
+**Nicht getestet:** echtes iPhone, echtes Android. Die Messungen sind
+Chromium mit CPU ÷4 — wie viel es auf einem bestimmten Gerät bringt,
+steht hier nicht.
