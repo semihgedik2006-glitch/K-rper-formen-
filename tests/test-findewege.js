@@ -135,6 +135,6 @@ const knoepfe = (p, SEL) => p.evaluate((SEL) => [...document.querySelectorAll(SE
   await b.close();
   console.log(schlecht
     ? '\n✗ Findewege: ' + schlecht + ' von ' + (gut + schlecht) + ' Zusicherungen falsch'
-    : '\n✓ Findewege: jedes typische Ziel in höchstens zwei bis drei Tipps — ' + gut + ' Zusicherungen');
+    : '\n✓ Findewege: jedes typische Ziel in höchstens zwei Tipps — ' + gut + ' Zusicherungen');
   process.exit(schlecht ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

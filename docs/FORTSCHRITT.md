@@ -20112,3 +20112,33 @@ zusammen. Jetzt gibt es zwei Zeilen mit den Namen des Umschalters:
 „Infos" und „Aushänge". Die zweite setzt den Teil der Pinnwand über das
 schon vorhandene `data-pin`. Ist das Brett abgeschaltet, gibt es die
 Zeile nicht (`feature:'brett'`).
+
+## Runde 224 — „Was ist neu": doppelter Eintrag, fehlende Wege (23.10.2026)
+
+**Gefunden** beim Zusammenführen von Runde 223: `2026-10-22-soll-wochentag`
+stand zweimal in `NEUIGKEITEN`. Die eine Fassung hatte eine leere
+Punkteliste und erschien als leere Karte. Die andere zeigte noch auf
+`chef:zeiten`, das es seit dem Raum „Zeiten" (Runde 222, #281) nicht mehr
+gibt. Ursache waren meine eigenen Konfliktauflösungen in Runde 220/223:
+Das Muster „meins + `]},` + ihres“ passt nicht, wenn ein Konfliktblock
+mitten in einem fremden Eintrag endet.
+
+**Neuer Test** `tests/test-neuigkeiten.js`. Er prüft:
+- jede id kommt genau einmal vor;
+- jeder Eintrag hat Datum, Titel und Punkte;
+- die Liste ist nach Datum absteigend;
+- „Was ist neu" (über „Alles" geöffnet, wie ein Mensch) zeigt jeden
+  Eintrag;
+- jeder Eintrag mit `wo` hat „Zeigen ›";
+- „Zeigen ›" beim Profil öffnet das Profil.
+
+Gegen `main` sind 4 der 5 ersten Zusicherungen falsch.
+
+**Dabei gefunden:** sechs ältere Einträge ohne „Zeigen ›":
+- `team` und `chef` ohne Unterreiter → jetzt `team:schicht` und
+  `chef:ueberblick`;
+- dreimal `profil`. Das Profil ist ein Fenster, keine Seite. `renderNeu`
+  kennt dafür jetzt einen eigenen Knopf, der `openProfile()` aufruft.
+
+Mit diesem Test fällt eine verunglückte Zusammenführung künftig schon in
+der Runde auf, die sie anrichtet.
