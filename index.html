@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-XlOA4+0j2rgs1+BRbsqkc3KoySyeX2qGl+CNi4ePrwk='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-12E2tnhzbLO7YW+1P3Krt7U36zZtN4CiuI9MqERx2BU='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3908,6 +3908,27 @@ button.ich-zeile:active{opacity:.7}
 /* Runde 197: vier Reiter statt vier Blöcke nebeneinander — am Rechner
    standen 2 × 2 Formulare über 1.600 px Breite, das war die „Wand". */
 .spl-regel-reiter{margin:var(--s12) 0}
+/* Fragen zum Plan */
+.spl-fragen > summary{cursor:pointer;min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:var(--s8);
+  font-family:var(--font-head);font-weight:800;font-size:var(--t-md);list-style:none}
+.spl-fragen > summary::-webkit-details-marker{display:none}
+.spl-fragen > summary span{display:inline-flex;align-items:center;gap:var(--s8)}
+.spl-fragen > summary span svg{width:20px;height:20px}
+.spl-fragen > summary small{font-family:var(--font-body);font-weight:600;font-size:var(--t-xs);color:var(--text-3)}
+.spl-fragen .hint{margin:var(--s8) 0 0}
+#spFragenReiter .pm-tab small{font-size:var(--t-2xs);color:var(--text-3);font-weight:700}
+/* Am Handy nur der Buchstabe – fünf Wörter passen bei 320 px nicht. */
+@media (max-width:819px){ #spFragenReiter .spl-lang{display:none} #spFragenReiter .pm-tab small{display:none} }
+.spl-fragen-titel{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.spl-frage{display:grid;gap:var(--s4);padding:var(--s10) var(--s12);border-radius:var(--r-md);background:var(--auf-1);margin-bottom:var(--s8);
+  box-shadow:inset 3px 0 0 var(--line-2)}
+.spl-frage.fertig{box-shadow:inset 3px 0 0 var(--accent)}
+.spl-frage label{font-weight:600;font-size:var(--t-sm);line-height:var(--lh)}
+.spl-frage label b{display:inline-block;min-width:1.6em;color:var(--accent-d)}
+.spl-frage small{color:var(--text-3);font-size:var(--t-xs);line-height:var(--lh)}
+.spl-frage-feld{display:flex;gap:var(--s8);align-items:flex-start}
+.spl-frage-feld textarea{flex:1;min-width:0;min-height:44px;resize:vertical}
+@media (min-width:1100px){ .spl-fragen > *:not(summary){max-width:960px} }
 /* Am Handy 2 × 2: in einer Zeile rollte „Notiz" aus dem Bild und war
    bei 320–430 px nur 36–43 px breit zu treffen (test-schichtplaner). */
 @media (max-width:819px){ #spRegelReiter{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible} }
@@ -11575,6 +11596,20 @@ body.neu .td-erledigt > .todo + .todo::after,body.neu .td-erledigt > .pp-item + 
             <section class="card spl-ausfaelle" id="spAusfaelle" hidden></section>
             <!-- Was die Chefin selbst festlegt. Zugeklappt: es ist einmal
                  eingerichtet und wird selten angefasst. -->
+            <!-- Die 24 Fragen (Runde 245) — dieselbe Liste wie in
+                 Schichtplaner-Fragen.pdf und im Blatt „Fragen“ der Vorlage
+                 (Quelle: docs/schichtplaner/werkzeug/inhalt.py). Aus dem
+                 Betrieb, 22.10.2026: „uns alle fragen stellen welche wir
+                 beantworten müssen damit der schichtplan danach direkt
+                 klappt“ — und auf den Vorschlag, sie in der App zu
+                 beantworten: „jap mach weiter dann“. -->
+            <details class="card spl-fragen" id="spFragen">
+              <summary><span data-ikon="hakenKreis">Fragen zum Plan</span><small id="spFragenKurz"></small></summary>
+              <p class="hint">Bei jeder Frage steht, was die App heute annimmt. Passt das, tippe „passt“. Gespeichert wird beim Verlassen des Feldes.</p>
+              <div class="pm-tabs spl-regel-reiter" id="spFragenReiter" role="tablist" aria-label="Fragen"></div>
+              <div id="spFragenListe"></div>
+            </details>
+
             <details class="card spl-regeln" id="spRegeln">
               <summary><span data-ikon="regler">Regeln &amp; Sonderfälle</span><small id="spRegelnKurz"></small></summary>
               <div class="pm-tabs spl-regel-reiter" id="spRegelReiter" role="tablist" aria-label="Regeln">
@@ -11655,6 +11690,9 @@ body.neu .td-erledigt > .todo + .todo::after,body.neu .td-erledigt > .pp-item + 
                       <h3 data-ikon="hakenKreis">Fertig?</h3>
                       <button type="button" class="btn btn-primary" id="spVeroeffentlichen">Im Team-Schichtplan veröffentlichen</button>
                       <button type="button" class="btn btn-ghost" id="spLogx">Für LogX kopieren</button>
+                      <!-- Runde 245: eine Probe muss sich zurückholen lassen,
+                           sonst traut sich niemand, es auszuprobieren. -->
+                      <button type="button" class="btn btn-ghost spl-zurueck" id="spZurueck" hidden>Veröffentlichung zurücknehmen</button>
                       <p class="hint" id="spAktionHinweis">Kopiert eine Tabelle (Datum, Studio, Schicht, Zeit, Name) – in Excel oder LogX einfügen.</p>
                     </section>
                     <!-- Die Auswahl steht ZULETZT: sie haftet am Rechner beim
@@ -22135,6 +22173,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-23-schichtplaner-fragen-app', datum:'23.10.2026', titel:'Schichtplaner: Fragen in der App beantworten, Probe zurücknehmen', wo:'planer', punkte:[
+    'Im Schichtplaner (Verwaltung) gibt es die Karte „Fragen zum Plan": dieselben 24 Fragen wie im PDF, in fünf Reitern. Bei jeder steht, was die App heute annimmt – ein Tipp auf „passt" genügt, sonst eine eigene Antwort. Oben steht, wie viele schon beantwortet sind.',
+    'Nach dem Veröffentlichen gibt es „Veröffentlichung zurücknehmen": Die Schichten des Monats verschwinden wieder aus dem Team-Plan, der Entwurf im Planer bleibt. So lässt sich gefahrlos ausprobieren. Von Hand eingetragene Schichten bleiben stehen.',
+    'Öffnungszeiten, die nur in der Excel-Vorlage (Blatt „Studios") stehen, zählen jetzt auch für die Besetzungs-Leiste unter Plan → Schichten.' ] },
   { id:'2026-10-23-aufgaben-gruppen', datum:'23.10.2026', titel:'Aufgaben und Putzplan als ruhige Gruppen', wo:'todos', punkte:[
     'Unter „Studio" stehen die Aufgaben und der Putzplan jetzt genauso wie auf der Startseite: jede Gruppe (z. B. Täglich, Wöchentlich) ist eine gerundete Fläche, die Zeilen darin trennt nur eine feine Linie.',
     'Am Rechner ist „+ Neu" oben rechts jetzt der eine gefüllte Knopf der Ansicht. Filter, Drucken und „Wer hakt ab?" bleiben daneben als ruhige Umrandung.',
@@ -36991,7 +37033,16 @@ function buildTeamSelect(){
   var nb=$('shiftNeu'); if(nb) nb.hidden=!canManage();
 }
 var _shiftVergangenAuf=false;
+function spConfFuerTeam(){
+  if(_sp.conf || _sp.confLaedt) return;
+  _sp.confLaedt=true;
+  S('config').doc('schichtplaner').get().then(function(d){
+    _sp.conf=_sp.conf || (d && d.exists ? d.data()||{} : {});
+    if(_teamStudioKey) renderShifts();
+  }).catch(function(){}).then(function(){ _sp.confLaedt=false; });
+}
 function ensureTeamLoaded(){
+  spConfFuerTeam();
   var sel=$('teamStudio'); if(!sel) return;
   if(!sel.options.length) buildTeamSelect();
   if(!_shiftWeek) _shiftWeek=mondayOf(new Date());
@@ -37370,8 +37421,19 @@ function wpUhr(m){ var h=Math.floor(m/60), mi=m%60; return (h<10?'0':'')+h+(mi?'
 function wpOeffnung(key){
   var st=(_studioListe||[]).filter(function(x){ return x.id===_teamStudioKey; })[0];
   var o=st && st.oeffnung;
-  if(!o) return null;                       // nicht gepflegt
-  var k=['so','mo','di','mi','do','fr','sa'][new Date(key+'T12:00:00').getDay()];
+  var wt=new Date(key+'T12:00:00').getDay();
+  if(!o){
+    /* Runde 245: nicht unter Verwaltung → Studios gepflegt? Dann
+       zählt das Blatt „Studios“ der Schichtplaner-Excel. Vorher gab es
+       zwei Stellen, und die Leiste las nur eine. */
+    var ex=_sp && _sp.conf && _sp.conf.studios && _sp.conf.studios[_teamStudioKey];
+    if(!ex || !ex.oeffnung) return null;   // nirgends gepflegt
+    var t=String(ex.oeffnung[wt===0?7:wt]||'').trim();
+    if(!t || /^(zu|geschlossen|-|–)$/i.test(t)) return { zu:true };
+    var m=/(\d{1,2})(?:[:.](\d{2}))?\s*(?:-|–|bis)\s*(\d{1,2})(?:[:.](\d{2}))?/.exec(t);
+    return m ? { von:(+m[1])*60+(+(m[2]||0)), bis:(+m[3])*60+(+(m[4]||0)) } : null;
+  }
+  var k=['so','mo','di','mi','do','fr','sa'][wt];
   var z=zeitPaar(o[k]);
   return z ? { von:wpMin(z.von), bis:wpMin(z.bis) } : { zu:true };
 }
@@ -45296,6 +45358,7 @@ function spBinden(){
   });
   $('spVeroeffentlichen').addEventListener('click', function(){ spVeroeffentlichen(this); });
   $('spLogx').addEventListener('click', function(){ spKopieren(); });
+  $('spZurueck').addEventListener('click', function(){ spZuruecknehmen(this); });
 }
 
 function spLaden(){
@@ -45324,6 +45387,7 @@ function spLaden(){
     spMeldung('');
     spSchritteZeichnen();
     spRegelnZeichnen();
+    spFragenZeichnen();
     spErgebnisZeichnen();
   }).catch(function(e){ spMeldung(errMsg(e), true); });
 }
@@ -45653,6 +45717,8 @@ function spErgebnisZeichnen(){
     b.addEventListener('click', function(){ spStudioWaehlen(b.getAttribute('data-spkachel')); });
   });
   var hin=$('spAktionHinweis');
+  var zr=$('spZurueck'); if(zr) zr.hidden=!p.veroeffentlicht;
+  if(hin && !p.veroeffentlicht) hin.textContent='Kopiert eine Tabelle (Datum, Studio, Schicht, Zeit, Name) – in Excel oder LogX einfügen.';
   if(hin && p.veroeffentlicht) hin.textContent='Veröffentlicht am '+new Date(p.veroeffentlicht).toLocaleDateString('de-DE')+'. Erneut veröffentlichen ersetzt die Schichten dieses Monats.';
   spStudioTeileZeichnen();
   spAusfaelleZeichnen();
@@ -46219,6 +46285,94 @@ function spVeroeffentlichen(btn){
       return spPlanSpeichern();
     }).catch(function(e){ toast(errMsg(e), true); });
   });
+}
+
+/* ══ Veröffentlichung zurücknehmen (Runde 245) ═══════════════════
+   Holt alle Schichten dieses Monats, die der Planer geschrieben hat
+   (Merkmal planer == Monat), aus dem Team-Schichtplan. Von Hand
+   eingetragene Schichten bleiben — sie tragen das Merkmal nicht. */
+function spZuruecknehmen(btn){
+  var p=_sp.plan; if(!p || !p.veroeffentlicht) return;
+  var studios=spStudios().map(function(s){ return s.id; });
+  withBusy(btn, function(){
+    return Promise.all(studios.map(function(sk){
+      /* Über die Kennung statt d.ref: die Demo-Datenbank kennt kein .ref. */
+      return S('studios').doc(sk).collection('shifts').where('planer','==',_sp.monat).get()
+        .then(function(sn){ return sn.docs.map(function(d){ return S('studios').doc(sk).collection('shifts').doc(d.id); }); });
+    })).then(function(alt){
+      var refs=[].concat.apply([], alt);
+      if(!confirm(refs.length+' veröffentlichte Schichten für '+spMonatName(_sp.monat)+' aus dem Team-Schichtplan nehmen?\n\n'+
+        'Der Entwurf hier im Planer bleibt. Von Hand eingetragene Schichten bleiben auch. Laufende Tausche dieser Schichten fallen weg.')) return null;
+      var stapel=[];
+      for(var i=0;i<refs.length;i+=450){
+        var b=db.batch(); refs.slice(i,i+450).forEach(function(r){ b.delete(r); }); stapel.push(b.commit());
+      }
+      return Promise.all(stapel).then(function(){
+        delete p.veroeffentlicht;
+        toast(refs.length+' Schichten zurückgenommen – der Entwurf bleibt ✓');
+        spErgebnisZeichnen();
+        return spPlanSpeichern();
+      });
+    }).catch(function(e){ toast(errMsg(e), true); });
+  });
+}
+
+/* ══ Fragen zum Plan (Runde 245) ═════════════════════════════════
+   Dieselben 24 Fragen wie im PDF und im Excel (Quelle: inhalt.py; der
+   Test vergleicht beide Listen). Antworten liegen in
+   config/schichtplaner.antworten — dort, wo die Excel-Datei auch die
+   Einstellungen hinschreibt. Eine Antwort ist Text; „passt“ heisst:
+   die Annahme der App gilt. */
+var SP_FRAGEN = [["A · Ohne diese Angaben gibt es keinen Plan", [["Welche Studios sollen im ersten Monat mitgeplant werden – alle 14 oder zum Testen erst eins oder zwei?", "Empfehlung: erst ein Studio."], ["Öffnungszeiten je Studio und Wochentag.", "Ins Excel, Blatt „Studios“."], ["Schichten je Studio: Name, Beginn, Ende, an welchen Wochentagen. Sind sie in allen Studios gleich?", "Ins Excel, Blatt „Schichten“. Heute in der Demo: Früh 7–14, Spät 14–21, Samstag 9–14."], ["Das Team: eine Zeile pro Person – Name genau wie in der App, Hauptstudio, in welchen Studios sie aushilft, Stunden pro Woche (Minijob: Monatsgrenze).", "Ins Excel, Blatt „Mitarbeiter“."], ["Wer kann wann grundsätzlich nicht? (z. B. „nie Dienstag“, „nur früh“, „Di Uni“)", "Ins Excel, Blatt „Mitarbeiter“, Spalten Mo–So und „Sperrzeiten“."]]], ["B · Besetzung", [["Wie viele Personen müssen mindestens gleichzeitig im Studio sein?", "Heute: 1 je Schicht."], ["Gibt es Stoßzeiten, Tage oder Studios, an denen mehr Leute da sein müssen? Wann, wo, wie viele?", "Heute: nur über „Sondertage“ für einzelne Daten."], ["Wer darf nicht allein im Studio sein (Azubis, Neue, bestimmte Personen)? Und wer zählt als Begleitung?", "Heute: Begleitung ist jede Person mit „darf allein: ja“."], ["Muss in bestimmten Schichten jemand mit einer bestimmten Fähigkeit da sein (Probetraining, Kasse, Abschluss am Abend, Erste Hilfe)? In welchen?", "Heute: je Schicht eine Fähigkeit („Braucht jemanden mit …“)."], ["Werden Studioleitungen und Regionalleiter fest eingeplant oder nur bei Bedarf?", "Heute: wie alle anderen, wenn sie im Blatt „Mitarbeiter“ stehen."]]], ["C · Arbeitszeit", [["Wie lang darf eine Schicht höchstens sein, und ab wann gibt es Pause?", "Heute: wird nicht geprüft."], ["Wie viele Tage am Stück darf jemand höchstens arbeiten?", "Heute: 6."], ["Höchstens wie viele Tage pro Woche – für alle gleich oder je Person?", "Heute: je Person im Excel, sonst ohne Grenze."], ["Gibt es Mitarbeiter unter 18?", "Wenn ja, gilt automatisch: nur 6–20 Uhr, höchstens 8 Stunden."], ["Feiertage in NRW: geschlossen oder offen? Gibt es Betriebsferien?", "Heute: offen (umschaltbar)."]]], ["D · Wünsche und Fairness", [["Bis zum wievielten des Vormonats müssen Wünsche eingetragen sein?", "Heute: bis zum 15."], ["Wie viele Wunsch-frei-Tage darf jede Person im Monat angeben?", "Heute: keine Grenze."], ["Was hat Vorrang, wenn es sich beisst? Bitte in eine Reihenfolge: Besetzung · vereinbarte Stunden · Wünsche · Fairness.", "Heute: Besetzung zuerst; ein Wunsch wird nur als Rückfrage gebrochen."], ["Wochenenden: reihum verteilen, oder hat jemand fest frei?", "Heute: reihum, so gleich wie möglich."], ["Fällt jemand aus: nur die Lücke melden oder gleich vorschlagen, wen man fragen kann?", "Heute: bis zu drei Vorschläge."]]], ["E · Ablauf", [["Wer erstellt und veröffentlicht den Plan – nur die Geschäftsführung oder auch die Studioleitung für ihr Studio?", "Heute: nur die Geschäftsführung."], ["Bis wann muss der Plan für den nächsten Monat fertig sein (z. B. am 20.)?", "Heute: keine Frist."], ["Muss die Leitung jeden Schichttausch bestätigen?", "Heute: ja."], ["Wird der Plan danach noch in LogX eingetragen? (Was ich dafür brauche: letzte Seite)", "Heute: „Für LogX kopieren“ legt eine Tabelle in die Zwischenablage."]]]];
+var _spFragenGruppe = 0;
+function spFragenZeichnen(){
+  var liste=$('spFragenListe'), reiter=$('spFragenReiter'); if(!liste || !reiter) return;
+  var a=(_sp.conf && _sp.conf.antworten) || {};
+  var n=0, beantwortet=0;
+  SP_FRAGEN.forEach(function(g){ g[1].forEach(function(){ n++; if(String(a[n]||'').trim()) beantwortet++; }); });
+  var kurz=$('spFragenKurz'); if(kurz) kurz.textContent=beantwortet+' von '+n+' beantwortet';
+  reiter.innerHTML=SP_FRAGEN.map(function(g, i){
+    var nr0=SP_FRAGEN.slice(0,i).reduce(function(s,x){ return s+x[1].length; },0), offen=0;
+    g[1].forEach(function(_, j){ if(!String(a[nr0+j+1]||'').trim()) offen++; });
+    var an=i===_spFragenGruppe;
+    return '<button type="button" class="pm-tab'+(an?' on':'')+'" role="tab" aria-selected="'+an+'" data-spfgruppe="'+i+'">'+
+      esc(g[0].split(' · ')[0])+'<span class="spl-lang"> '+['Pflicht','Besetzung','Arbeitszeit','Wünsche','Ablauf'][i]+'</span>'+
+      (offen?' <small>'+offen+' offen</small>':' ✓')+'</button>';
+  }).join('');
+  var g=SP_FRAGEN[_spFragenGruppe], nr=SP_FRAGEN.slice(0,_spFragenGruppe).reduce(function(s,x){ return s+x[1].length; },0);
+  liste.innerHTML='<h4 class="spl-fragen-titel">'+esc(g[0])+'</h4>'+g[1].map(function(f){
+    nr++;
+    var w=String(a[nr]||'');
+    return '<div class="spl-frage'+(w.trim()?' fertig':'')+'">'+
+      '<label for="spAntwort'+nr+'"><b>'+nr+'</b> '+esc(f[0])+'</label>'+
+      '<small>'+esc(f[1])+'</small>'+
+      '<div class="spl-frage-feld"><textarea class="inp" id="spAntwort'+nr+'" rows="1" maxlength="600" data-spantwort="'+nr+'" placeholder="Antwort – oder „passt“">'+esc(w)+'</textarea>'+
+      '<button type="button" class="chip" data-sppasst="'+nr+'"'+(w.trim()==='passt'?' aria-pressed="true"':'')+'>passt</button></div></div>';
+  }).join('');
+  reiter.querySelectorAll('[data-spfgruppe]').forEach(function(b){
+    b.addEventListener('click', function(){ _spFragenGruppe=+b.getAttribute('data-spfgruppe'); spFragenZeichnen(); tick(6); });
+  });
+  liste.querySelectorAll('[data-spantwort]').forEach(function(t){
+    t.addEventListener('change', function(){ spAntwortSpeichern(t.getAttribute('data-spantwort'), t.value); });
+  });
+  liste.querySelectorAll('[data-sppasst]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var k=b.getAttribute('data-sppasst'), f=$('spAntwort'+k);
+      if(f) f.value='passt';
+      spAntwortSpeichern(k, 'passt');
+    });
+  });
+}
+function spAntwortSpeichern(nr, wert){
+  wert=String(wert||'').trim().slice(0,600);
+  _sp.conf=_sp.conf||{}; _sp.conf.antworten=_sp.conf.antworten||{};
+  if((_sp.conf.antworten[nr]||'')===wert) return;
+  _sp.conf.antworten[nr]=wert;
+  var upd={}; upd['antworten.'+nr]=wert;
+  S('config').doc('schichtplaner').update(upd)
+    .catch(function(){ return S('config').doc('schichtplaner').set({ antworten:_sp.conf.antworten }, { merge:true }); })
+    .then(function(){ spFragenZeichnen(); tick(6); })
+    .catch(function(e){ toast(errMsg(e), true); });
 }
 
 /* ══ Wünsche der Mitarbeiter (Team → Schichten) ══════════════════════
