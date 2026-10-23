@@ -18,7 +18,7 @@
    24.9.: Studio (Aufgaben und Putzplan) vor Nachrichten.
 
    Was dieser Durchlauf festhält:
-     · unten stehen Heute · Studio · Plan · Nachrichten · Wissen
+     · unten stehen Heute · Studio · Zeiten · Plan · Nachrichten · Wissen
      · „Studio" öffnet die Aufgaben und trägt die Marke; der Putzplan ist
        der Reiter daneben (kein eigener Knopf mehr), die Marke bleibt
        auf „Studio"
@@ -83,8 +83,10 @@ async function tippe(p, wort) {
     const a = await p.evaluate(LAGE);
     console.log('  ' + JSON.stringify(a));
     // Runde 184: „das problem mit dem zu viel bleibt immer noch bestehen" — fünf Räume.
-    pruefe('unten stehen Heute · Studio · Plan · Nachrichten · Wissen',
-      a.reihe.join('|') === 'Heute|Studio|Plan|Nachrichten|Wissen', a.reihe.join('|'));
+    /* Runde 216 (23.10.2026): „Zeiten" bekommt einen eigenen Knopf —
+       aus dem Betrieb auf die Rückfrage: „eigener knopf". */
+    pruefe('unten stehen Heute · Studio · Zeiten · Plan · Nachrichten · Wissen',
+      a.reihe.join('|') === 'Heute|Studio|Zeiten|Plan|Nachrichten|Wissen', a.reihe.join('|'));
 
     await tippe(p, 'Studio');
     const au = await p.evaluate(LAGE);
@@ -121,8 +123,11 @@ async function tippe(p, wort) {
     /* Schnellzugriffe: der Vorschlag für Mitarbeiter ist unverändert —
        Runde 184 hat die Wahl nicht angefasst, nur die Stelle. */
     const sz = await p.evaluate(() => [...document.querySelectorAll('#schnellLeiste .sz-wort')].map(x => x.textContent));
-    pruefe('der Schnellzugriff-Vorschlag: Meine Woche, Meine Zeiten, Geräte',
-      sz.slice(0, 3).join('|') === 'Meine Woche|Meine Zeiten|Geräte', sz.join('|'));
+    /* Seit Runde 216 liegt „Meine Zeiten" unten als eigener Knopf; als
+       Schnellzugriff wäre es ein zweiter Weg an dieselbe Stelle (wie der
+       Putzplan seit P5). An seinen Platz rückt „Mein Kalender". */
+    pruefe('der Schnellzugriff-Vorschlag: Meine Woche, Mein Kalender, Geräte',
+      sz.slice(0, 3).join('|') === 'Meine Woche|Mein Kalender|Geräte', sz.join('|'));
     pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await p.close();
   }
@@ -141,8 +146,8 @@ async function tippe(p, wort) {
         });
       }, '(' + TREFFER.toString() + ')');
       // Runde 184: fünf Räume statt vier Knöpfe (siehe oben).
-      pruefe(w + ' px, ' + dichte + ': fünf Knöpfe, jeder ≥ 44 × 44 und im Bild',
-        k.length === 5 && k.every(x => x.m.w >= 44 && x.m.h >= 44 && x.imBild), JSON.stringify(k));
+      pruefe(w + ' px, ' + dichte + ': sechs Knöpfe, jeder ≥ 44 × 44 und im Bild',
+        k.length === 6 && k.every(x => x.m.w >= 44 && x.m.h >= 44 && x.imBild), JSON.stringify(k));
     }
     pruefe(w + ' px ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await p.close();
@@ -167,6 +172,6 @@ async function tippe(p, wort) {
   await b.close();
   console.log(schlecht
     ? '\n✗ Leiste P5: ' + schlecht + ' von ' + (gut + schlecht) + ' Zusicherungen falsch'
-    : '\n✓ Leiste P5: Heute · Studio · Plan · Nachrichten · Wissen, Putzplan unter Studio, Ungelesenes sichtbar — ' + gut + ' Zusicherungen');
+    : '\n✓ Leiste P5: Heute · Studio · Zeiten · Plan · Nachrichten · Wissen, Putzplan unter Studio, Ungelesenes sichtbar — ' + gut + ' Zusicherungen');
   process.exit(schlecht ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });
