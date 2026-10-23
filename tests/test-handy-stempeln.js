@@ -154,19 +154,12 @@ async function starten(errs, frei, codeFehler, adresse) {
   return { b, page };
 }
 
-/* „Ich" war bis Runde 179 ein eigener Knopf unten (g-ich). Seit Runde
-   180 („fünf Räume", aus dem Betrieb 22.10.2026: „das problem mit dem zu
-   viel bleibt immer noch bestehen") ist es ein Reiter unter „Heute":
-   erst der Raum, dann der Reiter. */
+/* „Ich" war bis Runde 179 ein eigener Knopf unten (g-ich), danach ein
+   Reiter unter „Heute". Seit Runde 216 hat die Zeiterfassung einen
+   eigenen Knopf (aus dem Betrieb, 23.10.2026: „eigener knopf") — die
+   Karte steht dort. */
 async function zurIchKarte(page) {
-  await page.evaluate(() => document.querySelector('.mobnav [data-group="g-start"]').click());
-  await page.waitForTimeout(300);
-  await page.evaluate(() => document.querySelector('[data-subview="ich"]').click());
-  await page.waitForTimeout(400);
-  await page.evaluate(() => {
-    const t = document.querySelector('[data-ichtab="zeiten"]');
-    if (t) t.click();
-  });
+  await page.evaluate(() => document.querySelector('.mobnav [data-group="g-zeit"]').click());
   await page.waitForTimeout(1200);
 }
 
@@ -199,10 +192,6 @@ async function zurIchKarte(page) {
     const { b, page } = await starten(errs, true, false);
     /* Die Freigabe nachträglich setzen und die Ansicht neu zeichnen —
        session entsteht beim Start aus dem Profil der Attrappe. */
-    await page.evaluate(() => {
-      const t = document.querySelector('[data-ichtab="zeiten"]');
-      void t;
-    });
     await page.evaluate(() => {
       /* session liegt in der IIFE und ist von aussen nicht erreichbar.
          Der Weg dorthin führt über das Profil-Dokument der Attrappe,

@@ -6,7 +6,7 @@
 
    Geprüft wird, in der Demo (dort laufen die Server-Funktionen nach):
 
-     1. Heute → Ich → „Zeiten": Stand jetzt, heute gearbeitet, laut Plan.
+     1. Knopf „Zeiten" (Runde 216): Stand jetzt, heute gearbeitet, laut Plan.
      2. Mit Handy-Freigabe stehen die Knöpfe, die GERADE passen:
         Kommen → Pause + Feierabend → Zurück + Feierabend → Kommen.
         Jeder Knopf schickt, was er stempelt (art). Vorher gab es am
@@ -55,36 +55,34 @@ async function oeffne(b, rolle, w, h) {
   await p.waitForTimeout(3200);
   return p;
 }
-/* Der Weg eines Menschen: Heute → Ich → Zeiten. */
+/* Der Weg eines Menschen (Runde 216): der eigene Knopf „Zeiten" — aus
+   dem Betrieb, 23.10.2026: „eigener knopf". Vorher Heute → Ich → Zeiten. */
 async function zurSeite(p) {
   return p.evaluate(async () => {
     const w = (ms) => new Promise(r => setTimeout(r, ms));
-    const g = document.querySelector('.mobnav [data-group="g-start"], #side [data-group="g-start"]');
-    if (g) { g.click(); await w(500); }
-    const s = document.querySelector('#subnav [data-subview="ich"]');
-    if (s) { s.click(); await w(500); }
-    const t = document.querySelector('[data-ichtab="zeiten"]');
-    if (!t) return false;
-    t.click(); await w(1500);
-    return getComputedStyle(document.getElementById('ichPaneZeiten')).display !== 'none';
+    const g = document.querySelector('.mobnav [data-group="g-zeit"], #side [data-group="g-zeit"]');
+    if (!g || !g.getClientRects().length) {
+      const h = document.querySelector('#side [data-group="g-zeit"]');
+      if (!h) return false;
+      h.click();
+    } else g.click();
+    await w(1500);
+    const v = document.getElementById('view-zeit');
+    return !!(v && v.classList.contains('show')) && getComputedStyle(document.getElementById('ichPaneZeiten')).display !== 'none';
   });
 }
+/* Die Zeiten des Teams: derselbe Knopf, dann der Reiter „Team". Vorher
+   Verwaltung → Zeiten. */
 async function zuVerwaltungZeiten(p) {
   return p.evaluate(async () => {
     const w = (ms) => new Promise(r => setTimeout(r, ms));
-    const g = document.querySelector('.mobnav [data-group="g-chef"], #side [data-group="g-chef"]');
-    if (g) { g.click(); await w(700); }
-    else {
-      const a = document.querySelector('.mobnav [data-group="g-alles"]'); if (!a) return false;
-      a.click(); await w(700);
-      const v = [...document.querySelectorAll('#view-alles button, #view-alles a')].find(x => /Verwaltung/.test(x.textContent));
-      if (!v) return false;
-      v.click(); await w(700);
-    }
-    const c = document.querySelector('#chefHome [data-cgo="zeiten"]');
-    if (!c) return false;
-    c.click(); await w(1500);
-    return true;
+    const g = [...document.querySelectorAll('.mobnav [data-group="g-zeit"], #side [data-group="g-zeit"]')].find(x => x.getClientRects().length);
+    if (!g) return false;
+    g.click(); await w(700);
+    const s = document.querySelector('#subnav [data-subview="zeitteam"]');
+    if (!s) return false;
+    s.click(); await w(1500);
+    return document.getElementById('view-zeitteam').classList.contains('show');
   });
 }
 
@@ -94,7 +92,7 @@ async function zuVerwaltungZeiten(p) {
   console.log('\n── 1.–3. Mitarbeiter: Jetzt, Knöpfe nach Stand, Plan ──');
   {
     const p = await oeffne(b, 'mitarbeiter', 390, 844);
-    pruefe('Heute → Ich → „Zeiten" öffnet die Stempelseite', await zurSeite(p));
+    pruefe('Knopf „Zeiten" öffnet die Stempelseite', await zurSeite(p));
     const v = await p.evaluate(() => ({
       stand: document.getElementById('stStand').textContent,
       ist: document.getElementById('stHeuteIst').textContent,
@@ -217,7 +215,11 @@ async function zuVerwaltungZeiten(p) {
         const T = eval('(' + SRC + ')');
         const pane = document.getElementById('ichPaneZeiten');
         const els = [...pane.querySelectorAll('button, input, [data-ichtab]')].filter(e => e.offsetParent);
-        const reiter = [...document.querySelectorAll('[data-ichtab]')].filter(e => e.offsetParent);
+        /* Runde 216: statt der Ich-Reiter der eigene Knopf „Zeiten" (unten
+           bzw. links) und die Reiter darüber. Die Leiste unten ist fixed —
+           offsetParent ist dort immer null, deshalb getClientRects. */
+        const reiter = [...document.querySelectorAll('#subnav [data-subview], .mobnav [data-group="g-zeit"], #side [data-group="g-zeit"]')]
+          .filter(e => e.getClientRects().length && e.getBoundingClientRect().width > 0);
         const zu = [];
         for (const el of els.concat(reiter)) {
           el.scrollIntoView({ block: 'center' });
@@ -261,13 +263,27 @@ async function zuVerwaltungZeiten(p) {
   console.log('\n── 7. Leitung: Jetzt im Studio ──');
   for (const [rolle, w, h] of [['leiter', 390, 844], ['leiter', 1280, 800], ['chef', 1920, 1080], ['chef', 320, 568]]) {
     const p = await oeffne(b, rolle, w, h);
-    pruefe(rolle + ' ' + w + ' px: Verwaltung → Zeiten', await zuVerwaltungZeiten(p));
+    pruefe(rolle + ' ' + w + ' px: Zeiten → Team', await zuVerwaltungZeiten(p));
     const j = await p.evaluate(async (SRC) => {
       const T = eval('(' + SRC + ')');
       const box = document.getElementById('zkJetzt');
       const knopf = document.getElementById('zkJetztNeu');
       if (knopf) { knopf.scrollIntoView({ block: 'center' }); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); }
+      /* Ob jemand „erwartet" wird, hängt an der Uhrzeit: um 3 Uhr nachts
+         hat in der Demo keine Schicht begonnen (gefunden am 23.10.2026,
+         03:16 — der Test erwartete die Gruppe zu jeder Stunde). Deshalb
+         rechnet die Probe selbst aus den Daten nach, ob es jemanden geben
+         MUSS, und prüft dann beides: da, wenn ja — und weg, wenn nein. */
+      const sk = document.getElementById('zkStudio').value;
+      const heute = new Date().toLocaleDateString('sv-SE');
+      const fs = firebase.firestore();
+      const sch = (await fs.collection('firmen/koerperformen/studios/' + sk + '/shifts').where('date', '==', heute).get()).docs.map(d => d.data());
+      const st = (await fs.collection('firmen/koerperformen/zeiten').where('studioKey', '==', sk).where('tag', '==', heute).get()).docs.map(d => d.data());
+      const nun = new Date().getHours() * 60 + new Date().getMinutes();
+      const min = (t) => { const m = /^(\d{1,2}):(\d{2})$/.exec(t || ''); return m ? +m[1] * 60 + +m[2] : null; };
+      const muss = sch.some(x => x.uid && !st.some(z => z.uid === x.uid) && min(x.from) !== null && min(x.from) <= nun);
       return {
+        muss,
         titel: [...box.querySelectorAll('.zk-j-titel')].map(x => x.textContent),
         text: box.innerText.slice(0, 200),
         knopf: knopf ? T(knopf) : null,
@@ -275,7 +291,8 @@ async function zuVerwaltungZeiten(p) {
       };
     }, TREFFER.toString());
     pruefe(rolle + ' ' + w + ' px: „Im Dienst" mit Namen und seit wann', j.titel.some(t => /Im Dienst/.test(t)) && /seit \d\d:\d\d/.test(j.text), JSON.stringify(j.titel));
-    pruefe(rolle + ' ' + w + ' px: „Laut Plan erwartet" (Schicht begonnen, kein Stempel)', j.titel.some(t => /Laut Plan erwartet/.test(t)), JSON.stringify(j.titel));
+    pruefe(rolle + ' ' + w + ' px: „Laut Plan erwartet" genau dann, wenn eine Schicht begonnen hat und kein Stempel da ist (' + (j.muss ? 'jetzt: ja' : 'jetzt: niemand') + ')',
+      j.titel.some(t => /Laut Plan erwartet/.test(t)) === j.muss, JSON.stringify(j.titel));
     pruefe(rolle + ' ' + w + ' px: „Aktualisieren" trifft ≥ 44', j.knopf && j.knopf.w >= 44 && j.knopf.h >= 44, JSON.stringify(j.knopf));
     pruefe(rolle + ' ' + w + ' px: nichts ragt hinaus', j.quer <= 0, j.quer);
     pruefe(rolle + ' ' + w + ' px: ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
