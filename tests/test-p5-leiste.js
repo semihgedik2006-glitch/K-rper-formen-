@@ -162,9 +162,9 @@ async function tippe(p, wort) {
     await p.waitForTimeout(3200);
     const a = await p.evaluate(() => ({ neu: document.body.classList.contains('neu'),
       gruppen: [...document.querySelectorAll('.mobnav button')].map(x => x.dataset.group) }));
-    // Runde 184: auch im bisherigen Design dieselben fünf Räume.
-    pruefe('GEGENPROBE bisheriges Design: dieselben fünf Räume, kein Putzplan-Knopf',
-      a.neu === false && a.gruppen.join('|') === 'g-start|g-arbeit|g-team|g-komm|g-wissen' &&
+    // Runde 184: auch im bisherigen Design dieselben Räume — seit Runde 216 sechs („eigener knopf").
+    pruefe('GEGENPROBE bisheriges Design: dieselben sechs Räume, kein Putzplan-Knopf',
+      a.neu === false && a.gruppen.join('|') === 'g-start|g-arbeit|g-zeit|g-team|g-komm|g-wissen' &&
       a.gruppen.indexOf('g-putz') < 0, JSON.stringify(a));
     await p.close();
   }
