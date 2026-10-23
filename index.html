@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-ep+O+qNmOza9lEoe5S3KZFDEDX1FB5SEm3etJUpzkks='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-qIP1y25YpVW+3lP/6GS7eKNklECQ94vTWZELklikNiM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -6411,6 +6411,8 @@ html.fk-still .fk-wirbel,html.fk-still .fk-innen{animation:none}
 /* Formi neben dem Gruss: 44 px, morgens halb zu, abends müde. */
 .gruss-formi{--fg:44px;margin-right:var(--s12);align-self:center}
 .gruss-formi.gf-frueh .fk-auge,.gruss-formi.gf-abend .fk-auge{transform:scaleY(.6)}
+.gruss-formi.im-kopf{--fg:40px;margin:0 0 0 var(--s8)}
+body:not(.auf-start) .gruss-formi.im-kopf{display:none}
 /* Formi im Hinweis unten. */
 .toast{display:flex;align-items:center;gap:var(--s8)}
 .toast-formi{--fg:24px}
@@ -24012,6 +24014,8 @@ function showView(id, fromKey, ausVerlauf){
   /* Für die Regeln „Chat auf kleinen Handys" (Runde 127): nur ein
      Klassenname, kein Messen. */
   document.body.classList.toggle('im-chat', id==='chat');
+  /* Runde 237: Formi im Bereichskopf nur auf der Startseite. */
+  document.body.classList.toggle('auf-start', id==='home');
   /* Die Farbe des Bereichs, bevor irgendetwas gezeichnet wird — sonst
      baut sich die Ansicht in der alten Farbe auf und springt danach.
      Bei jeder anderen Einstellung als „Lebendig" ändert der Aufruf
@@ -29104,12 +29108,16 @@ function formiFunken(x, y){
 /* Formi neben dem Gruss auf „Heute": schaut wie die Tageszeit (morgens
    verschlafen, abends müde) und blinzelt mit den anderen Figuren. */
 function formiGrussFigur(){
-  var h=$('homeGreet'); if(!h || $('formiGruss')) return;
-  var zeile=h.closest('.vh-line'); if(!zeile) return;
+  if($('formiGruss')) return;
   var f=document.createElement('span');
   f.id='formiGruss'; f.className='formi-figur gruss-formi'; f.setAttribute('aria-hidden', 'true');
   f.innerHTML=formiFigurInnen(true);
-  zeile.insertBefore(f, zeile.firstChild);
+  /* Im neuen Design (seit Runde 236 für alle) gibt es auf „Heute" keinen
+     Gruss mehr — Formi sitzt dort im Bereichskopf neben „Heute", nur auf
+     der Startseite (body.auf-start). Im alten Design neben dem Gruss. */
+  var bz=$('bereichZeile'), kopf=$('bereichKopf'), h=$('homeGreet');
+  if(typeof layoutNeu==='function' && layoutNeu() && bz && kopf){ f.classList.add('im-kopf'); kopf.insertAdjacentElement('afterend', f); }
+  else { var zeile=h && h.closest('.vh-line'); if(!zeile) return; zeile.insertBefore(f, zeile.firstChild); }
   formiGrussStimmung();
 }
 function formiGrussStimmung(){

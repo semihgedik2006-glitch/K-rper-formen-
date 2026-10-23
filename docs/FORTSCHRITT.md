@@ -21130,3 +21130,15 @@ Zu den zehn Ideen kam „alles davon“.
 
 **Nicht geprüft:** echte Handys und die Arbeit je Bild beim Sog (ein
 Element, 1,1 s, nur `transform`/`opacity`).
+
+**Nachtrag beim Zusammenführen mit Runde 236 („Das neue Design gilt für
+alle“):** Im neuen Design gibt es auf „Heute“ keinen Gruss mehr. Damit war
+Formi neben dem Gruss (Runde 233) verschwunden, test-formi-app meldete
+„da: false“. Formi sitzt jetzt im Bereichskopf rechts neben „Heute“, mit
+40 px und nur auf der Startseite (`body.auf-start`, gesetzt in
+`showView`). Im alten Design, das die Geschäftsführung übergangsweise
+behalten kann, bleibt Formi neben dem Gruss.
+
+**Eigener Fehler, zweimal:** `index.html` wurde geändert, während ein
+Gesamtdurchlauf lief. Beide Läufe sind verworfen und auf dem Endstand
+wiederholt.
