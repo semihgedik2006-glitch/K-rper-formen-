@@ -2,7 +2,7 @@
    - Caching: HTML immer frisch (network-first), statische Dateien offline-fähig
    - Push: Firebase Cloud Messaging im Hintergrund
    Bei Code-Änderungen VERSION hochzählen. */
-const VERSION = 'v34';
+const VERSION = 'v35';
 const CACHE = 'studiochat-' + VERSION;
 /* loesungen-basis.js liegt mit im Vorrat: die 115 Einträge sind genau
    das, was jemand im Studio braucht, wenn das WLAN gerade der Grund
@@ -62,7 +62,10 @@ messaging.onBackgroundMessage(function (payload) {
        uebereinander. Mit dem Inhalt als Marke ersetzt eine identische
        Meldung die vorige, egal woher die zweite kam. Verschiedene
        Nachrichten stossen sich dabei nicht: sie haben andere Marken. */
-    tag: 'kf-' + marke(titel + '|' + text)
+    tag: 'kf-' + marke(titel + '|' + text),
+    /* Runde 243: wohin ein Tipp führt (z. B. 'zeit' bei der
+       Stempel-Erinnerung). Fehlt es, öffnet die App wie bisher. */
+    data: { ziel: zielPruefen(d.ziel) }
   }); });
 });
 /* Kurze, stabile Zahl aus einer Zeichenkette. Kein Sicherheitszweck —
@@ -72,11 +75,24 @@ function marke(s) {
   for (let i = 0; i < s.length; i++) { h = ((h << 5) - h + s.charCodeAt(i)) | 0; }
   return Math.abs(h).toString(36);
 }
+/* Nur ein Wort aus Kleinbuchstaben — es wird Teil einer Adresse. */
+function zielPruefen(z) {
+  return /^[a-z]{2,20}$/.test(String(z || '')) ? String(z) : '';
+}
+/* Ist die App schon offen, bekommt sie das Ziel als Nachricht und wechselt
+   selbst (ein neues Fenster hiesse: noch einmal anmelden, noch einmal
+   laden). Sonst öffnet sie mit #ziel — denselben Weg nimmt ein Link. */
 self.addEventListener('notificationclick', function (e) {
   e.notification.close();
+  const ziel = zielPruefen(e.notification.data && e.notification.data.ziel);
   e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (list) {
-    for (const c of list) { if ('focus' in c) return c.focus(); }
-    if (self.clients.openWindow) return self.clients.openWindow('./index.html');
+    for (const c of list) {
+      if ('focus' in c) {
+        if (ziel) c.postMessage({ typ: 'ziel', ziel: ziel });
+        return c.focus();
+      }
+    }
+    if (self.clients.openWindow) return self.clients.openWindow('./index.html' + (ziel ? '#' + ziel : ''));
   }));
 });
 

@@ -131,11 +131,15 @@ function willHaben(d, art) {
    Erinnerungen, Nachweise, Formi meldet sich), tragen von:'formi' — der
    Service Worker zeigt sie dann als „Formi · …" mit Formis Bild. Was ein
    Mensch schreibt (Chat, Ankündigung, neue Aufgabe), bleibt unverändert:
-   „das kommt von Formi" ist etwas anderes als „das kommt von der Chefin". */
-async function sendPush(tokens, title, body, von) {
+   „das kommt von Formi" ist etwas anderes als „das kommt von der Chefin".
+   `ziel` (Runde 243): eine Ansicht der App, die ein Tipp auf die Meldung
+   öffnet (sw.js, notificationclick) — z. B. 'zeit'. Ohne Ziel öffnet sie
+   die App wie bisher. Nur Kleinbuchstaben: es landet in einer Adresse. */
+async function sendPush(tokens, title, body, von, ziel) {
   if (!tokens.length) return;
   const message = {
-    data: { title: String(title || 'StudioChat'), body: String(body || '') },
+    data: { title: String(title || 'StudioChat'), body: String(body || ''),
+      ziel: /^[a-z]{2,20}$/.test(String(ziel || '')) ? String(ziel) : '' },
     tokens: tokens.slice(0, 500)
   };
   if (von === 'formi') message.data.von = 'formi';
@@ -2370,6 +2374,24 @@ exports.mailStatus = region
                                requireChef allein prueft nur die Rolle.
      3. nicht sich selbst      wer sich selbst entfernt, sperrt sich aus
                                und hinterlaesst eine Firma ohne Chef. */
+/* Runde 243: wer geht, nimmt seine Lohn-Angaben mit — Soll je Wochentag
+   und Urlaubsanspruch (lohnEinstellungen/zeitregeln, regeln.<uid>) und
+   die DATEV-Personalnummer (lohnEinstellungen/datev, personalNr.<uid>).
+   Vorher blieben sie stehen, bis jemand die Felder von Hand leerte
+   (docs/av/LOESCHKONZEPT.md nannte das als offen). Stempelzeiten und
+   Monatsabschlüsse bleiben: für sie gilt die Aufbewahrungsfrist.
+   Ein fehlendes Dokument ist kein Fehler — dann gab es nichts. */
+async function lohnEintraegeWeg(firma, uid) {
+  const F = W(firma).collection('lohnEinstellungen');
+  const weg = admin.firestore.FieldValue.delete();
+  await Promise.all([
+    F.doc('zeitregeln').update(new admin.firestore.FieldPath('regeln', uid), weg),
+    F.doc('datev').update(new admin.firestore.FieldPath('personalNr', uid), weg)
+  ].map((x) => x.catch((e) => {
+    if (!/NOT_FOUND|No document/i.test(String(e.code) + ' ' + e.message)) console.warn('lohnEintraegeWeg:', e.message);
+  })));
+}
+
 exports.zugangEntfernen = region
   .https.onCall(async (data, context) => {
     const ich = await requireChef(context);
@@ -2414,6 +2436,7 @@ exports.zugangEntfernen = region
     }
     const altMail = ((await db.collection('users').doc(uid).get()).data() || {}).email;
     await authMailSpurenWeg(uid, altMail);
+    await lohnEintraegeWeg((snap.data() || {}).firma || null, uid);
     await db.collection('users').doc(uid).delete();
     return { profil: true, konto: konto };
   });
@@ -9259,7 +9282,7 @@ async function stempelErinnernFirma(firma, jetzt, opt) {
     const ud = u.exists ? (u.data() || {}) : null;
     if (!ud || ud.aktiv === false || !gehoertZu(ud, firma)) continue;
     const tokens = await collectTokens((d) => d.uid === e.uid && willHaben(d, 'stempel'), null, firma);
-    if (tokens.length) await push(tokens, e.titel, e.text);
+    if (tokens.length) await push(tokens, e.titel, e.text, 'formi', 'zeit');
     let mails = 0;
     if (e.art === 'gehen') {
       const m = stempelErinnernMail(e, ud.name);

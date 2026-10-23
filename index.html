@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-z002H8mnEmmCD/hFTJ5yqdLnJz7537P3PgIpk7z+fxQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-ZWf0JCWVoWa8k6DmzndkqQKZ0s4//aDxLBRf4GxZsTE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -11548,7 +11548,7 @@ body.neu #view-chef .chef-liste .chef-tab-gruppe{text-transform:none;letter-spac
             <section class="card spl-ausfaelle" id="spAusfaelle" hidden></section>
             <!-- Was die Chefin selbst festlegt. Zugeklappt: es ist einmal
                  eingerichtet und wird selten angefasst. -->
-            <!-- Die 24 Fragen (Runde RUNDE_NR) — dieselbe Liste wie in
+            <!-- Die 24 Fragen (Runde 244) — dieselbe Liste wie in
                  Schichtplaner-Fragen.pdf und im Blatt „Fragen“ der Vorlage
                  (Quelle: docs/schichtplaner/werkzeug/inhalt.py). Aus dem
                  Betrieb, 22.10.2026: „uns alle fragen stellen welche wir
@@ -11642,7 +11642,7 @@ body.neu #view-chef .chef-liste .chef-tab-gruppe{text-transform:none;letter-spac
                       <h3 data-ikon="hakenKreis">Fertig?</h3>
                       <button type="button" class="btn btn-primary" id="spVeroeffentlichen">Im Team-Schichtplan veröffentlichen</button>
                       <button type="button" class="btn btn-ghost" id="spLogx">Für LogX kopieren</button>
-                      <!-- Runde RUNDE_NR: eine Probe muss sich zurückholen lassen,
+                      <!-- Runde 244: eine Probe muss sich zurückholen lassen,
                            sonst traut sich niemand, es auszuprobieren. -->
                       <button type="button" class="btn btn-ghost spl-zurueck" id="spZurueck" hidden>Veröffentlichung zurücknehmen</button>
                       <p class="hint" id="spAktionHinweis">Kopiert eine Tabelle (Datum, Studio, Schicht, Zeit, Name) – in Excel oder LogX einfügen.</p>
@@ -22129,6 +22129,10 @@ var NEUIGKEITEN = [
     'Im Schichtplaner (Verwaltung) gibt es die Karte „Fragen zum Plan": dieselben 24 Fragen wie im PDF, in fünf Reitern. Bei jeder steht, was die App heute annimmt – ein Tipp auf „passt" genügt, sonst eine eigene Antwort. Oben steht, wie viele schon beantwortet sind.',
     'Nach dem Veröffentlichen gibt es „Veröffentlichung zurücknehmen": Die Schichten des Monats verschwinden wieder aus dem Team-Plan, der Entwurf im Planer bleibt. So lässt sich gefahrlos ausprobieren. Von Hand eingetragene Schichten bleiben stehen.',
     'Öffnungszeiten, die nur in der Excel-Vorlage (Blatt „Studios") stehen, zählen jetzt auch für die Besetzungs-Leiste unter Plan → Schichten.' ] },
+  { id:'2026-10-23-erinnerung-tipp', datum:'23.10.2026', titel:'Ein Tipp auf die Stempel-Erinnerung öffnet „Zeiten"', wo:'zeit', punkte:[
+    'Tippst du auf die Erinnerung „Feierabend vergessen?" oder „Schon eingestempelt?" auf dem Handy, öffnet die App jetzt direkt die Seite „Zeiten" – dort stempelst du oder beantragst eine Korrektur.',
+    'Für die Geschäftsführung: Entfernst du unter Verwaltung → Team einen Zugang, verschwinden mit ihm auch das Soll je Wochentag, der Urlaubsanspruch und die DATEV-Personalnummer dieser Person. Stempelzeiten und Monatsabschlüsse bleiben, wie es die Aufbewahrungsfrist verlangt.'
+  ]},
   { id:'2026-10-23-formi-seit-du-weg', datum:'23.10.2026', titel:'Formi sagt dir, was seit deiner letzten Schicht passiert ist', wo:'home', punkte:[
     'Warst du länger als 12 Stunden weg, steht auf „Heute" eine Zeile von Formi: „Seit Mittwoch: 3 Übergaben, 1 Ankündigung" – darunter das Wichtigste wörtlich, mit wem es geschrieben hat und wann. Ein Tipp öffnet die Übergaben.',
     'Benachrichtigungen, die die App selbst schickt (fällige Aufgaben, Erinnerungen, Nachweise, Formis Tagesmeldung), kommen jetzt als „Formi · …" mit Formis Gesicht. Nachrichten von Menschen sehen aus wie bisher.',
@@ -37366,7 +37370,7 @@ function wpOeffnung(key){
   var o=st && st.oeffnung;
   var wt=new Date(key+'T12:00:00').getDay();
   if(!o){
-    /* Runde RUNDE_NR: nicht unter Verwaltung → Studios gepflegt? Dann
+    /* Runde 244: nicht unter Verwaltung → Studios gepflegt? Dann
        zählt das Blatt „Studios“ der Schichtplaner-Excel. Vorher gab es
        zwei Stellen, und die Leiste las nur eine. */
     var ex=_sp && _sp.conf && _sp.conf.studios && _sp.conf.studios[_teamStudioKey];
@@ -46230,7 +46234,7 @@ function spVeroeffentlichen(btn){
   });
 }
 
-/* ══ Veröffentlichung zurücknehmen (Runde RUNDE_NR) ═══════════════════
+/* ══ Veröffentlichung zurücknehmen (Runde 244) ═══════════════════
    Holt alle Schichten dieses Monats, die der Planer geschrieben hat
    (Merkmal planer == Monat), aus dem Team-Schichtplan. Von Hand
    eingetragene Schichten bleiben — sie tragen das Merkmal nicht. */
@@ -46260,7 +46264,7 @@ function spZuruecknehmen(btn){
   });
 }
 
-/* ══ Fragen zum Plan (Runde RUNDE_NR) ═════════════════════════════════
+/* ══ Fragen zum Plan (Runde 244) ═════════════════════════════════
    Dieselben 24 Fragen wie im PDF und im Excel (Quelle: inhalt.py; der
    Test vergleicht beide Listen). Antworten liegen in
    config/schichtplaner.antworten — dort, wo die Excel-Datei auch die
@@ -50060,6 +50064,20 @@ function letzteAnsichtHolen(){
 
 function verlaufStarten(){
   _verlaufBereit=true;
+
+  /* Runde 243: ein Tipp auf eine Meldung, während die App offen ist —
+     der Service Worker schickt das Ziel (sw.js, notificationclick). Nur
+     Ansichten, die es gibt und die diese Person sehen darf; showView
+     prüft das ohnehin noch einmal (ansichtAn). */
+  if(navigator.serviceWorker && navigator.serviceWorker.addEventListener){
+    navigator.serviceWorker.addEventListener('message', function(e){
+      var d=e && e.data;
+      if(!d || d.typ!=='ziel' || !/^[a-z]{2,20}$/.test(String(d.ziel||''))) return;
+      if(!document.getElementById('view-'+d.ziel)) return;
+      if((d.ziel==='chef' || d.ziel==='archive') && !canManage()) return;
+      showView(d.ziel);
+    });
+  }
 
   // Eine Adresse in der Zeile schlägt alles – wer einen Link bekommt, soll
   // dort landen. Danach erst die zuletzt offene Ansicht.
