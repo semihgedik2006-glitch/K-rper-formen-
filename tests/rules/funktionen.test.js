@@ -1516,13 +1516,17 @@ const TAG = 86400000;
          eNeulich   — Fragen fällig, aber vor 2 Tagen schon erinnert → nein
          eNichts    — nichts fällig (gerade bestanden)               → nein
          eAus       — Konto inaktiv                                  → nein
+         eStill     — Teilnehmer stillgelegt (Runde 244)             → nein
+         eUmgehaengt — Teilnehmer inzwischen an einem anderen Konto  → nein
          und ein Testplan der Leitung                                → nein */
       const leute = {
         eFaellig: { plan: {}, ende: T - 10 * TAG, notify: { schulung: true } },
         eLeise:   { plan: {}, ende: T - 10 * TAG, notify: { schulung: false } },
         eNeulich: { plan: { erinnertAm: T - 2 * TAG }, ende: T - 10 * TAG, notify: {} },
         eNichts:  { plan: {}, ende: T - 1 * 3600000, notify: {} },
-        eAus:     { plan: {}, ende: T - 10 * TAG, notify: {}, aktiv: false }
+        eAus:     { plan: {}, ende: T - 10 * TAG, notify: {}, aktiv: false },
+        eStill:   { plan: {}, ende: T - 10 * TAG, notify: {}, tn: { gesperrt: true } },
+        eUmgehaengt: { plan: {}, ende: T - 10 * TAG, notify: {}, tn: { uid: 'jemandAnders' } }
       };
       for (const [uid, d] of Object.entries(leute)) {
         await db.doc('users/' + uid).set({ name: uid, firma: 'alpha', role: 'mitarbeiter', aktiv: d.aktiv !== false });
@@ -1530,6 +1534,7 @@ const TAG = 86400000;
         await F.collection('schulungLaeufe').doc('el-' + uid).set({ modul: 'm-hygiene', teilnehmer: 'te-' + uid, uid,
           status: 'fertig', bestanden: true, ende: d.ende, ts: d.ende, fragen });
         await F.collection('schulungLernplan').doc('te-' + uid).set(Object.assign({ teilnehmer: 'te-' + uid, uid, karten: {} }, d.plan));
+        await F.collection('schulungTeilnehmer').doc('te-' + uid).set(Object.assign({ name: uid, uid, gesperrt: false }, d.tn || {}));
       }
       await F.collection('schulungLernplan').doc('test:eFaellig').set({ teilnehmer: 'test:eFaellig', uid: 'eFaellig', test: true,
         karten: { 'm-x#0': { s: 0, f: T - TAG } } });
@@ -1540,6 +1545,8 @@ const TAG = 86400000;
         JSON.stringify(alle));
       pruefe('ERINNERN · nicht bei „Kurz auffrischen" aus, nicht zweimal in drei Tagen, nicht ohne Fälliges, nicht inaktiv, nie ein Testplan',
         !alle.some((t) => /eLeise|eNeulich|eNichts|eAus/.test(t)) && gesendet.length === 1);
+      pruefe('ERINNERN · nicht an Stillgelegte, nicht an ein Konto, mit dem der Teilnehmer nicht mehr verknüpft ist (Runde 244)',
+        !alle.some((t) => /eStill|eUmgehaengt/.test(t)), JSON.stringify(alle));
       const m0 = (gesendet[0] || { data: {} }).data;
       pruefe('ERINNERN · Überschrift „Kurz auffrischen", Text mit der Zahl der Fragen', /Kurz auffrischen/.test(m0.title || '') &&
         /^2 Fragen aus deinen Schulungen warten/.test(m0.body || ''), JSON.stringify(m0));
@@ -1552,6 +1559,24 @@ const TAG = 86400000;
       pruefe('ERINNERN · nach drei Tagen darf es wieder', I.auffrischErinnernDarf({ uid: 'x', erinnertAm: T - 3 * TAG }, T) &&
         !I.auffrischErinnernDarf({ uid: 'x', erinnertAm: T - 3 * TAG + 60000 }, T) && !I.auffrischErinnernDarf({ erinnertAm: 0 }, T));
       pruefe('ERINNERN · eine Frage: eigener Satz', I.auffrischErinnernText(1) === 'Eine Frage aus deinen Schulungen wartet — dauert keine Minute.');
+      pruefe('ERINNERN · der Teilnehmer gilt nur, wenn er da, nicht stillgelegt und mit DIESEM Konto verknüpft ist',
+        I.auffrischTeilnehmerGilt({ uid: 'a' }, { uid: 'a' }) && !I.auffrischTeilnehmerGilt(null, { uid: 'a' }) &&
+        !I.auffrischTeilnehmerGilt({ uid: 'a', gesperrt: true }, { uid: 'a' }) && !I.auffrischTeilnehmerGilt({ uid: 'b' }, { uid: 'a' }) &&
+        !I.auffrischTeilnehmerGilt({ uid: null }, { uid: null }));
+
+      /* Teilnehmer gelöscht → sein Lernplan geht mit (Runde 244). Die
+         Durchläufe bleiben: sie sind der Nachweis. */
+      await F.collection('schulungTeilnehmer').doc('te-eFaellig').delete();
+      await fns.onSchulungTeilnehmerWegF.run({ exists: false, data: () => ({ uid: 'eFaellig' }) },
+        { params: { firma: 'alpha', tId: 'te-eFaellig' } });
+      const weg = await F.collection('schulungLernplan').doc('te-eFaellig').get();
+      const bleibt = await F.collection('schulungLernplan').doc('te-eLeise').get();
+      const nachweis = await F.collection('schulungLaeufe').doc('el-eFaellig').get();
+      pruefe('AUFRÄUMEN · Teilnehmer gelöscht → sein Lernplan ist weg', !weg.exists);
+      pruefe('GEGENPROBE der Plan eines anderen bleibt, der Durchlauf (Nachweis) auch', bleibt.exists && nachweis.exists);
+      await db.doc('schulungLernplan/te-flach').set({ uid: 'x', karten: {} });
+      await fns.onSchulungTeilnehmerWeg.run({ exists: false, data: () => ({}) }, { params: { tId: 'te-flach' } });
+      pruefe('AUFRÄUMEN · auch auf dem flachen Pfad', !(await db.doc('schulungLernplan/te-flach').get()).exists);
       for (const uid of Object.keys(leute)) {
         await db.doc('users/' + uid).delete(); await db.doc('pushTokens/tok-' + uid).delete();
       }

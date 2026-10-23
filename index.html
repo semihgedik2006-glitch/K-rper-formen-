@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-q2xNd0FkmbG83aF5kcZS5iIML0ucO8oUfBX0UgcxCI0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-IykXW41DkgonieDOplSWJfMH1KbmelbeCYwnNg6c+Fk='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -5393,6 +5393,8 @@ html{font-size:var(--fs,100%)}
    wenn #printArea nichts enthaelt, und die zwei Wege nennt, die es
    wirklich gibt. */
 #printArea{display:none}
+/* Bescheinigung (Runde 244): Knopf und Satz unter der eigenen Liste */
+.sch-meine-tun{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s8) var(--s12);margin-top:var(--s12)}
 #printHinweis{display:none}
 @media print{
   body{background:#fff!important;color:#000!important}
@@ -22087,6 +22089,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-23-schulung-bescheinigung', datum:'23.10.2026', titel:'Schulung: deine eigene Bescheinigung zum Drucken', wo:'schulung', punkte:[
+    'Unter Wissen → Schulung, im Kasten „Was du schon gemacht hast", gibt es jetzt „Bescheinigung drucken": ein Blatt mit allen Schulungen, die du bestanden hast – mit Datum, Ergebnis, Dauer und bis wann sie gilt.',
+    'Was als Pflicht noch offen ist, steht ehrlich darunter. Unten ist Platz, damit die Studioleitung unterschreibt.'
+  ]},
   { id:'2026-10-23-erinnerung-tipp', datum:'23.10.2026', titel:'Ein Tipp auf die Stempel-Erinnerung öffnet „Zeiten"', wo:'zeit', punkte:[
     'Tippst du auf die Erinnerung „Feierabend vergessen?" oder „Schon eingestempelt?" auf dem Handy, öffnet die App jetzt direkt die Seite „Zeiten" – dort stempelst du oder beantragst eine Korrektur.',
     'Für die Geschäftsführung: Entfernst du unter Verwaltung → Team einen Zugang, verschwinden mit ihm auch das Soll je Wochentag, der Urlaubsanspruch und die DATEV-Personalnummer dieser Person. Stempelzeiten und Monatsabschlüsse bleiben, wie es die Aufbewahrungsfrist verlangt.'
@@ -33399,7 +33405,59 @@ function schMeineZeichnen(){
       '<span class="sch-lauf-zahl">'+(fehl? fehl+'× daneben' : 'ohne Fehler')+'</span>'+
       '<span class="sch-marke '+(l.bestanden?'fertig':'faellig')+'">'+
         (l.bestanden?'bestanden':'offen')+'</span></div>';
-  }).join('');
+  }).join('')+
+  (schBescheinigungLaeufe().length
+    ? '<div class="sch-meine-tun"><button type="button" class="btn btn-ghost btn-sm" id="schBescheinigung">Bescheinigung drucken</button>'+
+      '<span class="hint">alle bestandenen Schulungen auf einem Blatt</span></div>'
+    : '');
+  var bb=$('schBescheinigung');
+  if(bb) bb.addEventListener('click', schBescheinigungDrucken);
+}
+/* ── Die eigene Bescheinigung (Runde 244) ─────────────────────────────
+   Aus dem Betrieb, 23.10.2026: „jo mach weiter" — auf den Vorschlag,
+   dass jede und jeder die eigenen Schulungen auf einem Blatt mitnehmen
+   kann. Den Nachweis je Modul gab es bisher nur für die Leitung
+   (Runde 211); wer ihn für sich selbst brauchte (Bewerbung, Ordner,
+   Krankenkasse), musste fragen.
+
+   Je Modul zählt der LETZTE bestandene Durchlauf, ohne Testläufe —
+   dieselbe Regel wie beim Nachweis der Leitung. Was als Pflicht noch
+   offen ist, steht darunter: ein Blatt, das nur das Erledigte zeigt,
+   sähe vollständiger aus, als es ist. */
+function schBescheinigungLaeufe(){
+  var juengst={};
+  _schMeine.forEach(function(l){
+    if(l.test || l.status!=='fertig' || !l.bestanden) return;
+    var j=juengst[l.modul];
+    if(!j || (l.ende||0)>(j.ende||0)) juengst[l.modul]=l;
+  });
+  return Object.keys(juengst).map(function(k){ return juengst[k]; })
+    .sort(function(a,b){ return (b.ende||0)-(a.ende||0); });
+}
+function schBescheinigungDrucken(){
+  var pa=$('printArea'); if(!pa) return;
+  var datum=function(ts){ return new Date(ts).toLocaleDateString('de-DE',{ day:'2-digit', month:'2-digit', year:'numeric' }); };
+  var laeufe=schBescheinigungLaeufe();
+  var offen=schModule().filter(function(m){ return m.pflicht && schStand(m).art!=='fertig'; })
+    .map(function(m){ return m.titel||''; });
+  pa.innerHTML='<h1>Schulungsnachweis</h1>'+
+    '<p class="p-sub">'+esc((session && session.name)||'')+' · '+esc(firmaAnzeige())+' · Stand '+esc(datum(Date.now()))+'</p>'+
+    (laeufe.length
+      ? '<table><tr><th>Schulung</th><th>Bestanden am</th><th>Ergebnis</th><th>Dauer</th><th>Gültig bis</th></tr>'+
+        laeufe.map(function(l){
+          var m=schModulVon(l.modul)||{};
+          var bis=m.gueltigMonate ? l.ende + m.gueltigMonate*30.4*86400000 : 0;
+          return '<tr><td>'+esc(m.titel||l.modulTitel||'')+(m.pflicht ? ' (Pflicht)' : '')+'</td>'+
+            '<td>'+esc(datum(l.ende))+'</td><td>'+(l.punkte||0)+' %</td>'+
+            '<td>'+esc(schDauerText(l.aktivMs))+'</td>'+
+            '<td>'+(bis ? esc(datum(bis))+(Date.now()>bis ? ' — wieder fällig' : '') : 'ohne Ablauf')+'</td></tr>';
+        }).join('')+'</table>'
+      : '<p class="p-note">Noch keine Schulung bestanden.</p>')+
+    (offen.length ? '<p class="p-note"><b>Als Pflicht noch offen:</b> '+esc(offen.join(', '))+'</p>' : '')+
+    '<p class="p-note">Bestätigt durch die Studioleitung: ______________________________ &nbsp; Datum: ____________</p>'+
+    '<p class="p-foot">'+esc(KONFIG.appName||'StudioChat')+' — erstellt aus den eigenen Schulungs-Durchläufen. '+
+      'Ob dieses Blatt eine bestimmte Vorschrift erfüllt, prüft die App nicht.</p>';
+  window.print();
 }
 
 /* ── 2. Der Code ───────────────────────────────────────────────── */
