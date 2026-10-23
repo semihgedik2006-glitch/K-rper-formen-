@@ -22500,3 +22500,82 @@ wie ein langsamer Zug. Jetzt zählt `e.timeStamp` (wann der Finger dort
 war), und ein Zug unter 250 ms zählt mit seinem mittleren Tempo, wenn das
 höher ist. Das hilft auch auf einem langsamen Handy, nicht nur im Test.
 Die Schwellen sind unverändert.
+
+## Runde 258 — Linien-Symbole mit einer Strichstärke (23.10.2026)
+
+Vierzehnter Bauschritt aus dem Plan „Studio Chat wie von Apple“:
+„SF-Symbols-artige Linien-Symbole“. Apples Schrift und Symbole selbst
+werden nicht übernommen (Plan: „zeichnet eigene Symbole im selben Stil“) —
+übernommen wird, was sie ausmacht.
+
+**Gemessen vorher** (390 und 1440 px, alle Ansichten, Formi): gezeichnet
+wurden Striche von 1,04 bis 2,19 px, 644 mit eckigem und 577 mit rundem
+Ende. Der Grund: die Stärke stand im 24er-Raster (`stroke-width="2"`) und
+wuchs mit der Grösse — ein 16-px-Symbol 1,33 px, ein 24-px-Symbol 2 px.
+Bei Apple ist ein Symbol in einer Zeile so kräftig wie die Schrift
+daneben, egal wie gross es steht.
+
+**Geändert.**
+- `vector-effect: non-scaling-stroke` mit einer Stärke in echten
+  Bildpunkten, `--sym-strich: 1.7px`, runde Enden und Ecken — für alle
+  Symbole in Knöpfen, Leisten, Auswahlen und `.sym`.
+- Punkte bleiben Punkte: was im Raster mit `stroke-width="3"` als Punkt
+  gezeichnet ist (Mehr „…“), bekommt das 1,75-fache.
+- Ausgenommen: der Haken im Abhak-Kreis (soll kräftiger sein als ein
+  Symbol, wie in Apples Erinnerungen), das Logo, Formi.
+- Keine Schriftzeichen mehr als Symbol: „⋯“ an Aufgaben, Putzplan und
+  Dokumenten → `ikon('mehr')`; „＋“ im Wochenplan → `ikon('plus')`;
+  „＋ Schicht“ und „≡ Verwalten“ über `data-ikon`.
+
+**Test:** neu `tests/test-symbole.js`, 33 grün: in jeder Ansicht bei 320 /
+390 / 820 / 1440 / 1920 (Formi), 390 (Hell), 1280 (Dunkel) ist jeder
+sichtbare Strich 1,7 px (Punkte 2,975) mit runden Enden — rund 900 bis
+1.370 Striche je Breite; der Haken im Kreis bleibt bei 3,5; kein Knopf
+trägt ⋯, ≡ oder ＋ aus der Schrift; ⋯ an Aufgaben und ＋ im Wochenplan
+sind zu sehen (20 × 20) und ≥ 44 × 44 per Hit-Test (normal und kompakt).
+
+**Gefunden beim Gesamtdurchlauf:** `test-gestaltung` meldete „dieselbe
+Eigenschaft zweimal" — die Punkt-Regel setzte `stroke-width` ein zweites
+Mal. Jetzt steht `stroke-width` nur in einer Regel
+(`var(--sym-dicke, var(--sym-strich))`); die Punkt-Regel setzt nur
+`--sym-dicke`. Beide Zweige (Knöpfe und `.sym`) stehen in einem `:is()`.
+
+## Runde 259 — Leere Zustände zeigen den nächsten Schritt (23.10.2026)
+
+Fünfzehnter und letzter Bauschritt aus dem Plan: „leere Zustände zeigen
+den nächsten Schritt“ (Apple, Writing). Formi sitzt seit Runde 233 über
+jeder leeren Liste; was fehlte, war an den meisten Stellen der Weg.
+
+**Gezählt:** 26 Aufrufe von `emptyHTML`, 1 mit einem Weg-Knopf
+(„Aufgabe anlegen“). Der Mechanismus (`tatKnopf` → drückt das echte
+Bedienelement) war da und wurde kaum benutzt.
+
+**Geändert.**
+- Suche ohne Treffer (Aufgaben, Putzplan, Direktnachrichten, Notizen):
+  „Suche leeren“. Dafür kann `tatKnopf` jetzt einen Wert setzen
+  (`data-leerzu-wert`) — das Feld bekommt ein input-Ereignis wie beim
+  Tippen, also keine eigene Logik.
+- Filter ohne Treffer (Aufgaben, Putzplan): „Alle zeigen“ drückt den
+  Filter „Alle“. Der Satz „tippe auf ‚Alle‘ (unter ‚Filter‘)“ fällt weg —
+  der Knopf sagt es.
+- Leere Listen mit einem Eingabeweg: „Punkt anlegen“, „Gerät eintragen“,
+  „Probetraining eintragen“, „Namen suchen“, „Wunsch eintragen“, „Ziel
+  eintragen“, „To-do eintragen“, „Notiz schreiben“ — jeweils nur, wer
+  darf.
+- Ist das Ziel ein Feld, hat es danach den Fokus (vorher drückte der Weg
+  nur `click()`, das bei einem Feld nichts tut).
+
+**Test:** neu `tests/test-leer-weg.js`, 34 grün, in der echten Demo bei 390
+und 1440 px, normal und kompakt: Suche ohne Treffer in Aufgaben, Putzplan,
+Direktnachrichten → Formi und „Suche leeren“ (≥ 44 × 44), danach Feld
+leer, im Fokus, Liste wieder da; Filter „meine“ ohne Treffer → „Alle
+zeigen“ schaltet auf Alle; in allen Ansichten zeigt jeder sichtbare Weg
+auf ein Element, das es gibt, und Felder bekommen den Fokus. Die Wege für
+leere Geräte-, Probetrainings-, Wunsch- und Ziellisten kommen in der Demo
+nicht vor (dort steht etwas) — sie sind über denselben Mechanismus gebaut,
+aber hier nicht einzeln durchgeklickt.
+
+**Ein bestehender Test geändert:** `test-aufgaben-bereich4` verlangte den
+Satz „tippe auf …" im leeren Filter. Der Satz ist durch den Knopf „Alle
+zeigen" ersetzt; der Test prüft jetzt, dass der Knopf da ist **und** auf
+„Alle" schaltet — strenger als vorher, nicht lockerer.

@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-iNE/XhtYY5PPa/ZoT+ocit6AtK2nZhZlJ9s6UI8x+n8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-wTvHG6EmqqUPDd43oGuoU090jyUilaz4KOGmmlcGVDE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -10001,6 +10001,28 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
   .ptr.laeuft svg{animation:none}
   .ptr-zurueck{transition:none}
 }
+
+/* ══ EINE STRICHSTÄRKE FÜR ALLE SYMBOLE (Runde 258) ══════════════════
+   Plan „Studio Chat wie von Apple", Schritt 12: Linien-Symbole im Stil
+   von SF Symbols — Apples Symbole haben in einer Zeile dieselbe
+   Strichstärke, egal wie gross sie stehen, und runde Enden. Gemessen am
+   23.10.2026 (390 und 1440 px, alle Ansichten): gezeichnet wurden
+   1,04 bis 2,19 px, 644 Striche mit eckigem und 577 mit rundem Ende —
+   weil die Stärke im 24er-Raster festgelegt war und mit der Grösse
+   mitwuchs (16-px-Symbol 1,33 px, 24-px-Symbol 2 px).
+
+   Jetzt: `vector-effect: non-scaling-stroke` und eine Stärke in echten
+   Bildpunkten, --sym-strich. Ausgenommen: das Logo (gefüllt), der dicke
+   Haken im Abhak-Kreis (der soll kräftiger sein als ein Symbol — wie bei
+   Apples Erinnerungen) und Formi. Punkte (Mehr „…") bleiben Punkte: was
+   im Raster mit stroke-width 3 als Punkt gezeichnet ist, bekommt das
+   1,75-fache — über --sym-dicke, damit stroke-width nur an einer Stelle
+   steht. */
+:root{--sym-strich:1.7px}
+:is(:is(button,[role=button],a,summary,.opt,.mobnav,.side) svg:not(.tb-logo svg):not(.check svg), svg.sym) :is(path,line,polyline,polygon,circle,rect,ellipse){
+  stroke-width:var(--sym-dicke, var(--sym-strich));vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round}
+:is(:is(button,[role=button],a,summary,.opt,.mobnav,.side) svg:not(.tb-logo svg):not(.check svg), svg.sym) :is([stroke-width="3"],[stroke-width="2.6"]){--sym-dicke:calc(var(--sym-strich) * 1.75)}
+.check svg *, .tb-logo svg *, .formi-kugel svg *{vector-effect:none}
 </style>
 </head>
 <body>
@@ -11649,7 +11671,7 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
                     <button type="button" class="chip" data-wpansicht="person">Personen</button>
                   </div>
                   <button type="button" class="chip" id="wpMeine" aria-pressed="false">Nur meine</button>
-                  <button type="button" class="btn btn-primary btn-sm" id="shiftNeu" hidden>＋ Schicht</button>
+                  <button type="button" class="btn btn-primary btn-sm" id="shiftNeu" data-ikon="plus" hidden>Schicht</button>
                 </div>
               </div>
               <div id="shiftGrid"></div>
@@ -12124,7 +12146,7 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
             </div>
             <button class="kopf-plus" id="schVerwaltenBtn" data-manage-only="1"
                     style="display:none" title="Teilnehmer, Codes und Auswertung"
-                    aria-label="Verwalten">≡<span class="kp-wort"> Verwalten</span></button>
+                    aria-label="Verwalten" data-ikon="regler"><span class="kp-wort">Verwalten</span></button>
           </div>
         </div>
         <div class="scroll-area" data-shrinks="1">
@@ -20461,6 +20483,11 @@ document.addEventListener('click', function(e){
   var ziel = document.querySelector(k.getAttribute('data-leerzu'));
   if(!ziel){ console.warn('Leerer Zustand zeigt ins Leere:', k.getAttribute('data-leerzu')); return; }
   ziel.click();
+  var wert = k.getAttribute('data-leerzu-wert');
+  if(wert!==null && 'value' in ziel){ ziel.value=wert; ziel.dispatchEvent(new Event('input', { bubbles:true })); }
+  /* Ein Feld als Ziel: click() setzt keinen Fokus — man soll aber gleich
+     tippen können (Runde 259). */
+  if(/^(INPUT|TEXTAREA|SELECT)$/.test(ziel.tagName)){ try{ ziel.focus({ preventScroll:true }); }catch(_){ ziel.focus(); } }
   /* Wandert der Weg woandershin (Formular weiter unten auf der Seite),
      soll man auch dort ankommen. */
   if(ziel.scrollIntoView) sanftInsBild(ziel, { behavior:'smooth', block:'center' });
@@ -22707,6 +22734,14 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-23-leer-naechster-schritt', datum:'23.10.2026', titel:'Leere Listen zeigen, was du als Nächstes tun kannst', wo:'todos', punkte:[
+    'Findet die Suche nichts, steht unter Formi ein Knopf „Suche leeren". Zeigt ein Filter nichts, bringt „Alle zeigen" alles zurück.',
+    'Ist eine Liste noch ganz leer, führt ein Knopf direkt zum Eintragen – zum Beispiel „Gerät eintragen" oder „To-do eintragen". Das Feld ist dann gleich zum Tippen bereit.'
+  ]},
+  { id:'2026-10-23-linien-symbole', datum:'23.10.2026', titel:'Alle Symbole in einer Linie', wo:'home', punkte:[
+    'Die kleinen Zeichen auf den Knöpfen sind jetzt überall gleich kräftig und haben runde Enden – egal wie groß sie stehen. Das wirkt ruhiger, so wie die Symbole auf dem iPhone.',
+    'Auch „⋯", „+" und das Verwalten-Zeichen sind keine Schriftzeichen mehr, sondern gezeichnete Symbole im selben Stil.'
+  ]},
   { id:'2026-10-23-schrift-wie-iphone', datum:'23.10.2026', titel:'Schriftgröße wie am iPhone', wo:'home', punkte:[
     'Hast du am iPhone eine größere (oder kleinere) Schrift eingestellt, übernimmt die App sie jetzt – bis zur Stufe „Sehr groß".',
     'Bei der normalen iPhone-Schrift ändert sich nichts. Unter Profil → Aussehen → Schriftgröße kannst du weiter eine feste Größe wählen.'
@@ -26432,7 +26467,7 @@ function renderDocs(docs){
       '<div class="doc-info"><b>'+esc(d.name||d.fileName)+'</b>'+
       '<div class="doc-meta">'+esc(meta)+'</div></div>'+
       '<div class="doc-actions">'+
-      (chef?'<button class="t-mehr doc-mehr" title="Mehr" aria-label="Mehr">⋯</button>':'')+
+      (chef?'<button class="t-mehr doc-mehr" title="Mehr" aria-label="Mehr">'+ikon('mehr')+'</button>':'')+
       '<span class="doc-go" aria-hidden="true">›</span></div></div>';
   }).join('');
   box.querySelectorAll('.doc').forEach(function(node){
@@ -38505,7 +38540,7 @@ function wpTageHTML(tage, heute, ende){
       (vergangen && vorbei ? ' vergangen' : '')+
       '" data-tag="'+key+'">'+
       '<div class="shift-day-h"><b>'+namen[i]+'</b><span>'+t.d.toLocaleDateString('de-DE',o)+'</span>'+
-      (darf && !vorbei ? '<button type="button" class="wp-tag-plus" data-wpneu="'+key+'|" aria-label="Schicht am '+namen[i]+' eintragen">＋</button>' : '')+
+      (darf && !vorbei ? '<button type="button" class="wp-tag-plus" data-wpneu="'+key+'|" aria-label="Schicht am '+namen[i]+' eintragen">'+ikon('plus')+'</button>' : '')+
       '</div>'+
       /* Die Leiste zählt immer alle Schichten des Tages, auch bei „Nur meine". */
       wpBandHTML(key, _shifts.filter(function(x){ return x.date===key; }), vorbei);
@@ -38692,7 +38727,7 @@ function wpRasterHTML(tage, woche, heute){
       }).join('');
       if(darf && !hier.length && !weg && t.key>=heute && p.id.indexOf('name:')!==0){
         html+='<button type="button" class="wp-leer" data-wpneu="'+t.key+'|'+esc(p.id)+'" aria-label="Schicht für '+
-          esc(p.name)+' am '+kurz[i]+' '+t.d.toLocaleDateString('de-DE',o)+' eintragen">＋</button>';
+          esc(p.name)+' am '+kurz[i]+' '+t.d.toLocaleDateString('de-DE',o)+' eintragen">'+ikon('plus')+'</button>';
       }
       html+='</div>';
     });
@@ -40894,7 +40929,7 @@ function renderIchWuensche(){
   box.innerHTML = liste.length
     ? liste.map(wunschZeileHTML).join('')
     : emptyHTML('Noch kein Wunsch',
-        'Trag oben ein, was dir fehlt — „nur für mich" bleibt bei dir.', 'herz');
+        'Trag ein, was dir fehlt — „nur für mich" bleibt bei dir.', 'herz', tatKnopf('Wunsch eintragen', '#wunschText'));
 }
 
 function wunschRef(id){
@@ -41330,7 +41365,7 @@ function renderIchZiele(){
   box.innerHTML = offen.length
     ? offen.map(zielZeileHTML).join('')
     : emptyHTML('Noch kein Ziel',
-        'Trag oben ein, was du erreichen willst — mit einer Zahl daran.', 'pokal');
+        'Trag ein, was du erreichen willst — mit einer Zahl daran.', 'pokal', tatKnopf('Ziel eintragen', '#zielTitel'));
   if(fbox){
     fbox.style.display = fertig.length ? '' : 'none';
     if(ftext) ftext.textContent = fertig.length===1 ? '1 erreicht' : fertig.length+' erreicht';
@@ -41988,7 +42023,7 @@ function renderIchTodos(){
   // Ziehen nur bei den offenen: Erledigtes zu sortieren hat keinen Sinn.
   box.innerHTML = offen.length
     ? offen.map(function(t){ return ichTodoZeile(t, true); }).join('')
-    : emptyHTML('Nichts offen', 'Trag oben ein, was du dir vornimmst.', 'hakenKreis');
+    : emptyHTML('Nichts offen', 'Trag ein, was du dir vornimmst.', 'hakenKreis', tatKnopf('To-do eintragen', '#ichTodoNeu'));
 
   if(fWrap) fWrap.style.display = fertig.length ? '' : 'none';
   if(fTxt) fTxt.textContent = fertig.length===1 ? '1 erledigt' : fertig.length+' erledigt';
@@ -42211,13 +42246,13 @@ function renderIchNotizen(){
 
   if(!_ichNotizen.length){
     box.innerHTML=emptyHTML('Noch keine Notiz',
-      'Was du hier schreibst, bleibt bei dir.', 'stift');
+      'Was du hier schreibst, bleibt bei dir.', 'stift', tatKnopf('Notiz schreiben', '#ichNotizNeu'));
     ikonenEinsetzen(box);
     return;
   }
   if(!zeigen.length){
     box.innerHTML=emptyHTML('Nichts gefunden',
-      'Andere Art oder anderes Wort probieren.', 'stift');
+      'Andere Art oder anderes Wort probieren.', 'stift', tatKnopf('Suche leeren', '#ichNotizSuche', ''));
     ikonenEinsetzen(box);
     return;
   }
@@ -44869,13 +44904,14 @@ function leerText(gesamt){
     return emptyHTML('Nichts gefunden',
       'Für „'+esc(_todoFilter)+'" gibt es keine Aufgabe.'+
       (_todoMode!=='alle' ? ' Der Filter „'+esc(chipLabel(_todoMode))+'" ist zusätzlich aktiv.' : ''),
-      'hakenKreis');
+      'hakenKreis', tatKnopf('Suche leeren', '#todoSearch', ''));
   }
   if(_todoMode!=='alle' || _todoDring){
     var wort = _todoMode!=='alle' ? FILTERWORT[_todoMode] : 'dringenden';
     return emptyHTML('Keine '+wort+' Aufgaben',
-      gesamt ? 'Es gibt '+gesamt+(gesamt===1?' Aufgabe':' Aufgaben')+' – tippe auf „Alle" (unter „Filter"), um sie zu sehen.'
-             : 'Hier ist noch gar nichts angelegt.', 'hakenKreis');
+      gesamt ? 'Es gibt '+gesamt+(gesamt===1?' Aufgabe':' Aufgaben')+' mit einem anderen Filter.'
+             : 'Hier ist noch gar nichts angelegt.', 'hakenKreis',
+      gesamt ? tatKnopf('Alle zeigen', '[data-tfilter="alle"]') : (canManage() ? tatKnopf('Aufgabe anlegen', '#todoNew') : ''));
   }
   /* Der Weg nur fuer den, der ihn gehen kann. Ein Mitarbeiter sieht den
      Knopf „+ Neu" gar nicht — ihm einen anzubieten, der ins Leere zeigt,
@@ -45423,7 +45459,7 @@ function todoHTML(t,sk,chefView,mitStudio,ziehbar){
   var del = darf ? '<button class="t-del" data-tdel="1" aria-label="löschen" title="Löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>' : '';
   /* „…" an JEDER Aufgabe: dort stehen Foto, Grund, Frist und Danke —
      Foto, Grund und Danke darf jeder. */
-  var mehr = '<button class="t-mehr" data-tmehr="1" title="Mehr: Foto, Grund, Frist, Danke" aria-label="Mehr">⋯</button>';
+  var mehr = '<button class="t-mehr" data-tmehr="1" title="Mehr: Foto, Grund, Frist, Danke" aria-label="Mehr">'+ikon('mehr')+'</button>';
   var frisch=frischAttr(t.id, done);
   return '<div class="todo'+(done?' done':'')+(isOver?' overdue':'')+frisch.cls+'"'+frisch.stil+
     ' data-id="'+esc(t.id)+'" data-sid="'+esc(sk)+'">'+
@@ -48972,9 +49008,13 @@ function renderSicherungStand(){
    den es ohnehin gibt. Wandert der Knopf, wandert der Weg mit — und
    verschwindet er, faellt das im Test auf, statt still ins Leere zu
    fuehren. */
-function tatKnopf(text, ziel){
+function tatKnopf(text, ziel, wert){
   if(!text || !ziel) return '';
-  return '<button class="btn btn-ghost btn-sm leer-weg" data-leerzu="'+esc(ziel)+'">'+
+  /* Runde 259: mit wert (meist '') setzt der Knopf das Feld auf diesen
+     Wert — „Suche leeren". Auch das ist keine eigene Logik: das Feld
+     bekommt ein input-Ereignis wie beim Tippen. */
+  return '<button class="btn btn-ghost btn-sm leer-weg" data-leerzu="'+esc(ziel)+'"'+
+    (wert!=null ? ' data-leerzu-wert="'+esc(wert)+'"' : '')+'>'+
     esc(text)+'</button>';
 }
 function emptyHTML(h,s,iko,tat){
@@ -49862,12 +49902,13 @@ function ppLeerText(gesamt){
     return emptyHTML('Nichts gefunden',
       'Für „'+esc(_ppFilter)+'" gibt es keinen Punkt im Putzplan.'+
       (_ppMode!=='alle' ? ' Der Filter „'+esc(ppChipWort(_ppMode))+'" ist zusätzlich aktiv.' : ''),
-      'tropfen');
+      'tropfen', tatKnopf('Suche leeren', '#ppSearch', ''));
   }
   var WORT={ offen:'offenen', pausiert:'pausierten' };
   return emptyHTML('Keine '+(WORT[_ppMode]||'')+' Punkte',
-    gesamt ? 'Der Plan hat '+gesamt+(gesamt===1?' Punkt':' Punkte')+' – tippe auf „Alle", um sie zu sehen.'
-           : 'Hier ist noch gar nichts angelegt.', 'tropfen');
+    gesamt ? 'Der Plan hat '+gesamt+(gesamt===1?' Punkt':' Punkte')+' mit einem anderen Filter.'
+           : 'Hier ist noch gar nichts angelegt.', 'tropfen',
+    gesamt ? tatKnopf('Alle zeigen', '[data-ppfilter="alle"]') : (canManage() ? tatKnopf('Punkt anlegen', '#ppNew') : ''));
 }
 function ppChipWort(modus){
   var c=document.querySelector('[data-ppfilter="'+modus+'"]');
@@ -50016,7 +50057,9 @@ function renderPutzplan(){
   if(balken) balken.style.width = (total ? Math.round(done/total*100) : 0)+'%';
   ppLeisteSetzen();
   if(!list.length){
-    box.innerHTML=emptyHTML('Kein Putzplan','Der Chef legt hier Reinigungsaufgaben an.','tropfen');
+    box.innerHTML=emptyHTML('Kein Putzplan',
+      canManage() ? 'Lege den ersten Punkt an – täglich, wöchentlich oder einmal.' : 'Die Leitung legt hier Reinigungsaufgaben an.', 'tropfen',
+      canManage() ? tatKnopf('Punkt anlegen', '#ppNew') : '');
     ppZahlenSetzen(list, 0);
     return;
   }
@@ -50065,7 +50108,7 @@ function renderPutzplan(){
       '<div class="pp-meta">'+(pause
         ? '<span class="pp-pausetxt">'+esc(ppPauseText(t))+'</span>'
         : (doneInfo||'<span>noch offen</span>'))+pauseKnopf+'</div></div>'+
-      stift+del+(chef ? '<button class="t-mehr pp-mehr" data-ppmehr="'+esc(t.id)+'" title="Mehr: Bearbeiten, Löschen" aria-label="Mehr">⋯</button>' : '')+
+      stift+del+(chef ? '<button class="t-mehr pp-mehr" data-ppmehr="'+esc(t.id)+'" title="Mehr: Bearbeiten, Löschen" aria-label="Mehr">'+ikon('mehr')+'</button>' : '')+
       '</div></div>';
   }
   /* ── Gruppiert nach Rhythmus (Runde 103, P2) ──
@@ -51101,8 +51144,9 @@ function renderDevices(){
 
   if(!_devices.length){
     box.innerHTML=emptyHTML('Noch keine Geräte',
-      canManage() ? 'Trage unten ein, was in diesem Studio steht.'
-                  : 'Die Leitung trägt hier die Geräte des Studios ein.', 'werkzeug');
+      canManage() ? 'Trage ein, was in diesem Studio steht.'
+                  : 'Die Leitung trägt hier die Geräte des Studios ein.', 'werkzeug',
+      canManage() ? tatKnopf('Gerät eintragen', '#devName') : '');
     return;
   }
   sortLeiste($('devSort'), 'dev', [
@@ -51618,8 +51662,8 @@ function renderProbe(){
   if(!alle.length){
     qBox.innerHTML='<p class="hint">Noch nichts eingetragen in diesem Zeitraum.</p>';
     lBox.innerHTML=emptyHTML('Noch kein Probetraining',
-      'Trag oben rechts ein, was gelaufen ist – die Quote rechnet sich von selbst.',
-      'pokal');
+      'Trag ein, was gelaufen ist – die Quote rechnet sich von selbst.',
+      'pokal', tatKnopf('Probetraining eintragen', '#pbNew'));
     return;
   }
 
@@ -53072,7 +53116,7 @@ function renderDmPeople(filter){
   if(filter){
     var list=_allUsers.filter(function(u){ return u.uid!==session.uid && !u.system && (u.name||'').toLowerCase().indexOf(filter)>=0; });
     list.sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
-    if(!list.length){ box.innerHTML=emptyHTML('Niemand gefunden','Tippe einen anderen Namen ein.','leute'); return; }
+    if(!list.length){ box.innerHTML=emptyHTML('Niemand gefunden','Tippe einen anderen Namen ein.','leute', tatKnopf('Suche leeren', '#dmSearch', '')); return; }
     box.innerHTML='<div class="dm-section">Ergebnisse</div>'+list.map(function(u){
       var sub=u.status?u.status:(u.role==='chef'?'Chef':(u.role==='leiter'?'Studio-Leiter':((u.studios&&u.studios.length)?u.studios.join(', '):(u.studio||''))));
       return '<div class="dm-person" data-uid="'+esc(u.uid)+'" data-name="'+esc(u.name||'')+'">'+
@@ -53086,7 +53130,7 @@ function renderDmPeople(filter){
     var peer=(t.participants||[]).filter(function(u){ return u!==session.uid; })[0];
     return !(_allUsers.length && !_userById(peer));
   });
-  if(!threads.length){ box.innerHTML=emptyHTML('Noch keine Unterhaltungen','Tippe oben einen Namen ein, um jemandem zu schreiben.','leute'); return; }
+  if(!threads.length){ box.innerHTML=emptyHTML('Noch keine Unterhaltungen','Such einen Namen, um jemandem zu schreiben.','leute', tatKnopf('Namen suchen', '#dmSearch')); return; }
   box.innerHTML='<div class="dm-section">Unterhaltungen</div>'+threads.map(function(t){
     var peer=(t.participants||[]).filter(function(u){ return u!==session.uid; })[0];
     var nm=(t.names&&t.names[peer])||'?';
