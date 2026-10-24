@@ -22675,6 +22675,11 @@ Höhe wächst; am Handy und Tablet in einer.
   14,0 : 1, „Richtig:" 17,6 : 1. Das helle Design habe ich nicht
   gemessen.
 
+- `test-schulung-bescheinigung` (Runde 248) geht jetzt über ☰ zur
+  Schulung: Seit Runde 260 haben Mitarbeiter den Raum „Wissen" nicht
+  mehr, und der Durchlauf fand den Weg nicht (26 von 30 rot). Die
+  Prüfungen selbst sind unverändert, wieder 30 grün.
+
 ### Nicht geprüft
 
 - Das helle Design (siehe Kontrast).

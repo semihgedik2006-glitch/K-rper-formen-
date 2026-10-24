@@ -50,12 +50,17 @@ async function oeffne(b, w, h, rolle) {
   await p.waitForTimeout(3200);
   await p.evaluate(() => { window.__gedruckt = 0; window.print = function () { window.__gedruckt++; };
     window.LAUF = (id) => firebase.firestore().collection('firmen/koerperformen/schulungLaeufe').doc(id); });
-  await p.evaluate(() => {
-    const k = document.querySelector('.mobnav [data-group="g-wissen"]') || document.querySelector('#side [data-group="g-wissen"]');
-    if (k) k.click();
+  /* Seit Runde 260 haben Mitarbeiter den Raum „Wissen" nicht mehr; dann
+     über ☰ („Alles") — derselbe Weg wie ein Mensch. */
+  await p.evaluate(async () => {
+    const k = [...document.querySelectorAll('.mobnav [data-group="g-wissen"], #side [data-group="g-wissen"]')].find(e => e.offsetParent);
+    if (k) { k.click(); return; }
+    document.getElementById('bereichKopf').click();
+    await new Promise(r => setTimeout(r, 450));
+    const z = document.querySelector('#allesLadeInhalt .al-zeile[data-alles="schulung"]'); if (z) z.click();
   });
-  await p.waitForTimeout(700);
-  await p.evaluate(() => { const t = [...document.querySelectorAll('[data-subview]')].find(x => /Schulung/.test(x.textContent)); if (t) t.click(); });
+  await p.waitForTimeout(900);
+  await p.evaluate(() => { const t = [...document.querySelectorAll('[data-subview]')].find(x => /Schulung/.test(x.textContent) && x.offsetParent); if (t) t.click(); });
   await p.waitForTimeout(1500);
   return p;
 }
