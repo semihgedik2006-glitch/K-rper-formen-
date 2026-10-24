@@ -311,29 +311,32 @@ const KUGEL_ANIM = () => {
 
     /* Runde 188 — aus dem Betrieb: „Ja aber versteckter". Der Schalter
        steht in Formis eigenen Einstellungen (Regler im Formi-Fenster). */
-    console.log('\n── Versteckter Schalter: Gefühle aus ──');
+    /* Runde 262 — aus dem Betrieb: „einen Schalter wo man formis Animationen
+       anpassen kann also stark, Mittel, keine". „Gefühle aus" ist jetzt
+       „Bewegung: Keine"; geprüft wird dasselbe (still, gemerkt). */
+    console.log('\n── Schalter Bewegung: Stark / Mittel / Keine ──');
     for (const [w, h] of [[1440, 900], [390, 844]]) {
       const p = await oeffne(b, w, h);
       await p.click('#formiKugel'); await p.waitForTimeout(400);
       /* Runde 209: im kleinen Fenster liegen die Einstellungen hinter „…". */
       await p.click('#jarvisMehr'); await p.waitForTimeout(200);
       await p.click('#jarvisPersonaBtn'); await p.waitForTimeout(300);
-      const aus = '#jarvisPersona [data-jvp="gefuehle"][data-jvw="aus"]', an = '#jarvisPersona [data-jvp="gefuehle"][data-jvw="an"]';
-      pruefe(`${w} px: der Schalter steht in Formis Einstellungen, Standard „Zeigen"`,
+      const aus = '#jarvisPersona [data-fbew="keine"]', an = '#jarvisPersona [data-fbew="mittel"]', stark = '#jarvisPersona [data-fbew="stark"]';
+      pruefe(`${w} px: der Schalter steht in Formis Einstellungen, Standard „Mittel"`,
         await p.evaluate((s) => document.querySelector(s) && document.querySelector(s).getAttribute('aria-pressed') === 'true', an));
-      for (const sel of [an, aus]) {
+      for (const sel of [stark, an, aus]) {
         await p.evaluate((s) => document.querySelector(s).scrollIntoView({ block: 'center' }), sel);
         const m = await p.evaluate(([TR, s]) => (eval(TR))(document.querySelector(s)), [TREFFER.toString(), sel]);
-        pruefe(`${w} px: „${sel.includes('aus') ? 'Aus' : 'Zeigen'}" trifft ${m.w}×${m.h}, im Bild`, m.w >= 44 && m.h >= 44 && m.imBild, JSON.stringify(m));
+        pruefe(`${w} px: „${sel.includes('keine') ? 'Keine' : sel.includes('stark') ? 'Stark' : 'Mittel'}" trifft ${m.w}×${m.h}, im Bild`, m.w >= 44 && m.h >= 44 && m.imBild, JSON.stringify(m));
       }
       await p.click(aus); await p.waitForTimeout(200);
-      pruefe(`${w} px: „Aus" ist gewählt und gemerkt`, await p.evaluate(() => JSON.parse(localStorage.getItem('kf_jv_persona') || '{}').gefuehle === 'aus'));
+      pruefe(`${w} px: „Keine" ist gewählt und gemerkt`, await p.evaluate(() => JSON.parse(localStorage.getItem('kf_jv_persona') || '{}').bewegung === 'keine'));
       await p.click('#jarvisZu'); await p.waitForTimeout(400);
       await p.evaluate(() => { window.__formiLebt.fuehlt('freut'); window.__formiLebt.fuehlt('feiert'); window.__formiLebt.haken(); });
       if (w > 820) { await p.mouse.move(10, 10); await p.waitForTimeout(300); }
       const still = await p.evaluate(() => ({ n: document.getElementById('formiKugel').getAnimations({ subtree: true }).length,
         schlaf: window.__formiLebt.einschlafen() }));
-      pruefe(`${w} px: Gefühle aus — keine Bewegung, kein Schauen, kein Einschlafen`, still.n === 0 && !still.schlaf, JSON.stringify(still));
+      pruefe(`${w} px: Bewegung „Keine" — keine Bewegung, kein Schauen, kein Einschlafen`, still.n === 0 && !still.schlaf, JSON.stringify(still));
       // Formi war eben offen, also ist der Stand „gesehen". Vergessen lassen:
       await p.evaluate(() => localStorage.removeItem('kf_formi_gesehen'));
       await p.reload({ waitUntil: 'domcontentloaded' });

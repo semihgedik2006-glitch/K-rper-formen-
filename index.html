@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-JmzxhEV4ACAqh7E4WJX/8Mwpq9q7oCiMgiu/lxqiCHA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Zfm4NFPDrt3J3oA+3wqKw3XMjy3QS45aDyBnipCjVwY='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -4896,6 +4896,10 @@ body.formi:not(.light).hud-impuls .topbar::after{animation:hudImpuls .9s var(--e
 .opt.on{border-color:var(--accent);background:rgba(var(--akz-rgb),.10)}
 .opt span{font-size:var(--t-2xs);font-weight:700;color:var(--text-2)}
 .opt.on span{color:var(--accent)}
+/* Runde 262: Formis Bewegung als echte Knöpfe (die übrigen .opt sind
+   noch div-Flächen). Ohne Browser-Schrift und -Farbe. */
+button.opt{font:inherit;color:inherit;min-height:44px;width:100%}
+.fbw-figur{--fg:30px;display:block}
 .opt-prev{width:100%;height:42px;border-radius:var(--r-xs);border:1px solid var(--line);background:var(--bg-2)}
 .acc-dot{width:34px;height:34px;border-radius:var(--r-rund);box-shadow:var(--e1)}
 
@@ -7202,9 +7206,6 @@ body.jv-offen{overflow:hidden}
 .jv-untertitel.da{opacity:1;transform:none}
 .jv-untertitel:empty{display:none}
 .jarvis.jv-pegel .jv-eq u,.jarvis.jv-pegel .jv-kern b{animation:none}
-.jv-weck{margin-left:var(--s8);padding:var(--s2) var(--s8);border-radius:var(--r-pille);border:1px solid var(--jv-kante);font-size:var(--t-2xs);
-  color:var(--jv-cyan);letter-spacing:var(--ls-m);animation:jvBlinken 2.4s ease-in-out infinite}
-.jv-weck[hidden]{display:none}
 /* Persönlichkeit und Stimme */
 .jv-persona label,.jv-persona .jv-pz{display:flex;flex-direction:column;gap:var(--s4);font-size:var(--t-xs);color:var(--text-2)}
 .jv-persona input[type=text],.jv-persona select{min-height:44px;font-size:16px}
@@ -7215,7 +7216,7 @@ body.jv-offen{overflow:hidden}
 .jv-persona .jv-pw button[aria-pressed="true"]{border-color:var(--jv-cyan);background:rgba(var(--jv-rgb),.16);color:var(--text)}
 .jv-persona .jv-phinweis{margin:0;font-size:var(--t-xs);color:var(--text-3)}
 .jv-persona .jv-pinhalt{flex:1 1 auto;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:var(--s12)}
-@media (prefers-reduced-motion:reduce){ .jv-untertitel{transition:none} .jv-weck{animation:none} }
+@media (prefers-reduced-motion:reduce){ .jv-untertitel{transition:none} }
 /* Gespeicherte Gespräche (20.10.2026: „chat verläufe speicherung") */
 .jv-gespraeche{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;gap:var(--s8);padding:var(--s12);
   border:1px solid var(--jv-kante);border-radius:var(--r-md);background:rgba(3,10,20,.985);
@@ -13725,6 +13726,11 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
       <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Untere Leiste am Handy</label>
       <div class="opt-grid" id="glasOpts"></div>
 
+      <!-- Formis Bewegung, Runde 262: derselbe Schalter wie in Formis
+           eigenen Einstellungen (ein Wert je Gerät). -->
+      <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Formis Bewegung</label>
+      <div class="opt-grid" id="formiBewOpts"></div>
+
       <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Akzentfarbe</label>
       <div class="opt-grid" id="accOpts"></div>
 
@@ -14351,7 +14357,7 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
     <span class="jv-ecke ul" aria-hidden="true"></span><span class="jv-ecke ur" aria-hidden="true"></span>
     <ol class="jv-log" aria-hidden="true"><li>&gt; Systeme starten</li><li>&gt; Studio-Wissen verbunden</li><li>&gt; App-Steuerung bereit</li><li>&gt; Online</li></ol>
     <div class="jv-kopf">
-      <span class="jv-titel"><span class="formi-gesicht formi-figur mini" aria-hidden="true"><span class="fk-koerper"><span class="fk-wirbel"></span><span class="fk-innen"></span><span class="fk-licht"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i><i class="fk-froh l"></i><i class="fk-froh r"></i><i class="fk-backe l"></i><i class="fk-backe r"></i></span></span></span></span></span><span class="jv-punkt" aria-hidden="true"></span><span id="jarvisTitel">Formi</span><span class="jv-weck" id="jarvisWeck" hidden>hört auf dich</span><span class="jv-offline" id="jarvisOffline" hidden>offline · Schnellbefehle gehen</span></span>
+      <span class="jv-titel"><span class="formi-gesicht formi-figur mini" aria-hidden="true"><span class="fk-koerper"><span class="fk-wirbel"></span><span class="fk-innen"></span><span class="fk-licht"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i><i class="fk-froh l"></i><i class="fk-froh r"></i><i class="fk-backe l"></i><i class="fk-backe r"></i></span></span></span></span></span><span class="jv-punkt" aria-hidden="true"></span><span id="jarvisTitel">Formi</span><span class="jv-offline" id="jarvisOffline" hidden>offline · Schnellbefehle gehen</span></span>
       <span class="jv-kopf-knoepfe">
         <button type="button" class="icon-btn" id="jarvisMehr" data-ikon="mehr" aria-expanded="false" aria-label="Mehr: Einstellungen, Gespräche, Ton" title="Mehr"></button>
         <button type="button" class="icon-btn" id="jarvisPersonaBtn" data-ikon="regler" aria-expanded="false" aria-controls="jarvisPersona" aria-label="Persönlichkeit und Stimme" title="Persönlichkeit und Stimme"></button>
@@ -28137,7 +28143,7 @@ function gehirnZeigen(vorschlag){
   if(f) setTimeout(function(){ f.focus(); }, 80);
 }
 function gehirnWenigBewegung(){
-  return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  return formiBewegung()==='keine' || !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 }
 var GEHIRN_BEISPIELE = [
   'Was mache ich, wenn eine Kundin ein Attest abgibt?',
@@ -28323,18 +28329,6 @@ function gehirnMiniDirekt(ziel){
     gehirnVerlaufSichern();
   });
   gehirnZeichnen(); gehirnNachUnten(); tick(8);
-}
-/* Einmal am Tag beim ersten Öffnen: das Briefing vorlesen (wenn Ton an). */
-function jvBriefingSprechen(){
-  var tag=ymd(new Date());
-  try{ if(localStorage.getItem('kf_jv_brief')===tag) return; }catch(e){ return; }
-  Promise.race([gehirnLageLaden(), new Promise(function(r){ setTimeout(r, 2000); })]).then(function(){
-    if(!jarvisOffen() || _gVerlauf.length || !_jvTonAn) return;
-    var l=gehirnBriefing(), n=gehirnVorname();
-    var text=jvGruss()+(n ? ', '+n : '')+'! '+(l.length ? l.map(function(x){ return x[1]; }).join('. ')+'.' : 'Alles ruhig — nichts offen.');
-    try{ localStorage.setItem('kf_jv_brief', tag); }catch(e){}
-    jvSprechen(text);
-  });
 }
 function jvLeerHTML(){
   var vorname=gehirnVorname();
@@ -28659,27 +28653,70 @@ function gehirnTonfall(){ return jvPersona().ton==='sachlich' ? 'sachlich' : 'lo
    Je Gerät: Name, Tonfall, Stimme (menschlich über Google oder die des
    Geräts), Weckwort. Aus dem Betrieb: „wie ein echter mensch als
    assistent" — und auf die Ideenliste „mach alles davon". */
-var JV_PERSONA_STD={ name:'Formi', ton:'locker', stimme:'profi', profiStimme:'de-DE-Chirp3-HD-Aoede', geraetStimme:'', weckwort:false, studio:'', effekte:'auto', gefuehle:'an' };
-var JV_PROFI_STIMMEN=[['de-DE-Chirp3-HD-Aoede','Aoede (weiblich)'],['de-DE-Chirp3-HD-Kore','Kore (weiblich)'],['de-DE-Chirp3-HD-Charon','Charon (männlich)'],['de-DE-Chirp3-HD-Puck','Puck (männlich)']];
+/* Runde 262 — aus dem Betrieb: „das formi doch kein „hey formi“ mehr hat
+   aber man kann noch sprach Nachrichten schicken und das vor lesen ist auch
+   unnötig“. Stimme und Weckwort sind weg; Sprechen statt Tippen bleibt.
+   Alte gespeicherte Felder (stimme, weckwort …) werden einfach nicht mehr
+   gelesen. */
+var JV_PERSONA_STD={ name:'Formi', ton:'locker', studio:'', bewegung:'' };
 function jvPersona(){
   var p={}; try{ p=JSON.parse(localStorage.getItem('kf_jv_persona')||'{}')||{}; }catch(e){}
   /* Umbenannt am 20.10.2026 („es soll nicht jarvis heissen"): wer den
      alten Standardnamen noch gespeichert hat, heisst jetzt Formi. */
   if(p && p.name==='Jarvis') delete p.name;
   var r=Object.assign({}, JV_PERSONA_STD, p);
+  /* Runde 262: EIN Schalter für Formis Bewegung. Wer früher „Gefühle
+     der Kugel: Aus" gewählt hatte, landet bei „Keine". Effekte und
+     Gefühle folgen daraus. */
+  if(FORMI_BEWEGUNGEN.indexOf(r.bewegung)<0) r.bewegung = p.gefuehle==='aus' ? 'keine' : 'mittel';
+  r.effekte = { stark:'voll', mittel:'auto', keine:'sparsam' }[r.bewegung];
+  r.gefuehle = r.bewegung==='keine' ? 'aus' : 'an';
   r.name=String(r.name||'').replace(/[^\wäöüÄÖÜß \-]/g,'').trim().slice(0,20) || 'Formi';
   return r;
+}
+/* ── Formis Bewegung (Runde 262) ──────────────────────────────────────
+   Aus dem Betrieb: „Wir bräuchten auch noch einen Schalter wo man formis
+   Animationen anpassen kann also stark, Mittel, keine".
+   – Stark: Eigenleben etwa doppelt so oft, alle Effekte voll, der Strom
+     beim Abhaken macht mehr Umläufe.
+   – Mittel (Standard): wie bisher („Mittel" seit Runde 231).
+   – Keine: Formi steht still — keine Gefühle, kein Eigenleben, kein
+     Strom, kein strömender Rand, keine Federn an der Insel. Was er
+     MELDET, bleibt (Insel, Punkt „hat etwas für dich", Rand ohne Fluss).
+   Je Gerät gespeichert, wie Formis übrige Einstellungen. */
+var FORMI_BEWEGUNGEN=['stark','mittel','keine'];
+var FORMI_BEWEGUNG_NAMEN={ stark:'Stark', mittel:'Mittel', keine:'Keine' };
+var FORMI_BEWEGUNG_HINWEIS={
+  stark:'Formi zeigt öfter etwas von sich, Effekte laufen voll.',
+  mittel:'Wie gewohnt: ab und zu eine Kleinigkeit, Effekte passen sich dem Gerät an.',
+  keine:'Formi steht still. Was er dir meldet, siehst du trotzdem.' };
+var _fbStufe=null;
+function formiBewegung(){ if(_fbStufe===null) _fbStufe=jvPersona().bewegung; return _fbStufe; }
+function formiBewegungAnwenden(){
+  _fbStufe=jvPersona().bewegung;
+  formiGefuehleAnwenden(_fbStufe!=='keine');
+  if(typeof _jvQ!=='undefined'){ _jvQ.stufe=null; if(typeof jvQualitaetNeu==='function') jvQualitaetNeu(); }
+  if(_fl.gestartet) formiEigenlebenPlanen();
+  if(_fbStufe==='keine'){ formiRand(false); formiInselWeg(); }
+  [].forEach.call(document.querySelectorAll('[data-fbew]'), function(el){
+    var an=el.getAttribute('data-fbew')===_fbStufe;
+    el.classList.toggle('on', an); el.setAttribute('aria-pressed', an ? 'true' : 'false');
+  });
+}
+function formiBewegungSetzen(stufe){
+  if(FORMI_BEWEGUNGEN.indexOf(stufe)<0) return;
+  jvPersonaSetzen({ bewegung:stufe });
+  tick(8);
 }
 function jvPersonaSetzen(aenderung){
   var p=Object.assign(jvPersona(), aenderung);
   try{ localStorage.setItem('kf_jv_persona', JSON.stringify(p)); }catch(e){}
-  if('gefuehle' in aenderung) formiGefuehleAnwenden(p.gefuehle!=='aus');
+  if('bewegung' in aenderung) formiBewegungAnwenden();
   jvPersonaAnwenden();
   return p;
 }
 function jvPersonaAnwenden(){
   var t=$('jarvisTitel'); if(t) t.textContent=jvPersona().name;
-  jvWeckPruefen();
 }
 function jvPersonaAuf(auf){
   var pn=$('jarvisPersona'), b=$('jarvisPersonaBtn'); if(!pn) return;
@@ -28688,45 +28725,26 @@ function jvPersonaAuf(auf){
   if(!auf) return;
   jvGesprAuf(false);
   var p=jvPersona();
-  var geraete=(window.speechSynthesis && window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices() : []).filter(function(x){ return /^de/i.test(x.lang); });
-  var SR=window.SpeechRecognition || window.webkitSpeechRecognition;
   function wahl(feld, wert, text){ return '<button type="button" data-jvp="'+feld+'" data-jvw="'+esc(wert)+'" aria-pressed="'+(p[feld]===wert ? 'true' : 'false')+'">'+esc(text)+'</button>'; }
-  pn.innerHTML='<h2>Persönlichkeit und Stimme</h2><div class="jv-pinhalt">'+
+  pn.innerHTML='<h2>Formi einstellen</h2><div class="jv-pinhalt">'+
     '<label>Name<input type="text" class="inp" id="jvPName" maxlength="20" value="'+esc(p.name)+'" autocomplete="off"></label>'+
     (gehirnAlleMeineKeys().length>1 ? '<div class="jv-pz">Mein Studio<div class="jv-pw" role="group" aria-label="Mein Studio">'+
       gehirnAlleMeineKeys().slice(0,14).map(function(k){ return '<button type="button" data-jvp="studio" data-jvw="'+esc(k)+'" aria-pressed="'+(gehirnMeinStudio()===k ? 'true' : 'false')+'">'+esc(studioName(k))+'</button>'; }).join('')+
       '</div><p class="jv-phinweis">Hier nehme ich an, dass du bist, wenn du kein Studio nennst.</p></div>' : '')+
-    '<div class="jv-pz">Effekte<div class="jv-pw" role="group" aria-label="Effekte">'+wahl('effekte','auto','Automatisch')+wahl('effekte','voll','Voll')+wahl('effekte','sparsam','Sparsam')+'</div>'+
-      '<p class="jv-phinweis">Automatisch: weniger Teilchen, sobald dein Gerät ins Stocken kommt.</p></div>'+
-    /* Runde 188 — aus dem Betrieb auf „ein Schalter für Formis Gefühle?":
-       „Ja aber versteckter". Deshalb hier in Formis eigenen Einstellungen
-       und nicht unter Profil → Aussehen. */
-    '<div class="jv-pz">Gefühle der Kugel<div class="jv-pw" role="group" aria-label="Gefühle der Kugel">'+wahl('gefuehle','an','Zeigen')+wahl('gefuehle','aus','Aus')+'</div>'+
-      '<p class="jv-phinweis">Aus: Die Kugel schaut nicht mit, blinzelt nicht, freut sich nicht und schläft nicht ein. Der Punkt „hat etwas für dich" und „über Formi" bleiben.</p></div>'+
+    /* Runde 262: ein Schalter statt „Effekte" und „Gefühle der Kugel". */
+    '<div class="jv-pz">Bewegung<div class="jv-pw" role="group" aria-label="Formis Bewegung">'+
+      FORMI_BEWEGUNGEN.map(function(x){ return '<button type="button" data-fbew="'+x+'" aria-pressed="'+(p.bewegung===x ? 'true' : 'false')+'">'+FORMI_BEWEGUNG_NAMEN[x]+'</button>'; }).join('')+'</div>'+
+      '<p class="jv-phinweis">'+FORMI_BEWEGUNG_HINWEIS[p.bewegung]+'</p></div>'+
     '<div class="jv-pz">Tonfall<div class="jv-pw" role="group" aria-label="Tonfall">'+wahl('ton','locker','Locker')+wahl('ton','sachlich','Sachlich')+'</div></div>'+
-    '<div class="jv-pz">Stimme<div class="jv-pw" role="group" aria-label="Stimme">'+wahl('stimme','profi','Menschlich')+wahl('stimme','geraet','Vom Gerät')+'</div>'+
-    (_jvProfiAus && p.stimme==='profi' ? '<p class="jv-phinweis">Die menschliche Stimme ist gerade nicht eingerichtet — ich spreche mit der Stimme des Geräts.</p>' : '')+'</div>'+
-    (p.stimme==='profi'
-      ? '<label>Welche Stimme<select class="inp" id="jvPProfi">'+JV_PROFI_STIMMEN.map(function(x){ return '<option value="'+x[0]+'"'+(x[0]===p.profiStimme ? ' selected' : '')+'>'+esc(x[1])+'</option>'; }).join('')+'</select></label>'
-      : '<label>Stimme des Geräts<select class="inp" id="jvPGeraet"><option value="">automatisch</option>'+geraete.map(function(x){ return '<option value="'+esc(x.name)+'"'+(x.name===p.geraetStimme ? ' selected' : '')+'>'+esc(x.name)+'</option>'; }).join('')+'</select></label>')+
-    (SR ? '<div class="jv-pz">Freihändig<div class="jv-pw">'+'<button type="button" id="jvPWeck" aria-pressed="'+(p.weckwort ? 'true' : 'false')+'">„Hey '+esc(p.name)+'" hören</button></div>'+
-      '<p class="jv-phinweis">Solange dieses Fenster offen ist, hört das Mikrofon auf „Hey '+esc(p.name)+'". Kostet etwas Akku; geht im Chrome-Browser.</p></div>' : '')+
     (isChef() ? '<div class="jv-pz">Mail-Code der Leitung<p class="jv-phinweis">Wer diesen Code in eine Mail an Formi schreibt („Code: …"), legt per Mail Aufgaben und Ankündigungen an. Gespeichert wird nur ein Hash — merk ihn dir gut.</p>'+
       '<div class="jv-pw"><input type="password" class="inp" id="jvPCode" minlength="8" maxlength="64" autocomplete="new-password" aria-label="Neuer Mail-Code" placeholder="neuer Code, mind. 8 Zeichen"><button type="button" id="jvPCodeSetzen">Code speichern</button></div></div>' : '')+
-    '</div><div class="jv-gk"><button type="button" class="btn btn-primary btn-sm" id="jvPProbe">Probehören</button><button type="button" class="btn btn-ghost btn-sm" id="jvPZu">Fertig</button></div>';
+    '</div><div class="jv-gk"><button type="button" class="btn btn-primary btn-sm" id="jvPZu">Fertig</button></div>';
   var n=$('jvPName'); if(n) n.addEventListener('change', function(){ jvPersonaSetzen({ name:n.value }); });
   pn.querySelectorAll('[data-jvp]').forEach(function(x){ x.addEventListener('click', function(){
     var a={}; a[x.getAttribute('data-jvp')]=x.getAttribute('data-jvw'); jvPersonaSetzen(a); jvPersonaAuf(true);
-    if(a.effekte){ _jvQ.stufe=null; jvQualitaetNeu(); }
     if(a.studio){ var o=$('jarvisOrt'); if(o) o.textContent=studioName(a.studio); }
   }); });
-  var pr=$('jvPProfi'); if(pr) pr.addEventListener('change', function(){ jvPersonaSetzen({ profiStimme:pr.value }); });
-  var ge=$('jvPGeraet'); if(ge) ge.addEventListener('change', function(){ jvPersonaSetzen({ geraetStimme:ge.value }); });
-  var wk=$('jvPWeck'); if(wk) wk.addEventListener('click', function(){ jvPersonaSetzen({ weckwort:!jvPersona().weckwort }); jvPersonaAuf(true); });
-  var pb=$('jvPProbe'); if(pb) pb.addEventListener('click', function(){
-    var q=jvPersona(); if(n && n.value) q=jvPersonaSetzen({ name:n.value });
-    var vorher=_jvTonAn; _jvTonAn=true; jvSprechen('Hi'+(gehirnVorname() ? ' '+gehirnVorname() : '')+', ich bin '+q.name+'. So klinge ich.'); _jvTonAn=vorher;
-  });
+  pn.querySelectorAll('[data-fbew]').forEach(function(x){ x.addEventListener('click', function(){ formiBewegungSetzen(x.getAttribute('data-fbew')); jvPersonaAuf(true); }); });
   var zu=$('jvPZu'); if(zu) zu.addEventListener('click', function(){ if(n && n.value) jvPersonaSetzen({ name:n.value }); jvPersonaAuf(false); });
   var cs=$('jvPCodeSetzen'); if(cs) cs.addEventListener('click', function(){
     var f=$('jvPCode'), code=String((f && f.value)||'');
@@ -30095,7 +30113,8 @@ var FK_EIGENLEBEN=['summt','faengt','niest','zwinkert','kopfschief','huepft','um
 function formiEigenlebenPlanen(){
   clearTimeout(_fl.lebenUhr);
   if(_fl.uhrenAus) return;
-  _fl.lebenUhr=setTimeout(function(){ formiEigenleben(); formiEigenlebenPlanen(); }, 8000+Math.random()*12000);
+  var f = formiBewegung()==='stark' ? .5 : 1;
+  _fl.lebenUhr=setTimeout(function(){ formiEigenleben(); formiEigenlebenPlanen(); }, (8000+Math.random()*12000)*f);
 }
 function formiEigenleben(art){
   if(!art){
@@ -30206,7 +30225,9 @@ function formiStromZiel(){
 /* Die Bahn EINES Buchstabens: Mitte (x0|y0) → Loch (zx|zy). Koordinaten
    der Bilder relativ zu (ox|oy), Grösse des Buchstabens w × h. */
 function formiBahn(x0, y0, zx, zy, rH, w, h, ox, oy, runden, dreh){
-  var rx=x0-zx, ry=y0-zy, r0=Math.max(rH*2.5, Math.sqrt(rx*rx+ry*ry)), th0=Math.atan2(ry, rx), N=40;
+  var rx=x0-zx, ry=y0-zy, r0=Math.max(rH*2.5, Math.sqrt(rx*rx+ry*ry)), th0=Math.atan2(ry, rx), N=Math.round(34*Math.max(1.15, runden||1.2));
+  /* Mehr Umläufe brauchen mehr Bilder, sonst springt ein Bild nah am Loch
+     über die halbe Runde (Runde 262, „Stark"). */
   var rr=[], gew=[0], zeit=[0];
   for(var i=0;i<=N;i++){ var s=i/N; rr.push(rH+(r0-rH)*Math.pow(1-Math.pow(s, 1.15), 1.6)); }
   /* Umlauf ∝ r^-1 (gedeckelt): die Bahn biegt schon von weitem ein, statt
@@ -30273,7 +30294,7 @@ function formiStrom(titel, text, ziel, opt){
   }
   lage.forEach(function(l, i){
     if(l.el.textContent==='\u00a0'){ l.el.style.display='none'; return; }
-    var bild=formiBahn(ox+l.x+l.w/2, oy+l.y+l.h/2, ziel.x, ziel.y, ziel.rH, l.w, l.h, ox, oy, 1.15+((i*7)%5)*.04, dreh);
+    var bild=formiBahn(ox+l.x+l.w/2, oy+l.y+l.h/2, ziel.x, ziel.y, ziel.rH, l.w, l.h, ox, oy, (formiBewegung()==='stark' ? 1.6 : 1.15)+((i*7)%5)*.04, dreh);
     var verz=start+(opt.aus ? (lage.length-1-rang[i]) : rang[i])*26;
     if(opt.aus) bild=bild.slice().reverse().map(function(f){ var g=Object.assign({}, f); g.offset=+(1-f.offset).toFixed(4); g.opacity = f.opacity===0 ? 0 : 1; return g; });
     else bild[0].opacity=1;
@@ -30817,7 +30838,7 @@ function formiGesehen(){
 }
 function formiLebtStart(){
   if(_fl.gestartet) return; _fl.gestartet=true;
-  _fl.gefuehleAus = jvPersona().gefuehle==='aus';
+  _fl.gefuehleAus = formiBewegung()==='keine';
   if(_fl.gefuehleAus) document.documentElement.classList.add('fk-still');
   var maus=!!(window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches);
   function tun(){ formiWach(); }
@@ -31619,7 +31640,7 @@ function gehirnAbschluss(i, was, btn){
     a.fertig=true; a.fertigText=gehirnSpruch('feierabend');
     gehirnStimmung('ok'); jvTon('komplett'); jvVibrieren([20,60,30]);
     if(!gehirnWenigBewegung() && typeof fireConfetti==='function') fireConfetti();
-    gehirnZeichnen(); jvSprechen(a.fertigText); gehirnVerlaufSichern();
+    gehirnZeichnen(); gehirnVerlaufSichern();
   }
   if(was==='weiter' || was==='zurueck'){
     a.schritt=Math.max(0, Math.min(2, a.schritt+(was==='weiter' ? 1 : -1))); a.neu=true;
@@ -32411,7 +32432,6 @@ function jarvisAuf(){
   jvKachelnZeichnen(); gehirnLageLaden();
   jvPersonaAnwenden(); jvPersonaAuf(false); jvOfflineZeigen();
   jvTon('auf');
-  setTimeout(jvBriefingSprechen, 1300);
   requestAnimationFrame(function(){ j.classList.add('da'); var f=$('jarvisFeld'); if(f && !('ontouchstart' in window)) f.focus(); gehirnNachUnten(); });
   /* Runde 186: das kleine Fenster springt glitchend auf — Formi kommt aus
      dem System, nicht aus einer Schublade. Nur transform/opacity. */
@@ -32427,7 +32447,7 @@ function jarvisAuf(){
 function jarvisZu(){
   var j=$('jarvis'); if(!j || j.hidden) return;
   jvTon('zu'); jvStill();
-  jvWeckStop(); gehirnHoerenStop();
+  gehirnHoerenStop();
   jvUhrStop(); jvFeldStop();
   j.classList.remove('da', 'jv-boot', 'jv-mehr-auf'); j.hidden=true;
   var mz=$('jarvisMehr'); if(mz) mz.setAttribute('aria-expanded', 'false');
@@ -32517,7 +32537,7 @@ var _jvKlang=null, _jvWar={ laeuft:false, schritte:0, n:0 }, _jvSpricht=false;
 function jvTonKnopf(){
   var b=$('jarvisTon'); if(!b) return;
   b.setAttribute('aria-pressed', _jvTonAn ? 'true' : 'false');
-  b.setAttribute('aria-label', _jvTonAn ? 'Ton und Stimme ausschalten' : 'Ton und Stimme einschalten');
+  b.setAttribute('aria-label', _jvTonAn ? 'Töne ausschalten' : 'Töne einschalten');
   b.innerHTML=_jvTonAn ? ikon('ton') : ikon('stumm');
 }
 function jvTon(art){
@@ -32550,66 +32570,9 @@ function jvTon(art){
   }catch(e){}
 }
 function jvStill(){
-  try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
-  _jvSprechNr++;
-  if(_jvAudio){ try{ _jvAudio.pause(); }catch(e){} _jvAudio=null; }
   jvPegelStop();
   _jvSpricht=false;
   var j=$('jarvis'); if(j) j.classList.remove('jv-z-spricht');
-}
-/* Vorlesen ohne Warnzeile und ohne Zeichen, die als Wort gesprochen
-   würden; höchstens ~600 Zeichen. */
-/* Erst die menschliche Stimme (Google über den Worker), sonst die des
-   Geräts. Ist die menschliche nicht eingerichtet, merkt sich die App das
-   für diese Sitzung und fragt nicht bei jedem Satz neu. */
-var _jvProfiAus='', _jvSprechNr=0, _jvAudio=null;
-function jvSprechen(text){
-  if(!_jvTonAn || !jarvisOffen()) return;
-  var t=String(text||'').split(/\n\n\u26a0/)[0].replace(/[*_#>•]/g,' ').replace(/\s+/g,' ').trim().slice(0, 600);
-  if(!t) return;
-  jvStill();
-  var p=jvPersona(), nr=++_jvSprechNr;
-  if(p.stimme==='profi' && !_jvProfiAus){
-    _jvSpricht=true; jvZustand();
-    firebase.app().functions(KONFIG.region).httpsCallable('gehirnStimme')({ text:t, stimme:p.profiStimme }).then(function(r){
-      if(nr!==_jvSprechNr || !jarvisOffen()) return;
-      var d=(r && r.data) || {};
-      if(!d.audio){ _jvProfiAus=d.grund||'aus'; return jvGeraetSprechen(t, p, nr); }
-      jvAudioAbspielen(d.audio, nr);
-    }).catch(function(){ if(nr===_jvSprechNr){ _jvProfiAus='fehler'; jvGeraetSprechen(t, p, nr); } });
-    return;
-  }
-  jvGeraetSprechen(t, p, nr);
-}
-function jvAudioAbspielen(b64, nr){
-  try{
-    var a=new Audio('data:audio/mpeg;base64,'+b64);
-    _jvAudio=a;
-    a.onended=a.onerror=function(){ if(_jvAudio===a){ _jvAudio=null; _jvSpricht=false; jvPegelStop(); jvZustand(); } };
-    _jvSpricht=true; jvZustand();
-    var spiel=a.play();
-    if(spiel && spiel.catch) spiel.catch(function(){ if(_jvAudio===a){ _jvAudio=null; _jvSpricht=false; jvZustand(); } });
-    jvPegelVonAudio(a);
-  }catch(e){ _jvSpricht=false; jvZustand(); }
-}
-function jvGeraetSprechen(t, p, nr){
-  if(nr!==_jvSprechNr || !window.speechSynthesis || !window.SpeechSynthesisUtterance){ _jvSpricht=false; jvZustand(); return; }
-  try{
-    window.speechSynthesis.cancel();
-    var u=new SpeechSynthesisUtterance(t); u.lang='de-DE'; u.rate=1.05; u.pitch=1;
-    var stimmen=window.speechSynthesis.getVoices()||[];
-    var de=stimmen.filter(function(x){ return /^de/i.test(x.lang); });
-    var gewaehlt=p && p.geraetStimme ? de.filter(function(x){ return x.name===p.geraetStimme; })[0] : null;
-    if(gewaehlt) u.voice=gewaehlt;
-    else if(de.length) u.voice=de.filter(function(x){ return /google|neural|natural|anna|markus|helena|katja|conrad/i.test(x.name); })[0] || de[0];
-    var kern=document.querySelector('#jarvisKern b');
-    u.onstart=function(){ _jvSpricht=true; jvZustand(); };
-    u.onend=u.onerror=function(){ _jvSpricht=false; jvZustand(); };
-    u.onboundary=function(){
-      if(kern && kern.animate && !gehirnWenigBewegung()) kern.animate([{ transform:'scale(1.16)' }, { transform:'scale(1)' }], { duration:220, easing:'ease-out' });
-    };
-    window.speechSynthesis.speak(u);
-  }catch(e){}
 }
 var _jvZ={ uhr:0, pool:'', liste:[], ctx:null, S:0, dpr:1, leer:true };
 function jvZeichenAn(){ return jarvisOffen() && !gehirnWenigBewegung() && _jvF.an; }
@@ -32701,9 +32664,8 @@ function jvZustand(){
   j.classList.toggle('jv-z-hoert', !!_gHoert && !_gLaeuft);
   j.classList.toggle('jv-z-spricht', !!_jvSpricht && !_gLaeuft);
   var letzte=_gVerlauf[_gVerlauf.length-1], schr=(letzte && letzte.schritte || []).length;
-  /* Erst den neuen Stand merken, DANN reagieren: jvSprechen ruft wieder
-     jvZustand auf — mit dem alten Stand hielte es den Übergang für neu
-     und spräche endlos (Stapelüberlauf, gefunden 20.10.2026). */
+  /* Erst den neuen Stand merken, DANN reagieren (mit dem alten Stand
+     hielte ein erneuter Aufruf den Übergang für neu). */
   var war=_jvWar;
   _jvWar={ laeuft:!!_gLaeuft, schritte:schr, n:_gVerlauf.length, kachelnBei:war.kachelnBei };
   if(jarvisOffen()){
@@ -32718,13 +32680,9 @@ function jvZustand(){
           (letzte.vorschlag.typ==='abhaken' && !letzte.erledigt && !(letzte.wahl && letzte.wahl.length)));
         gehirnStimmung(warn ? 'warn' : 'ok');
         jvTon('fertig'); jvVibrieren(warn ? [10,40,10] : [16]);
-        if(letzte.art==='frage') jvSprechen(letzte.antwort);
-        else if(letzte.spruch) jvSprechen(letzte.spruch);
       }
     }
   }
-  if(war.laeuft && !_gLaeuft) setTimeout(jvWeckPruefen, 400);
-  if(_gLaeuft && _jvWeck) jvWeckStop();
   jvWerte();
   if(jarvisOffen() && !_gLaeuft && _jvWar.kachelnBei!==_gVerlauf.length){ _jvWar.kachelnBei=_gVerlauf.length; jvKachelnZeichnen(); }
 }
@@ -32806,23 +32764,14 @@ function jvPegelVomMikro(){
     jvPegelStart(an);
   }).catch(function(){});
 }
-function jvPegelVonAudio(audio){
-  try{
-    var c=jvPegelKontext(); if(!c) return;
-    var an=c.createAnalyser(); an.fftSize=64; an.smoothingTimeConstant=0.55;
-    var q=c.createMediaElementSource(audio); q.connect(an); an.connect(c.destination);
-    jvPegelStart(an);
-  }catch(e){}
-}
 
-/* ── Zuhören: Knopf, Kern gedrückt halten, Leertaste, Weckwort ──────
+/* ── Zuhören: Knopf, Kern gedrückt halten, Leertaste ────────────────
    Eine Erkennung zur Zeit. Im Fenster schickt das Ende des Sprechens
    ab; auf der Seite bleibt Zeit zum Prüfen. Live-Untertitel unter dem
    Kern. */
 function gehirnHoerenStart(feldId, btn){
   var SR=window.SpeechRecognition || window.webkitSpeechRecognition;
   if(!SR || _gHoert) return false;
-  jvWeckStop();
   jvStill();
   var r; try{ r=new SR(); }catch(e){ toast('Spracheingabe geht auf diesem Gerät nicht.', true); return false; }
   r.lang='de-DE'; r.interimResults=true; r.continuous=false;
@@ -32839,7 +32788,6 @@ function gehirnHoerenStart(feldId, btn){
     if(ut){ ut.classList.remove('da'); setTimeout(function(){ if(!_gHoert) ut.textContent=''; }, 300); }
     jarvisStatus();
     if(feldId==='jarvisFeld' && (f.value||'').trim() && (f.value||'').trim()!==vorher) gehirnSenden('auto', 'jarvisFeld');
-    setTimeout(jvWeckPruefen, 600);
   };
   _gHoert=r;
   if(btn){ btn.classList.add('hoert'); btn.setAttribute('aria-pressed','true'); if(btn.lastChild) btn.lastChild.textContent='Zuhören …'; }
@@ -32880,50 +32828,6 @@ function jvHaltenBinden(){
   }
 }
 
-/* ── Weckwort (20.10.2026: „Hey Formi") ──────────────────────────────
-   Nur wenn eingeschaltet, nur solange das Fenster offen ist, nur mit
-   Spracherkennung (Chrome). Was nach dem Namen gesagt wird, geht ab;
-   nur der Name → kurzer Ton, der nächste Satz geht ab. */
-var _jvWeck=null, _jvWeckWartet=false;
-function jvWeckPruefen(){
-  var an=jvPersona().weckwort && jarvisOffen() && !_gHoert && !_gLaeuft;
-  var w=$('jarvisWeck'); if(w){ w.hidden=!jvPersona().weckwort || !jarvisOffen(); w.textContent='hört auf „Hey '+jvPersona().name+'"'; }
-  if(an) jvWeckStart(); else if(!jvPersona().weckwort || !jarvisOffen()) jvWeckStop();
-}
-function jvWeckStart(){
-  var SR=window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SR || _jvWeck || _gHoert) return;
-  var name=jvPersona().name.toLowerCase();
-  /* „Formi" hört die Erkennung auch als „Vormi" oder „for me". */
-  var kern=name.replace(/[^a-zäöüß0-9]/g,'.?');
-  if(name==='formi') kern='(?:[fv]orm[iy]e?|for ?me)';
-  var muster=new RegExp('(?:^|\\s)(?:hey|hei|hallo|ok|okay)?\\s*'+kern+'[,.!?]?\\s*(.*)$', 'i');
-  var r; try{ r=new SR(); }catch(e){ return; }
-  r.lang='de-DE'; r.interimResults=false; r.continuous=true;
-  r.onresult=function(ev){
-    for(var k=ev.resultIndex;k<ev.results.length;k++){
-      if(!ev.results[k].isFinal) continue;
-      var t=String(ev.results[k][0].transcript||'').trim();
-      if(_jvWeckWartet){ _jvWeckWartet=false; if(t) jvWeckSenden(t); continue; }
-      var m=muster.exec(t);
-      if(!m) continue;
-      var rest=(m[1]||'').trim();
-      if(rest.length>2) jvWeckSenden(rest);
-      else { _jvWeckWartet=true; jvTon('schritt'); gehirnStimmung('ok'); }
-    }
-  };
-  r.onerror=function(){};
-  r.onend=function(){ if(_jvWeck===r){ _jvWeck=null; setTimeout(jvWeckPruefen, 500); } };
-  _jvWeck=r;
-  try{ r.start(); }catch(e){ _jvWeck=null; }
-}
-function jvWeckStop(){ var r=_jvWeck; _jvWeck=null; _jvWeckWartet=false; if(r){ try{ r.stop(); }catch(e){} } }
-function jvWeckSenden(text){
-  var f=$('jarvisFeld'); if(!f || _gLaeuft) return;
-  f.value=text;
-  var ut=$('jarvisUntertitel'); if(ut){ ut.textContent=text; ut.classList.add('da'); setTimeout(function(){ ut.classList.remove('da'); ut.textContent=''; }, 1200); }
-  gehirnSenden('auto', 'jarvisFeld');
-}
 
 var _jvUhr=0;
 function jvUhrStart(){
@@ -53959,6 +53863,18 @@ function buildAppearanceOptions(){
         gl.querySelectorAll('[data-glas]').forEach(function(x){ x.classList.remove('on'); });
         el.classList.add('on'); tick(8);
       });
+    });
+  }
+
+  // 3d) Formis Bewegung (Runde 262)
+  var fbw=$('formiBewOpts');
+  if(fbw){
+    fbw.innerHTML=FORMI_BEWEGUNGEN.map(function(x){
+      return '<button type="button" class="opt'+(formiBewegung()===x?' on':'')+'" data-fbew="'+x+'" aria-pressed="'+(formiBewegung()===x?'true':'false')+'">'+
+        '<span class="formi-figur fbw-figur" aria-hidden="true">'+formiFigurInnen(false, true)+'</span><span>'+FORMI_BEWEGUNG_NAMEN[x]+'</span></button>';
+    }).join('');
+    fbw.querySelectorAll('[data-fbew]').forEach(function(el){
+      el.addEventListener('click', function(){ formiBewegungSetzen(el.getAttribute('data-fbew')); });
     });
   }
 

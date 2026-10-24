@@ -137,7 +137,7 @@ const zeige = (p, id) => p.evaluate((id) => { history.pushState({ v: id }, '', '
         const zr = z.parentElement.getBoundingClientRect();
         let summe = 0, alt = null, streck = 0;
         kf.forEach(f => { const m = /translate\(([-\d.]+)px,\s*([-\d.]+)px\).*scale\(([-\d.]+),\s*([-\d.]+)\)/.exec(f.transform); if (!m) return;
-          const x = zr.left + +m[1], y = zr.top + +m[2], w = Math.atan2(y - ky, x - kx);
+          const x = zr.left + +m[1] + z.offsetWidth / 2, y = zr.top + +m[2] + z.offsetHeight / 2, w = Math.atan2(y - ky, x - kx);
           if (alt !== null) { let d = w - alt; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; summe += d; } alt = w;
           streck = Math.max(streck, (+m[3]) / Math.max(.01, +m[4])); });
         return { text, box: true, n: zeichen.length, soll: text.replace(/\s/g, '').length, spur, eig, grad: Math.abs(summe * 180 / Math.PI), streck };
