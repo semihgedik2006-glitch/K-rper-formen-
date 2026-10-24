@@ -61,8 +61,20 @@ async function oeffne(b, w, h, rolle) {
 async function zu(p, v) {
   /* Der Knopf, der im Bild ist: am Handy unten, am Rechner links. Ohne
      den Filter traf querySelector am Handy die verborgene Seitenleiste. */
-  await p.evaluate((g) => { const k = [...document.querySelectorAll('.mobnav [data-group="' + g + '"], #side [data-group="' + g + '"]')].find(e => e.offsetParent); if (k) k.click(); }, GRUPPE[v]);
+  const gefunden = await p.evaluate((g) => { const k = [...document.querySelectorAll('.mobnav [data-group="' + g + '"], #side [data-group="' + g + '"]')].find(e => e.offsetParent); if (k) k.click(); return !!k; }, GRUPPE[v]);
   await p.waitForTimeout(700);
+  /* Seit Runde 246 steht „Wissen" am Handy nicht mehr unten, sondern
+     unter ☰ („ja … Wissen unter ☰"). Dann derselbe Weg wie ein Mensch:
+     der Griff oben, dann die Zeile — zwei Tipps (test-navigation). */
+  if (!gefunden) {
+    await p.evaluate(async (v) => {
+      document.getElementById('bereichKopf').click();
+      await new Promise(r => setTimeout(r, 450));
+      const z = document.querySelector('#allesLadeInhalt .al-zeile[data-alles="' + v + '"]');
+      if (z) z.click();
+    }, v === 'geraete' ? 'material' : v);
+    await p.waitForTimeout(700);
+  }
   /* Runde 187: Material und Geräte sind EIN Reiter „Bestand“; Geräte
      erreicht man über den Umschalter in der Materialansicht. Aus dem
      Betrieb: „das problem mit dem zu viel bleibt immer noch bestehen“ –

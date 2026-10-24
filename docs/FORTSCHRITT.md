@@ -22579,3 +22579,67 @@ aber hier nicht einzeln durchgeklickt.
 Satz „tippe auf …" im leeren Filter. Der Satz ist durch den Knopf „Alle
 zeigen" ersetzt; der Test prüft jetzt, dass der Knopf da ist **und** auf
 „Alle" schaltet — strenger als vorher, nicht lockerer.
+
+## Runde 260 — Schulung: „Das nimmst du mit" am Ende eines Durchlaufs (24.10.2026)
+
+Aus dem Betrieb, 24.10.2026: „Jo mach weiter" — die nächste
+Schulungs-Runde.
+
+### Was man sieht
+
+Bisher endete ein Durchlauf mit vier Zahlen, darunter zum Beispiel „2
+Fehlversuche". Welche zwei Fragen das waren, stand nirgends. Der Hinweis
+zu einer Frage verschwand mit dem nächsten Tipp.
+
+Jetzt steht unter den Zahlen „Das nimmst du mit": jede Frage, die nicht
+auf Anhieb sass, mit der richtigen Antwort und dem Hinweis dazu. Am
+Rechner stehen die Fragen in zwei Spalten, damit die Karte nicht in die
+Höhe wächst; am Handy und Tablet in einer.
+
+**Warum so entschieden:**
+- **Kein leerer Kasten.** Wer alles beim ersten Mal wusste, sieht ihn
+  nicht. Ein Kasten „Alles richtig!“ würde jedes Mal Platz für eine
+  Nachricht nehmen, die die Zahlen schon sagen.
+- **Der Satz zum Auffrischen steht nur, wo er stimmt.** Bei einem
+  bestandenen Durchlauf ohne Testcode legt `auffrischRunde` genau diese
+  Fragen zuerst in den Plan (Merkmal `d`, Runde 201). Beim Testcode und
+  bei nicht Bestandenem fehlt der Satz.
+- **„Richtig:" in Textfarbe, nicht in Grün.** Statusfarben nur für
+  Status; hier meldet nichts einen Zustand.
+- **Links bündig**, obwohl das Ergebnis darüber zentriert steht: Eine
+  Liste liest man von links.
+- **Kein neuer Datenweg.** Es wird nur angezeigt, was der Durchlauf
+  ohnehin speichert (`fragen` mit `versuche`) und was im Modul steht
+  (Antworten, Hinweis).
+
+### Nebenbei: `test-pc-spalten` wieder grün
+
+Seit Runde 246 steht „Wissen" am Handy unter ☰. Der Durchlauf suchte den
+Knopf unten, fand keinen und prüfte eine leere Liste („Handy:
+Schulungsmodule untereinander — []"). Er geht jetzt denselben Weg wie
+`test-navigation`: erst ☰, dann die Zeile. Die Messung selbst ist
+unverändert.
+
+### Geprüft
+
+- `tests/test-schulung-mitnehmen.js` (24, neu). Drei echte Durchläufe in
+  der Demo:
+  - Eine Frage daneben: genau diese mit Antwort und Hinweis; die anderen
+    nicht; Satz zum Auffrischen in Einzahl. Bei zwei Fragen daneben
+    steht der Satz in Mehrzahl.
+  - GEGENPROBEN: alles richtig → kein Kasten; Testcode → zwei Fragen,
+    kein Satz zum Auffrischen.
+  - Am Rechner zwei Spalten, darunter eine. „Fertig" trifft ≥ 44 × 44 bei
+    320 / 390 / 430 / 820 / 1280 / 1440 / 1920 px, normal und kompakt;
+    nichts ragt hinaus.
+  - Gegenprobe am Code: Ohne den Filter (alle Fragen) fallen sieben
+    Prüfungen.
+- Kontrast an echten Bildpunkten (hellstes gegen dunkelstes Pixel im
+  Ausschnitt, Rechner, dunkles Design): Hinweis 13,0 : 1, Satz darüber
+  14,0 : 1, „Richtig:" 17,6 : 1. Das helle Design habe ich nicht
+  gemessen.
+- `test-pc-spalten` (30) grün; auf `main` vorher rot.
+
+### Nicht geprüft
+
+- Das helle Design (siehe Kontrast).
