@@ -22817,3 +22817,121 @@ mir selber noch 20 Ideen …"
 
 **Nicht geprüft:** echte Spracherkennung auf echten Geräten (im Durchlauf
 eine Attrappe), echte Handys.
+## Runde 264 — Handy-Prüfung: Rand des iPhones, Meldungen, Bewegung (24.10.2026)
+
+Aus dem Betrieb, 24.10.2026: „Es ist alles noch bisschen buggy aber
+kannst du einen kompletten animations Check machen und wie flüssig es
+läuft und die App läuft auf dem Handy sehr abgeschnitten und fehl
+geformt“. Der Apple-Plan (Runden 247–259) war gemergt, aber nie an
+einem iPhone angesehen.
+
+**Warum die Durchläufe es nicht gefunden haben.** Alle liefen in
+Chromium mit `viewport` allein — ohne `isMobile`, und vor allem: Chromium
+meldet `env(safe-area-inset-*)` nie, der Rand ist dort 0. Am iPhone mit
+Home-Leiste sind es unten 34 px (als App vom Home-Bildschirm, mit
+`viewport-fit=cover`), oben 47–59 px. Neu gemessen mit
+`Emulation.setSafeAreaInsetsOverride` (CDP), Safari-Kennung (damit die
+Chromium-Linse um Formi aus ist, wie am Gerät), 375 × 553 bis
+430 × 932, Demo-Leiste ausgeblendet (echte Konten haben sie nicht).
+
+**Gefunden und behoben**
+
+1. **Die unterste Reihe jeder Seite lag unter der Leiste.** Die Leiste
+   unten trägt den Rand (`.mn-reihe` mit `--sab`, 71 + 34 = 105 px), der
+   Platz darüber (`--main-unten`) war fest `--s72` = 72 px. Auf „Heute“
+   stand die Schnellzugriff-Reihe zur Hälfte darunter (Hit-Test traf die
+   Leiste), in jeder Liste fehlten die letzten 34 px. Dazu ein zweiter
+   Fehler, der sich dahinter versteckte: in „kompakt“ schrumpft `--s72`
+   auf 50 px, die Leiste bleibt 71 — dort lag die Reihe auch **ohne**
+   Rand 13–21 px darunter. Jetzt `--main-unten: var(--mobnav-h, calc(72px
+   + var(--sab)))`: die gemessene Höhe der Leiste (ResizeObserver, lief
+   bisher nur mit Daumen-Knopf, jetzt auf jedem Handy), bis dahin 72 px +
+   Rand. Mit Formi über der Leiste kommt der Rand ebenso dazu.
+2. **Meldungen breiter als der Bildschirm.** `.toast` hatte
+   `white-space:nowrap`; „Aufgaben-Erinnerung: 4 heute fällig · 2 morgen
+   fällig“ war 454 px breit, bei 320–430 px fehlten Anfang und Ende.
+   Jetzt `width:max-content; max-width: 100vw − 32 px`, zweizeilig wenn
+   nötig, unten ebenfalls über dem Rand. `max-content`, weil ein fest
+   gesetztes Element mit `left:50%` sonst schon bei halber Fensterbreite
+   umbricht.
+3. **Fenster und Blätter in `vh`.** In Safari ist `100vh` die Höhe ohne
+   Adressleiste; ein Blatt mit `max-height:90vh` ragte bei sichtbarer
+   Leiste über das Bild. 16 Höhen stehen jetzt in `dvh`. Erst mit `vh`
+   als Rückfall in derselben Regel — das meldete test-gestaltung als
+   „dieselbe Eigenschaft zweimal“ an `.pm-box` (der Selektor steht in
+   mehreren Regeln, und der Test zählt über alle). `dvh` kennen Safari
+   seit 15.4 und Chrome seit 108; ein Rückfall lohnt den Ausnahmefall im
+   Test nicht. Am Rechner und in Chromium ist beides gleich — dort ändert
+   sich nichts.
+4. **Plan: Wochendatum unter dem Pfeil.** „19.10. – 25.10.“ braucht
+   146 px, bekam bei 360–390 px nur 103–130 und lief unter „›“; mit
+   „Sehr gross“ (182 px) bis 430 px. Die Anordnung für 320 px (Heute in
+   der zweiten Zeile) gilt jetzt bis 479 px.
+
+**Bewegung — gemessen** (Demo Chef, Formi, CPU ÷4, Arbeit des
+Hauptfadens je Bild aus dem Trace, Demo-Leiste aus):
+
+| | 390 px | 1440 px |
+|---|---|---|
+| Ruhe auf „Heute“ | 3,3 ms | 3,5 ms |
+| Ruhe auf „Studio“ | 2,8 ms | 3,0 ms |
+| Aufgabenliste scrollen | 6,1 ms (davon ~1,6 der Messtreiber) | 2,8 ms |
+| Chat scrollen | 2,9 ms | 2,6 ms |
+| Seitenwechsel (5 Räume, je 500 ms) | 16,3 ms, 90 von 150 Bildern > 8,3 | 18,0 ms, 95 von 142 |
+| Formi-Gefühle auf „Heute“ | 12,7 ms, 123 von 182 > 8,3 | 12,1 ms, 104 von 166 |
+
+Ruhe und Scrollen liegen unter der Grenze. Über der Grenze: der
+Seitenwechsel und Formis Gefühle.
+
+- **Seitenwechsel.** Der Tipp selbst baut die Seite in einer Aufgabe von
+  120–180 ms (÷4, also 30–45 ms ungedrosselt) — das ist der Aufbau, keine
+  Bewegung. Danach rechnet jedes Bild 45–75 Elemente neu (Stil 4–9 ms je
+  Bild). Laut Invalidierungs-Trace: Formis Kugel (10 × `formiDoppler`,
+  4 Drehungen, in zwei Formis), die Einblendung der neuen Zeilen
+  (`hudEin`), die Farbübergänge der drei Kopfknöpfe, und die gleitende
+  Füllung der unteren Leiste mit Übergängen auf `width`, `height`,
+  Hintergrund und Schatten — gegen die Hausregel „keine Übergänge auf
+  width/height“.
+- **Geändert:** die Füllung gleitet nur noch per `transform`; Breite und
+  Bereichsfarbe stehen sofort auf dem Ziel (so überblendet auch Apples
+  Tab-Leiste die Farbe nicht). Im A-B-B-A-Vergleich in derselben Seite:
+  8,1 gegen 8,9 ms je Bild bei 390 px — **innerhalb der Streuung**
+  (bei 1440 px, wo es die Leiste gar nicht gibt, lagen die beiden Hälften
+  ebenso 1 ms auseinander). Behauptet wird also: die Regel ist
+  eingehalten, nicht: es ist messbar flüssiger.
+- **Nicht angefasst, mit Grund:** Formis Animationen. Sie laufen in
+  diesem Chromium (Software-Rastern, ohne Grafikkarte) jedes Bild über
+  den Hauptfaden — auch in Ruhe 1,1–1,4 ms je Bild Stil. Ob WebKit am
+  iPhone sie auf den Compositor legt, ist hier nicht messbar. Formi
+  gehört einer anderen Sitzung (Aussehen und Gefühle); das ist die Spur
+  für dort.
+
+**Nicht behoben, gesehen:**
+- Am Rechner (Chromium) verzerrt die Linse um Formi (Runde 250) Knöpfe
+  in ihrer Nähe sichtbar — „Kommen“, „+ Putzaufgabe“, ein Eingabefeld.
+  Am iPhone gibt es die Linse nicht (Safari kennt SVG-Filter in
+  `backdrop-filter` nicht), sie kann also nicht das „fehl geformt“ am
+  Handy sein. Gewünscht war sie ausdrücklich („mehr verzerrung … ums
+  loch herum“); ob sie über Bedienelementen liegen soll, ist eine Frage
+  an den Betrieb.
+- Demo-Leiste: sie hat oben keinen Rand für die Kamera-Insel. Nur
+  sichtbar, wenn die Demo als App vom Home-Bildschirm läuft.
+- 320 px mit „Sehr gross“: das Wochendatum berührt den linken Pfeil
+  (10 px). War vorher schon so.
+
+**Test:** neu `tests/test-iphone-rand.js`, 35 grün: Startseite bei vier
+iPhone-Grössen mit Rand, normal und kompakt, kein Bedienelement unter der
+Leiste (Hit-Test); drei Räume ganz unten, letzte Zeile über der Leiste;
+lange Meldung bei 320 / 390 / 393 / 1440 im Fenster und über der Leiste;
+Höhen in `dvh` statt `vh` (Regel, weil Chromium den
+Unterschied nicht kennt); Wochendatum bei 360–480 px in zwei
+Schriftgrössen zwischen den Pfeilen; ohne Rand und am Rechner kein
+Unterschied. Gegen `main` 19 von 35 falsch: Startseite 7 von 8 (alle
+mit Rand, dazu SE kompakt ohne Rand), Meldung 3 von 4 (bis 157 px über
+den Rand), die `vh`-Regel, Plan 9 von 12. Die Prüfung „letzte Zeile ganz
+unten“ ist auch auf `main` grün — die Listen haben dort schon genug
+Polster für Formi; sie bleibt als Wache.
+
+**Nicht getestet:** Safari am iPhone selbst. Der Rand ist nachgestellt,
+nicht gemessen; ob Safari 26 mit schwebender Adressleiste unten einen
+Rand meldet, zeigt nur das Gerät.
