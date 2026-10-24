@@ -22683,3 +22683,64 @@ Höhe wächst; am Handy und Tablet in einer.
 ### Nicht geprüft
 
 - Das helle Design (siehe Kontrast).
+
+## Runde 262 — Formi versteht, was gemeint ist (Worker 2.25, 24.10.2026)
+
+Aus dem Betrieb: „noch antwortet eher sehr komisch und nicht wirklich so als
+wäre da ein Mensch hinter … Hauptziel wäre es eigentlich das Formi so wie du
+ist und auch rück Fragen stellt und wirklich versteht was ich meine, ich
+hatte heute gefragt was ich tun soll wenn ein Kunde mitten im Training
+Durchfall hat und er meinte ich soll keine Kunden Daten weiter geben … und
+danach meinte er ich soll die Person hinsetzten".
+
+Auf die Rückfragen:
+- Modell: „Gratis bleiben". Claude Haiku war die Empfehlung, rund 0,1 Cent
+  je Antwort.
+- Rückfragen: „Nur wenn es wirklich zählt".
+- Gesundheit ohne Wissen: „Gesunder Menschenverstand + Hinweis".
+
+**Warum Formi so antwortete** (aus dem Code, nicht aus dem Verlauf — der
+Leitstand war heute nicht erreichbar)
+1. Im Systemtext standen „Nennt jemand … Gesundheitsdetails, wiederhole sie
+   nicht" und „Gesundheitsdaten nie per WhatsApp verschicken" ohne Anlass.
+   Ein schwächeres Modell macht daraus eine Ermahnung. Gemini, das vorher
+   entscheidet, ob Frage oder Auftrag, kannte nur „keins … das andere
+   Personen betrifft (z. B. jemand anderen krankmelden)". „Kunde hat
+   Durchfall" konnte so als „keins" mit Datenschutz-Hinweis enden.
+2. „Steht zu einem Gesundheitsthema ein Vorgehen im STUDIO-WISSEN, gib es
+   vollständig wieder" — ohne die Frage, ob es zu GENAU dieser Lage passt.
+   Die Suche findet zu Durchfall den Schwindel-Ablauf („hinsetzen"), und
+   das Modell schrieb ihn ab.
+3. „Steht nichts dazu im Wissen: keine eigene medizinische Einschätzung" —
+   damit blieb nur der unpassende Eintrag.
+4. Acht Einträge, bis 12.000 Zeichen, die meisten halb passend.
+
+**Geändert**
+- Systemtext:
+  - „SO DENKST DU": Was will die Person wirklich? Ist es dringend? Passt
+    ein Eintrag zu GENAU dieser Situation, sonst weglassen? Fehlt etwas,
+    das die Antwort ändert? Dann zuerst das Sichere und EINE Rückfrage.
+    Zum Schluss der Bezug aufs bisherige Gespräch.
+  - „SO ANTWORTEST DU": wie ein Mensch, der daneben steht, ohne Floskeln
+    und Belehrungen.
+  - Gesundheit ohne passendes Wissen: vernünftige erste Schritte, die
+    Warnzeichen, „Nicht geprüft:", keine Diagnosen und keine Medikamente.
+  - Datenschutz nur, wenn wirklich etwas weitergegeben wird.
+  - Zwei Beispiele: Durchfall, mit gutem und schlechtem Weg, und eine
+    unklare Frage („die weste geht nicht").
+  - Sprüche selten, bei Arbeitsfragen keine.
+- An die KI gehen höchstens 5 Einträge bzw. 7.000 Zeichen (`kiWissen`).
+  Über der Liste steht: „Treffer einer Suche — oft passt nur einer oder
+  keiner".
+- `FORMI_DENKEN` (low | medium | high) als Variable in Cloudflare. Standard
+  bleibt „low": „medium" brauchte am 23.10. 6–18 s je Antwort.
+- Gemini (gehirnAktion): Eine Situation mit einem Kunden oder Kollegen ist
+  IMMER „frage", nie „keins" oder „abwesenheit".
+
+**Geprüft:** `test-formi-worker` 159 und `test-gehirn-aktion` 140. Geprüft
+ist der Wortlaut des Systemtexts, Wissen höchstens 5 Einträge,
+FORMI_DENKEN und die Gemini-Regel.
+**Nicht geprüft:** wie die echte KI damit antwortet. Das geht nur mit
+`/api/probe` im Leitstand, und der war heute nicht erreichbar. Als Erstes
+mit der Durchfall-Frage prüfen, dann mit Fieber, Partner-Einwand,
+Herzschrittmacher mit Bescheinigung und „Gerät piept".
