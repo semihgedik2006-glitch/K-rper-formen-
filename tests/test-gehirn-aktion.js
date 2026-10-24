@@ -48,6 +48,7 @@ console.log('── Etappe 3: Material, Probetraining, Formi meldet sich (23.10.
   pruefe('Probetraining: Zukunft oder älter als 30 Tage → nichts', MB({ typ: 'probe', datum: '2026-10-24' }) === null && MB({ typ: 'probe', datum: '2026-09-22' }) === null && MB({ typ: 'probe', datum: '2026-09-23' }) !== null);
   const sysE = __intern.gehirnAktionSystem({ rolle: 'mitarbeiter', namen: NAM, erlaubt: ['studio-1'], name: 'Lea', heute: '2026-10-23' });
   pruefe('Systemtext kennt „material" und „probe", Probetraining ohne Kundennamen', /"typ":"material"/.test(sysE) && /"typ":"probe"/.test(sysE) && /OHNE Kundennamen/.test(sysE));
+  pruefe('Systemtext: eine Situation mit einem Kunden („Kunde hat Durchfall") ist immer eine Frage, nie „keins" (24.10.2026)', /Kunde hat Durchfall[^']*IMMER "frage" — nie "keins", nie "abwesenheit"/.test(sysE));
   pruefe('ein ungültiges „material"/„probe" wird „unklar", nicht als Frage beantwortet', W({ typ: 'material' }, null) === 'unklar' && W({ typ: 'probe' }, null) === 'unklar');
 
   const I = __intern;

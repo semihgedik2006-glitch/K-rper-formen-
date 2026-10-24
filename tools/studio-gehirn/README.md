@@ -94,6 +94,7 @@ Workers AI, **nicht** über GitHub Actions.
 
 | Name | Wofür |
 |---|---|
+| `FORMI_DENKEN` | `low` (Standard, schnell), `medium` oder `high`: wie gründlich gpt-oss nachdenkt — gründlicher versteht schwierige Sätze besser, dauert aber länger und kostet mehr Kontingent |
 | `NEURONEN_SPAR`, `NEURONEN_STOPP` | Grenzen für Sparmodus (6000) und Notbremse (9200), geschätzte Neuronen je UTC-Tag |
 | `WA_AKTIV` | `1` = WhatsApp senden. Ohne sie ist WhatsApp seit 2.10 aus (Meta sperrt noch). |
 | `LIMIT_PRO_TAG`, `LIMIT_STUDIOCHAT_TAG`, `AUFBEWAHRUNG_TAGE` | wie im Kopf von `worker.js` |
