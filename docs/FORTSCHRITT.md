@@ -22797,7 +22797,23 @@ mir selber noch 20 Ideen …"
   Randes aus Runde 250. Deshalb der sparsamere Rand.
 
 **Geprüft:**
-ERGEBNIS_HIER
+- Neu: `test-formi-bewegung` (46). Der Schalter steht an beiden Stellen
+  mit einem Wert; jede Wahl ist per Hit-Test bei 320–1920, normal und
+  kompakt, ≥ 44 × 44 treffbar. „Keine" ist still und gemerkt, die Insel
+  meldet trotzdem; Gegenprobe „Mittel" bewegt wieder. „Stark" läuft
+  weiter um Formi (gemessen etwa 590° statt 415°). „Gefühle aus" wird zu
+  „Keine". Im Quelltext gibt es kein speechSynthesis, keine
+  Stimm-Function und kein dauerhaft hörendes Mikrofon mehr.
+- `test-gehirn` 12d/12e umgestellt, Zitat aus dem Betrieb im Test: Sprechen
+  per Halten, per Leertaste und mit Untertitel geht; Antworten und
+  Briefing werden NICHT vorgelesen; kein Weckwort. 327 grün.
+- **Arbeit je Bild beim Denken** (CPU ÷4): 390 px 5,7 ms, 1440 px 6,8 ms,
+  1920 px 6,8 ms, Grenze 8,3. Auf `main` vorher 1440 px 10,2 ms und
+  1920 px 9,3 ms. Gemessen wurde, was es kostete: Die Figur in der Insel
+  drehte dauernd mit (mehrere ms), der strömende Rand etwa 1–3 ms. Die
+  Insel-Figur steht jetzt still, der Rand ist eine dünne Linie.
+- Gesamtdurchlauf mit 27 Durchläufen (Formi, Gestaltung, Knöpfe,
+  abgeschnitten, quer, Federn, Glas, Neuigkeiten, CSP …): alle grün.
 
 **Nicht geprüft:** echte Spracherkennung auf echten Geräten (im Durchlauf
 eine Attrappe), echte Handys.
