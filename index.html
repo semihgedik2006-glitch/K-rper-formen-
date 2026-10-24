@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-gBGbmZP3H/EjJMXJwSrwA65bb2KzK0IPBVuy84cnAgs='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-AUNmK4boZo8ZbaUwdWAf+MrXplUfvkEpwEqWz0dVgnY='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -22767,6 +22767,12 @@ var NEUIGKEITEN = [
     'Formi hört nicht mehr auf „Hey Formi" und liest nichts mehr vor. Sprechen statt Tippen geht weiter: im Formi-Fenster auf „Sprechen" tippen oder gedrückt halten.',
     'Neu ist der Schalter „Formis Bewegung" mit Stark, Mittel und Keine, unter Persönlich → Profil → Aussehen und in Formis Einstellungen. Stark: Formi zeigt öfter etwas von sich. Keine: Formi steht still, was er dir meldet, siehst du trotzdem.',
     'Der Leuchtrand, wenn Formi arbeitet, ist jetzt eine feine Lichtlinie, die um den Bildschirm läuft – ruhiger und sparsamer für das Gerät.'
+  ]},
+  { id:'2026-10-24-formi-versteht', datum:'24.10.2026', titel:'Formi denkt erst nach, dann antwortet er', wo:'gehirn', punkte:[
+    'Formi überlegt jetzt zuerst, was du wirklich meinst und ob etwas dringend ist – und nimmt aus unserem Wissen nur, was zu genau deiner Situation passt.',
+    'Fehlt etwas Wichtiges, sagt Formi dir erst, was auf jeden Fall gilt, und fragt dann einmal kurz nach.',
+    'Bei Gesundheitsfragen, zu denen wir noch nichts festgelegt haben, gibt Formi vernünftige erste Schritte und sagt dazu, dass das noch nicht geprüft ist.',
+    'Keine Datenschutz-Hinweise mehr, wenn du nur fragst, was du bei einem Kunden tun sollst.'
   ]},
   { id:'2026-10-24-schulung-mitnehmen', datum:'24.10.2026', titel:'Schulung: am Ende steht, was du mitnimmst', wo:'schulung', punkte:[
     'Nach einer Schulung stehen unter den Zahlen jetzt die Fragen, die nicht auf Anhieb geklappt haben – mit der richtigen Antwort und der Erklärung dazu. Wer alles beim ersten Mal wusste, sieht diesen Kasten nicht.',

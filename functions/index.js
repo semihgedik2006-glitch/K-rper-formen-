@@ -8486,6 +8486,10 @@ function gehirnAktionSystem(o) {
     'Enthält der Satz MEHRERE getrennte Aufträge (z. B. "Klo ist sauber und die Handtücher sind leer"), antworte {"befehle":[Aktion, Aktion]} mit höchstens 3 Aktionen. ' +
     'Mögliche Aktionen: ' +
     '{"typ":"frage"} — eine Frage zum Studio, zu EMS, zu Abläufen oder zur Bedienung der App (das Studio-Wissen antwortet). Im Zweifel IMMER "frage". ' +
+    /* 24.10.2026, aus dem Betrieb: „was ich tun soll wenn ein Kunde mitten im Training Durchfall hat und er
+       meinte ich soll keine Kunden Daten weiter geben". Eine Situation mit einem Kunden ist eine Frage —
+       kein Auftrag, jemanden abzumelden, und kein Datenschutzfall. */
+    'Beschreibt jemand eine Situation mit einem Kunden oder Kollegen und will wissen, was zu tun ist ("Kunde hat Durchfall", "Kundin ist schwindelig", "Kollege ist nicht gekommen, was jetzt?"), ist das IMMER "frage" — nie "keins", nie "abwesenheit". ' +
     '{"typ":"idee","text":"..."} — ein Vorschlag, eine Idee oder ein Anliegen an die Leitung (z. B. "wir bräuchten …", "man könnte …"). ' +
     '{"typ":"navigation","ziel":"<Schlüssel>","studio":"Studioname oder leer"} — eine Seite öffnen. Ziele: ' + ziele + '. ' +
     '{"typ":"abfrage","was":"aufgaben"|"dienst"|"abwesend","studio":"Studioname oder leer"} — offene/überfällige Aufgaben, wer heute Dienst hat, wer heute fehlt. ' +

@@ -131,7 +131,19 @@ function ki(antworten) {
   ];
   pruefe(w.wissenRangieren(roh, w.suchbegriffe('was tun wenn kunde lws hat'))[0].thema === 'was tun wenn kunde lws hat', 'seltenes Wort im Thema (LWS) kommt nach vorn');
   pruefe(w.wissenRangieren(roh, w.suchbegriffe('kunde will kündigen'))[0].thema.startsWith('ein kunde will'), 'Gegenprobe: Kündigung bleibt vorn');
-  pruefe(/geprüftes internes Vorgehen/.test(sys), 'Systemtext: Gesundheits-Vorgehen aus dem Wissen wird wiedergegeben');
+  pruefe(/Vorgehen für GENAU diese Situation[^\n]*gilt es — vollständig, mit den Schritten/.test(sys), 'Systemtext: ein passendes Gesundheits-Vorgehen aus dem Wissen wird vollständig wiedergegeben');
+  /* 2.25. Aus dem Betrieb (24.10.2026): „ich hatte heute gefragt was ich tun soll wenn ein Kunde mitten im
+     Training Durchfall hat und er meinte ich soll keine Kunden Daten weiter geben … und danach meinte er ich
+     soll die Person hinsetzten was auch kein Sinn macht" — Ziel: „das Formi so wie du ist und auch rück Fragen
+     stellt und wirklich versteht was ich meine". Rückfragen: „Nur wenn es wirklich zählt"; Gesundheit ohne
+     Wissen: „Gesunder Menschenverstand + Hinweis". Was die echte KI daraus macht, prüft nur die Probe live. */
+  pruefe(/Schwindel passt nicht zu Durchfall/.test(sys) && /Unpassendes lässt du komplett weg/.test(sys), 'Systemtext: nur Wissen, das zu GENAU dieser Situation passt (Schwindel ≠ Durchfall)');
+  pruefe(/KEIN Datenschutzproblem — dann kein Hinweis/.test(sys) && !/Gesundheitsdaten nie per WhatsApp verschicken\./.test(sys), 'Systemtext: Datenschutz nur, wenn wirklich etwas weitergegeben wird');
+  pruefe(/EINE kurze, konkrete Rückfrage/.test(sys) && /Fehlt nichts Entscheidendes, frag nicht/.test(sys), 'Systemtext: Rückfrage nur, wenn sie die Antwort ändert');
+  pruefe(/praktische, vernünftige erste Schritte/.test(sys) && /Beginne dann mit "Nicht geprüft:"/.test(sys) && /Keine Diagnosen, keine Medikamente/.test(sys), 'Systemtext: Gesundheit ohne Wissen — gesunder Menschenverstand, markiert, ohne Diagnose');
+  pruefe(/durchfall/.test(sys) && /"hinsetzen lassen" ist der Ablauf bei Schwindel/.test(sys), 'Systemtext: das Durchfall-Beispiel mit gutem und schlechtem Weg steht drin');
+  pruefe(w.kiWissen(Array.from({ length: 8 }, (_, i) => ({ thema: 't' + i, inhalt: 'x'.repeat(100) }))).length === 5 && w.kiWissen([{ thema: 'a', inhalt: 'x'.repeat(9000) }, { thema: 'b', inhalt: 'y' }]).length === 1, 'an die KI höchstens 5 Einträge und 7.000 Zeichen (ein langer bleibt)');
+  pruefe(w.denkenFuer({}).reasoning.effort === 'low' && w.denkenFuer({ FORMI_DENKEN: 'medium' }).reasoning.effort === 'medium' && w.denkenFuer({ FORMI_DENKEN: 'quatsch' }).reasoning.effort === 'low', 'Nachdenken per FORMI_DENKEN umstellbar, sonst „low"');
   pruefe(!/oder sag "Das weiß ich noch nicht sicher"/.test(sys), 'Systemtext: „weiß ich nicht sicher" nur ohne Wissen');
 
   pruefe(!w.whatsappAktiv({}), 'WhatsApp ohne WA_AKTIV aus');
