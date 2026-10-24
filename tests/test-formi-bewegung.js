@@ -1,6 +1,6 @@
 /* ══════════════════════════════════════════════════════════════════════
    FORMIS BEWEGUNG: STARK / MITTEL / KEINE — und Formi ohne Stimme
-   (Runde 262)
+   (Runde 263)
 
    Aus dem Betrieb (24.10.2026):
    „kannst du dafür sorgen das formi doch kein „hey formi“ mehr hat aber

@@ -311,7 +311,7 @@ const KUGEL_ANIM = () => {
 
     /* Runde 188 — aus dem Betrieb: „Ja aber versteckter". Der Schalter
        steht in Formis eigenen Einstellungen (Regler im Formi-Fenster). */
-    /* Runde 262 — aus dem Betrieb: „einen Schalter wo man formis Animationen
+    /* Runde 263 — aus dem Betrieb: „einen Schalter wo man formis Animationen
        anpassen kann also stark, Mittel, keine". „Gefühle aus" ist jetzt
        „Bewegung: Keine"; geprüft wird dasselbe (still, gemerkt). */
     console.log('\n── Schalter Bewegung: Stark / Mittel / Keine ──');

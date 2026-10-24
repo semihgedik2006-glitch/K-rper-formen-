@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-LZ6WqtJbHzxk3pKUIeXSygYA5qyVUovSV5T4Y4pEh40='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-gBGbmZP3H/EjJMXJwSrwA65bb2KzK0IPBVuy84cnAgs='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -4896,7 +4896,7 @@ body.formi:not(.light).hud-impuls .topbar::after{animation:hudImpuls .9s var(--e
 .opt.on{border-color:var(--accent);background:rgba(var(--akz-rgb),.10)}
 .opt span{font-size:var(--t-2xs);font-weight:700;color:var(--text-2)}
 .opt.on span{color:var(--accent)}
-/* Runde 262: Formis Bewegung als echte Knöpfe (die übrigen .opt sind
+/* Runde 263: Formis Bewegung als echte Knöpfe (die übrigen .opt sind
    noch div-Flächen). Ohne Browser-Schrift und -Farbe. */
 button.opt{font:inherit;color:inherit;min-height:44px;width:100%}
 .fbw-figur{--fg:30px;display:block}
@@ -6593,13 +6593,18 @@ html.fk-still .fk-wirbel,html.fk-still .fk-innen{animation:none}
 .formi-rand.an{opacity:.95}
 .formi-rand.blitz{opacity:1}
 .formi-rand i{position:absolute;overflow:hidden}
-.formi-rand .o{left:0;right:0;top:0;height:var(--fr-b);-webkit-mask-image:linear-gradient(180deg, #000, transparent);mask-image:linear-gradient(180deg, #000, transparent)}
-.formi-rand .u{left:0;right:0;bottom:0;height:var(--fr-b);-webkit-mask-image:linear-gradient(0deg, #000, transparent);mask-image:linear-gradient(0deg, #000, transparent)}
-.formi-rand .l{top:0;bottom:0;left:0;width:var(--fr-b);-webkit-mask-image:linear-gradient(90deg, #000, transparent);mask-image:linear-gradient(90deg, #000, transparent)}
-.formi-rand .r{top:0;bottom:0;right:0;width:var(--fr-b);-webkit-mask-image:linear-gradient(270deg, #000, transparent);mask-image:linear-gradient(270deg, #000, transparent)}
+.formi-rand .o{left:0;right:0;top:0;height:var(--fr-b);background:linear-gradient(180deg, rgba(182,156,255,.5), rgba(95,225,255,.12) 45%, transparent)}
+.formi-rand .u{left:0;right:0;bottom:0;height:var(--fr-b);background:linear-gradient(0deg, rgba(255,143,200,.5), rgba(182,156,255,.12) 45%, transparent)}
+.formi-rand .l{top:0;bottom:0;left:0;width:var(--fr-b);background:linear-gradient(90deg, rgba(95,225,255,.5), rgba(182,156,255,.12) 45%, transparent)}
+.formi-rand .r{top:0;bottom:0;right:0;width:var(--fr-b);background:linear-gradient(270deg, rgba(182,156,255,.5), rgba(255,143,200,.12) 45%, transparent)}
+/* Runde 263: bewegt wird nur eine 3 px dünne Lichtlinie an der Kante (der
+   Schein darunter steht still, ohne Maske) — vorher strömte eine maskierte
+   Fläche über die ganze Breite; gemessen zu teuer bei CPU ÷4. */
 .formi-rand i::before{content:"";position:absolute;left:0;top:0}
-.formi-rand .o::before,.formi-rand .u::before{width:200%;height:100%;background:linear-gradient(90deg, #5FE1FF, #B69CFF 25%, #FF8FC8 50%, #B69CFF 75%, #5FE1FF) 0 0 / 50% 100% repeat-x}
-.formi-rand .l::before,.formi-rand .r::before{width:100%;height:200%;background:linear-gradient(180deg, #5FE1FF, #B69CFF 25%, #FF8FC8 50%, #B69CFF 75%, #5FE1FF) 0 0 / 100% 50% repeat-y}
+.formi-rand .o::before,.formi-rand .u::before{width:200%;height:3px;background:linear-gradient(90deg, #5FE1FF, #B69CFF 25%, #FF8FC8 50%, #B69CFF 75%, #5FE1FF) 0 0 / 50% 100% repeat-x}
+.formi-rand .u::before{top:auto;bottom:0}
+.formi-rand .l::before,.formi-rand .r::before{width:3px;height:200%;background:linear-gradient(180deg, #5FE1FF, #B69CFF 25%, #FF8FC8 50%, #B69CFF 75%, #5FE1FF) 0 0 / 100% 50% repeat-y}
+.formi-rand .r::before{left:auto;right:0}
 @media (min-width:900px){ .formi-rand{--fr-b:34px} }
 /* Jets: entlang der Achse, senkrecht zur Scheibe. */
 .fk-jet{position:absolute;left:50%;width:8%;height:150%;margin-left:-4%;pointer-events:none;border-radius:var(--r-pille);opacity:0;z-index:0}
@@ -13726,7 +13731,7 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
       <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Untere Leiste am Handy</label>
       <div class="opt-grid" id="glasOpts"></div>
 
-      <!-- Formis Bewegung, Runde 262: derselbe Schalter wie in Formis
+      <!-- Formis Bewegung, Runde 263: derselbe Schalter wie in Formis
            eigenen Einstellungen (ein Wert je Gerät). -->
       <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Formis Bewegung</label>
       <div class="opt-grid" id="formiBewOpts"></div>
@@ -22758,6 +22763,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-24-formi-bewegung', datum:'24.10.2026', titel:'Formi leiser: kein „Hey Formi", kein Vorlesen, Bewegung einstellbar', wo:'profil', punkte:[
+    'Formi hört nicht mehr auf „Hey Formi" und liest nichts mehr vor. Sprechen statt Tippen geht weiter: im Formi-Fenster auf „Sprechen" tippen oder gedrückt halten.',
+    'Neu ist der Schalter „Formis Bewegung" mit Stark, Mittel und Keine, unter Persönlich → Profil → Aussehen und in Formis Einstellungen. Stark: Formi zeigt öfter etwas von sich. Keine: Formi steht still, was er dir meldet, siehst du trotzdem.',
+    'Der Leuchtrand, wenn Formi arbeitet, ist jetzt eine feine Lichtlinie, die um den Bildschirm läuft – ruhiger und sparsamer für das Gerät.'
+  ]},
   { id:'2026-10-24-schulung-mitnehmen', datum:'24.10.2026', titel:'Schulung: am Ende steht, was du mitnimmst', wo:'schulung', punkte:[
     'Nach einer Schulung stehen unter den Zahlen jetzt die Fragen, die nicht auf Anhieb geklappt haben – mit der richtigen Antwort und der Erklärung dazu. Wer alles beim ersten Mal wusste, sieht diesen Kasten nicht.',
     'Diese Fragen kommen beim „Kurz auffrischen" als Erstes wieder dran.'
@@ -28653,7 +28663,7 @@ function gehirnTonfall(){ return jvPersona().ton==='sachlich' ? 'sachlich' : 'lo
    Je Gerät: Name, Tonfall, Stimme (menschlich über Google oder die des
    Geräts), Weckwort. Aus dem Betrieb: „wie ein echter mensch als
    assistent" — und auf die Ideenliste „mach alles davon". */
-/* Runde 262 — aus dem Betrieb: „das formi doch kein „hey formi“ mehr hat
+/* Runde 263 — aus dem Betrieb: „das formi doch kein „hey formi“ mehr hat
    aber man kann noch sprach Nachrichten schicken und das vor lesen ist auch
    unnötig“. Stimme und Weckwort sind weg; Sprechen statt Tippen bleibt.
    Alte gespeicherte Felder (stimme, weckwort …) werden einfach nicht mehr
@@ -28665,7 +28675,7 @@ function jvPersona(){
      alten Standardnamen noch gespeichert hat, heisst jetzt Formi. */
   if(p && p.name==='Jarvis') delete p.name;
   var r=Object.assign({}, JV_PERSONA_STD, p);
-  /* Runde 262: EIN Schalter für Formis Bewegung. Wer früher „Gefühle
+  /* Runde 263: EIN Schalter für Formis Bewegung. Wer früher „Gefühle
      der Kugel: Aus" gewählt hatte, landet bei „Keine". Effekte und
      Gefühle folgen daraus. */
   if(FORMI_BEWEGUNGEN.indexOf(r.bewegung)<0) r.bewegung = p.gefuehle==='aus' ? 'keine' : 'mittel';
@@ -28674,7 +28684,7 @@ function jvPersona(){
   r.name=String(r.name||'').replace(/[^\wäöüÄÖÜß \-]/g,'').trim().slice(0,20) || 'Formi';
   return r;
 }
-/* ── Formis Bewegung (Runde 262) ──────────────────────────────────────
+/* ── Formis Bewegung (Runde 263) ──────────────────────────────────────
    Aus dem Betrieb: „Wir bräuchten auch noch einen Schalter wo man formis
    Animationen anpassen kann also stark, Mittel, keine".
    – Stark: Eigenleben etwa doppelt so oft, alle Effekte voll, der Strom
@@ -28731,7 +28741,7 @@ function jvPersonaAuf(auf){
     (gehirnAlleMeineKeys().length>1 ? '<div class="jv-pz">Mein Studio<div class="jv-pw" role="group" aria-label="Mein Studio">'+
       gehirnAlleMeineKeys().slice(0,14).map(function(k){ return '<button type="button" data-jvp="studio" data-jvw="'+esc(k)+'" aria-pressed="'+(gehirnMeinStudio()===k ? 'true' : 'false')+'">'+esc(studioName(k))+'</button>'; }).join('')+
       '</div><p class="jv-phinweis">Hier nehme ich an, dass du bist, wenn du kein Studio nennst.</p></div>' : '')+
-    /* Runde 262: ein Schalter statt „Effekte" und „Gefühle der Kugel". */
+    /* Runde 263: ein Schalter statt „Effekte" und „Gefühle der Kugel". */
     '<div class="jv-pz">Bewegung<div class="jv-pw" role="group" aria-label="Formis Bewegung">'+
       FORMI_BEWEGUNGEN.map(function(x){ return '<button type="button" data-fbew="'+x+'" aria-pressed="'+(p.bewegung===x ? 'true' : 'false')+'">'+FORMI_BEWEGUNG_NAMEN[x]+'</button>'; }).join('')+'</div>'+
       '<p class="jv-phinweis">'+FORMI_BEWEGUNG_HINWEIS[p.bewegung]+'</p></div>'+
@@ -30227,7 +30237,7 @@ function formiStromZiel(){
 function formiBahn(x0, y0, zx, zy, rH, w, h, ox, oy, runden, dreh){
   var rx=x0-zx, ry=y0-zy, r0=Math.max(rH*2.5, Math.sqrt(rx*rx+ry*ry)), th0=Math.atan2(ry, rx), N=Math.round(40*Math.max(1, (runden||1.2)/1.31));
   /* Mehr Umläufe brauchen mehr Bilder, sonst springt ein Bild nah am Loch
-     über die halbe Runde (Runde 262, „Stark"). */
+     über die halbe Runde (Runde 263, „Stark"). */
   var rr=[], gew=[0], zeit=[0];
   for(var i=0;i<=N;i++){ var s=i/N; rr.push(rH+(r0-rH)*Math.pow(1-Math.pow(s, 1.15), 1.6)); }
   /* Umlauf ∝ r^-1 (gedeckelt): die Bahn biegt schon von weitem ein, statt
@@ -53866,7 +53876,7 @@ function buildAppearanceOptions(){
     });
   }
 
-  // 3d) Formis Bewegung (Runde 262)
+  // 3d) Formis Bewegung (Runde 263)
   var fbw=$('formiBewOpts');
   if(fbw){
     fbw.innerHTML=FORMI_BEWEGUNGEN.map(function(x){

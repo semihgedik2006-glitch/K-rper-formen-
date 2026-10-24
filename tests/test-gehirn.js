@@ -791,10 +791,10 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await p.keyboard.press('j'); await p.waitForTimeout(2800);
     const brief = await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf .jv-brief li')].map(l => l.textContent));
     pruefe('Morgen-Briefing im leeren Gespräch: Aufgaben mit überfällig, Putzplan, Material', brief.some(t => /Aufgaben offen, \d+ überfällig/.test(t)) && brief.some(t => /^Putzplan: \d+ offen/.test(t)) && brief.some(t => /Material/.test(t)), JSON.stringify(brief));
-    /* Runde 262 — aus dem Betrieb: „das vor lesen ist auch unnötig".
+    /* Runde 263 — aus dem Betrieb: „das vor lesen ist auch unnötig".
        Früher stand hier „einmal am Tag vorgelesen"; jetzt das Gegenteil. */
     const gesagt = await p.evaluate(() => window.__gesprochen);
-    pruefe('… und NICHT vorgelesen (Runde 262: „das vor lesen ist auch unnötig")', gesagt.length === 0, JSON.stringify(gesagt));
+    pruefe('… und NICHT vorgelesen (Runde 263: „das vor lesen ist auch unnötig")', gesagt.length === 0, JSON.stringify(gesagt));
     await p.click('#jarvisZu'); await p.keyboard.press('j'); await p.waitForTimeout(2000);
     const kacheln = await p.evaluate(() => [...document.querySelectorAll('#jarvisKacheln .jv-kl')].map(k => k.getAttribute('data-jvmini') + ':' + k.querySelector('b').textContent));
     pruefe('„Heute im Studio": fünf Kacheln mit Zahlen', kacheln.length === 5 && /^todos:\d+$/.test(kacheln[0]), JSON.stringify(kacheln));
@@ -838,7 +838,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await zu(p);
   }
 
-  console.log('\n── 12e Zuhören, Persönlichkeit — ohne Vorlesen und ohne „Hey Formi" (Runde 262) ──');
+  console.log('\n── 12e Zuhören, Persönlichkeit — ohne Vorlesen und ohne „Hey Formi" (Runde 263) ──');
   /* Aus dem Betrieb (20.10.2026): gedrückt halten, echte Wellenform,
      Persönlichkeit. Und am 24.10.2026: „das formi doch kein „hey formi“
      mehr hat aber man kann noch sprach Nachrichten schicken und das vor
@@ -1024,7 +1024,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     pruefe('… der Cursor verschwindet, wenn alles dasteht', await p.evaluate(() => !document.querySelector('#jarvisVerlauf .ga-text.tippt')));
     pruefe('nach der Antwort denkt es nicht mehr', !(await p.evaluate(() => document.getElementById('jarvis').classList.contains('jv-z-denkt'))));
     const ton = await p.evaluate(() => ({ k: window.__klaenge, g: window.__gesprochen }));
-    /* Runde 262: „das vor lesen ist auch unnötig" — Klänge ja, Vorlesen nein. */
+    /* Runde 263: „das vor lesen ist auch unnötig" — Klänge ja, Vorlesen nein. */
     pruefe('Klänge beim Senden und Fertig; die Antwort wird NICHT vorgelesen', ton.k >= 2 && ton.g.length === 0, JSON.stringify(ton));
     // Daumen
     const d = await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf [data-gdaumen]')].map(x => x.textContent.trim()));
@@ -1188,7 +1188,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await p.click('#jarvisPersona [data-jvp="studio"][data-jvw="studio-6"]'); await p.waitForTimeout(150);
     const ort = await p.textContent('#jarvisOrt');
     pruefe('… gewählt: Hürth steht oben als Studio', ort === 'Hürth' && (await p.getAttribute('#jarvisPersona [data-jvp="studio"][data-jvw="studio-6"]', 'aria-pressed')) === 'true', ort);
-    // 6: Effekte — seit Runde 262 Teil von „Bewegung" (Keine = sparsam)
+    // 6: Effekte — seit Runde 263 Teil von „Bewegung" (Keine = sparsam)
     await p.click('#jarvisPersona [data-fbew="keine"]'); await p.waitForTimeout(150);
     pruefe('„Bewegung: Keine" setzt die niedrige Stufe der Effekte', (await p.getAttribute('#jarvis', 'data-effekte')) === 'niedrig');
     await p.click('#jarvisPersona [data-fbew="mittel"]'); await p.waitForTimeout(150);
