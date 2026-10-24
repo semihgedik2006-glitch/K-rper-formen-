@@ -21,7 +21,7 @@ async function start(stub, errs) {
   await page.waitForTimeout(1600);
   await page.mouse.click(195, 400).catch(() => {});
   await page.waitForTimeout(2700);
-  await page.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
+  await page.evaluate(() => (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="todos"]').click(); } }).click());
   await page.waitForTimeout(1100);
   return { b, page };
 }

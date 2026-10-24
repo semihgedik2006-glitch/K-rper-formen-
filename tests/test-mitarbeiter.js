@@ -30,7 +30,12 @@ const SP = process.env.SP || __dirname;
                      den Aufgaben des Tages. */
                   team:'g-team', docs:'g-wissen' };
   async function go(view) {
-    await page.evaluate(g => document.querySelector('.mobnav [data-group="' + g + '"]').click(), GROUP[view]);
+    /* Runde 260 (aus dem Betrieb, 23.10.2026, auf „Mitarbeiter unten nur
+       Heute, Zeiten, Plan, Nachrichten – Studio und Wissen über ‚Alles'?":
+       „ja"): fehlt der Raum-Knopf, geht es über die Schublade „Alles". */
+    await page.evaluate(([g, v]) => (document.querySelector('.mobnav [data-group="' + g + '"]') || { click: () => {
+      document.getElementById('bereichKopf').click();
+      document.querySelector('#allesLade [data-alles="' + v + '"]').click(); } }).click(), [GROUP[view], view]);
     await page.waitForTimeout(420);
     /* Runde 187 (aus dem Betrieb: „das problem mit dem zu viel bleibt
        immer noch bestehen"): Chat und Direkt sind EIN Reiter „Chats".

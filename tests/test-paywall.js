@@ -36,9 +36,13 @@ function pruefe(was, bedingung, hinweis) {
 async function zuDenAufgaben(p) {
   await p.evaluate(() => {
     const b = document.querySelector('.mobnav [data-group="g-arbeit"]') ||
-              document.querySelector('.mn-reihe [data-group="g-arbeit"]') ||
-              document.querySelector('[data-view="todos"]');
-    if (b) b.click();
+              document.querySelector('.mn-reihe [data-group="g-arbeit"]');
+    if (b) { b.click(); return; }
+    /* Runde 260: Mitarbeiter haben den Raum „Studio" nicht mehr —
+       die Aufgaben erreichen sie über die Schublade „Alles". */
+    document.getElementById('bereichKopf').click();
+    const a = document.querySelector('#allesLade [data-alles="todos"]');
+    if (a) a.click();
   });
   await p.waitForTimeout(700);
 }

@@ -53,7 +53,8 @@ async function zurSchulung(p) {
   await p.evaluate(() => {
     const k = document.querySelector('.mobnav [data-group="g-wissen"]') ||
               document.querySelector('#side [data-group="g-wissen"]');
-    if (k) k.click();
+    /* Runde 260: Mitarbeiter haben den Raum „Wissen“ nicht mehr – dann über „Alles“. */
+    if (k) k.click(); else { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="schulung"]').click(); }
   });
   await p.waitForTimeout(700);
   await p.evaluate(() => {

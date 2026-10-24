@@ -21,7 +21,7 @@ const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linu
   await page.goto(APP, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1600); await page.mouse.click(215, 400).catch(() => {}); await page.waitForTimeout(2400);
 
-  await page.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
+  await page.evaluate(() => (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="todos"]').click(); } }).click());
   await page.waitForTimeout(450);
   const sub = await page.$('[data-subview="putzplan"]');
   if (sub) { await sub.click(); await page.waitForTimeout(900); }

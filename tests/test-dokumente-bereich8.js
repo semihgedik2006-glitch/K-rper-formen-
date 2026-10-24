@@ -24,7 +24,7 @@ async function start(stub, errs) {
   /* Seit Runde 184 („fünf Räume", aus dem Betrieb 22.10.2026: „das
      problem mit dem zu viel bleibt immer noch bestehen") stehen die
      Dokumente unter „Wissen" — dort sind sie der erste Reiter. */
-  await page.evaluate(() => document.querySelector('.mobnav [data-group="g-wissen"]').click());
+  await page.evaluate(() => (document.querySelector('.mobnav [data-group="g-wissen"]') || { click: () => { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="docs"]').click(); } }).click());
   await page.waitForTimeout(600);
   const s = await page.$('[data-subview="docs"]');
   if (s) { await s.click(); await page.waitForTimeout(1400); }

@@ -109,7 +109,7 @@ const ZWEI_STUDIOS = `
   }
 
   // ══ 2. Nach dem Öffnen des Putzplans darf sich die Zahl NICHT ändern ══
-  await page.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
+  await page.evaluate(() => (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="todos"]').click(); } }).click());
   await page.waitForTimeout(250);
   await page.evaluate(() => {
     const e = document.querySelector('[data-subview="putzplan"]'); if (e) e.click();

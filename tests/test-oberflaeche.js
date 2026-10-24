@@ -21,7 +21,7 @@ async function start(breite, hoehe, stub, errs) {
 }
 
 async function zuArbeit(page, unterseite) {
-  await page.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
+  await page.evaluate(() => (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="todos"]').click(); } }).click());
   await page.waitForTimeout(450);
   /* Runde 187 (aus dem Betrieb: „das problem mit dem zu viel bleibt
      immer noch bestehen"): Material und Geräte sind EIN Reiter
