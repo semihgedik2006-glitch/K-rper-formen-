@@ -51,7 +51,14 @@ function pruefe(was, bedingung, hinweis) {
 async function offeneLautListe(p) {
   await p.evaluate(() => {
     const g = document.querySelector('.mobnav [data-group="g-arbeit"]');
+    /* Runde 260: Mitarbeiter haben den Raum „Studio" nicht mehr — ohne
+       Raum-Knopf geht der Weg über die Schublade „Alles". */
     if (g) g.click();
+    else {
+      document.getElementById('bereichKopf').click();
+      const a = document.querySelector('#allesLade [data-alles="todos"]');
+      if (a) a.click();
+    }
   });
   await p.waitForTimeout(500);
   await p.evaluate(() => {
@@ -87,7 +94,11 @@ async function startseite(p) {
       .map(x => x.textContent.trim());
     const offenKopf = koepfe.find(t => /^Offen/.test(t)) || '';
     const m = /(?:·\s*|\s)(\d+)$/.exec(offenKopf);
-    const abz = document.querySelector('.mn-reihe [data-group="g-arbeit"] .badge');
+    /* Runde 260: Mitarbeiter haben keinen Raum „Studio" mehr (aus dem
+       Betrieb, 23.10.2026: „ja" zu „unten nur Heute, Zeiten, Plan,
+       Nachrichten"); bei ihnen trägt „Heute" den Punkt. */
+    const abz = document.querySelector('.mn-reihe [data-group="g-arbeit"] .badge') ||
+                document.querySelector('.mn-reihe [data-group="g-start"] .badge');
     const ueber = koepfe.find(t => /^Überfällig/.test(t)) || '';
     const mu = /(?:·\s*|\s)(\d+)$/.exec(ueber);
     /* Seit dem 23.9.2026 kann „Offen" auch als Knopf unter „Ausserdem"
@@ -249,7 +260,14 @@ async function startseite(p) {
        ein Mensch es täte. */
     await p.evaluate(() => {
       const g = document.querySelector('.mobnav [data-group="g-arbeit"]');
+      /* Runde 260: Mitarbeiter haben den Raum „Studio" nicht mehr — ohne
+         Raum-Knopf geht der Weg über die Schublade „Alles". */
       if (g) g.click();
+      else {
+        document.getElementById('bereichKopf').click();
+        const a = document.querySelector('#allesLade [data-alles="todos"]');
+        if (a) a.click();
+      }
     });
     await p.waitForTimeout(500);
     await p.evaluate(() => {

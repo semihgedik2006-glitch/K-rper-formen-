@@ -81,7 +81,7 @@ async function starten(browser, errs, ruhe) {
   passt(nav0, navA, 'untere Leiste', errs);
 
   // ══ 2. Wechsel bewegt ihn ══
-  await page.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
+  await page.evaluate(() => (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="todos"]').click(); } }).click());
   await page.waitForTimeout(700);
   const nav1 = await page.evaluate(lies('.mobnav'));
   const navA1 = await page.evaluate(aktiv('.mobnav', 'button.active'));

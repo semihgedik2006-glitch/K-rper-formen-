@@ -49,7 +49,7 @@ const SP = process.env.SP || __dirname;
       return c;
     };
   });
-  await page.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
+  await page.evaluate(() => (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="todos"]').click(); } }).click());
   await page.waitForTimeout(450);
   const st = await page.$('[data-subview="todos"]'); if (st) { await st.click(); await page.waitForTimeout(600); }
   // Löschen liegt jetzt im Aktionsblatt der Aufgabe

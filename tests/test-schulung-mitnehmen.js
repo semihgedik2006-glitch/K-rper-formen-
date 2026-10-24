@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════════
-   SCHULUNG: „DAS NIMMST DU MIT" AM ENDE EINES DURCHLAUFS (Runde 260)
+   SCHULUNG: „DAS NIMMST DU MIT" AM ENDE EINES DURCHLAUFS (Runde 261)
 
    Aus dem Betrieb, 24.10.2026: „Jo mach weiter". Bisher stand am Ende
    nur „2 Fehlversuche" — welche, stand nirgends.

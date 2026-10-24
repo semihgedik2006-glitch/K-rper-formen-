@@ -22579,8 +22579,52 @@ aber hier nicht einzeln durchgeklickt.
 Satz „tippe auf …" im leeren Filter. Der Satz ist durch den Knopf „Alle
 zeigen" ersetzt; der Test prüft jetzt, dass der Knopf da ist **und** auf
 „Alle" schaltet — strenger als vorher, nicht lockerer.
+## Runde 260 — Vier Räume für Mitarbeiter (23.10.2026)
 
-## Runde 260 — Schulung: „Das nimmst du mit" am Ende eines Durchlaufs (24.10.2026)
+Aus dem Betrieb, 23.10.2026, auf „Mitarbeiter unten nur Heute, Zeiten,
+Plan, Nachrichten – Studio und Wissen über ‚Alles'?": „ja". Seit Runde 240
+werden Aufgaben und Putzpunkte auf „Heute" abgehakt.
+
+**Gebaut.**
+- `seitenGruppen()` lässt `g-arbeit` und `g-wissen` für Rollen ohne
+  Verwaltung (`!canManage()`) weg, unten wie links. Studio und Wissen
+  bleiben über „Alles" zwei Tipps entfernt.
+- Leitung und Geschäftsführung behalten alle sechs Räume.
+
+**Dabei gefunden und behoben:**
+- *Kein Hinweis mehr auf offene Aufgaben* (`test-startseite-offen`). Der
+  Punkt hing nur am Raum „Studio". Bei Mitarbeitern trägt ihn jetzt
+  „Heute", wo die Aufgaben stehen.
+- *Fingerziel in „Dokumente"* (`test-fingerziele`, 86 × 39). Bei
+  Mitarbeitern fehlt die Karte „Hochladen", deshalb lag die Fläche der
+  Reiter 5 px über den Filter-Chips. Die Chips haben jetzt `--s8` Abstand
+  nach oben. Aufgefallen ist das erst jetzt: Der Test ordnete Dokumente
+  dem Raum „Studio" zu und übersprang die Seite für Mitarbeiter.
+
+**Tests.** Rund 30 Durchläufe gingen als Mitarbeiter über die Räume
+„Studio" oder „Wissen". Sie gehen jetzt über „Alles", wenn der Raum-Knopf
+fehlt. Geändert ist nur der Weg; keine Grenze, keine Erwartung. Die
+Raum-Zusicherungen in p4, p5 und raeume nennen jetzt die vier Räume, mit
+Zitat. p5 prüft die Abläufe über „Studio" mit der Studioleitung, die
+vier Räume der Mitarbeiter in einem eigenen Block. Die Umstellung haben
+drei Helfer parallel gemacht, je mit eigenen Dateien; ihre Änderungen
+habe ich durchgesehen.
+
+**Offen, nicht in dieser Runde.** `test-quer` misst bei Geräten und
+Dokumenten nach einem älteren Umbau die zuletzt offene Seite ein zweites
+Mal. Die Zahl der Messungen ist deshalb etwas grösser als die der
+erreichten Ansichten.
+
+**Beim Zusammenführen mit main (Runden 246–259)**
+
+- test-raeume war auch auf `main` rot (7 von 31): Runde 246 nahm „Wissen“
+  unten am Handy heraus (aus dem Betrieb: „ja so wie du empfohlen hast
+  klingt super“), der Raum-Test erwartete weiter sechs Knöpfe. Jetzt
+  erwartet er am Handy im neuen Design fünf, mit dem Zitat im Test;
+  31 grün.
+
+
+## Runde 261 — Schulung: „Das nimmst du mit" am Ende eines Durchlaufs (24.10.2026)
 
 Aus dem Betrieb, 24.10.2026: „Jo mach weiter" — die nächste
 Schulungs-Runde.
@@ -22612,14 +22656,6 @@ Höhe wächst; am Handy und Tablet in einer.
   ohnehin speichert (`fragen` mit `versuche`) und was im Modul steht
   (Antworten, Hinweis).
 
-### Nebenbei: `test-pc-spalten` wieder grün
-
-Seit Runde 246 steht „Wissen" am Handy unter ☰. Der Durchlauf suchte den
-Knopf unten, fand keinen und prüfte eine leere Liste („Handy:
-Schulungsmodule untereinander — []"). Er geht jetzt denselben Weg wie
-`test-navigation`: erst ☰, dann die Zeile. Die Messung selbst ist
-unverändert.
-
 ### Geprüft
 
 - `tests/test-schulung-mitnehmen.js` (24, neu). Drei echte Durchläufe in
@@ -22638,7 +22674,6 @@ unverändert.
   Ausschnitt, Rechner, dunkles Design): Hinweis 13,0 : 1, Satz darüber
   14,0 : 1, „Richtig:" 17,6 : 1. Das helle Design habe ich nicht
   gemessen.
-- `test-pc-spalten` (30) grün; auf `main` vorher rot.
 
 ### Nicht geprüft
 

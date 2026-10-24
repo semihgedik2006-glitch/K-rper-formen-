@@ -36,6 +36,9 @@ const SP = __dirname;
    jeden Tag zweimal — deshalb direkt hinter „Studio". Die Knöpfe treffen
    weiter ≥ 44 × 44 bei 320 px (Abschnitt 7). */
 const RAEUME = ['Heute', 'Studio', 'Zeiten', 'Plan', 'Nachrichten', 'Wissen'];
+/* Am Handy unten ohne „Wissen“ (Runde 246, aus dem Betrieb 23.10.2026, 08:07:
+   „ja so wie du empfohlen hast klingt super“) – es liegt dort unter ☰ „Alles“. */
+const HANDY = RAEUME.filter(r => r !== 'Wissen');
 
 let gut = 0, schlecht = 0;
 function pruefe(was, bedingung, hinweis) {
@@ -85,7 +88,8 @@ const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel
   for (const [stub, leitung] of [['stub-chef.js', true], ['stub-mitarbeiter.js', false]]) {
     const p = await oeffne(b, 1440, 900, { stub });
     const s = await leiste(p, '#side > [data-group]');
-    const soll = leitung ? RAEUME.concat('Verwaltung') : RAEUME;
+    /* Runde 260, aus dem Betrieb 23.10.2026 auf „Mitarbeiter unten nur Heute, Zeiten, Plan, Nachrichten?": „ja" – Studio und Wissen liegen für Mitarbeiter unter „Alles". */
+    const soll = leitung ? RAEUME.concat('Verwaltung') : RAEUME.filter(r => r !== 'Studio' && r !== 'Wissen');
     pruefe((leitung ? 'Leitung' : 'Mitarbeiter') + ': ' + s.join(' · '), JSON.stringify(s) === JSON.stringify(soll), JSON.stringify(s));
     const extra = await p.evaluate(() => ({ schnell: !!document.querySelector('#side .side-schnell'),
       putz: !!document.querySelector('#side [data-group="g-putz"]'), alles: !!document.querySelector('#side [data-group="g-alles"]') }));
@@ -103,7 +107,7 @@ const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel
   for (const neu of [1, 0]) {
     const p = await oeffne(b, 390, 844, { neu, touch: true });
     const u = await leiste(p, '.mobnav [data-group]');
-    pruefe((neu ? 'neues' : 'bisheriges') + ' Design: ' + u.join(' · '), JSON.stringify(u.slice(0, RAEUME.length)) === JSON.stringify(RAEUME), JSON.stringify(u));
+    pruefe((neu ? 'neues' : 'bisheriges') + ' Design: ' + u.join(' · '), JSON.stringify(u.slice(0, (neu ? HANDY : RAEUME).length)) === JSON.stringify(neu ? HANDY : RAEUME), JSON.stringify(u));
     await zu(p);
   }
 
@@ -214,7 +218,7 @@ const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel
   console.log('\n── 6 Formi-Kugel und „+ Aufgabe" am Handy ──');
   {
     const p = await oeffne(b, 390, 844, { touch: true });
-    await p.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
+    await p.evaluate(() => (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="todos"]').click(); } }).click());
     await p.waitForTimeout(800);
     const r = await p.evaluate(() => {
       const k = document.getElementById('formiKugel'), d = document.querySelector('#daumenDock .kopf-plus');
@@ -239,7 +243,7 @@ const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel
         return { n: k.length, klein: k.map(e => [e.textContent.trim(), f(e)]).filter(x => x[1].w < 44 || x[1].h < 44).map(x => x[0] + ' ' + x[1].w + '×' + x[1].h),
           quer: document.documentElement.scrollWidth - innerWidth };
       }, TREFFER.toString());
-      pruefe(dichte + ' ' + w + ' px: ' + m.n + ' Knöpfe ≥ 44 × 44, kein Querlauf', m.n === RAEUME.length && !m.klein.length && m.quer <= 0, JSON.stringify(m));
+      pruefe(dichte + ' ' + w + ' px: ' + m.n + ' Knöpfe ≥ 44 × 44, kein Querlauf', m.n === HANDY.length && !m.klein.length && m.quer <= 0, JSON.stringify(m));
       await zu(p);
     }
   }

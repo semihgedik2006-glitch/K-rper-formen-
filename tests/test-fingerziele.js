@@ -132,12 +132,23 @@ async function fuerRolle(rolle, errs) {
   const funde = [];
   const gesehen = [];
   for (const [v, g] of VIEWS) {
-    await page.evaluate((gg) => {
+    /* Runde 260: Mitarbeiter haben die Räume „Studio" und „Wissen" nicht
+       mehr unten — fehlt der Raum-Knopf, geht es über die Schublade
+       „Alles" zur Ansicht. */
+    const ueberAlles = await page.evaluate(([gg, vv]) => {
       const el = document.querySelector('.mobnav [data-group="' + gg + '"]');
-      if (el) el.click();
-    }, g);
+      if (el) { el.click(); return false; }
+      document.getElementById('bereichKopf').click();
+      const a = document.querySelector('#allesLade [data-alles="' + vv + '"]');
+      if (a) { a.click(); return true; }
+      document.getElementById('bereichKopf').click();   // Schublade wieder zu
+      return false;
+    }, [g, v]);
     await page.waitForTimeout(320);
-    const da = await page.evaluate((vv) => {
+    const da = ueberAlles ? await page.evaluate((vv) => {
+      const w = document.getElementById('view-' + vv);
+      return !!(w && w.classList.contains('show'));
+    }, v) : await page.evaluate((vv) => {
       const el = document.querySelector('[data-subview="' + vv + '"]');
       if (el) { el.click(); return true; }
       return false;                      // diese Rolle hat die Ansicht nicht

@@ -78,6 +78,7 @@ const MESSEN = erlaubt => {
   const errs = [];
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
   let gemessen = 0;
+  const proRolle = {};
 
   for (const rolle of ['chef', 'mitarbeiter']) {
     for (const breite of [320, 390]) {
@@ -99,10 +100,12 @@ const MESSEN = erlaubt => {
         const gDa = await page.evaluate(([g, erste]) => {
           const k = document.querySelector('.mobnav [data-group="' + g + '"]');
           if (k) { k.click(); return true; }
-          const alles = document.querySelector('.mobnav [data-group="g-alles"]');
+          /* Runde 260: „Alles" ist die Schublade am Bereichskopf; über sie
+             erreichen Mitarbeiter Studio und Wissen ohne Raum-Knopf. */
+          const alles = document.getElementById('bereichKopf');
           if (!alles) return false;
           alles.click();
-          const z = document.querySelector('#allesSeite [data-alles="' + erste + '"]');
+          const z = document.querySelector('#allesLade [data-alles="' + erste + '"]');
           if (!z) return false;
           z.click(); return true;
         }, [gruppe, views[0]]);
@@ -116,7 +119,7 @@ const MESSEN = erlaubt => {
           }, v);
           if (!vDa) continue;
           await page.waitForTimeout(400);
-          gemessen++;
+          gemessen++; proRolle[rolle] = (proRolle[rolle] || 0) + 1;
           const funde = await page.evaluate(MESSEN, ERLAUBT);
           funde.forEach(f => errs.push(rolle + ' ' + breite + 'px · ' + v + ' → ' + f));
         }
@@ -126,7 +129,7 @@ const MESSEN = erlaubt => {
   }
   await b.close();
 
-  console.log('Gemessen: 2 Rollen × 2 Breiten × alle Ansichten = ' + gemessen + ' Messungen');
+  console.log('Gemessen: 2 Rollen × 2 Breiten × alle Ansichten = ' + gemessen + ' Messungen ' + JSON.stringify(proRolle));
   console.log('Erlaubte Leisten: ' + ERLAUBT.join(', '));
   /* Eine Messung, die nichts gemessen hat, ist kein gruener Durchlauf.
      Bei 13 Ansichten mal vier Durchgaengen sind es mindestens 40. */

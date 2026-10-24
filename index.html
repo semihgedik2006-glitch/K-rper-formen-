@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-2lIobD6CwQpkyc7qnpFjDJ/KyMpSQKrhZwQCogDTGBs='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-JmzxhEV4ACAqh7E4WJX/8Mwpq9q7oCiMgiu/lxqiCHA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1987,6 +1987,10 @@ body.nurlesen .kopf-plus{display:none !important}
    neue Design für alle gilt, lag die Fläche der Reiter 3 px über der
    Studio-Wahl (test-aufgaben-wie-putzplan: 150 × 41 in „kompakt"). */
 body.neu .scroll-area > .pp-leiste:first-child{margin-top:var(--s8)}
+/* Runde 260: dasselbe bei den Filter-Chips der Dokumente. Für Mitarbeiter
+   ist die Karte „Hochladen" darüber ausgeblendet; dann lag die Fläche der
+   Reiter 5 px über „Alle (3)" (test-fingerziele: 86 × 39). */
+body.neu #view-docs #docCatRow{margin-top:var(--s8)}
 .card.fold > .fold-head:hover{color:var(--accent-d)}
 .card.fold > .fold-head > *{margin-bottom:0}
 .fold-head .fold-main{flex:1;min-width:0;display:flex;align-items:baseline;
@@ -7945,7 +7949,7 @@ body.jv-offen{overflow:hidden}
 .sch-fertig p{font-size:var(--t-md);color:var(--text-2);line-height:var(--lh)}
 .sch-zahlen{display:grid;gap:var(--s8);margin:var(--s24) 0;
   grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
-/* „Das nimmst du mit" (Runde 260): links bündig, auch wenn das Ergebnis
+/* „Das nimmst du mit" (Runde 261): links bündig, auch wenn das Ergebnis
    darüber zentriert steht — eine Liste liest man von links. Am Rechner
    zwei Spalten, damit die Karte nicht in die Höhe wächst. */
 .sch-mitnehmen{text-align:left;margin:0 0 var(--s24)}
@@ -22752,6 +22756,11 @@ var NEUIGKEITEN = [
     'Nach einer Schulung stehen unter den Zahlen jetzt die Fragen, die nicht auf Anhieb geklappt haben – mit der richtigen Antwort und der Erklärung dazu. Wer alles beim ersten Mal wusste, sieht diesen Kasten nicht.',
     'Diese Fragen kommen beim „Kurz auffrischen" als Erstes wieder dran.'
   ]},
+  { id:'2026-10-23-vier-raeume', datum:'23.10.2026', titel:'Weniger Knöpfe für Mitarbeiter', wo:'home', punkte:[
+    'Wer nichts verwaltet, hat unten (am Rechner links) nur noch vier Räume: Heute, Zeiten, Plan und Nachrichten.',
+    'Aufgaben und Putzplan hakst du direkt auf „Heute" ab. Die ganzen Listen, Material, Geräte, Dokumente und Schulung findest du über „Alles" oben links – zwei Tipps.',
+    'Offene Aufgaben zeigt jetzt ein Punkt an „Heute". Leitung und Geschäftsführung behalten alle Räume.'
+  ]},
   { id:'2026-10-23-leer-naechster-schritt', datum:'23.10.2026', titel:'Leere Listen zeigen, was du als Nächstes tun kannst', wo:'todos', punkte:[
     'Findet die Suche nichts, steht unter Formi ein Knopf „Suche leeren". Zeigt ein Filter nichts, bringt „Alle zeigen" alles zurück.',
     'Ist eine Liste noch ganz leer, führt ein Knopf direkt zum Eintragen – zum Beispiel „Gerät eintragen" oder „To-do eintragen". Das Feld ist dann gleich zum Tippen bereit.'
@@ -24085,6 +24094,13 @@ function seitenGruppen(gruppen){
   var nach={};
   gruppen.forEach(function(g){ nach[g.id]=g; });
   delete nach['g-alles'];
+  /* Runde 260, aus dem Betrieb, 23.10.2026, auf „Mitarbeiter sehen unten
+     nur Heute, Zeiten, Plan und Nachrichten – Studio und Wissen über
+     ‚Alles'?": „ja". Wer nichts verwaltet, arbeitet seinen Tag auf
+     „Heute" ab (dort steht seit Runde 240 der Haken); Studio und Wissen
+     bleiben zwei Tipps entfernt. Leitung und Geschäftsführung behalten
+     alle Räume. Gilt unten und links gleich. */
+  if(!canManage()){ delete nach['g-arbeit']; delete nach['g-wissen']; }
   var reihe=[];
   SEITE_REIHE.forEach(function(id){ if(nach[id]){ reihe.push(nach[id]); delete nach[id]; } });
   /* Was hier (noch) nicht genannt ist, hängt hinten an — eine neue
@@ -35448,7 +35464,7 @@ function schAbschliessen(){
     schErgebnisZeigen(punkte, bestanden, fragen);
   });
 }
-/* ── „Das nimmst du mit" (Runde 260) ─────────────────────────────────
+/* ── „Das nimmst du mit" (Runde 261) ─────────────────────────────────
    Aus dem Betrieb, 24.10.2026: „Jo mach weiter" — die nächste
    Schulungs-Runde. Bisher endete ein Durchlauf mit vier Zahlen, darunter
    „2 Fehlversuche". WELCHE zwei, stand nirgends; der Hinweis zur Frage
@@ -49135,7 +49151,17 @@ function updateBadges(){
      etwas offen"; die Zahl steht eine Ebene tiefer (Kopfzeile „4 offen",
      Gruppen) und im Vorlesetext. Zahlen bleiben nur, wo jemand
      persönlich gemeint ist (Glocke der Leitung, Direktnachrichten). */
-  document.querySelectorAll('[data-badge="g-arbeit"],[data-mbadge="g-arbeit"]').forEach(function(b){
+  /* Runde 260: Mitarbeiter haben keinen Raum „Studio" mehr – ihre
+     Aufgaben stehen auf „Heute" und werden dort abgehakt. Also trägt
+     „Heute" bei ihnen den Punkt; sonst gäbe es von keiner Seite aus
+     einen Hinweis auf Offenes (gefunden von test-startseite-offen).
+     Leitung und Geschäftsführung behalten ihn an „Studio". */
+  var punktRaum = canManage() ? 'g-arbeit' : 'g-start';
+  ['g-arbeit','g-start'].forEach(function(g){
+    if(g===punktRaum) return;
+    document.querySelectorAll('[data-badge="'+g+'"].punkt,[data-mbadge="'+g+'"].punkt').forEach(function(b){ b.style.display='none'; });
+  });
+  document.querySelectorAll('[data-badge="'+punktRaum+'"],[data-mbadge="'+punktRaum+'"]').forEach(function(b){
     b.textContent=''; b.classList.add('punkt');
     b.setAttribute('role','img');
     b.setAttribute('aria-label', open+' offen'); b.title=open+' offen';
