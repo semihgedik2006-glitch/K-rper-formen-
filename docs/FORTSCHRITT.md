@@ -22744,3 +22744,76 @@ FORMI_DENKEN und die Gemini-Regel.
 `/api/probe` im Leitstand, und der war heute nicht erreichbar. Als Erstes
 mit der Durchfall-Frage prüfen, dann mit Fieber, Partner-Einwand,
 Herzschrittmacher mit Bescheinigung und „Gerät piept".
+
+## Runde 263 — Formi ohne „Hey Formi" und ohne Vorlesen, Schalter für Formis Bewegung, 20 Ideen (24.10.2026)
+
+**Aus dem Betrieb:** „kannst du dafür sorgen das formi doch kein „hey
+formi“ mehr hat aber man kann noch sprach Nachrichten schicken und das vor
+lesen ist auch unnötig. Wir bräuchten auch noch einen Schalter wo man
+formis Animationen anpassen kann also stark, Mittel, keine und so und gib
+mir selber noch 20 Ideen …"
+
+**Gebaut:**
+1. **Kein Weckwort.** Das dauernd hörende Mikrofon (`jvWeck…`), der
+   Schalter „Freihändig" und der Hinweis oben im Fenster sind weg.
+   Sprechen statt Tippen bleibt: Knopf „Sprechen" (tippen oder halten),
+   Leertaste im leeren Feld, Live-Untertitel.
+2. **Kein Vorlesen.** Antworten, Sprüche, das Morgen-Briefing und der
+   Tagesabschluss werden nicht mehr gesprochen. Weg sind die Stimmwahl,
+   „Probehören", das Abspielen der Server-Stimme und die Gerätestimme. Der
+   Knopf oben heisst nur noch „Töne aus-/einschalten" (Klänge und
+   Vibration bleiben).
+3. **Schalter „Formis Bewegung": Stark / Mittel / Keine.** Er steht in
+   Formis Einstellungen (statt „Effekte" und „Gefühle der Kugel") und unter
+   Profil → Aussehen. Es ist ein Wert je Gerät.
+   - Stark: Eigenleben etwa doppelt so oft, Effekte voll, der Strom beim
+     Abhaken läuft gut eineinhalb Mal um Formi.
+   - Mittel: wie bisher.
+   - Keine: Formi steht still (`fk-still`, keine Gefühle, kein
+     Eigenleben, kein Strom, keine Federn an der Insel, der Rand ohne
+     Fluss). Was Formi meldet, bleibt.
+   - Wer früher „Gefühle aus" hatte, steht auf „Keine".
+4. **Leuchtrand sparsamer.** Statt einer maskierten, über die ganze Breite
+   strömenden Fläche bewegt sich nur eine 3 px dünne Lichtlinie an der
+   Kante. Der weiche Schein darunter steht still und braucht keine Maske.
+5. **20 Ideen** in `docs/ideen/formi-und-oberflaeche-20.md`: 10 für Formi,
+   10 für eine leichtere Oberfläche, jede mit Gewinn und, wo es eine gibt,
+   der Studie aus `docs/design-vorbilder/`.
+
+**Entschieden und warum:**
+- *Die Stimm-Function `gehirnStimme` im Worker bleibt vorerst stehen,
+  wird aber nicht mehr aufgerufen.* Sie zu löschen hiesse, eine
+  ausgelieferte Function zu entfernen, ohne dass es hier jemand prüfen
+  kann. Sie kostet nichts, solange sie niemand ruft.
+- *„Keine" schaltet `gehirnWenigBewegung()` mit.* Daran hängen alle
+  Formi-Bewegungen, im Fenster wie in der App. Ein zweiter Schalter daneben
+  würde früher oder später vergessen.
+- *Ein Schalter an zwei Stellen, ein Wert.* Formis Einstellungen findet,
+  wer im Formi-Fenster ist; „Aussehen" findet, wer die App einstellt. Beide
+  zeigen sofort denselben Stand.
+- *Leuchtrand:* `test-gehirn` misst die Arbeit je Bild bei CPU ÷4, während
+  Formi denkt. Diese Messung war auf `main` schon rot (1440 px 10,2 ms,
+  1920 px 9,3 ms, Grenze 8,3), wahrscheinlich auch wegen des strömenden
+  Randes aus Runde 250. Deshalb der sparsamere Rand.
+
+**Geprüft:**
+- Neu: `test-formi-bewegung` (46). Der Schalter steht an beiden Stellen
+  mit einem Wert; jede Wahl ist per Hit-Test bei 320–1920, normal und
+  kompakt, ≥ 44 × 44 treffbar. „Keine" ist still und gemerkt, die Insel
+  meldet trotzdem; Gegenprobe „Mittel" bewegt wieder. „Stark" läuft
+  weiter um Formi (gemessen etwa 590° statt 415°). „Gefühle aus" wird zu
+  „Keine". Im Quelltext gibt es kein speechSynthesis, keine
+  Stimm-Function und kein dauerhaft hörendes Mikrofon mehr.
+- `test-gehirn` 12d/12e umgestellt, Zitat aus dem Betrieb im Test: Sprechen
+  per Halten, per Leertaste und mit Untertitel geht; Antworten und
+  Briefing werden NICHT vorgelesen; kein Weckwort. 327 grün.
+- **Arbeit je Bild beim Denken** (CPU ÷4): 390 px 5,7 ms, 1440 px 6,8 ms,
+  1920 px 6,8 ms, Grenze 8,3. Auf `main` vorher 1440 px 10,2 ms und
+  1920 px 9,3 ms. Gemessen wurde, was es kostete: Die Figur in der Insel
+  drehte dauernd mit (mehrere ms), der strömende Rand etwa 1–3 ms. Die
+  Insel-Figur steht jetzt still, der Rand ist eine dünne Linie.
+- Gesamtdurchlauf mit 27 Durchläufen (Formi, Gestaltung, Knöpfe,
+  abgeschnitten, quer, Federn, Glas, Neuigkeiten, CSP …): alle grün.
+
+**Nicht geprüft:** echte Spracherkennung auf echten Geräten (im Durchlauf
+eine Attrappe), echte Handys.
