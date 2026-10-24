@@ -40,7 +40,7 @@ async function start(stub) {
   /* Auf die Leiste warten statt auf die Uhr: die Attrappe des
      Mitarbeiters braucht laenger als die des Chefs, und eine feste
      Wartezeit ist entweder zu kurz oder verschenkt Zeit. */
-  /* Runde 245: Mitarbeiter haben den Raum „Studio" nicht mehr — gewartet
+  /* Runde 260: Mitarbeiter haben den Raum „Studio" nicht mehr — gewartet
      wird auf „Heute", den Raum, den jede Rolle hat; zum Probetraining
      geht es ohne Raum-Knopf über die Schublade „Alles". */
   await page.waitForSelector('.mobnav [data-group="g-start"]', { timeout: 20000 });

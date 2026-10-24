@@ -138,10 +138,13 @@ async function seite(b, stub, such, breite) {
        Zeiten?": „eigener knopf". Seitdem sechs: „Zeiten" direkt hinter
        „Studio" (gestempelt wird jeden Tag). Nachgezogen in Runde 228 –
        #281 hatte test-navigation und test-p5-leiste angepasst, diesen
-       Durchlauf nicht. */
-    pruefe('unten stehen sechs Knöpfe', neu.reihe.length === 6, JSON.stringify(neu.reihe));
-    pruefe('und zwar Heute, Studio, Zeiten, Plan, Nachrichten, Wissen',
-      neu.reihe.join('|') === 'Heute|Studio|Zeiten|Plan|Nachrichten|Wissen', JSON.stringify(neu.reihe));
+       Durchlauf nicht.
+       Runde 246 (23.10.2026), Plan „Studio Chat wie von Apple": fünf statt
+       sechs, „Wissen" liegt unter ☰ (am Rechner weiter links). Aus dem
+       Betrieb, 08:07: „ja so wie du empfohlen hast klingt super". */
+    pruefe('unten stehen fünf Knöpfe', neu.reihe.length === 5, JSON.stringify(neu.reihe));
+    pruefe('und zwar Heute, Studio, Zeiten, Plan, Nachrichten',
+      neu.reihe.join('|') === 'Heute|Studio|Zeiten|Plan|Nachrichten', JSON.stringify(neu.reihe));
     pruefe('die Schublade ist beim Start zu', neu.ladeZu === true);
     pruefe('der Bereichskopf trägt einen sichtbaren Griff', neu.griff === true);
   }

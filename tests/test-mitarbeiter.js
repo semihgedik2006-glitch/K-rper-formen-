@@ -30,7 +30,7 @@ const SP = process.env.SP || __dirname;
                      den Aufgaben des Tages. */
                   team:'g-team', docs:'g-wissen' };
   async function go(view) {
-    /* Runde 245 (aus dem Betrieb, 23.10.2026, auf „Mitarbeiter unten nur
+    /* Runde 260 (aus dem Betrieb, 23.10.2026, auf „Mitarbeiter unten nur
        Heute, Zeiten, Plan, Nachrichten – Studio und Wissen über ‚Alles'?":
        „ja"): fehlt der Raum-Knopf, geht es über die Schublade „Alles". */
     await page.evaluate(([g, v]) => (document.querySelector('.mobnav [data-group="' + g + '"]') || { click: () => {

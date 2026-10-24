@@ -51,7 +51,7 @@ function pruefe(was, bedingung, hinweis) {
 async function offeneLautListe(p) {
   await p.evaluate(() => {
     const g = document.querySelector('.mobnav [data-group="g-arbeit"]');
-    /* Runde 245: Mitarbeiter haben den Raum „Studio" nicht mehr — ohne
+    /* Runde 260: Mitarbeiter haben den Raum „Studio" nicht mehr — ohne
        Raum-Knopf geht der Weg über die Schublade „Alles". */
     if (g) g.click();
     else {
@@ -94,7 +94,7 @@ async function startseite(p) {
       .map(x => x.textContent.trim());
     const offenKopf = koepfe.find(t => /^Offen/.test(t)) || '';
     const m = /(?:·\s*|\s)(\d+)$/.exec(offenKopf);
-    /* Runde 245: Mitarbeiter haben keinen Raum „Studio" mehr (aus dem
+    /* Runde 260: Mitarbeiter haben keinen Raum „Studio" mehr (aus dem
        Betrieb, 23.10.2026: „ja" zu „unten nur Heute, Zeiten, Plan,
        Nachrichten"); bei ihnen trägt „Heute" den Punkt. */
     const abz = document.querySelector('.mn-reihe [data-group="g-arbeit"] .badge') ||
@@ -260,7 +260,7 @@ async function startseite(p) {
        ein Mensch es täte. */
     await p.evaluate(() => {
       const g = document.querySelector('.mobnav [data-group="g-arbeit"]');
-      /* Runde 245: Mitarbeiter haben den Raum „Studio" nicht mehr — ohne
+      /* Runde 260: Mitarbeiter haben den Raum „Studio" nicht mehr — ohne
          Raum-Knopf geht der Weg über die Schublade „Alles". */
       if (g) g.click();
       else {

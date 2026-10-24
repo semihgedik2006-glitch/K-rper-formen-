@@ -132,7 +132,7 @@ async function fuerRolle(rolle, errs) {
   const funde = [];
   const gesehen = [];
   for (const [v, g] of VIEWS) {
-    /* Runde 245: Mitarbeiter haben die Räume „Studio" und „Wissen" nicht
+    /* Runde 260: Mitarbeiter haben die Räume „Studio" und „Wissen" nicht
        mehr unten — fehlt der Raum-Knopf, geht es über die Schublade
        „Alles" zur Ansicht. */
     const ueberAlles = await page.evaluate(([gg, vv]) => {

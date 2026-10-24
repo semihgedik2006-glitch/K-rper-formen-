@@ -6958,6 +6958,9 @@ function auffrischErinnernDarf(plan, jetzt) {
   return !!plan && !!plan.uid && !plan.test &&
     (jetzt - (plan.erinnertAm || 0)) >= AUFFRISCH_ERINNERN_ABSTAND_MS;
 }
+function auffrischTeilnehmerGilt(t, plan) {
+  return !!t && !t.gesperrt && !!t.uid && t.uid === (plan || {}).uid;
+}
 function auffrischErinnernText(offen) {
   return offen === 1
     ? 'Eine Frage aus deinen Schulungen wartet — dauert keine Minute.'
@@ -6970,6 +6973,11 @@ async function auffrischErinnernFirma(firma, jetzt) {
   for (const doc of plaene.docs) {
     const plan = doc.data() || {};
     if (!auffrischErinnernDarf(plan, jetzt)) continue;
+    /* Der Plan merkt sich die uid von damals. Gilt sie noch? Stillgelegt,
+       gelöscht oder mit einem anderen Konto verknüpft heisst: keine
+       Nachricht (Runde 248 — bis dahin ging sie trotzdem raus). */
+    const tn = await F.collection('schulungTeilnehmer').doc(doc.id).get();
+    if (!auffrischTeilnehmerGilt(tn.exists ? tn.data() : null, plan)) continue;
     const u = await db.collection('users').doc(String(plan.uid)).get();
     const ud = u.exists ? (u.data() || {}) : null;
     if (!ud || ud.aktiv === false || !gehoertZu(ud, firma)) continue;
@@ -6998,6 +7006,20 @@ exports.schulungAuffrischErinnern = region
     return null;
   });
 
+
+/* ── Teilnehmer gelöscht → Lernplan weg (Runde 248) ──────────────────
+   Bis Runde 247 blieb der Plan liegen (FORTSCHRITT, Runde 201: „Offen").
+   In der App gibt es nur „Stilllegen"; gelöscht wird ein Teilnehmer in
+   der Konsole oder mit der ganzen Firma. Der Plan sagt dann über
+   niemanden mehr etwas — also geht er mit. Die Durchläufe bleiben: sie
+   sind der Nachweis der Unterweisung. */
+const _schTnWeg = beideWelten('schulungTeilnehmer/{tId}', async (snap, ctx) => {
+  const firma = (ctx.params && ctx.params.firma) || null;
+  await W(firma).collection('schulungLernplan').doc(String(ctx.params.tId)).delete()
+    .catch((e) => console.warn('Lernplan aufräumen:', e.message));
+}, 'onDelete');
+exports.onSchulungTeilnehmerWeg = _schTnWeg.flach;
+exports.onSchulungTeilnehmerWegF = _schTnWeg.firma;
 
 /* ══════════════════════════════════════════════════════════════════════
    BEITRITT PER FIRMENCODE (Runde 117)
@@ -9314,7 +9336,7 @@ exports.__intern = { stempelErinnerungen, stempelErinnernMail, stempelErinnernFi
                      schulungZeichen, schulungCodeNormal, SCHULUNG_ALPHABET,
                      SCHULUNG_TESTCODE, schulungTestErlaubt,
                      schulungOffenerLauf, auffrischRunde, auffrischWeiter, AUFFRISCH_STUFEN_TAGE,
-                     auffrischErinnernDarf, auffrischErinnernText, AUFFRISCH_ERINNERN_ABSTAND_MS,
+                     auffrischErinnernDarf, auffrischTeilnehmerGilt, auffrischErinnernText, AUFFRISCH_ERINNERN_ABSTAND_MS,
                      AUFFRISCH_JE_MODUL, AUFFRISCH_JE_RUNDE, SCHULUNG_FORTSETZEN_MS,
                      wichtigFehlende, wichtigFaellig, wichtigTitel, wichtigText,
                      WICHTIG_AB_MS, WICHTIG_BIS_MS,

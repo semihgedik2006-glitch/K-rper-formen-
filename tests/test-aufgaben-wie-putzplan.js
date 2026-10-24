@@ -120,7 +120,7 @@ async function zuDenAufgaben(p) {
   /* Wie test-all: über die Gruppe „Arbeit", dann den Reiter. Ein
      Knopf, auf dem nur „Aufgaben" steht, kann auch „Meine Aufgaben"
      sein. */
-  /* Runde 245: Mitarbeiter haben keinen Raum „Studio" mehr — sie gehen
+  /* Runde 260: Mitarbeiter haben keinen Raum „Studio" mehr — sie gehen
      über die Schublade „Alles". */
   await p.evaluate(() => (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => {
     document.getElementById('bereichKopf').click();

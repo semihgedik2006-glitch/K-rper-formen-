@@ -52,7 +52,7 @@ async function start(rolle) {
   }
   await page.evaluate(() => {
     const g = document.querySelector('.mobnav [data-group="g-arbeit"]');
-    /* Runde 245: Mitarbeiter haben den Raum „Studio" nicht mehr — ohne
+    /* Runde 260: Mitarbeiter haben den Raum „Studio" nicht mehr — ohne
        Raum-Knopf geht der Weg über die Schublade „Alles". */
     if (g) g.click();
     else {

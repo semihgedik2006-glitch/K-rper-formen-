@@ -38,7 +38,7 @@ async function zuDenAufgaben(p) {
     const b = document.querySelector('.mobnav [data-group="g-arbeit"]') ||
               document.querySelector('.mn-reihe [data-group="g-arbeit"]');
     if (b) { b.click(); return; }
-    /* Runde 245: Mitarbeiter haben den Raum „Studio" nicht mehr —
+    /* Runde 260: Mitarbeiter haben den Raum „Studio" nicht mehr —
        die Aufgaben erreichen sie über die Schublade „Alles". */
     document.getElementById('bereichKopf').click();
     const a = document.querySelector('#allesLade [data-alles="todos"]');

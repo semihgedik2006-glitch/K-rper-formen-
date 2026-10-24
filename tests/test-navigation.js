@@ -51,13 +51,19 @@ const ansicht = page => page.evaluate(() => {
        Runde 222 (23.10.2026), auf die Rückfrage „eigener Knopf oder unter
        Alles?" für die Zeiterfassung: „eigener knopf" — „Zeiten" direkt
        hinter „Studio". */
-    const soll = ['Heute', 'Studio', 'Zeiten', 'Plan', 'Nachrichten', 'Wissen', 'Verwaltung'];
+    /* Runde 246 (23.10.2026), Plan „Studio Chat wie von Apple": unten
+       fünf Knöpfe, „Wissen" liegt unter ☰. Aus dem Betrieb, 08:07: „ja
+       so wie du empfohlen hast klingt super". Die Verwaltung steht schon
+       seit Runde 222 nicht mehr unten (sechs Knöpfe waren das Maximum),
+       sondern unter ☰ und am Rechner links — dieser Durchlauf war
+       seitdem rot. */
+    const soll = ['Heute', 'Studio', 'Zeiten', 'Plan', 'Nachrichten'];
     if (JSON.stringify(gruppen) !== JSON.stringify(soll)) {
       errs.push('Gruppen stimmen nicht: ' + JSON.stringify(gruppen) +
         ' — erwartet ' + JSON.stringify(soll));
     }
 
-    await page.evaluate(() => (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="todos"]').click(); } }).click());
+    await page.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
     await page.waitForTimeout(600);
     const unter = await page.evaluate(() => [...document.querySelectorAll('[data-subview]')].map(s => s.textContent.trim()));
     console.log('STUDIO:', JSON.stringify(unter));
@@ -102,8 +108,13 @@ const ansicht = page => page.evaluate(() => {
       errs.push('Im Bestand fehlt der Umschalter Material | Geräte: ' + JSON.stringify(bestand));
     }
 
-    await page.evaluate(() => (document.querySelector('.mobnav [data-group="g-wissen"]') || { click: () => { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="docs"]').click(); } }).click());
-    await page.waitForTimeout(600);
+    /* „Wissen" über ☰: der Griff, dann „Dokumente" — zwei Tipps. */
+    await page.evaluate(async () => {
+      document.getElementById('bereichKopf').click();
+      await new Promise(r => setTimeout(r, 450));
+      document.querySelector('#allesLadeInhalt .al-zeile[data-alles="docs"]').click();
+    });
+    await page.waitForTimeout(800);
     const wissen = await page.evaluate(() => [...document.querySelectorAll('[data-subview]')].map(s => s.textContent.trim()));
     console.log('WISSEN:', JSON.stringify(wissen));
     if (!wissen.some(u => /Dokumente/.test(u))) errs.push('Dokumente liegt nicht unter Wissen');
@@ -117,7 +128,7 @@ const ansicht = page => page.evaluate(() => {
 
     await page.evaluate(() => document.querySelector('.mobnav [data-group="g-komm"]').click());
     await page.waitForTimeout(550);
-    await page.evaluate(() => (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="todos"]').click(); } }).click());
+    await page.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
     await page.waitForTimeout(550);
     const hash = await page.evaluate(() => location.hash);
     console.log('ZURÜCK – Adresse nach zwei Wechseln:', hash, '| Ansicht:', await ansicht(page));
@@ -155,7 +166,10 @@ const ansicht = page => page.evaluate(() => {
   // ── 3. Verwaltung: Übersicht -> Reiter -> zurück ──
   {
     const { b, page } = await start('stub-chef.js', errs);
-    await page.evaluate(() => document.querySelector('.mobnav [data-group="g-chef"]').click());
+    /* Seit Runde 222 nicht mehr unten. Derselbe Knopf der Seitenleiste
+       (am Handy ausgeblendet, aber im Dokument) öffnet die Übersicht —
+       ☰ → „Überblick" springt gleich in einen Reiter. */
+    await page.evaluate(() => document.querySelector('#side [data-group="g-chef"]').click());
     await page.waitForTimeout(900);
 
     const uebersicht = await page.evaluate(() => ({

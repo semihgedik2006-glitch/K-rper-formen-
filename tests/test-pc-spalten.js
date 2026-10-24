@@ -61,7 +61,7 @@ async function oeffne(b, w, h, rolle) {
 async function zu(p, v) {
   /* Der Knopf, der im Bild ist: am Handy unten, am Rechner links. Ohne
      den Filter traf querySelector am Handy die verborgene Seitenleiste. */
-  /* Runde 245: Mitarbeiter haben die Räume „Studio" und „Wissen" nicht
+  /* Runde 260: Mitarbeiter haben die Räume „Studio" und „Wissen" nicht
      mehr — fehlt der Raum-Knopf, geht der Weg über die Schublade „Alles". */
   await p.evaluate(({ g, v }) => {
     const k = [...document.querySelectorAll('.mobnav [data-group="' + g + '"], #side [data-group="' + g + '"]')].find(e => e.offsetParent);

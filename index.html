@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-MJYCMrdoEQDCsABBn3gxiYnhFTVy1b0gdDkYcOr2ysM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-XE6nnk0/X8i4bhagfsVhYyxFioIdmj84oFSz1DfPMZ4='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -258,6 +258,7 @@
   --t-lg:1.12rem;    /* Kartentitel */
   --t-xl:1.36rem;    /* Abschnittstitel */
   --t-2xl:1.75rem;   /* Seitentitel */
+  --t-3xl:2.125rem;  /* Grosser Titel oben (Apple „Large Title", 34 px) */
 
   /* Zeilenabstand: eng fuer Ueberschriften, normal fuer Text, weit fuer
      laengere Absaetze. --lh-1 ist der bewusste Reset auf 1. */
@@ -307,6 +308,49 @@
   /* Apple-typische Kurven: ruhiges Ausgleiten und leichtes Nachfedern */
   --ease-ios:cubic-bezier(.32,.72,0,1);
   --spring:cubic-bezier(.34,1.42,.64,1);
+}
+/* ── Drei Federn statt vieler Kurven (Runde 247, 23.10.2026) ──────
+   Plan „Studio Chat wie von Apple", Schritt Bewegung; Recherche
+   „Bewegung, Psychologie und Formi" (23.10.2026), Empfehlung 1. Seit
+   15:18 aus dem Betrieb: „es soll einfach den ganzen plan erledigen".
+
+   Apple beschreibt Bewegung nicht mit Kurven, sondern mit Federn: wie
+   stark sie nachschwingen (bounce). Drei reichen:
+     --feder-fest   0     gleitet aus, schwingt nicht nach — Seiten,
+                          Blätter, Leisten (ersetzt --ease-ios/-out)
+     --feder-weich  0,15  ein Hauch Nachschwingen — Haken, Schalter,
+                          Knöpfe (ersetzt --spring)
+     --feder-formi  0,3   nur für Formi; angelegt, aber NICHT benutzt:
+                          Formi gehört einer anderen Sitzung.
+   Die Werte sind eine echte gedämpfte Schwingung, abgetastet in
+   linear() (die Rechnung steht in docs/FORTSCHRITT.md, Runde 247):
+   eingeschwungen auf 0,1 % genau am Ende der Dauer. Runde 249: nur so
+   viele Stützpunkte, dass die Kurve höchstens 1 % (fest, formi) bzw.
+   0,5 % (weich, damit das Nachschwingen bleibt) abweicht — 10 / 17 / 11
+   statt 29. Jede Stilneuberechnung liest die Kurve neu ein; mit 29
+   Punkten kostete ein Seitenwechsel im Median 1–2 ms je Bild mehr. Browser ohne
+   linear() (Safari < 17.2) behalten die alten Kurven.
+
+   Die alten Namen bleiben als Verweise — über 200 Stellen umzuschreiben
+   hätte nichts verbessert, nur den Unterschied verdeckt. */
+@supports (transition-timing-function:linear(0,1)){
+  :root{
+    --feder-fest:linear(0, 0.02 2.3%, 0.082 5.1%, 0.462 16.9%, 0.637 23.4%, 0.766 30.1%, 0.861 37.5%, 0.93 46.9%, 0.971 58.6%, 1);
+    --feder-weich:linear(0, 0.006 1.4%, 0.023 2.9%, 0.095 6.2%, 0.187 9.3%, 0.511 19.4%, 0.607 22.8%, 0.688 26.1%, 0.756 29.3%, 0.814 32.6%, 0.863 36%, 0.903 39.6%, 0.938 43.6%, 0.965 48.1%, 0.997 58.6%, 1.006 72%, 1);
+    --feder-formi:linear(0, 0.027 2.5%, 0.111 5.5%, 0.591 16.7%, 0.783 22.1%, 0.916 27.5%, 0.999 33.2%, 1.035 38.4%, 1.046 44.6%, 1.003 72.9%, 1);
+    --ease-ios:var(--feder-fest);
+    --ease-out:var(--feder-fest);
+    --spring:var(--feder-weich);
+  }
+  /* Formi und seine Seite behalten ihre Kurven genau wie bisher: die
+     Eigenschaften erben, also reicht es, sie an Formis Wurzeln
+     zurückzusetzen. body.formi (der Stil) ist ausgenommen — sonst
+     behielte die ganze App die alten Kurven. */
+  :not(body)[class*="formi"],[id*="formi"],[id*="Formi"],#view-gehirn,.jarvis{
+    --ease-ios:cubic-bezier(.32,.72,0,1);
+    --ease-out:cubic-bezier(.16,1,.3,1);
+    --spring:cubic-bezier(.34,1.42,.64,1);
+  }
 }
 /* ── Hell-Modus ── */
 body.light{
@@ -1943,7 +1987,7 @@ body.nurlesen .kopf-plus{display:none !important}
    neue Design für alle gilt, lag die Fläche der Reiter 3 px über der
    Studio-Wahl (test-aufgaben-wie-putzplan: 150 × 41 in „kompakt"). */
 body.neu .scroll-area > .pp-leiste:first-child{margin-top:var(--s8)}
-/* Runde 245: dasselbe bei den Filter-Chips der Dokumente. Für Mitarbeiter
+/* Runde 260: dasselbe bei den Filter-Chips der Dokumente. Für Mitarbeiter
    ist die Karte „Hochladen" darüber ausgeblendet; dann lag die Fläche der
    Reiter 5 px über „Alle (3)" (test-fingerziele: 86 × 39). */
 body.neu #view-docs #docCatRow{margin-top:var(--s8)}
@@ -2142,7 +2186,7 @@ body.neu #view-docs #docCatRow{margin-top:var(--s8)}
 .mobnav{display:none}
 @media(max-width:820px){
   .side{display:none}
-  .main{padding-bottom:var(--s72)}
+  .main{--main-unten:var(--s72);padding-bottom:var(--main-unten)}
   .mobnav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:30;
     /* Deckend, ohne Weichzeichner — Begründung an .topbar. Der
        Inhalt endet über der Leiste (.main trägt unten Abstand), unter
@@ -3171,10 +3215,28 @@ body.neu #view-docs #docCatRow{margin-top:var(--s8)}
     overscroll-behavior:contain;touch-action:none}
   #profileModal.show .pm-box,#personModal.show .pm-box{
     animation:sheetUp .5s var(--ease-ios)}
-  /* Griff oben – zeigt ohne Worte, dass sich das Blatt schließen lässt */
-  #profileModal .pm-box::before,#personModal .pm-box::before{
-    content:'';display:block;width:38px;height:4px;border-radius:var(--r-pille);
-    background:var(--line-2);margin:-6px auto var(--s12)}
+  /* Griff oben: seit Runde 253 ein echtes Element an JEDEM Blatt
+     (.blatt-griff, siehe unten) statt ::before nur an zwei. */
+  #profileModal .blatt-griff,#personModal .blatt-griff,#devModal .blatt-griff,#pollModal .blatt-griff,#todoEditModal .blatt-griff,
+  #aboModal .blatt-griff,#ownTodoModal .blatt-griff,#probeModal .blatt-griff,#zugangModal .blatt-griff,#putzModal .blatt-griff{
+    display:block;top:calc(-1 * var(--s20));margin:calc(-1 * var(--s20)) auto calc(-1 * var(--s8))}
+}
+/* ── Blätter mit Griff und Rasthöhen (Runde 253) ─────────────────────
+   Plan „Studio Chat wie von Apple", Schritt 7: „Blatt (Sheet): Rasthöhen
+   halb und voll, ein Griff oben zeigt, dass man ziehen kann."
+   Der Griff ist ein echtes Element (blattGriffAnbringen), oben in der
+   Mitte, klebt beim Scrollen im Blatt oben und ist 44 px hoch — der
+   Strich darin ist 36 × 5 px wie bei iOS. Er ist bewusst nur so breit
+   wie nötig (bis 200 px): rechts oben sitzt bei manchen Blättern das
+   Kreuz, das soll er nicht überdecken. Ziehen: blattZiehenBinden. */
+.blatt-griff{display:none;position:sticky;top:0;z-index:3;width:min(200px, 60%);height:44px;
+  cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none}
+.blatt-griff::before{content:'';position:absolute;left:50%;top:var(--s8);width:36px;height:5px;margin-left:-18px;
+  border-radius:var(--r-pille);background:var(--text-3);opacity:.55}
+.blatt-griff:active{cursor:grabbing}
+@media (max-width:1099px){
+  /* top negativ: „sticky" hält sonst Abstand zum Innenrand des Blatts. */
+  .msg-sheet:not(.am-ort) .blatt-griff{display:block;top:calc(-1 * var(--s16));margin:calc(-1 * var(--s16)) auto calc(-1 * var(--s8))}
 }
 @keyframes sheetUp{
   from{opacity:.4;transform:translateY(100%)}
@@ -3912,6 +3974,27 @@ button.ich-zeile:active{opacity:.7}
 /* Runde 197: vier Reiter statt vier Blöcke nebeneinander — am Rechner
    standen 2 × 2 Formulare über 1.600 px Breite, das war die „Wand". */
 .spl-regel-reiter{margin:var(--s12) 0}
+/* Fragen zum Plan */
+.spl-fragen > summary{cursor:pointer;min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:var(--s8);
+  font-family:var(--font-head);font-weight:800;font-size:var(--t-md);list-style:none}
+.spl-fragen > summary::-webkit-details-marker{display:none}
+.spl-fragen > summary span{display:inline-flex;align-items:center;gap:var(--s8)}
+.spl-fragen > summary span svg{width:20px;height:20px}
+.spl-fragen > summary small{font-family:var(--font-body);font-weight:600;font-size:var(--t-xs);color:var(--text-3)}
+.spl-fragen .hint{margin:var(--s8) 0 0}
+#spFragenReiter .pm-tab small{font-size:var(--t-2xs);color:var(--text-3);font-weight:700}
+/* Am Handy nur der Buchstabe – fünf Wörter passen bei 320 px nicht. */
+@media (max-width:819px){ #spFragenReiter .spl-lang{display:none} #spFragenReiter .pm-tab small{display:none} }
+.spl-fragen-titel{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.spl-frage{display:grid;gap:var(--s4);padding:var(--s10) var(--s12);border-radius:var(--r-md);background:var(--auf-1);margin-bottom:var(--s8);
+  box-shadow:inset 3px 0 0 var(--line-2)}
+.spl-frage.fertig{box-shadow:inset 3px 0 0 var(--accent)}
+.spl-frage label{font-weight:600;font-size:var(--t-sm);line-height:var(--lh)}
+.spl-frage label b{display:inline-block;min-width:1.6em;color:var(--accent-d)}
+.spl-frage small{color:var(--text-3);font-size:var(--t-xs);line-height:var(--lh)}
+.spl-frage-feld{display:flex;gap:var(--s8);align-items:flex-start}
+.spl-frage-feld textarea{flex:1;min-width:0;min-height:44px;resize:vertical}
+@media (min-width:1100px){ .spl-fragen > *:not(summary){max-width:960px} }
 /* Am Handy 2 × 2: in einer Zeile rollte „Notiz" aus dem Bild und war
    bei 320–430 px nur 36–43 px breit zu treffen (test-schichtplaner). */
 @media (max-width:819px){ #spRegelReiter{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible} }
@@ -5397,6 +5480,12 @@ html{font-size:var(--fs,100%)}
    wenn #printArea nichts enthaelt, und die zwei Wege nennt, die es
    wirklich gibt. */
 #printArea{display:none}
+/* Bescheinigung (Runde 248): das Zeichen rechts im Kopf. Die negativen
+   Ränder halten die Zeile so hoch wie die Überschrift — die Trefferfläche
+   bleibt 44 × 44 und ragt in den Innenabstand der Karte. */
+.sch-meine-kopf{display:flex;align-items:center;justify-content:space-between;gap:var(--s8)}
+.sch-meine-kopf h3{min-width:0}
+.sch-meine-kopf .icon-btn{width:44px;height:44px;flex-shrink:0;margin:-12px -6px -12px 0}
 #printHinweis{display:none}
 @media print{
   body{background:#fff!important;color:#000!important}
@@ -5881,14 +5970,18 @@ html{font-size:var(--fs,100%)}
 }
 /* Ein offenes Blatt ist oben — die Formi-Kugel (z-index 150) lag am
    Handy über seinem ersten Knopf (gemessen am Schicht-Blatt bei 390 px;
-   dasselbe galt für jedes .msg-sheet). */
-body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
+   dasselbe galt für jedes .msg-sheet). Runde 251: über Geschwister statt
+   „body:has(…)" — ein :has am <body> liess JEDE Änderung irgendwo im
+   Dokument die ganze Seite neu berechnen (~650 Elemente, 9 ms am Rechner,
+   gemessen). Die Blätter stehen im Dokument vor der Kugel. */
+body > .msg-sheet.show ~ .formi-kugel{visibility:hidden}
 /* Runde 236: Auf kleinen Handys (320 × 640) bleibt mit offenem „Filter"
    über Aufgaben oder Putzplan so wenig Fläche, dass die Kugel mitten auf
    den Chips und den „…" lag (test-aufgaben-wie-putzplan, kompakt). Für
-   die Dauer des Filterns tritt sie zur Seite; zu → sie ist wieder da. */
+   die Dauer des Filterns tritt sie zur Seite; zu → sie ist wieder da.
+   Runde 251: die Klasse setzt ppAufklappen (kein :has am <body>). */
 @media(max-width:820px) and (max-height:700px){
-  body:has(.pp-werkzeuge:not([hidden])) .formi-kugel{visibility:hidden}
+  body.pp-filter-auf .formi-kugel{visibility:hidden}
 }
 /* Am Rechner: Studio-Auswahl und Reiter in EINER Zeile — vorher zwei
    Zeilen (gemessen: die Woche begann bei 1440 × 900 erst bei y = 547). */
@@ -5944,6 +6037,28 @@ body:has(.msg-sheet.show) .formi-kugel{visibility:hidden}
 .swipe-body{position:relative;display:flex;gap:var(--s12);align-items:flex-start;width:100%;
   transition:transform .38s var(--spring)}
 .swiping .swipe-body{transition:none}
+/* Runde 255: Über der Schwelle wächst der Haken — man sieht, dass
+   Loslassen jetzt abhakt, bevor man loslässt (wie in Mail). */
+.swipe-hint{transition:transform .2s var(--spring)}
+.swipe-ueber .swipe-hint{transform:scale(1.25);transform-origin:var(--s24) 50%}
+/* ── Nach links wischen: die Aktionen der Zeile (Runde 255) ──
+   Wie in Mail: die Knöpfe schieben sich von rechts mit herein und
+   bleiben stehen, bis man woanders tippt. Jede Aktion ist auch ohne
+   Wischen da (⋯ und Papierkorb an der Zeile) — Wischen ist nur der
+   kürzere Weg (Plan: „Wischen nur als Abkürzung, jede Aktion auch
+   sichtbar"). Gebaut wird das Feld erst beim ersten Wischen. */
+.swipe-akt{position:absolute;top:0;right:0;bottom:0;z-index:1;display:flex;visibility:hidden;
+  transform:translateX(100%);transition:transform .38s var(--spring)}
+.swipe-links .swipe-akt,.swipe-offen .swipe-akt{visibility:visible}
+.swiping .swipe-akt{transition:none}
+.swipe-k{width:76px;min-height:44px;border:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:var(--s4);font:inherit;font-size:var(--t-2xs);font-weight:600;cursor:pointer;
+  background:var(--bg-3);color:var(--text)}
+.swipe-k svg{width:20px;height:20px}
+/* --danger ist eine Fläche mit dunkler Schrift (siehe :root) —
+   weiss darauf läge unter 4,5 : 1. */
+.swipe-k.sk-weg{background:var(--danger);color:#2A0610}
+.swipe-k:active{filter:brightness(.88)}
 
 /* ── Schnellfilter-Chips (Aufgaben) ── */
 .chip-row{display:flex;gap:var(--s8);flex-wrap:wrap}
@@ -6428,6 +6543,60 @@ html.fk-still .fk-wirbel,html.fk-still .fk-innen{animation:none}
 /* Was ins Loch fällt (formiSchlucken). */
 .formi-schluck{position:fixed;left:0;top:0;z-index:1180;pointer-events:none;white-space:nowrap;transform-origin:50% 50%;will-change:transform;
   font-weight:700;font-size:var(--t-sm);color:#E8F8FF;text-shadow:0 0 10px rgba(182,156,255,.9)}
+/* ── Gezeitenstrom, Lichtkrümmung, Insel, Leuchtrand (Runde 250) ──────
+   Der Strom: jeder Buchstabe des Titels fällt einzeln (formiStrom). Beim
+   Messen stehen sie in einer Zeile (.mass), danach einzeln frei. */
+.formi-strom .fs-zeile{position:absolute;left:0;top:0;white-space:pre}
+.formi-strom.mass i{position:static;display:inline-block}
+.formi-strom i{font:inherit;letter-spacing:inherit;color:#EAF9FF;text-shadow:0 0 8px rgba(95,225,255,.9), 0 0 2px rgba(255,255,255,.9);transform-origin:50% 50%;will-change:transform}
+.formi-strom i::after{font:inherit}
+.formi-strom i.spur{color:#B69CFF;text-shadow:0 0 10px rgba(182,156,255,.9)}
+.formi-strom i.spur::after{content:none}
+/* Die Linse: ein Kreis um die Kugel, der den Hintergrund krümmt. Nur wo
+   der Filter wirkt (html.linse-ok, Chromium). Keine Trefferfläche. */
+.formi-linse{display:none}
+.linse-ok .formi-linse:not([hidden]){display:block;position:fixed;left:0;top:0;z-index:149;width:192px;height:192px;
+  border-radius:var(--r-rund);pointer-events:none;backdrop-filter:url(#formiLinse)}
+.formi-linse-svg{position:absolute;width:0;height:0;overflow:hidden}
+/* Die Insel: schwarz wie das Loch, mit Photonenring. Die Form wechselt
+   über clip-path (Punkt → klein → gross), der Inhalt nur über opacity. */
+.formi-insel{position:fixed;left:50%;top:var(--s8);translate:-50% 0;z-index:1190;width:min(380px, calc(100vw - 32px));height:68px;
+  pointer-events:none;color:#F4F9FF}
+.formi-insel[hidden]{display:none}
+.fi-ring,.fi-flaeche{position:absolute;inset:0}
+.fi-ring{background:conic-gradient(from 200deg, #5FE1FF, #B69CFF, #FF8FC8, #5FE1FF);opacity:.9}
+.fi-flaeche{background:#000}
+.fi-klein,.fi-gross{position:absolute;display:flex;align-items:center;opacity:0;transition:opacity .18s ease}
+.fi-klein{left:50%;top:0;translate:-50% 0;width:min(300px, 100%);height:40px;gap:var(--s8);padding:0 var(--s16) 0 var(--s6)}
+.fi-gross{inset:0;gap:var(--s12);padding:0 var(--s16) 0 var(--s12)}
+.formi-insel.klein .fi-klein{opacity:1;transition-delay:.12s}
+.formi-insel.gross .fi-gross{opacity:1;transition-delay:.16s}
+.fi-klein .formi-figur{--fg:28px;flex:none}
+.fi-gross .formi-figur{--fg:46px;flex:none}
+.fi-t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:var(--t-sm);font-weight:600}
+.fi-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:var(--s2)}
+.fi-was{font-size:var(--t-xs);font-weight:600;color:rgba(244,249,255,.72)}
+.fi-titel{font-size:var(--t-md);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fi-zeichen{flex:none;width:28px;height:28px}
+.fi-zeichen svg{width:100%;height:100%;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.fi-zeichen circle{stroke:var(--ok)}
+.fi-zeichen path{stroke:var(--ok)}
+.formi-insel.fehler .fi-zeichen{display:none}
+/* Der Leuchtrand: vier Streifen, in denen das Licht gegen den Uhrzeiger
+   um den Bildschirm strömt (nur transform des ::before). */
+.formi-rand{--fr-b:24px;position:fixed;inset:0;z-index:1185;pointer-events:none;opacity:0;transition:opacity .5s ease}
+.formi-rand[hidden]{display:none}
+.formi-rand.an{opacity:.95}
+.formi-rand.blitz{opacity:1}
+.formi-rand i{position:absolute;overflow:hidden}
+.formi-rand .o{left:0;right:0;top:0;height:var(--fr-b);-webkit-mask-image:linear-gradient(180deg, #000, transparent);mask-image:linear-gradient(180deg, #000, transparent)}
+.formi-rand .u{left:0;right:0;bottom:0;height:var(--fr-b);-webkit-mask-image:linear-gradient(0deg, #000, transparent);mask-image:linear-gradient(0deg, #000, transparent)}
+.formi-rand .l{top:0;bottom:0;left:0;width:var(--fr-b);-webkit-mask-image:linear-gradient(90deg, #000, transparent);mask-image:linear-gradient(90deg, #000, transparent)}
+.formi-rand .r{top:0;bottom:0;right:0;width:var(--fr-b);-webkit-mask-image:linear-gradient(270deg, #000, transparent);mask-image:linear-gradient(270deg, #000, transparent)}
+.formi-rand i::before{content:"";position:absolute;left:0;top:0}
+.formi-rand .o::before,.formi-rand .u::before{width:200%;height:100%;background:linear-gradient(90deg, #5FE1FF, #B69CFF 25%, #FF8FC8 50%, #B69CFF 75%, #5FE1FF) 0 0 / 50% 100% repeat-x}
+.formi-rand .l::before,.formi-rand .r::before{width:100%;height:200%;background:linear-gradient(180deg, #5FE1FF, #B69CFF 25%, #FF8FC8 50%, #B69CFF 75%, #5FE1FF) 0 0 / 100% 50% repeat-y}
+@media (min-width:900px){ .formi-rand{--fr-b:34px} }
 /* Jets: entlang der Achse, senkrecht zur Scheibe. */
 .fk-jet{position:absolute;left:50%;width:8%;height:150%;margin-left:-4%;pointer-events:none;border-radius:var(--r-pille);opacity:0;z-index:0}
 .fk-jet.oben{bottom:50%;transform-origin:50% 100%;background:linear-gradient(0deg, rgba(255,255,255,.95), rgba(95,225,255,.6) 40%, rgba(182,156,255,0))}
@@ -6667,9 +6836,10 @@ body.light .fk-zeichen.tropfen path{fill:#1E8FD0}
    Runde 103). Die Kugel lag genau darauf und deckte das Wort ab. Wo es
    den Knopf gibt, rückt sie eine Knopfhöhe nach oben. :has statt
    Messen: kein Layout im Klick, und ohne Unterstützung bleibt es wie
-   bisher (dann deckt sie, wie vor dieser Runde). */
+   bisher (dann deckt sie, wie vor dieser Runde). Runde 251: statt :has
+   die Klasse hat-daumen, die kopfPlusUmhaengen genau dann setzt. */
 @media(max-width:820px){
-  body:has(#daumenDock:not([hidden]) .kopf-plus) .formi-kugel{bottom:calc(80px + 68px + var(--sab))}
+  body.hat-daumen .formi-kugel{bottom:calc(80px + 68px + var(--sab))}
 }
 /* ── Am Rechner wohnt Formi unten in der Seitenleiste (Runde 198) ──
    Aus dem Betrieb, 22.10.2026, auf die Frage „Platz für Formi": „a".
@@ -6703,10 +6873,10 @@ body.light .fk-zeichen.tropfen path{fill:#1E8FD0}
   body.neu.formi-kugel-an .side-schnell{margin-top:var(--s8);padding-top:var(--s8)}
 }
 /* Am Handy: so viel Luft unten, wie die Kugel braucht. */
-@media(max-width:820px){ body.formi-kugel-an .main{padding-bottom:calc(80px + 58px + var(--s8))} }
+@media(max-width:820px){ body.formi-kugel-an .main{--main-unten:calc(80px + 58px + var(--s8));padding-bottom:var(--main-unten)} }
 /* … ausser Formi sitzt in der Schnellzugriff-Reihe (Runde 218): dann
    nur die Leiste unten, wie ohne Kugel. */
-@media(max-width:820px){ body.formi-kugel-an.kugel-in-reihe .main{padding-bottom:var(--s72)} }
+@media(max-width:820px){ body.formi-kugel-an.kugel-in-reihe .main{--main-unten:var(--s72);padding-bottom:var(--main-unten)} }
 /* Runde 182 (aus dem Betrieb: „achte aber bitte darauf das der neue formi
    knopf nichts verdeckt"): am Handy scrollen die Ansichten in einem
    eigenen Bereich (.scroll-area), und dort lag der letzte Eintrag unter
@@ -6716,9 +6886,10 @@ body.light .fk-zeichen.tropfen path{fill:#1E8FD0}
 @media(max-width:820px){ body.formi-kugel-an .view:not(#view-home) .scroll-area{padding-bottom:calc(var(--s24) + 58px + var(--s16))} }
 /* Rückgängig-Leiste und Hinweis sitzen unten mittig — am Handy reichen
    sie bis unter die Kugel. Solange eins davon steht, weicht die Kugel
-   nach oben aus (gemessen: Leiste 51 px hoch, 72 px Abstand reichen). */
+   nach oben aus (gemessen: Leiste 51 px hoch, 72 px Abstand reichen).
+   Runde 251: Geschwister statt „body:has(…)" (beide stehen vor der Kugel). */
 @media(max-width:820px){
-  body:has(.undobar.show) .formi-kugel,body:has(.toast.show) .formi-kugel{transform:translateY(-72px)}
+  body > .undobar.show ~ .formi-kugel,body > .toast.show ~ .formi-kugel{transform:translateY(-72px)}
 }
 /* Kleines Gesicht im Kopf des kompakten Fensters — dieselbe Kugel. */
 /* Runde 205: im Kopf steht dieselbe Figur wie die Kugel, mit Gesicht
@@ -8135,8 +8306,9 @@ body.gast .sich-feld{display:none}
 .zf-pflicht{position:fixed;inset:0;z-index:880;display:grid;place-items:center;padding:var(--s16);
   background:var(--bg);overflow-y:auto}
 .zf-pflicht[hidden]{display:none}
-/* Das Einrichten-Fenster liegt sonst (z-index 210) UNTER der Sperre. */
-body:has(#zfPflicht:not([hidden])) #zfModal{z-index:890}
+/* Das Einrichten-Fenster liegt sonst (z-index 210) UNTER der Sperre.
+   Runde 251: Geschwister statt „body:has(…)", gleiche Spezifität. */
+body > #zfPflicht:not([hidden]) ~ #zfModal{z-index:890}
 /* Das Fenster wird auch AUS den Profil-Einstellungen geöffnet („Einrichten",
    „Weiteres Gerät"). Mit derselben Ebene wie das Profilfenster lag es
    darunter — der Knopf war zu sehen und nicht zu treffen (gefunden
@@ -8572,7 +8744,7 @@ body.neu.light[data-bereich="g-alles"] {--ber:#3E4E6B;--ber-f:rgba(62,78,107,.16
    soll nicht gesucht werden müssen. */
 body.neu .bereich-kopf{display:flex;align-items:center;gap:var(--s10);
   flex:1 1 220px;min-width:0;text-align:left;cursor:pointer;
-  padding:var(--s16) var(--s8) var(--s12) var(--rand);
+  padding:var(--s12) var(--s8) var(--s10) var(--rand);
   background:none;border:none;color:inherit;font-family:var(--font-body)}
 /* ── Keine Übergänge auf Grösse und Abstand ─────────────────────────
    Bis zum 23.9.2026 glitten padding, width, height und font-size über
@@ -8600,7 +8772,12 @@ body.neu .bk-ikon{flex:0 0 auto;display:grid;place-items:center;
   transition:background-color .35s var(--ease-ios),color .35s var(--ease-ios)}
 body.neu .bk-ikon svg{width:22px;height:22px}
 body.neu .bk-txt{min-width:0;display:flex;flex-direction:column;gap:var(--s2)}
-body.neu .bk-txt b{font-family:var(--font-head);font-size:var(--t-2xl);
+/* Runde 252 (Plan „Studio Chat wie von Apple", Schritt 6): der Titel ist
+   ein grosser Titel wie in Mail und Einstellungen — 34 px fett, links.
+   Beim Scrollen schrumpft er auf 17 px halbfett, die Grösse der Titel in
+   Apples Kopfleiste (.eng unten, Bewegung per FLIP in bereichKopfEng).
+   Der Kopf wird dabei kaum höher: oben 4 px, unten 2 px weniger Rand. */
+body.neu .bk-txt b{font-family:var(--font-head);font-size:var(--t-3xl);font-weight:700;
   line-height:var(--lh-eng);letter-spacing:var(--ls-eng)}
 body.neu .bk-txt i{font-style:normal;font-size:var(--t-sm);color:var(--text-2);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -8610,7 +8787,7 @@ body.neu .bk-txt b,body.neu .bk-ikon{transform-origin:0 0}
 body.neu .bereich-kopf.eng{padding-top:var(--s8);padding-bottom:var(--s6)}
 body.neu .bereich-kopf.eng .bk-ikon{width:34px;height:34px}
 body.neu .bereich-kopf.eng .bk-ikon svg{width:20px;height:20px}
-body.neu .bereich-kopf.eng .bk-txt b{font-size:var(--t-lg)}
+body.neu .bereich-kopf.eng .bk-txt b{font-size:var(--t-md);font-weight:600}
 body.neu .bereich-kopf.eng .bk-txt i{display:none}
 /* Runde 218: im Raum „Heute" ist der Kopf am Handy von Anfang an schmal.
    Das Datum steht ohnehin auf der Startseite („Heute"), und die 33 px
@@ -8623,7 +8800,7 @@ body.neu .bereich-kopf.eng .bk-txt i{display:none}
   body.neu[data-bereich="g-start"] .bereich-kopf,body.neu[data-bereich="g-komm"] .bereich-kopf{padding-top:var(--s8);padding-bottom:var(--s6)}
   body.neu[data-bereich="g-start"] .bk-ikon,body.neu[data-bereich="g-komm"] .bk-ikon{width:34px;height:34px}
   body.neu[data-bereich="g-start"] .bk-ikon svg,body.neu[data-bereich="g-komm"] .bk-ikon svg{width:20px;height:20px}
-  body.neu[data-bereich="g-start"] .bk-txt b,body.neu[data-bereich="g-komm"] .bk-txt b{font-size:var(--t-lg)}
+  body.neu[data-bereich="g-start"] .bk-txt b,body.neu[data-bereich="g-komm"] .bk-txt b{font-size:var(--t-md);font-weight:600}
   body.neu[data-bereich="g-start"] .bk-txt i,body.neu[data-bereich="g-komm"] .bk-txt i{display:none}
 }
 /* Am Rechner NICHT. Dort steht die Seitenleiste links und nennt den
@@ -9562,8 +9739,11 @@ body.neu .heute-liste > :last-child > .heute-zeile{border-bottom-right-radius:va
 body.neu .heute-liste > :last-child,
 body.neu .heute-liste > :last-child > .hz-haken{border-bottom-left-radius:var(--r-md)}
 /* Die Trennlinie beginnt beim Text: Rand 16 + Zeichen 26 + Abstand 12,
-   mit Haken davor zusätzlich dessen 44 px und 4 px Abstand. */
-body.neu .heute-liste > * + *::before{content:'';position:absolute;top:0;right:0;z-index:1;
+   mit Haken davor zusätzlich dessen 44 px und 4 px Abstand.
+   Runde 251: „:not(:first-child)" statt „* + *" — dasselbe, aber ein
+   Geschwister-Selektor mit * am Ende liess Chromium beim Entfernen
+   irgendeines Elements die ganze Seite neu berechnen (gemessen). */
+body.neu .heute-liste > :not(:first-child)::before{content:'';position:absolute;top:0;right:0;z-index:1;
   left:calc(var(--s16) + 26px + var(--s12));height:1px;background:var(--line);pointer-events:none}
 body.neu .heute-liste > .hz-mit-haken::before{left:calc(44px + var(--s4) + var(--s16) + 26px + var(--s12))}
 /* Der Pfeil ist ein Versprechen, keine Farbe: grau wie bei Apple. */
@@ -9623,7 +9803,9 @@ body.neu .td-erledigt > .todo,body.neu .td-erledigt > .pp-item{margin-bottom:0;b
   border-bottom-left-radius:var(--zg-r-unten,0);border-bottom-right-radius:var(--zg-r-unten,0)}
 /* Erste und letzte Zeile setzen nur ihre Werte; die Regel oben liest
    sie. So steht jede Eigenschaft genau einmal da (test-gestaltung). */
-body.neu .pp-gruppe > .pg-kopf + *,body.neu .td-erledigt > summary + *{--zg-oben:1px;--zg-r-oben:var(--r-md)}
+/* Runde 251: die Zeilen beim Namen statt „+ *" (siehe .heute-liste). */
+body.neu .pp-gruppe > .pg-kopf + .todo,body.neu .pp-gruppe > .pg-kopf + .pp-item,
+body.neu .td-erledigt > summary + .todo,body.neu .td-erledigt > summary + .pp-item{--zg-oben:1px;--zg-r-oben:var(--r-md)}
 body.neu .pp-gruppe > .todo:not(:has(+ .todo)),body.neu .pp-gruppe > .pp-item:not(:has(+ .pp-item)),
 body.neu .td-erledigt > .todo:last-child,body.neu .td-erledigt > .pp-item:last-child{--zg-unten:1px;--zg-r-unten:var(--r-md)}
 body.neu .pp-gruppe > .todo + .todo::after,body.neu .pp-gruppe > .pp-item + .pp-item::after,
@@ -9650,6 +9832,201 @@ body.neu .td-erledigt > .todo + .todo::after,body.neu .td-erledigt > .pp-item + 
 @media(min-width:821px) and (hover:hover){
   body.neu .bereich-zeile .kopf-plus:hover{background:var(--brand);filter:brightness(1.08)}
 }
+/* ── 10. Chat wie iMessage (Runde 249, 23.10.2026) ────────────────
+   Plan „Studio Chat wie von Apple", Schritt Chat. Vorbild ist das
+   Probebild 3-chat-handy.png, zu dem es aus dem Betrieb hiess: „genau
+   so hab ichs mir vorgestellt". Seit 15:18: „es soll einfach den
+   ganzen plan erledigen".
+
+   - Blasen ohne Rahmen, rund (--r-lg); fremde grau, eigene in der
+     Akzentfarbe mit --on-accent (dasselbe Paar wie der Hauptknopf,
+     test-akzent misst es für jede Akzentfarbe).
+   - Name · Studio und Uhrzeit stehen ÜBER der Blase, klein und leise,
+     statt eines Kopfes mit Pille darin.
+   - Folgen Nachrichten derselben Person, rücken sie auf 2 px zusammen;
+     die Ecken zur Absenderseite werden klein, nur die letzte behält
+     die runde Ecke unten.
+   - Eigene Nachrichten: Uhrzeit und Häkchen UNTER der Blase, auf dem
+     Hintergrund — dort bleiben die Farben der Häkchen lesbar („Jeder,
+     genau wie bei WhatsApp", 27.9.2026). Bei mehreren eigenen
+     hintereinander nur unter der letzten: deren Stand gilt für die
+     davor mit (gelesen heisst bis dahin gelesen). Wer es genau wissen
+     will: „Gelesen von …" im Menü.
+   - Umfragen und Sprachnachrichten in eigener Blase behalten die
+     getönte Fläche: ihre Balken und Knöpfe sind selbst Akzentfarbe. */
+body.neu .chat-scroll .msg{border-color:transparent;background:var(--bg-3);border-radius:var(--r-lg);
+  box-shadow:none;padding:var(--s8) var(--s12)}
+body.neu .chat-scroll .msg.mine:not(:has(.poll-opt)):not(:has(.sp)){background:var(--accent);color:var(--on-accent)}
+body.neu .chat-scroll .msg.mine:not(:has(.poll-opt)):not(:has(.sp)) > :not(.meta):not(.meta-min){--text:var(--on-accent);--text-2:var(--on-accent);
+  --text-3:var(--on-accent);--accent:var(--on-accent);--accent-2:var(--on-accent);--accent-d:var(--on-accent)}
+body.neu .chat-scroll .msg.mine:not(:has(.poll-opt)):not(:has(.sp)) .mention{background:none;text-decoration:underline}
+body.neu .chat-scroll .msg.mine:has(.poll-opt),body.neu .chat-scroll .msg.mine:has(.sp){background:var(--tipp-2)}
+body.neu .chat-scroll .msg.mentioned{box-shadow:inset 0 0 0 2px var(--accent)}
+
+/* Name · Studio, Uhrzeit: über der Blase */
+body.neu .chat-scroll .msg:not(.mine):not(.grp){margin-top:calc(var(--s16) + var(--s4))}
+body.neu .chat-scroll .msg:not(.mine) > .meta{position:absolute;left:var(--s12);bottom:100%;margin:0 0 var(--s2);
+  width:max-content;max-width:calc(100vw - var(--rand) * 2 - var(--s12));flex-wrap:nowrap;gap:var(--s4)}
+body.neu .chat-scroll .msg > .meta .chat-author{font-family:var(--font-body);font-size:var(--t-xs);font-weight:500;
+  letter-spacing:normal;color:var(--text-3)}
+body.neu .chat-scroll .msg > .meta .tag{background:none;padding:0;text-transform:none;letter-spacing:normal;
+  font-weight:500;font-size:var(--t-xs);color:var(--text-3)}
+body.neu .chat-scroll .msg > .meta .tag::before{content:'· '}
+body.neu .chat-scroll .msg > .meta time{margin-left:var(--s6)}
+
+/* Eigene: Uhrzeit und Häkchen unter der Blase */
+body.neu .chat-scroll .msg.mine > .meta .chat-author,body.neu .chat-scroll .msg.mine > .meta .tag{display:none}
+body.neu .chat-scroll .msg.mine > .meta,body.neu .chat-scroll .msg.mine > .meta-min{position:absolute;right:var(--s4);top:100%;
+  margin:var(--s2) 0 0;width:max-content;flex-wrap:nowrap;justify-content:flex-end}
+body.neu .chat-scroll .msg.mine > .meta time{margin-left:0}
+body.neu .chat-scroll .msg.mine:not(:has(+ .msg.mine.grp)){margin-bottom:calc(var(--s16) + var(--s2))}
+body.neu .chat-scroll .msg.mine:has(+ .msg.mine.grp) > .meta,body.neu .chat-scroll .msg.mine:has(+ .msg.mine.grp) > .meta-min{display:none}
+
+/* Zusammenrücken, kleine Ecken zur Absenderseite */
+body.neu .chat-scroll .msg.grp{margin-top:calc(var(--s2) - var(--s8))}
+body.neu .chat-scroll .msg.grp:not(.mine){border-top-left-radius:var(--r-xs)}
+body.neu .chat-scroll .msg:not(.mine):has(+ .msg.grp:not(.mine)){border-bottom-left-radius:var(--r-xs)}
+body.neu .chat-scroll .msg.grp.mine{border-top-left-radius:var(--r-lg);border-top-right-radius:var(--r-xs)}
+body.neu .chat-scroll .msg.mine:has(+ .msg.mine.grp){border-bottom-right-radius:var(--r-xs)}
+
+/* ── Das Menü an der Nachricht wie ein Kontextmenü (Runde 249) ──
+   Bisher ein Blatt von unten, das die Nachricht nur als Textzeile
+   zeigte. Wie bei Apple steht es jetzt AN der Nachricht: oben die
+   Reaktionen als Kapsel, darunter die Nachricht, darunter die Einträge
+   als eine gerundete Gruppe mit Haarlinien. Am Rechner öffnet auch die
+   rechte Maustaste es, an der Stelle des Zeigers.
+   Hinaus: daneben tippen oder Esc (wie bisher). „Abbrechen" ist im
+   Dokument, aber ausgeblendet — Apples Kontextmenü hat keins.
+   Position: msgBlattPlatzieren() misst im nächsten Bild und schreibt
+   --ms-x / --ms-y; bis dahin ist die Karte unsichtbar. */
+body.neu .msg-sheet.am-ort{align-items:flex-start;justify-content:flex-start}
+body.neu .msg-sheet.am-ort .ms-card{position:absolute;left:var(--ms-x,0);top:var(--ms-y,0);width:min(300px, calc(100vw - var(--s12) * 2));
+  max-width:none;max-height:calc(100vh - var(--s12) * 2);display:flex;flex-direction:column;gap:var(--s8);
+  background:none;border:none;border-radius:0;box-shadow:none;padding:0;overflow:visible;
+  animation:none;transform-origin:var(--ms-ursprung,50% 0)}
+body.neu .msg-sheet.am-ort:not(.platziert) .ms-card{visibility:hidden}
+body.neu .msg-sheet.am-ort.platziert .ms-card{animation:msPop .32s var(--feder-weich, var(--spring)) backwards}
+@keyframes msPop{from{opacity:0;transform:scale(.9)}}
+body.neu .msg-sheet.am-ort .ms-react{order:-1;align-self:stretch;justify-content:space-between;gap:var(--s2);padding:var(--s4);
+  background:var(--bg-2);border:1px solid var(--line-2);border-radius:var(--r-pille);box-shadow:var(--e3)}
+body.neu .msg-sheet.am-ort .ms-emoji{flex:0 0 auto;width:44px;height:44px;min-height:0;padding:0;border-color:transparent;
+  background:none;border-radius:var(--r-rund)}
+body.neu .msg-sheet.am-ort .ms-emoji.on{background:rgba(var(--akz-rgb),.2)}
+body.neu .msg-sheet.am-ort .ms-head{padding:var(--s8) var(--s12);background:var(--bg-3);border:none;border-radius:var(--r-lg);
+  box-shadow:var(--e3)}
+body.neu .msg-sheet.am-ort .ms-head b{font-family:var(--font-body);font-size:var(--t-xs);font-weight:500;color:var(--text-3)}
+body.neu .msg-sheet.am-ort .ms-head p{white-space:normal;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;
+  color:var(--text);font-size:var(--t-md)}
+body.neu .msg-sheet.am-ort .ms-acts{padding:0;gap:0;background:var(--bg-2);border:1px solid var(--line-2);
+  border-radius:var(--r-md);box-shadow:var(--e3);overflow:hidden}
+body.neu .msg-sheet.am-ort .ms-act{min-height:44px;padding:0 var(--s16);border-radius:0;justify-content:space-between;
+  flex-direction:row-reverse;font-size:var(--t-md)}
+body.neu .msg-sheet.am-ort .ms-act + .ms-act{border-top:1px solid var(--line)}
+body.neu .msg-sheet.am-ort .ms-ico{width:auto;color:var(--text-2)}
+body.neu .msg-sheet.am-ort .ms-act.warn .ms-ico{color:inherit}
+body.neu .msg-sheet.am-ort .ms-info{background:var(--bg-2);border:1px solid var(--line-2);border-radius:var(--r-md);
+  padding:var(--s8) var(--s12);box-shadow:var(--e3)}
+body.neu .msg-sheet.am-ort #msSheetClose{display:none}
+/* Formis Sprechblase liegt sonst über dem Menü (die Kugel selbst wird
+   schon versteckt, siehe „.msg-sheet.show ~ .formi-kugel"). */
+body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
+
+/* ══ GLAS FÜR DIE UNTERE LEISTE (Runde 254) ═══════════════════════════
+   Plan „Studio Chat wie von Apple", Schritt 8: „Glas (Unschärfe) nur bei
+   Kopf- und unterer Leiste, nie hinter Text in Karten, immer mit einem
+   Schalter ‚Transparenz reduzieren'". Safari meldet
+   prefers-reduced-transparency nicht — darum ein eigener Schalter unter
+   Profil → Aussehen → Leisten (data-glas="deckend").
+
+   Warum der Inhalt jetzt UNTER die Leiste läuft: seit 23.9. war die
+   Leiste deckend, weil unter ihr nichts durchscrollte — ein Weichzeichner
+   verwischte nur den stehenden Hintergrund (Begründung an .topbar). Glas
+   ohne Inhalt dahinter ist nur eine Farbe. Also endet der Scroll-Bereich
+   jetzt am unteren Rand (negativer Rand gegen das Polster von .main,
+   --main-unten), und ein Abstandhalter genau dieser Höhe am Ende sorgt
+   dafür, dass die letzte Zeile ganz unten an derselben Stelle steht wie
+   vorher — über der Leiste und über Formi (test-formi-verdeckt).
+   Nicht auf der Startseite: sie soll auf einen Bildschirm passen und
+   ist so gebaut, dass unter der Leiste nichts liegt.
+
+   „Deckend" ist wirklich deckend: im Stil Formi lag die Leiste bisher
+   zu 86 % über dem Grund (--hud-glas) — gezeichnet wird jetzt dieselbe
+   Farbe, aber auf --bg statt auf dem, was darunter scrollt.
+
+   Nicht für den Kopf: der liegt über, nicht auf dem Scroll-Bereich —
+   dort gäbe es wieder nichts zu verwischen. Nicht am Rechner: neben der
+   Seitenleiste scrollt nichts darunter.
+
+   Deckend bleibt die Leiste bei „Deckend", bei Transparenz reduzieren
+   oder Mehr Kontrast des Geräts (wo der Browser es meldet) und wo der
+   Browser keinen Weichzeichner kann — 74 % Deckung ohne Unschärfe wären
+   unruhiger als beides. */
+@media(max-width:820px){
+  body.neu:not([data-glas="deckend"]) .view:not(#view-home) > .scroll-area{margin-bottom:calc(-1 * var(--main-unten));
+    /* Was unter der Leiste liegt, ist zu sehen, aber nicht „im Bild":
+       Fokus und scrollIntoView richten sich nach dem Bereich darüber —
+       sonst landete ein angesprungenes Feld genau unter der Leiste
+       (test-formi-verdeckt fand das an der Schulung bei 320 × 568). */
+    scroll-padding-bottom:var(--main-unten)}
+  body.neu:not([data-glas="deckend"]) .view:not(#view-home) > .scroll-area::after{content:'';display:block;grid-column:1 / -1;
+    height:var(--main-unten);pointer-events:none}
+  body.neu:not([data-glas="deckend"]) .mobnav{background:color-mix(in srgb, var(--bg) 74%, transparent);
+    -webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8)}
+  body.neu.light:not([data-glas="deckend"]) .mobnav{background:color-mix(in srgb, var(--bg-2) 74%, transparent)}
+  body.neu.formi:not(.light)[data-glas="deckend"] .mobnav{background:linear-gradient(var(--hud-glas), var(--hud-glas)), var(--bg)}
+  @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+    body.neu:not([data-glas="deckend"]) .mobnav{background:var(--bg)}
+    body.neu.light:not([data-glas="deckend"]) .mobnav{background:var(--bg-2)}
+  }
+  @media (prefers-reduced-transparency:reduce), (prefers-contrast:more){
+    body.neu:not([data-glas="deckend"]) .mobnav{background:var(--bg);-webkit-backdrop-filter:none;backdrop-filter:none}
+    body.neu.light:not([data-glas="deckend"]) .mobnav{background:var(--bg-2)}
+  }
+}
+
+/* ══ ZIEHEN ZUM AKTUALISIEREN (Runde 256) ══════════════════════════════
+   Oben in einer Liste nach unten ziehen, wie in Mail. Die Liste rückt
+   mit dem Finger nach (halber Weg), darüber füllt sich ein Kreis; über
+   der Schwelle ist er voll. Loslassen: kurz dreht er sich, dann eine
+   Rückmeldung. Gebaut wird das Zeichen erst beim ersten Ziehen. */
+.ptr{position:fixed;left:50%;top:0;z-index:25;width:32px;height:32px;margin-left:-16px;
+  pointer-events:none;opacity:0;color:var(--ber, var(--accent));
+  transform:translateY(var(--ptr-y, 0px))}
+.ptr svg{width:100%;height:100%;display:block;transform:rotate(-90deg)}
+.ptr circle{fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;
+  stroke-dasharray:100;stroke-dashoffset:calc(100 - var(--ptr-p, 0) * 100)}
+.ptr.voll circle{stroke-width:3}
+.ptr.laeuft svg{animation:ptrDreh .8s linear infinite}
+.ptr.laeuft circle{stroke-dashoffset:30}
+@keyframes ptrDreh{to{transform:rotate(270deg)}}
+.ptr-zieht{transition:none}
+.ptr-zurueck{transition:transform .38s var(--feder-weich, var(--spring))}
+@media (prefers-reduced-motion:reduce){
+  .ptr.laeuft svg{animation:none}
+  .ptr-zurueck{transition:none}
+}
+
+/* ══ EINE STRICHSTÄRKE FÜR ALLE SYMBOLE (Runde 258) ══════════════════
+   Plan „Studio Chat wie von Apple", Schritt 12: Linien-Symbole im Stil
+   von SF Symbols — Apples Symbole haben in einer Zeile dieselbe
+   Strichstärke, egal wie gross sie stehen, und runde Enden. Gemessen am
+   23.10.2026 (390 und 1440 px, alle Ansichten): gezeichnet wurden
+   1,04 bis 2,19 px, 644 Striche mit eckigem und 577 mit rundem Ende —
+   weil die Stärke im 24er-Raster festgelegt war und mit der Grösse
+   mitwuchs (16-px-Symbol 1,33 px, 24-px-Symbol 2 px).
+
+   Jetzt: `vector-effect: non-scaling-stroke` und eine Stärke in echten
+   Bildpunkten, --sym-strich. Ausgenommen: das Logo (gefüllt), der dicke
+   Haken im Abhak-Kreis (der soll kräftiger sein als ein Symbol — wie bei
+   Apples Erinnerungen) und Formi. Punkte (Mehr „…") bleiben Punkte: was
+   im Raster mit stroke-width 3 als Punkt gezeichnet ist, bekommt das
+   1,75-fache — über --sym-dicke, damit stroke-width nur an einer Stelle
+   steht. */
+:root{--sym-strich:1.7px}
+:is(:is(button,[role=button],a,summary,.opt,.mobnav,.side) svg:not(.tb-logo svg):not(.check svg), svg.sym) :is(path,line,polyline,polygon,circle,rect,ellipse){
+  stroke-width:var(--sym-dicke, var(--sym-strich));vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round}
+:is(:is(button,[role=button],a,summary,.opt,.mobnav,.side) svg:not(.tb-logo svg):not(.check svg), svg.sym) :is([stroke-width="3"],[stroke-width="2.6"]){--sym-dicke:calc(var(--sym-strich) * 1.75)}
+.check svg *, .tb-logo svg *, .formi-kugel svg *{vector-effect:none}
 </style>
 </head>
 <body>
@@ -11298,7 +11675,7 @@ body.neu .td-erledigt > .todo + .todo::after,body.neu .td-erledigt > .pp-item + 
                     <button type="button" class="chip" data-wpansicht="person">Personen</button>
                   </div>
                   <button type="button" class="chip" id="wpMeine" aria-pressed="false">Nur meine</button>
-                  <button type="button" class="btn btn-primary btn-sm" id="shiftNeu" hidden>＋ Schicht</button>
+                  <button type="button" class="btn btn-primary btn-sm" id="shiftNeu" data-ikon="plus" hidden>Schicht</button>
                 </div>
               </div>
               <div id="shiftGrid"></div>
@@ -11579,6 +11956,20 @@ body.neu .td-erledigt > .todo + .todo::after,body.neu .td-erledigt > .pp-item + 
             <section class="card spl-ausfaelle" id="spAusfaelle" hidden></section>
             <!-- Was die Chefin selbst festlegt. Zugeklappt: es ist einmal
                  eingerichtet und wird selten angefasst. -->
+            <!-- Die 24 Fragen (Runde 245) — dieselbe Liste wie in
+                 Schichtplaner-Fragen.pdf und im Blatt „Fragen“ der Vorlage
+                 (Quelle: docs/schichtplaner/werkzeug/inhalt.py). Aus dem
+                 Betrieb, 22.10.2026: „uns alle fragen stellen welche wir
+                 beantworten müssen damit der schichtplan danach direkt
+                 klappt“ — und auf den Vorschlag, sie in der App zu
+                 beantworten: „jap mach weiter dann“. -->
+            <details class="card spl-fragen" id="spFragen">
+              <summary><span data-ikon="hakenKreis">Fragen zum Plan</span><small id="spFragenKurz"></small></summary>
+              <p class="hint">Bei jeder Frage steht, was die App heute annimmt. Passt das, tippe „passt“. Gespeichert wird beim Verlassen des Feldes.</p>
+              <div class="pm-tabs spl-regel-reiter" id="spFragenReiter" role="tablist" aria-label="Fragen"></div>
+              <div id="spFragenListe"></div>
+            </details>
+
             <details class="card spl-regeln" id="spRegeln">
               <summary><span data-ikon="regler">Regeln &amp; Sonderfälle</span><small id="spRegelnKurz"></small></summary>
               <div class="pm-tabs spl-regel-reiter" id="spRegelReiter" role="tablist" aria-label="Regeln">
@@ -11659,6 +12050,9 @@ body.neu .td-erledigt > .todo + .todo::after,body.neu .td-erledigt > .pp-item + 
                       <h3 data-ikon="hakenKreis">Fertig?</h3>
                       <button type="button" class="btn btn-primary" id="spVeroeffentlichen">Im Team-Schichtplan veröffentlichen</button>
                       <button type="button" class="btn btn-ghost" id="spLogx">Für LogX kopieren</button>
+                      <!-- Runde 245: eine Probe muss sich zurückholen lassen,
+                           sonst traut sich niemand, es auszuprobieren. -->
+                      <button type="button" class="btn btn-ghost spl-zurueck" id="spZurueck" hidden>Veröffentlichung zurücknehmen</button>
                       <p class="hint" id="spAktionHinweis">Kopiert eine Tabelle (Datum, Studio, Schicht, Zeit, Name) – in Excel oder LogX einfügen.</p>
                     </section>
                     <!-- Die Auswahl steht ZULETZT: sie haftet am Rechner beim
@@ -11756,7 +12150,7 @@ body.neu .td-erledigt > .todo + .todo::after,body.neu .td-erledigt > .pp-item + 
             </div>
             <button class="kopf-plus" id="schVerwaltenBtn" data-manage-only="1"
                     style="display:none" title="Teilnehmer, Codes und Auswertung"
-                    aria-label="Verwalten">≡<span class="kp-wort"> Verwalten</span></button>
+                    aria-label="Verwalten" data-ikon="regler"><span class="kp-wort">Verwalten</span></button>
           </div>
         </div>
         <div class="scroll-area" data-shrinks="1">
@@ -11787,7 +12181,14 @@ body.neu .td-erledigt > .todo + .todo::after,body.neu .td-erledigt > .pp-item + 
                  heimlichen Akte — und er steht deshalb ganz oben, nicht
                  versteckt im Ich-Bereich. -->
             <div class="card" id="schMeineKarte" style="display:none">
-              <h3 data-ikon="pokal">Was du schon gemacht hast</h3>
+              <!-- Runde 248: „Bescheinigung drucken" als Zeichen im Kopf —
+                   als eigene Zeile schob er die Modulliste am Telefon
+                   98 px nach unten (test-auffrischen). -->
+              <div class="sch-meine-kopf">
+                <h3 data-ikon="pokal">Schon geschafft</h3>
+                <button type="button" class="icon-btn" id="schBescheinigung" data-ikon="drucken" hidden
+                  aria-label="Bescheinigung drucken: alle bestandenen Schulungen auf einem Blatt" title="Bescheinigung drucken"></button>
+              </div>
               <div id="schMeine"></div>
             </div>
             </div>
@@ -13305,6 +13706,11 @@ body.neu .td-erledigt > .todo + .todo::after,body.neu .td-erledigt > .pp-item + 
       <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Dichte</label>
       <div class="opt-grid" id="dichteOpts"></div>
 
+      <!-- Leisten, Runde 254: Apples „Transparenz reduzieren" als eigener
+           Schalter, weil Safari die Einstellung des iPhones nicht meldet. -->
+      <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Untere Leiste am Handy</label>
+      <div class="opt-grid" id="glasOpts"></div>
+
       <label style="display:block;font-size:.82rem;color:var(--text-2);margin:16px 0 7px">Akzentfarbe</label>
       <div class="opt-grid" id="accOpts"></div>
 
@@ -13989,6 +14395,15 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
 <button type="button" class="formi-kugel" id="formiKugel" hidden aria-haspopup="dialog" aria-controls="jarvis"
   aria-label="Formi öffnen" title="Formi — frag mich oder sag, was ich tun soll"><span class="fk-koerper" aria-hidden="true"><span class="fk-scheibe hinten"><span class="fk-halb"><span class="fk-flach"><span class="fk-bahn"><i style="--w:20deg;--p:0.944"></i><i style="--w:140deg;--p:0.611"></i><i style="--w:260deg;--p:0.278"></i></span><span class="fk-bahn innen"><i style="--w:80deg;--p:0.778"></i><i style="--w:260deg;--p:0.278"></i></span></span></span></span><span class="fk-wirbel"></span><span class="fk-innen"></span><span class="fk-licht"></span><span class="fk-bogen"></span><span class="fk-geist a"></span><span class="fk-geist b"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-braue l"></i><i class="fk-braue r"></i><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i><i class="fk-froh l"></i><i class="fk-froh r"></i><i class="fk-backe l"></i><i class="fk-backe r"></i></span></span></span><span class="fk-scheibe vorn"><span class="fk-halb"><span class="fk-flach"><span class="fk-bahn"><i style="--w:20deg;--p:0.944"></i><i style="--w:140deg;--p:0.611"></i><i style="--w:260deg;--p:0.278"></i></span><span class="fk-bahn innen"><i style="--w:80deg;--p:0.778"></i><i style="--w:260deg;--p:0.278"></i></span></span></span></span></span><span class="fk-punkt" aria-hidden="true"></span></button>
 <span id="formiKugelHat" hidden>Formi hat etwas für dich</span>
+<!-- Lichtkrümmung ums Loch (Runde 250): ein eigener Kreis unter der Kugel —
+     in der Kugel selbst sieht backdrop-filter in Chromium nichts von der
+     Seite dahinter (nachgemessen). Keine Trefferfläche. -->
+<span class="formi-linse" id="formiLinseKreis" aria-hidden="true" hidden></span>
+<!-- Formi-Insel und Leuchtrand (Runde 250): schwarz wie das Loch, oben in
+     der Mitte; der Rand leuchtet, solange Formi arbeitet. Schmuck ohne
+     Trefferfläche — gesagt wird alles im Fenster. -->
+<div class="formi-insel" id="formiInsel" aria-hidden="true" hidden><span class="fi-ring"></span><span class="fi-flaeche"></span><span class="fi-klein"><span class="formi-figur"></span><span class="fi-t"></span></span><span class="fi-gross"><span class="formi-figur"></span><span class="fi-text"><small class="fi-was"></small><b class="fi-titel"></b></span><span class="fi-zeichen"><svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="12"/><path d="M8 14.5l4 4 8-9"/></svg></span></span></div>
+<div class="formi-rand" id="formiRand" aria-hidden="true" hidden><i class="o"></i><i class="r"></i><i class="u"></i><i class="l"></i></div>
 <!-- Formis Sprechblase (Runde 196): ein kurzer Satz, 4,5 s, dann weg.
      Keine Trefferfläche — sie verdeckt nie einen Knopf. -->
 <div class="formi-blase" id="formiBlase" role="status" aria-live="polite" hidden></div>
@@ -14013,6 +14428,7 @@ var PREFS = {
   accent:'bunt',    // 'bunt' oder ein Schlüssel aus ACCENTS
   fs:'100',         // Schriftgröße in Prozent
   dichte:'normal',  // normal | kompakt — siehe body[data-dichte]
+  glas:'glas',      // glas | deckend — untere Leiste am Handy (Runde 254)
   lieferantMail:'', // Adresse für die Bestellmail (bleibt auf diesem Gerät)
   folds:{},         // welche Abschnitte aufgeklappt sind (pro Gerät)
   sort:{},          // gewählte Sortierung je Liste (pro Gerät)
@@ -14446,6 +14862,16 @@ function loadPrefs(){
        Voreinstellung, keine Wahl. Wer ausdrücklich Hell oder Dunkel
        gewählt hat, behält es. Einmal je Gerät (stil2), danach gilt, was
        jemand unter Profil → Aussehen einstellt. */
+    /* Runde 257: Wo die App die Textgrösse des iPhones lesen kann, ist
+       „Wie am Gerät" die Voreinstellung — einmal je Gerät (fs2). Wer
+       „Normal" hatte, sieht bei der Standardgrösse des iPhones keinen
+       Unterschied; wer Klein, Gross oder Sehr gross gewählt hat, behält
+       das. */
+    if(!PREFS.fs2){
+      if(geraeteSchriftKann() && String(PREFS.fs||'100')==='100') PREFS.fs='geraet';
+      PREFS.fs2=true;
+      if(raw) savePrefs();
+    }
     if(!PREFS.stil2){
       if(PREFS.theme==='auto') PREFS.theme='formi';
       /* Derselbe Gedanke beim Hintergrund: 'keiner' war die alte
@@ -14459,6 +14885,51 @@ function loadPrefs(){
 function savePrefs(){
   try{ localStorage.setItem('kf_prefs', JSON.stringify(PREFS)); }catch(e){}
 }
+/* ── Schriftgrösse wie am Gerät (Runde 257) ──
+   Plan „Studio Chat wie von Apple", Schritt 11. Safari kennt
+   `font: -apple-system-body`: das ist die Textgrösse, die am iPhone unter
+   Einstellungen → Anzeige & Helligkeit → Textgrösse eingestellt ist
+   (Standard 17 px). Gemessen wird sie an einem unsichtbaren Probestück;
+   die App rechnet sie ins Verhältnis zu 17 px — bei der Standardgrösse
+   des iPhones ändert sich also NICHTS, nur wer am iPhone grössere oder
+   kleinere Schrift eingestellt hat, bekommt sie auch hier.
+
+   Nur auf Touch-Geräten: Safari am Mac liefert für -apple-system-body
+   13 px (die Mac-Grösse) — das hiesse dort „kleiner", obwohl niemand
+   etwas eingestellt hat.
+
+   Begrenzt auf 90 bis 125 % — genau die Spanne, die es als feste Stufen
+   schon gibt (Klein bis Sehr gross) und auf die alle Ansichten geprüft
+   sind. Die ganz grossen Bedienungshilfe-Grössen des iPhones (bis 300 %)
+   würden die Ansichten sprengen; dafür bleibt der Zoom des Browsers.
+   Chrome kennt -apple-system-body nicht: dort gibt es die Wahl nicht. */
+function geraeteSchriftKann(){
+  try{
+    return !!(window.CSS && CSS.supports && CSS.supports('font', '-apple-system-body')) &&
+      !!(window.matchMedia && matchMedia('(pointer:coarse)').matches);
+  }catch(e){ return false; }
+}
+function geraeteSchriftFaktor(){
+  if(!geraeteSchriftKann() || !document.body) return 0;
+  var probe=document.createElement('span');
+  probe.className='fs-probe'; probe.setAttribute('aria-hidden','true'); probe.textContent='Aa';
+  probe.style.cssText='position:absolute;left:-9999px;top:0;visibility:hidden;font:-apple-system-body';
+  document.body.appendChild(probe);
+  var px=parseFloat(getComputedStyle(probe).fontSize)||17;
+  probe.remove();
+  return Math.max(.9, Math.min(1.25, px/17));
+}
+function fsAnwenden(){
+  var fs=String(PREFS.fs||'100'), wert=fs+'%';
+  if(fs==='geraet'){ var f=geraeteSchriftFaktor(); wert = f ? (Math.round(f*1000)/10)+'%' : '100%'; }
+  document.documentElement.style.setProperty('--fs', wert);
+}
+/* Wer die Textgrösse am iPhone ändert, während die App im Hintergrund
+   liegt, sieht sie beim Zurückkommen. */
+document.addEventListener('visibilitychange', function(){
+  if(!document.hidden && String(PREFS.fs)==='geraet') fsAnwenden();
+});
+
 /* „auto" folgt der Systemeinstellung des Geräts */
 function systemPrefersLight(){
   return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
@@ -14477,8 +14948,9 @@ function applyPrefs(){
      Modus einen eigenen Wert. Dasselbe gilt für die Firmenfarbe — sie
      läuft seit dem 21.9. durch dieselbe Funktion. */
   akzentAnwenden();
-  document.documentElement.style.setProperty('--fs', (PREFS.fs||100)+'%');
+  fsAnwenden();
   document.body.setAttribute('data-dichte', PREFS.dichte||'normal');
+  document.body.setAttribute('data-glas', PREFS.glas==='deckend' ? 'deckend' : 'glas');
   /* Der Hintergrund der ganzen App, nicht nur des Chats. */
   document.body.setAttribute('data-appbg', PREFS.appbg||'keiner');
   // Farbe der Statusleiste mitziehen
@@ -18864,6 +19336,117 @@ function offenerDialog(){
   return treffer;
 }
 
+/* ── Blätter mit Griff und Rasthöhen (Runde 253) ─────────────────────
+   Plan „Studio Chat wie von Apple", Schritt 7. Was von unten kommt
+   (am Handy die Fenster unter 620 px, die Aktionsblätter bis 1099 px),
+   trägt oben einen Griff. Am Griff zieht man das Blatt:
+     - nach unten, weit genug oder schnell genug: es geht zu — über
+       denselben Weg wie ein Tipp daneben (der Klick auf den Hintergrund
+       ruft das Schliessen des jeweiligen Fensters, mit Aufräumen);
+     - ist das Blatt höher als 62 % des Bildschirms, rastet es auf halber
+       Höhe ein (Apples „medium"); von dort nach oben wieder ganz.
+   Während des Ziehens bewegt sich nur transform (keine Layout-Arbeit je
+   Bild); beim Einrasten EIN Layout (max-height) und die Bewegung per
+   FLIP mit der weichen Feder. Geöffnet wird immer ganz — ein halb
+   offenes Formular hätte seinen Knopf versteckt. */
+var BLATT_PM = ['profileModal','personModal','devModal','pollModal','todoEditModal','aboModal','ownTodoModal','probeModal','zugangModal','putzModal'];
+var BLAETTER = BLATT_PM.concat(['docSheet','todoSheet','msgSheet','shiftSheet']);
+function blattGriffAnbringen(wrap){
+  var karte = wrap.querySelector('.pm-box, .ms-card');
+  if(!karte || karte.querySelector(':scope > .blatt-griff')) return;
+  var g = document.createElement('div');
+  g.className = 'blatt-griff'; g.setAttribute('aria-hidden', 'true');
+  karte.insertBefore(g, karte.firstChild);
+  blattZiehenBinden(wrap, karte, g);
+  /* Jedes Öffnen beginnt ganz, ohne Reste vom letzten Ziehen. */
+  new MutationObserver(function(){
+    if(!wrap.classList.contains('show')) return;
+    karte.style.maxHeight = ''; karte.style.transform = ''; wrap.removeAttribute('data-rast');
+  }).observe(wrap, { attributes:true, attributeFilter:['class'] });
+}
+function blattZiehenBinden(wrap, karte, g){
+  var z = null;
+  function setze(dy){ karte.style.transform = dy ? 'translateY(' + dy.toFixed(1) + 'px)' : ''; }
+  g.addEventListener('pointerdown', function(e){
+    if(!g.getClientRects().length || (e.button && e.button !== 0)) return;
+    karte.getAnimations().forEach(function(a){ if(a.effect && a.effect.target === karte) a.finish(); });
+    /* Zeit aus dem Ereignis (e.timeStamp: wann der Finger dort war),
+       nicht aus der Uhr beim Abarbeiten. Ist das Gerät gerade beschäftigt,
+       kommen die Bewegungen gebündelt an — mit performance.now() sah ein
+       Schnippen dann aus wie ein langsamer Zug (test-blaetter unter Last,
+       Runde 258). */
+    z = { y0:e.clientY, y:e.clientY, t0:e.timeStamp, t:e.timeStamp, v:0, dy:0, h:karte.getBoundingClientRect().height,
+          halb: wrap.getAttribute('data-rast') === 'halb' };
+    try{ g.setPointerCapture(e.pointerId); }catch(x){}
+    e.preventDefault();
+  });
+  g.addEventListener('pointermove', function(e){
+    if(!z) return;
+    var jetzt = e.timeStamp, dt = Math.max(1, jetzt - z.t);
+    z.v = .7 * ((e.clientY - z.y) / dt) + .3 * z.v; z.y = e.clientY; z.t = jetzt;
+    var dy = e.clientY - z.y0;
+    /* Nach oben gibt es nur aus der halben Höhe Weg; sonst federt es
+       zäh (wie am Rand einer Liste). */
+    if(dy < 0) dy = z.halb ? Math.max(dy, -innerHeight * .4) : -Math.sqrt(-dy) * 3;
+    z.dy = dy; setze(dy);
+  });
+  function los(){
+    if(!z) return;
+    var dy = z.dy, v = z.v, h = z.h, halb = z.halb;
+    /* Ein kurzer Zug (unter 250 ms) zählt mit seinem mittleren Tempo,
+       wenn das höher ist als das zuletzt gemessene. */
+    var dauer = z.t - z.t0;
+    if(dauer > 0 && dauer < 250){ var mittel = dy / dauer; if(Math.abs(mittel) > Math.abs(v)) v = mittel; }
+    z = null;
+    var hoch = karte.scrollHeight > innerHeight * .62 || halb;
+    if(halb){
+      if(dy < -50 || v < -.45) return blattRast(wrap, karte, 'voll');
+      if(dy > h * .35 || v > .6) return blattZu(wrap, karte);
+      return blattZurueck(karte);
+    }
+    if(v > .9 || dy > h * .55) return blattZu(wrap, karte);
+    if(hoch && (dy > h * .16 || v > .35)) return blattRast(wrap, karte, 'halb');
+    if(!hoch && (dy > h * .3 || v > .5)) return blattZu(wrap, karte);
+    blattZurueck(karte);
+  }
+  g.addEventListener('pointerup', los);
+  g.addEventListener('pointercancel', function(){ if(z){ z = null; blattZurueck(karte); } });
+}
+function blattZurueck(karte){
+  var m = /translateY\(([-\d.]+)px\)/.exec(karte.style.transform || ''), dy = m ? +m[1] : 0;
+  karte.style.transform = '';
+  if(!dy || willRuhe() || !karte.animate) return;
+  karte.animate([{ transform:'translateY(' + dy + 'px)' }, { transform:'none' }], { duration:320, easing:'cubic-bezier(.32,.72,0,1)' });
+}
+/* Einrasten: erst die alte Oberkante merken, dann die neue Höhe setzen
+   (ein Layout), dann vom alten Platz auf den neuen gleiten. */
+function blattRast(wrap, karte, rast){
+  var vorher = karte.getBoundingClientRect().top;
+  karte.style.transform = '';
+  karte.style.maxHeight = rast === 'halb' ? Math.round(innerHeight * .5) + 'px' : '';
+  if(rast === 'halb') wrap.setAttribute('data-rast', 'halb'); else wrap.removeAttribute('data-rast');
+  tick(6);
+  if(willRuhe() || !karte.animate) return;
+  var nachher = karte.getBoundingClientRect().top;
+  karte.animate([{ transform:'translateY(' + (vorher - nachher).toFixed(1) + 'px)' }, { transform:'none' }],
+    { duration:380, easing:'cubic-bezier(.32,.72,0,1)' });
+}
+function blattZu(wrap, karte){
+  var m = /translateY\(([-\d.]+)px\)/.exec(karte.style.transform || ''), dy = m ? +m[1] : 0;
+  var fertig = function(){
+    /* Derselbe Weg wie ein Tipp neben das Blatt: dort hängt das
+       Schliessen des Fensters mit seinem Aufräumen. */
+    wrap.dispatchEvent(new MouseEvent('click', { bubbles:true }));
+    if(wrap.classList.contains('show')) wrap.classList.remove('show');
+    karte.style.transform = ''; karte.style.maxHeight = ''; wrap.removeAttribute('data-rast');
+  };
+  tick(6);
+  if(willRuhe() || !karte.animate){ fertig(); return; }
+  var a = karte.animate([{ transform:'translateY(' + dy + 'px)' }, { transform:'translateY(' + (karte.getBoundingClientRect().height + 40) + 'px)' }],
+    { duration:220, easing:'cubic-bezier(.4,0,1,1)', fill:'forwards' });
+  a.onfinish = function(){ fertig(); a.cancel(); };
+}
+
 /* Mehrfach aufrufbar: einmal beim Anmeldebildschirm (dort gibt es schon
    das Rechtliches-Fenster) und einmal beim Start der App. Ohne diese
    Sperre bekäme jedes Fenster zwei Beobachter und der Fokus würde zweimal
@@ -18873,6 +19456,7 @@ function dialogeVorbereiten(){
   DIALOGE.forEach(function(id){
     var wrap = document.getElementById(id); if(!wrap || wrap._dlg) return;
     wrap._dlg = true;
+    if(BLAETTER.indexOf(id) >= 0) blattGriffAnbringen(wrap);
     var box = wrap.querySelector('.pm-box, .ms-card, .search-box') || wrap;
     box.setAttribute('role','dialog');
     box.setAttribute('aria-modal','true');
@@ -19903,6 +20487,11 @@ document.addEventListener('click', function(e){
   var ziel = document.querySelector(k.getAttribute('data-leerzu'));
   if(!ziel){ console.warn('Leerer Zustand zeigt ins Leere:', k.getAttribute('data-leerzu')); return; }
   ziel.click();
+  var wert = k.getAttribute('data-leerzu-wert');
+  if(wert!==null && 'value' in ziel){ ziel.value=wert; ziel.dispatchEvent(new Event('input', { bubbles:true })); }
+  /* Ein Feld als Ziel: click() setzt keinen Fokus — man soll aber gleich
+     tippen können (Runde 259). */
+  if(/^(INPUT|TEXTAREA|SELECT)$/.test(ziel.tagName)){ try{ ziel.focus({ preventScroll:true }); }catch(_){ ziel.focus(); } }
   /* Wandert der Weg woandershin (Formular weiter unten auf der Seite),
      soll man auch dort ankommen. */
   if(ziel.scrollIntoView) sanftInsBild(ziel, { behavior:'smooth', block:'center' });
@@ -21745,7 +22334,17 @@ var NAVGROUPS = [
 
    Ist der Putzplan abgeschaltet, rückt „Nachrichten" an seine Stelle —
    ein Platz in dieser Leiste bleibt nie leer. */
-var NEU_LEISTE = ['g-start','g-arbeit','g-zeit','g-team','g-komm','g-wissen'];
+/* ── Fünf statt sechs (Runde 246, 23.10.2026) ──
+   Plan „Studio Chat wie von Apple": Apples Tab-Leiste trägt höchstens
+   fünf Einträge, sonst wird jeder Knopf zu schmal für ein lesbares
+   Wort. Vorschlag war „Wissen" — das öffnet man ein paarmal die Woche,
+   nicht mehrmals am Tag. Aus dem Betrieb, 23.10.2026, 08:07, auf die
+   Empfehlungen: „ja so wie du empfohlen hast klingt super".
+   „Wissen" bleibt zwei Tipps entfernt (☰ → Wissen) und steht am
+   Rechner weiter in der Seitenleiste. Einen Ungelesen-Punkt verliert
+   es nicht: Dokumente, Schulung und Formi tragen keinen (updateNavMarkers
+   kennt nur Chat und Ankündigungen). */
+var NEU_LEISTE = ['g-start','g-arbeit','g-zeit','g-team','g-komm'];
 function neuLeisteGruppen(gruppen){
   var nach={};
   seitenGruppen(gruppen).forEach(function(g){ nach[g.id]=g; });
@@ -22144,6 +22743,71 @@ var NEUIGKEITEN = [
     'Aufgaben und Putzplan hakst du direkt auf „Heute" ab. Die ganzen Listen, Material, Geräte, Dokumente und Schulung findest du über „Alles" oben links – zwei Tipps.',
     'Offene Aufgaben zeigt jetzt ein Punkt an „Heute". Leitung und Geschäftsführung behalten alle Räume.'
   ]},
+  { id:'2026-10-23-leer-naechster-schritt', datum:'23.10.2026', titel:'Leere Listen zeigen, was du als Nächstes tun kannst', wo:'todos', punkte:[
+    'Findet die Suche nichts, steht unter Formi ein Knopf „Suche leeren". Zeigt ein Filter nichts, bringt „Alle zeigen" alles zurück.',
+    'Ist eine Liste noch ganz leer, führt ein Knopf direkt zum Eintragen – zum Beispiel „Gerät eintragen" oder „To-do eintragen". Das Feld ist dann gleich zum Tippen bereit.'
+  ]},
+  { id:'2026-10-23-linien-symbole', datum:'23.10.2026', titel:'Alle Symbole in einer Linie', wo:'home', punkte:[
+    'Die kleinen Zeichen auf den Knöpfen sind jetzt überall gleich kräftig und haben runde Enden – egal wie groß sie stehen. Das wirkt ruhiger, so wie die Symbole auf dem iPhone.',
+    'Auch „⋯", „+" und das Verwalten-Zeichen sind keine Schriftzeichen mehr, sondern gezeichnete Symbole im selben Stil.'
+  ]},
+  { id:'2026-10-23-schrift-wie-iphone', datum:'23.10.2026', titel:'Schriftgröße wie am iPhone', wo:'home', punkte:[
+    'Hast du am iPhone eine größere (oder kleinere) Schrift eingestellt, übernimmt die App sie jetzt – bis zur Stufe „Sehr groß".',
+    'Bei der normalen iPhone-Schrift ändert sich nichts. Unter Profil → Aussehen → Schriftgröße kannst du weiter eine feste Größe wählen.'
+  ]},
+  { id:'2026-10-23-ziehen-aktualisieren', datum:'23.10.2026', titel:'Oben nach unten ziehen zum Aktualisieren', wo:'todos', punkte:[
+    'Ganz oben in einer Liste nach unten ziehen, bis der Kreis voll ist, und loslassen: Die App sucht nach einer neuen Version und sagt dir, ob alles aktuell ist.',
+    'Die Listen selbst sind wie bisher immer live – Änderungen der anderen kommen auch ohne Ziehen an.'
+  ]},
+  { id:'2026-10-23-wischen', datum:'23.10.2026', titel:'Aufgaben wischen wie in Mail', wo:'todos', punkte:[
+    'Eine Aufgabe nach rechts wischen hakt sie ab – wenn der Haken größer wird, reicht Loslassen.',
+    'Nach links wischen zeigt „Mehr" und „Löschen". Das geht auch im Putzplan. Alles bleibt wie bisher auch über „⋯" erreichbar.'
+  ]},
+  { id:'2026-10-23-glas-leiste', datum:'23.10.2026', titel:'Die untere Leiste am Handy ist aus Glas', wo:'todos', punkte:[
+    'Beim Scrollen läuft die Liste jetzt unter der unteren Leiste weiter und schimmert weich verschwommen durch – wie bei den Apps auf dem iPhone. Ganz unten steht der letzte Eintrag wie bisher frei.',
+    'Lieber ohne Durchschimmern? Unter Profil → Aussehen → „Untere Leiste am Handy" auf „Deckend" stellen.'
+  ]},
+  { id:'2026-10-23-blaetter', datum:'23.10.2026', titel:'Fenster von unten lassen sich ziehen', wo:'todos', punkte:[
+    'Fenster, die am Handy von unten hochkommen (zum Beispiel „…" an einer Aufgabe oder dein Profil), haben oben einen kleinen Strich. Daran kannst du sie ziehen.',
+    'Nach unten ziehen oder schnell wischen schliesst das Fenster. Bei langen Fenstern hält ein mittlerer Zug auf halber Höhe, nach oben wird es wieder ganz gross.',
+    'Schliessen geht weiter wie bisher mit dem Knopf oder einem Tipp daneben.'
+  ]},
+  { id:'2026-10-23-grosser-titel', datum:'23.10.2026', titel:'Grosser Titel oben, wie in den iPhone-Apps', wo:'todos', punkte:[
+    'Oben auf jeder Seite steht der Name jetzt gross und fett, zum Beispiel „Studio" oder „Zeiten" – so wie bei Mail oder den Einstellungen auf dem iPhone.',
+    'Scrollst du nach unten, wird der Titel klein und macht Platz. Oben angekommen, ist er wieder gross.'
+  ]},
+  { id:'2026-10-23-fluessiger', datum:'23.10.2026', titel:'Alles reagiert schneller, Formi jubelt ohne Ruckeln', wo:'home', punkte:[
+    'Die App rechnet bei jeder kleinen Änderung nicht mehr die ganze Seite neu. Seitenwechsel und Tippen fühlen sich dadurch spürbar flüssiger an, besonders auf älteren Handys.',
+    'Wenn Formi sich freut oder jubelt (zum Beispiel nach einer erledigten Aufgabe), läuft das jetzt ohne Hänger. Formi sieht genau so aus wie vorher.'
+  ]},
+  { id:'2026-10-23-formi-insel', datum:'23.10.2026', titel:'Formi bei der Arbeit zusehen: Insel, Leuchtrand und ein echter Sog', wo:'home', punkte:[
+    'Wenn Formi etwas für dich tut, erscheint oben eine schwarze Insel wie beim iPhone: Darin steht, was er gerade macht. Ist er fertig, wird sie grösser und zeigt das Ergebnis, zum Beispiel „Abgehakt · Hürth – Spiegel putzen".',
+    'Solange Formi arbeitet, leuchtet der ganze Bildschirmrand in seinen Farben, das Licht kreist um den Rand. Ist er fertig, flammt es kurz auf und geht aus.',
+    'Was Formi abhakt, zerfällt in einzelne Buchstaben und fällt in Formi in der Insel. Was er anlegt, kommt Buchstabe für Buchstabe aus ihm heraus.',
+    'Auch was du selbst abhakst, zerfällt jetzt in Buchstaben, die sich als leuchtender Faden um Formi wickeln, bevor sie im Loch verschwinden.',
+    'Am Rechner und auf Android krümmt Formi das Bild um sich herum wie ein echtes schwarzes Loch – und wenn er etwas schluckt, wird die Krümmung kurz stärker.'
+  ]},
+  { id:'2026-10-23-chat-blasen', datum:'23.10.2026', titel:'Nachrichten sehen aus wie auf dem iPhone', wo:'chat', punkte:[
+    'Im Chat stehen die Nachrichten jetzt als runde Blasen ohne Rahmen: die der anderen grau, deine eigenen in deiner Akzentfarbe. Name, Studio und Uhrzeit stehen klein über der Blase.',
+    'Schreibt jemand mehrere Nachrichten hintereinander, rücken sie eng zusammen. Uhrzeit und Häkchen deiner eigenen Nachrichten stehen unter der letzten.',
+    'Tippst du auf eine Nachricht, öffnet sich das Menü direkt an ihr: oben die Reaktionen, darunter Antworten, Weiterleiten, Kopieren und mehr. Am Rechner geht es auch mit der rechten Maustaste.'
+  ]},
+  { id:'2026-10-23-schulung-bescheinigung', datum:'23.10.2026', titel:'Schulung: deine eigene Bescheinigung zum Drucken', wo:'schulung', punkte:[
+    'Unter Wissen → Schulung, im Kasten „Schon geschafft" (bisher „Was du schon gemacht hast"), steht rechts oben ein Drucker-Zeichen: „Bescheinigung drucken". Es druckt ein Blatt mit allen Schulungen, die du bestanden hast – mit Datum, Ergebnis, Dauer und bis wann sie gilt.',
+    'Was als Pflicht noch offen ist, steht ehrlich darunter. Unten ist Platz, damit die Studioleitung unterschreibt.'
+  ]},
+  { id:'2026-10-23-federn', datum:'23.10.2026', titel:'Bewegungen gleiten wie auf dem iPhone', wo:'home', punkte:[
+    'Seitenwechsel, Blätter, Haken und Schalter bewegen sich jetzt wie echte Federn: Seiten gleiten ruhig aus, Haken und Schalter federn ganz leicht nach.',
+    'Am deutlichsten siehst du es, wenn du unten zwischen Heute, Studio und Zeiten wechselst. Formi bewegt sich wie bisher.'
+  ]},
+  { id:'2026-10-23-leiste-fuenf', datum:'23.10.2026', titel:'Unten nur noch fünf Knöpfe', wo:'home', punkte:[
+    'Auf dem Handy stehen unten jetzt fünf Knöpfe: Heute, Studio, Zeiten, Plan und Nachrichten. Jeder ist dadurch breiter und leichter zu treffen.',
+    '„Wissen" (Dokumente, Schulung, Formi) findest du über die drei Striche oben links am Seitenkopf („Alles“), zwei Tipps. Am Rechner steht es weiter links in der Seitenleiste.'
+  ]},
+  { id:'2026-10-23-schichtplaner-fragen-app', datum:'23.10.2026', titel:'Schichtplaner: Fragen in der App beantworten, Probe zurücknehmen', wo:'planer', punkte:[
+    'Im Schichtplaner (Verwaltung) gibt es die Karte „Fragen zum Plan": dieselben 24 Fragen wie im PDF, in fünf Reitern. Bei jeder steht, was die App heute annimmt – ein Tipp auf „passt" genügt, sonst eine eigene Antwort. Oben steht, wie viele schon beantwortet sind.',
+    'Nach dem Veröffentlichen gibt es „Veröffentlichung zurücknehmen": Die Schichten des Monats verschwinden wieder aus dem Team-Plan, der Entwurf im Planer bleibt. So lässt sich gefahrlos ausprobieren. Von Hand eingetragene Schichten bleiben stehen.',
+    'Öffnungszeiten, die nur in der Excel-Vorlage (Blatt „Studios") stehen, zählen jetzt auch für die Besetzungs-Leiste unter Plan → Schichten.' ] },
   { id:'2026-10-23-aufgaben-gruppen', datum:'23.10.2026', titel:'Aufgaben und Putzplan als ruhige Gruppen', wo:'todos', punkte:[
     'Unter „Studio" stehen die Aufgaben und der Putzplan jetzt genauso wie auf der Startseite: jede Gruppe (z. B. Täglich, Wöchentlich) ist eine gerundete Fläche, die Zeilen darin trennt nur eine feine Linie.',
     'Am Rechner ist „+ Neu" oben rechts jetzt der eine gefüllte Knopf der Ansicht. Filter, Drucken und „Wer hakt ab?" bleiben daneben als ruhige Umrandung.',
@@ -23412,7 +24076,7 @@ function seitenGruppen(gruppen){
   var nach={};
   gruppen.forEach(function(g){ nach[g.id]=g; });
   delete nach['g-alles'];
-  /* Runde 245, aus dem Betrieb, 23.10.2026, auf „Mitarbeiter sehen unten
+  /* Runde 260, aus dem Betrieb, 23.10.2026, auf „Mitarbeiter sehen unten
      nur Heute, Zeiten, Plan und Nachrichten – Studio und Wissen über
      ‚Alles'?": „ja". Wer nichts verwaltet, arbeitet seinen Tag auf
      „Heute" ab (dort steht seit Runde 240 der Haken); Studio und Wissen
@@ -23464,7 +24128,7 @@ function buildNav(){
     return;
   }
 
-  /* Vier Knöpfe, feste Reihenfolge aus NEU_LEISTE — nicht die von
+  /* Fünf Knöpfe, feste Reihenfolge aus NEU_LEISTE — nicht die von
      NAVGROUPS: dort steht „Ich" an zweiter Stelle, und „Nachrichten"
      wäre dadurch vor „Aufgaben" gelandet.
 
@@ -23516,6 +24180,100 @@ document.addEventListener('keydown', function(e){
     }
   }, {passive:true});
   document.addEventListener('touchend', function(){ x0=null; }, {passive:true});
+})();
+
+/* ── Ziehen zum Aktualisieren (Runde 256) ──
+   Plan „Studio Chat wie von Apple", Schritt 10. Was „aktualisieren" hier
+   ehrlich heisst: die Listen sind ohnehin live mit der Datenbank
+   verbunden — es gibt nichts nachzuladen, was nicht schon da wäre.
+   Was ein Zug nach unten wirklich tut:
+    1. nach einer neuen Version der App suchen (sonst höchstens einmal je
+       Minute beim Zurückkommen, siehe checkUpdate) — findet er eine,
+       lädt die Seite wie bei jedem Update einmal neu;
+    2. sagen, wie es steht: live verbunden, oder ohne Verbindung mit dem
+       letzten Stand.
+   Nur am Handy (Touch), nur ganz oben in einer Liste, nur senkrecht.
+   Im Chat nicht: dort heisst Ziehen nach oben „ältere Nachrichten". */
+(function ziehenZumAktualisieren(){
+  var SCHWELLE=72, MAX=110;
+  var flaeche=null, ind=null, x0=0, y0=0, dy=0, oben=0, aktiv=false, entschieden=false, laeuft=false, voll=false;
+  function zeichen(){
+    if(ind) return ind;
+    ind=document.createElement('div'); ind.className='ptr'; ind.setAttribute('aria-hidden','true');
+    ind.innerHTML='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" pathLength="100"/></svg>';
+    document.body.appendChild(ind);
+    return ind;
+  }
+  function setze(y){
+    flaeche.style.transform = y ? 'translateY('+y+'px)' : '';
+    var z=zeichen();
+    z.style.setProperty('--ptr-y', (oben + y/2 - 16)+'px');
+    z.style.setProperty('--ptr-p', Math.min(1, y/SCHWELLE).toFixed(3));
+    z.style.opacity = y>8 ? Math.min(1, y/40).toFixed(2) : '0';
+  }
+  function zurueck(){
+    var f=flaeche; if(!f) return;
+    f.classList.remove('ptr-zieht'); f.classList.add('ptr-zurueck');
+    f.style.transform='';
+    if(ind){ ind.style.opacity='0'; ind.classList.remove('laeuft','voll'); ind.style.setProperty('--ptr-p','0'); }
+    setTimeout(function(){ f.classList.remove('ptr-zurueck'); }, 400);
+  }
+  function aktualisieren(){
+    if(!navigator.onLine) return Promise.resolve({ text:'Keine Verbindung – du siehst den letzten Stand. Neues kommt, sobald du wieder online bist.', fehler:true });
+    var suche = ('serviceWorker' in navigator && navigator.serviceWorker.getRegistration)
+      ? navigator.serviceWorker.getRegistration().then(function(reg){ return reg && reg.update(); }).catch(function(){})
+      : Promise.resolve();
+    return suche.then(function(){ return { text:'✓ Aktuell – Änderungen kommen live an.' }; });
+  }
+  document.addEventListener('touchstart', function(e){
+    if(laeuft || !layoutNeu() || e.touches.length!==1) return;
+    var f=e.target.closest && e.target.closest('.view.show > .scroll-area');
+    if(!f || f.scrollTop>0){ aktiv=false; return; }
+    flaeche=f; aktiv=true; entschieden=false; dy=0; voll=false;
+    x0=e.touches[0].clientX; y0=e.touches[0].clientY;
+  }, {passive:true});
+  document.addEventListener('touchmove', function(e){
+    if(!aktiv) return;
+    var t=e.touches[0], mx=t.clientX-x0, my=t.clientY-y0;
+    if(!entschieden){
+      if(Math.abs(mx)<8 && Math.abs(my)<8) return;
+      /* Nur ein Zug nach unten, der deutlich senkrecht ist, und nur, wenn
+         die Liste wirklich oben steht. Alles andere ist Scrollen oder
+         Wischen auf einer Zeile. */
+      if(my<=0 || Math.abs(mx)>Math.abs(my) || flaeche.scrollTop>0){ aktiv=false; return; }
+      entschieden=true;
+      /* Einmal je Zug gelesen, nicht je Bewegung. */
+      oben=flaeche.getBoundingClientRect().top;
+      flaeche.classList.add('ptr-zieht');
+    }
+    /* Halber Weg, dann immer zäher. */
+    dy = my<=0 ? 0 : Math.min(MAX, my*.5);
+    var v = dy>=SCHWELLE;
+    if(v!==voll){ voll=v; zeichen().classList.toggle('voll', v); if(v) tick(6); }
+    setze(dy);
+  }, {passive:true});
+  function ende(){
+    if(!aktiv){ return; }
+    aktiv=false;
+    if(!entschieden){ return; }
+    flaeche.classList.remove('ptr-zieht');
+    if(dy<SCHWELLE){ zurueck(); return; }
+    laeuft=true;
+    flaeche.classList.add('ptr-zurueck');
+    setze(48);
+    var z=zeichen(); z.classList.add('laeuft');
+    var start=Date.now();
+    aktualisieren().then(function(r){
+      /* Mindestens kurz drehen: eine Antwort nach 20 ms sieht aus, als
+         hätte nichts stattgefunden. */
+      setTimeout(function(){
+        zurueck(); laeuft=false;
+        toast(r.text, !!r.fehler);
+      }, Math.max(0, 600-(Date.now()-start)));
+    });
+  }
+  document.addEventListener('touchend', ende, {passive:true});
+  document.addEventListener('touchcancel', ende, {passive:true});
 })();
 
 /* ── Gleitender Marker unter der aktiven Auswahl ──
@@ -25725,7 +26483,7 @@ function renderDocs(docs){
       '<div class="doc-info"><b>'+esc(d.name||d.fileName)+'</b>'+
       '<div class="doc-meta">'+esc(meta)+'</div></div>'+
       '<div class="doc-actions">'+
-      (chef?'<button class="t-mehr doc-mehr" title="Mehr" aria-label="Mehr">⋯</button>':'')+
+      (chef?'<button class="t-mehr doc-mehr" title="Mehr" aria-label="Mehr">'+ikon('mehr')+'</button>':'')+
       '<span class="doc-go" aria-hidden="true">›</span></div></div>';
   }).join('');
   box.querySelectorAll('.doc').forEach(function(node){
@@ -28344,6 +29102,9 @@ function formiKugelZeigen(){
     }
     return;
   }
+  /* Runde 250: die Lichtkrümmung ums Loch (einmal gebaut). */
+  formiLinseBauen();
+  requestAnimationFrame(formiLinseLage);
   if(!k._gebunden){ k._gebunden=true; k.addEventListener('click', function(){ jarvisAuf(); }); formiLebtStart(); }
   k.hidden=!(gehirnVerfuegbar() && !jarvisOffen() && currentView!=='gehirn' && currentView!=='chat');
   document.body.classList.toggle('formi-kugel-an', !k.hidden);
@@ -29397,9 +30158,133 @@ function formiKugelMitte(){
   var k=$('formiKugel'); if(!k || k.hidden || !k.getClientRects().length) return null;
   var r=k.getBoundingClientRect(); return { x:r.left+r.width/2, y:r.top+r.height/2 };
 }
-/* Sog am Ereignishorizont: was man abhakt, fliegt als Schriftzug in einer
-   enger werdenden Spirale zu Formi, wird dabei lang gezogen
-   („Spaghettifizierung") und verschwindet im Loch. */
+/* ── Gezeitenstrom (Runde 250) ────────────────────────────────────────
+   Aus dem Betrieb, nach Runde 242: „können wir fürs aufgaben einsaugen
+   einen besseren effekt machen … und mehr verzerrung auch für den
+   hintergrund und so ums loch herum".
+   Vorher flog der Titel als EIN Block. Jetzt wie bei einem Stern, der
+   einem Loch zu nahe kommt (Gezeitenzerriss): der Titel zerfällt in
+   seine Buchstaben, der dem Loch nächste reisst zuerst ab, die anderen
+   folgen — so entsteht ein Strom, der sich um Formi wickelt.
+   – Bahn: Spirale gegen den Uhrzeiger, Umlauf ∝ r^-1,5 (Kepler).
+   – Jeder Buchstabe wird erst zum Loch hin gestreckt (Gezeiten ∝ 1/r³),
+     nah am Loch schert ihn der schnellere Umlauf innen in die Bahn —
+     aus dem Buchstaben wird ein Lichtfaden.
+   – Am Horizont: kriechen (Zeitdehnung), röter (Rotverschiebung, eigene
+     Ebene ::after), erlöschen.
+   – Beim Schlucken zuckt das Loch, die Scheibe flammt, und die Krümmung
+     ums Loch (formiLinse) wird kurz stärker: es hat Masse dazubekommen.
+   Alles ist transform/opacity, je Buchstabe EINE Animation, die Bilder
+   einmal vorab gerechnet. Gemessen wird im nächsten Bild, nie im Klick. */
+function formiStromZiel(){
+  var fi=$('formiInsel');
+  if(fi && !fi.hidden && fi.classList.contains('gross')){
+    var f=fi.querySelector('.fi-gross .formi-figur');
+    if(f && f.getClientRects().length){ var r=f.getBoundingClientRect(); return { x:r.left+r.width/2, y:r.top+r.height/2, rH:Math.max(6, r.width*.26), figur:f, insel:true }; }
+  }
+  var k=$('formiKugel'); if(!k || k.hidden || !k.getClientRects().length) return null;
+  var q=k.getBoundingClientRect(); return { x:q.left+q.width/2, y:q.top+q.height/2, rH:13, figur:k };
+}
+/* Die Bahn EINES Buchstabens: Mitte (x0|y0) → Loch (zx|zy). Koordinaten
+   der Bilder relativ zu (ox|oy), Grösse des Buchstabens w × h. */
+function formiBahn(x0, y0, zx, zy, rH, w, h, ox, oy, runden, dreh){
+  var rx=x0-zx, ry=y0-zy, r0=Math.max(rH*2.5, Math.sqrt(rx*rx+ry*ry)), th0=Math.atan2(ry, rx), N=40;
+  var rr=[], gew=[0], zeit=[0];
+  for(var i=0;i<=N;i++){ var s=i/N; rr.push(rH+(r0-rH)*Math.pow(1-Math.pow(s, 1.15), 1.6)); }
+  /* Umlauf ∝ r^-1 (gedeckelt): die Bahn biegt schon von weitem ein, statt
+     gerade anzufliegen und erst am Loch zu kreisen. */
+  for(var j=1;j<=N;j++){ gew.push(gew[j-1]+Math.min(14, r0/rr[j])); zeit.push(zeit[j-1]+Math.min(4, 1/Math.sqrt(Math.max(.06, 1-rH/rr[j])))); }
+  /* Die Scheibe: nah am Loch läuft die Bahn in ihrer Ebene (flach, 9°). */
+  var rF=Math.max(70, rH*8), rT=Math.max(90, rH*7), runde=Math.PI*2*(runden||1.2), pkt=[];
+  for(var k=0;k<=N;k++){
+    var r=rr[k], th=th0-(dreh||1)*runde*gew[k]/gew[N];
+    var flach = r<rF ? .32+.68*Math.max(0, (r-rH)/(rF-rH)) : 1;
+    var ex=Math.cos(th)*r, ey=Math.sin(th)*r*flach, nz=-9*Math.PI/180*(1-flach)/.68;
+    pkt.push({ x:zx+ex*Math.cos(nz)-ey*Math.sin(nz), y:zy+ex*Math.sin(nz)+ey*Math.cos(nz), r:r });
+  }
+  var bild=[], alt=null;
+  bild.aussen=pkt.filter(function(q){ return q.x<8 || q.y<8 || q.x>innerWidth-8 || q.y>innerHeight-8; }).length;
+  for(var m=0;m<=N;m++){
+    var p=pkt[m], a=pkt[Math.max(0, m-1)], c=pkt[Math.min(N, m+1)];
+    /* Lage: der Faden zeigt in Flugrichtung (stetig weitergezählt), am
+       Anfang weich aus der Waagerechten. */
+    var wf=Math.atan2(c.y-a.y, c.x-a.x)*180/Math.PI;
+    if(alt!==null){ while(wf-alt>180) wf-=360; while(wf-alt<-180) wf+=360; } alt=wf;
+    /* Die Achse (0° ≡ 180°) so wählen, dass der Buchstabe am Anfang
+       aufrecht bleibt: Versatz einmal am ersten Bild bestimmt. */
+    if(m===0){ var a0=((wf%180)+180)%180; if(a0>90) a0-=180; var versatz=a0-wf; }
+    var auf=Math.min(1, m/(N*.12)), winkel=(wf+versatz)*auf;
+    /* Streckung: schneller = länger (v ∝ r^-½), dazu die Gezeiten ∝ 1/r³
+       nah am Loch. Quer dazu dünner (das Volumen bleibt). */
+    var streck=1+Math.min(10, .9*Math.pow(rT/p.r, 1.2)+Math.pow(rT/p.r, 3)*.35), quer=Math.max(.18, 1/Math.sqrt(streck));
+    var klein = p.r>rF ? 1 : .4+.6*Math.max(0, (p.r-rH)/(rF-rH));
+    var deck = p.r<rH*2.2 ? Math.max(0, (p.r-rH)/(rH*1.2)) : 1;
+    bild.push({ transform:'translate('+(p.x-ox-w/2).toFixed(1)+'px,'+(p.y-oy-h/2).toFixed(1)+'px) rotate('+winkel.toFixed(1)+'deg) scale('+(streck*klein).toFixed(2)+','+(quer*klein).toFixed(2)+')',
+      opacity:m===N ? 0 : +deck.toFixed(2), offset:+(zeit[m]/zeit[N]).toFixed(4) });
+  }
+  return bild;
+}
+/* Den Strom bauen: titel = das Element, dessen Text zerfällt. aus=true
+   dreht alles um (weisses Loch): die Buchstaben kommen aus Formi und
+   setzen sich zum Titel zusammen. */
+function formiStrom(titel, text, ziel, opt){
+  opt=opt||{};
+  var q=titel.getBoundingClientRect(), cs=getComputedStyle(titel);
+  var box=document.createElement('div'); box.className='formi-flug formi-strom mass'; box.setAttribute('aria-hidden', 'true');
+  var zeile=document.createElement('span'); zeile.className='fs-zeile';
+  zeile.style.font=cs.font; zeile.style.letterSpacing=cs.letterSpacing;
+  zeile.style.transform='translate('+Math.round(q.left)+'px,'+Math.round(q.top+(q.height-parseFloat(cs.lineHeight||q.height))/2)+'px)';
+  var html='';
+  for(var i=0;i<text.length;i++){ var zz=esc(text[i]===' ' ? '\u00a0' : text[i]); html+='<i data-z="'+zz+'">'+zz+'</i>'; }
+  zeile.innerHTML=html; box.appendChild(zeile); document.body.appendChild(box);
+  /* Erst alles lesen … */
+  var ox=Math.round(q.left), oy=Math.round(q.top+(q.height-parseFloat(cs.lineHeight||q.height))/2);
+  var lage=[].map.call(zeile.children, function(el){ return { el:el, x:el.offsetLeft, y:el.offsetTop, w:el.offsetWidth, h:el.offsetHeight }; });
+  /* … dann schreiben. */
+  box.classList.remove('mass');
+  var reihe=lage.map(function(l, i){ var cx=ox+l.x+l.w/2, cy=oy+l.y+l.h/2; return { i:i, d:Math.hypot(cx-ziel.x, cy-ziel.y) }; })
+    .sort(function(a, b){ return a.d-b.d; });
+  var rang=[]; reihe.forEach(function(r, n){ rang[r.i]=n; });
+  var dauer=1750, ende=0, start=opt.verz||0;
+  /* Umlaufsinn: wie die Scheibe gegen den Uhrzeiger — es sei denn, die
+     Bahn liefe so aus dem Bild (Kugel am Rand); dann andersherum. */
+  var n0=lage[reihe[0].i], dreh=1;
+  if(n0){
+    var px0=ox+n0.x+n0.w/2, py0=oy+n0.y+n0.h/2;
+    if(formiBahn(px0, py0, ziel.x, ziel.y, ziel.rH, 1, 1, 0, 0, 1.2, 1).aussen > formiBahn(px0, py0, ziel.x, ziel.y, ziel.rH, 1, 1, 0, 0, 1.2, -1).aussen) dreh=-1;
+  }
+  lage.forEach(function(l, i){
+    if(l.el.textContent==='\u00a0'){ l.el.style.display='none'; return; }
+    var bild=formiBahn(ox+l.x+l.w/2, oy+l.y+l.h/2, ziel.x, ziel.y, ziel.rH, l.w, l.h, ox, oy, 1.15+((i*7)%5)*.04, dreh);
+    var verz=start+(opt.aus ? (lage.length-1-rang[i]) : rang[i])*26;
+    if(opt.aus) bild=bild.slice().reverse().map(function(f){ var g=Object.assign({}, f); g.offset=+(1-f.offset).toFixed(4); g.opacity = f.opacity===0 ? 0 : 1; return g; });
+    else bild[0].opacity=1;
+    ende=Math.max(ende, verz+dauer+70);
+    try{ l.el.animate(bild, { duration:dauer, delay:verz, easing: opt.aus ? 'cubic-bezier(.2,.7,.3,1)' : 'linear', fill:'backwards' }); }catch(e){}
+    if(!opt.aus) formiRot(l.el, dauer, verz, .62);
+    /* Ein Nachleuchten folgt jedem Buchstaben 70 ms später, halb so hell —
+       aus Punkten wird ein Faden. */
+    var spur=document.createElement('i'); spur.className='spur'; spur.textContent=l.el.textContent;
+    zeile.appendChild(spur);
+    try{ spur.animate(bild.map(function(f){ var g=Object.assign({}, f); g.opacity=+(f.opacity*.45).toFixed(2); return g; }),
+      { duration:dauer, delay:verz+70, easing: opt.aus ? 'cubic-bezier(.2,.7,.3,1)' : 'linear', fill:'backwards' }); }catch(e){}
+  });
+  /* Das Original tritt zurück, solange sein Abbild zerfällt (oder
+     erscheint erst, wenn der Strom angekommen ist). */
+  try{
+    if(opt.aus) titel.animate([{ opacity:0 }, { opacity:0, offset:.88 }, { opacity:1 }], { duration:ende+120 });
+    else titel.animate([{ opacity:1 }, { opacity:.1, offset:Math.min(.3, (start+200)/ende) }, { opacity:.1, offset:.92 }, { opacity:opt.bleibtWeg ? .1 : 1 }], { duration:ende+150, fill:opt.bleibtWeg ? 'forwards' : 'none' });
+  }catch(e){}
+  setTimeout(function(){ if(box.parentNode) box.parentNode.removeChild(box); }, ende+120);
+  if(opt.aus) return ende;
+  setTimeout(function(){
+    var pu=ziel.figur && ziel.figur.querySelector('.fk-pupille');
+    if(pu) try{ pu.animate([{transform:'none'},{transform:'scale(.8)',offset:.35},{transform:'scale(1.07)',offset:.7},{transform:'none'}], { duration:420 }); }catch(e){}
+  }, ende-200);
+  formiUmgebung(ziel.figur, 'sog', Math.max(0, ende-300));
+  if(!ziel.insel) formiLinsePuls(ende);
+  return ende;
+}
 function formiSchlucken(el){
   if(!el || _fl.gefuehleAus || gehirnWenigBewegung() || !document.body.animate) return;
   /* Runde 242: auch der Haken direkt auf „Heute" (Runde 240, .hz-mit-haken). */
@@ -29409,60 +30294,276 @@ function formiSchlucken(el){
   var text=[].filter.call(titel.childNodes, function(n){ return n.nodeType===3; }).map(function(n){ return n.nodeValue; }).join(' ').trim() || String(titel.textContent||'').trim();
   text=text.slice(0, 40); if(!text) return;
   requestAnimationFrame(function(){
-    var ziel=formiKugelMitte(); if(!ziel || !titel.getClientRects().length) return;
-    var q=titel.getBoundingClientRect();
-    var g=document.createElement('span');
-    g.className='formi-schluck'; g.setAttribute('aria-hidden', 'true'); g.textContent=text;
-    g.style.transform='translate('+Math.round(q.left)+'px,'+Math.round(q.top)+'px)';
-    document.body.appendChild(g);
-    /* Die Breite des Schriftzugs (nicht die der Zeile) — einmal gelesen,
-       bevor etwas animiert wird. */
-    var gw=g.offsetWidth, gh=g.offsetHeight;
-    /* Runde 242 — aus dem Betrieb: „die erledigten aufgaben fliegen ganz
-       steif in formi rein statt gestreckt und drehend … keine
-       spagettifikation". Jetzt wie beim echten Loch:
-       – Bahn: eine Spirale um Formis Mitte, gegen den Uhrzeiger wie die
-         Scheibe. Je näher, desto schneller der Umlauf (Kepler, ω ∝ r^-1,5),
-         insgesamt gut eineinviertel Runden.
-       – Lage: der Schriftzug richtet sich zum Loch aus und dreht sich so
-         mit der Bahn — er „taumelt" hinein.
-       – Gezeitenkraft ∝ 1/r³: in Richtung Loch gestreckt, quer dazu
-         gestaucht (Spaghettifizierung), stark erst in der Nähe.
-       – Zeitdehnung: kurz vor dem Horizont kriecht er und verblasst
-         (die Bilder liegen dort zeitlich weiter auseinander).
-       Alles ist EIN transform je Bild, gerechnet einmal vorab. */
-    var cx0=q.left+gw/2, cy0=q.top+gh/2, rx=cx0-ziel.x, ry=cy0-ziel.y;
-    var r0=Math.max(40, Math.sqrt(rx*rx+ry*ry)), th0=Math.atan2(ry, rx), rH=13, N=30;
-    var rr=[], gew=[0];
-    for(var i=0;i<=N;i++){ var sI=i/N; rr.push(rH+(r0-rH)*Math.pow(1-sI, 1.6)); }
-    for(var j=1;j<=N;j++) gew.push(gew[j-1]+Math.min(60, Math.pow(r0/rr[j], 1.5)));
-    var runde=Math.PI*2*1.25, zeit=[0];
-    for(var m=1;m<=N;m++) zeit.push(zeit[m-1]+Math.min(4, 1/Math.sqrt(Math.max(.06, 1-rH/rr[m]))));
-    var bild=[];
-    for(var k2=0;k2<=N;k2++){
-      var r=rr[k2], th=th0-runde*gew[k2]/gew[N];
-      /* Nah am Loch schwenkt die Bahn in die Ebene der Scheibe ein: flach
-         (wie die Scheibe, schräg gesehen) und um 9° geneigt wie sie. */
-      var flach = r<140 ? .3+.7*Math.max(0,(r-rH)/(140-rH)) : 1;
-      var ex=Math.cos(th)*r, ey=Math.sin(th)*r*flach, nz=-9*Math.PI/180*(1-flach)/.7;
-      var px=ziel.x+ex*Math.cos(nz)-ey*Math.sin(nz)-gw/2, py=ziel.y+ex*Math.sin(nz)+ey*Math.cos(nz)-gh/2;
-      /* Zum Loch ausgerichtet; am Anfang weich aus der Waagerechten. */
-      /* Die Achse zeigt zum Loch; welche Richtung, ist gleich (180°
-         symmetrisch). Die Ausrichtung kommt weich dazu, der Umlauf dreht
-         voll mit. */
-      var a0=((th0*180/Math.PI+90)%180+180)%180-90;
-      var mix=Math.min(1, k2/(N*.2));
-      var rot=mix*a0+(th-th0)*180/Math.PI;
-      var streck=1+Math.min(6.5, Math.pow(95/r, 3)*.55), quer=1/Math.sqrt(streck);
-      var klein=.35+.65*(r-rH)/(r0-rH);
-      var deck = r<rH*2.4 ? Math.max(0, (r-rH)/(rH*1.4)) : 1;
-      bild.push({ transform:'translate('+px.toFixed(1)+'px,'+py.toFixed(1)+'px) rotate('+rot.toFixed(1)+'deg) scale('+(streck*klein).toFixed(2)+','+(quer*klein).toFixed(2)+')',
-        opacity: k2===N ? 0 : +deck.toFixed(2), offset:+(zeit[k2]/zeit[N]).toFixed(4) });
-    }
-    var dauer=1900;
-    try{ g.animate(bild, { duration:dauer, easing:'linear' }).onfinish=function(){ if(g.parentNode) g.parentNode.removeChild(g); }; }catch(e){}
-    setTimeout(function(){ if(g.parentNode) g.parentNode.removeChild(g); var k=$('formiKugel'); if(k) formiUmgebung(k, 'sog'); }, dauer+60);
+    var ziel=formiStromZiel(); if(!ziel || !titel.getClientRects().length) return;
+    formiStrom(titel, text, ziel);
   });
+}
+
+/* ── Lichtkrümmung ums Loch (Runde 250) ───────────────────────────────
+   „liquid glas finde ich unnötig wenn überhaupt soll das den hintergrund
+   verzerren etwas weils ja ein schwarzes loch ist" — und dann: „mehr
+   verzerrung auch für den hintergrund und so ums loch herum".
+   Ein Kreis um die Kugel krümmt, was dahinter liegt, wie eine
+   Gravitationslinse: ein Bildpunkt im Abstand θ zeigt, was bei
+   β = θ − θE²/θ liegt (Punktlinse, θE = Einstein-Radius). Nah am Loch
+   wird die Umgebung nach aussen gezogen und um das Loch gebogen.
+   Gebaut als backdrop-filter mit einer Verschiebungskarte (SVG
+   feDisplacementMap), die Karte einmal beim Start gerechnet. Nur in
+   Chromium (Rechner, Android): Safari und Firefox kennen SVG-Filter in
+   backdrop-filter nicht — dort bleibt der Kreis einfach durchsichtig. */
+var FL_LINSE={ n:192, e:36, s:120 };
+function formiLinseAn(){
+  var ua=navigator.userAgent||'';
+  return /Chrome\/\d/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
+}
+function formiLinseBauen(){
+  if(_fl.linse || !formiLinseAn()) return;
+  _fl.linse=true;
+  var n=FL_LINSE.n, R=n/2, E=FL_LINSE.e, S=FL_LINSE.s, url='';
+  try{
+    var c=document.createElement('canvas'); c.width=c.height=n;
+    var g=c.getContext('2d'), d=g.createImageData(n, n);
+    for(var y=0;y<n;y++) for(var x=0;x<n;x++){
+      var dx=x+.5-R, dy=y+.5-R, r=Math.sqrt(dx*dx+dy*dy), p=(y*n+x)*4;
+      var f=r>=R ? 0 : Math.pow(1-(r/R)*(r/R), 2);
+      /* zum Loch hin abtasten: β = θ − θE²/θ */
+      var m=E*E/Math.max(r, 16)*f, vx=r ? -m*dx/r : 0, vy=r ? -m*dy/r : 0;
+      d.data[p]=Math.max(0, Math.min(255, Math.round(128+vx/S*255)));
+      d.data[p+1]=Math.max(0, Math.min(255, Math.round(128+vy/S*255)));
+      d.data[p+2]=128; d.data[p+3]=255;
+    }
+    g.putImageData(d, 0, 0); url=c.toDataURL('image/png');
+  }catch(e){ return; }
+  var ns='http://www.w3.org/2000/svg', svg=document.createElementNS(ns, 'svg');
+  svg.setAttribute('class', 'formi-linse-svg'); svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('focusable', 'false');
+  svg.setAttribute('width', '0'); svg.setAttribute('height', '0');
+  svg.innerHTML='<filter id="formiLinse" x="0" y="0" width="'+n+'" height="'+n+'" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" color-interpolation-filters="sRGB">'+
+    '<feImage x="0" y="0" width="'+n+'" height="'+n+'" preserveAspectRatio="none" result="karte"/>'+
+    '<feDisplacementMap id="formiLinseD" in="SourceGraphic" in2="karte" scale="'+S+'" xChannelSelector="R" yChannelSelector="G"/></filter>';
+  svg.querySelector('feImage').setAttribute('href', url);
+  document.body.appendChild(svg);
+  document.documentElement.classList.add('linse-ok');
+  formiLinseLage();
+  window.addEventListener('resize', function(){ requestAnimationFrame(formiLinseLage); });
+  setInterval(function(){ if(!document.hidden) requestAnimationFrame(formiLinseLage); }, 1000);
+}
+/* Der Kreis folgt der Kugel: gelesen beim Zeigen, bei Grössenwechsel
+   und einmal je Sekunde (die Kugel wandert mit Ansicht und Leisten). */
+function formiLinseLage(){
+  var l=$('formiLinseKreis'); if(!l || !_fl.linse) return;
+  var k=$('formiKugel'), sicht=!!(k && !k.hidden && k.getClientRects().length && !jarvisOffen());
+  if(!sicht){ if(!l.hidden) l.hidden=true; return; }
+  var q=k.getBoundingClientRect(), n=FL_LINSE.n;
+  var t='translate('+Math.round(q.left+q.width/2-n/2)+'px,'+Math.round(q.top+q.height/2-n/2)+'px)';
+  if(l.style.transform!==t) l.style.transform=t;
+  if(l.hidden) l.hidden=false;
+}
+/* Schluckt Formi etwas, wird die Krümmung kurz stärker (mehr Masse). */
+function formiLinsePuls(ende){
+  var d=document.getElementById('formiLinseD'); if(!d || gehirnWenigBewegung()) return;
+  var t0=performance.now()+Math.max(0, (ende||0)-900), dauer=1300;
+  if(_fl.linseRaf) cancelAnimationFrame(_fl.linseRaf);
+  (function bild(jetzt){
+    var t=(jetzt-t0)/dauer;
+    if(t<0){ _fl.linseRaf=requestAnimationFrame(bild); return; }
+    var k = t>=1 ? 0 : Math.sin(Math.PI*Math.min(1, t))*(1-t*.3);
+    d.setAttribute('scale', (FL_LINSE.s*(1+.85*k)).toFixed(1));
+    if(t<1) _fl.linseRaf=requestAnimationFrame(bild); else _fl.linseRaf=0;
+  })(performance.now());
+}
+
+/* ── Formi-Insel und Leuchtrand (Runde 250) ───────────────────────────
+   Aus dem Betrieb, zu den Apple-Entwürfen: „ich finde die insel und die
+   widgets super krass falls das geht können wir das schonmal umsetzten
+   … diesen leucht ring am rand find ich auch mega … am besten auch
+   animationen und so wenn er was für uns in der app macht und man kann
+   das live sehen wie er eine aufgabe abhakt oder etwas anlegt" — und:
+   „es soll am ende immer noch ein schwarzes loch sein".
+   – Die Insel ist eine schwarze Fläche oben in der Mitte, wie Apples
+     „Dynamic Island" — hier ein zweites Loch mit Photonenring. Solange
+     Formi arbeitet, steht klein darin, was er tut; ist er fertig, wächst
+     sie und zeigt das Ergebnis. Was er abhakt, zerfällt und fällt in
+     Formi in der Insel; was er anlegt, kommt aus ihm heraus.
+   – Die echte Insel und Widgets auf dem Startbildschirm gibt es nur für
+     eine echte App, nicht für eine Web-App. Hier ist die Insel IN der
+     App; Widgets folgen mit der App (docs/ideen/formi-apple.md).
+   – Der Leuchtrand läuft um den ganzen Bildschirm, solange Formi
+     arbeitet — das Licht kreist gegen den Uhrzeiger wie seine Scheibe.
+   Beides ist Schmuck: aria-hidden, keine Trefferfläche, verdeckt nie
+   einen Knopf. Gesagt wird alles weiterhin im Fenster (Status). */
+var _fi={ stand:'weg', uhr:0, randUhr:0, plan:0, init:false, ani:[] };
+function formiInselDarf(){ return !(jarvisOffen() && !_jvKompakt); }
+function formiInselForm(art, plus){
+  plus=plus||0;
+  if(art==='gross') return 'inset('+(-plus)+'px round '+(34+plus)+'px)';
+  var halb = art==='klein' ? 'max(0px, calc(50% - '+(150+plus)+'px))' : 'calc(50% - '+(20+plus)+'px)';
+  return 'inset('+(-plus)+'px '+halb+' calc(100% - '+(40+plus)+'px) '+halb+' round '+(20+plus)+'px)';
+}
+function formiInselMorph(art){
+  var fi=$('formiInsel'); if(!fi) return;
+  [[fi.querySelector('.fi-ring'), 1.5], [fi.querySelector('.fi-flaeche'), 0]].forEach(function(t){
+    var el=t[0]; if(!el) return;
+    var ziel=formiInselForm(art, t[1]), von=el.style.clipPath || formiInselForm('punkt', t[1]);
+    el.style.clipPath=ziel;
+    if(von!==ziel && !gehirnWenigBewegung() && el.animate) try{
+      el.animate([{ clipPath:von }, { clipPath:ziel }], art==='punkt'
+        ? { duration:300, easing:'cubic-bezier(.5,0,.75,0)' }
+        : { duration:520, easing:'cubic-bezier(.32,1.28,.5,1)' });
+    }catch(e){}
+  });
+  fi.classList.toggle('klein', art==='klein');
+  fi.classList.toggle('gross', art==='gross');
+}
+/* Wohin die Insel kommt: in die Kopfleiste, wenn die Mitte dort frei
+   ist (Rechner), sonst knapp darunter (Handy). Gelesen, bevor sie
+   erscheint — nicht im Klick. */
+function formiInselLage(fi){
+  /* Mitte des sichtbaren App-Bereichs: ein angedocktes Formi-Fenster
+     rechts zählt nicht dazu. */
+  var links=0, rechts=innerWidth, j=$('jarvis');
+  if(jarvisOffen() && j && j.getClientRects().length){ var jr=j.getBoundingClientRect(); if(jr.left>innerWidth/2) rechts=jr.left; }
+  var W=Math.min(380, rechts-links-32), mitte=(links+rechts)/2, oben=8, kopf=document.querySelector('.topbar');
+  if(kopf && kopf.getClientRects().length){
+    var r=kopf.getBoundingClientRect(), l=mitte-W/2-12, re=mitte+W/2+12, frei=true;
+    [].forEach.call(kopf.querySelectorAll('button, a, .tb-wer, .tb-brand'), function(el){
+      if(!frei || !el.getClientRects().length) return;
+      var q=el.getBoundingClientRect(); if(q.width && q.right>l && q.left<re) frei=false;
+    });
+    oben = frei ? Math.max(6, r.top+(r.height-40)/2) : Math.max(8, r.bottom+8);
+  }
+  fi.style.top=Math.round(oben)+'px';
+  fi.style.left=Math.round(mitte)+'px';
+  fi.style.width=Math.round(W)+'px';
+}
+function formiInselZeigen(){
+  var fi=$('formiInsel'); if(!fi) return null;
+  clearTimeout(_fi.uhr);
+  [].forEach.call(fi.querySelectorAll('.formi-figur'), function(f){ if(!f.firstChild) f.innerHTML=formiFigurInnen(false, true); });
+  if(_fi.stand==='weg' || fi.hidden){
+    formiInselLage(fi);
+    [fi.querySelector('.fi-ring'), fi.querySelector('.fi-flaeche')].forEach(function(el, i){ if(el) el.style.clipPath=formiInselForm('punkt', i ? 0 : 1.5); });
+    fi.hidden=false;
+  }
+  return fi;
+}
+function formiInselArbeit(text){
+  formiRand(true);
+  if(!formiInselDarf()){ formiInselWeg(); return; }
+  var fi=formiInselZeigen(); if(!fi) return;
+  var t=fi.querySelector('.fi-klein .fi-t'); if(t && t.textContent!==text) t.textContent=text;
+  if(_fi.stand!=='klein') formiInselMorph('klein');
+  _fi.stand='klein';
+}
+/* o: { was, titel, ok, zeile (Element in der App), aus (es entsteht) } */
+function formiInselErgebnis(o){
+  formiRand(false, true);
+  if(!formiInselDarf()) return;
+  var fi=formiInselZeigen(); if(!fi) return;
+  fi.classList.toggle('fehler', o.ok===false);
+  var was=fi.querySelector('.fi-was'), b=fi.querySelector('.fi-titel');
+  if(was) was.textContent=o.was||'';
+  if(b){ b.getAnimations && b.getAnimations().forEach(function(a){ a.cancel(); }); b.textContent=o.titel||''; }
+  formiInselMorph('gross'); _fi.stand='gross';
+  var dauer=3400;
+  if(!_fl.gefuehleAus && !gehirnWenigBewegung() && document.body.animate && b && o.titel){
+    var text=String(o.titel).slice(0, 40);
+    /* Erst wenn die Insel steht (Feder 520 ms), dann der Strom. */
+    setTimeout(function(){
+      requestAnimationFrame(function(){
+        var ziel=formiStromZiel(); if(!ziel || !ziel.insel) return;
+        var quelle=o.zeile && document.contains(o.zeile) && o.zeile.getClientRects().length ? o.zeile : null;
+        var ende;
+        if(o.aus) ende=formiStrom(b, text, ziel, { aus:true });
+        else if(quelle){
+          var t=quelle.querySelector('.t-title, .pp-title, .pp-name, b, strong') || quelle;
+          ende=formiStrom(t, (t.textContent||text).trim().slice(0, 40), ziel);
+        } else ende=formiStrom(b, text, ziel, { verz:650, bleibtWeg:true });
+        if(ende){ clearTimeout(_fi.uhr); _fi.uhr=setTimeout(formiInselWeg, ende+1300); }
+      });
+    }, 360);
+  }
+  _fi.uhr=setTimeout(formiInselWeg, dauer);
+}
+function formiInselWeg(){
+  var fi=$('formiInsel'); clearTimeout(_fi.uhr);
+  if(!fi || _fi.stand==='weg'){ if(fi) fi.hidden=true; _fi.stand='weg'; return; }
+  _fi.stand='weg';
+  formiInselMorph('punkt');
+  _fi.uhr=setTimeout(function(){ if(_fi.stand==='weg') fi.hidden=true; }, gehirnWenigBewegung() ? 0 : 320);
+}
+/* Der Leuchtrand: an, solange Formi arbeitet; beim Ergebnis flammt er
+   einmal auf und erlischt. Das Licht strömt als transform (zusammen-
+   gesetzt, kein Neumalen); höchstens 30 s, dann aus. */
+function formiRand(an, fertig){
+  var r=$('formiRand'); if(!r) return;
+  clearTimeout(_fi.randUhr);
+  if(an){
+    if(!r.classList.contains('an')){
+      r.hidden=false;
+      _fi.ani.forEach(function(a){ try{ a.cancel(); }catch(e){} }); _fi.ani=[];
+      if(!gehirnWenigBewegung() && r.animate){
+        var wege={ o:['translateX(0)', 'translateX(-50%)'], l:['translateY(-50%)', 'translateY(0)'], u:['translateX(-50%)', 'translateX(0)'], r:['translateY(0)', 'translateY(-50%)'] };
+        [].forEach.call(r.children, function(s){
+          var w=wege[s.className]; if(!w) return;
+          try{ _fi.ani.push(s.animate([{ transform:w[0] }, { transform:w[1] }], { duration:2800, iterations:Infinity, pseudoElement:'::before' })); }catch(e){}
+        });
+      }
+      requestAnimationFrame(function(){ r.classList.add('an'); });
+    }
+    _fi.randUhr=setTimeout(function(){ formiRand(false); }, 30000);
+    return;
+  }
+  if(r.hidden) return;
+  if(fertig && r.classList.contains('an') && !gehirnWenigBewegung() && r.animate){
+    r.classList.add('blitz');
+    _fi.ani.forEach(function(a){ try{ a.playbackRate=3; }catch(e){} });
+  }
+  _fi.randUhr=setTimeout(function(){
+    r.classList.remove('an', 'blitz');
+    _fi.randUhr=setTimeout(function(){ _fi.ani.forEach(function(a){ try{ a.cancel(); }catch(e){} }); _fi.ani=[]; r.hidden=true; }, 700);
+  }, fertig ? 500 : 0);
+}
+/* Was Formi gerade tut, aus dem Verlauf gelesen. Gebündelt: mehrere
+   Aufrufe in einem Zug ergeben EINE Prüfung danach. */
+function formiInselPruefen(){
+  if(_fi.plan) return;
+  _fi.plan=setTimeout(function(){ _fi.plan=0; formiInselJetzt(); }, 0);
+}
+var FI_WAS={ aufgabe:'Aufgabe angelegt', ankuendigung:'Ankündigung gesendet', abwesenheit:'Eingetragen', uebergabe:'Übergabe eingetragen',
+  idee:'Idee gesendet', defekt:'Defekt gemeldet', material:'Material eingetragen', probe:'Eingetragen', mail:'Mail gesendet' };
+function formiZeileFinden(id){
+  if(!id) return null;
+  var sel='[data-id="'+String(id).replace(/["\\]/g, '')+'"]';
+  var z=document.querySelector('.view.show .pp-item'+sel+', .view.show .todo'+sel);
+  if(!z || !z.getClientRects().length) return null;
+  var q=z.getBoundingClientRect();
+  return q.bottom>0 && q.top<innerHeight ? z : null;
+}
+function formiInselAus(v){
+  if(v.erledigt){
+    var x=v.erledigt;
+    return { was:'Abgehakt · '+studioName(x.k), titel:x.t.title||x.t.text||'Eintrag', zeile:formiZeileFinden(x.t.id) };
+  }
+  var s=v.vorschlag||{}, typ=s.typ;
+  var titel=(typ==='aufgabe' && s.titel) || (typ==='ankuendigung' && (s.text||s.titel)) || v.angelegt;
+  return { was:FI_WAS[typ]||'Erledigt', titel:titel, aus:true };
+}
+function formiInselJetzt(){
+  if(!_fi.init){ _fi.init=true; _gVerlauf.forEach(function(v){ v._fiGemeldet=v.angelegt; }); }
+  var neu=null;
+  _gVerlauf.slice(-4).forEach(function(v){
+    if(v.angelegt && v._fiGemeldet!==v.angelegt){ v._fiGemeldet=v.angelegt; if(!/^Zurückgenommen/.test(v.angelegt)) neu=v; }
+  });
+  if(neu) return formiInselErgebnis(formiInselAus(neu));
+  var letzte=_gVerlauf[_gVerlauf.length-1];
+  if(_gLaeuft){
+    var l=(letzte && letzte.schritte) || [];
+    return formiInselArbeit(l.length ? l[l.length-1].t : 'Formi denkt nach …');
+  }
+  if(_fi.stand==='klein'){
+    clearTimeout(_fi.uhr);
+    _fi.uhr=setTimeout(function(){ if(!_gLaeuft && _fi.stand==='klein'){ formiInselWeg(); formiRand(false); } }, 900);
+  }
 }
 /* Jets: beim grossen Jubel schiesst Formi zwei Lichtstrahlen nach oben
    und unten – entlang der Achse, senkrecht zur Scheibe. */
@@ -29812,6 +30913,11 @@ window.__formiLebt = {
   lebenZuletzt: function(){ return _fl.lebenZuletzt||''; },
   /* Runde 242: „zuletzt da" für den Durchlauf setzen (test-formi-seit). */
   seit: function(ts){ _fsStand=ts; renderHeute(); },
+  /* Runde 250: Insel, Rand und Linse für die Durchläufe. */
+  insel: function(){ var fi=$('formiInsel'), r=$('formiRand'); return { stand:_fi.stand, hidden:!fi || fi.hidden, klasse:fi ? fi.className : '', titel:fi ? fi.querySelector('.fi-titel').textContent : '', was:fi ? fi.querySelector('.fi-was').textContent : '', klein:fi ? fi.querySelector('.fi-t').textContent : '', rand:!!(r && !r.hidden && r.classList.contains('an')) }; },
+  inselErgebnis: function(o){ formiInselErgebnis(o); },
+  inselArbeit: function(t){ formiInselArbeit(t); },
+  linsePuls: function(){ formiLinsePuls(0); },
   schlucken: function(sel){ formiSchlucken(document.querySelector(sel)); },
   wurmloch: function(){ formiWurmloch(); },
   masse: function(n){ return formiMasse(n); },
@@ -31238,6 +32344,7 @@ function gehirnMicBinden(knopfId, feldId){
    transform/opacity); der laufende trägt einen Punkt. */
 function gehirnSchritt(v, text, fertig){
   if(!v.schritte) v.schritte=[];
+  formiInselPruefen();
   v.schritte.forEach(function(x){ x.ok=true; });
   v.schritte.push({ t:text, ok:!!fertig, _ab:Date.now() });
   if(gehirnSichtbar()) gehirnZeichnen();
@@ -31570,6 +32677,7 @@ function jvZeichenBild(dt){
   _jvZ.liste=rest;
 }
 function jvZustand(){
+  formiInselPruefen();
   var j=$('jarvis'); if(!j) return;
   j.classList.toggle('jv-z-denkt', !!_gLaeuft);
   j.classList.toggle('jv-z-hoert', !!_gHoert && !_gLaeuft);
@@ -33469,6 +34577,57 @@ function schMeineZeichnen(){
       '<span class="sch-marke '+(l.bestanden?'fertig':'faellig')+'">'+
         (l.bestanden?'bestanden':'offen')+'</span></div>';
   }).join('');
+  var bb=$('schBescheinigung');
+  if(bb){
+    bb.hidden=!schBescheinigungLaeufe().length;
+    if(!bb._hat){ bb._hat=1; bb.addEventListener('click', schBescheinigungDrucken); }
+  }
+}
+/* ── Die eigene Bescheinigung (Runde 248) ─────────────────────────────
+   Aus dem Betrieb, 23.10.2026: „jo mach weiter" — auf den Vorschlag,
+   dass jede und jeder die eigenen Schulungen auf einem Blatt mitnehmen
+   kann. Den Nachweis je Modul gab es bisher nur für die Leitung
+   (Runde 211); wer ihn für sich selbst brauchte (Bewerbung, Ordner,
+   Krankenkasse), musste fragen.
+
+   Je Modul zählt der LETZTE bestandene Durchlauf, ohne Testläufe —
+   dieselbe Regel wie beim Nachweis der Leitung. Was als Pflicht noch
+   offen ist, steht darunter: ein Blatt, das nur das Erledigte zeigt,
+   sähe vollständiger aus, als es ist. */
+function schBescheinigungLaeufe(){
+  var juengst={};
+  _schMeine.forEach(function(l){
+    if(l.test || l.status!=='fertig' || !l.bestanden) return;
+    var j=juengst[l.modul];
+    if(!j || (l.ende||0)>(j.ende||0)) juengst[l.modul]=l;
+  });
+  return Object.keys(juengst).map(function(k){ return juengst[k]; })
+    .sort(function(a,b){ return (b.ende||0)-(a.ende||0); });
+}
+function schBescheinigungDrucken(){
+  var pa=$('printArea'); if(!pa) return;
+  var datum=function(ts){ return new Date(ts).toLocaleDateString('de-DE',{ day:'2-digit', month:'2-digit', year:'numeric' }); };
+  var laeufe=schBescheinigungLaeufe();
+  var offen=schModule().filter(function(m){ return m.pflicht && schStand(m).art!=='fertig'; })
+    .map(function(m){ return m.titel||''; });
+  pa.innerHTML='<h1>Schulungsnachweis</h1>'+
+    '<p class="p-sub">'+esc((session && session.name)||'')+' · '+esc(firmaAnzeige())+' · Stand '+esc(datum(Date.now()))+'</p>'+
+    (laeufe.length
+      ? '<table><tr><th>Schulung</th><th>Bestanden am</th><th>Ergebnis</th><th>Dauer</th><th>Gültig bis</th></tr>'+
+        laeufe.map(function(l){
+          var m=schModulVon(l.modul)||{};
+          var bis=m.gueltigMonate ? l.ende + m.gueltigMonate*30.4*86400000 : 0;
+          return '<tr><td>'+esc(m.titel||l.modulTitel||'')+(m.pflicht ? ' (Pflicht)' : '')+'</td>'+
+            '<td>'+esc(datum(l.ende))+'</td><td>'+(l.punkte||0)+' %</td>'+
+            '<td>'+esc(schDauerText(l.aktivMs))+'</td>'+
+            '<td>'+(bis ? esc(datum(bis))+(Date.now()>bis ? ' — wieder fällig' : '') : 'ohne Ablauf')+'</td></tr>';
+        }).join('')+'</table>'
+      : '<p class="p-note">Noch keine Schulung bestanden.</p>')+
+    (offen.length ? '<p class="p-note"><b>Als Pflicht noch offen:</b> '+esc(offen.join(', '))+'</p>' : '')+
+    '<p class="p-note">Bestätigt durch die Studioleitung: ______________________________ &nbsp; Datum: ____________</p>'+
+    '<p class="p-foot">'+esc(KONFIG.appName||'StudioChat')+' — erstellt aus den eigenen Schulungs-Durchläufen. '+
+      'Ob dieses Blatt eine bestimmte Vorschrift erfüllt, prüft die App nicht.</p>';
+  window.print();
 }
 
 /* ── 2. Der Code ───────────────────────────────────────────────── */
@@ -36693,7 +37852,7 @@ function atUebernehmen(i){
    Symbolknöpfe in der Kopfzeile der Blase wären 21 × 19 Pixel gross und
    unbeschriftet — weit unter dem, was ein Daumen sicher trifft. */
 var _blattMsg=null;
-function msgBlattOeffnen(m){
+function msgBlattOeffnen(m, anker){
   if(!m) return;
   _blattMsg=m;
   var blatt=$('msgSheet'); if(!blatt) return;
@@ -36727,9 +37886,48 @@ function msgBlattOeffnen(m){
       '<span class="ms-ico">'+e.ico+'</span><span>'+esc(e.txt)+'</span></button>';
   }).join('');
   blatt.classList.add('show');
+  msgBlattPlatzieren(blatt, anker, mine);
   tick(8);
 }
-function msgBlattSchliessen(){ var b=$('msgSheet'); if(b) b.classList.remove('show'); _blattMsg=null; }
+/* ── Das Menü AN der Nachricht (Runde 249) ──
+   Im neuen Aussehen steht das Menü wie Apples Kontextmenü dort, wo die
+   Nachricht ist: die Vorschau deckt die Blase, die Reaktionen stehen
+   darüber, die Einträge darunter. anker = {el} (Tipp auf die Blase)
+   oder {x, y} (rechte Maustaste am Rechner).
+   Gemessen wird im NÄCHSTEN Bild, gebündelt: erst beide Rechtecke
+   lesen, dann die zwei Werte schreiben (CLAUDE.md, „Flüssig heisst
+   konkret"). Bis dahin ist die Karte unsichtbar (.am-ort ohne
+   .platziert). Ohne Anker, im alten Aussehen oder ohne Platz bleibt es
+   das Blatt von unten. */
+function msgBlattPlatzieren(blatt, anker, mine){
+  blatt.classList.remove('platziert');
+  var amOrt = !!anker && layoutNeu();
+  blatt.classList.toggle('am-ort', amOrt);
+  if(!amOrt) return;
+  requestAnimationFrame(function(){
+    if(!blatt.classList.contains('show')) return;
+    var karte=blatt.querySelector('.ms-card'), reakt=$('msSheetReact');
+    var k=karte.getBoundingClientRect();
+    var rh=reakt && !reakt.hidden ? reakt.getBoundingClientRect().height : 0;
+    var r=anker.el ? anker.el.getBoundingClientRect() : null;
+    var B=window.innerWidth, H=window.innerHeight, rand=12, abstand=8;
+    var x, y;
+    if(r){
+      y = r.top - (rh ? rh + abstand : 0);
+      x = mine ? r.right - k.width : r.left;
+    } else {
+      x = anker.x; y = anker.y;
+    }
+    var maxX=Math.max(rand, B - k.width - rand), maxY=Math.max(rand, H - k.height - rand);
+    x=Math.min(Math.max(x, rand), maxX);
+    y=Math.min(Math.max(y, rand), maxY);
+    blatt.style.setProperty('--ms-x', Math.round(x)+'px');
+    blatt.style.setProperty('--ms-y', Math.round(y)+'px');
+    blatt.style.setProperty('--ms-ursprung', (mine ? '100% ' : '0 ') + (r ? Math.round(r.top - y + r.height/2) : 0) + 'px');
+    blatt.classList.add('platziert');
+  });
+}
+function msgBlattSchliessen(){ var b=$('msgSheet'); if(b) b.classList.remove('show','am-ort','platziert'); _blattMsg=null; }
 
 function msgBlattAktion(was){
   var m=_blattMsg; if(!m) return;
@@ -36887,7 +38085,22 @@ function bindMessageTools(box){
       var el=e.target.closest && e.target.closest('.msg');
       if(!el) return;
       var m=(_curMsgs||[]).filter(function(x){ return x.id===el.dataset.mid; })[0];
-      msgBlattOeffnen(m);
+      msgBlattOeffnen(m, {el:el});
+    });
+    /* Am Rechner: rechte Maustaste öffnet dasselbe Menü am Zeiger.
+       Auf Bild, Link oder markiertem Text bleibt das Menü des Browsers
+       (Bild speichern, Link kopieren, Text kopieren). */
+    box.addEventListener('contextmenu',function(e){
+      if(!layoutNeu()) return;
+      if(e.target.closest('img,a,audio,[data-sp]')) return;
+      var sel=window.getSelection && String(window.getSelection());
+      if(sel) return;
+      var el=e.target.closest && e.target.closest('.msg');
+      if(!el) return;
+      var m=(_curMsgs||[]).filter(function(x){ return x.id===el.dataset.mid; })[0];
+      if(!m) return;
+      e.preventDefault();
+      msgBlattOeffnen(m, {x:e.clientX, y:e.clientY});
     });
     chatWischen(box);
     chatAntwortKnopf(box);
@@ -37007,7 +38220,16 @@ function buildTeamSelect(){
   var nb=$('shiftNeu'); if(nb) nb.hidden=!canManage();
 }
 var _shiftVergangenAuf=false;
+function spConfFuerTeam(){
+  if(_sp.conf || _sp.confLaedt) return;
+  _sp.confLaedt=true;
+  S('config').doc('schichtplaner').get().then(function(d){
+    _sp.conf=_sp.conf || (d && d.exists ? d.data()||{} : {});
+    if(_teamStudioKey) renderShifts();
+  }).catch(function(){}).then(function(){ _sp.confLaedt=false; });
+}
 function ensureTeamLoaded(){
+  spConfFuerTeam();
   var sel=$('teamStudio'); if(!sel) return;
   if(!sel.options.length) buildTeamSelect();
   if(!_shiftWeek) _shiftWeek=mondayOf(new Date());
@@ -37334,7 +38556,7 @@ function wpTageHTML(tage, heute, ende){
       (vergangen && vorbei ? ' vergangen' : '')+
       '" data-tag="'+key+'">'+
       '<div class="shift-day-h"><b>'+namen[i]+'</b><span>'+t.d.toLocaleDateString('de-DE',o)+'</span>'+
-      (darf && !vorbei ? '<button type="button" class="wp-tag-plus" data-wpneu="'+key+'|" aria-label="Schicht am '+namen[i]+' eintragen">＋</button>' : '')+
+      (darf && !vorbei ? '<button type="button" class="wp-tag-plus" data-wpneu="'+key+'|" aria-label="Schicht am '+namen[i]+' eintragen">'+ikon('plus')+'</button>' : '')+
       '</div>'+
       /* Die Leiste zählt immer alle Schichten des Tages, auch bei „Nur meine". */
       wpBandHTML(key, _shifts.filter(function(x){ return x.date===key; }), vorbei);
@@ -37386,8 +38608,19 @@ function wpUhr(m){ var h=Math.floor(m/60), mi=m%60; return (h<10?'0':'')+h+(mi?'
 function wpOeffnung(key){
   var st=(_studioListe||[]).filter(function(x){ return x.id===_teamStudioKey; })[0];
   var o=st && st.oeffnung;
-  if(!o) return null;                       // nicht gepflegt
-  var k=['so','mo','di','mi','do','fr','sa'][new Date(key+'T12:00:00').getDay()];
+  var wt=new Date(key+'T12:00:00').getDay();
+  if(!o){
+    /* Runde 245: nicht unter Verwaltung → Studios gepflegt? Dann
+       zählt das Blatt „Studios“ der Schichtplaner-Excel. Vorher gab es
+       zwei Stellen, und die Leiste las nur eine. */
+    var ex=_sp && _sp.conf && _sp.conf.studios && _sp.conf.studios[_teamStudioKey];
+    if(!ex || !ex.oeffnung) return null;   // nirgends gepflegt
+    var t=String(ex.oeffnung[wt===0?7:wt]||'').trim();
+    if(!t || /^(zu|geschlossen|-|–)$/i.test(t)) return { zu:true };
+    var m=/(\d{1,2})(?:[:.](\d{2}))?\s*(?:-|–|bis)\s*(\d{1,2})(?:[:.](\d{2}))?/.exec(t);
+    return m ? { von:(+m[1])*60+(+(m[2]||0)), bis:(+m[3])*60+(+(m[4]||0)) } : null;
+  }
+  var k=['so','mo','di','mi','do','fr','sa'][wt];
   var z=zeitPaar(o[k]);
   return z ? { von:wpMin(z.von), bis:wpMin(z.bis) } : { zu:true };
 }
@@ -37510,7 +38743,7 @@ function wpRasterHTML(tage, woche, heute){
       }).join('');
       if(darf && !hier.length && !weg && t.key>=heute && p.id.indexOf('name:')!==0){
         html+='<button type="button" class="wp-leer" data-wpneu="'+t.key+'|'+esc(p.id)+'" aria-label="Schicht für '+
-          esc(p.name)+' am '+kurz[i]+' '+t.d.toLocaleDateString('de-DE',o)+' eintragen">＋</button>';
+          esc(p.name)+' am '+kurz[i]+' '+t.d.toLocaleDateString('de-DE',o)+' eintragen">'+ikon('plus')+'</button>';
       }
       html+='</div>';
     });
@@ -39712,7 +40945,7 @@ function renderIchWuensche(){
   box.innerHTML = liste.length
     ? liste.map(wunschZeileHTML).join('')
     : emptyHTML('Noch kein Wunsch',
-        'Trag oben ein, was dir fehlt — „nur für mich" bleibt bei dir.', 'herz');
+        'Trag ein, was dir fehlt — „nur für mich" bleibt bei dir.', 'herz', tatKnopf('Wunsch eintragen', '#wunschText'));
 }
 
 function wunschRef(id){
@@ -40148,7 +41381,7 @@ function renderIchZiele(){
   box.innerHTML = offen.length
     ? offen.map(zielZeileHTML).join('')
     : emptyHTML('Noch kein Ziel',
-        'Trag oben ein, was du erreichen willst — mit einer Zahl daran.', 'pokal');
+        'Trag ein, was du erreichen willst — mit einer Zahl daran.', 'pokal', tatKnopf('Ziel eintragen', '#zielTitel'));
   if(fbox){
     fbox.style.display = fertig.length ? '' : 'none';
     if(ftext) ftext.textContent = fertig.length===1 ? '1 erreicht' : fertig.length+' erreicht';
@@ -40806,7 +42039,7 @@ function renderIchTodos(){
   // Ziehen nur bei den offenen: Erledigtes zu sortieren hat keinen Sinn.
   box.innerHTML = offen.length
     ? offen.map(function(t){ return ichTodoZeile(t, true); }).join('')
-    : emptyHTML('Nichts offen', 'Trag oben ein, was du dir vornimmst.', 'hakenKreis');
+    : emptyHTML('Nichts offen', 'Trag ein, was du dir vornimmst.', 'hakenKreis', tatKnopf('To-do eintragen', '#ichTodoNeu'));
 
   if(fWrap) fWrap.style.display = fertig.length ? '' : 'none';
   if(fTxt) fTxt.textContent = fertig.length===1 ? '1 erledigt' : fertig.length+' erledigt';
@@ -41029,13 +42262,13 @@ function renderIchNotizen(){
 
   if(!_ichNotizen.length){
     box.innerHTML=emptyHTML('Noch keine Notiz',
-      'Was du hier schreibst, bleibt bei dir.', 'stift');
+      'Was du hier schreibst, bleibt bei dir.', 'stift', tatKnopf('Notiz schreiben', '#ichNotizNeu'));
     ikonenEinsetzen(box);
     return;
   }
   if(!zeigen.length){
     box.innerHTML=emptyHTML('Nichts gefunden',
-      'Andere Art oder anderes Wort probieren.', 'stift');
+      'Andere Art oder anderes Wort probieren.', 'stift', tatKnopf('Suche leeren', '#ichNotizSuche', ''));
     ikonenEinsetzen(box);
     return;
   }
@@ -43687,13 +44920,14 @@ function leerText(gesamt){
     return emptyHTML('Nichts gefunden',
       'Für „'+esc(_todoFilter)+'" gibt es keine Aufgabe.'+
       (_todoMode!=='alle' ? ' Der Filter „'+esc(chipLabel(_todoMode))+'" ist zusätzlich aktiv.' : ''),
-      'hakenKreis');
+      'hakenKreis', tatKnopf('Suche leeren', '#todoSearch', ''));
   }
   if(_todoMode!=='alle' || _todoDring){
     var wort = _todoMode!=='alle' ? FILTERWORT[_todoMode] : 'dringenden';
     return emptyHTML('Keine '+wort+' Aufgaben',
-      gesamt ? 'Es gibt '+gesamt+(gesamt===1?' Aufgabe':' Aufgaben')+' – tippe auf „Alle" (unter „Filter"), um sie zu sehen.'
-             : 'Hier ist noch gar nichts angelegt.', 'hakenKreis');
+      gesamt ? 'Es gibt '+gesamt+(gesamt===1?' Aufgabe':' Aufgaben')+' mit einem anderen Filter.'
+             : 'Hier ist noch gar nichts angelegt.', 'hakenKreis',
+      gesamt ? tatKnopf('Alle zeigen', '[data-tfilter="alle"]') : (canManage() ? tatKnopf('Aufgabe anlegen', '#todoNew') : ''));
   }
   /* Der Weg nur fuer den, der ihn gehen kann. Ein Mitarbeiter sieht den
      Knopf „+ Neu" gar nicht — ihm einen anzubieten, der ins Leere zeigt,
@@ -44241,7 +45475,7 @@ function todoHTML(t,sk,chefView,mitStudio,ziehbar){
   var del = darf ? '<button class="t-del" data-tdel="1" aria-label="löschen" title="Löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>' : '';
   /* „…" an JEDER Aufgabe: dort stehen Foto, Grund, Frist und Danke —
      Foto, Grund und Danke darf jeder. */
-  var mehr = '<button class="t-mehr" data-tmehr="1" title="Mehr: Foto, Grund, Frist, Danke" aria-label="Mehr">⋯</button>';
+  var mehr = '<button class="t-mehr" data-tmehr="1" title="Mehr: Foto, Grund, Frist, Danke" aria-label="Mehr">'+ikon('mehr')+'</button>';
   var frisch=frischAttr(t.id, done);
   return '<div class="todo'+(done?' done':'')+(isOver?' overdue':'')+frisch.cls+'"'+frisch.stil+
     ' data-id="'+esc(t.id)+'" data-sid="'+esc(sk)+'">'+
@@ -44260,15 +45494,67 @@ function todoHTML(t,sk,chefView,mitStudio,ziehbar){
     '</div></div>';
 }
 
-/* ── Wischen zum Abhaken ──
+/* ── Wischen auf Listeneinträgen ──
    Nach rechts ziehen (> 80 px) löst dieselbe Aktion aus wie das Häkchen.
+   Seit Runde 255 auch nach links, wie in Mail: dahinter stehen „Mehr"
+   und — wer darf — „Löschen". Beides gibt es an der Zeile auch ohne
+   Wischen (⋯ und Papierkorb); die Knöpfe hier drücken genau diese.
+   Löschen fragt weiter nach (kein Löschen durch blosses Durchwischen:
+   was nicht umkehrbar ist, braucht einen Tipp).
    Funktioniert für Aufgaben und Putzplan-Zeilen. */
+var SWIPE_K = 76;          // Breite eines Knopfs im Aktionsfeld (CSS .swipe-k)
+var _swipeOffen = null;
+function swipeSchliessen(){
+  var n=_swipeOffen; if(!n) return;
+  _swipeOffen=null;
+  n.classList.remove('swipe-offen');
+  var b=n.querySelector('.swipe-body'), a=n.querySelector('.swipe-akt');
+  if(b) b.style.transform='';
+  if(a) a.style.transform='';
+}
+/* Ein Tipp woanders oder Scrollen schliesst die offene Zeile. */
+document.addEventListener('touchstart', function(e){
+  if(_swipeOffen && !_swipeOffen.contains(e.target)) swipeSchliessen();
+}, {passive:true, capture:true});
+document.addEventListener('scroll', function(){ if(_swipeOffen) swipeSchliessen(); }, {passive:true, capture:true});
 function bindSwipe(node, onDone){
   var body=node.querySelector('.swipe-body'); if(!body) return;
-  var x0=0, y0=0, dx=0, active=false, decided=false;
+  var x0=0, y0=0, dx=0, start=0, active=false, decided=false, ueber=false;
+  var akt=null, aktB=0, t0=0, xAlt=0, tAlt=0, v=0;
+  /* Das Aktionsfeld entsteht erst beim ersten Wischen nach links: die
+     Liste zeichnet sich oft neu, und Hunderte unsichtbarer Knöpfe
+     wären Arbeit für nichts. */
+  function aktionen(){
+    if(akt) return akt;
+    var mehr=node.querySelector('[data-tmehr], .pp-mehr'), weg=node.querySelector('[data-tdel], .pp-del');
+    if(!mehr && !weg) return null;
+    akt=document.createElement('div'); akt.className='swipe-akt'; akt.setAttribute('aria-hidden','true');
+    function knopf(cls, inhalt, wort, ziel){
+      var k=document.createElement('button'); k.type='button'; k.className='swipe-k '+cls; k.tabIndex=-1;
+      k.innerHTML=inhalt+'<span>'+wort+'</span>';
+      k.addEventListener('click', function(e){ e.stopPropagation(); swipeSchliessen(); ziel.click(); });
+      akt.appendChild(k);
+    }
+    if(mehr) knopf('sk-mehr', ikon('mehr'), 'Mehr', mehr);
+    if(weg) knopf('sk-weg', ikon('papierkorb'), 'Löschen', weg);
+    aktB=SWIPE_K*akt.children.length;
+    node.insertBefore(akt, body);
+    return akt;
+  }
+  function setze(x){
+    body.style.transform = x ? 'translateX('+x+'px)' : '';
+    if(akt) akt.style.transform = x<0 ? 'translateX('+(aktB + x)+'px)' : '';
+  }
+  /* Tippt man auf die offene Zeile selbst (nicht auf einen der Knöpfe),
+     schliesst sie nur — sonst öffnete derselbe Tipp noch die Aufgabe. */
+  node.addEventListener('click', function(e){
+    if(!node.classList.contains('swipe-offen') || e.target.closest('.swipe-akt')) return;
+    e.preventDefault(); e.stopPropagation(); swipeSchliessen();
+  }, true);
   node.addEventListener('touchstart',function(e){
-    if(node.classList.contains('done')) return;
-    var t=e.touches[0]; x0=t.clientX; y0=t.clientY; dx=0; active=true; decided=false;
+    var t=e.touches[0]; x0=t.clientX; y0=t.clientY; dx=0; active=true; decided=false; ueber=false;
+    start = node.classList.contains('swipe-offen') ? -aktB : 0;
+    t0=tAlt=e.timeStamp; xAlt=x0; v=0;
   }, {passive:true});
   node.addEventListener('touchmove',function(e){
     if(!active) return;
@@ -44279,15 +45565,43 @@ function bindSwipe(node, onDone){
       if(Math.abs(my)>Math.abs(mx)){ active=false; return; }
       if(Math.abs(mx)<8) return;
       decided=true; node.classList.add('swiping');
+      if(_swipeOffen && _swipeOffen!==node) swipeSchliessen();
     }
-    dx=Math.max(0, Math.min(140, mx));
-    body.style.transform='translateX('+dx+'px)';
+    if(e.timeStamp>tAlt){ v=(t.clientX-xAlt)/(e.timeStamp-tAlt); xAlt=t.clientX; tAlt=e.timeStamp; }
+    var roh=start+mx;
+    if(roh>0){
+      /* Erledigte nicht noch einmal abhaken, Pausierte gar nicht. */
+      dx = (node.classList.contains('done') || node.classList.contains('pausiert')) ? 0 : Math.min(140, roh);
+      var u = dx>80;
+      if(u!==ueber){ ueber=u; node.classList.toggle('swipe-ueber', u); if(u) tick(6); }
+      node.classList.remove('swipe-links');
+    } else {
+      if(!aktionen()){ dx=0; }
+      /* Über das Feld hinaus nur noch mit Widerstand. */
+      else dx = roh < -aktB ? -aktB + (roh + aktB) * .3 : roh;
+      node.classList.toggle('swipe-links', dx<0);
+      if(ueber){ ueber=false; node.classList.remove('swipe-ueber'); }
+    }
+    setze(dx);
   }, {passive:true});
   function end(){
-    if(!active){ node.classList.remove('swiping'); return; }
-    active=false; node.classList.remove('swiping');
-    body.style.transform='';
-    if(dx>80){ tick(14); onDone(); }
+    /* Ohne seitliche Bewegung war es ein Tipp: offen bleibt offen, damit
+       der Klick den Knopf im Feld noch trifft. */
+    if(!active || !decided){ active=false; node.classList.remove('swiping'); return; }
+    active=false; node.classList.remove('swiping', 'swipe-ueber');
+    if(dx>80){ setze(0); node.classList.remove('swipe-links'); tick(14); onDone(); dx=0; return; }
+    /* Offen bleibt es, wenn mehr als die Hälfte des Felds zu sehen ist
+       oder schnell nach links geschnippt wurde; ein Schnippen nach
+       rechts schliesst. */
+    var offen = dx<0 && akt && (dx < -aktB*.5 || v < -.4) && !(v > .4);
+    if(offen){
+      if(_swipeOffen && _swipeOffen!==node) swipeSchliessen();
+      _swipeOffen=node; node.classList.add('swipe-offen'); setze(-aktB);
+    } else {
+      if(_swipeOffen===node) _swipeOffen=null;
+      node.classList.remove('swipe-offen'); setze(0);
+    }
+    node.classList.remove('swipe-links');
     dx=0;
   }
   node.addEventListener('touchend', end);
@@ -45312,6 +46626,7 @@ function spBinden(){
   });
   $('spVeroeffentlichen').addEventListener('click', function(){ spVeroeffentlichen(this); });
   $('spLogx').addEventListener('click', function(){ spKopieren(); });
+  $('spZurueck').addEventListener('click', function(){ spZuruecknehmen(this); });
 }
 
 function spLaden(){
@@ -45340,6 +46655,7 @@ function spLaden(){
     spMeldung('');
     spSchritteZeichnen();
     spRegelnZeichnen();
+    spFragenZeichnen();
     spErgebnisZeichnen();
   }).catch(function(e){ spMeldung(errMsg(e), true); });
 }
@@ -45669,6 +46985,8 @@ function spErgebnisZeichnen(){
     b.addEventListener('click', function(){ spStudioWaehlen(b.getAttribute('data-spkachel')); });
   });
   var hin=$('spAktionHinweis');
+  var zr=$('spZurueck'); if(zr) zr.hidden=!p.veroeffentlicht;
+  if(hin && !p.veroeffentlicht) hin.textContent='Kopiert eine Tabelle (Datum, Studio, Schicht, Zeit, Name) – in Excel oder LogX einfügen.';
   if(hin && p.veroeffentlicht) hin.textContent='Veröffentlicht am '+new Date(p.veroeffentlicht).toLocaleDateString('de-DE')+'. Erneut veröffentlichen ersetzt die Schichten dieses Monats.';
   spStudioTeileZeichnen();
   spAusfaelleZeichnen();
@@ -46235,6 +47553,94 @@ function spVeroeffentlichen(btn){
       return spPlanSpeichern();
     }).catch(function(e){ toast(errMsg(e), true); });
   });
+}
+
+/* ══ Veröffentlichung zurücknehmen (Runde 245) ═══════════════════
+   Holt alle Schichten dieses Monats, die der Planer geschrieben hat
+   (Merkmal planer == Monat), aus dem Team-Schichtplan. Von Hand
+   eingetragene Schichten bleiben — sie tragen das Merkmal nicht. */
+function spZuruecknehmen(btn){
+  var p=_sp.plan; if(!p || !p.veroeffentlicht) return;
+  var studios=spStudios().map(function(s){ return s.id; });
+  withBusy(btn, function(){
+    return Promise.all(studios.map(function(sk){
+      /* Über die Kennung statt d.ref: die Demo-Datenbank kennt kein .ref. */
+      return S('studios').doc(sk).collection('shifts').where('planer','==',_sp.monat).get()
+        .then(function(sn){ return sn.docs.map(function(d){ return S('studios').doc(sk).collection('shifts').doc(d.id); }); });
+    })).then(function(alt){
+      var refs=[].concat.apply([], alt);
+      if(!confirm(refs.length+' veröffentlichte Schichten für '+spMonatName(_sp.monat)+' aus dem Team-Schichtplan nehmen?\n\n'+
+        'Der Entwurf hier im Planer bleibt. Von Hand eingetragene Schichten bleiben auch. Laufende Tausche dieser Schichten fallen weg.')) return null;
+      var stapel=[];
+      for(var i=0;i<refs.length;i+=450){
+        var b=db.batch(); refs.slice(i,i+450).forEach(function(r){ b.delete(r); }); stapel.push(b.commit());
+      }
+      return Promise.all(stapel).then(function(){
+        delete p.veroeffentlicht;
+        toast(refs.length+' Schichten zurückgenommen – der Entwurf bleibt ✓');
+        spErgebnisZeichnen();
+        return spPlanSpeichern();
+      });
+    }).catch(function(e){ toast(errMsg(e), true); });
+  });
+}
+
+/* ══ Fragen zum Plan (Runde 245) ═════════════════════════════════
+   Dieselben 24 Fragen wie im PDF und im Excel (Quelle: inhalt.py; der
+   Test vergleicht beide Listen). Antworten liegen in
+   config/schichtplaner.antworten — dort, wo die Excel-Datei auch die
+   Einstellungen hinschreibt. Eine Antwort ist Text; „passt“ heisst:
+   die Annahme der App gilt. */
+var SP_FRAGEN = [["A · Ohne diese Angaben gibt es keinen Plan", [["Welche Studios sollen im ersten Monat mitgeplant werden – alle 14 oder zum Testen erst eins oder zwei?", "Empfehlung: erst ein Studio."], ["Öffnungszeiten je Studio und Wochentag.", "Ins Excel, Blatt „Studios“."], ["Schichten je Studio: Name, Beginn, Ende, an welchen Wochentagen. Sind sie in allen Studios gleich?", "Ins Excel, Blatt „Schichten“. Heute in der Demo: Früh 7–14, Spät 14–21, Samstag 9–14."], ["Das Team: eine Zeile pro Person – Name genau wie in der App, Hauptstudio, in welchen Studios sie aushilft, Stunden pro Woche (Minijob: Monatsgrenze).", "Ins Excel, Blatt „Mitarbeiter“."], ["Wer kann wann grundsätzlich nicht? (z. B. „nie Dienstag“, „nur früh“, „Di Uni“)", "Ins Excel, Blatt „Mitarbeiter“, Spalten Mo–So und „Sperrzeiten“."]]], ["B · Besetzung", [["Wie viele Personen müssen mindestens gleichzeitig im Studio sein?", "Heute: 1 je Schicht."], ["Gibt es Stoßzeiten, Tage oder Studios, an denen mehr Leute da sein müssen? Wann, wo, wie viele?", "Heute: nur über „Sondertage“ für einzelne Daten."], ["Wer darf nicht allein im Studio sein (Azubis, Neue, bestimmte Personen)? Und wer zählt als Begleitung?", "Heute: Begleitung ist jede Person mit „darf allein: ja“."], ["Muss in bestimmten Schichten jemand mit einer bestimmten Fähigkeit da sein (Probetraining, Kasse, Abschluss am Abend, Erste Hilfe)? In welchen?", "Heute: je Schicht eine Fähigkeit („Braucht jemanden mit …“)."], ["Werden Studioleitungen und Regionalleiter fest eingeplant oder nur bei Bedarf?", "Heute: wie alle anderen, wenn sie im Blatt „Mitarbeiter“ stehen."]]], ["C · Arbeitszeit", [["Wie lang darf eine Schicht höchstens sein, und ab wann gibt es Pause?", "Heute: wird nicht geprüft."], ["Wie viele Tage am Stück darf jemand höchstens arbeiten?", "Heute: 6."], ["Höchstens wie viele Tage pro Woche – für alle gleich oder je Person?", "Heute: je Person im Excel, sonst ohne Grenze."], ["Gibt es Mitarbeiter unter 18?", "Wenn ja, gilt automatisch: nur 6–20 Uhr, höchstens 8 Stunden."], ["Feiertage in NRW: geschlossen oder offen? Gibt es Betriebsferien?", "Heute: offen (umschaltbar)."]]], ["D · Wünsche und Fairness", [["Bis zum wievielten des Vormonats müssen Wünsche eingetragen sein?", "Heute: bis zum 15."], ["Wie viele Wunsch-frei-Tage darf jede Person im Monat angeben?", "Heute: keine Grenze."], ["Was hat Vorrang, wenn es sich beisst? Bitte in eine Reihenfolge: Besetzung · vereinbarte Stunden · Wünsche · Fairness.", "Heute: Besetzung zuerst; ein Wunsch wird nur als Rückfrage gebrochen."], ["Wochenenden: reihum verteilen, oder hat jemand fest frei?", "Heute: reihum, so gleich wie möglich."], ["Fällt jemand aus: nur die Lücke melden oder gleich vorschlagen, wen man fragen kann?", "Heute: bis zu drei Vorschläge."]]], ["E · Ablauf", [["Wer erstellt und veröffentlicht den Plan – nur die Geschäftsführung oder auch die Studioleitung für ihr Studio?", "Heute: nur die Geschäftsführung."], ["Bis wann muss der Plan für den nächsten Monat fertig sein (z. B. am 20.)?", "Heute: keine Frist."], ["Muss die Leitung jeden Schichttausch bestätigen?", "Heute: ja."], ["Wird der Plan danach noch in LogX eingetragen? (Was ich dafür brauche: letzte Seite)", "Heute: „Für LogX kopieren“ legt eine Tabelle in die Zwischenablage."]]]];
+var _spFragenGruppe = 0;
+function spFragenZeichnen(){
+  var liste=$('spFragenListe'), reiter=$('spFragenReiter'); if(!liste || !reiter) return;
+  var a=(_sp.conf && _sp.conf.antworten) || {};
+  var n=0, beantwortet=0;
+  SP_FRAGEN.forEach(function(g){ g[1].forEach(function(){ n++; if(String(a[n]||'').trim()) beantwortet++; }); });
+  var kurz=$('spFragenKurz'); if(kurz) kurz.textContent=beantwortet+' von '+n+' beantwortet';
+  reiter.innerHTML=SP_FRAGEN.map(function(g, i){
+    var nr0=SP_FRAGEN.slice(0,i).reduce(function(s,x){ return s+x[1].length; },0), offen=0;
+    g[1].forEach(function(_, j){ if(!String(a[nr0+j+1]||'').trim()) offen++; });
+    var an=i===_spFragenGruppe;
+    return '<button type="button" class="pm-tab'+(an?' on':'')+'" role="tab" aria-selected="'+an+'" data-spfgruppe="'+i+'">'+
+      esc(g[0].split(' · ')[0])+'<span class="spl-lang"> '+['Pflicht','Besetzung','Arbeitszeit','Wünsche','Ablauf'][i]+'</span>'+
+      (offen?' <small>'+offen+' offen</small>':' ✓')+'</button>';
+  }).join('');
+  var g=SP_FRAGEN[_spFragenGruppe], nr=SP_FRAGEN.slice(0,_spFragenGruppe).reduce(function(s,x){ return s+x[1].length; },0);
+  liste.innerHTML='<h4 class="spl-fragen-titel">'+esc(g[0])+'</h4>'+g[1].map(function(f){
+    nr++;
+    var w=String(a[nr]||'');
+    return '<div class="spl-frage'+(w.trim()?' fertig':'')+'">'+
+      '<label for="spAntwort'+nr+'"><b>'+nr+'</b> '+esc(f[0])+'</label>'+
+      '<small>'+esc(f[1])+'</small>'+
+      '<div class="spl-frage-feld"><textarea class="inp" id="spAntwort'+nr+'" rows="1" maxlength="600" data-spantwort="'+nr+'" placeholder="Antwort – oder „passt“">'+esc(w)+'</textarea>'+
+      '<button type="button" class="chip" data-sppasst="'+nr+'"'+(w.trim()==='passt'?' aria-pressed="true"':'')+'>passt</button></div></div>';
+  }).join('');
+  reiter.querySelectorAll('[data-spfgruppe]').forEach(function(b){
+    b.addEventListener('click', function(){ _spFragenGruppe=+b.getAttribute('data-spfgruppe'); spFragenZeichnen(); tick(6); });
+  });
+  liste.querySelectorAll('[data-spantwort]').forEach(function(t){
+    t.addEventListener('change', function(){ spAntwortSpeichern(t.getAttribute('data-spantwort'), t.value); });
+  });
+  liste.querySelectorAll('[data-sppasst]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var k=b.getAttribute('data-sppasst'), f=$('spAntwort'+k);
+      if(f) f.value='passt';
+      spAntwortSpeichern(k, 'passt');
+    });
+  });
+}
+function spAntwortSpeichern(nr, wert){
+  wert=String(wert||'').trim().slice(0,600);
+  _sp.conf=_sp.conf||{}; _sp.conf.antworten=_sp.conf.antworten||{};
+  if((_sp.conf.antworten[nr]||'')===wert) return;
+  _sp.conf.antworten[nr]=wert;
+  var upd={}; upd['antworten.'+nr]=wert;
+  S('config').doc('schichtplaner').update(upd)
+    .catch(function(){ return S('config').doc('schichtplaner').set({ antworten:_sp.conf.antworten }, { merge:true }); })
+    .then(function(){ spFragenZeichnen(); tick(6); })
+    .catch(function(e){ toast(errMsg(e), true); });
 }
 
 /* ══ Wünsche der Mitarbeiter (Team → Schichten) ══════════════════════
@@ -47618,9 +49024,13 @@ function renderSicherungStand(){
    den es ohnehin gibt. Wandert der Knopf, wandert der Weg mit — und
    verschwindet er, faellt das im Test auf, statt still ins Leere zu
    fuehren. */
-function tatKnopf(text, ziel){
+function tatKnopf(text, ziel, wert){
   if(!text || !ziel) return '';
-  return '<button class="btn btn-ghost btn-sm leer-weg" data-leerzu="'+esc(ziel)+'">'+
+  /* Runde 259: mit wert (meist '') setzt der Knopf das Feld auf diesen
+     Wert — „Suche leeren". Auch das ist keine eigene Logik: das Feld
+     bekommt ein input-Ereignis wie beim Tippen. */
+  return '<button class="btn btn-ghost btn-sm leer-weg" data-leerzu="'+esc(ziel)+'"'+
+    (wert!=null ? ' data-leerzu-wert="'+esc(wert)+'"' : '')+'>'+
     esc(text)+'</button>';
 }
 function emptyHTML(h,s,iko,tat){
@@ -47693,7 +49103,7 @@ function updateBadges(){
      etwas offen"; die Zahl steht eine Ebene tiefer (Kopfzeile „4 offen",
      Gruppen) und im Vorlesetext. Zahlen bleiben nur, wo jemand
      persönlich gemeint ist (Glocke der Leitung, Direktnachrichten). */
-  /* Runde 245: Mitarbeiter haben keinen Raum „Studio" mehr – ihre
+  /* Runde 260: Mitarbeiter haben keinen Raum „Studio" mehr – ihre
      Aufgaben stehen auf „Heute" und werden dort abgehakt. Also trägt
      „Heute" bei ihnen den Punkt; sonst gäbe es von keiner Seite aus
      einen Hinweis auf Offenes (gefunden von test-startseite-offen).
@@ -48518,12 +49928,13 @@ function ppLeerText(gesamt){
     return emptyHTML('Nichts gefunden',
       'Für „'+esc(_ppFilter)+'" gibt es keinen Punkt im Putzplan.'+
       (_ppMode!=='alle' ? ' Der Filter „'+esc(ppChipWort(_ppMode))+'" ist zusätzlich aktiv.' : ''),
-      'tropfen');
+      'tropfen', tatKnopf('Suche leeren', '#ppSearch', ''));
   }
   var WORT={ offen:'offenen', pausiert:'pausierten' };
   return emptyHTML('Keine '+(WORT[_ppMode]||'')+' Punkte',
-    gesamt ? 'Der Plan hat '+gesamt+(gesamt===1?' Punkt':' Punkte')+' – tippe auf „Alle", um sie zu sehen.'
-           : 'Hier ist noch gar nichts angelegt.', 'tropfen');
+    gesamt ? 'Der Plan hat '+gesamt+(gesamt===1?' Punkt':' Punkte')+' mit einem anderen Filter.'
+           : 'Hier ist noch gar nichts angelegt.', 'tropfen',
+    gesamt ? tatKnopf('Alle zeigen', '[data-ppfilter="alle"]') : (canManage() ? tatKnopf('Punkt anlegen', '#ppNew') : ''));
 }
 function ppChipWort(modus){
   var c=document.querySelector('[data-ppfilter="'+modus+'"]');
@@ -48672,7 +50083,9 @@ function renderPutzplan(){
   if(balken) balken.style.width = (total ? Math.round(done/total*100) : 0)+'%';
   ppLeisteSetzen();
   if(!list.length){
-    box.innerHTML=emptyHTML('Kein Putzplan','Der Chef legt hier Reinigungsaufgaben an.','tropfen');
+    box.innerHTML=emptyHTML('Kein Putzplan',
+      canManage() ? 'Lege den ersten Punkt an – täglich, wöchentlich oder einmal.' : 'Die Leitung legt hier Reinigungsaufgaben an.', 'tropfen',
+      canManage() ? tatKnopf('Punkt anlegen', '#ppNew') : '');
     ppZahlenSetzen(list, 0);
     return;
   }
@@ -48721,7 +50134,7 @@ function renderPutzplan(){
       '<div class="pp-meta">'+(pause
         ? '<span class="pp-pausetxt">'+esc(ppPauseText(t))+'</span>'
         : (doneInfo||'<span>noch offen</span>'))+pauseKnopf+'</div></div>'+
-      stift+del+(chef ? '<button class="t-mehr pp-mehr" data-ppmehr="'+esc(t.id)+'" title="Mehr: Bearbeiten, Löschen" aria-label="Mehr">⋯</button>' : '')+
+      stift+del+(chef ? '<button class="t-mehr pp-mehr" data-ppmehr="'+esc(t.id)+'" title="Mehr: Bearbeiten, Löschen" aria-label="Mehr">'+ikon('mehr')+'</button>' : '')+
       '</div></div>';
   }
   /* ── Gruppiert nach Rhythmus (Runde 103, P2) ──
@@ -48791,6 +50204,8 @@ function ppAufklappen(knopfId, bereichId){
   var auf=b.hidden;
   b.hidden=!auf;
   k.setAttribute('aria-expanded', auf?'true':'false');
+  /* Runde 251: statt „body:has(.pp-werkzeuge:not([hidden]))" im CSS. */
+  document.body.classList.toggle('pp-filter-auf', !!document.querySelector('.pp-werkzeuge:not([hidden])'));
   tick(6);
   if(auf){
     var f=b.querySelector('input'); if(f && bereichId==='ppWerZeile') try{ f.focus(); }catch(e){}
@@ -49117,9 +50532,10 @@ function bindPutzplanClicks(box){
   box.querySelectorAll('.pp-item').forEach(function(node){
     var chk=node.querySelector('[data-check]');
     /* Pausierte nicht per Wischen abhaken: der Haken ist dort gar nicht
-       da, und eine Geste, die nichts tut, fuehlt sich kaputt an. */
-    if(node.classList.contains('pausiert')) return;
-    bindSwipe(node, function(){ if(chk && !node.classList.contains('done')) chk.click(); });
+       da, und eine Geste, die nichts tut, fuehlt sich kaputt an. Nach
+       links (Mehr, Löschen) geht es dort aber (Runde 255) — darum
+       bindSwipe auch hier, nur ohne Abhaken. */
+    bindSwipe(node, function(){ if(chk && !node.classList.contains('done') && !node.classList.contains('pausiert')) chk.click(); });
   });
   /* Pausieren und fortsetzen. Vier Wochen ist die Spanne, die im Studio
      wirklich vorkommt (Umbau, Geraet in Reparatur); wer laenger braucht,
@@ -49754,8 +51170,9 @@ function renderDevices(){
 
   if(!_devices.length){
     box.innerHTML=emptyHTML('Noch keine Geräte',
-      canManage() ? 'Trage unten ein, was in diesem Studio steht.'
-                  : 'Die Leitung trägt hier die Geräte des Studios ein.', 'werkzeug');
+      canManage() ? 'Trage ein, was in diesem Studio steht.'
+                  : 'Die Leitung trägt hier die Geräte des Studios ein.', 'werkzeug',
+      canManage() ? tatKnopf('Gerät eintragen', '#devName') : '');
     return;
   }
   sortLeiste($('devSort'), 'dev', [
@@ -50271,8 +51688,8 @@ function renderProbe(){
   if(!alle.length){
     qBox.innerHTML='<p class="hint">Noch nichts eingetragen in diesem Zeitraum.</p>';
     lBox.innerHTML=emptyHTML('Noch kein Probetraining',
-      'Trag oben rechts ein, was gelaufen ist – die Quote rechnet sich von selbst.',
-      'pokal');
+      'Trag ein, was gelaufen ist – die Quote rechnet sich von selbst.',
+      'pokal', tatKnopf('Probetraining eintragen', '#pbNew'));
     return;
   }
 
@@ -51725,7 +53142,7 @@ function renderDmPeople(filter){
   if(filter){
     var list=_allUsers.filter(function(u){ return u.uid!==session.uid && !u.system && (u.name||'').toLowerCase().indexOf(filter)>=0; });
     list.sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
-    if(!list.length){ box.innerHTML=emptyHTML('Niemand gefunden','Tippe einen anderen Namen ein.','leute'); return; }
+    if(!list.length){ box.innerHTML=emptyHTML('Niemand gefunden','Tippe einen anderen Namen ein.','leute', tatKnopf('Suche leeren', '#dmSearch', '')); return; }
     box.innerHTML='<div class="dm-section">Ergebnisse</div>'+list.map(function(u){
       var sub=u.status?u.status:(u.role==='chef'?'Chef':(u.role==='leiter'?'Studio-Leiter':((u.studios&&u.studios.length)?u.studios.join(', '):(u.studio||''))));
       return '<div class="dm-person" data-uid="'+esc(u.uid)+'" data-name="'+esc(u.name||'')+'">'+
@@ -51739,7 +53156,7 @@ function renderDmPeople(filter){
     var peer=(t.participants||[]).filter(function(u){ return u!==session.uid; })[0];
     return !(_allUsers.length && !_userById(peer));
   });
-  if(!threads.length){ box.innerHTML=emptyHTML('Noch keine Unterhaltungen','Tippe oben einen Namen ein, um jemandem zu schreiben.','leute'); return; }
+  if(!threads.length){ box.innerHTML=emptyHTML('Noch keine Unterhaltungen','Such einen Namen, um jemandem zu schreiben.','leute', tatKnopf('Namen suchen', '#dmSearch')); return; }
   box.innerHTML='<div class="dm-section">Unterhaltungen</div>'+threads.map(function(t){
     var peer=(t.participants||[]).filter(function(u){ return u!==session.uid; })[0];
     var nm=(t.names&&t.names[peer])||'?';
@@ -52430,9 +53847,14 @@ function buildAppearanceOptions(){
   var fs=$('fsOpts');
   if(fs){
     var sizes=[['90','Klein'],['100','Normal'],['112','Groß'],['125','Sehr groß']];
+    /* Runde 257: zuerst „Wie am Gerät", wo die App es lesen kann. */
+    var gf=geraeteSchriftFaktor();
+    if(gf) sizes.unshift(['geraet','Wie am Gerät']);
     fs.innerHTML=sizes.map(function(v){
-      return '<div class="opt'+(String(PREFS.fs)===v[0]?' on':'')+'" data-fs="'+v[0]+'">'+
-        '<div style="font-weight:800;font-size:'+(v[0]/100*15)+'px;color:var(--text)">Aa</div>'+
+      var pr = v[0]==='geraet' ? Math.round(gf*100) : +v[0];
+      return '<div class="opt'+(String(PREFS.fs)===v[0]?' on':'')+'" data-fs="'+v[0]+'"'+
+        (v[0]==='geraet' ? ' title="Folgt der Textgrösse in den Einstellungen des iPhones (Anzeige &amp; Helligkeit)"' : '')+'>'+
+        '<div style="font-weight:800;font-size:'+(pr/100*15)+'px;color:var(--text)">Aa</div>'+
         '<span>'+v[1]+'</span></div>';
     }).join('');
     fs.querySelectorAll('[data-fs]').forEach(function(el){
@@ -52464,6 +53886,29 @@ function buildAppearanceOptions(){
       el.addEventListener('click',function(){
         PREFS.dichte=el.getAttribute('data-dichte'); savePrefs(); applyPrefs();
         dc.querySelectorAll('[data-dichte]').forEach(function(x){ x.classList.remove('on'); });
+        el.classList.add('on'); tick(8);
+      });
+    });
+  }
+
+  // 3c) Leisten: Glas oder deckend (Runde 254)
+  var gl=$('glasOpts');
+  if(gl){
+    /* Die Vorschau zeigt den Unterschied: drei Streifen „Inhalt", über
+       denen die Leiste liegt — einmal durchscheinend, einmal deckend. */
+    var arten=[['glas','Glas','.74'],['deckend','Deckend','1']];
+    gl.innerHTML=arten.map(function(a){
+      var streifen='<i style="position:absolute;left:4px;right:4px;top:3px;height:4px;border-radius:2px;background:var(--text-3)"></i>'+
+        '<i style="position:absolute;left:4px;right:12px;top:10px;height:4px;border-radius:2px;background:var(--text-3)"></i>';
+      var leiste='<i style="position:absolute;left:0;right:0;bottom:0;height:11px;background:var(--bg-2);opacity:'+a[2]+';border-top:1px solid var(--line-2)"></i>';
+      return '<div class="opt'+((PREFS.glas||'glas')===a[0]?' on':'')+'" data-glas="'+a[0]+'">'+
+        '<div style="position:relative;width:34px;height:22px">'+streifen+leiste+'</div>'+
+        '<span>'+a[1]+'</span></div>';
+    }).join('');
+    gl.querySelectorAll('[data-glas]').forEach(function(el){
+      el.addEventListener('click',function(){
+        PREFS.glas=el.getAttribute('data-glas'); savePrefs(); applyPrefs();
+        gl.querySelectorAll('[data-glas]').forEach(function(x){ x.classList.remove('on'); });
         el.classList.add('on'); tick(8);
       });
     });
@@ -52512,13 +53957,14 @@ function buildAppearanceOptions(){
    „Entfernen" daneben. */
 function aussehenZuruecksetzen(){
   if(!confirm('Aussehen auf die Voreinstellung zurücksetzen?\n\n'+
-              'Modus, Schriftgröße, Dichte, Akzentfarbe und beide Hintergründe gehen '+
+              'Modus, Schriftgröße, Dichte, Leiste, Akzentfarbe und beide Hintergründe gehen '+
               'auf den Auslieferungsstand zurück. Dein Profil, deine '+
               'Meldungen und alle Daten bleiben unberührt.\n\n'+
               'Gilt nur auf diesem Gerät.')) return;
   PREFS.theme  = 'formi';
-  PREFS.fs     = '100';
+  PREFS.fs     = geraeteSchriftKann() ? 'geraet' : '100';
   PREFS.dichte = 'normal';
+  PREFS.glas   = 'glas';
   PREFS.accent = 'bunt';
   PREFS.chatbg = 'verlauf';
   PREFS.appbg  = 'raum';

@@ -21646,7 +21646,940 @@ geben“ — die weiteren Runden folgen ohne Zwischenfrage.
 Bildschirm; der Anmeldeweg (Firebase lädt hier nicht).
 
 **Als Nächstes:** untere Leiste mit fünf Einträgen („Wissen“ fällt weg).
-## Runde 245 — Vier Räume für Mitarbeiter (23.10.2026)
+
+## Runde 245 — Schichtplaner: Fragen in der App, Probe zurücknehmen, Öffnungszeiten an einer Stelle (23.10.2026)
+
+**Aus dem Betrieb:** „jap mach weiter dann“ — auf den Vorschlag, mit
+„Plan zurücknehmen“, der Einrichtung in der App und den Öffnungszeiten
+an einer Stelle anzufangen.
+
+**Was gebaut ist**
+- **„Veröffentlichung zurücknehmen“** im Kasten „Fertig?“, sobald ein
+  Monat veröffentlicht ist. Gelöscht wird, was der Planer geschrieben hat
+  (Merkmal `planer == Monat`), in allen Studios; von Hand eingetragene
+  Schichten tragen das Merkmal nicht und bleiben. Der Entwurf bleibt.
+  Vorher hiess eine Probe: jede Schicht einzeln löschen — so traut sich
+  niemand, es auszuprobieren.
+- **„Fragen zum Plan“**: die 24 Fragen aus dem PDF als Karte im Planer,
+  fünf Reiter (am Rechner mit Namen und „n offen“, am Handy Buchstaben),
+  je Frage die heutige Annahme, ein Feld und „passt“. Gespeichert beim
+  Verlassen des Feldes in `config/schichtplaner.antworten` (dieselbe
+  Regel wie die übrigen Einstellungen: lesen alle Aktiven, schreiben die
+  Geschäftsführung). Die Liste kommt aus `werkzeug/inhalt.py` — dieselbe
+  Quelle wie PDF und Excel; der Test vergleicht alle 24 Wortlaute.
+  Die Antworten sind Text; sie stellen den Planer (noch) nicht selbst
+  ein. Was davon Regeln werden, entscheidet sich, wenn sie da sind.
+- **Öffnungszeiten an einer Stelle**: Ist ein Studio unter Verwaltung →
+  Studios ohne Zeiten, nimmt die Besetzungs-Leiste die aus dem Excel-Blatt
+  „Studios“. Gelesen werden „10:00–12:00“, „10–12“, „10.00 – 12.00“ und
+  „zu“. Dazu lädt die Team-Seite `config/schichtplaner` einmal mit (das
+  brauchten die Schicht-Vorlagen im Blatt ohnehin).
+
+**Gefunden**
+- Die Demo-Datenbank gibt bei `get()` kein `d.ref` mit; Zurücknehmen
+  baut die Verweise deshalb über die Kennung. (Veröffentlichen nutzt noch
+  `d.ref` — in der echten Datenbank richtig, in der Demo scheitert nur ein
+  zweites Veröffentlichen. Nicht angefasst.)
+- Die erste Fassung der Gegenprobe im Test zählte nur die letzte Woche
+  und blieb mit abgeschaltetem Löschen grün. Jetzt zählt sie alle acht
+  Wochen: ohne Löschen 47 Planer-Schichten → rot; mit → grün.
+
+**Geprüft**
+- test-schichtplan-raster, Abschnitt 11 (10 Prüfungen neu, 102 gesamt):
+  Wortlaut der 24 Fragen = inhalt.py; „passt“ und eigene Antwort zählen
+  (0 → 2 von 24) und überstehen das Neuladen; Zurücknehmen erscheint nach
+  dem Veröffentlichen, nimmt 582 Schichten heraus, Zustand wieder
+  „Entwurf“, im Team-Plan keine Planer-Schicht mehr; Öffnungszeit nur aus
+  dem Excel → „Geöffnet 10–12 Uhr“ an allen sechs Tagen, „zu“ →
+  geschlossen.
+- test-schichtplaner (140), test-gestaltung, test-doppelte-namen, test-knoepfe,
+  test-abgeschnitten, test-team-woche, test-tausch: grün.
+## Runde 246 — Unten fünf Knöpfe, „Wissen“ unter ☰ (23.10.2026)
+
+Vierter Bauschritt aus dem Plan „Studio Chat wie von Apple“. Die Frage,
+welcher Eintrag unten wegfällt, war am Morgen beantwortet: Vorschlag
+„Wissen“, aus dem Betrieb (08:07) „ja so wie du empfohlen hast klingt
+super“. Seit 15:18 läuft der Plan ohne Zwischenfrage durch.
+
+**Was gebaut wurde**
+
+- `NEU_LEISTE` ohne `g-wissen`: am Handy unten Heute · Studio · Zeiten ·
+  Plan · Nachrichten. „Wissen“ (Dokumente, Schulung, Formi) liegt unter
+  ☰ am Seitenkopf — zwei Tipps — und am Rechner unverändert links in
+  der Seitenleiste. Das bisherige Aussehen (ohne `body.neu`) ist nicht
+  angefasst.
+
+**Warum so**
+
+- Apples Tab-Leiste trägt höchstens fünf Einträge. Mit sechs war jeder
+  Knopf bei 320 px auf die Untergrenze gedrückt (Runde 228: 48 px), mit
+  fünf misst er 48–91 px, bei 390 px 61–105 px.
+- „Wissen“ öffnet man ein paarmal die Woche; alles andere unten mehrmals
+  am Tag.
+- Einen Ungelesen-Punkt verliert dadurch nichts: `updateNavMarkers`
+  kennt nur Chat und Ankündigungen, und beide bleiben unten.
+- Die Breite richtet sich auf schmalen Handys weiter nach dem Wort
+  (Runde 222): „Nachrichten“ braucht in der Systemschrift 68 px, gleich
+  breite Knöpfe wären bei 320 px nur 62 px.
+
+**Tests**
+
+- test-p5-leiste: fünf Knöpfe, jeder ≥ 44 × 44 per Hit-Test und im Bild
+  bei 320 / 390 / 430 / 820 px in „normal“ und „kompakt“; neu: „Wissen →
+  Dokumente“ in zwei Tipps über ☰ bei allen vier Breiten. 27 grün.
+- test-navigation: Gruppen unten sind fünf; „Wissen“ und die
+  Verwaltung über ☰ bzw. die Seitenleiste. Der Durchlauf war seit
+  Runde 222 rot (er suchte die Verwaltung unten) — jetzt grün.
+- test-neu-design: Abschnitt 2 auf fünf Knöpfe. Weiter rot wie auf
+  `main`: „320 × 568 passt ohne Scrollen“ (343 > 265), nicht von hier.
+- Grün: abgeschnitten, quer, findewege, zusammengelegt, zeiten-bereich,
+  formi-kugel, formi-reihe, paywall, startseite-offen, knoepfe,
+  fingerziele, neuigkeiten, csp, team-woche, gestaltung,
+  gruppen-aufgaben, gruppen-titel, heute-haken. akzent im Parallellauf
+  wieder an der Zeitprobe rot, allein grün. test-rahmen rot wie auf
+  `main`.
+- Rechner: die Seitenleiste ist nicht verändert; gemessen ist hier nur,
+  dass sie unverändert alle Bereiche zeigt (test-navigation über
+  `#side`).
+
+**Nicht getestet:** echtes iPhone.
+
+**Als Nächstes:** Bewegung — drei Federn, Seitenwechsel.
+
+## Runde 247 — Drei Federn statt vieler Kurven (23.10.2026)
+
+Fünfter Bauschritt aus dem Plan „Studio Chat wie von Apple“ (Bewegung),
+nach Empfehlung 1 der Recherche „Bewegung, Psychologie und Formi“. Aus
+dem Betrieb, 15:18: „es soll einfach den ganzen plan erledigen“.
+
+**Was gebaut wurde**
+
+- Drei Federn als Eigenschaften an `:root`, gerechnet als echte
+  gedämpfte Schwingung und in `linear()` abgetastet (29 Punkte):
+  `--feder-fest` (bounce 0, Dämpfung 1), `--feder-weich` (bounce 0,15,
+  Dämpfung 0,85, 0,6 % Überschwingen), `--feder-formi` (bounce 0,3,
+  4,6 %) — die letzte nur angelegt, nicht benutzt.
+- `--ease-ios` und `--ease-out` zeigen auf `--feder-fest`, `--spring` auf
+  `--feder-weich`. Damit bewegen sich alle ~225 Stellen der App, die eine
+  der drei Kurven benutzen, als Feder — ohne eine einzige davon
+  umzuschreiben.
+- Formi bleibt unverändert: an Formis Wurzeln (`[class*="formi"]` ausser
+  `body`, `[id*="formi"]`, `#view-gehirn`, `.jarvis`) werden die drei
+  alten Kurven wieder gesetzt; sie erben in alles darunter. Die rund 50
+  festen `cubic-bezier(…)` in Formis eigenen Regeln und im Skript sind
+  nicht angefasst.
+- Ohne `linear()` (Safari < 17.2) bleibt alles bei den alten Kurven
+  (`@supports`).
+
+**Warum so**
+
+- Apple beschreibt Bewegung als Feder mit „bounce“, nicht als Kurve.
+  Eine Feder ohne Anfangsgeschwindigkeit setzt weich an und läuft lang
+  aus; zur Hälfte der Dauer ist `--feder-fest` bei 96 %, so wie
+  `--ease-ios` vorher.
+- Die Rechnung: Dämpfung ζ = 1 − bounce. Für ζ = 1 gilt
+  x(t) = 1 − (1 + ωt)·e^(−ωt), ω so gewählt, dass x(1) = 0,999
+  (ω ≈ 9,23). Für ζ < 1 gilt x(t) = 1 − e^(−ζωt)·(cos ω_d t +
+  ζω/ω_d · sin ω_d t) mit ω_d = ω√(1−ζ²) und ζω = 6,9 (Hülle 0,1 % bei
+  t = 1). Abgetastet bei t = (i/28)^1,6, damit der Anfang dichter liegt.
+- Verweise statt Umschreiben: über 200 Stellen zu ändern hätte nichts
+  verbessert, nur den Unterschied in der Versionsgeschichte verdeckt.
+- `linear()` läuft wie `cubic-bezier` auf dem Compositor: in einer
+  leeren Seite 0 Stil-Neuberechnungen in 1 s für beide (nachgemessen).
+
+**Was dabei gefunden wurde — Arbeit je Bild beim Seitenwechsel**
+
+- Gemessen am Hauptfaden, CPU ÷4, 450 ms nach dem Tipp (der Aufbau der
+  Seite selbst nicht mitgezählt): schon auf `main` 13,8–14,8 ms je Bild
+  bei 390 px und 18,5–20,1 ms bei 1440 px — über der Grenze von 8,3 ms.
+  Mit den Federn 13,9–17,3 bzw. 15,5–20,5 ms; im direkten Vergleich in
+  derselben Seite 13,9 gegen 12,7 und 15,5 gegen 15,0 ms (Streuung
+  zwischen Läufen ±3 ms).
+- Der grösste Posten ist Stil-Neuberechnung (`UpdateLayoutTree`, 900 ms
+  in 5 × 450 ms). Was in diesen Bildern auf dem Hauptfaden läuft:
+  Formis `formiDoppler` an zehn `<i>` (Deckkraft, nicht auf dem
+  Compositor), `formiBahn`/`formiScheibe`; Übergänge von Farbe, Fläche
+  und Schatten an den Knöpfen der Kopfzeile, wenn die Bereichsfarbe
+  wechselt; die gleitende Füllung der unteren Leiste mit `width` und
+  `height` (gegen die Regel „keine Übergänge auf width“); in der Demo
+  die angemeldeten Farben an `.demo-bar`. Formi gehört einer anderen
+  Sitzung; der Rest ist ein eigener Schritt, nicht diese Runde.
+
+**Tests**
+
+- Neu: `tests/test-federn.js`, 30 Zusicherungen: die Federn (Form,
+  Überschwingen), die Verweise, Formis Kurven in Kugel und auf seiner
+  Seite unverändert, GEGENPROBE `body.formi` behält die Federn, die
+  Seiteneinblendung läuft mit `linear()` in Formi/Dunkel/Hell bei 390
+  und 1440 px, weniger Bewegung schaltet ab, und die Arbeit je Bild mit
+  Federn gegen alte Kurven in derselben Seite.
+- Gegen `main`: 6 von 24 falsch.
+- Im Parallellauf (vier Browser) waren akzent, formi-kugel und
+  gruppen-aufgaben einmal rot, allein alle grün. gruppen-aufgaben traf
+  unter Last eine Zeile mitten im Einblenden (44 × 40); der Test wartet
+  jetzt, bis die Zeile steht — die Grenze bleibt 44 × 44.
+
+**Nicht getestet:** wie es sich am iPhone und am Mac anfühlt —
+Chromium ohne Bildschirm taktet mit 60 Hz.
+
+**Als Nächstes:** Chat-Blasen und Kontextmenü.
+
+## Runde 248 — Schulung: die eigene Bescheinigung zum Drucken; Erinnerung nicht an Stillgelegte (23.10.2026)
+
+Aus dem Betrieb, 23.10.2026: „jo mach weiter" — die nächste
+Schulungs-Runde.
+
+### 1. „Bescheinigung drucken" für jede und jeden
+
+Unter Wissen → Schulung steht im Kasten „Schon geschafft" (bisher „Was
+du schon gemacht hast") rechts oben ein Drucker-Zeichen: „Bescheinigung
+drucken". Es druckt ein Blatt „Schulungsnachweis" mit Name, Firma und
+Datum. Darauf:
+
+- je Modul der **jüngste bestandene** Durchlauf mit Datum samt Jahr,
+  Ergebnis, Dauer und „Gültig bis" (bei Modulen mit Wiederholung;
+  abgelaufen steht „wieder fällig" daneben);
+- darunter, was **als Pflicht noch offen** ist;
+- eine Zeile, auf der die Studioleitung unterschreibt.
+
+Den Nachweis je Modul gab es bisher nur für die Leitung (Runde 211).
+Wer ein Blatt für sich selbst brauchte (Bewerbung, eigener Ordner), musste
+fragen. Lernplattformen machen das so: Moodle hat Kursbescheinigungen,
+LinkedIn Learning hat Abschlusszertifikate. Übernommen ist nur das Muster
+„was ich geschafft habe, auf einem Blatt". Eine Studie, die zeigt, dass
+das beim Lernen hilft, habe ich nicht gesucht und nenne keine.
+
+**Warum so entschieden:**
+- **Testläufe stehen nie darauf**, und ohne bestandene Schulung gibt es
+  den Knopf nicht. Dieselbe Regel gilt beim Nachweis der Leitung.
+- **Das Offene steht mit darauf.** Ein Blatt, das nur das Erledigte
+  zeigt, sähe vollständiger aus, als es ist.
+- **Keine Unterschrift der App.** Das Blatt ist aus den eigenen
+  Durchläufen erstellt, und die Fusszeile sagt, dass die App nicht prüft,
+  ob es eine Vorschrift erfüllt. Bestätigen tut ein Mensch.
+- **Ein Zeichen im Kopf, keine eigene Zeile.** Der erste Bau setzte
+  Knopf und Satz unter die Liste. `test-auffrischen` wurde rot: Am
+  390er Telefon begann die Modulliste bei 1.370 px statt bei 1.272 px,
+  und die Grenze liegt bei 1.290 px. Den Test zu lockern kam nicht in
+  Frage. Das Zeichen sitzt jetzt mit negativen Rändern in der
+  Kopfzeile: Die Trefferfläche bleibt 44 × 44, die Liste beginnt wieder
+  bei 1.272 px. Damit Überschrift und Zeichen in eine Zeile passen,
+  heisst die Karte „Schon geschafft". Der alte Text brauchte 302 px, der
+  Platz neben dem Zeichen ist 267 px. Die alte Überschrift war kein
+  Zitat aus dem Betrieb.
+- **Kein neuer Datenweg.** Das Blatt liest nur `_schMeine`, die eigenen
+  Durchläufe, die die Regeln jedem ohnehin zeigen.
+
+### 2. Die Auffrisch-Erinnerung prüft den Teilnehmer (Fehler aus Runde 216)
+
+Der Lernplan merkt sich die `uid` vom Zeitpunkt der ersten Runde. Die
+Erinnerung um 9:40 Uhr las nur diesen Plan. Auch eine **stillgelegte**
+Person bekam deshalb weiter „Kurz auffrischen" aufs Handy, ebenso ein
+Konto, von dem die Leitung den Teilnehmer inzwischen gelöst hatte.
+`schulungAuffrischen` selbst hat beides immer abgewiesen; nur der
+Zeitplan nicht.
+
+Jetzt liest der Zeitplan den Teilnehmer mit
+(`auffrischTeilnehmerGilt`): Der Teilnehmer muss da sein, darf nicht
+stillgelegt sein und muss mit **diesem** Konto verknüpft sein.
+
+### 3. Teilnehmer gelöscht → Lernplan weg
+
+Das stand seit Runde 201 als „Offen". Ein neuer Auslöser
+`onSchulungTeilnehmerWeg` (flach und unter `firmen/<k>/`) löscht den
+Lernplan, sobald das Teilnehmer-Dokument verschwindet. In der App gibt es
+nur „Stilllegen"; gelöscht wird ein Teilnehmer in der Konsole oder mit
+der ganzen Firma. Die **Durchläufe bleiben**: Sie sind der Nachweis der
+Unterweisung.
+
+### Geprüft
+
+- `tests/test-schulung-bescheinigung.js` (30, neu): das Zeichen im Kopf
+  (Überschrift einzeilig, Zeichen auf ihrer Höhe),
+  Druck, Kopf mit Name, Firma und Stand, Spalten, die Notfall-Zeile mit
+  „Gültig bis" (12 Monate), das Angefangene nicht in der Tabelle, das
+  Offene darunter, Druckbild nur mit dem Blatt.
+  - GEGENPROBEN, geändert in den Demo-Daten (der Quelle der App):
+    abgelaufen → „wieder fällig" und unter „offen"; nur ein Testlauf →
+    kein Knopf; nicht bestanden → Liste ja, Knopf nein.
+  - Fingerziele ≥ 44 × 44 per Hit-Test bei 320 / 390 / 430 / 820 / 1280
+    / 1440 / 1920 px, normal und kompakt; nichts ragt hinaus.
+  - Gegenprobe am Code: Ohne den Testlauf-Filter wird der Durchlauf rot.
+- `tests/rules/funktionen.test.js` (272, fünf neu): keine Erinnerung an
+  Stillgelegte oder ein umgehängtes Konto; die Regel als Rechnung; der
+  Lernplan ist nach dem Löschen weg, auf beiden Pfaden; der Plan eines
+  anderen und der Durchlauf bleiben.
+  - Gegenprobe: Ohne die neue Prüfung im Zeitplan fallen drei Prüfungen.
+- Grün außerdem: alle `test-schulung*`, test-auffrischen, test-knoepfe,
+  test-gestaltung, test-abgeschnitten, test-quer, test-csp,
+  test-neuigkeiten, test-pc-*.
+
+### Nicht geprüft
+
+- Der echte Druck auf Papier. Geprüft ist das Druckbild (`media print`)
+  im Test-Browser.
+- Der Auslöser beim Löschen im echten Projekt. Geprüft ist er im Emulator
+  mit `.run()`, so wie die anderen Auslöser in diesem Test.
+## Runde 249 — Chat wie iMessage, Menü an der Nachricht (23.10.2026)
+
+Sechster Bauschritt aus dem Plan „Studio Chat wie von Apple“. Vorbild
+ist das Probebild `3-chat-handy.png` (unter
+`/mnt/project-files/apple-probebilder/`), zu dem es aus dem Betrieb
+hiess: „genau so hab ichs mir vorgestellt“. Seit 15:18: „es soll
+einfach den ganzen plan erledigen“.
+
+**Was gebaut wurde**
+
+- **Blasen:** ohne Rahmen und Schatten, `--r-lg` rund. Fremde in
+  `--bg-3`, eigene in `--accent` mit `--on-accent` — dasselbe Paar wie
+  der Hauptknopf, das test-akzent für jede Akzentfarbe misst. In der
+  eigenen Blase zeigen Text-, Link- und Akzentfarben der Kinder auf
+  `--on-accent`, sonst verschwänden Links, Zitat und Erwähnung in der
+  Fläche.
+- **Kopf über der Blase:** „Name · Studio  Uhrzeit“ klein und leise
+  über der fremden Blase statt Name, VERSALIEN-Pille und Zeit darin.
+- **Eigene:** Uhrzeit und Häkchen unter der Blase, auf dem Hintergrund.
+  Bei einer Folge nur unter der letzten; an den anderen stehen sie
+  weiter im Dokument (test-gelesen-haken liest sie).
+- **Folgen:** Nachrichten derselben Person innerhalb von fünf Minuten
+  rücken auf 2 px zusammen; die Ecken zur Absenderseite werden klein.
+- **Menü an der Nachricht:** Ein Tipp öffnet das Menü dort, wo die
+  Nachricht steht — Reaktionen als Kapsel oben, die Nachricht als
+  Vorschau, die Einträge als gerundete Gruppe mit Haarlinien, Symbol
+  rechts. Am Rechner auch per rechter Maustaste, am Zeiger (auf Bild,
+  Link oder markiertem Text bleibt das Menü des Browsers). Hinaus:
+  daneben tippen oder Esc; „Abbrechen“ ist ausgeblendet.
+- Formis Sprechblase lag über dem Menü — sie wird, wie die Kugel schon,
+  ausgeblendet, solange das Menü offen ist. Formi selbst ist nicht
+  verändert.
+
+**Warum so**
+
+- Uhrzeit und Häkchen der eigenen Nachrichten UNTER statt IN der Blase:
+  in der Akzentfläche wären die Häkchen-Farben (grau/blau, „Jeder,
+  genau wie bei WhatsApp“, 27.9.2026) nicht mehr zu unterscheiden. Auf
+  dem Hintergrund bleiben sie, was sie waren.
+- Nur unter der letzten einer Folge: „gelesen“ heisst bis dahin
+  gelesen, der Stand der letzten gilt für die davor mit. Genau steht es
+  unter „Gelesen von …“ im Menü.
+- Umfragen und Sprachnachrichten in eigener Blase behalten die getönte
+  Fläche: ihre Balken und Knöpfe sind selbst Akzentfarbe.
+- Gemessen wird im nächsten Bild und gebündelt (`msgBlattPlatzieren`):
+  erst beide Rechtecke lesen, dann zwei Werte schreiben — im Klick wird
+  nichts vermessen.
+- `:has(a, b)` ist als `:has(a)` / `:has(b)` geschrieben: der
+  Gestaltungstest zerlegt Selektoren an jedem Komma.
+
+**Was dabei gefunden wurde**
+
+- Bei 320 × 568 schwebt Formis Kugel über der untersten eigenen Blase
+  (rechts unten, fest). Der Kontrast wird deshalb links im Innenabstand
+  der Blase gemessen. Formi gehört einer anderen Sitzung.
+- **Die Federn aus Runde 247 kosteten doch etwas.** Mit mehr Messungen
+  (Median aus je vier Runden, Reihenfolge A-B-B-A) lagen die Federn
+  beim Seitenwechsel durchgehend 0,2–2,2 ms je Bild über den alten
+  Kurven. Ursache: jede Stilneuberechnung setzt `var(--ease-ios)` neu
+  ein und liest eine `linear()`-Liste mit 29 Punkten. Jetzt nur so
+  viele Punkte, dass die Kurve höchstens 1 % abweicht (fest 10, formi
+  11) bzw. 0,5 % (weich 17, damit das Nachschwingen bleibt). Danach:
+  14,2 gegen 16,2 und 16,7 gegen 16,4 ms bei 390 px, 18,2 gegen 20,2
+  und 21,0 gegen 19,6 ms bei 1440 px — im Rauschen. test-federn
+  vergleicht jetzt Mediane aus A-B-B-A-Runden.
+- test-chat-bereich3 ist schon auf `main` rot („Langer Text drückt den
+  Verlauf auf 264 px“, 52 % der Ansicht) — nicht von dieser Runde.
+
+**Tests**
+
+- Neu: `tests/test-chat-blasen.js`, 226 Zusicherungen. Stil Formi bei
+  320 / 390 / 430 / 820 / 1280 / 1440 / 1920 px, Dunkel und Hell bei
+  390 / 1440. Schrift auf der eigenen Blase an Bildpunkten 9,9 : 1
+  (Formi/Dunkel) und 5,5 : 1 (Hell), Name über der Blase 7,3–9,7 : 1.
+  Reaktionen und Einträge im Menü ≥ 44 × 44 per Hit-Test in „normal“
+  und „kompakt“; Menü ganz im Bild; rechte Maustaste am Rechner;
+  GEGENPROBE altes Aussehen: Blatt von unten. Gegen `main`: 72 von 226
+  falsch.
+- Grün: chat, chat-antworten, gelesen-haken, block5, block8, ui,
+  dialoge, design-107, sprachabspieler, datum, zusammengelegt,
+  gestaltung, csp, knoepfe, fingerziele, abgeschnitten, quer, akzent.
+
+**Nicht getestet:** echtes iPhone; lange Nachrichten mit vielen Zeilen im
+Menü (die Vorschau ist auf vier Zeilen begrenzt).
+
+**Als Nächstes:** Formi-Gefühle auf der Startseite leichter.
+
+## Runde 250 — Formi-Insel, Leuchtrand, Lichtkrümmung und Gezeitenstrom (23.10.2026)
+
+**Aus dem Betrieb**, zu den vier Apple-Entwürfen:
+- „ich finde die insel und die widgets super krass falls das geht können
+  wir das schonmal umsetzten sonst bauen wir das ein wenn wir die web app
+  zur normalen app machen"
+- „liquid glas finde ich unnötig wenn überhaupt soll das den hintergrund
+  verzerren etwas weils ja ein schwarzes loch ist"
+- „diesen leucht ring am rand find ich auch mega … am besten auch
+  animationen und so wenn er was für uns in der app macht und man kann
+  das live sehen wie er eine aufgabe abhakt oder etwas anlegt"
+- „nur die lichtkugel würde ich nicht wollen es soll am ende immer noch
+  ein schwarzes loch sein"
+- Mitten in der Runde: „können wir fürs aufgaben einsaugen einen besseren
+  effekt machen … und mehr verzerrung auch für den hintergrund und so ums
+  loch herum"
+
+**Gebaut:**
+1. **Gezeitenstrom** (`formiStrom`, `formiBahn`). Der Titel zerfällt in
+   seine Buchstaben. Der dem Loch nächste reisst zuerst ab, die anderen
+   folgen, so entsteht ein Faden, der sich um Formi wickelt. Die Bahn
+   biegt schon von weitem ein (Umlauf ∝ 1/r statt nur am Loch). Jeder
+   Buchstabe zeigt in Flugrichtung und wird mit der Geschwindigkeit und
+   nah am Loch mit den Gezeiten lang gezogen (gemessen bis über 30-fach).
+   Jeder Buchstabe hat ein Nachleuchten 70 ms dahinter. Am Horizont wird
+   er rot und erlischt. Läuft die Bahn aus dem Bild (Kugel am Rand), dreht
+   der Strom andersherum.
+2. **Lichtkrümmung** (`formiLinseBauen`). Ein Kreis von 192 px unter der
+   Kugel krümmt, was dahinter liegt, wie eine Gravitationslinse
+   (β = θ − θE²/θ). Gebaut ist er als `backdrop-filter` mit einer einmal
+   gerechneten Verschiebungskarte. Schluckt Formi etwas, wird die
+   Krümmung 1,3 s lang bis 1,85-fach stärker.
+3. **Formi-Insel.** Eine schwarze Fläche mit Photonenring, oben in der
+   Mitte. Klein steht darin, was Formi tut („Suche „Spiegel" …"). Gross
+   zeigt sie das Ergebnis („Abgehakt · Hürth – Spiegel putzen") mit
+   grünem Haken. Abgehaktes fällt als Strom in Formi IN der Insel, und
+   zwar aus der Zeile in der App, wenn sie zu sehen ist. Angelegtes kommt
+   aus ihm heraus (derselbe Strom rückwärts, weisses Loch). Am Rechner
+   sitzt die Insel in der Kopfleiste, wenn deren Mitte frei ist, sonst
+   knapp darunter.
+4. **Leuchtrand.** Vier Streifen am Bildschirmrand, in denen Formis
+   Farben gegen den Uhrzeiger kreisen, solange er arbeitet. Beim Ergebnis
+   flammt der Rand auf und erlischt. Er läuft höchstens 30 s.
+5. `docs/ideen/formi-apple.md`: was entschieden ist, was eine Web-App
+   nicht kann, und die Widgets für die echte App.
+
+**Entschieden und warum:**
+- *Die Insel lebt in der App.* Die echte Dynamic Island und Widgets gibt
+  es nur für installierte Apps. Das steht so in der Doku, damit es beim
+  Umstieg auf eine echte App nicht verloren geht.
+- *Keine Trefferfläche für Insel, Rand und Linse.* Die Insel liegt am
+  Handy kurz über dem Seitenkopf. Würde sie Klicks fangen, verdeckte sie
+  Knöpfe. Gesagt wird alles weiter im Fenster.
+- *Bei „Mehr Platz" keine Insel*, denn dort zeigt das Fenster selbst,
+  was Formi tut. Der Rand leuchtet trotzdem.
+- *Die Linse ist ein eigenes Element, nicht in der Kugel.* In der Kugel
+  sah `backdrop-filter` in Chromium nichts von der Seite dahinter
+  (nachgemessen: weder Unschärfe noch Krümmung). Als eigenes Element
+  direkt unter der Kugel geht es. Es folgt der Kugel beim Zeigen, bei
+  Grössenwechseln und einmal je Sekunde.
+- *Die Linse nur in Chromium* (Rechner, Android). Safari und Firefox
+  kennen SVG-Filter in `backdrop-filter` nicht. Dort bleibt der Kreis
+  durchsichtig, statt etwas Kaputtes zu zeigen.
+- *Die Form der Insel wechselt über `clip-path`*, nicht über
+  `width`/`height`. Das löst kein Layout aus. Neu gemalt wird nur die
+  Insel selbst.
+- *Kein Bernstein im Leuchtrand.* Bernstein ist eine Statusfarbe; der
+  Rand nutzt nur Formis Cyan, Violett und Rosa.
+
+**Geprüft:**
+- Neu: `test-formi-insel` (60). Er prüft die Linse an echten Bildpunkten
+  (mit/ohne) und den Puls. Die Kugel bleibt trotz Linse bei 320–1920,
+  normal und kompakt, 58 × 58 treffbar. Der Strom: Buchstaben plus
+  Nachleuchten, Bahn ≥ 180° um Formi, Streckung ≥ 5-fach, nur
+  transform/opacity, danach weg; Gegenprobe „weniger Bewegung". Insel
+  und Rand: klein beim Denken, Rand strömt, weg nach einer blossen
+  Antwort, gross beim Abhaken, die Buchstaben enden höchstens 16 px von
+  Formis Mitte in der Insel, Anlegen kommt aus ihm; Gegenprobe „Mehr
+  Platz". Lage: im Bild, keine Trefferfläche, auf keinem Knopf der
+  Kopfleiste, bei allen sieben Breiten in beiden Dichten.
+- `test-formi-loch` auf den Strom umgestellt (gleiche Schwellen: Drehung
+  ≥ 360°, Streckung am Ende ≥ 10 und mehr als doppelt so viel wie in der
+  Mitte, Zeitdehnung ≥ 30 %), 31 grün.
+- Gesamtdurchlauf mit 36 Durchläufen auf dem Stand mit den Runden 244–246:
+  35 grün, darunter `test-formi-kugel` (70) und `test-formi-verdeckt` (42,
+  ohne Zeitlimit). Rot ist `test-mitarbeiter`: Er sucht „Wissen" in der
+  unteren Leiste, das seit Runde 246 unter ☰ liegt. Er bricht auf `main`
+  genauso ab, nachgemessen auf einem eigenen Stand von `main`.
+- Nach der Übernahme der Runden 247–249 noch einmal 15 Durchläufe, darunter
+  `test-federn`, `test-chat-blasen`, `test-gruppen-aufgaben` und alle
+  Formi-Durchläufe: alle grün.
+
+**Nicht geprüft:** Safari und Firefox (dort ist die Linse absichtlich
+aus), echte Handys, die Arbeit je Bild beim Strom (bis 80 Elemente, nur
+`transform`/`opacity`) und bei der Linse.
+
+## Runde 251 — Eine Änderung rechnet nicht mehr die ganze Seite (23.10.2026)
+
+Siebter Bauschritt aus dem Plan „Studio Chat wie von Apple“: „Formi-Gefühle
+auf der Startseite leichter (Spur: ‚stolz‘ startet 52 Animationen;
+Formi-Aussehen nicht ändern)“. Formi selbst ist in dieser Runde nicht
+angefasst — am Aussehen und an den Gefühlen arbeitet eine andere Sitzung.
+
+**Gemessen, bevor etwas geändert wurde** (Startseite, Demo Chef, CPU ÷4,
+Formis Zeitgeber aus, Arbeit des Hauptfadens je Bild über 2,4 s):
+„feiert“ 12,9 ms, „freut“ 9,9, „stolz“ 9,2 — alle anderen Gefühle 3–4 ms.
+Die Spur „52 Animationen“ führte nicht zum Ziel: alle Animationen des
+Jubels laufen auf `transform`/`opacity` und auf dem Compositor (im Trace
+`compositeFailed = 0` für jede). Ein Ausbruch ohne Teilchen kostete
+gleich viel wie mit.
+
+**Was es wirklich war.** Im Trace fiel ein Muster auf: fünfmal je Jubel
+eine Stilberechnung über ~650 Elemente (gegen ~30 sonst), jedes Mal
+ausgelöst von einer ganz harmlosen Änderung — das Teilchen-Kästchen kommt
+in die Kugel, eine Welle an den `<body>`, und beides wieder weg. Eine
+Probe zeigte: **jede** Änderung irgendwo im Dokument, selbst ein
+Inline-Stil, kostete 8–14 ms am Rechner ohne Drosselung (×4 am Handy).
+Das betrifft die ganze App, nicht nur Formi.
+
+Zwei Ursachen, beide gefunden, indem Regeln einzeln herausgenommen wurden:
+
+1. **Sechs Regeln „body:has(…) .formi-kugel“** (und eine für das
+   Zwei-Faktor-Fenster). Ein `:has()` am `<body>` heisst für Chromium:
+   bei jeder Änderung darunter könnte der `<body>` jetzt anders passen.
+   Und weil Chromium alle `:has()`-Regeln in eine gemeinsame Menge legt,
+   in der auch Selektoren wie `.todo.done:has(…) .swipe-body > :not(.t-body)`
+   stehen, heisst „der body könnte sich ändern“: jedes Element neu.
+   Ohne diese sechs Regeln: 0,6 ms statt 9 ms.
+   Ersetzt durch:
+   - Geschwister: die vier Blätter, die Meldung (`#toast`), die
+     Rückgängig-Leiste und die Zwei-Faktor-Sperre stehen im Dokument vor
+     der Kugel bzw. vor `#zfModal` und werden nie umgehängt —
+     `body > .msg-sheet.show ~ .formi-kugel`. Das `body >` hält die
+     Spezifität gleich (0,3,1 wie vorher; bei `#zfModal` 2,1,1, was
+     weiter gegen `#zfModal.show` gewinnt).
+   - `body.hat-daumen` statt `body:has(#daumenDock:not([hidden]) .kopf-plus)`
+     — die Klasse setzt `kopfPlusUmhaengen` schon genau dann.
+   - `body.pp-filter-auf`, gesetzt in `ppAufklappen` (dem einzigen Ort,
+     der die Filter öffnet).
+2. **Geschwister-Selektoren, die auf `*` enden**: `.heute-liste > * + *::before`
+   und (aus Runde 244, von mir) `.pg-kopf + *`, `summary + *`. Beim
+   Entfernen eines Elements legt Chromium für `+ *` eine Ungültigkeit
+   über den ganzen Teilbaum des Elternteils — am `<body>` die ganze
+   Seite. Jetzt `:not(:first-child)::before` (dasselbe, weil `* + *`
+   jedes Kind ausser dem ersten trifft) und die Zeilen beim Namen
+   (`+ .todo`, `+ .pp-item`).
+
+**Nachher** (gleiche Messung, je Gefühl zwei Durchgänge, gegen `main`
+im selben Lauf; „längstes“ = längstes einzelnes Bild):
+
+| | Rechner 1440 | Handy 390 |
+|---|---|---|
+| feiert | 9,8–11,9 → 6,8–7,5 ms, längstes 83–183 → 50 ms | 11,0–12,1 → 6,8–7,6 ms, längstes 133–150 → 33 ms |
+| stolz | 7,6–9,0 → 6,1–7,7 ms, längstes 100–117 → 33 ms | 10,1–11,6 → 6,5–7,6 ms, längstes 67–100 → 33–50 ms |
+| freut | 6,8–7,5 → 4,9–5,4 ms, längstes 67 → 33 ms | 7,8–8,0 → 5,4–5,9 ms, längstes 50–83 → 17–33 ms |
+| Seitenwechsel (test-federn, nach Ursache 1) | 16,2 → 13,2 ms je Bild | 15,6 → 11,6 ms je Bild |
+| ein Element rein/raus | 8–14 ms → unter 1,3 ms (ohne Drosselung) | |
+
+Alle drei Gefühle liegen damit im Mittel unter der Grenze von 8,3 ms je
+Bild (120 Hz), auf beiden Geräten; einzelne Bilder darüber gibt es noch
+(Malen und Rastern der Teilchen und Wellen beim Start des Jubels). Die
+Zahlen schwanken zwischen Läufen um ±1 ms, die Richtung war in jedem Lauf
+dieselbe. Den Seitenwechsel drücken andere Dinge über 8,3 ms (siehe
+Runde 247) — die bleiben offen.
+
+**Gefunden nebenbei:** die Kugel gleitet bei Meldung und Rückgängig-Leiste
+mit einer 160-ms-Web-Animation hoch; ein Prüfen direkt nach dem Setzen
+von `.show` sieht deshalb noch die alte Lage (der Test wartet 300 ms).
+
+**Test:** neu `tests/test-ganze-seite.js`, 45 grün (gegen `main` 11 falsch):
+kein `:has` am `<body>`/`<html>`/`:root`, kein Geschwister-Selektor auf
+`*` (beide mit Gegenprobe); ein Element in die Kugel, an den `<body>`,
+ein Inline-Stil fassen < 120 Elemente an (gezählt im Trace, nicht
+gestoppt — 23–25 von ~7.000), mit eingeschleustem `body:has` wieder 419
+(Gegenprobe); „freut“, „stolz“, „feiert“ ohne Berechnung der ganzen
+Seite bei 390 und 1440 px, mit Gegenprobe, dass das Gefühl wirklich
+läuft; und dass die neuen Regeln tun, was die alten taten: Kugel und
+Sprechblase weg unter jedem der vier Blätter (390 und 1440), Kugel 72 px
+höher bei Meldung und Leiste, 68 px höher über „+ Aufgabe“, weg beim
+Filtern auf 320 × 640, Einrichten-Fenster über der Sperre (210 → 890),
+Trennlinien in „Heute“ und die obere Rundung der Gruppen unverändert.
+
+**Geändert an einem bestehenden Test:** `test-formi-verdeckt` hängte für
+„verdeckt die Rückgängig-Leiste die Kugel?“ eine Kopie von `.undobar.show`
+und `.toast.show` ans Ende des `<body>` — hinter die Kugel. Mit der neuen
+Geschwister-Regel weicht die Kugel dafür nicht aus (die Kopie steht nicht
+vor ihr). Die App hängt nie eine zweite Leiste an; der Test nimmt jetzt
+die echten Elemente `#undoBar` und `#toast`, setzt Text und `.show` und
+stellt sie danach wieder her. Die Frage und die Grenze sind dieselben —
+das ist keine Lockerung, sondern dieselbe Prüfung am echten Element (und
+offen hier genannt).
+
+**Nicht getestet:** echtes iPhone, echtes Android. Die Messungen sind
+Chromium mit CPU ÷4 — wie viel es auf einem bestimmten Gerät bringt,
+steht hier nicht.
+
+## Runde 252 — Grosser Titel, der beim Scrollen schrumpft (23.10.2026)
+
+Achter Bauschritt aus dem Plan „Studio Chat wie von Apple“: „Grosser Titel
+34 px fett, links, schrumpft beim Scrollen in die Kopfleiste (wie in Mail
+und Einstellungen)“.
+
+**Was schon da war.** Der Bereichskopf rückte beim Scrollen bereits
+zusammen (`.eng`, Bewegung per FLIP in `bereichKopfEng`, kein Übergang auf
+Layout-Eigenschaften). Es fehlten die Grössen: oben 1,85rem (29,6 px)
+in normaler Stärke, gescrollt 1,2rem. Apples Leiter sagt 34 px fett für
+den grossen Titel und 17 px halbfett für den Titel in der Kopfleiste.
+
+**Geändert.**
+- Neue Stufe `--t-3xl: 2.125rem` (34 px) in der Leiter, nur für diesen Titel.
+- Titel oben 34 px, `font-weight:700`; gescrollt `--t-md` (16,5 px im
+  neuen Schnitt) mit 600. Dieselben Werte für „Heute“ und „Nachrichten“
+  am Handy, die von Anfang an schmal stehen (Runden 218/236 — dabei
+  bleibt es, der Platz gehört dem Tag und dem Verlauf).
+- Damit der Kopf nicht höher wird, oben 4 px und unten 2 px weniger
+  Rand: er bleibt bei 85 px. Das war die Falle aus Runde 241 (die
+  Team-Seite rollt bei 390 px, sobald oben etwas über 7 px wächst).
+- Bis 360 px bleibt der Titel bei 1,45rem — „Aufgaben“ in 34 px passt
+  dort nicht neben Griff, Zeichen und Plus.
+- Im Stil Formi bleibt der Titel im Verlauf (Formi-Farben als Akzent,
+  entschieden 23.10.); die Grösse ist Apples.
+
+**Nicht gemacht, mit Grund:** ein Schrumpfen, das stufenlos dem Finger
+folgt (iOS skaliert den Titel mit der Scroll-Lage). Im Browser ginge das
+mit scroll-gesteuerten Animationen — der Kopf liegt aber ausserhalb des
+Scroll-Bereichs, und eine Skalierung ändert seine Höhe nicht: der Platz,
+den der kleine Titel freigeben soll, käme erst mit einem Layout-Sprung.
+Das bestehende Umschalten mit FLIP ist ein Layout statt eines je Bild
+und lief bisher ohne Beschwerde.
+
+**Test:** neu `tests/test-grosser-titel.js`, 76 grün: in allen fünf
+Bereichen bei 320 / 390 / 430 / 820 / 1280 / 1440 / 1920 px oben 34 px
+fett (bis 360: 1,45rem), ganz zu lesen, Kopf ≤ 86 px; gescrollt 17 px
+halbfett und niedriger; zurück oben wieder gross. Der Plan springt beim
+Öffnen auf heute und steht darum zu Recht klein da (geprüft, dann nach
+oben). Im Chat am Handy hat der Verlauf seinen eigenen Kopf. Kopf als
+Knopf ≥ 44 × 44 per Hit-Test in normal und kompakt bei 320/390/820/1440.
+Am Rechner scrollen „Studio“ und „Plan“ in der Demo nicht weit genug zum
+Schrumpfen (unter 90 px Überhang — dann schrumpft er absichtlich nicht);
+dort ist es an „Zeiten“ geprüft.
+
+**Nicht getestet:** echtes iPhone; die Kontrastmessung des Titels im
+Verlauf ist unverändert gegenüber Runde 241 (Farben nicht angefasst).
+
+## Runde 253 — Blätter mit Griff und Rasthöhen (23.10.2026)
+
+Neunter Bauschritt aus dem Plan „Studio Chat wie von Apple“: „Blatt
+(Sheet): Rasthöhen halb und voll, ein Griff oben zeigt, dass man ziehen
+kann.“
+
+**Was schon da war.** Zehn Fenster kamen am Handy (bis 620 px) schon als
+Blatt von unten (`profileModal`, `personModal`, `devModal`, `pollModal`,
+`todoEditModal`, `aboModal`, `ownTodoModal`, `probeModal`, `zugangModal`,
+`putzModal`), dazu die vier Blätter `docSheet`, `todoSheet`, `msgSheet`,
+`shiftSheet` bis 1099 px. Oben sass ein gemalter Strich (`::before`) —
+er sah aus wie ein Griff, liess sich aber nicht ziehen. Ein Zeichen, das
+etwas verspricht und nichts tut, ist schlechter als keins.
+
+**Geändert.**
+- Der Strich ist jetzt ein echtes Element `.blatt-griff` (oben im Blatt,
+  `position:sticky`, damit er beim Scrollen im Blatt bleibt). Trefferfläche
+  ≥ 44 px hoch und `min(200px, 60%)` breit, der sichtbare Strich bleibt
+  36 × 5 px wie bei iOS. Er wird in `dialogeVorbereiten` einmal eingesetzt,
+  `aria-hidden` — er ist eine Abkürzung, kein eigener Bedienweg.
+- Ziehen per Pointer-Ereignissen am Griff, Bewegung nur per `transform`.
+  Beim Loslassen zählt Weg **und** Tempo (geschätzt aus den letzten
+  Bewegungen): kurzer Zug federt zurück, weiter oder schnell nach unten
+  schliesst. Nach oben gibt es nur einen Gummiband-Widerstand.
+- Halbe Höhe nur bei hohen Blättern (Inhalt über 62 % des Bildschirms):
+  ein mittlerer Zug rastet bei 50 % ein, von dort nach oben wieder ganz.
+  Kurze Blätter springen nicht auf halb — sie wären danach kaum kleiner.
+  Der Wechsel der Höhe läuft per FLIP (einmal Layout, dann `transform`).
+- Geschlossen wird über einen Klick auf den Hintergrund des Fensters —
+  also über die vorhandenen Schliess-Wege, mit allem, was die schon
+  tun. Ein eigener Schliessweg hätte das ein
+  zweites Mal gebaut. Beim nächsten Öffnen steht das Blatt wieder ganz da.
+- Wo das Fenster in der Mitte steht (Profil ab 621 px, Aufgaben-Blatt ab
+  1100 px), gibt es keinen Griff — am Rechner zieht man keine Fenster
+  nach unten weg, dort bleiben Esc, ✕ und der Klick daneben.
+
+**Nicht gemacht, mit Grund:** Ziehen am ganzen Blatt (iOS erlaubt das
+auch aus dem Inhalt, wenn er oben steht). Im Browser kollidiert das mit
+dem Scrollen im Blatt und mit Wischgesten in Listen darin; der Griff ist
+eindeutig. Kann folgen, wenn es im Studio vermisst wird.
+
+**Test:** neu `tests/test-blaetter.js`, 69 grün: Aufgaben-Blatt und Profil
+bei 320 / 390 / 430 in normal und kompakt — Griff per Hit-Test ≥ 44 × 44
+(172 × 44 bei 320), Strich 36 × 5 mittig, ganz oben im Blatt, überdeckt
+keinen Knopf; 30 px gezogen federt zurück; mittlerer Zug am hohen Blatt
+rastet bei 50 % ± 3 % ein (320 von 640 px), nach oben wieder ganz; weit
+gezogen und schnell geschnippt (80 px) schliesst; öffnet danach wieder
+ganz. Bei 820 hat das Aufgaben-Blatt einen Griff, bei 1280 / 1440 / 1920
+keins; das Profil hat ab 621 px keinen.
+
+**Nicht getestet:** echtes iPhone mit Finger (gezogen wird im Test mit
+der Maus über dieselben Pointer-Ereignisse); das Gefühl der Federung ist
+eine Einschätzung, keine Messung.
+
+## Runde 254 — Glas für die untere Leiste, mit eigenem Schalter (23.10.2026)
+
+Zehnter Bauschritt aus dem Plan „Studio Chat wie von Apple“: „Glas
+(Unschärfe) nur bei Kopf- und unterer Leiste, nie hinter Text in Karten,
+immer mit einem Schalter ‚Transparenz reduzieren‘. Prüfung: Kontrast
+≥ 4,5 : 1 an echten Bildpunkten.“
+
+**Warum es mehr ist als ein Weichzeichner.** Seit dem 23.9. war die
+untere Leiste deckend, aus gutem Grund (an `.topbar` begründet): unter
+ihr scrollte nichts durch, ein Weichzeichner hätte nur den stehenden
+Hintergrund verwischt. Glas ohne Inhalt dahinter ist eine Farbe. Darum
+läuft der Inhalt jetzt unter die Leiste:
+- Das Polster von `.main` heisst jetzt `--main-unten` (Wert unverändert:
+  `--s72`, mit Formi-Kugel `80px + 58px + --s8`).
+- Der Scroll-Bereich hebt es mit einem negativen Rand auf und reicht bis
+  an den unteren Rand; ein Abstandhalter (`::after`) genau dieser Höhe
+  am Ende sorgt dafür, dass der letzte Eintrag ganz unten an **derselben
+  Stelle** steht wie vorher — über der Leiste und über Formi.
+- `scroll-padding-bottom` in derselben Höhe: was unter der Leiste liegt,
+  ist zu sehen, aber nicht „im Bild“. Ohne das richteten Fokus und
+  `scrollIntoView` ein Element am unteren Rand aus — also genau unter
+  der Leiste. Gefunden hat es test-formi-verdeckt (Schulung bei 320 ×
+  568, Notizen bei 820): Karten liessen sich dort nicht mehr neben die
+  Kugel holen. Mit dem Polster ist der Test ohne Änderung grün.
+- Die Leiste: Grund zu 74 % (`color-mix` mit `--bg`, hell `--bg-2`),
+  `blur(20px) saturate(1.8)`.
+
+**Wo nicht, mit Grund.**
+- Startseite: sie soll auf einen Bildschirm passen; unter der Leiste liegt
+  dort absichtlich nichts.
+- Kopf: er liegt über dem Scroll-Bereich, nicht auf ihm — wieder nichts
+  zu verwischen. Ihn über den Inhalt zu legen hiesse, den grossen Titel
+  aus Runde 252 neu zu bauen; das ist es nicht wert.
+- Am Rechner: neben der Seitenleiste scrollt nichts darunter.
+- Die Leiste schrumpft beim Scrollen NICHT (iOS 26 tut es): im Plan
+  steht unter „Was nicht übernommen wird“, dass nichts unerwartet Ort
+  oder Grösse ändert.
+
+**Der Schalter.** Safari meldet `prefers-reduced-transparency` nicht,
+also: Profil → Aussehen → „Untere Leiste am Handy“: Glas / Deckend
+(`PREFS.glas`, `body[data-glas]`), mit kleiner Vorschau wie bei der
+Dichte; „Zurücksetzen“ nimmt ihn mit. Wo der Browser „Transparenz
+reduzieren“ oder „Mehr Kontrast“ meldet (Chromium), ist die Leiste ohne
+Schalter deckend; wo er keinen Weichzeichner kann, ebenfalls — 74 %
+ohne Unschärfe wären unruhiger als beides. „Deckend“ im Stil Formi ist
+jetzt wirklich deckend: dieselbe Farbe (`--hud-glas`), aber auf `--bg`.
+
+**Test:** neu `tests/test-glas.js`, 69 grün. Glas bei 320 / 390 / 430 /
+820 in Formi, Dunkel, Hell; in Studio, Zeiten, Plan endet der
+Scroll-Bereich am unteren Rand und das letzte Element steht ganz unten
+über der Leiste; Startseite unverändert. Beschriftung der Leiste an
+echten Bildpunkten mit Inhalt darunter: schwächste 6,3 : 1 (Formi),
+5,3 : 1 (Dunkel), 5,7 : 1 (Hell). Schalter: beide Wahlen ≥ 44 × 44 per
+Hit-Test (normal und kompakt, 320/390/1440), Deckend wirkt, bleibt nach
+dem Neuladen, Zurücksetzen stellt Glas her. Transparenz reduzieren und
+Mehr Kontrast (per CDP gemeldet) machen deckend. Am Rechner (1280 /
+1440 / 1920) keine Leiste, kein negativer Rand.
+
+**Kosten, gemessen in dieser Umgebung** (390 px, CPU ÷ 4, Aufgabenliste
+2 s gescrollt, A-B-B-A): Hauptfaden mit Glas 13,2 ms je Bild, deckend
+13,0; Rastern 0,5 gegen 0,4 ms. Ohne Grafikkarte gerechnet: was eine
+echte Grafikkarte für die Unschärfe braucht, misst das **nicht**.
+Gefunden nebenbei: das Scrollen der Aufgabenliste liegt bei CPU ÷ 4
+schon deckend über 8,3 ms je Bild — das ist die Liste, nicht das Glas,
+und steht als offene Baustelle hier.
+
+**Gefunden nebenbei:** test-blaetter (Runde 253) schnippte mit zwei
+einzelnen Mausbewegungen; unter Last (vier Tests parallel) lagen
+dazwischen so viele ms, dass aus dem Schnippen ein langsamer Zug wurde
+und das Blatt — richtig — offen blieb. Jetzt in einem Aufruf ohne
+Pause; die Schwellen in der App sind unverändert.
+
+**Nicht getestet:** Safari und ein echtes iPhone (dort wirkt die
+Unschärfe über die Grafikkarte; Kontrast und Lesbarkeit sind hier nur in
+Chromium gemessen).
+
+## Runde 255 — Wischen auf Listeneinträgen, wie in Mail (23.10.2026)
+
+Elfter Bauschritt aus dem Plan „Studio Chat wie von Apple“, mit der
+Richtlinie dazu: „Wischaktionen werden selten entdeckt (NN/g) — Wischen
+nur als Abkürzung, jede Aktion auch sichtbar.“
+
+**Was schon da war.** Nach rechts wischen (> 80 px) hakte Aufgaben und
+Putzplan-Zeilen ab (`bindSwipe`). Ob man weit genug war, sah man erst
+nach dem Loslassen.
+
+**Geändert.**
+- Nach rechts: über der Schwelle wächst der Haken (Klasse `swipe-ueber`)
+  und es tickt einmal — man sieht vor dem Loslassen, dass es abhakt.
+- Nach links: „Mehr“ und — wer darf — „Löschen“ schieben sich von rechts
+  mit herein und bleiben stehen (über die Hälfte des Felds oder schnell
+  geschnippt). Die Knöpfe drücken genau die vorhandenen (⋯ und
+  Papierkorb); „Löschen“ fragt also weiter nach. Ein Durchwischen ohne
+  Tipp löscht nichts: was nicht umkehrbar ist, braucht einen Tipp.
+- Ein Tipp auf die offene Zeile schliesst nur (öffnet nicht noch die
+  Aufgabe), ein Tipp woanders oder Scrollen schliesst, eine zweite Zeile
+  zu öffnen schliesst die erste.
+- Das Aktionsfeld entsteht erst beim ersten Wischen: die Liste zeichnet
+  sich oft neu, Hunderte unsichtbarer Knöpfe wären Arbeit für nichts
+  (und Zähler in den Knopf-Tests).
+- „Löschen“ auf `--danger` mit dunkler Schrift (5,7 : 1); weiss läge
+  darunter.
+- Pausierte Putzplan-Zeilen: nach links ja (Mehr, Löschen), abhaken nein.
+
+**Sichtbarer Weg:** jede Zeile trägt ⋯; am Handy stehen Bearbeiten und
+Löschen seit Runde 187 dort drin (der Test prüft, dass „Löschen“ im
+Blatt steht).
+
+**Test:** neu `tests/test-wischen.js`, 52 grün, mit echten
+Touch-Ereignissen (CDP) bei 320 / 390 / 430 / 820 an Aufgaben und
+Putzplan, Hit-Test der Knöpfe in normal und kompakt (76 px breit, so hoch
+wie die Zeile), Rechner: Maus-Ziehen öffnet nichts. Bei 320 deckt die
+Formi-Kugel die Mitte von „Löschen“ an einer hohen Zeile — der Test tippt
+oben in den Knopf; das ist der Platz der Kugel, kein Fehler des Felds.
+
+**Nicht getestet:** echtes iPhone mit Finger.
+
+## Runde 256 — Ziehen zum Aktualisieren (23.10.2026)
+
+Zwölfter Bauschritt aus dem Plan.
+
+**Was „aktualisieren“ hier ehrlich heisst.** Die Listen sind live mit
+der Datenbank verbunden; es gibt nichts nachzuladen, was nicht schon da
+wäre. Ein Zug nach unten tut darum zweierlei, und nur das:
+1. nach einer neuen Version der App suchen (`reg.update()`, sonst
+   höchstens einmal je Minute beim Zurückkommen) — findet er eine, lädt
+   die Seite wie bei jedem Update einmal neu;
+2. sagen, wie es steht: „Aktuell – Änderungen kommen live an“ oder
+   „Keine Verbindung – du siehst den letzten Stand“.
+Etwas anderes zu behaupten („12 neue Einträge geladen“) wäre erfunden.
+
+**Wie es sich anfühlt.** Nur ganz oben in einer Liste, nur senkrecht,
+nur mit dem Finger. Die Liste rückt den halben Weg mit (höchstens
+110 px), darüber füllt sich ein Kreis in der Bereichsfarbe; bei 72 px ist
+er voll und es tickt. Losgelassen hält die Liste bei 48 px, der Kreis
+dreht sich mindestens 0,6 s (eine Antwort nach 20 ms sähe aus, als wäre
+nichts passiert), dann federt sie zurück und die Rückmeldung kommt.
+Gemessen wird einmal je Zug, nicht je Bewegung. Im Chat nicht: dort
+heisst Ziehen „ältere Nachrichten“.
+
+**Test:** neu `tests/test-ziehen-aktualisieren.js`, 39 grün (320 / 390 /
+430 / 820 und am Rechner): kurzer Zug federt zurück und sucht nicht;
+weiter Zug füllt den Kreis, dreht, sucht genau einmal, meldet „Aktuell“;
+gescrollt, waagerecht und im Chat nichts; ohne Verbindung die ehrliche
+Meldung und keine Suche. Der Service Worker ist im Test gesperrt —
+gezählt wird der Aufruf von `update()`, nicht, ob ein echtes Update
+gefunden würde.
+
+## Runde 257 — Schriftgrösse wie am iPhone (23.10.2026)
+
+Dreizehnter Bauschritt aus dem Plan: „`font: -apple-system-body` folgt
+in Safari der eingestellten Textgrösse des iPhones.“
+
+**Wie.** Ein unsichtbares Probestück mit `font:-apple-system-body`; seine
+Grösse im Verhältnis zu 17 px (Standard am iPhone) wird `--fs`. Bei der
+Standardgrösse ändert sich also nichts — nur wer am iPhone grössere oder
+kleinere Schrift eingestellt hat, bekommt sie auch hier. Beim
+Zurückkommen aus dem Hintergrund wird neu gemessen.
+
+**Grenzen, mit Grund.**
+- Nur auf Touch-Geräten: Safari am Mac liefert 13 px (die Mac-Grösse) —
+  das hiesse dort „kleiner“, ohne dass jemand etwas eingestellt hat.
+- 90 bis 125 %: genau die Spanne der festen Stufen (Klein bis Sehr
+  gross), auf die die Ansichten geprüft sind. Die Bedienungshilfe-Grössen
+  des iPhones gehen bis 300 % und würden die Ansichten sprengen.
+- Chrome kennt `-apple-system-body` nicht: dort gibt es die Wahl nicht.
+
+**Voreinstellung.** Wo die App es lesen kann, ist „Wie am Gerät“ einmal
+je Gerät die Voreinstellung (`fs2`) — wer „Normal“ hatte, sieht bei
+Standardgrösse keinen Unterschied; Klein, Gross, Sehr gross bleiben.
+„Zurücksetzen“ führt dorthin zurück. Andere benutzen die App parallel:
+an einem iPhone mit Standardschrift ändert sich nichts, und das ist der
+häufigste Fall.
+
+**Test:** neu `tests/test-schrift-geraet.js`, 19 grün. Weil Chromium
+`-apple-system-body` nicht kennt, ist Safari nachgestellt (CSS.supports
+und die Grösse des Probestücks) — geprüft ist, was die App aus dem Wert
+macht, **nicht**, was ein echtes iPhone liefert. 17 → 100 %, 21 →
+123,5 %, 14 → 90 %, 40 → 125 %; eigene Wahl bleibt; neu messen beim
+Zurückkommen; ohne Unterstützung oder mit Maus keine neue Wahl; fünf
+Wahlen ≥ 44 × 44 (normal und kompakt); bei 125 % ragt bei 320 px auf
+Startseite und Studio nichts seitlich hinaus.
+
+**Nicht getestet:** Safari am iPhone. Das ist der eine Punkt dieser
+Runde, den nur ein Blick am echten Gerät bestätigt.
+
+**Gefunden nebenbei (Blätter, Runde 253):** test-blaetter wurde im
+Gesamtdurchlauf wieder rot — „schnell 80 px geschnippt → zu" bei 430 px —,
+allein grün. Der Grund lag diesmal in der App: das Tempo des Zugs wurde
+mit `performance.now()` beim Abarbeiten gemessen. Ist das Gerät
+beschäftigt, kommen die Bewegungen gebündelt an, und ein Schnippen sah aus
+wie ein langsamer Zug. Jetzt zählt `e.timeStamp` (wann der Finger dort
+war), und ein Zug unter 250 ms zählt mit seinem mittleren Tempo, wenn das
+höher ist. Das hilft auch auf einem langsamen Handy, nicht nur im Test.
+Die Schwellen sind unverändert.
+
+## Runde 258 — Linien-Symbole mit einer Strichstärke (23.10.2026)
+
+Vierzehnter Bauschritt aus dem Plan „Studio Chat wie von Apple“:
+„SF-Symbols-artige Linien-Symbole“. Apples Schrift und Symbole selbst
+werden nicht übernommen (Plan: „zeichnet eigene Symbole im selben Stil“) —
+übernommen wird, was sie ausmacht.
+
+**Gemessen vorher** (390 und 1440 px, alle Ansichten, Formi): gezeichnet
+wurden Striche von 1,04 bis 2,19 px, 644 mit eckigem und 577 mit rundem
+Ende. Der Grund: die Stärke stand im 24er-Raster (`stroke-width="2"`) und
+wuchs mit der Grösse — ein 16-px-Symbol 1,33 px, ein 24-px-Symbol 2 px.
+Bei Apple ist ein Symbol in einer Zeile so kräftig wie die Schrift
+daneben, egal wie gross es steht.
+
+**Geändert.**
+- `vector-effect: non-scaling-stroke` mit einer Stärke in echten
+  Bildpunkten, `--sym-strich: 1.7px`, runde Enden und Ecken — für alle
+  Symbole in Knöpfen, Leisten, Auswahlen und `.sym`.
+- Punkte bleiben Punkte: was im Raster mit `stroke-width="3"` als Punkt
+  gezeichnet ist (Mehr „…“), bekommt das 1,75-fache.
+- Ausgenommen: der Haken im Abhak-Kreis (soll kräftiger sein als ein
+  Symbol, wie in Apples Erinnerungen), das Logo, Formi.
+- Keine Schriftzeichen mehr als Symbol: „⋯“ an Aufgaben, Putzplan und
+  Dokumenten → `ikon('mehr')`; „＋“ im Wochenplan → `ikon('plus')`;
+  „＋ Schicht“ und „≡ Verwalten“ über `data-ikon`.
+
+**Test:** neu `tests/test-symbole.js`, 33 grün: in jeder Ansicht bei 320 /
+390 / 820 / 1440 / 1920 (Formi), 390 (Hell), 1280 (Dunkel) ist jeder
+sichtbare Strich 1,7 px (Punkte 2,975) mit runden Enden — rund 900 bis
+1.370 Striche je Breite; der Haken im Kreis bleibt bei 3,5; kein Knopf
+trägt ⋯, ≡ oder ＋ aus der Schrift; ⋯ an Aufgaben und ＋ im Wochenplan
+sind zu sehen (20 × 20) und ≥ 44 × 44 per Hit-Test (normal und kompakt).
+
+**Gefunden beim Gesamtdurchlauf:** `test-gestaltung` meldete „dieselbe
+Eigenschaft zweimal" — die Punkt-Regel setzte `stroke-width` ein zweites
+Mal. Jetzt steht `stroke-width` nur in einer Regel
+(`var(--sym-dicke, var(--sym-strich))`); die Punkt-Regel setzt nur
+`--sym-dicke`. Beide Zweige (Knöpfe und `.sym`) stehen in einem `:is()`.
+
+## Runde 259 — Leere Zustände zeigen den nächsten Schritt (23.10.2026)
+
+Fünfzehnter und letzter Bauschritt aus dem Plan: „leere Zustände zeigen
+den nächsten Schritt“ (Apple, Writing). Formi sitzt seit Runde 233 über
+jeder leeren Liste; was fehlte, war an den meisten Stellen der Weg.
+
+**Gezählt:** 26 Aufrufe von `emptyHTML`, 1 mit einem Weg-Knopf
+(„Aufgabe anlegen“). Der Mechanismus (`tatKnopf` → drückt das echte
+Bedienelement) war da und wurde kaum benutzt.
+
+**Geändert.**
+- Suche ohne Treffer (Aufgaben, Putzplan, Direktnachrichten, Notizen):
+  „Suche leeren“. Dafür kann `tatKnopf` jetzt einen Wert setzen
+  (`data-leerzu-wert`) — das Feld bekommt ein input-Ereignis wie beim
+  Tippen, also keine eigene Logik.
+- Filter ohne Treffer (Aufgaben, Putzplan): „Alle zeigen“ drückt den
+  Filter „Alle“. Der Satz „tippe auf ‚Alle‘ (unter ‚Filter‘)“ fällt weg —
+  der Knopf sagt es.
+- Leere Listen mit einem Eingabeweg: „Punkt anlegen“, „Gerät eintragen“,
+  „Probetraining eintragen“, „Namen suchen“, „Wunsch eintragen“, „Ziel
+  eintragen“, „To-do eintragen“, „Notiz schreiben“ — jeweils nur, wer
+  darf.
+- Ist das Ziel ein Feld, hat es danach den Fokus (vorher drückte der Weg
+  nur `click()`, das bei einem Feld nichts tut).
+
+**Test:** neu `tests/test-leer-weg.js`, 34 grün, in der echten Demo bei 390
+und 1440 px, normal und kompakt: Suche ohne Treffer in Aufgaben, Putzplan,
+Direktnachrichten → Formi und „Suche leeren“ (≥ 44 × 44), danach Feld
+leer, im Fokus, Liste wieder da; Filter „meine“ ohne Treffer → „Alle
+zeigen“ schaltet auf Alle; in allen Ansichten zeigt jeder sichtbare Weg
+auf ein Element, das es gibt, und Felder bekommen den Fokus. Die Wege für
+leere Geräte-, Probetrainings-, Wunsch- und Ziellisten kommen in der Demo
+nicht vor (dort steht etwas) — sie sind über denselben Mechanismus gebaut,
+aber hier nicht einzeln durchgeklickt.
+
+**Ein bestehender Test geändert:** `test-aufgaben-bereich4` verlangte den
+Satz „tippe auf …" im leeren Filter. Der Satz ist durch den Knopf „Alle
+zeigen" ersetzt; der Test prüft jetzt, dass der Knopf da ist **und** auf
+„Alle" schaltet — strenger als vorher, nicht lockerer.
+## Runde 260 — Vier Räume für Mitarbeiter (23.10.2026)
 
 Aus dem Betrieb, 23.10.2026, auf „Mitarbeiter unten nur Heute, Zeiten,
 Plan, Nachrichten – Studio und Wissen über ‚Alles'?": „ja". Seit Runde 240
@@ -21681,3 +22614,11 @@ habe ich durchgesehen.
 Dokumenten nach einem älteren Umbau die zuletzt offene Seite ein zweites
 Mal. Die Zahl der Messungen ist deshalb etwas grösser als die der
 erreichten Ansichten.
+
+**Beim Zusammenführen mit main (Runden 246–259)**
+
+- test-raeume war auch auf `main` rot (7 von 31): Runde 246 nahm „Wissen“
+  unten am Handy heraus (aus dem Betrieb: „ja so wie du empfohlen hast
+  klingt super“), der Raum-Test erwartete weiter sechs Knöpfe. Jetzt
+  erwartet er am Handy im neuen Design fünf, mit dem Zitat im Test;
+  31 grün.

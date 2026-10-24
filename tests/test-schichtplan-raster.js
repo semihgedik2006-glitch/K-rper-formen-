@@ -472,6 +472,104 @@ const ZUSTAND = () => {
     await c.close();
   }
 
+  console.log('\n── 11. Fragen zum Plan, Zurücknehmen, Öffnungszeiten aus dem Excel ──');
+  /* Runde 245 — aus dem Betrieb: „uns alle fragen stellen welche wir
+     beantworten müssen“ und „jap mach weiter dann“. */
+  {
+    const fs = require('fs'), path = require('path');
+    const py = fs.readFileSync(path.join(__dirname, '..', 'docs', 'schichtplaner', 'werkzeug', 'inhalt.py'), 'utf8');
+    const block = py.slice(py.indexOf('FRAGEN = ['), py.indexOf('# Was ich von LogX'));
+    const ausPdf = [...block.matchAll(/\(\s*"((?:[^"\\]|\\.)*)",\s*\n\s*"((?:[^"\\]|\\.)*)"\)/g)].map(m => m[1]);
+    const c = await b.newContext({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
+    const p = await c.newPage();
+    p._fehler = []; p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
+    await p.route('**://www.gstatic.com/**', r => r.abort());
+    await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); window.confirm = () => true; });
+    await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
+    await p.waitForTimeout(3200);
+    const r = await p.evaluate(async () => {
+      const wt = ms => new Promise(r => setTimeout(r, ms));
+      const g = document.getElementById('bereichKopf'); if (g && g.offsetParent) { g.click(); await wt(700); }
+      [...document.querySelectorAll('[data-alles="planer"]')].find(e => e.offsetParent).click(); await wt(2500);
+      const f = document.getElementById('spFragen'); f.open = true; await wt(150);
+      const fragen = [];
+      for (let i = 0; i < 5; i++) {
+        document.querySelector('[data-spfgruppe="' + i + '"]').click(); await wt(120);
+        document.querySelectorAll('.spl-frage label').forEach(l => fragen.push(l.textContent.replace(/^\d+\s*/, '').trim()));
+      }
+      const vor = document.getElementById('spFragenKurz').textContent;
+      document.querySelector('[data-spfgruppe="0"]').click(); await wt(120);
+      document.querySelector('[data-sppasst="1"]').click(); await wt(300);
+      const t = document.getElementById('spAntwort3'); t.value = 'Früh 7–14, Spät 14–21'; t.dispatchEvent(new Event('change')); await wt(300);
+      const nach = document.getElementById('spFragenKurz').textContent;
+      // nach einem Monatswechsel neu geladen: die Antworten sind gespeichert
+      document.getElementById('spMonatVor').click(); await wt(900);
+      document.getElementById('spMonatZurueck').click(); await wt(1500);
+      const geladen = document.getElementById('spFragenKurz').textContent;
+      const a3 = (document.getElementById('spAntwort3') || {}).value;
+      f.open = false;
+      // veröffentlichen, dann zurücknehmen
+      document.getElementById('spLos').click(); await wt(4000);
+      document.getElementById('spVeroeffentlichen').click(); await wt(2500);
+      const zeigt = !document.getElementById('spZurueck').hidden;
+      document.getElementById('spZurueck').click(); await wt(2500);
+      return { fragen, vor, nach, geladen, a3, zeigt, weg: document.getElementById('spZurueck').hidden,
+        zustand: document.getElementById('spZustand').textContent, toast: (document.getElementById('toast') || {}).textContent };
+    });
+    console.log('  ' + JSON.stringify(Object.assign({}, r, { fragen: r.fragen.length })));
+    pruefe('in der App dieselben 24 Fragen wie in PDF und Excel (inhalt.py)',
+      ausPdf.length === 24 && r.fragen.length === 24 && ausPdf.every((q, i) => q === r.fragen[i]),
+      JSON.stringify(ausPdf.map((q, i) => q === r.fragen[i] ? '' : i + 1).filter(Boolean)));
+    pruefe('„passt“ und eine eigene Antwort zählen: 0 → 2 von 24', /^0 von 24/.test(r.vor) && /^2 von 24/.test(r.nach), r.vor + ' → ' + r.nach);
+    pruefe('nach dem Neuladen sind die Antworten noch da', /^2 von 24/.test(r.geladen) && /Spät 14–21/.test(r.a3 || ''), r.geladen + ' · ' + r.a3);
+    pruefe('nach dem Veröffentlichen steht „Veröffentlichung zurücknehmen“', r.zeigt);
+    pruefe('Zurücknehmen nimmt die Schichten heraus, der Entwurf bleibt', r.weg && /Entwurf/.test(r.zustand) && /zurückgenommen/.test(r.toast || ''), JSON.stringify(r));
+    const team = await p.evaluate(async () => {
+      const wt = ms => new Promise(r => setTimeout(r, ms));
+      [...document.querySelectorAll('#side [data-group="g-team"]')].find(x => x.getClientRects().length).click(); await wt(1500);
+      let notizen = 0;
+      for (let i = 0; i < 8; i++) {
+        document.getElementById('shiftNext').click(); await wt(150);
+        notizen += [...document.querySelectorAll('#shiftGrid .wp-schicht small, #shiftGrid .shift-note')].filter(n => /Früh|Spät|Samstag/.test(n.textContent)).length;
+      }
+      document.getElementById('shiftToday').click(); await wt(150);
+      return notizen;
+    });
+    pruefe('GEGENPROBE im Team-Plan: keine Planer-Schichten mehr (Schichtname) in den nächsten Wochen', team === 0, String(team));
+    pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await c.close();
+  }
+  {
+    /* Öffnungszeiten nur im Excel-Blatt „Studios“, nicht unter Verwaltung →
+       Studios: die Besetzungs-Leiste nimmt die aus dem Excel. */
+    const c = await b.newContext({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
+    const p = await c.newPage();
+    p._fehler = []; p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
+    await p.route('**://www.gstatic.com/**', r => r.abort());
+    await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
+    await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
+    await p.waitForTimeout(3200);
+    const r = await p.evaluate(async () => {
+      const wt = ms => new Promise(r => setTimeout(r, ms));
+      const db = firebase.firestore().collection('firmen').doc('koerperformen');
+      const st = await db.collection('config').doc('studios').get();
+      const liste = (st.data().liste || []).map(x => { const y = Object.assign({}, x); delete y.oeffnung; return y; });
+      await db.collection('config').doc('studios').set(Object.assign({}, st.data(), { liste }));
+      const studios = {};
+      liste.forEach(x => { studios[x.id] = { min: 1, oeffnung: { 1: '10:00–12:00', 2: '10–12', 3: '10:00-12:00', 4: '10.00 – 12.00', 5: '10:00-12:00', 6: '10:00-12:00', 7: 'zu' } }; });
+      await db.collection('config').doc('schichtplaner').set({ studios }, { merge: true });
+      await wt(500);
+      [...document.querySelectorAll('#side [data-group="g-team"]')].find(x => x.getClientRects().length).click(); await wt(1800);
+      return [...document.querySelectorAll('.wp-besetzt .wp-band')].map(x => x.getAttribute('aria-label'));
+    });
+    console.log('  ' + JSON.stringify(r));
+    pruefe('Öffnungszeit aus dem Excel: Mo–Sa „Geöffnet 10–12 Uhr“, auch bei „10.00 – 12.00“ und „10–12“',
+      r.length === 7 && r.slice(0, 6).every(x => /^Geöffnet 10–12 Uhr/.test(x || '')), JSON.stringify(r));
+    pruefe('„zu“ im Excel heisst geschlossen', /^Geschlossen/.test(r[6] || ''), r[6]);
+    pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await c.close();
+  }
+
   await b.close();
   console.log(schlecht
     ? '\n✗ Schichtplan-Raster: ' + schlecht + ' von ' + (gut + schlecht) + ' Zusicherungen falsch'

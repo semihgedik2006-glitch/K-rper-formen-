@@ -167,11 +167,19 @@ const aktuell = (p) => p.evaluate(() => ((document.querySelector('.view.show') |
             const probe = (cls, html) => { const d = document.createElement('div'); d.className = cls; d.innerHTML = html; document.body.appendChild(d);
               const r = d.getBoundingClientRect(); if (r.right > kr.left - 4 && r.left < kr.right + 4 && r.bottom > kr.top - 4 && r.top < kr.bottom + 4) raus.push(cls + ' (' + Math.round(r.left) + '–' + Math.round(r.right) + ' × ' + Math.round(r.top) + '–' + Math.round(r.bottom) + ')'); d.remove(); };
             /* Die Kugel weicht aus, solange eine davon steht — gemessen
-               wird also die Kugel MIT eingeblendeter Leiste. */
-            const probeMit = (cls, html) => { const d = document.createElement('div'); d.className = cls; d.innerHTML = html; document.body.appendChild(d);
+               wird also die Kugel MIT eingeblendeter Leiste. Runde 251:
+               mit den ECHTEN Elementen (#undoBar, #toast) statt einer
+               angehängten Kopie. Die Regel dafür ist seitdem „#toast.show
+               ~ .formi-kugel" (ein :has am <body> rechnete bei jeder
+               Änderung die ganze Seite neu) — und eine Kopie hinter der
+               Kugel ist kein Geschwister VOR ihr. Die App hängt nie eine
+               zweite Leiste an; geprüft wird dieselbe Frage am echten
+               Element: verdeckt die stehende Leiste die Kugel? */
+            const probeMit = (cls, html) => { const d = document.getElementById(cls.startsWith('undobar') ? 'undoBar' : 'toast');
+              const altHtml = d.innerHTML, altKlasse = d.className; d.innerHTML = html; d.className = cls;
               const k2 = k.getBoundingClientRect(); const r = d.getBoundingClientRect();
               if (r.right > k2.left - 4 && r.left < k2.right + 4 && r.bottom > k2.top - 4 && r.top < k2.bottom + 4) raus.push(cls + ' (' + Math.round(r.left) + '–' + Math.round(r.right) + ' × ' + Math.round(r.top) + '–' + Math.round(r.bottom) + ', Kugel ' + Math.round(k2.top) + '–' + Math.round(k2.bottom) + ')');
-              d.remove(); };
+              d.className = altKlasse; d.innerHTML = altHtml; };
             const vorher = getComputedStyle(k).transition; k.style.transition = 'none';
             probeMit('undobar show', '<span>Aufgabe „Briefkasten leeren" erledigt</span><button>Rückgängig</button>');
             probeMit('toast show', 'Gespeichert — in allen Studios sichtbar');

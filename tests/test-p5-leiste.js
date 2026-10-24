@@ -18,7 +18,8 @@
    24.9.: Studio (Aufgaben und Putzplan) vor Nachrichten.
 
    Was dieser Durchlauf festhält:
-     · unten stehen Heute · Studio · Zeiten · Plan · Nachrichten · Wissen
+     · unten stehen Heute · Studio · Zeiten · Plan · Nachrichten
+       (Runde 246: „Wissen" unter ☰, zwei Tipps)
      · „Studio" öffnet die Aufgaben und trägt die Marke; der Putzplan ist
        der Reiter daneben (kein eigener Knopf mehr), die Marke bleibt
        auf „Studio"
@@ -83,7 +84,7 @@ async function tippe(p, wort) {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
 
   {
-    /* Runde 245, aus dem Betrieb 23.10.2026 auf „Mitarbeiter unten nur Heute, Zeiten, Plan, Nachrichten?": „ja". Die Abläufe über „Studio" prüft
+    /* Runde 260, aus dem Betrieb 23.10.2026 auf „Mitarbeiter unten nur Heute, Zeiten, Plan, Nachrichten?": „ja". Die Abläufe über „Studio" prüft
        dieser Durchlauf deshalb mit der Studioleitung, die alle Räume hat;
        die vier Räume der Mitarbeiter stehen gleich darunter. */
     {
@@ -101,9 +102,12 @@ async function tippe(p, wort) {
     console.log('  ' + JSON.stringify(a));
     // Runde 184: „das problem mit dem zu viel bleibt immer noch bestehen" — fünf Räume.
     /* Runde 222 (23.10.2026): „Zeiten" bekommt einen eigenen Knopf —
-       aus dem Betrieb auf die Rückfrage: „eigener knopf". */
-    pruefe('unten stehen Heute · Studio · Zeiten · Plan · Nachrichten · Wissen',
-      a.reihe.join('|') === 'Heute|Studio|Zeiten|Plan|Nachrichten|Wissen', a.reihe.join('|'));
+       aus dem Betrieb auf die Rückfrage: „eigener knopf".
+       Runde 246 (23.10.2026), Plan „Studio Chat wie von Apple": fünf statt
+       sechs, „Wissen" liegt unter ☰ (am Rechner weiter links). Aus dem
+       Betrieb, 08:07: „ja so wie du empfohlen hast klingt super". */
+    pruefe('unten stehen Heute · Studio · Zeiten · Plan · Nachrichten',
+      a.reihe.join('|') === 'Heute|Studio|Zeiten|Plan|Nachrichten', a.reihe.join('|'));
 
     await tippe(p, 'Studio');
     const au = await p.evaluate(LAGE);
@@ -143,7 +147,7 @@ async function tippe(p, wort) {
     /* Seit Runde 222 liegt „Meine Zeiten" unten als eigener Knopf; als
        Schnellzugriff wäre es ein zweiter Weg an dieselbe Stelle (wie der
        Putzplan seit P5). An seinen Platz rückt „Mein Kalender". */
-    /* Seit Runde 245 läuft dieser Teil mit der Studioleitung; deren
+    /* Seit Runde 260 läuft dieser Teil mit der Studioleitung; deren
        Vorschlag ist Schichtplan · Anliegen · Meine Woche (SCHNELL_VORSCHLAG).
        Den der Mitarbeiter prüft der Block „Mitarbeiter" oben. */
     pruefe('der Schnellzugriff-Vorschlag (Studioleitung): Schichtplan, Anliegen, Meine Woche',
@@ -165,10 +169,23 @@ async function tippe(p, wort) {
           return { t: x.textContent.trim().slice(0, 12), m: TREFFER(x), imBild: r.left >= 0 && r.right <= innerWidth + .5 };
         });
       }, '(' + TREFFER.toString() + ')');
-      // Runde 184: fünf Räume statt vier Knöpfe (siehe oben).
-      pruefe(w + ' px, ' + dichte + ': sechs Knöpfe, jeder ≥ 44 × 44 und im Bild',
-        k.length === 6 && k.every(x => x.m.w >= 44 && x.m.h >= 44 && x.imBild), JSON.stringify(k));
+      // Runde 184: fünf Räume statt vier Knöpfe; Runde 222 sechs; Runde 246 wieder fünf.
+      pruefe(w + ' px, ' + dichte + ': fünf Knöpfe, jeder ≥ 44 × 44 und im Bild',
+        k.length === 5 && k.every(x => x.m.w >= 44 && x.m.h >= 44 && x.imBild), JSON.stringify(k));
     }
+    /* Runde 246: „Wissen" hat unten keinen Knopf mehr — es muss in zwei
+       Tipps erreichbar bleiben (CLAUDE.md: „Jedes Ziel in zwei Tipps
+       über ‚Alles'"): ☰ öffnet die Liste, ein Tipp auf „Dokumente". */
+    const wi = await p.evaluate(async () => {
+      document.getElementById('bereichKopf').click();
+      await new Promise(r => setTimeout(r, 500));
+      const z = [...document.querySelectorAll('#allesLadeInhalt .al-zeile')].find(e => /Dokumente/.test(e.textContent) && e.getClientRects().length);
+      if (!z) return { ziel: null };
+      z.click();
+      await new Promise(r => setTimeout(r, 700));
+      return { ziel: z.textContent.trim().slice(0, 30), ansicht: (document.querySelector('.view.show') || {}).id };
+    });
+    pruefe(w + ' px: „Wissen → Dokumente" in zwei Tipps über ☰ (' + wi.ansicht + ')', wi.ziel && wi.ansicht === 'view-docs', JSON.stringify(wi));
     pruefe(w + ' px ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await p.close();
   }
@@ -193,6 +210,6 @@ async function tippe(p, wort) {
   await b.close();
   console.log(schlecht
     ? '\n✗ Leiste P5: ' + schlecht + ' von ' + (gut + schlecht) + ' Zusicherungen falsch'
-    : '\n✓ Leiste P5: Heute · Studio · Zeiten · Plan · Nachrichten · Wissen, Putzplan unter Studio, Ungelesenes sichtbar — ' + gut + ' Zusicherungen');
+    : '\n✓ Leiste P5: Heute · Studio · Zeiten · Plan · Nachrichten (Wissen unter ☰), Putzplan unter Studio, Ungelesenes sichtbar — ' + gut + ' Zusicherungen');
   process.exit(schlecht ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

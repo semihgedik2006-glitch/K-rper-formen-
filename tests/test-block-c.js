@@ -117,7 +117,7 @@ const FEDERN = () => document.getAnimations().filter(a => a.animationName === 'c
   /* ══ C1: Putzplan ══ */
   {
     const p = await seite(b, 'mitarbeiter');
-    /* Runde 245: Mitarbeiter haben keinen Raum „Studio" mehr — der
+    /* Runde 260: Mitarbeiter haben keinen Raum „Studio" mehr — der
        Putzplan liegt für sie in der Schublade „Alles". */
     await p.evaluate(() => (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => {
       document.getElementById('bereichKopf').click();
