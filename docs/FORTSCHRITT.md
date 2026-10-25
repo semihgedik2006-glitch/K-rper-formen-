@@ -23538,7 +23538,7 @@ welche Seiten geöffnet werden, gibt es schon (`nutzAnsicht` in
 
 **Nicht getestet:** am echten iPhone. Ob Safari dort jeden Tipp genau
 einmal als Klick meldet, zeigt nur das Gerät.
-=======
+
 
 **Beim Zusammenführen mit main (bis Runde 274)**
 
@@ -23624,3 +23624,70 @@ lief er zweimal hintereinander mit denselben Werten.
 ### Nicht geprüft
 
 - Der Druck auf echtes Papier. Geprüft ist das Druckbild im Browser.
+
+## Runde 277 — Chats wie iMessage: Blasen, Eingabe, „… schreibt" (25.10.2026)
+
+Aus dem Betrieb, 25.10.2026: „das die chats wie imassage funktionieren
+sehe ich leider noch nicht so richtig". Runde 249 hatte die Blasen schon
+ohne Rahmen und mit Name darüber gebaut — gegen das Probebild
+`3-chat-handy.png` gehalten fehlte aber genau das, woran man iMessage
+erkennt.
+
+**Gebaut.**
+- **Eigene Blase blau, fremde grau.** Vorher trug die eigene die
+  Akzentfarbe des Stils (im Stil Formi Türkis) und die fremde Nachtblau —
+  zwei Karten unter vielen. Jetzt ein festes Blau mit leichtem Verlauf
+  (#166FE4 → #0A66DE, Weiss darauf 4,7 bzw. 5,3 : 1, an Bildpunkten
+  gemessen) und das neutrale Grau von iMessage, hell wie dunkel. Blau ist
+  hier keine Statusfarbe: es heisst „von mir".
+- **Schwanz an der letzten Blase einer Folge**, alle Ecken sonst rund.
+  Vorher waren die Ecken zur Absenderseite eingekniffen — das ist
+  WhatsApp. Gezeichnet mit `clip-path:path()` auf `::after` in der Farbe
+  der Blase (`--blase`), kein Bild.
+- **„Gelesen" / „Zugestellt" als Wort** neben den Häkchen unter der
+  letzten eigenen Blase — aus dem `title`, den `hakenHTML()` ohnehin
+  setzt. Keine Uhrzeit dazu: bekannt ist nur, bis wann jemand gelesen hat.
+- **Eingabe als Pille:** runder „+" links, im Feld rechts das Mikrofon;
+  sobald etwas zu senden da ist, wird es zum blauen Pfeil nach oben.
+  Ob etwas da ist, entscheidet das Stylesheet (`:placeholder-shown`, dazu
+  Foto- oder Aufnahme-Vorschau) — kein zweiter Zustand in JS.
+  Trefferfläche jedes Knopfs 44 × 44, gezeichnet ein Kreis von 32 px.
+- **„… schreibt":** unten im Verlauf eine graue Blase mit drei Punkten,
+  im Kanal mit Vornamen. Gespeichert als `channels/<k>/tippt/<uid>` bzw.
+  `dms/<id>/tippt/<uid>` = `{ts, uid, name}`, höchstens alle 3,5 s
+  geschrieben, beim Senden/Leeren/Wechseln/Hintergrund gelöscht; älter
+  als 6 s gilt als vorbei. Regeln in **beiden** Bäumen,
+  `tests/rules/tippt.test.js` (47 Zusicherungen, lokal im Emulator grün),
+  Attrappe `stub-chef.js` an **beiden** Einstiegen (`get` und
+  `onSnapshot`).
+- **In der Demo antwortet jemand** nach einer eigenen Nachricht (höchstens
+  alle 20 s), damit man die Punkte überhaupt sieht. Nicht in
+  automatischen Durchläufen (`navigator.webdriver`), ausser einer
+  schaltet es mit `window.__demoAntwort` ein.
+- **Nur neue Blasen blenden ein.** Gefunden beim Bauen: `.msg` trug die
+  Einblendung immer, und `renderMessages()` zeichnet bei jeder Änderung
+  (neue Nachricht, Reaktion, Häkchen) den ganzen Verlauf neu — also
+  flackerte jedes Mal der ganze Verlauf. Jetzt merkt sich
+  `einblendenMerker()`, was schon gezeigt war; nur Neues bekommt `.ein`.
+  Die eigene steigt aus dem Feld auf, eine fremde wächst aus ihrer Ecke.
+- **Kein „Neue Nachrichten"** über einer Antwort, die ankommt, während
+  man unten im offenen Verlauf zusieht (oder nachdem man selbst
+  geschrieben hat).
+- **Direktnachrichten** bilden jetzt auch Folgen (`.grp`), der Name der
+  anderen Seite steht nur noch oben im Kopf.
+
+**Bewusst nicht geändert.** Der Aufbau über dem Verlauf (Titel, Reiter,
+Studios/Gruppen, Kanalzeile) bleibt am Handy. Eine Liste-dann-Unterhaltung
+wie in der Nachrichten-App wäre der nächste grosse Schritt; daran hängen
+13 Durchläufe, und das Handy-Layout wird parallel in einem anderen Faden
+umgebaut. Formi ist unverändert.
+
+**Tests:** `test-chat-imessage` neu (109 Zusicherungen: 320 / 390 / 430 /
+820 px, je mit und ohne nachgestellten iPhone-Rand 59/34, und 1280 / 1440
+/ 1920 px; Gegenprobe mit zurückgebauter Logik wird rot);
+`test-chat-blasen` angepasst (Blau statt Akzentfarbe, runde Ecken +
+Schwanz statt kleiner Ecken — das ist der Wunsch dieser Runde, keine
+Lockerung), 237 grün.
+
+**Nicht getestet:** iPhone und Safari selbst; die Regeln gegen das echte
+Firebase (nur Emulator).
