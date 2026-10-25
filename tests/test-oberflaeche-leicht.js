@@ -123,6 +123,12 @@ const TREFFER = (el) => {
       const f = await p.evaluate((TR) => { const b = document.getElementById('fokusAus'); return { an: document.body.classList.contains('fokus'), side: document.getElementById('side') ? getComputedStyle(document.getElementById('side')).display : 'none', k: b && !b.hidden ? (eval(TR))(b) : null }; }, TREFFER.toString());
       if (w < 900) { pruefe(`${w} px: am Handy tut F nichts`, !f.an, JSON.stringify(f)); await p._ctx.close(); continue; }
       pruefe(`${w} px: F → Fokus, Seitenleiste weg, „Fokus beenden" ${f.k && f.k.w}×${f.k && f.k.h}`, f.an && f.side === 'none' && f.k && f.k.w >= 44 && f.k.h >= 44 && f.k.imBild, JSON.stringify(f));
+      /* Gesehen am 25.10.2026: oben links lag der Knopf über dem Bereichskopf
+         (#bereichKopf: Menü und Titel). Er darf nichts verdecken, was man anklicken kann. */
+      const deckt = await p.evaluate(() => { const q = document.getElementById('fokusAus').getBoundingClientRect();
+        return [...document.querySelectorAll('button, a[href], [role="button"], .view-head, .topbar')].filter(k => k.id !== 'fokusAus' && !k.closest('#fokusAus') && k.getClientRects().length && getComputedStyle(k).visibility !== 'hidden')
+          .map(k => k.getBoundingClientRect()).filter(k => !(q.bottom <= k.top || q.top >= k.bottom || q.right <= k.left || q.left >= k.right)).length; });
+      pruefe(`${w} px: „Fokus beenden" liegt über keinem Kopf und keinem Knopf`, deckt === 0, String(deckt));
       await p.keyboard.press('f'); await p.waitForTimeout(200);
       const aus = await p.evaluate(() => document.body.classList.contains('fokus'));
       await p.keyboard.press('f'); await p.waitForTimeout(200); await p.keyboard.press('Escape'); await p.waitForTimeout(200);

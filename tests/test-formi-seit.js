@@ -66,8 +66,12 @@ const TREFFER = (sel) => {
   {
     const fn = fs.readFileSync(path.join(W, 'functions', 'index.js'), 'utf8');
     const zeilen = fn.split('\n');
-    const mitFormi = (muster) => zeilen.some(z => muster.test(z) && /sendPush\(/.test(z) && /'formi'\)/.test(z));
-    const ohneFormi = (muster) => zeilen.filter(z => muster.test(z) && /sendPush\(/.test(z)).every(z => !/'formi'\)/.test(z));
+    /* Seit Runde 268 trägt sendPush ein fünftes Argument (das Ziel):
+       sendPush(tk, titel, text, 'formi', 'todos'). Gesucht wird 'formi'
+       als VIERTES Argument, mit oder ohne Ziel dahinter. */
+    const VON_FORMI = /'formi'\s*[,)]/;
+    const mitFormi = (muster) => zeilen.some(z => muster.test(z) && /sendPush\(/.test(z) && VON_FORMI.test(z));
+    const ohneFormi = (muster) => zeilen.filter(z => muster.test(z) && /sendPush\(/.test(z)).every(z => !VON_FORMI.test(z));
     for (const [name, m] of [['Aufgabe fällig', /'Aufgabe fällig'/], ['Erinnerung', /'Erinnerung', titel/], ['Nachweis', /'Nachweis '/], ['Nachweise', /'Nachweise', text/],
       ['Kurz auffrischen', /Kurz auffrischen/], ['⏰ Erinnerung', /⏰ Erinnerung/], ['Formi meldet sich', /sendPush\(tokens, titel, text/], ['Defekt gemeldet', /Defekt gemeldet/], ['Material fehlt', /Material fehlt/]]) {
       pruefe(`„${name}" kommt von Formi`, mitFormi(m));

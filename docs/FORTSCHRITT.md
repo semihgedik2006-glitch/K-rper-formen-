@@ -23561,7 +23561,42 @@ siehe Runde 277 (ein gemeinsamer Durchlauf für 268–271).
   Breite). So rutscht die Liste nicht unter das Detail.
 
 **Geprüft (Runden 274–277):**
-ERGEBNIS_HIER
+Gesamtdurchlauf auf dem Stand nach dem Übernehmen von `main` (Runden
+268–273), 45 Tests: 43 grün, 2 rot — beide auch auf einem sauberen
+`main` rot (dort nachgeprüft, nicht von hier):
+- `test-gestaltung`: die neuen Patchnotes-Marken trugen `3px 6px`,
+  `3px 2px` und `line-height:1.35` statt Werten der Leiter → `--s4 --s6`,
+  `--s4 --s2`, `--lh-eng`. Danach grün; `test-neuigkeiten` (12) grün.
+- `test-formi-seit`: Runde 268 gab `sendPush` ein fünftes Argument (das
+  Ziel). Der Test suchte `'formi')` am Zeilenende und fand deshalb keine
+  Formi-Meldung mehr. Er sucht jetzt `'formi'` als viertes Argument mit
+  oder ohne Ziel dahinter — gleich streng, nur an die neue Form
+  angepasst. 58 grün.
+
+Danach einzeln wiederholt und grün: `test-formi-werkzeug` 56,
+`test-oberflaeche-leicht` 28, `test-schicht-detail` 42,
+`test-formi-feinschliff` 19, `test-formi-verdeckt` 42, `test-knoepfe`,
+`test-abgeschnitten`, `test-quer`, `test-csp`, `test-gruppen-titel`,
+`test-startseite-putz`, `test-tagesgruss`, `test-gehirn-aktion`.
+
+**Im ersten Durchlauf gefunden und behoben:**
+- *„Meine Schicht" kostete am Handy eine Kategorie.* Der Schalter oben
+  (66 px) schob „Zum Übernehmen" bzw. „Putzplan" nach „Ausserdem"
+  (`test-gruppen-titel`, `test-startseite-putz`). Am Handy (< 700 px)
+  steht im Überblick deshalb nur „Meine Schicht ›" als erster Knopf
+  unter „Ausserdem"; in „Meine Schicht" selbst steht der Schalter oben —
+  dort ist ohnehin nur eine Liste. Nachgemessen: dieselben Blöcke wie
+  vorher auf `main` (Chef 390 px: Überfällig, Heute, Zum Übernehmen;
+  Mitarbeiter 430 px: dazu Putzplan).
+- *Formis Morgengruss rechnete eigene Tageszeit* („Guten Morgen" um
+  3 Uhr) — genau der Fehler aus Runde 221. Jetzt `jvGruss()`.
+- *„Fokus beenden" lag oben links über dem Bereichskopf* (Menü, Titel).
+  Jetzt unten mittig; der Test prüft, dass der Knopf nichts Anklickbares
+  überdeckt (Gegenprobe mit der alten Lage: rot). Gemessen 196 × 46
+  (kompakt 182 × 44) bei 1280 / 1440 / 1920, im Bild, 16 px über der
+  Unterkante.
+- *Fester Abstand 400 px* am angedockten Blatt → `--dock-breit`, eine
+  Grösse für Blatt und Rand der Liste.
 
 **Nicht geprüft:** echte Handys, Ziehen mit dem Finger (gibt es nicht),
 echte Spracherkennung.
