@@ -902,6 +902,23 @@ service cloud.firestore {
         && request.resource.data.ts <= request.time.toMillis() + 300000;
       allow delete: if false;
     }
+    // ── „… schreibt" je Person und Unterhaltung (Runde 277) ──
+    // {ts, uid, name}. Lesen darf, wer die Unterhaltung lesen darf.
+    // Schreiben und Löschen nur das EIGENE Dokument — wer fremde
+    // schreiben könnte, liesse jemanden „schreiben", der nichts tut.
+    // name ist kurz, ts nicht weit in der Zukunft (sonst stünde die
+    // Anzeige, bis die Uhr sie einholt). Dieselbe Regel unter firmen/<k>/.
+    match /channels/{channelId}/tippt/{uid} {
+      allow read: if aufFlachenPfaden() && istAktiv() && kanalErlaubt(channelId);
+      allow create, update: if aufFlachenPfaden() && istAktiv() && kanalErlaubt(channelId)
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['ts','uid','name'])
+        && request.resource.data.uid == uid
+        && request.resource.data.name is string && request.resource.data.name.size() <= 80
+        && request.resource.data.ts is number
+        && request.resource.data.ts <= request.time.toMillis() + 60000;
+      allow delete: if aufFlachenPfaden() && request.auth != null && request.auth.uid == uid;
+    }
     match /channels/{channelId}/messages/{msgId} {
       allow read: if aufFlachenPfaden()
         && (istAktiv() && kanalErlaubt(channelId));
@@ -1416,6 +1433,19 @@ service cloud.firestore {
         && request.auth.uid in resource.data.participants
         && request.resource.data.participants.size() == 2
         && request.resource.data.participants.hasOnly(resource.data.participants));
+    }
+    match /dms/{dmId}/tippt/{uid} {
+      allow read: if aufFlachenPfaden()
+        && istAktiv() && dmId.split('_').hasAny([request.auth.uid]);
+      allow create, update: if aufFlachenPfaden() && istAktiv()
+        && dmId.split('_').hasAny([request.auth.uid])
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['ts','uid','name'])
+        && request.resource.data.uid == uid
+        && request.resource.data.name is string && request.resource.data.name.size() <= 80
+        && request.resource.data.ts is number
+        && request.resource.data.ts <= request.time.toMillis() + 60000;
+      allow delete: if aufFlachenPfaden() && request.auth != null && request.auth.uid == uid;
     }
     match /dms/{dmId}/messages/{msgId} {
       allow read: if aufFlachenPfaden()
@@ -2064,6 +2094,18 @@ service cloud.firestore {
             && request.resource.data.ts <= request.time.toMillis() + 300000;
           allow delete: if false;
         }
+        // „… schreibt" — dieselbe Regel wie flach (Runde 277).
+        match /channels/{channelId}/tippt/{uid} {
+          allow read: if inFirma(f) && istAktiv() && kanalErlaubt(channelId);
+          allow create, update: if schreibtIn(f) && istAktiv() && kanalErlaubt(channelId)
+            && request.auth.uid == uid
+            && request.resource.data.keys().hasOnly(['ts','uid','name'])
+            && request.resource.data.uid == uid
+            && request.resource.data.name is string && request.resource.data.name.size() <= 80
+            && request.resource.data.ts is number
+            && request.resource.data.ts <= request.time.toMillis() + 60000;
+          allow delete: if inFirma(f) && request.auth.uid == uid;
+        }
         match /channels/{channelId}/messages/{msgId} {
           allow read: if inFirma(f) && (istAktiv() && kanalErlaubt(channelId));
           // Nur als man selbst senden; Bilder/Text/Aufnahme begrenzen
@@ -2417,6 +2459,19 @@ service cloud.firestore {
             && request.auth.uid in resource.data.participants
             && request.resource.data.participants.size() == 2
             && request.resource.data.participants.hasOnly(resource.data.participants));
+        }
+
+        match /dms/{dmId}/tippt/{uid} {
+          allow read: if inFirma(f) && istAktiv() && dmId.split('_').hasAny([request.auth.uid]);
+          allow create, update: if schreibtIn(f) && istAktiv()
+            && dmId.split('_').hasAny([request.auth.uid])
+            && request.auth.uid == uid
+            && request.resource.data.keys().hasOnly(['ts','uid','name'])
+            && request.resource.data.uid == uid
+            && request.resource.data.name is string && request.resource.data.name.size() <= 80
+            && request.resource.data.ts is number
+            && request.resource.data.ts <= request.time.toMillis() + 60000;
+          allow delete: if inFirma(f) && request.auth.uid == uid;
         }
 
         match /dms/{dmId}/messages/{msgId} {

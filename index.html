@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-yJwgZs14jlbFSVmjRriq4K8AtXy1lqFLO2yZbglbykE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-gYTNogJKczg+3LPWiSbFI4+bns8AE0WYIkSqil3tAy4='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -751,7 +751,7 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .spinner{width:44px;height:44px;border:3px solid var(--line-2);border-top-color:var(--accent);
   border-radius:var(--r-rund);animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-/* Runde 274, Idee 4: wartet ein Knopf, dreht darin eine kleine Formi-
+/* Runde 278, Idee 4: wartet ein Knopf, dreht darin eine kleine Formi-
    Scheibe (Ring in Formis Farben um ein schwarzes Loch) — kein Standard-
    Kreisel. Der Text bleibt für Vorlesegeräte, sichtbar nur die Scheibe. */
 .btn.laedt{position:relative;color:transparent!important}
@@ -2124,11 +2124,11 @@ body.neu #view-docs #docCatRow{margin-top:var(--s8)}
    sichtbar nichts. Mein Test hat das nicht gefunden, weil er die
    Klasse .show geprueft hat statt der Sichtbarkeit: die Klasse sass
    richtig, sie hatte nur keine Wirkung. */
-#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#schnellModal,#neuModal,#vorfallModal,#zfModal,#bestellModal,#aktionModal{
+#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#schnellModal,#neuModal,#findeModal,#vorfallModal,#zfModal,#bestellModal,#aktionModal{
   position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
   padding:var(--s20);background:var(--scrim);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#schnellModal.show,#neuModal.show,#vorfallModal.show,#zfModal.show,#bestellModal.show,#aktionModal.show{display:flex}
+#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#schnellModal.show,#neuModal.show,#findeModal.show,#vorfallModal.show,#zfModal.show,#bestellModal.show,#aktionModal.show{display:flex}
 /* Runde 146: der Link aus der Bestätigungs- oder Passwort-Mail. Er muss
    VOR der Anmeldung und über dem Startbild stehen (#splash 1000,
    #loadingWrap 999). */
@@ -4019,6 +4019,14 @@ button.ich-zeile:active{opacity:.7}
 .spl-fragen > summary span svg{width:20px;height:20px}
 .spl-fragen > summary small{font-family:var(--font-body);font-weight:600;font-size:var(--t-xs);color:var(--text-3)}
 .spl-fragen .hint{margin:var(--s8) 0 0}
+.spl-fragen-zeile{display:flex;align-items:center;justify-content:space-between;gap:var(--s12);width:100%;min-height:52px;
+  padding:var(--s8) var(--s12);border-radius:var(--r-md);background:var(--f-warn-leise);border:none;
+  box-shadow:inset 3px 0 0 var(--warm);color:var(--text);font:inherit;text-align:left;cursor:pointer}
+.spl-fragen-zeile span{display:flex;flex-direction:column;gap:var(--s2);min-width:0}
+.spl-fragen-zeile small{color:var(--text-2);font-size:var(--t-xs)}
+.spl-fragen-zeile i{font-style:normal;font-weight:700;color:var(--accent-d);white-space:nowrap}
+.spl-fragen-zeile.fertig{background:var(--auf-1);box-shadow:inset 3px 0 0 var(--accent)}
+@media (hover:hover){ .spl-fragen-zeile:hover{filter:brightness(1.08)} }
 /* Zugeklappt sind „Fragen“ und „Regeln“ nur eine Zeile — vorher je 105 px
    hoch bei 44 px Inhalt (Runde 269). Am Rechner nebeneinander. */
 .spl > .spl-fragen:not([open]),.spl > .spl-regeln:not([open]),body.neu .spl > .spl-fragen:not([open]),body.neu .spl > .spl-regeln:not([open]){padding-top:var(--s8);padding-bottom:var(--s8)}
@@ -4466,7 +4474,7 @@ button.ich-zeile:active{opacity:.7}
 .toast{transition:opacity .3s var(--ease-ios),transform .44s var(--spring)}
 
 /* Nachrichten und Listenzeilen gleiten sanft ein */
-.msg{animation:msgIn .42s var(--ease-ios) both}
+.msg.ein{animation:msgIn .42s var(--ease-ios) backwards}
 @keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .ann,.wk-row,.emp{animation:cardUp .45s var(--ease-ios) both}
 
@@ -6556,7 +6564,7 @@ html.fk-still .fk-bahn,html.fk-still .fk-bahn i{animation:none}
    - das Gesicht wird dunkel. Ohne mix-blend-mode: mit „difference" würden
      die Augen auf dem hellen Kern schwarz mit heller Pupille.
    Nur Farben – Bewegung, Grössen und Trefferfläche bleiben dieselben. */
-/* Runde 274, Idee 9 — „Formi im Hellmodus als Tinte" (aus dem Betrieb,
+/* Runde 278, Idee 9 — „Formi im Hellmodus als Tinte" (aus dem Betrieb,
    24.10.2026: „mach alles davon"): statt des weissen Lochs (Runde 226)
    ein tiefer Tintenpunkt; das Gesicht leuchtet darin wie im dunklen Stil.
    Die Scheibe bleibt in satten Tönen, die auf Weiss stehen. */
@@ -6586,7 +6594,7 @@ html.fk-still .fk-wirbel,html.fk-still .fk-innen{animation:none}
 /* Was ins Loch fällt (formiSchlucken). */
 .formi-schluck{position:fixed;left:0;top:0;z-index:1180;pointer-events:none;white-space:nowrap;transform-origin:50% 50%;will-change:transform;
   font-weight:700;font-size:var(--t-sm);color:#E8F8FF;text-shadow:0 0 10px rgba(182,156,255,.9)}
-/* ── Meine Schicht, Liste + Detail, eine Karte (Runde 277) ── */
+/* ── Meine Schicht, Liste + Detail, eine Karte (Runde 281) ── */
 /* Idee 11: der Schalter oben auf „Heute". */
 .heute-modus{display:inline-flex;gap:var(--s4);padding:var(--s4);margin:0 0 var(--s12);border-radius:var(--r-pille);background:var(--bg-soft);border:1px solid var(--line)}
 .heute-modus button{min-height:44px;padding:0 var(--s16);border:0;border-radius:var(--r-pille);background:none;color:var(--text-2);font:inherit;font-size:var(--t-sm);font-weight:600;cursor:pointer}
@@ -6617,7 +6625,7 @@ html.fk-still .fk-wirbel,html.fk-still .fk-innen{animation:none}
 body.formi:not(.light).neu .heute-block ~ .heute-block .heute-liste,
 body.formi:not(.light).neu .heute-spalte + .heute-spalte .heute-liste{border-color:var(--line-2);background:var(--formi-kern)}
 body.formi:not(.light) .card ~ .card,body.formi:not(.light) .chef-card ~ .chef-card{border-color:var(--line-2);background:var(--formi-kern)}
-/* ── Oberfläche leichter (Runde 276) ── */
+/* ── Oberfläche leichter (Runde 280) ── */
 /* Idee 15: die Glocke gebündelt. */
 .gl-gruppe{border-top:1px solid var(--line)}
 .gl-gruppe:first-child{border-top:none}
@@ -6639,7 +6647,7 @@ body.fokus .heute-spalten{grid-template-columns:1fr !important}
 .km-eintrag{min-height:44px;padding:var(--s10) var(--s16);border:0;border-radius:var(--r-md);background:none;color:var(--text);font:inherit;
   font-size:var(--t-sm);font-weight:600;text-align:left;cursor:pointer}
 .km-eintrag:hover,.km-eintrag:focus-visible{background:var(--bg-soft);outline:none}
-/* ── Formi als Werkzeug (Runde 275) ── */
+/* ── Formi als Werkzeug (Runde 279) ── */
 /* Idee 2 / 1: das Menü über der Kugel — eine Spalte schwarzer Knöpfe
    (Formis Farbe), leicht im Bogen. Der Hintergrund fängt nur den Klick
    zum Schliessen. */
@@ -6943,7 +6951,7 @@ body.light .fk-zeichen.tropfen path{fill:#1E8FD0}
 .formi-kugel:hover{transform:scale(1.05)}
 .formi-kugel:active{transform:scale(.94)}
 .formi-kugel:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
-/* Runde 274, Idee 3: der Tagesstand als Schild über der Kugel, nur beim
+/* Runde 278, Idee 3: der Tagesstand als Schild über der Kugel, nur beim
    Darüberfahren oder mit der Tastatur. Keine Trefferfläche. */
 .fk-stand{position:absolute;left:50%;bottom:100%;margin-bottom:var(--s10);translate:-50% 0;white-space:nowrap;pointer-events:none;
   padding:var(--s4) var(--s10);border-radius:var(--r-pille);background:rgba(2,4,10,.86);color:#F4F9FF;font-size:var(--t-xs);font-weight:600;
@@ -9551,7 +9559,7 @@ body.neu .np-punkt{width:8px;height:8px;border-radius:var(--r-rund);background:v
 @media(hover:hover){ .neu-eintrag>summary:hover b{color:var(--accent-d)} }
 .neu-eintrag>summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:var(--r-sm)}
 .ne-art{flex:none;box-sizing:border-box;width:96px;white-space:nowrap;text-align:center;font-size:var(--t-xs);font-weight:700;letter-spacing:0;
-  padding:var(--s4) var(--s6);border-radius:var(--r-rund);border:1px solid var(--line-2);color:var(--text-2)}
+  padding:var(--s2) var(--s6);border-radius:var(--r-rund);border:1px solid var(--line-2);color:var(--text-2)}
 .ne-art.neu{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .ne-art.besser{color:var(--accent-d);border-color:var(--accent-d)}
 .neu-eintrag ul{margin:0 0 var(--s8);padding-left:calc(96px + var(--s10) + var(--s16));font-size:var(--t-sm);
@@ -9561,7 +9569,40 @@ body.neu .np-punkt{width:8px;height:8px;border-radius:var(--r-rund);background:v
 @media(max-width:420px){
   .neu-eintrag ul{padding-left:var(--s20)}
   .ne-zeigen{margin-left:0}
-  .ne-art{width:92px;padding:var(--s4) var(--s2)}
+  .ne-art{width:92px;padding:var(--s2)}
+}
+
+/* ── Findetest (Runde 275) ──
+   Die Uhr steht in der Kopfzeile als eigenes Stück zwischen Marke und
+   Profil (im Fluss, nicht darübergelegt – darübergelegt deckte sie bei
+   430 und 820 px den Schriftzug der Marke zu, und der ist ein Knopf). Unten lag sie in der ersten Fassung auf den Schnellzugriffen
+   von „Heute" – also auf einem der Wege, die sie messen soll. Am Handy
+   nur Sekunden und ein ×, am Rechner mit Ziel und Tipps. */
+.ft-zeile{display:flex;align-items:center;gap:var(--s12);padding:var(--s8) 0;border-top:1px solid var(--line)}
+.ft-zeile:first-child{border-top:none}
+.ft-zeile .ft-was{flex:1;min-width:0}
+.ft-zeile .ft-was b{display:block;font-size:var(--t-md)}
+.ft-zeile .ft-was i{display:block;font-style:normal;font-size:var(--t-xs);color:var(--text-2)}
+.ft-zeile .btn{min-height:44px;min-width:64px}
+.ft-ergebnis{margin:0 0 var(--s12);padding:var(--s8) var(--s12);border-radius:var(--r-md);
+  background:var(--bg-3);font-weight:700}
+.ft-fuss{display:flex;flex-wrap:wrap;gap:var(--s8);margin-top:var(--s12)}
+.ft-fuss .btn{min-height:44px}
+.ft-uhr{flex:0 1 auto;min-width:0;margin:0 auto;
+  display:flex;align-items:center;gap:var(--s4);
+  padding:0 0 0 var(--s12);border-radius:var(--r-rund);
+  background:var(--bg-2);border:1px solid var(--line-2);box-shadow:var(--e3)}
+.ft-uhr[hidden]{display:none}
+.ft-uhr-txt{min-width:0;display:flex;flex-direction:column;line-height:var(--lh-1);
+  font-variant-numeric:tabular-nums;font-weight:700}
+.ft-uhr-txt b,#ftUhrTipps,.ft-auf-wort{display:none}
+.ft-uhr .btn{min-height:44px;min-width:44px;padding:0 var(--s10);border:none;background:none;box-shadow:none;flex:0 0 auto}
+@media(min-width:821px){
+  .ft-uhr{max-width:420px;padding-left:var(--s16)}
+  .ft-uhr-txt{font-weight:400}
+  .ft-uhr-txt b{display:block;font-size:var(--t-sm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ft-uhr-txt > span{font-size:var(--t-xs);color:var(--text-2)}
+  #ftUhrTipps,.ft-auf-wort{display:inline}
 }
 
 /* ── Schnellzugriffe (Runde 103) ──
@@ -10038,13 +10079,33 @@ body.neu .td-erledigt > .todo + .todo::after,body.neu .td-erledigt > .pp-item + 
      will: „Gelesen von …" im Menü.
    - Umfragen und Sprachnachrichten in eigener Blase behalten die
      getönte Fläche: ihre Balken und Knöpfe sind selbst Akzentfarbe. */
-body.neu .chat-scroll .msg{border-color:transparent;background:var(--bg-3);border-radius:var(--r-lg);
+/* Runde 277, aus dem Betrieb, 25.10.2026: „das die chats wie imassage
+   funktionieren sehe ich leider noch nicht so richtig". Was bis dahin
+   fehlte, gegen das Probebild gehalten:
+   - Die eigene Blase trug die Akzentfarbe des Stils (im Stil Formi
+     Türkis) — wie iMessage wirkt sie erst im Blau. Ein festes Blau mit
+     leichtem Verlauf nach oben; Weiss darauf an Bildpunkten ≥ 4,5 : 1
+     (#166FE4 oben 4,7, #0A66DE unten 5,3 — test-chat-blasen misst es).
+     Blau ist hier keine Statusfarbe: es meldet nichts, es heisst „von
+     mir", und das war es bei iMessage schon immer.
+   - Die fremde Blase war Nachtblau (--bg-3) und damit eine Karte unter
+     vielen. Jetzt das neutrale Grau von iMessage — im Dunkeln wie im
+     Hellen.
+   - Eine Folge war an den Ecken zur Absenderseite eingekniffen (das ist
+     WhatsApp). Bei iMessage bleiben alle Blasen rund; nur die LETZTE
+     einer Folge bekommt den Schwanz zur eigenen Seite. Gezeichnet mit
+     clip-path:path() auf einem ::after in der Farbe der Blase — kein
+     Bild, keine Maske, und Safari kann es seit 13.1. */
+body.neu{--blase-fremd:#2B2B30;--blase-eigen:#0A66DE;--blase-eigen-oben:#166FE4}
+body.neu.light{--blase-fremd:#E9E9EB}
+body.neu .chat-scroll .msg{--blase:var(--blase-fremd);border-color:transparent;background:var(--blase);border-radius:var(--r-lg);
   box-shadow:none;padding:var(--s8) var(--s12)}
-body.neu .chat-scroll .msg.mine:not(:has(.poll-opt)):not(:has(.sp)){background:var(--accent);color:var(--on-accent)}
-body.neu .chat-scroll .msg.mine:not(:has(.poll-opt)):not(:has(.sp)) > :not(.meta):not(.meta-min){--text:var(--on-accent);--text-2:var(--on-accent);
-  --text-3:var(--on-accent);--accent:var(--on-accent);--accent-2:var(--on-accent);--accent-d:var(--on-accent)}
+body.neu .chat-scroll .msg.mine:not(:has(.poll-opt)):not(:has(.sp)){--blase:var(--blase-eigen);
+  background:linear-gradient(var(--blase-eigen-oben), var(--blase-eigen)) var(--blase-eigen);color:#fff}
+body.neu .chat-scroll .msg.mine:not(:has(.poll-opt)):not(:has(.sp)) > :not(.meta):not(.meta-min){--text:#fff;--text-2:#fff;
+  --text-3:#fff;--accent:#fff;--accent-2:#fff;--accent-d:#fff}
 body.neu .chat-scroll .msg.mine:not(:has(.poll-opt)):not(:has(.sp)) .mention{background:none;text-decoration:underline}
-body.neu .chat-scroll .msg.mine:has(.poll-opt),body.neu .chat-scroll .msg.mine:has(.sp){background:var(--tipp-2)}
+body.neu .chat-scroll .msg.mine:has(.poll-opt),body.neu .chat-scroll .msg.mine:has(.sp){--blase:var(--tipp-2)}
 body.neu .chat-scroll .msg.mentioned{box-shadow:inset 0 0 0 2px var(--accent)}
 
 /* Name · Studio, Uhrzeit: über der Blase */
@@ -10057,21 +10118,116 @@ body.neu .chat-scroll .msg > .meta .tag{background:none;padding:0;text-transform
   font-weight:500;font-size:var(--t-xs);color:var(--text-3)}
 body.neu .chat-scroll .msg > .meta .tag::before{content:'· '}
 body.neu .chat-scroll .msg > .meta time{margin-left:var(--s6)}
+/* In einer Direktnachricht steht der Name schon oben im Kopf. */
+body.neu #dmScroll .msg:not(.mine) > .meta .chat-author{display:none}
+body.neu #dmScroll .msg:not(.mine) > .meta time{margin-left:0}
 
-/* Eigene: Uhrzeit und Häkchen unter der Blase */
+/* Eigene: Uhrzeit, Häkchen und das Wort dazu unter der Blase.
+   „Gelesen" / „Zugestellt" wie bei iMessage, neben den Häkchen, die es
+   seit dem 27.9. gibt („Jeder, genau wie bei WhatsApp"). Das Wort kommt
+   aus dem title, den hakenHTML() ohnehin setzt — kein zweiter Ort, an
+   dem der Zustand stehen könnte. Eine Uhrzeit zu „Gelesen" steht nicht
+   da: bekannt ist nur, bis wann jemand den Verlauf gesehen hat (siehe
+   leseInfoZeigen). */
 body.neu .chat-scroll .msg.mine > .meta .chat-author,body.neu .chat-scroll .msg.mine > .meta .tag{display:none}
 body.neu .chat-scroll .msg.mine > .meta,body.neu .chat-scroll .msg.mine > .meta-min{position:absolute;right:var(--s4);top:100%;
   margin:var(--s2) 0 0;width:max-content;flex-wrap:nowrap;justify-content:flex-end}
 body.neu .chat-scroll .msg.mine > .meta time{margin-left:0}
+body.neu .chat-scroll .msg.mine .haken::after{content:attr(title);margin-left:var(--s4);font-size:var(--t-2xs);font-weight:600}
 body.neu .chat-scroll .msg.mine:not(:has(+ .msg.mine.grp)){margin-bottom:calc(var(--s16) + var(--s2))}
 body.neu .chat-scroll .msg.mine:has(+ .msg.mine.grp) > .meta,body.neu .chat-scroll .msg.mine:has(+ .msg.mine.grp) > .meta-min{display:none}
 
-/* Zusammenrücken, kleine Ecken zur Absenderseite */
+/* Zusammenrücken; der Schwanz nur an der letzten Blase einer Folge.
+   An ihr ist die Ecke zur eigenen Seite fast eckig — der Schwanz
+   ersetzt sie, sonst bliebe zwischen Rundung und Schwanz eine Kerbe. */
 body.neu .chat-scroll .msg.grp{margin-top:calc(var(--s2) - var(--s8))}
-body.neu .chat-scroll .msg.grp:not(.mine){border-top-left-radius:var(--r-xs)}
-body.neu .chat-scroll .msg:not(.mine):has(+ .msg.grp:not(.mine)){border-bottom-left-radius:var(--r-xs)}
-body.neu .chat-scroll .msg.grp.mine{border-top-left-radius:var(--r-lg);border-top-right-radius:var(--r-xs)}
-body.neu .chat-scroll .msg.mine:has(+ .msg.mine.grp){border-bottom-right-radius:var(--r-xs)}
+body.neu .chat-scroll .msg:not(:has(+ .msg.grp)){border-bottom-left-radius:var(--s4)}
+body.neu .chat-scroll .msg.mine:not(:has(+ .msg.grp)){border-bottom-left-radius:var(--r-lg);border-bottom-right-radius:var(--s4)}
+body.neu .chat-scroll .msg:not(:has(+ .msg.grp))::after{content:'';position:absolute;bottom:0;left:-6px;width:16px;height:20px;
+  background:var(--blase);pointer-events:none;clip-path:path('M6 0Q6 17.5 0 20L12 20L12 0Z')}
+body.neu .chat-scroll .msg.mine:not(:has(+ .msg.grp))::after{left:auto;right:-6px;
+  clip-path:path('M10 0Q10 17.5 16 20L4 20L4 0Z')}
+
+/* ── Neue Blasen kommen herein wie bei iMessage (Runde 277) ──
+   Nur Nachrichten, die nach dem ersten Zeichnen dazukommen, tragen .ein
+   (einblendenMerker). Die eigene steigt aus dem Eingabefeld auf, eine
+   fremde wächst aus ihrer Ecke. Nur transform und opacity, einmal,
+   mit fill-mode backwards (CLAUDE.md, „Flüssig heisst konkret"). */
+body.neu .chat-scroll .msg.ein{animation:blaseFremd .42s var(--feder-weich, var(--spring)) backwards;transform-origin:0 100%}
+body.neu .chat-scroll .msg.mine.ein{animation-name:blaseEigen;transform-origin:100% 100%}
+@keyframes blaseFremd{from{opacity:0;transform:scale(.82)}}
+@keyframes blaseEigen{from{opacity:0;transform:translateY(36px) scale(.9)}}
+
+/* ── „… schreibt" (Runde 277) ──
+   Eine fremde Blase mit drei Punkten, unten im Verlauf; im Kanal mit
+   dem Vornamen darüber wie bei jeder fremden Nachricht. Die Punkte
+   wippen nur, solange jemand schreibt — die Zeile ist danach weg
+   (tipptZeichnen), eine Endlos-Animation ohne Grund ist das nicht. */
+.tippt-zeile{align-self:flex-start;display:flex;flex-direction:column;gap:var(--s2);margin-top:var(--s4);
+  animation:blaseFremd .36s var(--feder-weich, var(--spring)) backwards;transform-origin:0 100%}
+.tippt-wer{font-size:var(--t-xs);color:var(--text-3);padding-left:var(--s12)}
+#dmScroll .tippt-wer{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.tippt-blase{position:relative;display:inline-flex;align-items:center;gap:var(--s4);align-self:flex-start;
+  padding:var(--s12) var(--s16);border-radius:var(--r-lg);border-bottom-left-radius:var(--s4);
+  background:var(--blase-fremd, var(--bg-2))}
+.tippt-blase::after{content:'';position:absolute;bottom:0;left:-6px;width:16px;height:20px;background:inherit;
+  clip-path:path('M6 0Q6 17.5 0 20L12 20L12 0Z')}
+.tippt-blase i{width:8px;height:8px;border-radius:var(--r-rund);background:var(--text-3);animation:tipptPunkt 1.2s ease-in-out infinite}
+.tippt-blase i:nth-child(2){animation-delay:.16s}
+.tippt-blase i:nth-child(3){animation-delay:.32s}
+@keyframes tipptPunkt{0%,60%,100%{opacity:.45;transform:none}30%{opacity:1;transform:translateY(-3px)}}
+@media (prefers-reduced-motion:reduce){
+  .tippt-zeile,.tippt-blase i,body.neu .chat-scroll .msg.ein{animation:none}
+}
+
+/* ── Die Eingabe wie bei iMessage (Runde 277) ──
+   Vorher drei Kästen nebeneinander — „+", Mikrofon, Feld — und rechts
+   ein runder Knopf im Formi-Verlauf mit Papierflieger. Bei iMessage
+   ist es EINE Pille: links ein runder „+", das Feld, und IN der Pille
+   rechts das Mikrofon, das zum blauen Pfeil wird, sobald etwas zu
+   senden da ist.
+   - Raster statt Flex: Feld, Mikrofon und Senden teilen sich die
+     letzte Spalte; das Feld reicht darunter durch, sein Innenabstand
+     rechts hält den Platz frei. In der Direktnachricht gibt es kein
+     „+" — dort hat das Raster eine Spalte weniger.
+   - Ob etwas zu senden da ist, weiss das Stylesheet selbst:
+     :placeholder-shown heisst „leer". Ein Foto oder eine fertige
+     Aufnahme zählt auch (Vorschau sichtbar). Kein Zustand in JS, der
+     vom Feld abweichen könnte.
+   - Jeder Knopf bleibt 44 × 44 als Trefferfläche (CLAUDE.md); gezeichnet
+     wird ein Kreis von 32 px darin. border-radius:50% begrenzt auch den
+     Hit-Test. */
+body.neu .chat-input{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:end;column-gap:var(--s6);
+  padding-top:var(--s8);padding-bottom:calc(var(--s8) + var(--sab))}
+body.neu .chat-input:not(:has(.attach-wrap)){grid-template-columns:minmax(0,1fr) 44px}
+body.neu .chat-input > .attach-wrap{grid-column:1;grid-row:1}
+body.neu .chat-input > textarea{grid-column:-3 / -1;grid-row:1;min-height:44px;border-radius:var(--r-pille);
+  padding:var(--s10) var(--s48) var(--s10) var(--s16);line-height:var(--lh-eng);background:var(--bg-2);border:1px solid var(--line-2)}
+/* Kein Schein um das Feld beim Schreiben — die Kante zeigt den Fokus. */
+body.neu .chat-input > textarea:focus{box-shadow:none}
+body.neu .chat-input > #chatMic,body.neu .chat-input > #dmMic,body.neu .chat-input > #chatSend,body.neu .chat-input > #dmSend{
+  grid-column:-2;grid-row:1;z-index:1;width:44px;min-width:44px;height:44px;min-height:44px;padding:0;margin:0;
+  border:none;border-radius:var(--r-rund);box-shadow:none;align-self:end;
+  transition:opacity .16s var(--ease-out),transform .3s var(--feder-weich, var(--spring)),visibility .16s}
+body.neu .chat-input > #chatMic,body.neu .chat-input > #dmMic{background:none;color:var(--text-3)}
+body.neu .chat-input > #chatMic:hover,body.neu .chat-input > #dmMic:hover{color:var(--text)}
+body.neu .chat-input > #chatSend,body.neu .chat-input > #dmSend{color:#fff;filter:none;
+  background:radial-gradient(circle closest-side, var(--blase-eigen) 0 calc(100% - 6px), transparent calc(100% - 5.5px))}
+body.neu .chat-input > #chatSend svg,body.neu .chat-input > #dmSend svg{width:18px!important;height:18px!important}
+/* Leer: der Pfeil weicht, das Mikrofon kommt (und umgekehrt). */
+body.neu #view-chat:not(:has(.img-preview.show, .rec-prev.show)) .chat-input:has(> textarea:placeholder-shown) > #chatSend,
+body.neu #dmConvo:not(:has(.rec-prev.show)) .chat-input:has(> textarea:placeholder-shown) > #dmSend{
+  opacity:0;visibility:hidden;transform:scale(.4)}
+body.neu .chat-input:has(> textarea:not(:placeholder-shown)) > #chatMic,
+body.neu #view-chat:has(.img-preview.show, .rec-prev.show) .chat-input > #chatMic,
+body.neu .chat-input:has(> textarea:not(:placeholder-shown)) > #dmMic,
+body.neu #dmConvo:has(.rec-prev.show) .chat-input > #dmMic{opacity:0;visibility:hidden;transform:scale(.6)}
+/* Während einer Aufnahme bleibt das Mikrofon sichtbar und rot. */
+body.neu .chat-input > .attach-btn.rec-on{opacity:1;visibility:visible;transform:none;color:var(--danger-tx)}
+/* „+" als runder grauer Knopf, wie links neben der Pille bei iMessage. */
+body.neu .chat-input .attach-wrap > .attach-btn{width:44px;min-width:44px;height:44px;border:none;border-radius:var(--r-rund);
+  color:var(--text-2);background:radial-gradient(circle closest-side, var(--auf-2) 0 calc(100% - 6px), transparent calc(100% - 5.5px))}
+body.neu .chat-input .attach-wrap > .attach-btn:hover{color:var(--text)}
 
 /* ── Das Menü an der Nachricht wie ein Kontextmenü (Runde 249) ──
    Bisher ein Blatt von unten, das die Nachricht nur als Textzeile
@@ -10674,7 +10830,7 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
       <!-- START -->
       <section class="view" id="view-home">
         <div class="view-head shrink"><div class="vh-line"><div class="vh-text"><h2 id="homeGreet">Start</h2><p id="homeSub">Dein Überblick für heute.</p></div>
-            <!-- Runde 276, Idee 13: derselbe „+"-Knopf an derselben Stelle
+            <!-- Runde 280, Idee 13: derselbe „+"-Knopf an derselben Stelle
                  wie überall, auf „Heute" mit Vorschlägen (was man von hier
                  aus am häufigsten anlegt). Nur am Rechner; am Handy liegt
                  dort der Platz der Startseite, und Formis Ring (lange
@@ -11464,7 +11620,7 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
           <textarea class="inp" id="chatText" rows="1" placeholder="Nachricht"
             title="Enter sendet, Shift+Enter macht eine neue Zeile. @ erwähnt jemanden." maxlength="2000"></textarea>
           <button class="btn btn-primary btn-sm" id="chatSend" aria-label="Senden">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:17px;height:17px"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px" aria-hidden="true"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
           </button>
         </div>
       </section>
@@ -11897,7 +12053,7 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
             <div class="card"><h3>Kommende Abwesenheiten</h3><div id="absList"></div></div>
             <div class="card" data-fold="abwmelden">
               <h3 data-ikon="sonne">Abwesenheit melden</h3>
-              <p class="hint">Urlaub, Krankheit oder frei – erscheint im Schichtplan.</p>
+              <p class="hint">Urlaub, Krankheit, frei, Uni/Berufsschule oder Weiterbildung – erscheint im Schichtplan, und der Planer teilt dich an diesen Tagen nicht ein.</p>
               <div class="row">
                 <div class="field"><label for="abFrom">Von</label><input class="inp" id="abFrom" type="date" /></div>
                 <div class="field"><label for="abTo">Bis</label><input class="inp" id="abTo" type="date" /></div>
@@ -11907,6 +12063,11 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
                   <option value="urlaub">🌴 Urlaub</option>
                   <option value="krank">🤒 Krank</option>
                   <option value="frei">🏠 Frei</option>
+                  <!-- Runde 274, aus dem Betrieb: „bei der abwesendheit fehlt
+                       das man sich für uni oder sonstige weiterbildungen auch
+                       melden kann was bei uns aber auch sehr wichtig ist". -->
+                  <option value="schule">🎓 Uni / Berufsschule</option>
+                  <option value="weiterbildung">📚 Weiterbildung</option>
                 </select></div>
               <div class="field"><label for="abNote">Notiz (optional)</label>
                 <input class="inp" id="abNote" type="text" maxlength="80" /></div>
@@ -12037,7 +12198,7 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
             </button>
             <textarea class="inp" id="dmText" rows="1" placeholder="Nachricht" maxlength="2000"></textarea>
             <button class="btn btn-primary btn-sm" id="dmSend" aria-label="Senden">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:17px;height:17px"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px" aria-hidden="true"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
             </button>
           </div>
         </div>
@@ -12119,6 +12280,12 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
                   </div>
                 </div>
                 <ol class="spl-schritte" id="spSchritte"></ol>
+                <!-- Runde 274, aus dem Betrieb: „fragen zum plan finde ich
+                     nicht". Die Karte stand weiter unten und zugeklappt. -->
+                <button type="button" class="spl-fragen-zeile" id="spFragenZeile">
+                  <span><b>Fragen zum Plan</b><small id="spFragenZeileText">24 Fragen – beantworten, damit der Plan passt</small></span>
+                  <i aria-hidden="true">beantworten ›</i>
+                </button>
                 <p class="spl-notiz" id="spNotizAnzeige" hidden></p>
               <p class="spl-stand" id="spStand" role="status"></p>
                 <input type="file" id="spDatei" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden />
@@ -12239,7 +12406,11 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
                     <section class="card spl-aktionen">
                       <h3 data-ikon="hakenKreis">Fertig?</h3>
                       <button type="button" class="btn btn-primary" id="spVeroeffentlichen">Im Team-Schichtplan veröffentlichen</button>
-                      <button type="button" class="btn btn-ghost" id="spLogx">Für LogX kopieren</button>
+                      <!-- Runde 274, aus dem Betrieb: „es wäre cool wenn der
+                           schichtplan … auch so aufgeteilt ist für studio für
+                           studio" — in LogX sieht jede Leitung nur ihre Studios. -->
+                      <button type="button" class="btn btn-ghost" id="spLogx">Für LogX kopieren: nur dieses Studio</button>
+                      <button type="button" class="btn btn-ghost" id="spLogxAlle">Alle Studios kopieren (Studio für Studio)</button>
                       <!-- Runde 245: eine Probe muss sich zurückholen lassen,
                            sonst traut sich niemand, es auszuprobieren. -->
                       <button type="button" class="btn btn-ghost spl-zurueck" id="spZurueck" hidden>Veröffentlichung zurücknehmen</button>
@@ -13441,6 +13612,25 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
     <p class="hint" style="margin:0 0 12px" id="neuStand"></p>
     <div id="neuListe"></div>
   </div>
+</div>
+
+<!-- Findetest (Runde 275): die Stoppuhr zum Selbsttesten. -->
+<div id="findeModal" role="dialog" aria-modal="true" aria-labelledby="ftTitel">
+  <div class="pm-box">
+    <button class="lb-close" id="ftClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <h3 id="ftTitel" style="margin-bottom:4px">Findetest</h3>
+    <p class="hint" style="margin:0 0 12px">Gib das Handy jemandem aus dem Team. Ein Tipp auf „Los“ startet auf „Heute“ die Uhr; sie hält von selbst an, wenn das Ziel offen ist. Suche und Formi bitte nicht benutzen.</p>
+    <p class="ft-ergebnis" id="ftErgebnis" hidden></p>
+    <div id="ftListe"></div>
+    <div class="ft-fuss">
+      <button type="button" class="btn btn-ghost btn-sm" id="ftKopieren">Ergebnisse kopieren</button>
+      <button type="button" class="btn btn-ghost btn-sm" id="ftLeeren">Ergebnisse löschen</button>
+    </div>
+  </div>
+</div>
+<div class="ft-uhr" id="ftUhr" hidden role="status">
+  <span class="ft-uhr-txt"><b id="ftUhrZiel"></b><span><span id="ftUhrZeit">0 s</span><span id="ftUhrTipps"></span></span></span>
+  <button type="button" class="btn btn-ghost btn-sm" id="ftAufgeben" aria-label="Aufgeben"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg><span class="ft-auf-wort">Aufgeben</span></button>
 </div>
 
 <!-- DATENSCHUTZVORFALL MELDEN (P-02, Runde 113). Aus dem Betrieb:
@@ -19359,7 +19549,7 @@ var KEYS_FEST=[
   {k:'Esc', t:'Aus dem Schreibfeld heraus / Fenster schließen'}
 ];
 
-/* ── Fokus (Runde 276, Idee 17) ──────────────────────────────────────
+/* ── Fokus (Runde 280, Idee 17) ──────────────────────────────────────
    Am Rechner blendet F alles aus ausser der aktuellen Seite: keine
    Seitenleiste, keine Kopfleiste, keine rechte Spalte auf „Heute".
    Formi bleibt als Kugel. Oben links steht „Fokus beenden" (44 px). */
@@ -19392,7 +19582,7 @@ function homeNeuEintraege(){
   if(canManage() && ansichtAn('chef')) l.push({ text:'Ankündigung', tun:function(){ showView('chef', true); showChefTab('erstellen'); setTimeout(function(){ var f=$('bcText'); if(f) f.focus(); }, 320); } });
   return l;
 }
-/* Ein kleines Menü unter einem Knopf (Runde 276). */
+/* Ein kleines Menü unter einem Knopf (Runde 280). */
 function menuAn(anker, eintraege, name){
   menuZu();
   var r=anker.getBoundingClientRect();
@@ -19553,7 +19743,7 @@ var DIALOGE = ['profileModal','personModal','devModal','pollModal','todoEditModa
                'aboModal','zugangModal','ownTodoModal','probeModal',
                'fwdModal','keysModal','rechtModal','searchOverlay',
                'msgSheet','todoSheet','docSheet','werkbankModal','glockeModal',
-               'putzModal','schnellModal','neuModal','vorfallModal','zfModal',
+               'putzModal','schnellModal','neuModal','findeModal','vorfallModal','zfModal',
                'bestellModal','shiftSheet'];
 
 function closeAllModals(){
@@ -20369,7 +20559,7 @@ function withBusy(btn, fn){
   btn.dataset.busy='1';
   var label=btn.textContent, wasDisabled=btn.disabled;
   btn.disabled=true; btn.style.opacity='.6';
-  /* Runde 274, Idee 4: dauert es länger als 300 ms, dreht im Knopf eine
+  /* Runde 278, Idee 4: dauert es länger als 300 ms, dreht im Knopf eine
      kleine Formi-Scheibe statt eines Standard-Kreisels. */
   var ladeUhr=setTimeout(function(){ if(btn.dataset.busy==='1'){ btn.classList.add('laedt'); btn.setAttribute('aria-busy', 'true'); btn.style.opacity=''; } }, 300);
   var done=function(){
@@ -22387,7 +22577,7 @@ function meldListe(){
       '<span class="gl-txt"><b>'+esc(m.text)+'</b>'+
       '<span>'+esc(m.wo||'')+' · '+esc(fmtDateTime(m.ts))+'</span></span></div>';
   }
-  /* Runde 276, Idee 15: je Studio gebündelt — „3 neue in Hürth" als EINE
+  /* Runde 280, Idee 15: je Studio gebündelt — „3 neue in Hürth" als EINE
      Zeile, aufklappbar. Ein einzelner Eintrag steht wie bisher. */
   var gruppen=[], nach={};
   _meldungen.forEach(function(m){ var k=m.wo||''; if(!nach[k]){ nach[k]=[]; gruppen.push(k); } nach[k].push(m); });
@@ -22413,7 +22603,7 @@ function glockeAuf(){
      als gelesen markiert und der Unterschied waere nie zu sehen. */
   setTimeout(meldMarker, 50);
 }
-/* Für die Durchläufe (Runde 276): Meldungen einspielen. */
+/* Für die Durchläufe (Runde 280): Meldungen einspielen. */
 window.__oberflaeche={ meld:function(ts, art, text, wo){ meldHinzu(ts, art, text, wo); }, glocke:function(){ glockeAuf(); } };
 function glockeZu(){
   var f=$('glockeModal'); if(f) f.classList.remove('show');
@@ -22874,6 +23064,9 @@ function allesGruppen(){
     /* Runde 103: jede Auslieferung, nachvollziehbar. */
     {label:'Was ist neu', neu:true, roh:ikon('stern'),
      was: NEUIGKEITEN.length ? 'Zuletzt: '+NEUIGKEITEN[0].titel : 'Was sich zuletzt geändert hat'},
+    /* Runde 275: die Stoppuhr zum Selbsttesten. */
+    {label:'Findetest', findetest:true, roh:ikon('uhr'),
+     was:'Stoppen, wie lange man zu einem Ziel braucht'},
     /* Runde 113 (P-02). Für jeden, nicht nur die Leitung: eine Datenpanne
        bemerkt oft, wer am Empfang sitzt. */
     /* Seit Runde 126 „Problem melden" — jedes Problem, nicht nur der
@@ -22942,6 +23135,7 @@ function allesZielAttr(e){
   return ' data-alles="'+esc(e.view||'')+'"'+
     (e.hilfe   ?' data-al-hilfe="1"':'')+
     (e.neu     ?' data-al-neu="1"':'')+
+    (e.findetest?' data-al-findetest="1"':'')+
     (e.vorfall ?' data-al-vorfall="1"':'')+
     (e.teamtab?' data-al-teamtab="'+esc(e.teamtab)+'"':'')+
     (e.ichtab ?' data-al-ichtab="'+esc(e.ichtab)+'"':'')+
@@ -22974,6 +23168,7 @@ function allesZiel(el){
      ist — also wird hier nicht gewechselt, sondern geöffnet. */
   if(el.getAttribute('data-al-hilfe')){ hilfeOeffnen(); return; }
   if(el.getAttribute('data-al-neu')){ neuOeffnen(); return; }
+  if(el.getAttribute('data-al-findetest')){ findeOeffnen(); return; }
   if(el.getAttribute('data-al-vorfall')){ vorfallOeffnen(); return; }
   showView(view);
   var t=el.getAttribute('data-al-teamtab');
@@ -23017,6 +23212,25 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-26-abwesend-uni', datum:'26.10.2026', art:'neu', titel:'Uni und Weiterbildung als Abwesenheit melden', wo:'team:abwesend', punkte:[
+    'Plan → Abwesend → „Abwesenheit melden": neu „Uni / Berufsschule" und „Weiterbildung", als Antrag wie Urlaub.',
+    'Schichtplaner: „Fragen zum Plan" oben im Kopf, mit der Zahl der offenen Fragen.',
+    'LogX: Kopieren für „nur dieses Studio" oder „alle Studios", Studio für Studio sortiert.'
+  ]},
+  { id:'2026-10-25-chats-imessage', datum:'25.10.2026', art:'neu', titel:'Chats wie iMessage', wo:'chat', punkte:[
+    'Deine Nachrichten rechts in Blau, die der anderen links in Grau – die letzte Blase einer Reihe hat den kleinen Zipfel.',
+    'Unter deiner letzten Nachricht steht jetzt „Gesendet", „Zugestellt" oder „Gelesen".',
+    'Schreibt gerade jemand, siehst du unten im Chat drei Punkte und den Namen.',
+    'Runde Eingabeleiste: rechts im Feld das Mikrofon, beim Tippen der blaue Pfeil. Neue Nachrichten gleiten sanft herein.'
+  ]},
+  { id:'2026-10-25-findetest', datum:'25.10.2026', art:'neu', titel:'Findetest: Stoppuhr für Wege in der App', wo:'home', punkte:[
+    'Unter Alles → Was muss ich wissen? → Findetest: Ziel wählen, „Los" tippen.',
+    'Die Uhr startet auf „Heute" und hält am Ziel von selbst an – mit Sekunden und Tipps.',
+    'Die letzten Zeiten bleiben auf dem Gerät und lassen sich kopieren.'
+  ]},
+  { id:'2026-10-25-schulung-nachweis-person', datum:'25.10.2026', art:'neu', titel:'Leitung: Schulungsnachweis für jede Person', wo:'schulung', punkte:[
+    'Verwalten → Teilnehmer: „Nachweis" druckt alle bestandenen Schulungen einer Person.',
+    'Auch für alle ohne eigenen Zugang.'
   { id:'2026-10-25-meine-schicht', datum:'25.10.2026', art:'neu', titel:'„Meine Schicht" auf der Startseite', wo:'home', punkte:[
     'Auf „Heute" zwischen „Überblick" und „Meine Schicht" wechseln, am Handy unter „Ausserdem".',
     '„Meine Schicht" zeigt alles fürs eigene Studio in einer Liste, jeden Putzpunkt mit Haken.',
@@ -23813,6 +24027,104 @@ function neuOeffnen(){
   neuPilleSetzen();
 }
 function neuSchliessen(){ var m=$('neuModal'); if(m) m.classList.remove('show'); }
+
+/* ══ FINDETEST (Runde 275) ═══════════════════════════════════════════
+   Aus dem Betrieb, 23.10.2026, auf „Erst mit echten Leuten messen":
+   „ich kann leider nur selber testen aktuell". Also misst die App selbst:
+   ein Ziel wählen, „Los" – die Uhr läuft ab „Heute" und hält an, sobald
+   die Zielansicht offen ist. Gezählt werden Zeit und Tipps.
+
+   Die Uhr fragt alle 250 ms currentView ab, statt sich in showView zu
+   hängen: so bleibt der eine Weg durch showView unberührt, und kein
+   Fehler hier kann die Navigation stören.
+
+   Die Ergebnisse bleiben auf dem Gerät (PREFS.findetest) – es geht um
+   den Aufbau der App, nicht um die Person, die gesucht hat. */
+var FINDE_ZIELE = [
+  { id:'putz',   was:'Den Putzplan öffnen',          view:'putzplan' },
+  { id:'schicht',was:'Sehen, wer morgen arbeitet',   view:'team' },
+  { id:'dm',     was:'Jemandem direkt schreiben',    view:'dm' },
+  { id:'geraet', was:'Ein Gerät defekt melden',      view:'geraete' },
+  { id:'doku',   was:'Ein Dokument finden',          view:'docs' }
+];
+var _ft = null;
+function findeSek(ms){ return Math.max(1, Math.round(ms/1000)); }
+function findeRender(){
+  var box=$('ftListe'); if(!box) return;
+  var erg=PREFS.findetest||{};
+  box.innerHTML = FINDE_ZIELE.map(function(z){
+    var an = ansichtAn(z.view);
+    var r = (erg[z.id]||[])[0];
+    var info = !an ? 'Bei euch ausgeschaltet'
+      : (r ? (r.ok ? 'Zuletzt '+r.s+' s, '+r.t+' Tipp'+(r.t===1?'':'s') : 'Zuletzt aufgegeben nach '+r.s+' s') : 'Noch nicht gemessen');
+    return '<div class="ft-zeile"><span class="ft-was"><b>'+esc(z.was)+'</b><i>'+esc(info)+'</i></span>'+
+      (an ? '<button type="button" class="btn btn-primary btn-sm" data-ft-los="'+esc(z.id)+'">Los</button>' : '')+'</div>';
+  }).join('');
+  box.querySelectorAll('[data-ft-los]').forEach(function(b){
+    b.addEventListener('click', function(){ findeStart(b.getAttribute('data-ft-los')); });
+  });
+}
+function findeOeffnen(ergebnis){
+  var m=$('findeModal'); if(!m) return;
+  var e=$('ftErgebnis');
+  if(e){ e.hidden=!ergebnis; e.textContent=ergebnis||''; }
+  findeRender();
+  m.classList.add('show');
+}
+function findeSchliessen(){ var m=$('findeModal'); if(m) m.classList.remove('show'); }
+/* Gezählt wird der Klick, nicht das Berühren: Wischen zum Scrollen ist
+   kein Tipp. isTrusted lässt die Klicks aus, die die App selbst auslöst
+   (allesZiel klickt danach den Unterreiter an). */
+function findeTipp(ev){
+  if(!_ft || !ev.isTrusted) return;
+  var u=$('ftUhr'); if(u && u.contains(ev.target)) return;
+  _ft.tipps++;
+}
+function findeStart(id){
+  var z=FINDE_ZIELE.filter(function(x){ return x.id===id; })[0]; if(!z) return;
+  findeSchliessen();
+  closeAllModals();
+  showView('home');
+  _ft={ z:z, start:Date.now(), tipps:0 };
+  $('ftUhrZiel').textContent='Finde: '+z.was;
+  $('ftUhrZeit').textContent='0 s';
+  $('ftUhrTipps').textContent='';
+  /* Einmal in die Kopfzeile umhängen, gleich hinter die Marke. */
+  var uhr=$('ftUhr'), marke=$('tbHome');
+  if(marke && uhr.previousElementSibling!==marke) marke.parentNode.insertBefore(uhr, marke.nextSibling);
+  uhr.hidden=false;
+  document.addEventListener('click', findeTipp, true);
+  _ft.uhr=setInterval(function(){
+    if(!_ft) return;
+    var ms=Date.now()-_ft.start;
+    $('ftUhrZeit').textContent=Math.floor(ms/1000)+' s';
+    $('ftUhrTipps').textContent=' · '+_ft.tipps+' Tipp'+(_ft.tipps===1?'':'s');
+    if(currentView===_ft.z.view) findeEnde(true);
+  }, 250);
+}
+function findeEnde(ok){
+  if(!_ft) return;
+  var f=_ft; _ft=null;
+  clearInterval(f.uhr);
+  document.removeEventListener('click', findeTipp, true);
+  $('ftUhr').hidden=true;
+  var r={ ok:ok, s:findeSek(Date.now()-f.start), t:f.tipps, d:Date.now() };
+  var erg=PREFS.findetest||{};
+  erg[f.z.id]=[r].concat(erg[f.z.id]||[]).slice(0,5);
+  PREFS.findetest=erg; savePrefs();
+  if(ok) tick(8);
+  setTimeout(function(){
+    findeOeffnen(ok ? 'Geschafft: „'+f.z.was+'" in '+r.s+' s mit '+r.t+' Tipp'+(r.t===1?'':'s')+'.'
+                    : 'Aufgegeben: „'+f.z.was+'" nach '+r.s+' s.');
+  }, ok ? 600 : 0);
+}
+function findeText(){
+  var erg=PREFS.findetest||{};
+  return 'Findetest, '+new Date().toLocaleDateString('de-DE')+'\n'+FINDE_ZIELE.map(function(z){
+    var l=(erg[z.id]||[]).map(function(r){ return r.ok ? r.s+' s/'+r.t+' Tipps' : 'aufgegeben ('+r.s+' s)'; });
+    return z.was+': '+(l.length ? l.join(', ') : '–');
+  }).join('\n');
+}
 
 /* ══ AUSKUNFT NACH ART. 15 (P-10, Runde 114) ══════════════════════════
    Der Server (auskunftErstellen) sammelt, die App macht daraus EINE
@@ -25956,7 +26268,7 @@ function buildChefSelects(){
       if(!cb.checked){ $('ntAllStudios').checked=false; $('ntAllWrap').classList.remove('on'); }
     });
     var span=document.createElement('span'); span.textContent=x.name+(x.ok?'':' — nicht freigeschaltet');
-    /* Runde 276, Idee 16: die zuletzt gewählten Studios sind schon an. */
+    /* Runde 280, Idee 16: die zuletzt gewählten Studios sind schon an. */
     if(x.ok && ntStudiosZuletzt().indexOf(x.key)>=0){ cb.checked=true; lab.classList.add('on'); }
     lab.appendChild(cb); lab.appendChild(span); ns.appendChild(lab);
   });
@@ -29450,7 +29762,7 @@ function formiKugelZeigen(){
   formiLinseBauen();
   requestAnimationFrame(formiLinseLage);
   if(!k._gebunden){ k._gebunden=true;
-    /* Runde 275: nach dem Lange-Drücken öffnet der Klick nicht auch noch das Fenster. */
+    /* Runde 279: nach dem Lange-Drücken öffnet der Klick nicht auch noch das Fenster. */
     k.addEventListener('click', function(){ if(Date.now()-_frm.schluck<700) return; jarvisAuf(); });
     formiKugelRingBinden(k); formiKugelZielBinden(k); formiLebtStart(); }
   k.hidden=!(gehirnVerfuegbar() && !jarvisOffen() && currentView!=='gehirn' && currentView!=='chat');
@@ -29902,7 +30214,7 @@ function formiTagesStand(keys, heuteFertig, offen){
   var anteil=alle ? fertig/alle : 0;
   var stufe=!fertig ? 0 : anteil>=1 ? 4 : anteil>=.66 ? 3 : anteil>=.33 ? 2 : 1;
   _fl.tagAnteil=anteil;
-  /* Runde 274, Idee 3: der Stand ist lesbar — beim Darüberfahren (Rechner)
+  /* Runde 278, Idee 3: der Stand ist lesbar — beim Darüberfahren (Rechner)
      und mit der Tastatur. Idee 7: staut sich viel, wird Formi
      schwer (der Wirbel langsamer), ohne rote Zahl. */
   var k0=$('formiKugel');
@@ -30858,7 +31170,7 @@ function formiInselErgebnis(o){
 }
 function formiInselWeg(){
   var fi=$('formiInsel'); clearTimeout(_fi.uhr);
-  /* Runde 275: läuft etwas (eingestempelt) und steht die Insel in der
+  /* Runde 279: läuft etwas (eingestempelt) und steht die Insel in der
      Kopfleiste, kehrt sie dorthin zurück statt zu verschwinden. */
   if(fi && _fi.laufend && _fi.imKopf && _fi.stand!=='laufend' && _fi.stand!=='weg' && formiInselDarf()){
     fi.classList.remove('fehler'); _fi.stand='weg'; formiLaufendZeigen(); if(_fi.stand==='laufend') return;
@@ -30901,7 +31213,7 @@ function formiRand(an, fertig){
     _fi.randUhr=setTimeout(function(){ _fi.ani.forEach(function(a){ try{ a.cancel(); }catch(e){} }); _fi.ani=[]; r.hidden=true; }, 700);
   }, fertig ? 500 : 0);
 }
-/* ── Formi als Werkzeug (Runde 275) ───────────────────────────────────
+/* ── Formi als Werkzeug (Runde 279) ───────────────────────────────────
    Aus dem Betrieb (25.10.2026) auf die 20 Ideen: „mach alles davon".
    Idee 1 — auf Formi ziehen: am Rechner eine Aufgabe oder einen
    Putzpunkt auf die Kugel ziehen; Formi bietet Abhaken, Erinnern und
@@ -31047,7 +31359,7 @@ function formiZugAbhaken(z){
   Promise.resolve(arbeit).catch(function(e){ toast(e && e.message ? e.message : errMsg(e), true); });
 }
 
-/* ── Idee 6: morgens kommt der Tag aus dem Loch (Runde 275) ───────────
+/* ── Idee 6: morgens kommt der Tag aus dem Loch (Runde 279) ───────────
    Beim ersten Blick auf „Heute" an einem Tag kommen die ersten drei
    Zeilen aus Formi heraus (weisses Loch), einmal, kurz. Danach nie
    wieder an diesem Tag. Nur transform/opacity. */
@@ -31070,7 +31382,7 @@ function formiMorgen(box){
   });
 }
 
-/* ── Idee 8: die Insel für Laufendes (Runde 275) ──────────────────────
+/* ── Idee 8: die Insel für Laufendes (Runde 279) ──────────────────────
    Wer eingestempelt ist, sieht es in der Insel: „Im Dienst seit 06:58".
    Am Rechner steht sie dafür dauerhaft in der Kopfleiste (dort ist Platz),
    am Handy kurz, wenn sich der Stand ändert — dauerhaft läge sie über dem
@@ -31094,7 +31406,7 @@ function formiLaufendZeigen(){
   if(!dauerhaft){ clearTimeout(_fi.uhr); _fi.uhr=setTimeout(function(){ if(_fi.stand==='laufend'){ _fi.stand='klein'; formiInselWeg(); } }, 4500); }
 }
 
-/* ── Idee 18: die erste Woche mit Formi (Runde 275) ───────────────────
+/* ── Idee 18: die erste Woche mit Formi (Runde 279) ───────────────────
    Wer neu im Team ist (Konto jünger als 5 Tage, createdAt im Profil),
    bekommt auf „Heute" je Tag EINEN Rundgang angeboten — eine Minute,
    in der Reihenfolge, die man in den ersten Tagen braucht. Ältere Konten
@@ -31515,11 +31827,11 @@ window.__formiLebt = {
   /* Runde 250: Insel, Rand und Linse für die Durchläufe. */
   insel: function(){ var fi=$('formiInsel'), r=$('formiRand'); return { stand:_fi.stand, hidden:!fi || fi.hidden, klasse:fi ? fi.className : '', titel:fi ? fi.querySelector('.fi-titel').textContent : '', was:fi ? fi.querySelector('.fi-was').textContent : '', klein:fi ? fi.querySelector('.fi-t').textContent : '', rand:!!(r && !r.hidden && r.classList.contains('an')) }; },
   inselErgebnis: function(o){ formiInselErgebnis(o); },
-  /* Runde 274: Tagesstand/Stau, Formi im Knopf, Spur (Durchläufe). */
+  /* Runde 278: Tagesstand/Stau, Formi im Knopf, Spur (Durchläufe). */
   tagSetzen: function(fertig, offen){ _fl.tagStufe=null; return formiTagesStand([], fertig, offen); },
   beschaeftigt: function(sel, ms){ var b=document.querySelector(sel); withBusy(b, function(){ return new Promise(function(r){ setTimeout(r, ms); }); }); },
   spur: function(t, done){ return formiSpurHTML(t, done); },
-  /* Runde 275 (Durchläufe): Laufendes und ein neues Konto. */
+  /* Runde 279 (Durchläufe): Laufendes und ein neues Konto. */
   laufend: function(t){ formiLaufend(t); },
   morgen: function(){ try{ localStorage.removeItem('kf_formi_morgen'); }catch(e){} renderHeute(); },
   neuImTeam: function(ts){ session.createdAt=ts; try{ localStorage.removeItem('kf_formi_woche_'+session.uid); }catch(e){} renderHeute(); },
@@ -31881,7 +32193,7 @@ function gehirnMiniLaden(v){
         dienst:r[0].docs.map(function(d){ var x=d.data(); return { name:x.name||'', von:x.from||'', bis:x.to||'' }; })
           .sort(function(a,b){ return String(a.von).localeCompare(String(b.von)); }),
         weg:r[1].docs.map(function(d){ return d.data(); }).filter(function(a){ return a.from<=heute && (a.to||a.from)>=heute && a.status!=='abgelehnt'; })
-          .map(function(a){ return { name:a.name||'', art:({urlaub:'Urlaub',krank:'krank',frei:'frei'})[a.type]||'' }; })
+          .map(function(a){ return { name:a.name||'', art:ABW_ART[a.type]||'' }; })
       };
     });
   } else if(m.ziel==='material'){
@@ -32466,7 +32778,7 @@ function gehirnAbfrage(v){
       if(s.was==='abwesend') liste=liste.filter(function(a){ return a.from<=heute && (a.to||a.from)>=heute && a.status!=='abgelehnt'; });
       return { k:k, leute:liste.map(function(x){
         return s.was==='dienst' ? { name:x.name||'', neben:(x.from||'')+'–'+(x.to||'') }
-          : { name:x.name||'', neben:({urlaub:'Urlaub',krank:'krank',frei:'frei'})[x.type]||'' };
+          : { name:x.name||'', neben:ABW_ART[x.type]||'' };
       }) };
     }).catch(function(){ return { k:k, leute:null }; });
   })).then(function(r){ v.ergebnis=r.filter(function(x){ return keys.length===1 || (x.leute&&x.leute.length); }); });
@@ -32500,7 +32812,7 @@ function gehirnAbfrageHTML(v){
     '<div style="--gv-i:2" class="gv-knoepfe"><button type="button" class="btn btn-ghost btn-sm" data-gziel="'+ziel+'">'+
     (ziel==='todos' ? 'Zu den Aufgaben ›' : 'Zum Team ›')+'</button></div></div>';
 }
-var GEHIRN_ABW = { urlaub:'Urlaub', krank:'Krank', frei:'Frei' };
+var GEHIRN_ABW = { urlaub:'Urlaub', krank:'Krank', frei:'Frei', schule:'Uni / Berufsschule', weiterbildung:'Weiterbildung' };
 function gehirnDatum(x){ return String(x||'').split('-').reverse().join('.'); }
 function gehirnEintragHTML(v, i){
   var s=v.vorschlag, n=0, teile=[];
@@ -33108,7 +33420,7 @@ function jvTonKnopf(){
   b.setAttribute('aria-label', _jvTonAn ? 'Töne ausschalten' : 'Töne einschalten');
   b.innerHTML=_jvTonAn ? ikon('ton') : ikon('stumm');
 }
-/* Runde 274, Idee 10: EIN Formi-Ton für „erledigt" (tief, kurz, zwei
+/* Runde 278, Idee 10: EIN Formi-Ton für „erledigt" (tief, kurz, zwei
    Anschläge wie beim Bezahlen am Handy) und einer für Fehler. Öffnen,
    Schliessen, Senden und Schritte sind still. */
 var JV_TON_ART={ fertig:'erledigt', komplett:'erledigt', fehler:'fehler' };
@@ -35070,7 +35382,7 @@ function schMeineZeichnen(){
   var bb=$('schBescheinigung');
   if(bb){
     bb.hidden=!schBescheinigungLaeufe().length;
-    if(!bb._hat){ bb._hat=1; bb.addEventListener('click', schBescheinigungDrucken); }
+    if(!bb._hat){ bb._hat=1; bb.addEventListener('click', function(){ schBescheinigungDrucken(); }); }
   }
 }
 /* ── Die eigene Bescheinigung (Runde 248) ─────────────────────────────
@@ -35083,10 +35395,16 @@ function schMeineZeichnen(){
    Je Modul zählt der LETZTE bestandene Durchlauf, ohne Testläufe —
    dieselbe Regel wie beim Nachweis der Leitung. Was als Pflicht noch
    offen ist, steht darunter: ein Blatt, das nur das Erledigte zeigt,
-   sähe vollständiger aus, als es ist. */
-function schBescheinigungLaeufe(){
+   sähe vollständiger aus, als es ist.
+
+   Seit Runde 276 druckt dieselbe Funktion das Blatt auch für die Leitung,
+   je Teilnehmer (Verwalten → Teilnehmer → „Nachweis"). Aus dem Betrieb,
+   „das was leichter ist für leute ohne zugang": wer kein eigenes Konto
+   hat, kann sich das Blatt nicht selbst drucken — die Leitung kann es.
+   `fuer` ist dann der Teilnehmer; ohne `fuer` gilt das eigene Konto. */
+function schBescheinigungLaeufe(quelle){
   var juengst={};
-  _schMeine.forEach(function(l){
+  (quelle||_schMeine).forEach(function(l){
     if(l.test || l.status!=='fertig' || !l.bestanden) return;
     var j=juengst[l.modul];
     if(!j || (l.ende||0)>(j.ende||0)) juengst[l.modul]=l;
@@ -35094,14 +35412,19 @@ function schBescheinigungLaeufe(){
   return Object.keys(juengst).map(function(k){ return juengst[k]; })
     .sort(function(a,b){ return (b.ende||0)-(a.ende||0); });
 }
-function schBescheinigungDrucken(){
+function schTnLaeufe(t){
+  return _schAlleLaeufe.filter(function(l){ return l.teilnehmer===t.id; });
+}
+function schBescheinigungDrucken(fuer){
   var pa=$('printArea'); if(!pa) return;
   var datum=function(ts){ return new Date(ts).toLocaleDateString('de-DE',{ day:'2-digit', month:'2-digit', year:'numeric' }); };
-  var laeufe=schBescheinigungLaeufe();
-  var offen=schModule().filter(function(m){ return m.pflicht && schStand(m).art!=='fertig'; })
-    .map(function(m){ return m.titel||''; });
+  var laeufe=schBescheinigungLaeufe(fuer ? schTnLaeufe(fuer) : null);
+  var offen=schModule().filter(function(m){
+    return m.pflicht && (fuer ? schStandZelle(fuer, m).art : schStand(m).art)!=='fertig';
+  }).map(function(m){ return m.titel||''; });
+  var name=fuer ? (fuer.name||'') : ((session && session.name)||'');
   pa.innerHTML='<h1>Schulungsnachweis</h1>'+
-    '<p class="p-sub">'+esc((session && session.name)||'')+' · '+esc(firmaAnzeige())+' · Stand '+esc(datum(Date.now()))+'</p>'+
+    '<p class="p-sub">'+esc(name)+' · '+esc(firmaAnzeige())+' · Stand '+esc(datum(Date.now()))+'</p>'+
     (laeufe.length
       ? '<table><tr><th>Schulung</th><th>Bestanden am</th><th>Ergebnis</th><th>Dauer</th><th>Gültig bis</th></tr>'+
         laeufe.map(function(l){
@@ -35115,7 +35438,7 @@ function schBescheinigungDrucken(){
       : '<p class="p-note">Noch keine Schulung bestanden.</p>')+
     (offen.length ? '<p class="p-note"><b>Als Pflicht noch offen:</b> '+esc(offen.join(', '))+'</p>' : '')+
     '<p class="p-note">Bestätigt durch die Studioleitung: ______________________________ &nbsp; Datum: ____________</p>'+
-    '<p class="p-foot">'+esc(KONFIG.appName||'StudioChat')+' — erstellt aus den eigenen Schulungs-Durchläufen. '+
+    '<p class="p-foot">'+esc(KONFIG.appName||'StudioChat')+' — erstellt aus den '+(fuer ? '' : 'eigenen ')+'Schulungs-Durchläufen. '+
       'Ob dieses Blatt eine bestimmte Vorschrift erfüllt, prüft die App nicht.</p>';
   window.print();
 }
@@ -36448,6 +36771,8 @@ function schTnListeZeichnen(){
         ? '<button type="button" class="btn btn-ghost btn-sm" data-schkopie="'+esc(t.id)+'">Kopieren</button>'+
           '<button type="button" class="btn btn-ghost btn-sm" data-schteilen="'+esc(t.id)+'">Weitergeben</button>'
         : '')+
+      (schBescheinigungLaeufe(schTnLaeufe(t)).length
+        ? '<button type="button" class="btn btn-ghost btn-sm" data-schtnnachweis="'+esc(t.id)+'">Nachweis</button>' : '')+
       '<button type="button" class="btn btn-ghost btn-sm" data-schneucode="'+esc(t.id)+'">Neuer Code</button>'+
       '<button type="button" class="btn btn-ghost btn-sm" data-schsperre="'+esc(t.id)+'">'+
         (t.gesperrt?'Wieder freigeben':'Stilllegen')+'</button>'+
@@ -36486,6 +36811,9 @@ function schTnListeZeichnen(){
   });
   box.querySelectorAll('[data-schneucode]').forEach(function(b){
     b.addEventListener('click', function(){ schCodeNeu(b.getAttribute('data-schneucode'), b); });
+  });
+  box.querySelectorAll('[data-schtnnachweis]').forEach(function(b){
+    b.addEventListener('click', function(){ schBescheinigungDrucken(tnVon(b,'data-schtnnachweis')); });
   });
   box.querySelectorAll('[data-schsperre]').forEach(function(b){
     b.addEventListener('click', function(){
@@ -37543,6 +37871,8 @@ var _chatMore=false;        // gibt es überhaupt noch ältere?
 function listenChannel(channelId){
   if(_chatUnsub){ _chatUnsub(); _chatUnsub=null; }
   lesestaendeHoeren(channelId);
+  if(_tippt.chat.meinOrt && _tippt.chat.meinOrt!==channelId) tipptEnde('chat');
+  if(_tippt.chat.hoertAuf!==channelId){ _tippt.chat.hoertAuf=channelId; tipptHoeren('chat', channelId); }
   ladeGut('chat');                  // die Meldung galt dem vorigen Kanal
   var first=true, startTs=Date.now();
   _chatUnsub = S('channels').doc(channelId).collection('messages')
@@ -37791,15 +38121,180 @@ function markAnnouncementsRead(){
 /* ============================================================
    RENDER
    ============================================================ */
+/* ══ „… SCHREIBT" (Runde 277) ═══════════════════════════════════════════
+   Aus dem Betrieb, 25.10.2026: die Chats sollen „wie iMessage
+   funktionieren". Dazu gehört, dass man sieht, wenn auf der anderen
+   Seite gerade jemand schreibt: unten im Verlauf eine graue Blase mit
+   drei Punkten, im Kanal mit dem Vornamen darüber.
+
+   WIE ES GESPEICHERT WIRD: ein Dokument je Person und Unterhaltung,
+   channels/<kanal>/tippt/<uid> bzw. dms/<id>/tippt/<uid> = {ts, uid,
+   name}. Geschrieben höchstens alle 3,5 s, solange etwas im Feld steht
+   (nicht bei jedem Zeichen — 30 Leute im Kanal „Allgemein" lesen jeden
+   Schreibvorgang mit); gelöscht beim Senden, beim Leeren des Feldes, beim
+   Wechsel der Unterhaltung und wenn die App in den Hintergrund geht.
+   Was älter ist als 6 s, gilt als vorbei — auch wenn das Löschen nie
+   ankam (Netz weg, Handy zu). Die Regeln stehen in BEIDEN Bäumen
+   (tests/rules/tippt.test.js).
+
+   Beim Bearbeiten einer gesendeten Nachricht wird nichts gemeldet: dort
+   schreibt niemand etwas Neues. */
+var TIPPT_FRISCH=6000, TIPPT_TAKT=3500;
+var _tippt={ chat:{ daten:[], wer:[] }, dm:{ daten:[], wer:[] } };
+function tipptRef(art, ort){
+  try{
+    if(art==='chat'){ ort=ort||currentChannel; return ort ? S('channels').doc(ort).collection('tippt') : null; }
+    ort=ort||_dmId; return ort ? S('dms').doc(ort).collection('tippt') : null;
+  }catch(e){ return null; }
+}
+function tipptHoeren(art, ort){
+  var t=_tippt[art];
+  if(t.unsub){ try{ t.unsub(); }catch(e){} t.unsub=null; }
+  t.daten=[]; tipptZeichnen(art);
+  var ref=session && ort ? tipptRef(art, ort) : null; if(!ref) return;
+  try{
+    t.unsub=ref.onSnapshot(function(snap){
+      t.daten=snap.docs.map(function(d){ return d.data()||{}; });
+      tipptZeichnen(art);
+    }, function(){ /* ohne Leserecht: keine Anzeige, kein Fehlerbild */ });
+  }catch(e){}
+}
+function tipptZeichnen(art){
+  var t=_tippt[art], jetzt=Date.now();
+  t.wer=(t.daten||[]).filter(function(x){
+    var ts=+x.ts||0;
+    return x.uid && session && x.uid!==session.uid && ts > jetzt-TIPPT_FRISCH && ts < jetzt+60000;
+  });
+  clearTimeout(t.timer);
+  if(t.wer.length){
+    var bald=Math.min.apply(null, t.wer.map(function(x){ return (+x.ts)+TIPPT_FRISCH-jetzt; }));
+    t.timer=setTimeout(function(){ tipptZeichnen(art); }, Math.max(250, bald+50));
+  }
+  tipptAnhaengen(art);
+}
+/* Die Zeile hängt IM Verlauf, als letzte — sie rollt mit wie eine Blase.
+   renderMessages() setzt den Verlauf per innerHTML neu, darum hängt sie
+   sich danach wieder an. */
+function tipptAnhaengen(art){
+  var box=$(art==='chat'?'chatScroll':'dmScroll'); if(!box) return;
+  var el=box.querySelector(':scope > .tippt-zeile');
+  var wer=(_tippt[art]||{}).wer||[];
+  if(!wer.length){ if(el) el.remove(); return; }
+  var vn=wer.map(function(x){ return String(x.name||'Jemand').split(' ')[0]; });
+  var satz = vn.length===1 ? vn[0]+' schreibt …'
+    : (vn.length===2 ? vn[0]+' und '+vn[1]+' schreiben …' : vn.length+' Personen schreiben …');
+  var unten = box.scrollHeight-box.scrollTop-box.clientHeight < 100;
+  if(!el){
+    el=document.createElement('div'); el.className='tippt-zeile'; el.setAttribute('role','status');
+    el.innerHTML='<span class="tippt-wer"></span><span class="tippt-blase" aria-hidden="true"><i></i><i></i><i></i></span>';
+    box.appendChild(el);
+  } else if(el!==box.lastElementChild) box.appendChild(el);
+  el.querySelector('.tippt-wer').textContent=satz;
+  if(unten) box.scrollTop=box.scrollHeight;
+}
+function tipptMelden(art, feld){
+  if(!session || !feld) return;
+  if(art==='chat' && _editing) return;
+  if(!feld.value.trim()){ tipptEnde(art); return; }
+  var t=_tippt[art], ort=art==='chat'?currentChannel:_dmId, jetzt=Date.now();
+  if(!ort) return;
+  if(t.meinOrt===ort && jetzt-(t.gemeldet||0) < TIPPT_TAKT) return;
+  if(t.meinOrt && t.meinOrt!==ort) tipptEnde(art);
+  var ref=tipptRef(art, ort); if(!ref) return;
+  t.gemeldet=jetzt; t.meinOrt=ort;
+  try{
+    ref.doc(session.uid).set({ ts:jetzt, uid:session.uid, name:String(session.name||'').slice(0,80) })
+      .catch(function(){});
+  }catch(e){}
+}
+function tipptEnde(art){
+  var t=_tippt[art]; if(!t.meinOrt || !session) return;
+  var ref=tipptRef(art, t.meinOrt); t.meinOrt=null; t.gemeldet=0;
+  try{ if(ref) ref.doc(session.uid).delete().catch(function(){}); }catch(e){}
+}
+document.addEventListener('visibilitychange', function(){
+  if(document.hidden){ tipptEnde('chat'); tipptEnde('dm'); }
+});
+
+/* ── In der Demo antwortet jemand (Runde 277) ──
+   Sonst sähe niemand die drei Punkte, der die App nur ansieht: in der
+   Demo schreibt ausser einem selbst keiner. Nach einer eigenen Nachricht
+   „schreibt" eine Kollegin kurz und antwortet mit einem kurzen Satz —
+   höchstens alle 20 s. Nur in der Demo (erfundene Daten, nichts wird
+   gespeichert), und nicht in automatischen Durchläufen
+   (navigator.webdriver): dort würde eine unerwartete Antwort jede
+   Messung am Verlauf verschieben. Ein Durchlauf, der genau das prüft,
+   schaltet es mit window.__demoAntwort ein. */
+var _demoAntwortZuletzt=0;
+var DEMO_ANTWORTEN=['Alles klar 👍','Danke dir!','Passt, mach ich.','Super, danke!','Okay, schau ich mir gleich an.','Bin dabei.'];
+function demoAntwort(art){
+  if(!imDemo() || !session) return;
+  if(navigator.webdriver && !window.__demoAntwort) return;
+  var jetzt=Date.now(); if(jetzt-_demoAntwortZuletzt < 20000) return;
+  var ort=art==='chat'?currentChannel:_dmId; if(!ort) return;
+  var wer = art==='chat'
+    ? kanalMitglieder(ort).filter(function(u){ return u.name; })
+    : [ _userById(_dmPeer && _dmPeer.uid) || (_dmPeer ? { uid:_dmPeer.uid, name:_dmPeer.name } : null) ].filter(Boolean);
+  if(!wer.length) return;
+  _demoAntwortZuletzt=jetzt;
+  var u=wer[Math.floor(Math.random()*wer.length)];
+  var ref=tipptRef(art, ort);
+  setTimeout(function(){
+    try{ ref.doc(u.uid).set({ ts:Date.now(), uid:u.uid, name:u.name }); }catch(e){}
+  }, 900);
+  setTimeout(function(){
+    try{ ref.doc(u.uid).delete(); }catch(e){}
+    var doc={ uid:u.uid, name:u.name, text:DEMO_ANTWORTEN[Math.floor(Math.random()*DEMO_ANTWORTEN.length)], ts:Date.now() };
+    try{
+      if(art==='chat'){
+        doc.role=u.role||'mitarbeiter';
+        doc.studio=u.studio || ((u.studios||[])[0]) || '';
+        S('channels').doc(ort).collection('messages').add(doc);
+      } else {
+        S('dms').doc(ort).collection('messages').add(doc);
+      }
+    }catch(e){}
+  }, 3800);
+}
+
+/* ── Nur NEUE Nachrichten blenden ein (Runde 277) ──
+   Bis hierher trug jede Blase die Einblendung (.msg{animation:msgIn
+   both}). renderMessages() zeichnet den Verlauf bei jeder Änderung neu —
+   also blendete bei jeder neuen Nachricht, jeder Reaktion und jedem
+   Häkchen der GANZE Verlauf noch einmal ein: ein Flackern über die
+   ganze Höhe, wo iMessage genau eine Blase hereinschiebt. Jetzt merkt
+   sich der Verlauf, welche Nachrichten er schon gezeigt hat; nur, was
+   danach dazukommt (und nicht älter ist als das Neueste bisher — sonst
+   blendeten beim Nachladen älterer die nachgeladenen ein), bekommt
+   .ein. Beim Wechsel des Kanals blendet nichts ein. */
+function einblendenMerker(){
+  var gezeigt=null, wo=null, neueste=0;
+  return function(ort, msgs){
+    var erstes = wo!==ort || !gezeigt;
+    var vorher=gezeigt, grenze=neueste, neu={};
+    msgs.forEach(function(m){ neu[m.id]=1; if((m.ts||0)>neueste) neueste=m.ts||0; });
+    if(erstes){ neueste=0; msgs.forEach(function(m){ if((m.ts||0)>neueste) neueste=m.ts||0; }); }
+    gezeigt=neu; wo=ort;
+    var fn=function(m){ return !erstes && !vorher[m.id] && (m.ts||0)>=grenze; };
+    fn.erstes=erstes;
+    return fn;
+  };
+}
+var _chatEin=einblendenMerker(), _dmEin=einblendenMerker();
 function renderMessages(msgs){
   var box=$('chatScroll');
   _curMsgs=msgs;
+  var istNeu=_chatEin(currentChannel, msgs);
   if(!msgs.length){
     box.innerHTML='<div class="chat-empty">Noch keine Nachrichten – schreib die erste.</div>';
     return;
   }
   var atBottom = box.scrollHeight-box.scrollTop-box.clientHeight < 100;
+  /* Wer unten im offenen Verlauf zusieht, hat das Neue gesehen, während
+     es ankommt — kein Trenner darüber (Runde 277). */
+  if(atBottom && !istNeu.erstes && !document.hidden && currentView==='chat') _chatSeenTs=Date.now();
   var lastDay=null, sepDone=false, vorher=null;
+  var selbstDanach = !!_chatSeenTs && msgs.some(function(m){ return m.uid===session.uid && (m.ts||0)>_chatSeenTs; });
   // Ganz oben: ältere Nachrichten nachladen (spart Ladezeit beim Start)
   var html = _chatMore
     ? '<button class="load-older" id="loadOlder">↑ Ältere Nachrichten laden</button>'
@@ -37809,7 +38304,10 @@ function renderMessages(msgs){
     var neuerTag = dl!==lastDay;
     if(neuerTag){ html+='<div class="day-sep">'+esc(dl)+'</div>'; lastDay=dl; }
     // Trenner „Neue Nachrichten": vor der ersten Nachricht, die man noch nicht gesehen hat
-    var neuTrenner = !sepDone && _chatSeenTs && (m.ts||0)>_chatSeenTs && m.uid!==session.uid;
+    /* Runde 277: nicht, wenn man danach selbst geschrieben hat — dann war
+       man ja da. Sonst stand „Neue Nachrichten" über der Antwort auf die
+       eigene, gerade gesendete Nachricht. */
+    var neuTrenner = !sepDone && _chatSeenTs && (m.ts||0)>_chatSeenTs && m.uid!==session.uid && !selbstDanach;
     if(neuTrenner){
       html+='<div class="new-sep">Neue Nachrichten</div>'; sepDone=true;
     }
@@ -37847,12 +38345,13 @@ function renderMessages(msgs){
       : '<div class="meta"><b class="chat-author" data-uid="'+esc(m.uid||'')+'">'+esc(m.name)+'</b>'+tag+
         '<time>'+fmtUhr(m.ts)+'</time>'+edited+haken+'</div>';
     html+='<div class="msg'+(mine?' mine':'')+(iAmMentioned?' mentioned':'')+
-      (gruppiert?' grp':'')+'" data-mid="'+esc(m.id)+'">'+
+      (gruppiert?' grp':'')+(istNeu(m)?' ein':'')+'" data-mid="'+esc(m.id)+'">'+
       (gruppiert ? '' : meta)+
       fwd+quote+bodyHtml+pollHtml+audioHtml+imgHtml+
       (gruppiert ? meta : '')+reactionsHTML(m)+'</div>';
   });
   box.innerHTML=html;
+  tipptAnhaengen('chat');
   renderPinBar();
   var lo=$('loadOlder');
   if(lo) lo.addEventListener('click',function(){
@@ -38467,7 +38966,7 @@ function msgBlattAktion(was){
     return;
   }
   if(was==='del'){
-    /* Runde 276: sofort löschen, mit „Rückgängig" (dieselbe Kennung). */
+    /* Runde 280: sofort löschen, mit „Rückgängig" (dieselbe Kennung). */
     var mref=S('channels').doc(currentChannel).collection('messages').doc(m.id), mkopie=JSON.parse(JSON.stringify(m));
     mref.delete()
       .then(function(){ offerUndoDoc(mref, mkopie, 'Nachricht'); })
@@ -39108,7 +39607,7 @@ function wpTageHTML(tage, heute, ende){
 /* Abwesenheit ist kein Alarm (W7 in den Design-Vorbildern): neutrale
    Schraffur, das Wort sagt, was es ist. */
 function wpAbwText(a){
-  var art={ urlaub:'Urlaub', krank:'krank', frei:'frei' }[a.type] || 'abwesend';
+  var art=ABW_ART[a.type] || 'abwesend';
   return absStatus(a)==='offen' ? art+' (beantragt)' : art;
 }
 function wpTauschMarke(x){
@@ -39372,7 +39871,7 @@ function schichtBlattOeffnen(id){
 }
 function schichtBlattSchliessen(){ var b=$('shiftSheet'); if(b) b.classList.remove('show'); blattAbdocken(b); _shBlatt=null; }
 function schichtEntfernen(id){
-  /* Runde 276: ohne Rückfrage, mit „Rückgängig". */
+  /* Runde 280: ohne Rückfrage, mit „Rückgängig". */
   var ref=S('studios').doc(_teamStudioKey).collection('shifts').doc(id);
   ref.get().then(function(d){
     var kopie=d.exists ? Object.assign({ id:id }, d.data()) : null;
@@ -39557,6 +40056,10 @@ function absStatus(a){
   return a.status || 'genehmigt';
 }
 var ABS_LABEL={ offen:'wartet auf Antwort', genehmigt:'genehmigt', abgelehnt:'abgelehnt', info:'gemeldet' };
+/* Die Arten, klein geschrieben für den Satz („Nora · Uni“). Eine Liste
+   für alle Stellen — vorher stand die Zuordnung viermal da, und eine
+   neue Art hätte an jeder Stelle „abwesend“ geheissen (Runde 274). */
+var ABW_ART={ urlaub:'Urlaub', krank:'krank', frei:'frei', schule:'Uni/Schule', weiterbildung:'Weiterbildung' };
 
 function renderAbsences(){
   var box=$('absList'); if(!box) return;
@@ -39588,7 +40091,8 @@ function renderAbsences(){
       : '';
     return '<div class="abs-row'+(st==='offen'?' offen':'')+(st==='abgelehnt'?' abgelehnt':'')+'">'+
       '<b>'+ico+' '+esc(a.name||'')+'</b>'+chip+
-      '<div style="font-size:.86rem;color:var(--text-2);margin-top:var(--s2)">'+f+' bis '+t+
+      '<div style="font-size:.86rem;color:var(--text-2);margin-top:var(--s2)">'+
+      (ABW_NAME[a.type] ? '<b class="abs-art">'+esc(ABW_NAME[a.type])+'</b> · ' : '')+f+' bis '+t+
       (a.note?' · '+esc(a.note):'')+'</div>'+wer+aktion+
       (del?'<div class="bb-head"><span></span>'+del+'</div>':'')+'</div>';
   }).join('');
@@ -39880,7 +40384,7 @@ function formiSeitZeile(){
     titel:'Seit '+formiSeitWann(seit)+': '+teile.join(', '), wann:formiSeitWann(seit), anzahl:teile.join(', '),
     unter:'„'+zitat+'" — '+top.quelle+', '+uhr };
 }
-/* ── Meine Schicht (Runde 277, Idee 11) ───────────────────────────────
+/* ── Meine Schicht (Runde 281, Idee 11) ───────────────────────────────
    „Alles, was ich in meiner Schicht tun muss, in EINER Liste mit Haken,
    in der Reihenfolge des Tages." Ein Schalter oben auf „Heute":
    Überblick (die Gruppen wie bisher) oder Meine Schicht. Die Liste gilt
@@ -40301,7 +40805,7 @@ function renderHeuteJetzt(){
      Handy fiele dieser Block meist nach „Ausserdem", deshalb steht die
      eine Zeile dort ganz oben. Sie ist das Erste, was man zum
      Schichtbeginn braucht. */
-  /* Runde 277: „Meine Schicht" — eine Liste statt der Gruppen. */
+  /* Runde 281: „Meine Schicht" — eine Liste statt der Gruppen. */
   var schichtModus = heuteModus()==='schicht';
   if(schichtModus){
     ohneFrist.sort(function(a,b){ return a.ts-b.ts; });
@@ -41687,7 +42191,7 @@ function aufgabeFehlerText(e, sk){
    Ring. „über Formi" — die Person bleibt die, in deren Namen es geschah. */
 function formiSpurHTML(t, done){
   if(!t) return '';
-  /* Runde 274, Idee 5: mit Uhrzeit und für wen — nachvollziehbar, was
+  /* Runde 278, Idee 5: mit Uhrzeit und für wen — nachvollziehbar, was
      Formi getan hat. */
   if(done && t.formiAt && t.formiAt===t.doneAt){
     var uhr=fmtTime(t.formiAt), wer=t.doneBy ? ' für '+String(t.doneBy).split(' ')[0] : '';
@@ -42214,7 +42718,7 @@ function ichTagName(key){
   return new Date(key+'T12:00:00')
     .toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
 }
-var ABW_NAME={ urlaub:'Urlaub', krank:'Krank', frei:'Frei' };
+var ABW_NAME={ urlaub:'Urlaub', krank:'Krank', frei:'Frei', schule:'Uni / Berufsschule', weiterbildung:'Weiterbildung' };
 
 /* Zeitspanne als ein Stueck. „09:30–11:00" statt zweier Felder, und bei
    nur einem Ende eben nur das eine. */
@@ -44728,7 +45232,7 @@ function stJetztZeichnen(){
   /* Runde 226: Formi ruht mit in der Pause; nach dem Feierabend-Stempel
      (höchstens eine Minute her) fliegt die Zeit des Tages ins Loch. */
   if(typeof formiPause==='function') formiPause(st.art==='pause');
-  /* Runde 275, Idee 8: was läuft, steht in der Insel. */
+  /* Runde 279, Idee 8: was läuft, steht in der Insel. */
   if(typeof formiLaufend==='function') formiLaufend(!st.art || st.art==='gehen' ? '' : st.art==='pause' ? 'Pause seit '+zeitUhr(st.seit) : 'Im Dienst seit '+zeitUhr(st.beginn||st.seit));
   if(_fl.feierabend && st.art==='gehen' && Date.now()-_fl.feierabend<60000 && ist && tag) formiFeierabend(ist, stundenText(tag.arbeit));
   /* § 4 ArbZG, solange es noch hilft: ab 5:30 h am Stück ein Hinweis,
@@ -46356,7 +46860,7 @@ function todoFinden(sk, id){
    Rückfrage, Papierkorb, acht Sekunden „Rückgängig". */
 function todoLoeschen(t, sk){
   if(!t || !sk) return;
-  /* Runde 276, Idee 14 — „Rückgängig statt Nachfragen": gelöscht wird
+  /* Runde 280, Idee 14 — „Rückgängig statt Nachfragen": gelöscht wird
      sofort, acht Sekunden lang holt „Rückgängig" alles zurück. */
   var backup=JSON.parse(JSON.stringify(t));
   S('studios').doc(sk).collection('todos').doc(t.id).delete()
@@ -46664,7 +47168,7 @@ function renderAnnouncements(anns){
     });
     area.querySelectorAll('.ann-del').forEach(function(b){
       b.addEventListener('click',function(){
-        /* Runde 276: ohne Rückfrage — „Rückgängig" holt sie zurück. */
+        /* Runde 280: ohne Rückfrage — „Rückgängig" holt sie zurück. */
         var id=b.dataset.id, backup=copyOf(_allAnns, id);
         S('announcements').doc(id).delete()
           .then(function(){
@@ -47256,8 +47760,22 @@ function spBinden(){
     });
   });
   $('spVeroeffentlichen').addEventListener('click', function(){ spVeroeffentlichen(this); });
-  $('spLogx').addEventListener('click', function(){ spKopieren(); });
+  $('spLogx').addEventListener('click', function(){ spKopieren(_sp.studio); });
+  $('spLogxAlle').addEventListener('click', function(){ spKopieren(''); });
   $('spZurueck').addEventListener('click', function(){ spZuruecknehmen(this); });
+  $('spFragenZeile').addEventListener('click', function(){
+    var f=$('spFragen'); if(!f) return;
+    f.open=true;
+    /* Zur ersten Gruppe mit offener Frage. */
+    var a=(_sp.conf && _sp.conf.antworten)||{}, nr=0;
+    for(var i=0;i<SP_FRAGEN.length;i++){
+      var offen=SP_FRAGEN[i][1].some(function(){ nr++; return !String(a[nr]||'').trim(); });
+      if(offen){ _spFragenGruppe=i; break; }
+    }
+    spFragenZeichnen();
+    sanftInsBild(f, { block:'start' });
+    tick(6);
+  });
 }
 
 function spLaden(){
@@ -48169,10 +48687,14 @@ function spTeamZeichnen(){
 }
 
 /* ── Raus aus dem Planer ── */
-function spKopieren(){
+function spKopieren(studio){
   var p=_sp.plan; if(!p || !window.SCHICHTPLANER) return;
-  var text=window.SCHICHTPLANER.alsTabelle(p);
-  function ok(){ toast(p.einsaetze.length+' Schichten kopiert – in Excel oder LogX einfügen ✓'); }
+  /* Ein Studio: nur seine Zeilen. Alle: nach Studio geordnet, dann nach
+     Datum — so lässt sich Block für Block in LogX übertragen. */
+  var text=window.SCHICHTPLANER.alsTabelle(p, studio||'', { jeStudio:!studio });
+  var n=text.split('\n').length-1;
+  var name=studio ? (spStudios().filter(function(s){ return s.id===studio; })[0]||{}).name : '';
+  function ok(){ toast(n+' Schichten'+(name?' für '+name:' aus allen Studios')+' kopiert – in Excel oder LogX einfügen ✓'); }
   if(navigator.clipboard && navigator.clipboard.writeText){
     navigator.clipboard.writeText(text).then(ok, function(){ spKopierenAlt(text); ok(); });
   } else { spKopierenAlt(text); ok(); }
@@ -48269,6 +48791,9 @@ function spFragenZeichnen(){
   var n=0, beantwortet=0;
   SP_FRAGEN.forEach(function(g){ g[1].forEach(function(){ n++; if(String(a[n]||'').trim()) beantwortet++; }); });
   var kurz=$('spFragenKurz'); if(kurz) kurz.textContent=beantwortet+' von '+n+' beantwortet';
+  var zt=$('spFragenZeileText');
+  if(zt) zt.textContent = beantwortet>=n ? 'Alle '+n+' beantwortet ✓' : beantwortet+' von '+n+' beantwortet – noch '+(n-beantwortet)+' offen';
+  var zl=$('spFragenZeile'); if(zl) zl.classList.toggle('fertig', beantwortet>=n);
   reiter.innerHTML=SP_FRAGEN.map(function(g, i){
     var nr0=SP_FRAGEN.slice(0,i).reduce(function(s,x){ return s+x[1].length; },0), offen=0;
     g[1].forEach(function(_, j){ if(!String(a[nr0+j+1]||'').trim()) offen++; });
@@ -52190,7 +52715,7 @@ function todoGrundSetzen(text, btn){
   });
 }
 
-/* ── Liste + Detail am Rechner (Runde 277, Idee 12) ──────────────────
+/* ── Liste + Detail am Rechner (Runde 281, Idee 12) ──────────────────
    Aus dem Betrieb (25.10.2026) auf die 20 Ideen: „mach alles davon".
    Ab 1100 px öffnen Aufgabe, Putzpunkt, Schicht und Dokument nicht mehr
    als Blatt über der Liste, sondern rechts daneben: die Liste bleibt
@@ -52257,7 +52782,7 @@ function todoBlattOeffnen(t, sk){
     gb.style.display = done ? 'none' : '';
     var gf=$('tbGrund'); if(gf) gf.value = t.grund || '';
   }
-  /* Runde 277: angedockt ist Platz für das Detail — Beschreibung und
+  /* Runde 281: angedockt ist Platz für das Detail — Beschreibung und
      Schritte, wie sie in der Aufgabe stehen. */
   var mehr=$('tbMehr');
   if(mehr){
@@ -52321,7 +52846,7 @@ function todoBlattAktion(was){
   }
 
   if(was==='loeschen'){
-    /* Runde 276, Idee 14: ohne Rückfrage — acht Sekunden „Rückgängig". */
+    /* Runde 280, Idee 14: ohne Rückfrage — acht Sekunden „Rückgängig". */
     // Gelöschtes lässt sich 8 Sekunden lang zurückholen (Papierkorb im Kopf)
     var backup=JSON.parse(JSON.stringify(t));
     ref.delete()
@@ -53892,6 +54417,7 @@ function openDm(uid,name){
   $('dmListWrap').style.display='none';
   $('dmConvo').style.display='flex';
   if(_dmUnsub){ _dmUnsub(); _dmUnsub=null; }
+  tipptEnde('dm'); tipptHoeren('dm', _dmId);
   ladeGut('dm');
   _dmUnsub=S('dms').doc(_dmId).collection('messages').orderBy('ts').limitToLast(200)
     .onSnapshot(function(snap){ ladeGut('dm'); renderDmMessages(snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); })); },
@@ -53901,6 +54427,7 @@ function openDm(uid,name){
 }
 function closeDmConvo(){
   if(_dmUnsub){ _dmUnsub(); _dmUnsub=null; }
+  tipptEnde('dm'); tipptHoeren('dm', null);
   _dmPeer=null; _dmId=null;
   $('dmConvo').style.display='none';
   $('dmListWrap').style.display='block';
@@ -53919,8 +54446,15 @@ function renderDmMessages(msgs){
   var box=$('dmScroll'); if(!box) return;
   if(!msgs.length){ box.innerHTML='<div class="chat-empty">Noch keine Nachrichten – schreib die erste.</div>'; return; }
   var atBottom = box.scrollHeight-box.scrollTop-box.clientHeight < 100;
+  var istNeu=_dmEin(_dmId, msgs);
+  /* Folgen wie im Kanal (Runde 277): dieselbe Person innerhalb von fünf
+     Minuten rückt heran, ohne Kopf; die letzte trägt den Schwanz. */
+  var vorher=null;
   box.innerHTML=msgs.map(function(m){
     var mine=m.uid===session.uid;
+    var gruppiert = !!vorher && vorher.uid===m.uid && Math.abs((m.ts||0)-(vorher.ts||0)) < 5*60000 &&
+      dayLabel(m.ts||Date.now())===dayLabel(vorher.ts||Date.now());
+    vorher=m;
     var canDel = canManage() || (mine && (Date.now()-(m.ts||0) < 3600000));
     var del = canDel ? '<button class="msg-del" data-del="'+esc(m.id)+'" title="Löschen">'+ikon('schliessen')+'</button>' : '';
     var body;
@@ -53936,8 +54470,14 @@ function renderDmMessages(msgs){
         + (m.audio ? audioHTML(safeMedia(m.audio), m.audioMs||0) : '');
     }
     var dmHaken = mine ? hakenHTML(m, dmHakenStand(m)).replace('<span class="haken"', '<span class="haken" data-ts="'+(+m.ts||0)+'"') : '';
-    return '<div class="msg'+(mine?' mine':'')+'"><div class="meta"><b>'+esc(m.name)+'</b><time>'+fmtTime(m.ts)+'</time>'+dmHaken+del+'</div>'+body+'</div>';
+    var kopf='<div class="meta"><b class="chat-author">'+esc(m.name)+'</b><time>'+fmtTime(m.ts)+'</time>'+dmHaken+del+'</div>';
+    /* In einer Folge entfällt der Kopf; Häkchen und Löschen bleiben, unter
+       dem Text (wie im Kanal, .meta-min). */
+    if(gruppiert) kopf=(dmHaken||del) ? '<div class="meta-min'+(dmHaken?' hat-haken':'')+'">'+dmHaken+del+'</div>' : '';
+    return '<div class="msg'+(mine?' mine':'')+(gruppiert?' grp':'')+(istNeu(m)?' ein':'')+'">'+
+      (gruppiert ? body+kopf : kopf+body)+'</div>';
   }).join('');
+  tipptAnhaengen('dm');
   box.querySelectorAll('.msg-del').forEach(function(b){
     b.addEventListener('click',function(){
       if(confirm('Nachricht löschen?'))
@@ -53980,6 +54520,8 @@ function sendDm(){
   S('dms').doc(_dmId).collection('messages').add(doc)
     .then(function(){ touchDmThread(text || 'Sprachnachricht'); })
     .catch(function(e){ toast('Senden fehlgeschlagen: '+errMsg(e),true); });
+  tipptEnde('dm');
+  demoAntwort('dm');
   ta.focus();
 }
 /* Checkliste/To-do per DM an eine Person senden */
@@ -54936,7 +55478,7 @@ function bindActions(){
   var dmText=$('dmText');
   if(dmText){
     dmText.addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendDm(); } });
-    dmText.addEventListener('input',function(){ dmText.style.height='auto'; dmText.style.height=Math.min(dmText.scrollHeight,104)+'px'; });
+    dmText.addEventListener('input',function(){ dmText.style.height='auto'; dmText.style.height=Math.min(dmText.scrollHeight,104)+'px'; tipptMelden('dm', dmText); });
   }
 
   // Chat senden (Text und/oder Foto)
@@ -54973,6 +55515,8 @@ function bindActions(){
     if(voice){ doc.audio=voice; doc.audioMs=voiceMs; }
     S('channels').doc(currentChannel).collection('messages').add(doc)
       .catch(function(e){ toast('Senden fehlgeschlagen: '+errMsg(e),true); });
+    tipptEnde('chat');
+    demoAntwort('chat');
     federn($('chatSend'));
     ta.focus();
   }
@@ -55016,6 +55560,7 @@ function bindActions(){
   ta.addEventListener('input',function(){
     ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,104)+'px';
     atPruefen();
+    tipptMelden('chat', ta);
   });
   ta.addEventListener('click', atPruefen);
   ta.addEventListener('blur', function(){ setTimeout(atSchliessen,120); });
@@ -55808,6 +56353,16 @@ function bindActions(){
   var vs=$('vfSenden'); if(vs) vs.addEventListener('click', vorfallSenden);
   var vm=$('vorfallModal'); if(vm) vm.addEventListener('click', function(e){ if(e.target===vm) vorfallSchliessen(); });
   var nm=$('neuModal'); if(nm) nm.addEventListener('click', function(e){ if(e.target===nm) neuSchliessen(); });
+  // ── Findetest (Runde 275) ──
+  var ftc=$('ftClose'); if(ftc) ftc.addEventListener('click', findeSchliessen);
+  var ftm=$('findeModal'); if(ftm) ftm.addEventListener('click', function(e){ if(e.target===ftm) findeSchliessen(); });
+  var fta=$('ftAufgeben'); if(fta) fta.addEventListener('click', function(){ findeEnde(false); });
+  var ftk=$('ftKopieren'); if(ftk) ftk.addEventListener('click', function(){
+    Promise.resolve(copyText(findeText())).then(function(){ toast('Ergebnisse kopiert'); }, function(){ toast('Kopieren ging nicht', true); });
+  });
+  var ftl=$('ftLeeren'); if(ftl) ftl.addEventListener('click', function(){
+    PREFS.findetest={}; savePrefs(); findeOeffnen(); toast('Ergebnisse gelöscht');
+  });
 
   // ── Schnellzugriffe wählen ──
   var szl=$('schnellListe');
@@ -56660,7 +57215,7 @@ function bindActions(){
             if($('ntZeit')) $('ntZeit').value='';
             if($('ntSteps')) $('ntSteps').value='';
             if($('ntAssign')) $('ntAssign').value='';
-            /* Runde 276: die Studios bleiben gewählt (und gemerkt) — die
+            /* Runde 280: die Studios bleiben gewählt (und gemerkt) — die
                nächste Aufgabe geht meist an dieselben. */
             try{ localStorage.setItem('kf_nt_studios', JSON.stringify(targets)); }catch(e){}
             _pendingTaskImg=null; $('ntPreviewWrap').style.display='none'; $('ntPreviewImg').src='';

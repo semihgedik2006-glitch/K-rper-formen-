@@ -1025,7 +1025,7 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     pruefe('nach der Antwort denkt es nicht mehr', !(await p.evaluate(() => document.getElementById('jarvis').classList.contains('jv-z-denkt'))));
     const ton = await p.evaluate(() => ({ k: window.__klaenge, g: window.__gesprochen }));
     /* Runde 263: „das vor lesen ist auch unnötig" — Klänge ja, Vorlesen nein. */
-    /* Runde 274, Idee 10 („ein Formi-Ton statt vieler Klänge", „mach alles
+    /* Runde 278, Idee 10 („ein Formi-Ton statt vieler Klänge", „mach alles
        davon"): Senden ist still, „erledigt" ist EIN Ton mit zwei Anschlägen. */
     pruefe('Ein Formi-Ton beim Fertig (zwei Anschläge), Senden still; nichts vorgelesen', ton.k === 2 && ton.g.length === 0, JSON.stringify(ton));
     // Daumen

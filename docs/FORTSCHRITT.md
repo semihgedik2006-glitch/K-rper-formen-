@@ -23424,7 +23424,275 @@ nirgends quer (bei 320 px taten es lange Wörter wie
 
 **Geprüft:** `test-neuigkeiten` 12, `test-block-d` 28.
 
-## Runde 274 — Formi-Feinschliff (Ideen 3, 4, 5, 7, 9, 10) und Offenes (25.10.2026)
+## Runde 274 — Uni und Weiterbildung melden, Fragen finden, LogX Studio für Studio (26.10.2026)
+
+**Aus dem Betrieb:** „fragen zum plan finde ich nicht und die logx
+screenshots kann ich dir nur von hürth geben … wir ja 14 studios sind und
+ich nur die sehe die für mich relevant sind … es wäre cool wenn der
+schichtplan den du erstellst auch so aufgeteilt ist für studio für studio
+… bei der abwesendheit fehlt das man sich für uni oder sonstige
+weiterbildungen auch melden kann was bei uns aber auch sehr wichtig ist“.
+
+**Was gebaut ist**
+- **Abwesenheit: „Uni / Berufsschule“ und „Weiterbildung“** (`type:
+  'schule'` / `'weiterbildung'`). Wie Urlaub ein Antrag — die Regel lässt
+  Selbstgenehmigung nur bei „krank“ zu, und daran ändert sich nichts; die
+  Regeln prüfen die Art nicht, also keine Regeländerung nötig. Der Planer
+  nimmt jede Abwesenheit als harte Grenze, also auch diese; im Grund
+  heisst sie jetzt „Uni/Schule“ bzw. „Weiterbildung“ statt „Urlaub“
+  (`abwText` im Rechenkern). Die Bezeichnungen standen an vier Stellen
+  einzeln — jetzt `ABW_ART`/`ABW_NAME` für alle. Die Abwesenheitsliste
+  zeigte die Art bisher **gar nicht**; jetzt steht sie vor dem Datum.
+  **Nicht** gebaut: Uni nur für einige Stunden eines Tages (z. B. „Di
+  8–12“). Regelmässige Uni-Zeiten gehören in die Spalte „Sperrzeiten“ der
+  Excel-Vorlage; einzelne Tage hier.
+- **„Fragen zum Plan“ oben im Kopf** des Planers: eine Zeile mit „x von 24
+  beantwortet – noch n offen“; ein Tipp klappt die Karte auf, springt in die
+  erste Gruppe mit offener Frage und rollt hin. Vorher stand die Karte
+  zugeklappt unter „So fängst du an“ bzw. unter den Schritten.
+- **LogX Studio für Studio:** „nur dieses Studio“ kopiert das gewählte
+  Studio; „alle Studios“ ordnet nach Studio, dann Datum (`alsTabelle(plan,
+  studio, { jeStudio:true })`) — so überträgt man Block für Block. Die
+  bisherige Ordnung nach Datum bleibt der Standard des Rechenkerns (der
+  Rechentest prüft sie).
+
+**Zu den LogX-Bildschirmfotos nur aus Hürth:** reichen. Gebraucht wird
+das *Format* (Felder, Kürzel, Import), und das ist in jedem Studio gleich.
+
+**Geprüft**
+- test-schichtplan-raster, Abschnitt 14 (10 neu, 120 gesamt): Arten in der
+  Auswahl; Uni melden → Antrag mit Art in der Liste und „Uni/Schule
+  (beantragt)“ im Raster; Fragen-Zeile ohne Rollen im Bild, ein Tipp öffnet
+  und rollt hin; „nur dieses Studio“ nur dessen Zeilen; „alle“ genau ein
+  Block je Studio (14 Blöcke, 582 Zeilen).
+- test-schichtplaner-rechnung (+3, 85): Ausfall „Uni/Schule“ bzw.
+  „Weiterbildung“; beim Neu-Erstellen nicht eingeteilt. Gegenprobe: ohne
+  `abwText` → „Urlaub“ → rot.
+- test-schichtplaner, test-team-bereich7, test-gehirn (327), test-doppelte-
+  namen, test-knoepfe, test-team-woche, test-tausch: grün.
+- **test-gestaltung rot — auf main genauso** (in einem unveränderten
+  Stand von main nachgemessen, dieselben Meldungen): „FESTER ABSTAND 3px
+  (2×), 6px, 2px“ und „line-height 1.35“ stammen aus Runde 273 („Was ist
+  neu“ als Patchnotes, `.neu-eintrag`). Nicht von hier, nicht angefasst.
+
+## Runde 275 — Findetest: die Stoppuhr zum Selbsttesten (25./26.10.2026)
+
+Aus dem Betrieb, 23.10.2026, auf meinen Vorschlag „erst mit echten
+Leuten messen, dann umbauen": „ich kann leider nur selber testen
+akruell". Zugesagt war eine kleine Stoppuhr-Seite. Die anonyme Zählung,
+welche Seiten geöffnet werden, gibt es schon (`nutzAnsicht` in
+`showView`); sie musste nicht neu gebaut werden.
+
+**Was gebaut wurde**
+
+- „Alles → Was muss ich wissen? → Findetest": ein Fenster mit fünf
+  typischen Zielen (Putzplan, wer morgen arbeitet, Direktnachricht,
+  Gerät defekt melden, Dokument). Ziele, die eine Firma abgeschaltet
+  hat, stehen mit „Bei euch ausgeschaltet" da, ohne „Los".
+- „Los" schliesst alles, springt auf „Heute" und startet die Uhr. Sie
+  zählt Sekunden und Tipps (echte Klicks, `isTrusted`, Fangphase, ohne
+  die Uhr selbst; Wischen zum Scrollen zählt nicht, und die Klicks, die
+  die App selbst auslöst, auch nicht) und hält von selbst an, sobald `currentView` das Ziel ist.
+  Danach öffnet das Fenster wieder mit „Geschafft: … in 7 s mit 2
+  Tipps". „Aufgeben" (das × an der Uhr) merkt „aufgegeben".
+- Die letzten fünf Ergebnisse je Ziel stehen in `PREFS.findetest`, also
+  nur auf dem Gerät. „Ergebnisse kopieren" legt sie als Text in die
+  Zwischenablage, zum Weiterschicken.
+
+**Warum so**
+
+- **Am Ziel anhalten statt „Fertig" drücken lassen:** Wer drückt, misst
+  auch sein Zögern beim Drücken – und vergisst es manchmal. Die Ansicht
+  ist das, was sich sicher feststellen lässt.
+- **Abfragen alle 250 ms statt eines Hakens in `showView`:** Durch
+  `showView` geht jeder Weg der App. Ein Fehler im Test-Werkzeug soll
+  dort nichts stören können. 250 ms Ungenauigkeit sind bei Zeiten von
+  mehreren Sekunden ohne Belang.
+- **Auf dem Gerät, nicht in der Datenbank:** Es geht um den Aufbau der
+  App, nicht um die Person, die gesucht hat. Keine neue Sammlung, keine
+  neue Regel.
+- **Die Uhr in der Kopfzeile:** In der ersten Fassung lag sie unten
+  links über der Leiste – und damit auf den Schnellzugriffen von
+  „Heute", einem der Wege, die sie messen soll. Darübergelegt in der
+  Kopfzeile deckte sie bei 430 und 820 px den Schriftzug der Marke zu
+  (ein Knopf). Jetzt steht sie als eigenes Stück im Fluss der Kopfzeile
+  zwischen Marke und Profil: am Handy nur „12 s ×", am Rechner mit Ziel
+  und Tipps.
+- **Suche und Formi** sind nicht gesperrt, nur im Fenster ausgeschlossen
+  („bitte nicht benutzen"). Beide ersetzen jeden Weg; wer sie nimmt,
+  misst sie, nicht die Navigation.
+
+**Tests**
+
+- Neu: `test-findetest` (38 Zusicherungen, als Mitarbeiter): fünf
+  Ziele, jedes „Los" ≥ 44 × 44 in normal und kompakt; die Uhr steht auf
+  „Heute" im Bild, ihr × trifft ≥ 44 × 44, und sie liegt auf keinem
+  Bedienelement – geprüft wird jeder sichtbare Knopf, Link und Eintrag,
+  nicht eine Liste (die erste Liste hatte die Schnellzugriffe
+  übersehen) – bei 320 / 390 / 430 / 820 / 1280 / 1440 / 1920 px;
+  über „Alles → Geräte" hält sie nach 2 Tipps an, das Ergebnis übersteht
+  das Neuladen; „Aufgeben" und „Ergebnisse kopieren".
+- Bildschirmfotos bei 320, 430, 820, 1440, 1920 px angesehen. Die
+  „Los"-Knöpfe waren in der ersten Fassung hell auf hell (kein
+  `btn-primary`); im Test fiel das nicht auf, auf dem Bild sofort.
+
+**Nicht getestet:** am echten iPhone. Ob Safari dort jeden Tipp genau
+einmal als Klick meldet, zeigt nur das Gerät.
+
+
+**Beim Zusammenführen mit main (bis Runde 274)**
+
+- test-gestaltung war auf `main` rot (Runde 273, `.neu-eintrag`: „3px
+  6px", „3px 2px", „line-height 1.35"). Auf die Leiter gesetzt: `--s2`
+  / `--s6` und `--lh-eng` (1,25). Die Marke wird dadurch 1 px niedriger
+  pro Seite, die Titelzeile etwas enger. Danach grün.
+- test-neuigkeiten war auf `main` rot (4 von 12): der Eintrag aus Runde
+  274 (Uni/Weiterbildung) stand noch im alten Stil – ohne `art`, Titel
+  66 Zeichen, ein Punkt 270 Zeichen, `wo:'team'` ohne Ziel. Nach den
+  Patchnote-Regeln (CLAUDE.md, 25.10.2026) umgeschrieben: `art:'neu'`,
+  drei kurze Punkte, `wo:'team:abwesend'`. Danach 12 grün.
+
+## Runde 276 — Schulung: Nachweis je Person für die Leitung; Kontrast in allen drei Stilen (25.10.2026)
+
+Aus dem Betrieb, 25.10.2026: „jo mach weiter und teste".
+
+### 1. „Nachweis" in der Teilnehmerliste
+
+Die eigene Bescheinigung (Runde 248) half nur Leuten mit Zugang. Wer
+kein Konto hat, und gerade für diese Leute sind die Codes gedacht („das
+was leichter ist für leute ohne zugang"), konnte sie nicht drucken. Unter
+Verwalten → „Teilnehmer" trägt jetzt jede Person, die mindestens ein
+Modul bestanden hat (ohne Testläufe), einen Knopf „Nachweis". Er druckt
+dasselbe Blatt.
+
+**Warum so entschieden:**
+- **Eine Funktion, zwei Wege.** `schBescheinigungDrucken(fuer)`: ohne
+  `fuer` das eigene Konto (`_schMeine`), mit `fuer` der Teilnehmer
+  (`_schAlleLaeufe`). Was „offen" heisst, rechnet für die Leitung
+  `schStandZelle`, dieselbe Rechnung wie im Reiter „Pflicht". So
+  widersprechen sich Blatt und Tabelle nicht.
+- **Kein Knopf ohne Inhalt.** Wer nichts bestanden hat, bekommt keinen
+  „Nachweis", der ein leeres Blatt druckt.
+- **Kein neuer Datenweg.** Die Leitung liest die Durchläufe ohnehin
+  (Auswertung, Pflicht-Reiter).
+
+### 2. Kontrast nachgemessen, auch im hellen Stil
+
+Runde 261 hatte offen gelassen: „Das helle Design habe ich nicht
+gemessen." `tests/test-schulung-kontrast.js` misst jetzt an echten
+Bildpunkten. Gemessen werden die Teile der Runden 248 und 261: das
+Drucker-Zeichen, „Schon geschafft" und „Das nimmst du mit" mit Frage,
+„Richtig: …" und Hinweis. Die Stile sind formi, dark und light, je bei 390
+und 1440 px.
+
+**Messverfahren:** Hintergrund ist die häufigste Farbe im Ausschnitt,
+Schrift die Farbe mit dem grössten Abstand dazu. Das ist bei
+kantengeglätteter Schrift eher günstig gerechnet. Es misst den Kern der
+Buchstaben, nicht ihre Ränder.
+
+| Teil | formi | dark | light |
+|---|---|---|---|
+| Drucker-Zeichen (Grenze 3 : 1) | 5,44 | 4,69 | 5,99 |
+| Satz unter „Das nimmst du mit" | 14,01 | 11,52 | 11,89 |
+| Hinweis | 13,0 | 12,15 | 10,42 |
+| Frage / „Richtig: …" | 17,61 | 16,46 | 16,76 |
+
+GEGENPROBE: Ein Hinweis in Hintergrundfarbe misst rund 1,01 und fällt
+durch. Die Messung misst also.
+
+Einmal mass dieselbe Gegenprobe 9,4. Grund war Konfetti nach
+„Geschafft", das über dem Ausschnitt lag. Ein buntes Stück über dem Text
+täuscht genauso einen guten Kontrast vor. Der Durchlauf misst deshalb mit
+„Bewegung reduzieren" (`reducedMotion`, dann kommt kein Konfetti). Danach
+lief er zweimal hintereinander mit denselben Werten.
+
+### Geprüft
+
+- `tests/test-schulung-bescheinigung.js` (53, 23 neu):
+  - Jamie Kurz (ohne Zugang) hat „Nachweis"; das Blatt ist seins: Name,
+    zwei Zeilen, offen Notfall und Beratung, Fusszeile ohne „eigenen".
+  - GEGENPROBEN: Ohne bestandenes Modul kein Knopf (Nora Haas); nur
+    Testläufe → kein Knopf.
+  - „Nachweis" ≥ 44 × 44 per Hit-Test bei 320 / 390 / 430 / 820 / 1280 /
+    1440 / 1920 px, normal und kompakt.
+  - Gegenprobe am Code: Mit den eigenen statt den Durchläufen des
+    Teilnehmers fallen zwei Prüfungen.
+- `tests/test-schulung-kontrast.js` (53, neu), siehe oben.
+- Vor dem Bauen auf `main` gelaufen und grün: alle `test-schulung*`,
+  test-auffrischen, test-pc-spalten, test-pc-durchsicht (mit `ZEIT=600`).
+
+### Nicht geprüft
+
+- Der Druck auf echtes Papier. Geprüft ist das Druckbild im Browser.
+
+## Runde 277 — Chats wie iMessage: Blasen, Eingabe, „… schreibt" (25.10.2026)
+
+Aus dem Betrieb, 25.10.2026: „das die chats wie imassage funktionieren
+sehe ich leider noch nicht so richtig". Runde 249 hatte die Blasen schon
+ohne Rahmen und mit Name darüber gebaut — gegen das Probebild
+`3-chat-handy.png` gehalten fehlte aber genau das, woran man iMessage
+erkennt.
+
+**Gebaut.**
+- **Eigene Blase blau, fremde grau.** Vorher trug die eigene die
+  Akzentfarbe des Stils (im Stil Formi Türkis) und die fremde Nachtblau —
+  zwei Karten unter vielen. Jetzt ein festes Blau mit leichtem Verlauf
+  (#166FE4 → #0A66DE, Weiss darauf 4,7 bzw. 5,3 : 1, an Bildpunkten
+  gemessen) und das neutrale Grau von iMessage, hell wie dunkel. Blau ist
+  hier keine Statusfarbe: es heisst „von mir".
+- **Schwanz an der letzten Blase einer Folge**, alle Ecken sonst rund.
+  Vorher waren die Ecken zur Absenderseite eingekniffen — das ist
+  WhatsApp. Gezeichnet mit `clip-path:path()` auf `::after` in der Farbe
+  der Blase (`--blase`), kein Bild.
+- **„Gelesen" / „Zugestellt" als Wort** neben den Häkchen unter der
+  letzten eigenen Blase — aus dem `title`, den `hakenHTML()` ohnehin
+  setzt. Keine Uhrzeit dazu: bekannt ist nur, bis wann jemand gelesen hat.
+- **Eingabe als Pille:** runder „+" links, im Feld rechts das Mikrofon;
+  sobald etwas zu senden da ist, wird es zum blauen Pfeil nach oben.
+  Ob etwas da ist, entscheidet das Stylesheet (`:placeholder-shown`, dazu
+  Foto- oder Aufnahme-Vorschau) — kein zweiter Zustand in JS.
+  Trefferfläche jedes Knopfs 44 × 44, gezeichnet ein Kreis von 32 px.
+- **„… schreibt":** unten im Verlauf eine graue Blase mit drei Punkten,
+  im Kanal mit Vornamen. Gespeichert als `channels/<k>/tippt/<uid>` bzw.
+  `dms/<id>/tippt/<uid>` = `{ts, uid, name}`, höchstens alle 3,5 s
+  geschrieben, beim Senden/Leeren/Wechseln/Hintergrund gelöscht; älter
+  als 6 s gilt als vorbei. Regeln in **beiden** Bäumen,
+  `tests/rules/tippt.test.js` (47 Zusicherungen, lokal im Emulator grün),
+  Attrappe `stub-chef.js` an **beiden** Einstiegen (`get` und
+  `onSnapshot`).
+- **In der Demo antwortet jemand** nach einer eigenen Nachricht (höchstens
+  alle 20 s), damit man die Punkte überhaupt sieht. Nicht in
+  automatischen Durchläufen (`navigator.webdriver`), ausser einer
+  schaltet es mit `window.__demoAntwort` ein.
+- **Nur neue Blasen blenden ein.** Gefunden beim Bauen: `.msg` trug die
+  Einblendung immer, und `renderMessages()` zeichnet bei jeder Änderung
+  (neue Nachricht, Reaktion, Häkchen) den ganzen Verlauf neu — also
+  flackerte jedes Mal der ganze Verlauf. Jetzt merkt sich
+  `einblendenMerker()`, was schon gezeigt war; nur Neues bekommt `.ein`.
+  Die eigene steigt aus dem Feld auf, eine fremde wächst aus ihrer Ecke.
+- **Kein „Neue Nachrichten"** über einer Antwort, die ankommt, während
+  man unten im offenen Verlauf zusieht (oder nachdem man selbst
+  geschrieben hat).
+- **Direktnachrichten** bilden jetzt auch Folgen (`.grp`), der Name der
+  anderen Seite steht nur noch oben im Kopf.
+
+**Bewusst nicht geändert.** Der Aufbau über dem Verlauf (Titel, Reiter,
+Studios/Gruppen, Kanalzeile) bleibt am Handy. Eine Liste-dann-Unterhaltung
+wie in der Nachrichten-App wäre der nächste grosse Schritt; daran hängen
+13 Durchläufe, und das Handy-Layout wird parallel in einem anderen Faden
+umgebaut. Formi ist unverändert.
+
+**Tests:** `test-chat-imessage` neu (109 Zusicherungen: 320 / 390 / 430 /
+820 px, je mit und ohne nachgestellten iPhone-Rand 59/34, und 1280 / 1440
+/ 1920 px; Gegenprobe mit zurückgebauter Logik wird rot);
+`test-chat-blasen` angepasst (Blau statt Akzentfarbe, runde Ecken +
+Schwanz statt kleiner Ecken — das ist der Wunsch dieser Runde, keine
+Lockerung), 237 grün.
+
+**Nicht getestet:** iPhone und Safari selbst; die Regeln gegen das echte
+Firebase (nur Emulator).
+
+## Runde 278 — Formi-Feinschliff (Ideen 3, 4, 5, 7, 9, 10) und Offenes (25.10.2026)
 
 **Aus dem Betrieb**, auf die 20 Ideen: „mach alles davon und alles was
 noch offen ist". Gebaut wird in vier Runden; das hier ist die erste.
@@ -23467,11 +23735,11 @@ noch offen ist". Gebaut wird in vier Runden; das hier ist die erste.
   Aufrufer kostet er nichts.
 
 **Geprüft:**
-siehe Runde 277 (ein gemeinsamer Durchlauf für 268–271).
+siehe Runde 281 (ein gemeinsamer Durchlauf für 268–271).
 
 **Nicht geprüft:** echte Handys, echter Klang am Gerät.
 
-## Runde 275 — Formi als Werkzeug (Ideen 1, 2, 6, 8, 18) (25.10.2026)
+## Runde 279 — Formi als Werkzeug (Ideen 1, 2, 6, 8, 18) (25.10.2026)
 
 **Aus dem Betrieb:** „mach alles davon und alles was noch offen ist".
 
@@ -23514,7 +23782,7 @@ siehe Runde 277 (ein gemeinsamer Durchlauf für 268–271).
   Klick kam an**, obwohl der Hit-Test vorher stimmte. Jetzt steht die
   Lage in `translate`. Der Durchlauf klickt mit der echten Maus.
 
-## Runde 276 — Oberfläche leichter (Ideen 13, 14, 15, 16, 17, 20) (25.10.2026)
+## Runde 280 — Oberfläche leichter (Ideen 13, 14, 15, 16, 17, 20) (25.10.2026)
 
 **Gebaut:**
 - **Idee 13:** „+ Anlegen" auf „Heute" (am Rechner) mit einem Menü: nur,
@@ -23538,7 +23806,7 @@ siehe Runde 277 (ein gemeinsamer Durchlauf für 268–271).
   „Löschen", „ansehen" wird „Ansehen", „Hinzu" wird „Hinzufügen",
   „Schliessen" wird „Schließen".
 
-## Runde 277 — Meine Schicht, Liste + Detail am Rechner, eine Karte (Ideen 11, 12, 19) (25.10.2026)
+## Runde 281 — Meine Schicht, Liste + Detail am Rechner, eine Karte (Ideen 11, 12, 19) (25.10.2026)
 
 **Gebaut:**
 - **Idee 11:** Der Schalter „Überblick / Meine Schicht" steht oben auf
@@ -23560,13 +23828,14 @@ siehe Runde 277 (ein gemeinsamer Durchlauf für 268–271).
 - *`.main` bekommt 400 px Rand* (einmal beim Öffnen, keine Bewegung über
   Breite). So rutscht die Liste nicht unter das Detail.
 
-**Geprüft (Runden 274–277):**
+**Geprüft (Runden 278–281):**
 Gesamtdurchlauf auf dem Stand nach dem Übernehmen von `main` (Runden
-268–273), 45 Tests: 43 grün, 2 rot — beide auch auf einem sauberen
+268–273; 274–277 kamen danach dazu, siehe unten), 45 Tests: 43 grün, 2 rot — beide auch auf einem sauberen
 `main` rot (dort nachgeprüft, nicht von hier):
 - `test-gestaltung`: die neuen Patchnotes-Marken trugen `3px 6px`,
-  `3px 2px` und `line-height:1.35` statt Werten der Leiter → `--s4 --s6`,
-  `--s4 --s2`, `--lh-eng`. Danach grün; `test-neuigkeiten` (12) grün.
+  `3px 2px` und `line-height:1.35` statt Werten der Leiter. Behoben hier
+  mit `--lh-eng`; die Abstände hat `main` inzwischen selbst auf `--s2`
+  gesetzt, diese Fassung ist übernommen.
 - `test-formi-seit`: Runde 268 gab `sendPush` ein fünftes Argument (das
   Ziel). Der Test suchte `'formi')` am Zeilenende und fand deshalb keine
   Formi-Meldung mehr. Er sucht jetzt `'formi'` als viertes Argument mit

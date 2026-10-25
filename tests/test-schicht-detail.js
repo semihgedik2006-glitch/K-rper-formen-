@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════════
-   MEINE SCHICHT, LISTE + DETAIL AM RECHNER, EINE KARTE (Runde 277) —
+   MEINE SCHICHT, LISTE + DETAIL AM RECHNER, EINE KARTE (Runde 281) —
    Ideen 11, 12, 19 aus docs/ideen/formi-und-oberflaeche-20.md
 
    Aus dem Betrieb (25.10.2026): „mach alles davon".
