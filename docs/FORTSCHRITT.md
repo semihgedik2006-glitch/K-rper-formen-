@@ -23468,4 +23468,9 @@ das *Format* (Felder, Kürzel, Import), und das ist in jedem Studio gleich.
 - test-schichtplaner-rechnung (+3, 85): Ausfall „Uni/Schule“ bzw.
   „Weiterbildung“; beim Neu-Erstellen nicht eingeteilt. Gegenprobe: ohne
   `abwText` → „Urlaub“ → rot.
-- ERGEBNISSE_FOLGEN
+- test-schichtplaner, test-team-bereich7, test-gehirn (327), test-doppelte-
+  namen, test-knoepfe, test-team-woche, test-tausch: grün.
+- **test-gestaltung rot — auf main genauso** (in einem unveränderten
+  Stand von main nachgemessen, dieselben Meldungen): „FESTER ABSTAND 3px
+  (2×), 6px, 2px“ und „line-height 1.35“ stammen aus Runde 271 („Was ist
+  neu“ als Patchnotes, `.neu-eintrag`). Nicht von hier, nicht angefasst.
