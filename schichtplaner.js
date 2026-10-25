@@ -52,7 +52,7 @@
     return d.getUTCFullYear() + '-W' + ('0' + Math.ceil(((d - j) / 864e5 + 1) / 7)).slice(-2);
   }
   /* Wie eine Abwesenheit im Grund heisst. Uni/Schule und Weiterbildung
-     seit Runde RUNDE_NR; alles andere (Urlaub, frei) heisst wie bisher. */
+     seit Runde 274; alles andere (Urlaub, frei) heisst wie bisher. */
   function abwText(art) {
     return art === 'krank' ? 'krank' : (art === 'schule' ? 'Uni/Schule' : (art === 'weiterbildung' ? 'Weiterbildung' : 'Urlaub'));
   }
@@ -509,7 +509,7 @@
      oder einer Web-Tabelle in getrennten Zellen. Welche Spalten LogX
      wirklich braucht, ist noch offen (Frage 19/20) — bis dahin die
      naheliegende Reihenfolge. */
-  /* optionen.jeStudio (Runde RUNDE_NR): erst nach Studio, dann nach Datum
+  /* optionen.jeStudio (Runde 274): erst nach Studio, dann nach Datum
      — „Studio für Studio", so wie man in LogX überträgt. */
   function alsTabelle(plan, studioKey, optionen) {
     var jeStudio = !!(optionen && optionen.jeStudio);

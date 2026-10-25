@@ -671,7 +671,7 @@ const ZUSTAND = () => {
   }
 
   console.log('\n── 14. Uni/Weiterbildung melden, Fragen finden, LogX Studio für Studio ──');
-  /* Runde RUNDE_NR — aus dem Betrieb: „fragen zum plan finde ich nicht“,
+  /* Runde 274 — aus dem Betrieb: „fragen zum plan finde ich nicht“,
      „es wäre cool wenn der schichtplan … aufgeteilt ist für studio für
      studio“ und „bei der abwesendheit fehlt das man sich für uni oder
      sonstige weiterbildungen auch melden kann“. */

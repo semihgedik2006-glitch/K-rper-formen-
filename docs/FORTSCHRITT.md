@@ -23424,7 +23424,7 @@ nirgends quer (bei 320 px taten es lange Wörter wie
 
 **Geprüft:** `test-neuigkeiten` 12, `test-block-d` 28.
 
-## Runde RUNDE_NR — Uni und Weiterbildung melden, Fragen finden, LogX Studio für Studio (26.10.2026)
+## Runde 274 — Uni und Weiterbildung melden, Fragen finden, LogX Studio für Studio (26.10.2026)
 
 **Aus dem Betrieb:** „fragen zum plan finde ich nicht und die logx
 screenshots kann ich dir nur von hürth geben … wir ja 14 studios sind und
@@ -23472,5 +23472,5 @@ das *Format* (Felder, Kürzel, Import), und das ist in jedem Studio gleich.
   namen, test-knoepfe, test-team-woche, test-tausch: grün.
 - **test-gestaltung rot — auf main genauso** (in einem unveränderten
   Stand von main nachgemessen, dieselben Meldungen): „FESTER ABSTAND 3px
-  (2×), 6px, 2px“ und „line-height 1.35“ stammen aus Runde 271 („Was ist
+  (2×), 6px, 2px“ und „line-height 1.35“ stammen aus Runde 273 („Was ist
   neu“ als Patchnotes, `.neu-eintrag`). Nicht von hier, nicht angefasst.

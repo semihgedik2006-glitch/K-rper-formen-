@@ -233,7 +233,7 @@ function lies(datei) {
   pruefe('Krankmeldung nach dem Erstellen: der Einsatz erscheint als Ausfall „krank"', meiner && meiner.art === 'krank', aus.length);
   pruefe('… mit höchstens drei Ersatzvorschlägen, alle ohne harten Grund', meiner && meiner.vorschlag.length >= 1 && meiner.vorschlag.length <= 3 && meiner.vorschlag.every((v) => !v.grund), meiner && meiner.vorschlag);
   pruefe('… und die kranke Person selbst ist nicht dabei', meiner && !meiner.vorschlag.some((v) => v.id === ziel.id));
-  /* Runde RUNDE_NR — aus dem Betrieb: „bei der abwesendheit fehlt das man
+  /* Runde 274 — aus dem Betrieb: „bei der abwesendheit fehlt das man
      sich für uni oder sonstige weiterbildungen auch melden kann“. Eine
      Uni-Meldung ist hart wie Urlaub, heisst aber nicht „Urlaub“. */
   const uniEingabe = Object.assign({}, groß, { abwesend: groß.abwesend.concat([{ id: ziel.id, von: '2026-11-18', bis: '2026-11-18', art: 'schule' }]) });
