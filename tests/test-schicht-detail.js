@@ -6,7 +6,9 @@
 
    Geprüft:
    11. Oben auf „Heute" ein Schalter Überblick / Meine Schicht (je ≥ 44,
-       bei 320–1920 in beiden Dichten). „Meine Schicht" zeigt EINE Liste
+       bei 820–1920 in beiden Dichten; am Handy steht „Meine Schicht ›"
+       unter „Ausserdem", damit keine Kategorie dafür weichen muss).
+       „Meine Schicht" zeigt EINE Liste
        für mein Studio: jeder offene Putzpunkt einzeln mit Haken; gemerkt
        nach dem Neuladen; zurück auf Überblick sind die Gruppen wieder da.
    12. Am Rechner (≥ 1100) dockt das Aufgaben-Blatt rechts an: die Liste
@@ -60,10 +62,15 @@ const TREFFER = (el) => {
       for (const dichte of ['normal', 'kompakt']) {
         if (dichte === 'kompakt') { await p.evaluate(() => document.body.setAttribute('data-dichte', 'kompakt')); await p.waitForTimeout(200); }
         const k = await p.evaluate((TR) => [...document.querySelectorAll('#heuteListe [data-hmodus]')].map(x => Object.assign({ t: x.textContent, an: x.getAttribute('aria-pressed') }, (eval(TR))(x))), TREFFER.toString());
-        pruefe(`${w} px ${dichte}: Schalter ${k.map(x => x.t + ' ' + x.w + '×' + x.h).join(', ')}`, k.length === 2 && k.every(x => x.w >= 44 && x.h >= 44 && x.imBild) && k[0].an === 'true', JSON.stringify(k));
+        /* Am Handy (< 700) steht im Überblick nur „Meine Schicht ›" unter
+           „Ausserdem" — oben kostete der Schalter eine ganze Kategorie. */
+        if (w < 700) pruefe(`${w} px ${dichte}: „Meine Schicht" unter „Ausserdem" ${k.map(x => x.w + '×' + x.h).join(', ')}`, k.length === 1 && /Meine Schicht/.test(k[0].t) && k.every(x => x.w >= 44 && x.h >= 44 && x.imBild) && await p.evaluate(() => !!document.querySelector('#heuteListe .heute-rest [data-hmodus="schicht"]')), JSON.stringify(k));
+        else pruefe(`${w} px ${dichte}: Schalter ${k.map(x => x.t + ' ' + x.w + '×' + x.h).join(', ')}`, k.length === 2 && k.every(x => x.w >= 44 && x.h >= 44 && x.imBild) && k[0].an === 'true', JSON.stringify(k));
       }
       if (w === 390 || w === 1440) {
         await p.click('#heuteListe [data-hmodus="schicht"]'); await p.waitForTimeout(400);
+        const oben = await p.evaluate((TR) => [...document.querySelectorAll('#heuteListe .heute-modus [data-hmodus]')].map(x => Object.assign({ an: x.getAttribute('aria-pressed') }, (eval(TR))(x))), TREFFER.toString());
+        pruefe(`${w} px: in „Meine Schicht" steht oben der Schalter zurück (${oben.map(x => x.w + '×' + x.h).join(', ')})`, oben.length === 2 && oben[1].an === 'true' && oben.every(x => x.w >= 44 && x.h >= 44 && x.imBild), JSON.stringify(oben));
         const s = await p.evaluate(() => { const bl = [...document.querySelectorAll('#heuteListe .heute-block')];
           return { bloecke: bl.map(x => x.getAttribute('data-btitel')), putzMitHaken: document.querySelectorAll('#heuteListe [data-hhak="putz"]').length, gemerkt: localStorage.getItem('kf_heute_modus') }; });
         pruefe(`${w} px: „Meine Schicht": ${s.bloecke.join(' | ')}, ${s.putzMitHaken} Putzpunkte einzeln mit Haken`, /^Meine Schicht/.test(s.bloecke[0] || '') && s.putzMitHaken >= 1 && s.gemerkt === 'schicht' && !s.bloecke.some(x => /^(Überfällig|Putzplan)$/.test(x)), JSON.stringify(s));

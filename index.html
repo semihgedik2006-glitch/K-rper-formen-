@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-CYBYslULlYVJkgCACgOiTjTmpHpaZlhOMLg1l9spJ8U='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-3qFWWw6tyuAzfUjSDajZSGGVZDPUVbOyC3GIGNwGhK0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -6587,12 +6587,14 @@ html.fk-still .fk-wirbel,html.fk-still .fk-innen{animation:none}
 /* Idee 12: am Rechner dockt das Blatt rechts an — ohne Schleier, die
    Liste bleibt bedienbar. */
 @media (min-width:1100px){
-  body.neu .msg-sheet.angedockt{left:auto;right:0;top:var(--dock-oben, 0px);bottom:0;width:400px;background:none;
+  /* Eine Breite für Blatt und Platz daneben — sonst rutscht die Liste darunter. */
+  body{--dock-breit:400px}
+  body.neu .msg-sheet.angedockt{left:auto;right:0;top:var(--dock-oben, 0px);bottom:0;width:var(--dock-breit);background:none;
     -webkit-backdrop-filter:none;backdrop-filter:none;align-items:stretch;justify-content:stretch;pointer-events:none}
   body.neu .msg-sheet.angedockt .ms-card{pointer-events:auto;max-width:none;width:100%;max-height:none;height:100%;border-radius:0;
     border-width:0 0 0 1px;animation:dockRein .24s var(--ease-ios)}
   body.neu .msg-sheet.angedockt .blatt-griff{display:none}
-  body.detail-offen .main{margin-right:400px}
+  body.detail-offen .main{margin-right:var(--dock-breit)}
   body.neu .msg-sheet.angedockt .tb-mehr{display:block}
 }
 @keyframes dockRein{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}
@@ -6620,7 +6622,8 @@ body.formi:not(.light) .card ~ .card,body.formi:not(.light) .chef-card ~ .chef-c
 body.fokus .side,body.fokus .topbar,body.fokus .mobnav{display:none !important}
 body.fokus .heute-spalten > .heute-spalte + .heute-spalte{display:none}
 body.fokus .heute-spalten{grid-template-columns:1fr !important}
-.fokus-aus{position:fixed;left:var(--s16);top:var(--s16);z-index:1100;min-height:44px}
+/* unten mittig: oben lag er über Seitenkopf und Menü */
+.fokus-aus{position:fixed;left:50%;bottom:var(--s16);translate:-50% 0;z-index:1100;min-height:44px;background:var(--bg-2);box-shadow:var(--schatten-knopf, 0 4px 16px rgba(0,0,0,.18))}
 .fokus-aus[hidden]{display:none}
 /* Idee 13: „+" auf Heute nur am Rechner; das Menü darunter. */
 @media (max-width:820px){ #homeNeu{display:none !important} }
@@ -31040,7 +31043,7 @@ function formiMorgen(box){
         { transform:'none', opacity:1 }], { duration:620, delay:120+i*140, easing:'cubic-bezier(.2,.8,.2,1)', fill:'backwards' }); }catch(e){}
     });
     var k=$('formiKugel'); if(k) formiUmgebung(k, 'schub');
-    formiSagt('Guten '+(new Date().getHours()<11 ? 'Morgen' : 'Tag')+'! Das Wichtigste zuerst.', true);
+    formiSagt(jvGruss()+'! Das Wichtigste zuerst.', true);  /* derselbe Gruss wie oben (Runde 221) */
   });
 }
 
@@ -39857,8 +39860,14 @@ function formiSeitZeile(){
    jeder offene Putzpunkt einzeln, dann der Rest mit Frist. Je Gerät
    gemerkt. */
 function heuteModus(){ try{ return localStorage.getItem('kf_heute_modus')==='schicht' ? 'schicht' : 'ueberblick'; }catch(e){ return 'ueberblick'; } }
+/* Am Handy kostete der Schalter oben eine ganze Kategorie (sie rutschte
+   nach „Ausserdem", gefunden von test-gruppen-titel/-startseite-putz).
+   Dort steht er im Überblick deshalb selbst als Knopf unter „Ausserdem";
+   in „Meine Schicht" oben — dort ist ohnehin nur eine Liste. */
+function heuteModusSchmal(){ return !!(window.matchMedia && matchMedia('(max-width:699px)').matches); }
 function heuteModusHTML(){
   var m=heuteModus();
+  if(m==='ueberblick' && heuteModusSchmal()) return '';
   return '<div class="heute-modus" role="group" aria-label="Ansicht">'+
     '<button type="button" data-hmodus="ueberblick" aria-pressed="'+(m==='ueberblick')+'">Überblick</button>'+
     '<button type="button" data-hmodus="schicht" aria-pressed="'+(m==='schicht')+'">Meine Schicht</button></div>';
@@ -40454,6 +40463,7 @@ function heutePasst(box){
      versteckt, wäre clientHeight 0 — und die Schleife würde die ganze
      Liste abräumen. Dieselbe Klasse Fehler wie beim gleitenden Marker
      (siehe gruppenMarker). */
+  heuteRestZeichnen(box, []);   // der Schalter „Meine Schicht" (Handy) zählt beim Messen mit
   if(sa.clientHeight < 120) return;
 
   /* ZUERST KÜRZEN, DANN STREICHEN.
@@ -40585,9 +40595,11 @@ function heutePasst(box){
    für gekürzte Blöcke, nicht für gestrichene. */
 function heuteRestZeichnen(box, liste){
   var alt=box.querySelector('.heute-rest'); if(alt) alt.remove();
-  if(!liste.length) return;
+  var schicht = heuteModus()==='ueberblick' && heuteModusSchmal();
+  if(!liste.length && !schicht) return;
   box.insertAdjacentHTML('beforeend',
     '<div class="heute-rest"><span class="hr-wort">Ausserdem</span>'+
+    (schicht ? '<button type="button" class="chip heute-rest-knopf" data-hmodus="schicht" aria-pressed="false">Meine Schicht ›</button>' : '')+
     liste.map(function(x){
       return '<button type="button" class="chip heute-rest-knopf" data-heute="'+esc(x.ziel)+'"'+
         (x.f?' data-hf="'+esc(x.f)+'"':'')+'>'+esc(x.titel)+
@@ -40595,6 +40607,7 @@ function heuteRestZeichnen(box, liste){
     }).join('')+'</div>');
   box.querySelectorAll('.heute-rest [data-heute]').forEach(heuteTippBinden);
   box.querySelectorAll('.heute-rest [data-hhak]').forEach(heuteHakenBinden);
+  heuteModusBinden(box.querySelector('.heute-rest'));
 }
 
 /* Wurde in einem Block gekürzt, MUSS der Weg zum Rest dastehen. Eine
