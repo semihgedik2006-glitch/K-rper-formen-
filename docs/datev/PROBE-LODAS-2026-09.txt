@@ -1,0 +1,15 @@
+[Allgemein]
+Ziel=LODAS
+BeraterNr=1234567
+MandantenNr=99999
+Feldtrennzeichen=;
+Zahlenkomma=,
+Datumsformat=TT.MM.JJJJ
+
+[Satzbeschreibung]
+1;u_lod_bwd_buchung_standard;abrechnung_zeitraum#bwd;bs_wert_butab#bwd;bs_nr#bwd;la_eigene#bwd;pnr#bwd;
+
+[Bewegungsdaten]
+1;01.09.2026;131,80;01;200;1;
+1;01.09.2026;3,0;71;;1;
+1;01.09.2026;86,25;01;200;2;

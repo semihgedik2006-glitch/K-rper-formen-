@@ -223,6 +223,14 @@ async function zuVerwaltungZeiten(p) {
       const T = eval('(' + SRC + ')');
       const ws = (ms) => new Promise(r => setTimeout(r, ms));
       window.confirm = () => true;
+      /* Runde ###: ein genehmigter Urlaub im Vormonat (Mo–Mi), damit die
+         Datei sicher eine Zeile mit Schlüssel 71 hat — sonst prüfte die
+         Formatregel für Urlaubstage nichts. */
+      const fs = firebase.firestore(), F = 'firmen/koerperformen/';
+      const team = (await fs.collection(F + 'planerTeam').get()).docs.map(d => d.data()).filter(x => x.wocheStd > 0 && x.haupt);
+      const v = new Date(); v.setDate(1); v.setMonth(v.getMonth() - 1); while (v.getDay() !== 1) v.setDate(v.getDate() + 1);
+      const von = v.toLocaleDateString('sv-SE'); v.setDate(v.getDate() + 2); const bis = v.toLocaleDateString('sv-SE');
+      if (team[0]) await fs.collection(F + 'studios/' + team[0].haupt + '/absences').add({ uid: team[0].uid, name: team[0].name, type: 'urlaub', status: 'genehmigt', from: von, to: bis });
       document.querySelector('[data-zkansicht="konto"]').click(); await ws(2000);
       document.getElementById('zkPrev').click(); await ws(2000);
       document.querySelector('[data-zkexport="datev"]').click(); await ws(500);
@@ -249,10 +257,74 @@ async function zuVerwaltungZeiten(p) {
     pruefe('Kopf: [Allgemein], Ziel=LODAS, Berater- und Mandantennummer', zeilen[0] === '[Allgemein]' && zeilen.includes('Ziel=LODAS') && zeilen.includes('BeraterNr=28547') && zeilen.includes('MandantenNr=90909'));
     pruefe('Satzbeschreibung u_lod_bwd_buchung_standard', zeilen.includes('1;u_lod_bwd_buchung_standard;abrechnung_zeitraum#bwd;bs_wert_butab#bwd;bs_nr#bwd;la_eigene#bwd;pnr#bwd;'));
     const bew = zeilen.slice(zeilen.indexOf('[Bewegungsdaten]') + 1).filter(Boolean);
-    pruefe('Bewegungsdaten: Stunden je Person, Schlüssel 01, Lohnart 200', bew.length > 0 && bew.every(z => /^1;01\.\d{2}\.\d{4};\d+,\d{2};(01;200|71;);\d+;$/.test(z)), bew.slice(0, 3).join(' | '));
+    /* Runde ###: Urlaubstage (71) mit EINER Nachkommastelle — laut Handbuch
+       höchstens „99,5". Bis dahin stand hier für alle Zeilen \d{2}. */
+    pruefe('Bewegungsdaten: Stunden je Person, Schlüssel 01, Lohnart 200', bew.length > 0 && bew.every(z => /^1;01\.\d{2}\.\d{4};(\d+,\d{2};01;200|\d{1,2},[05];71;);\d+;$/.test(z)), bew.slice(0, 3).join(' | '));
     pruefe('ein Monat je Datei (alle Zeilen derselbe Zeitraum)', new Set(bew.map(z => z.split(';')[1])).size === 1);
     pruefe('keine Namen in der Datei', !/[A-Za-z]{3,}/.test(bew.join('')));
+    /* ── Runde ###: gegen das DATEV-Schnittstellenhandbuch LODAS (SSH,
+       45. Auflage 1/2016, Fach 2 und 4) — die einzige Fassung, die von
+       hier erreichbar war. Ein echtes LODAS gibt es hier nicht. ── */
+    const felder = zeilen.find(z => z.startsWith('1;u_lod_bwd_buchung_standard;')).split(';').filter(Boolean).length - 2;
+    pruefe('SSH: jede Bewegungszeile hat genau so viele Felder wie die Satzbeschreibung (' + felder + ')',
+      bew.every(z => z.split(';').length === felder + 2 && z.endsWith(';')), bew.slice(0, 2).join(' | '));
+    pruefe('SSH: Stunden (01) mit Lohnart, höchstens zwei Nachkommastellen', bew.filter(z => /;01;/.test(z)).every(z => /^1;01\.\d{2}\.\d{4};\d{1,4},\d{2};01;\d{1,4};\d{1,5};$/.test(z)));
+    const url = bew.filter(z => /;71;/.test(z));
+    pruefe('SSH: Urlaubstage (71) — es gibt eine Zeile, eine Nachkommastelle, höchstens 99,5, OHNE Lohnart',
+      url.length > 0 && url.every(z => /^1;01\.\d{2}\.\d{4};\d{1,2},[05];71;;\d{1,5};$/.test(z) && +z.split(';')[2].replace(',', '.') <= 99.5), url.join(' | ') || 'keine 71-Zeile');
+    pruefe('SSH: BeraterNr 4–7, MandantenNr 1–5 Ziffern', zeilen.some(z => /^BeraterNr=\d{4,7}$/.test(z)) && zeilen.some(z => /^MandantenNr=\d{1,5}$/.test(z)));
+    pruefe('SSH: Personalnummern 1–5 Ziffern (pnr#psd)', bew.every(z => /;\d{1,5};$/.test(z)));
+
+    /* GEGENPROBEN: was LODAS abschneiden würde, wird abgewiesen. */
+    const ab = await p.evaluate(async () => {
+      const ws = (ms) => new Promise(r => setTimeout(r, ms));
+      const fs = firebase.firestore(), F = 'firmen/koerperformen/';
+      const lesen = async () => ((await fs.collection(F + 'lohnEinstellungen').doc('datev').get()).data() || {});
+      const vorher = await lesen();
+      const toast = () => (document.querySelector('#toast .toast-text') || {}).textContent || '';
+      const f = document.getElementById('zkDatev'); f.open = true;
+      const pf = document.querySelector('[data-dvpnr]'); const altPnr = pf.value;
+      pf.value = '123456'; document.querySelector('[data-zkdatevsichern]').click(); await ws(600);
+      const zuLang = { toast: toast(), gleich: JSON.stringify((await lesen()).personalNr) === JSON.stringify(vorher.personalNr) };
+      pf.value = altPnr; dvBerater.value = '123';
+      document.querySelector('[data-zkdatevsichern]').click(); await ws(600);
+      const kurz = { toast: toast(), gleich: (await lesen()).beraterNr === vorher.beraterNr };
+      dvBerater.value = vorher.beraterNr;
+      return { zuLang, kurz };
+    });
+    pruefe('GEGENPROBE Personalnummer 123456 (6 Ziffern) → abgewiesen, nichts gespeichert', /Personalnummer/.test(ab.zuLang.toast) && ab.zuLang.gleich, JSON.stringify(ab.zuLang));
+    pruefe('GEGENPROBE Beraternummer 123 → abgewiesen, nichts gespeichert', /Beraternummer/.test(ab.kurz.toast) && ab.kurz.gleich, JSON.stringify(ab.kurz));
     pruefe('ohne Skriptfehler (DATEV)', !p._fehler.length, p._fehler.join(' | '));
+    await p.close();
+  }
+  /* GEGENPROBE: eine Personalnummer, die VOR Runde ### gespeichert wurde
+     und zu lang ist (7 Ziffern). Sie steht schon in der Ablage, bevor die
+     App die Einstellungen zum ersten Mal liest — so wie im Bestand. Die
+     Demo hält ihre Daten nur im Speicher; ein Neuladen hätte sie
+     verworfen, deshalb eine eigene Seite. */
+  {
+    const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 }, acceptDownloads: true });
+    p._fehler = []; p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
+    await p.route('**://www.gstatic.com/**', r => r.abort());
+    await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
+    await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
+    await p.waitForTimeout(3200);
+    await p.evaluate(async () => {
+      const fs = firebase.firestore(), F = 'firmen/koerperformen/';
+      const team = (await fs.collection(F + 'planerTeam').get()).docs.map(d => d.data());
+      const pn = {}; team.forEach(x => { pn[x.uid] = '1234567'; });
+      await fs.collection(F + 'lohnEinstellungen').doc('datev').set({ beraterNr: '28547', mandantenNr: '90909', lohnartStunden: '200', urlaubstage: true, personalNr: pn });
+    });
+    await zuVerwaltungZeiten(p);
+    await p.evaluate(async () => { const ws = (ms) => new Promise(r => setTimeout(r, ms)); window.confirm = () => true;
+      document.querySelector('[data-zkansicht="konto"]').click(); await ws(2000); document.getElementById('zkPrev').click(); await ws(2000); });
+    const [dl2] = await Promise.all([p.waitForEvent('download'), p.evaluate(() => document.querySelector('[data-zkexport="datev"]').click())]);
+    const txt2 = require('fs').readFileSync(await dl2.path()).toString('latin1');
+    const meldung = await p.evaluate(() => (document.querySelector('#toast .toast-text') || {}).textContent || '');
+    const zeilen2 = txt2.split('\r\n').filter(z => /^1;0/.test(z));
+    pruefe('GEGENPROBE alte 7-stellige Personalnummern kommen NICHT in die Datei (LODAS schnitte sie links ab)', !zeilen2.length && !/1234567|34567/.test(txt2), zeilen2.slice(0, 3).join(' | '));
+    pruefe('… und die Meldung nennt, wer deshalb fehlt', /NICHT drin: \S/.test(meldung), meldung);
+    pruefe('ohne Skriptfehler (alte Nummern)', !p._fehler.length, p._fehler.join(' | '));
     await p.close();
   }
 
