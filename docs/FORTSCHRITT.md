@@ -23423,3 +23423,49 @@ nirgends quer (bei 320 px taten es lange Wörter wie
 „Unterweisungsnachweis" — jetzt mit Silbentrennung).
 
 **Geprüft:** `test-neuigkeiten` 12, `test-block-d` 28.
+
+## Runde RUNDE_NR — Uni und Weiterbildung melden, Fragen finden, LogX Studio für Studio (26.10.2026)
+
+**Aus dem Betrieb:** „fragen zum plan finde ich nicht und die logx
+screenshots kann ich dir nur von hürth geben … wir ja 14 studios sind und
+ich nur die sehe die für mich relevant sind … es wäre cool wenn der
+schichtplan den du erstellst auch so aufgeteilt ist für studio für studio
+… bei der abwesendheit fehlt das man sich für uni oder sonstige
+weiterbildungen auch melden kann was bei uns aber auch sehr wichtig ist“.
+
+**Was gebaut ist**
+- **Abwesenheit: „Uni / Berufsschule“ und „Weiterbildung“** (`type:
+  'schule'` / `'weiterbildung'`). Wie Urlaub ein Antrag — die Regel lässt
+  Selbstgenehmigung nur bei „krank“ zu, und daran ändert sich nichts; die
+  Regeln prüfen die Art nicht, also keine Regeländerung nötig. Der Planer
+  nimmt jede Abwesenheit als harte Grenze, also auch diese; im Grund
+  heisst sie jetzt „Uni/Schule“ bzw. „Weiterbildung“ statt „Urlaub“
+  (`abwText` im Rechenkern). Die Bezeichnungen standen an vier Stellen
+  einzeln — jetzt `ABW_ART`/`ABW_NAME` für alle. Die Abwesenheitsliste
+  zeigte die Art bisher **gar nicht**; jetzt steht sie vor dem Datum.
+  **Nicht** gebaut: Uni nur für einige Stunden eines Tages (z. B. „Di
+  8–12“). Regelmässige Uni-Zeiten gehören in die Spalte „Sperrzeiten“ der
+  Excel-Vorlage; einzelne Tage hier.
+- **„Fragen zum Plan“ oben im Kopf** des Planers: eine Zeile mit „x von 24
+  beantwortet – noch n offen“; ein Tipp klappt die Karte auf, springt in die
+  erste Gruppe mit offener Frage und rollt hin. Vorher stand die Karte
+  zugeklappt unter „So fängst du an“ bzw. unter den Schritten.
+- **LogX Studio für Studio:** „nur dieses Studio“ kopiert das gewählte
+  Studio; „alle Studios“ ordnet nach Studio, dann Datum (`alsTabelle(plan,
+  studio, { jeStudio:true })`) — so überträgt man Block für Block. Die
+  bisherige Ordnung nach Datum bleibt der Standard des Rechenkerns (der
+  Rechentest prüft sie).
+
+**Zu den LogX-Bildschirmfotos nur aus Hürth:** reichen. Gebraucht wird
+das *Format* (Felder, Kürzel, Import), und das ist in jedem Studio gleich.
+
+**Geprüft**
+- test-schichtplan-raster, Abschnitt 14 (10 neu, 120 gesamt): Arten in der
+  Auswahl; Uni melden → Antrag mit Art in der Liste und „Uni/Schule
+  (beantragt)“ im Raster; Fragen-Zeile ohne Rollen im Bild, ein Tipp öffnet
+  und rollt hin; „nur dieses Studio“ nur dessen Zeilen; „alle“ genau ein
+  Block je Studio (14 Blöcke, 582 Zeilen).
+- test-schichtplaner-rechnung (+3, 85): Ausfall „Uni/Schule“ bzw.
+  „Weiterbildung“; beim Neu-Erstellen nicht eingeteilt. Gegenprobe: ohne
+  `abwText` → „Urlaub“ → rot.
+- ERGEBNISSE_FOLGEN

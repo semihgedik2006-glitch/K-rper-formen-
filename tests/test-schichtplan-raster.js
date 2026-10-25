@@ -670,6 +670,79 @@ const ZUSTAND = () => {
     await c.close();
   }
 
+  console.log('\n── 14. Uni/Weiterbildung melden, Fragen finden, LogX Studio für Studio ──');
+  /* Runde RUNDE_NR — aus dem Betrieb: „fragen zum plan finde ich nicht“,
+     „es wäre cool wenn der schichtplan … aufgeteilt ist für studio für
+     studio“ und „bei der abwesendheit fehlt das man sich für uni oder
+     sonstige weiterbildungen auch melden kann“. */
+  {
+    const p = await oeffne(b, 'mitarbeiter', 1440, 900);
+    const r = await p.evaluate(async () => {
+      const wt = ms => new Promise(r => setTimeout(r, ms));
+      const arten = [...document.querySelectorAll('#abType option')].map(o => o.value);
+      document.querySelector('[data-teamtab="abwesend"]').click(); await wt(300);
+      const karte = document.querySelector('[data-fold="abwmelden"]'); if (karte && karte.classList.contains('zu')) { const h = karte.querySelector('h3'); if (h) h.click(); await wt(200); }
+      const n = new Date(); n.setDate(n.getDate() + 9); const tag = n.toISOString().slice(0, 10);
+      document.getElementById('abFrom').value = tag; document.getElementById('abTo').value = tag;
+      document.getElementById('abType').value = 'schule';
+      document.getElementById('abAdd').click(); await wt(900);
+      const zeile = [...document.querySelectorAll('#absList .abs-row')].find(r => /Uni/.test(r.textContent));
+      document.querySelector('[data-teamtab="schicht"]').click(); await wt(300);
+      document.querySelector('[data-wpansicht="person"]').click(); await wt(300);
+      let raster = '';
+      for (let i = 0; i < 3 && !raster; i++) {
+        const c = [...document.querySelectorAll('.wp-z.ich .wp-abw-txt')].find(x => /Uni/.test(x.textContent));
+        if (c) raster = c.textContent; else { document.getElementById('shiftNext').click(); await wt(250); }
+      }
+      return { arten, zeile: zeile ? zeile.textContent.replace(/\s+/g, ' ').trim() : '', raster, toast: (document.getElementById('toast') || {}).textContent };
+    });
+    console.log('  ' + JSON.stringify(r));
+    pruefe('Arten: auch „Uni / Berufsschule“ und „Weiterbildung“', r.arten.includes('schule') && r.arten.includes('weiterbildung'), r.arten.join());
+    pruefe('Uni melden: als Antrag in der Liste, mit Art', /Uni \/ Berufsschule/.test(r.zeile) && /wartet auf Antwort/.test(r.zeile), r.zeile + ' · ' + r.toast);
+    pruefe('im Raster in der eigenen Zeile: „Uni/Schule (beantragt)“', /Uni\/Schule \(beantragt\)/.test(r.raster), r.raster);
+    pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await p._ctx.close();
+  }
+  {
+    /* Wie der Rechenkern Uni/Weiterbildung nennt, prüft test-schichtplaner-rechnung. */
+    const c = await b.newContext({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 }, permissions: ['clipboard-read', 'clipboard-write'] });
+    const p = await c.newPage();
+    p._fehler = []; p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
+    await p.route('**://www.gstatic.com/**', r => r.abort());
+    await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
+    await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
+    await p.waitForTimeout(3200);
+    const r = await p.evaluate(async () => {
+      const wt = ms => new Promise(r => setTimeout(r, ms));
+      const g = document.getElementById('bereichKopf'); if (g && g.offsetParent) { g.click(); await wt(700); }
+      [...document.querySelectorAll('[data-alles="planer"]')].find(e => e.offsetParent).click(); await wt(2500);
+      const zeile = document.getElementById('spFragenZeile');
+      const zr = zeile.getBoundingClientRect();
+      const imBild = zr.top >= 0 && zr.bottom <= innerHeight;
+      zeile.click(); await wt(700);
+      const offen = document.getElementById('spFragen').open;
+      const fr = document.getElementById('spFragen').getBoundingClientRect();
+      document.getElementById('spFragen').open = false;
+      document.getElementById('spLos').click(); await wt(4000);
+      const studio = document.getElementById('spStudio').selectedOptions[0].textContent.split(' · ')[0];
+      document.getElementById('spLogx').click(); await wt(400);
+      const eins = await navigator.clipboard.readText();
+      document.getElementById('spLogxAlle').click(); await wt(400);
+      const alle = await navigator.clipboard.readText();
+      return { imBild, offen, frTop: Math.round(fr.top), studio, eins: eins.split('\n'), alle: alle.split('\n') };
+    });
+    const studiosEins = new Set(r.eins.slice(1).map(z => z.split('\t')[2]));
+    const reihe = r.alle.slice(1).map(z => z.split('\t')[2]);
+    const bloecke = reihe.filter((x, i) => !i || x !== reihe[i - 1]);
+    console.log('  ' + JSON.stringify({ imBild: r.imBild, offen: r.offen, frTop: r.frTop, studio: r.studio, eins: r.eins.length, alle: r.alle.length, bloecke: bloecke.length }));
+    pruefe('„Fragen zum Plan“ steht oben im Kopf, ohne zu rollen', r.imBild);
+    pruefe('ein Tipp klappt die Fragen auf und rollt hin', r.offen && r.frTop < 400, JSON.stringify(r.frTop));
+    pruefe('„nur dieses Studio“: nur Zeilen von ' + r.studio, r.eins.length > 2 && studiosEins.size === 1 && studiosEins.has(r.studio), [...studiosEins].join());
+    pruefe('„alle Studios“: Studio für Studio – jedes Studio ein Block', bloecke.length === new Set(reihe).size && bloecke.length > 3, bloecke.join(' | '));
+    pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await c.close();
+  }
+
   await b.close();
   console.log(schlecht
     ? '\n✗ Schichtplan-Raster: ' + schlecht + ' von ' + (gut + schlecht) + ' Zusicherungen falsch'
