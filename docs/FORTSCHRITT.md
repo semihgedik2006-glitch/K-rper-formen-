@@ -22935,3 +22935,41 @@ Polster für Formi; sie bleibt als Wache.
 **Nicht getestet:** Safari am iPhone selbst. Der Rand ist nachgestellt,
 nicht gemessen; ob Safari 26 mit schwebender Adressleiste unten einen
 Rand meldet, zeigt nur das Gerät.
+
+## Runde RUNDE_NR — Schichtplaner: Öffnungszeit ohne Schicht, Stunden über Soll (25.10.2026)
+
+**Aus dem Betrieb:** „mach weiter mit dem was offen war dann“. Offen
+waren aus dem Vorschlag von Runde 206: der Planer prüft die Öffnungszeit,
+Monatsstunden je Person; Studioleitungen planen lassen und LogX warten
+auf Antworten (Fragen 21 und 24).
+
+**Was gebaut ist**
+- **„Öffnungszeit ohne Schicht“** oben unter „Zu klären“: je Wochentag
+  aus den Schichtzeiten des Studios gegen seine Öffnungszeit gerechnet
+  (Verwaltung → Studios, sonst Excel-Blatt „Studios“, wie die Leiste im
+  Team-Plan; `wpOeffnung` nimmt dafür jetzt ein Studio an). Gleiche
+  Lücken an mehreren Tagen stehen zusammen („Mo–Fr 21–22 Uhr“). In der
+  Demo: „Sa 14–15 Uhr (geöffnet 09–15)“ — die Samstagsschicht endet um 14.
+  **Warum je Wochentag und nicht je Tag:** Eine solche Lücke kommt jede
+  Woche wieder und liegt an der Einrichtung; kein Umbesetzen behebt sie.
+  Als dreissig einzelne „Lücken“ wäre sie in der Liste untergegangen.
+- **Stunden im Studio:** ↓ unter 85 %, ↑ über 115 % des Solls (vorher nur
+  „unter“).
+
+**Gefunden:** In der Demo hat eine Teilzeitkraft 147 von 86 Stunden. Das
+ist so gewollt, solange „Besetzung vor Stunden“ gilt: „über dem Soll“
+ist eine weiche Regel und wird gebrochen, wenn sonst niemand da wäre
+(dann als Rückfrage). Ob das so bleibt, entscheidet Frage 18 („Was hat
+Vorrang …“). Der Pfeil ↑ macht es jetzt sichtbar.
+
+**Geprüft**
+- test-schichtplan-raster, Abschnitt 12: genau „Sa 14–15“; GEGENPROBE
+  Samstag nur bis 14 Uhr geöffnet → kein Hinweis; ↓/↑ genau bei <85 % und
+  >115 %. Dabei gefunden: Abschnitt 4 brauchte an einem Sonntag eine
+  freie Zelle in der laufenden Woche — er blättert jetzt weiter, wenn
+  kein Werktag mehr vor ihm liegt. 106 Prüfungen, grün.
+- test-schichtplaner, test-gestaltung, test-doppelte-namen, test-knoepfe,
+  test-team-woche, test-tausch: grün. (Ein erster Lauf war wertlos: der
+  Neuigkeiten-Eintrag kam während des Laufs in index.html, ohne die
+  Sicherheitsregel neu zu setzen — genau die Falle aus CLAUDE.md.
+  Wiederholt nach `csp.js --setzen`.)
