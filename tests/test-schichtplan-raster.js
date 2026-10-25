@@ -565,6 +565,9 @@ const ZUSTAND = () => {
       await db.collection('config').doc('schichtplaner').set({ studios }, { merge: true });
       await wt(500);
       [...document.querySelectorAll('#side [data-group="g-team"]')].find(x => x.getClientRects().length).click(); await wt(1800);
+      /* Die nächste Woche: dort ist kein Tag vorbei. Vergangene Tage ohne
+         Schicht haben seit Runde 269 keine Leiste mehr. */
+      document.getElementById('shiftNext').click(); await wt(300);
       return [...document.querySelectorAll('.wp-besetzt .wp-band')].map(x => x.getAttribute('aria-label'));
     });
     console.log('  ' + JSON.stringify(r));
@@ -613,6 +616,57 @@ const ZUSTAND = () => {
       return soll2 !== (/↓/.test(t) ? '↓' : (/↑/.test(t) ? '↑' : '')); });
     pruefe('Stunden: ↓ unter 85 %, ↑ über 115 % des Solls – genau dort', r.std.length > 3 && !falsch.length, JSON.stringify(falsch));
     pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await c.close();
+  }
+
+  console.log('\n── 13. Feinschliff: leere Vergangenheit, geschlossen mit Schicht, zugeklappte Karten ──');
+  /* Runde 269 — aus dem Betrieb: „mach weiter mit dem design“. */
+  {
+    const p = await oeffne(b, 'mitarbeiter', 1440, 900);
+    const r = await p.evaluate(async () => {
+      const wt = ms => new Promise(r => setTimeout(r, ms));
+      const out = { leerVorbeiMitLeiste: 0, leerVorbei: 0, zuMitSchicht: [], zuOhne: [] };
+      for (let i = 0; i < 3; i++) {
+        document.querySelectorAll('#shiftGrid .shift-day').forEach(d => {
+          const vorbei = d.dataset.tag < new Date().toISOString().slice(0, 10);
+          const n = d.querySelectorAll('.shift-entry').length;
+          if (vorbei && !n) { out.leerVorbei++; if (d.querySelector('.wp-band')) out.leerVorbeiMitLeiste++; }
+          const t = d.querySelector('.wp-band-txt'); if (!t || !/geschlossen/.test(t.textContent)) return;
+          (n ? out.zuMitSchicht : out.zuOhne).push({ n, t: t.textContent, warn: t.classList.contains('luecke') });
+        });
+        document.getElementById(i ? 'shiftNext' : 'shiftPrev').click(); await wt(200);
+        if (!i) { document.getElementById('shiftPrev').click(); await wt(200); }
+      }
+      return out;
+    });
+    console.log('  ' + JSON.stringify(r));
+    pruefe('vergangene Tage ohne Schicht haben keine leere Leiste', r.leerVorbei > 0 && r.leerVorbeiMitLeiste === 0, JSON.stringify(r));
+    pruefe('geschlossen, aber eingeteilt: „geschlossen – trotzdem n …“ in Bernstein',
+      r.zuMitSchicht.every(x => x.warn && /trotzdem/.test(x.t)) && r.zuOhne.every(x => !x.warn && !/trotzdem/.test(x.t)) && (r.zuMitSchicht.length + r.zuOhne.length) > 0,
+      JSON.stringify(r));
+    await p._ctx.close();
+  }
+  {
+    const c = await b.newContext({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
+    const p = await c.newPage();
+    await p.route('**://www.gstatic.com/**', r => r.abort());
+    await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
+    await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
+    await p.waitForTimeout(3200);
+    const r = await p.evaluate(async () => {
+      const wt = ms => new Promise(r => setTimeout(r, ms));
+      const g = document.getElementById('bereichKopf'); if (g && g.offsetParent) { g.click(); await wt(700); }
+      [...document.querySelectorAll('[data-alles="planer"]')].find(e => e.offsetParent).click(); await wt(2500);
+      const f = document.getElementById('spFragen'), rg = document.getElementById('spRegeln');
+      const a = f.getBoundingClientRect(), b2 = rg.getBoundingClientRect();
+      f.open = true; await wt(200);
+      const offen = { f: f.getBoundingClientRect().width, r: rg.getBoundingClientRect().top > f.getBoundingClientRect().bottom - 1 };
+      f.open = false;
+      return { hf: Math.round(a.height), hr: Math.round(b2.height), nebeneinander: Math.abs(a.top - b2.top) < 2 && b2.left > a.right, offen };
+    });
+    console.log('  ' + JSON.stringify(r));
+    pruefe('zugeklappt höchstens 70 px hoch (vorher 106)', r.hf <= 70 && r.hr <= 70, JSON.stringify(r));
+    pruefe('zugeklappt am Rechner nebeneinander, aufgeklappt untereinander', r.nebeneinander && r.offen.r, JSON.stringify(r));
     await c.close();
   }
 
