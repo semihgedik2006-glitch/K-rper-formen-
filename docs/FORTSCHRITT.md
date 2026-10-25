@@ -23148,8 +23148,35 @@ Auslöser.
 
 - Ein echter Tipp auf echte Meldungen auf einem Handy.
 
+## Runde 269 — Schichtplan: Feinschliff (25.10.2026)
 
-## Runde 269 — Formi redet wie ein Kollege (Worker 2.27, 25.10.2026)
+**Aus dem Betrieb:** „mach weiter mit dem design“.
+
+**Gefunden beim Ansehen** (Demo, Sonntag 25.10., 1440 × 900 und 390 × 844)
+- Montag bis Samstag waren vorbei und ohne Schicht; jeder Tag trug eine
+  leere Besetzungs-Leiste — sechs Balken, die aussehen wie ein Laden, das
+  hängt. Jetzt hat ein vergangener Tag ohne Schicht keine Leiste.
+- Sonntag ist laut Öffnungszeit zu, trotzdem standen drei Schichten im
+  Plan; die Leiste sagte nur „geschlossen“. Jetzt: „geschlossen – trotzdem
+  3 Schichten“ in Bernstein — das ist ein Status (Öffnungszeit falsch
+  gepflegt oder Schicht zu viel), und er soll auffallen.
+- Im Planer waren „Fragen zum Plan“ und „Regeln & Sonderfälle“
+  zugeklappt je 106 px hoch bei 44 px Inhalt (`body.neu .card` gibt 30 px
+  Innenabstand). Jetzt 62 px, und am Rechner stehen beide nebeneinander,
+  solange beide zu sind (`:has()`); aufgeklappt wieder untereinander.
+
+**Geprüft**
+- test-schichtplan-raster, Abschnitt 13 (4 neu, 110 gesamt): keine Leiste
+  an 20 leeren vergangenen Tagen; „trotzdem“ genau bei geschlossenen Tagen
+  mit Schicht; Karten 62 px, nebeneinander, aufgeklappt untereinander.
+- Abschnitt 11 (Öffnungszeit aus dem Excel) las die laufende Woche und
+  erwartete 7 Leisten; an einem Sonntag sind sechs davon vorbei und leer.
+  Er liest jetzt die nächste Woche — die Prüfung selbst ist dieselbe.
+- test-schichtplaner, test-gestaltung, test-doppelte-namen, test-knoepfe,
+  test-abgeschnitten, test-team-woche, test-tausch: grün.
+
+
+## Runde 270 — Formi redet wie ein Kollege (Worker 2.27, 25.10.2026)
 
 Aus dem Betrieb: „wir sorgen einfach dafür das er schritt für schritt
 besser wird das soll ja auch ein prozess sein aber mann soll es merken auch".
