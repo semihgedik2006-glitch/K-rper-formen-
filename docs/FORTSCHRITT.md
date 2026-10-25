@@ -22979,6 +22979,101 @@ noch offen ist". Gebaut wird in vier Runden; das hier ist die erste.
   Aufrufer kostet er nichts.
 
 **Geprüft:**
-ERGEBNIS_HIER
+siehe Runde 268 (ein gemeinsamer Durchlauf für 265–268).
 
 **Nicht geprüft:** echte Handys, echter Klang am Gerät.
+
+## Runde 266 — Formi als Werkzeug (Ideen 1, 2, 6, 8, 18) (25.10.2026)
+
+**Aus dem Betrieb:** „mach alles davon und alles was noch offen ist".
+
+**Gebaut:**
+- **Idee 2 – Ring:** Lange drücken (480 ms) oder Rechtsklick auf die
+  Kugel zeigt die vier Aufträge, die diese Person am häufigsten gibt
+  (gezählt je Gerät in `kf_formi_auftraege`, ab zweimal). Fehlen welche,
+  wird mit vier Standards aufgefüllt. Ein Tipp öffnet Formi und schickt
+  den Auftrag ab. Die Knöpfe stehen als Spalte im Bogen über der Kugel,
+  immer zur Bildmitte hin und im Bild. Pfeiltasten und Esc gehen. Den
+  Tagesstand gibt es als Überschrift.
+- **Idee 1 – auf Formi ziehen (Rechner):** Offene Aufgaben und
+  Putzpunkte sind ziehbar, aber nicht vom Griff aus (der sortiert) und
+  nicht aus Knöpfen oder Feldern. Über der Kugel zieht sie an. Fallen
+  gelassen stehen „Abhaken" (mit Formi-Spur, Insel und Strom),
+  „Erinnere mich daran" und „Frag Formi dazu" zur Wahl (vorausgefüllt,
+  nicht abgeschickt).
+- **Idee 6 – morgens:** Beim ersten Blick auf „Heute" an einem Tag kommen
+  die ersten drei Zeilen aus Formi (weisses Loch), dazu ein Satz in der
+  Blase. Danach an dem Tag nicht mehr.
+- **Idee 8 – Laufendes in der Insel:** „Im Dienst seit 06:58" bzw.
+  „Pause seit …" aus dem Stempelstand. Am Rechner (die Insel steht dort
+  in der Kopfleiste) bleibt es dauerhaft, am Handy 4,5 s. Formis Arbeit
+  geht vor, danach kehrt die Insel zum Laufenden zurück.
+- **Idee 18 – erste Woche:** Wer ein Konto mit `createdAt` jünger als 5
+  Tage hat, bekommt auf „Heute" je Tag einen Rundgang („Zeig's mir · 1
+  Min." / „Später"). Die Reihenfolge ist Putzplan, Aufgabe, Übergabe,
+  Schicht, Abwesenheit.
+
+**Entschieden und warum:**
+- *Ziehen nur am Rechner.* Am Handy ist Wischen schon belegt (Abhaken),
+  und Ziehen mit dem Finger kollidiert mit dem Scrollen. Dort gibt es
+  den Ring.
+- *Erste Woche nur mit `createdAt`.* Ältere Konten haben es nicht. Ohne
+  diese Grenze bekäme das ganze bestehende Team auf einmal eine Woche
+  Rundgänge.
+- *Gefunden beim Messen:* Die Knöpfe im Ring standen zuerst über
+  `transform`. Das Nachgeben beim Drücken (`scale`) skalierte die
+  Verschiebung mit, der Knopf rutschte unter der Maus weg, und **kein
+  Klick kam an**, obwohl der Hit-Test vorher stimmte. Jetzt steht die
+  Lage in `translate`. Der Durchlauf klickt mit der echten Maus.
+
+## Runde 267 — Oberfläche leichter (Ideen 13, 14, 15, 16, 17, 20) (25.10.2026)
+
+**Gebaut:**
+- **Idee 13:** „+ Anlegen" auf „Heute" (am Rechner) mit einem Menü: nur,
+  was die Person darf. Darunter liegt ein eigenes kleines Menü
+  (`menuAn`). Es heisst „Anlegen", nicht „Neu", weil daneben schon „•
+  Neu" (Neuigkeiten) steht.
+- **Idee 14:** Aufgabe (Zeile und Blatt), Ankündigung, Nachricht und
+  Schicht werden ohne `confirm()` gelöscht, mit acht Sekunden
+  „Rückgängig" (dieselbe Kennung). Material behält die Rückfrage: Der
+  Knopf liegt dort neben dem Zählfeld, und die Rückfrage war genau gegen
+  diesen Fehlgriff eingebaut.
+- **Idee 15:** Die Glocke bündelt je Studio: „3 neue in Hürth" als
+  `<details>`. Ein einzelner Eintrag steht wie bisher.
+- **Idee 16:** Im Formular „Neue Aufgabe" sind die zuletzt gewählten
+  Studios schon angehakt und bleiben es nach dem Erstellen
+  (`kf_nt_studios`).
+- **Idee 17:** Taste F (änderbar unter Tastenkürzel) blendet Seitenleiste,
+  Kopfleiste und die rechte Spalte auf „Heute" aus. „Fokus beenden"
+  steht oben links. Unter 900 px tut F nichts.
+- **Idee 20:** Knöpfe beginnen gross und sagen ein Verb: „löschen" wird
+  „Löschen", „ansehen" wird „Ansehen", „Hinzu" wird „Hinzufügen",
+  „Schliessen" wird „Schließen".
+
+## Runde 268 — Meine Schicht, Liste + Detail am Rechner, eine Karte (Ideen 11, 12, 19) (25.10.2026)
+
+**Gebaut:**
+- **Idee 11:** Der Schalter „Überblick / Meine Schicht" steht oben auf
+  „Heute" (je Gerät gemerkt). „Meine Schicht" ist eine Liste für mein
+  Studio: das in Formis Einstellungen gewählte, sonst das mit den meisten
+  offenen Punkten. Reihenfolge: seit du weg warst, Überfälliges,
+  Heutiges, jeder offene Putzpunkt einzeln mit Haken, dann der Rest.
+- **Idee 12:** Ab 1100 px docken das Aufgaben-, Schicht- und
+  Dokument-Blatt rechts an (400 px, ohne Schleier). Die Liste daneben
+  bleibt klickbar. Beim Aufgaben-Blatt stehen Beschreibung, Schritte und
+  „Angelegt von" dabei. Esc schliesst.
+- **Idee 19:** Formis schillernde Kante trägt nur noch die erste Gruppe
+  bzw. Karte. Alle weiteren haben eine Haarlinie auf dem Kern.
+
+**Entschieden und warum:**
+- *Andocken statt neuer Seite:* Dieselben Blätter mit denselben Knöpfen,
+  am Rechner nur an einem anderen Ort. Eine zweite Detail-Ansicht
+  daneben wäre doppelt zu pflegen.
+- *`.main` bekommt 400 px Rand* (einmal beim Öffnen, keine Bewegung über
+  Breite). So rutscht die Liste nicht unter das Detail.
+
+**Geprüft (Runden 265–268):**
+ERGEBNIS_HIER
+
+**Nicht geprüft:** echte Handys, Ziehen mit dem Finger (gibt es nicht),
+echte Spracherkennung.

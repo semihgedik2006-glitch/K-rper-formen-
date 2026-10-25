@@ -6,8 +6,8 @@
    alles was noch offen ist".
 
    Geprüft:
-   3. Tagesstand lesbar: „7 von 11 heute erledigt" steht am Knopf
-      (aria-label) und als Schild über der Kugel — sichtbar beim
+   3. Tagesstand lesbar: „7 von 11 heute erledigt" steht als Schild
+      über der Kugel (der Name bleibt „Formi öffnen") — sichtbar beim
       Darüberfahren (Rechner), ohne Trefferfläche, im Bild bei 1280–1920
       und am Handy nicht im Weg (dort ohne Hover unsichtbar).
    4. Wartet ein Knopf länger als 300 ms, dreht darin eine Formi-Scheibe
@@ -53,7 +53,7 @@ async function oeffne(b, w, h, mehr) {
       await p.evaluate(() => window.__formiLebt.tagSetzen(4, 3));
       const k = await p.evaluate(() => { const k = document.getElementById('formiKugel'), s = k.querySelector('.fk-stand');
         return { label: k.getAttribute('aria-label'), text: s.textContent, op: getComputedStyle(s).opacity, pe: getComputedStyle(s).pointerEvents }; });
-      pruefe(`${w} px: „${k.text}" am Knopf und im Schild, keine Trefferfläche`, /von \d+ heute erledigt/.test(k.text) && k.label.indexOf(k.text) > 0 && k.pe === 'none', JSON.stringify(k));
+      pruefe(`${w} px: „${k.text}" im Schild, keine Trefferfläche, der Knopf heisst weiter „Formi öffnen"`, /von \d+ heute erledigt/.test(k.text) && k.label === 'Formi öffnen' && k.pe === 'none', JSON.stringify(k));
       if (w >= 1280) {
         const box = await p.evaluate(() => { const r = document.getElementById('formiKugel').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
         await p.mouse.move(box.x, box.y); await p.waitForTimeout(350);

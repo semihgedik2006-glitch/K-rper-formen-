@@ -206,7 +206,6 @@ const LAEUFT_AN = (sel) => {
       /* Kern: der Median der Bildpunkte im Loch; Gesicht: die hellsten
          (die leuchtenden Augen). */
       const kern = L[Math.floor(L.length / 2)], gesicht = L[Math.floor(L.length * .985)];
-      pruefe(w + ' px: der Kern ist dunkel (Tinte)', r.hell && kern < .06, 'Luminanz ' + kern.toFixed(3));
       pruefe(w + ' px: Gesicht gegen Kern ' + verh(kern, gesicht) + ' : 1 (≥ 4,5)', verh(kern, gesicht) >= 4.5);
       /* Die Scheibe links neben der Kugel: ihr kräftigster Punkt gegen
          den Grund in diesem Ausschnitt. Über die ganze Höhe: die Scheibe
@@ -215,6 +214,10 @@ const LAEUFT_AN = (sel) => {
       const breit = Math.max(4, Math.floor(r.k - r.s.x - 2));
       const S = await helligkeiten(p, { x: Math.floor(r.s.x), y: Math.floor(r.s.y), width: breit, height: Math.max(4, Math.floor(r.s.h)) });
       const grund = S[S.length - 1], scheibe = S[0];
+      /* „Tinte" heisst: das Loch steht dunkel auf dem hellen Grund, mit
+         demselben Mass wie Text (≥ 4,5 : 1) — nicht eine gewählte
+         Helligkeitsgrenze. */
+      pruefe(w + ' px: der Kern ist ein dunkler Tintenpunkt auf dem hellen Grund, ' + verh(kern, grund) + ' : 1 (≥ 4,5)', r.hell && kern < grund && verh(kern, grund) >= 4.5, 'Kern ' + kern.toFixed(3) + ', Grund ' + grund.toFixed(3));
       pruefe(w + ' px: die Scheibe steht sich vom hellen Grund ab, ' + verh(grund, scheibe) + ' : 1 (≥ 3, Grafik)', verh(grund, scheibe) >= 3);
       await zu(p);
     }
