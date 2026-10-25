@@ -18,7 +18,9 @@
        erschrickt es. Anmelden-Knopf und Augen-Knopf ≥ 44 × 44 per
        Hit-Test, 320 … 1920 px, normal und kompakt. Der echte Anmeldeweg
        (Firebase) ist hier NICHT prüfbar.
-    3. Heller Stil: der Kern ist hell (weisses Loch), das Gesicht dunkel,
+    3. Heller Stil: seit Runde 265 ein Tintenpunkt (aus dem Betrieb,
+       24.10.2026, auf Idee 9 „Formi im Hellmodus als Tinte": „mach alles
+       davon") — der Kern ist dunkel, das Gesicht leuchtet darin,
        Kontrast an echten Bildpunkten ≥ 4,5 : 1; die Scheibe steht sich
        vom hellen Grund ab (≥ 3 : 1, Grafik); im dunklen Stil bleibt das
        Loch schwarz.
@@ -189,7 +191,7 @@ const LAEUFT_AN = (sel) => {
       await zu(p);
     }
 
-    console.log('\n── 3 Heller Stil: das weisse Loch ──');
+    console.log('\n── 3 Heller Stil: Formi als Tinte (Runde 265) ──');
     for (const [w, h] of [[1440, 900], [390, 844]]) {
       const p = await oeffne(b, w, h, { prefs: JSON.stringify({ theme: 'light' }) });
       const r = await p.evaluate(() => {
@@ -201,8 +203,10 @@ const LAEUFT_AN = (sel) => {
       await p.evaluate(() => window.__formiLebt && window.__formiLebt.uhrenAus && window.__formiLebt.uhrenAus());
       await p.waitForTimeout(300);
       const L = await helligkeiten(p, { x: Math.floor(r.q.x + 2), y: Math.floor(r.q.y + 2), width: Math.floor(r.q.w - 4), height: Math.floor(r.q.h - 4) });
-      const kern = L[Math.floor(L.length / 2)], gesicht = L[0];
-      pruefe(w + ' px: der Kern ist hell (weisses Loch)', r.hell && kern > .7, 'Luminanz ' + kern.toFixed(2));
+      /* Kern: der Median der Bildpunkte im Loch; Gesicht: die hellsten
+         (die leuchtenden Augen). */
+      const kern = L[Math.floor(L.length / 2)], gesicht = L[Math.floor(L.length * .985)];
+      pruefe(w + ' px: der Kern ist dunkel (Tinte)', r.hell && kern < .06, 'Luminanz ' + kern.toFixed(3));
       pruefe(w + ' px: Gesicht gegen Kern ' + verh(kern, gesicht) + ' : 1 (≥ 4,5)', verh(kern, gesicht) >= 4.5);
       /* Die Scheibe links neben der Kugel: ihr kräftigster Punkt gegen
          den Grund in diesem Ausschnitt. Über die ganze Höhe: die Scheibe

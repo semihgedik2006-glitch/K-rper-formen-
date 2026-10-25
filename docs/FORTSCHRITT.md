@@ -22935,3 +22935,50 @@ Polster für Formi; sie bleibt als Wache.
 **Nicht getestet:** Safari am iPhone selbst. Der Rand ist nachgestellt,
 nicht gemessen; ob Safari 26 mit schwebender Adressleiste unten einen
 Rand meldet, zeigt nur das Gerät.
+
+## Runde 265 — Formi-Feinschliff (Ideen 3, 4, 5, 7, 9, 10) und Offenes (25.10.2026)
+
+**Aus dem Betrieb**, auf die 20 Ideen: „mach alles davon und alles was
+noch offen ist". Gebaut wird in vier Runden; das hier ist die erste.
+
+**Gebaut:**
+- **Offenes:**
+  - Die Stimm-Function `gehirnStimme` ist aus `functions/index.js`
+    entfernt; der Deploy mit `--force` räumt sie ab.
+  - `test-mitarbeiter` war schon durch Runde 260 repariert (er geht über
+    „Alles"), nichts zu tun.
+- **Idee 3 – Tagesstand lesbar:** Über der Kugel steht ein Schild „7 von
+  11 heute erledigt". Es erscheint nur beim Darüberfahren (Rechner) oder
+  mit der Tastatur und steht auch im `aria-label` des Knopfs. Es hat
+  keine Trefferfläche.
+- **Idee 7 – Stau:** Ab 8 offenen Punkten dreht der Wirbel 9 s statt 6 s,
+  ab 15 dreht er 13 s und der Kern ist dunkler. Es gibt keine
+  Statusfarbe, nur Bewegung.
+- **Idee 4 – Formi im wartenden Knopf:** `withBusy` zeigt nach 300 ms
+  eine kleine Formi-Scheibe (Ring um ein schwarzes Loch) mit
+  `aria-busy`. Der Text bleibt für Vorlesegeräte.
+- **Idee 5 – Formis Spur:** „über Formi · 09:14", im Titel „für Anna".
+- **Idee 9 – heller Stil als Tinte:** Das Loch ist ein tiefer
+  Tintenpunkt, das Gesicht leuchtet darin wie im dunklen Stil. Die
+  Scheibe behält die satten Töne für Weiss.
+- **Idee 10 – ein Formi-Ton:** Für „erledigt" gibt es zwei tiefe
+  Anschläge, für Fehler einen kurzen tiefen Ton. Öffnen, Schliessen,
+  Senden und Schritte sind still.
+
+**Entschieden und warum:**
+- *Der helle Stil kehrt eine frühere Entscheidung um.* Runde 226 hatte
+  das weisse Loch („ja können wir alles umsetzen", 23.10.). Die neue
+  Antwort „mach alles davon" auf Idee 9 ersetzt sie. Der Test
+  `test-formi-ideen` prüft jetzt das Gegenteil (Kern dunkel, Gesicht ≥
+  4,5 : 1) und nennt beide Zitate.
+- *Der Ton nur bei Formi, nicht bei jedem Haken in der App.* Im Studio
+  stehen Kundinnen daneben, und der Ton ist standardmässig an. Ein Piepen
+  bei jedem Haken wäre zu viel.
+- *Der Worker-Pfad `/api/stimme` bleibt* bis zur nächsten Auslieferung
+  des Workers stehen. Er wird von hier aus nicht ausgeliefert, und ohne
+  Aufrufer kostet er nichts.
+
+**Geprüft:**
+ERGEBNIS_HIER
+
+**Nicht geprüft:** echte Handys, echter Klang am Gerät.
