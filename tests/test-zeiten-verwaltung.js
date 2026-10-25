@@ -223,7 +223,7 @@ async function zuVerwaltungZeiten(p) {
       const T = eval('(' + SRC + ')');
       const ws = (ms) => new Promise(r => setTimeout(r, ms));
       window.confirm = () => true;
-      /* Runde ###: ein genehmigter Urlaub im Vormonat (Mo–Mi), damit die
+      /* Runde 271: ein genehmigter Urlaub im Vormonat (Mo–Mi), damit die
          Datei sicher eine Zeile mit Schlüssel 71 hat — sonst prüfte die
          Formatregel für Urlaubstage nichts. */
       const fs = firebase.firestore(), F = 'firmen/koerperformen/';
@@ -257,12 +257,12 @@ async function zuVerwaltungZeiten(p) {
     pruefe('Kopf: [Allgemein], Ziel=LODAS, Berater- und Mandantennummer', zeilen[0] === '[Allgemein]' && zeilen.includes('Ziel=LODAS') && zeilen.includes('BeraterNr=28547') && zeilen.includes('MandantenNr=90909'));
     pruefe('Satzbeschreibung u_lod_bwd_buchung_standard', zeilen.includes('1;u_lod_bwd_buchung_standard;abrechnung_zeitraum#bwd;bs_wert_butab#bwd;bs_nr#bwd;la_eigene#bwd;pnr#bwd;'));
     const bew = zeilen.slice(zeilen.indexOf('[Bewegungsdaten]') + 1).filter(Boolean);
-    /* Runde ###: Urlaubstage (71) mit EINER Nachkommastelle — laut Handbuch
+    /* Runde 271: Urlaubstage (71) mit EINER Nachkommastelle — laut Handbuch
        höchstens „99,5". Bis dahin stand hier für alle Zeilen \d{2}. */
     pruefe('Bewegungsdaten: Stunden je Person, Schlüssel 01, Lohnart 200', bew.length > 0 && bew.every(z => /^1;01\.\d{2}\.\d{4};(\d+,\d{2};01;200|\d{1,2},[05];71;);\d+;$/.test(z)), bew.slice(0, 3).join(' | '));
     pruefe('ein Monat je Datei (alle Zeilen derselbe Zeitraum)', new Set(bew.map(z => z.split(';')[1])).size === 1);
     pruefe('keine Namen in der Datei', !/[A-Za-z]{3,}/.test(bew.join('')));
-    /* ── Runde ###: gegen das DATEV-Schnittstellenhandbuch LODAS (SSH,
+    /* ── Runde 271: gegen das DATEV-Schnittstellenhandbuch LODAS (SSH,
        45. Auflage 1/2016, Fach 2 und 4) — die einzige Fassung, die von
        hier erreichbar war. Ein echtes LODAS gibt es hier nicht. ── */
     const felder = zeilen.find(z => z.startsWith('1;u_lod_bwd_buchung_standard;')).split(';').filter(Boolean).length - 2;
@@ -297,7 +297,7 @@ async function zuVerwaltungZeiten(p) {
     pruefe('ohne Skriptfehler (DATEV)', !p._fehler.length, p._fehler.join(' | '));
     await p.close();
   }
-  /* GEGENPROBE: eine Personalnummer, die VOR Runde ### gespeichert wurde
+  /* GEGENPROBE: eine Personalnummer, die VOR Runde 271 gespeichert wurde
      und zu lang ist (7 Ziffern). Sie steht schon in der Ablage, bevor die
      App die Einstellungen zum ersten Mal liest — so wie im Bestand. Die
      Demo hält ihre Daten nur im Speicher; ein Neuladen hätte sie
