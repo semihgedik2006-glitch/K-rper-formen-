@@ -63,6 +63,21 @@ Leute im Studio, nicht für Entwickler. Nach der Auslieferung steht auf
 der Startseite oben „Neu"; die ganze Liste liegt unter „Alles → Was ist
 neu". Ein PR ohne Eintrag ist nicht fertig.
 
+> „sorg bitte dafür das diese was ist neu nachrichten mehr wie
+> patchnotes aussehen und nicht wie ki infos die nur an mich gerichtet
+> sind eigentlich" (25.10.2026)
+
+**Patchnotes, nicht Erklärtexte** (`tests/test-neuigkeiten.js` prüft es):
+- `art:'neu' | 'besser' | 'fix'` an jedem Eintrag (Marke „Neu",
+  „Verbessert", „Behoben").
+- Titel ≤ 60 Zeichen, sagt **was** sich ändert — kein Werbesatz.
+- 1–3 Punkte (höchstens 4), je ≤ 140 Zeichen: was man sieht und wo.
+  Kein „warum", keine Vorgeschichte, keine Tipps à la „Zu viel? …".
+- Kein Technik- oder KI-Wort (Modell, Kontingent, Worker, Prompt,
+  Neuronen, ChatGPT …), keine Rundennummer, niemand persönlich
+  angesprochen (kein Semih, kein Claude). Die Begründung gehört in
+  `docs/FORTSCHRITT.md`, nicht in die App.
+
 ## Mergen
 
 > „Du kannst immer selber mergen statt auf mich zu warten."

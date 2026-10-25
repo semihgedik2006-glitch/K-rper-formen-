@@ -23373,7 +23373,109 @@ Zerlegung per Trace (`devtools.timeline`); Selektor-Statistik per
 `disabled-by-default-blink.debug` (1.819 Selektoren mit Treffern, keiner
 über 3 ms in fünf Wechseln).
 
-## Runde 273 — Schulung: Nachweis je Person für die Leitung; Kontrast in allen drei Stilen (25.10.2026)
+## Runde 273 — „Was ist neu" als Patchnotes (25.10.2026)
+
+Aus dem Betrieb: „sorg bitte dafür das diese was ist neu nachrichten
+mehr wie patchnotes aussehen und nicht wie ki infos die nur an mich
+gerichtet sind eigentlich".
+
+**Was gefunden wurde.** Die Einträge seit dem 22.10. waren
+Erklärtexte: lange Sätze mit Vorgeschichte („weil …"), Begriffe aus der
+Technik (Rechenkontingent, Modell, „wie ChatGPT"), Tipps zum Abschalten
+in jedem zweiten Eintrag und Sätze, die sich an Semih richteten. Für die
+Leute im Studio ist das Lesestoff, kein Überblick. Dazu zeigte ein
+Eintrag (`schichtplan-feinschliff`, `wo:'team'`) auf ein Ziel, das es
+nicht gibt — `test-neuigkeiten` war auf `main` rot.
+
+**Was gebaut wurde.**
+- `renderNeu()` gruppiert nach Tagen („Update · 25. Oktober", Zahl der
+  Änderungen, „neu für dich"). Jede Änderung ist eine aufklappbare
+  Zeile (`<details>`) mit Art-Marke und kurzem Titel; Einzelheiten und
+  „Zeigen ›" liegen darunter. Das jüngste Update und alles Ungesehene
+  ist offen, der Rest zu — 181 Einträge sind so in Sekunden überflogen.
+- Neues Feld `art` (`neu` / `besser` / `fix` → „Neu", „Verbessert",
+  „Behoben"). Ältere Einträge ohne `art` bekommen die Marke aus dem
+  Titel geraten (`neuArt`), ihr Text bleibt, wie er war.
+- Die 89 Einträge seit dem 22.10. neu geschrieben: Titel ≤ 60 Zeichen,
+  1–4 kurze Punkte, was man sieht und wo. ids und `wo` unverändert, damit
+  „neu für dich" (gemerkt per id) nicht neu aufleuchtet.
+- `wo:'team'` → `wo:'team:schicht'`.
+- Am Rechner ist das Fenster 640 px breit (vorher 420), Marken und
+  Punkte stehen bündig untereinander; am Handy rücken die Punkte nach
+  links.
+
+**Warum so.**
+- Marken in Akzent/neutral, **nicht** rot/grün: Statusfarben nur für
+  Status. „Behoben" ist keine Warnung.
+- Aufklappen statt kürzen allein: die Einzelheiten bleiben für die, die
+  sie suchen, aber der erste Blick zeigt nur Titel.
+- Die Regel steht jetzt in `CLAUDE.md` und wird im Test erzwungen (Art,
+  Längen, verbotene Wörter ab 22.10.) — sonst schreibt die nächste
+  Sitzung wieder Erklärtexte.
+- „Stand der App:" bleibt als Anfang der Zeile (test-block-d prüft es);
+  dahinter steht jetzt das Datum und „N Änderungen neu für dich".
+
+**Gemessen** (`test-neuigkeiten`, Hit-Test): jede Zeile und jedes
+„Zeigen ›" ≥ 44 × 44 und im Bild bei 320 / 390 / 430 / 820 / 1280 /
+1440 / 1920 px, normal und kompakt; Zeile am Handy 230–364 px breit,
+am Rechner 590–604 × 44; keine Marke läuft über, das Fenster schiebt
+nirgends quer (bei 320 px taten es lange Wörter wie
+„Unterweisungsnachweis" — jetzt mit Silbentrennung).
+
+**Geprüft:** `test-neuigkeiten` 12, `test-block-d` 28.
+
+## Runde 274 — Uni und Weiterbildung melden, Fragen finden, LogX Studio für Studio (26.10.2026)
+
+**Aus dem Betrieb:** „fragen zum plan finde ich nicht und die logx
+screenshots kann ich dir nur von hürth geben … wir ja 14 studios sind und
+ich nur die sehe die für mich relevant sind … es wäre cool wenn der
+schichtplan den du erstellst auch so aufgeteilt ist für studio für studio
+… bei der abwesendheit fehlt das man sich für uni oder sonstige
+weiterbildungen auch melden kann was bei uns aber auch sehr wichtig ist“.
+
+**Was gebaut ist**
+- **Abwesenheit: „Uni / Berufsschule“ und „Weiterbildung“** (`type:
+  'schule'` / `'weiterbildung'`). Wie Urlaub ein Antrag — die Regel lässt
+  Selbstgenehmigung nur bei „krank“ zu, und daran ändert sich nichts; die
+  Regeln prüfen die Art nicht, also keine Regeländerung nötig. Der Planer
+  nimmt jede Abwesenheit als harte Grenze, also auch diese; im Grund
+  heisst sie jetzt „Uni/Schule“ bzw. „Weiterbildung“ statt „Urlaub“
+  (`abwText` im Rechenkern). Die Bezeichnungen standen an vier Stellen
+  einzeln — jetzt `ABW_ART`/`ABW_NAME` für alle. Die Abwesenheitsliste
+  zeigte die Art bisher **gar nicht**; jetzt steht sie vor dem Datum.
+  **Nicht** gebaut: Uni nur für einige Stunden eines Tages (z. B. „Di
+  8–12“). Regelmässige Uni-Zeiten gehören in die Spalte „Sperrzeiten“ der
+  Excel-Vorlage; einzelne Tage hier.
+- **„Fragen zum Plan“ oben im Kopf** des Planers: eine Zeile mit „x von 24
+  beantwortet – noch n offen“; ein Tipp klappt die Karte auf, springt in die
+  erste Gruppe mit offener Frage und rollt hin. Vorher stand die Karte
+  zugeklappt unter „So fängst du an“ bzw. unter den Schritten.
+- **LogX Studio für Studio:** „nur dieses Studio“ kopiert das gewählte
+  Studio; „alle Studios“ ordnet nach Studio, dann Datum (`alsTabelle(plan,
+  studio, { jeStudio:true })`) — so überträgt man Block für Block. Die
+  bisherige Ordnung nach Datum bleibt der Standard des Rechenkerns (der
+  Rechentest prüft sie).
+
+**Zu den LogX-Bildschirmfotos nur aus Hürth:** reichen. Gebraucht wird
+das *Format* (Felder, Kürzel, Import), und das ist in jedem Studio gleich.
+
+**Geprüft**
+- test-schichtplan-raster, Abschnitt 14 (10 neu, 120 gesamt): Arten in der
+  Auswahl; Uni melden → Antrag mit Art in der Liste und „Uni/Schule
+  (beantragt)“ im Raster; Fragen-Zeile ohne Rollen im Bild, ein Tipp öffnet
+  und rollt hin; „nur dieses Studio“ nur dessen Zeilen; „alle“ genau ein
+  Block je Studio (14 Blöcke, 582 Zeilen).
+- test-schichtplaner-rechnung (+3, 85): Ausfall „Uni/Schule“ bzw.
+  „Weiterbildung“; beim Neu-Erstellen nicht eingeteilt. Gegenprobe: ohne
+  `abwText` → „Urlaub“ → rot.
+- test-schichtplaner, test-team-bereich7, test-gehirn (327), test-doppelte-
+  namen, test-knoepfe, test-team-woche, test-tausch: grün.
+- **test-gestaltung rot — auf main genauso** (in einem unveränderten
+  Stand von main nachgemessen, dieselben Meldungen): „FESTER ABSTAND 3px
+  (2×), 6px, 2px“ und „line-height 1.35“ stammen aus Runde 273 („Was ist
+  neu“ als Patchnotes, `.neu-eintrag`). Nicht von hier, nicht angefasst.
+
+## Runde 275 — Schulung: Nachweis je Person für die Leitung; Kontrast in allen drei Stilen (25.10.2026)
 
 Aus dem Betrieb, 25.10.2026: „jo mach weiter und teste".
 

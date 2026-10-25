@@ -141,7 +141,7 @@ const DATUM = /^\d{2}\.\d{2}\.\d{4}$/;
   pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
   await p.close();
 
-  /* ── Runde 273: die Leitung druckt das Blatt je Teilnehmer ──
+  /* ── Runde 275: die Leitung druckt das Blatt je Teilnehmer ──
      „das was leichter ist für leute ohne zugang": Jamie Kurz hat kein
      Konto und zwei Module bestanden. */
   console.log('\n── Leitung: Nachweis je Teilnehmer ──');
