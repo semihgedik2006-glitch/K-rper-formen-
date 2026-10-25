@@ -51,6 +51,11 @@
     var j = new Date(Date.UTC(d.getUTCFullYear(), 0, 1, 12));
     return d.getUTCFullYear() + '-W' + ('0' + Math.ceil(((d - j) / 864e5 + 1) / 7)).slice(-2);
   }
+  /* Wie eine Abwesenheit im Grund heisst. Uni/Schule und Weiterbildung
+     seit Runde 274; alles andere (Urlaub, frei) heisst wie bisher. */
+  function abwText(art) {
+    return art === 'krank' ? 'krank' : (art === 'schule' ? 'Uni/Schule' : (art === 'weiterbildung' ? 'Weiterbildung' : 'Urlaub'));
+  }
   function minuten(hhmm) { var p = String(hhmm || '0:0').split(':'); return (+p[0]) * 60 + (+p[1] || 0); }
   function dauerStd(von, bis) {
     var m = minuten(bis) - minuten(von); if (m <= 0) m += 1440;
@@ -189,7 +194,7 @@
       var studiosP = [p.haupt].concat(p.studios || []);
       if (studiosP.indexOf(pl.studio.key) < 0) return 'anderes Studio';
       if (pl.besetzt.indexOf(p.id) >= 0) return 'schon in dieser Schicht';
-      if (abwesend[p.id] && abwesend[p.id][d]) return abwesend[p.id][d] === 'krank' ? 'krank' : 'Urlaub';
+      if (abwesend[p.id] && abwesend[p.id][d]) return abwText(abwesend[p.id][d]);
       if (p.ab && d < p.ab) return 'fängt erst am ' + p.ab.split('-').reverse().join('.') + ' an';
       if (p.bis && d > p.bis) return 'hört am ' + p.bis.split('-').reverse().join('.') + ' auf';
       if (s.tage[d]) return 'schon eingeteilt';
@@ -374,7 +379,7 @@
         if (!p) return;
         if (!pl) { hinweise.push('Feste Einteilung ' + p.name + ' am ' + datum + ': diese Schicht gibt es an dem Tag nicht (zu oder kein Schichttag)'); return; }
         var abw = k.abwesend[p.id] && k.abwesend[p.id][datum];
-        if (abw) { hinweise.push(p.name + ' ist am ' + datum + ' fest eingeplant, aber ' + (abw === 'krank' ? 'krank' : 'im Urlaub') + ' — der Planer sucht Ersatz'); return; }
+        if (abw) { hinweise.push(p.name + ' ist am ' + datum + ' fest eingeplant, aber ' + (abw === 'krank' ? 'krank' : (abw === 'schule' ? 'in Uni/Schule' : (abw === 'weiterbildung' ? 'in der Weiterbildung' : 'im Urlaub'))) + ' — der Planer sucht Ersatz'); return; }
         if (k.stand[p.id].tage[datum]) return;
         /* Fest heisst: die Chefin hat entschieden. Wünsche und Höchsttage
            zählen hier nicht; Ruhezeit und Jugendschutz schon. */
@@ -495,7 +500,7 @@
     return plan.einsaetze.filter(function (x) { return abw[x.id] && abw[x.id][x.datum]; }).map(function (x) {
       var vorschlag = ersatz(e, plan, { datum: x.datum, studio: x.studio, schicht: x.schicht, ohne: x.id })
         .filter(function (c) { return !c.grund && c.id !== x.id; }).slice(0, 3);
-      return { einsatz: x, art: abw[x.id][x.datum] === 'krank' ? 'krank' : 'Urlaub', vorschlag: vorschlag };
+      return { einsatz: x, art: abwText(abw[x.id][x.datum]), vorschlag: vorschlag };
     }).sort(function (a, b) { return a.einsatz.datum.localeCompare(b.einsatz.datum); });
   }
 
@@ -504,10 +509,14 @@
      oder einer Web-Tabelle in getrennten Zellen. Welche Spalten LogX
      wirklich braucht, ist noch offen (Frage 19/20) — bis dahin die
      naheliegende Reihenfolge. */
-  function alsTabelle(plan, studioKey) {
+  /* optionen.jeStudio (Runde 274): erst nach Studio, dann nach Datum
+     — „Studio für Studio", so wie man in LogX überträgt. */
+  function alsTabelle(plan, studioKey, optionen) {
+    var jeStudio = !!(optionen && optionen.jeStudio);
     var zeilen = [['Datum', 'Tag', 'Studio', 'Schicht', 'Beginn', 'Ende', 'Mitarbeiter'].join('\t')];
     plan.einsaetze.filter(function (x) { return !studioKey || x.studio === studioKey; })
       .slice().sort(function (a, b) {
+        if (jeStudio) return a.studioName.localeCompare(b.studioName, 'de') || a.datum.localeCompare(b.datum) || a.von.localeCompare(b.von);
         return a.datum.localeCompare(b.datum) || a.studioName.localeCompare(b.studioName, 'de') || a.von.localeCompare(b.von);
       }).forEach(function (x) {
         var d = x.datum.split('-');
