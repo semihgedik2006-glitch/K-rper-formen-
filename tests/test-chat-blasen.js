@@ -10,14 +10,18 @@
    Geprüft wird im Stil Formi bei 320 / 390 / 430 / 820 / 1280 / 1440 /
    1920 px, in Dunkel und Hell bei 390 und 1440 px:
     1. Blasen ohne Rahmen, rund (≥ 18 px an der freien Ecke).
-    2. Eigene Blase in der Akzentfarbe; Schrift darauf an Bildpunkten
-       ≥ 4,5 : 1.
+    2. Eigene Blase im Blau von iMessage (--blase-eigen, seit Runde 277;
+       vorher die Akzentfarbe); Schrift darauf an Bildpunkten ≥ 4,5 : 1.
     3. Name · Studio und Uhrzeit stehen ÜBER der fremden Blase, die
        Uhrzeit und Häkchen UNTER der eigenen — und überdecken keine
        andere Blase. Name an Bildpunkten ≥ 4,5 : 1.
-    4. Eine eigene Folge rückt zusammen (≤ 3 px), die Ecke zur eigenen
-       Seite ist klein; Häkchen nur unter der letzten, im Dokument aber
-       an jeder (test-gelesen-haken liest sie).
+    4. Eine eigene Folge rückt zusammen (≤ 3 px). Seit Runde 277 wie bei
+       iMessage: alle Ecken bleiben rund (≥ 18 px), nur die LETZTE der
+       Folge trägt den Schwanz (::after), die davor keinen. Vorher waren
+       die Ecken zur eigenen Seite klein (≤ 8 px) — das ist WhatsApp; aus
+       dem Betrieb, 25.10.2026: „das die chats wie imassage funktionieren
+       sehe ich leider noch nicht so richtig". Häkchen nur unter der
+       letzten, im Dokument aber an jeder (test-gelesen-haken liest sie).
     5. Das Menü steht an der Nachricht: ganz im Bild, die Vorschau deckt
        die Blase (wenn Platz ist), Reaktionen und Einträge ≥ 44 × 44 per
        Hit-Test in „normal" und „kompakt". Daneben tippen und Esc
@@ -137,7 +141,7 @@ async function bildpunkt(p, x, y) {
           metaUeber,
           eigen: !!letzte,
           eigenFlaeche: st ? st.backgroundColor : null,
-          akzent: st ? cs(document.querySelector('#chatScroll')).getPropertyValue('--accent').trim() : null,
+          akzent: st ? (() => { const d = document.createElement('i'); d.style.color = 'var(--blase-eigen)'; letzte.appendChild(d); const c = cs(d).color; d.remove(); return c; })() : null,
           eigenText: text ? cs(text).color : null,
           textPunkt: text ? (() => { const r = text.getBoundingClientRect(); return { x: r.left + 2, y: r.top + r.height / 2, xr: r.right + 4 }; })() : null,
           metaUnter: lm ? (() => { const me = R(lm), mr = R(letzte); return { unter: me.t >= mr.b - 1, frei: !ueberlappt(me), sicht: sicht(lm) }; })() : null,
@@ -145,6 +149,8 @@ async function bildpunkt(p, x, y) {
             luecke: Math.round(R(letzte).t - R(vorletzte).b),
             ecke: parseFloat(cs(vorletzte).borderBottomRightRadius),
             obenEcke: parseFloat(cs(letzte).borderTopRightRadius),
+            schwanzLetzte: getComputedStyle(letzte, '::after').content !== 'none',
+            schwanzVorletzte: getComputedStyle(vorletzte, '::after').content !== 'none',
             vorletzteMetaSicht: vm ? sicht(vm) : false,
             hakenImDokument: !!vorletzte.querySelector('[data-haken]'),
           } : null,
@@ -193,7 +199,7 @@ async function bildpunkt(p, x, y) {
       }));
       pruefe('eigene Nachricht vorhanden', a.eigen);
       if (a.eigen) {
-        pruefe('eigene Blase in der Akzentfarbe (' + a.eigenFlaeche + ')', rgb(a.eigenFlaeche).join() === rgb(a.akzent).join(), a.akzent);
+        pruefe('eigene Blase im iMessage-Blau (' + a.eigenFlaeche + ')', !!a.akzent && rgb(a.eigenFlaeche).join() === rgb(a.akzent).join(), a.akzent);
         if (a.textPunkt) {
           /* Links neben dem Text, im Innenabstand der Blase: rechts schwebt bei
              320 px Formis Kugel (fest) über der untersten eigenen Blase. */
@@ -216,7 +222,8 @@ async function bildpunkt(p, x, y) {
       pruefe('zwei eigene hintereinander bilden eine Folge', !!a.folge);
       if (a.folge) {
         pruefe('die Folge rückt zusammen (' + a.folge.luecke + ' px ≤ 3)', a.folge.luecke >= 0 && a.folge.luecke <= 3);
-        pruefe('die Ecken zur eigenen Seite sind klein (' + a.folge.ecke + ' / ' + a.folge.obenEcke + ' px ≤ 8)', a.folge.ecke <= 8 && a.folge.obenEcke <= 8);
+        pruefe('die Ecken in der Folge bleiben rund (' + a.folge.ecke + ' / ' + a.folge.obenEcke + ' px ≥ 18)', a.folge.ecke >= 18 && a.folge.obenEcke >= 18);
+        pruefe('nur die letzte der Folge trägt den Schwanz', a.folge.schwanzLetzte && !a.folge.schwanzVorletzte, JSON.stringify(a.folge));
         pruefe('Häkchen nur unter der letzten zu sehen, an der vorletzten im Dokument', !a.folge.vorletzteMetaSicht && a.folge.hakenImDokument, JSON.stringify(a.folge));
       }
 

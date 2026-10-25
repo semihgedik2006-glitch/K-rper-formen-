@@ -623,6 +623,17 @@ var USERS = [
             return { id: d.id, data: function () { return d; } };
           })));
         }
+        /* „… schreibt" (Runde 277): channels/<k>/tippt und dms/<id>/tippt.
+           Leer, ausser ein Durchlauf legt window.__tippt[<k oder id>] hin.
+           Dieselbe Weiche steht unten in onSnapshot — die App hört mit
+           onSnapshot zu, get() ist die zweite Haelfte (CLAUDE.md). */
+        var gtp = /^(channels|dms)\/(.+)\/tippt$/.exec(path);
+        if (gtp) {
+          var tl = ((window.__tippt || {})[gtp[2]] || []);
+          return Promise.resolve(makeSnap(tl.map(function (d) {
+            return { id: d.uid, data: function () { return d; } };
+          })));
+        }
         var gm = /^channels\/(.+)\/messages$/.exec(path);
         var gh = /^studios\/(.+)\/handovers$/.exec(path);
         var list = gm ? (gm[1] === 'allgemein' ? MESSAGES : [])
@@ -753,6 +764,14 @@ var USERS = [
           var pl2 = ((window.__privat || {})[mp[1]] || []);
           try { cb(makeSnap(pl2.map(function (d) {
             return { id: d.id, data: function () { return d; } }; }))); }
+          catch (e) { console.error(e); }
+          return unsub();
+        }
+        var mtp = /^(channels|dms)\/(.+)\/tippt$/.exec(path);
+        if (mtp) {
+          var tl2 = ((window.__tippt || {})[mtp[2]] || []);
+          try { cb(makeSnap(tl2.map(function (d) {
+            return { id: d.uid, data: function () { return d; } }; }))); }
           catch (e) { console.error(e); }
           return unsub();
         }
