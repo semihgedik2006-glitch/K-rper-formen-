@@ -60,7 +60,10 @@ function kontrast(buf) {
   return Math.round(best * 100) / 100;
 }
 async function oeffne(b, w, h, theme) {
-  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
+  /* reducedMotion: sonst fällt nach „Geschafft" Konfetti über die
+     Ausschnitte — ein buntes Stück über dem Text ergibt einen Kontrast,
+     der mit der Schrift nichts zu tun hat (die Gegenprobe mass so 9,4). */
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h }, reducedMotion: 'reduce' });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());

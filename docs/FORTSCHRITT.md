@@ -23418,8 +23418,14 @@ Buchstaben, nicht ihre Ränder.
 | Hinweis | 13,0 | 12,15 | 10,42 |
 | Frage / „Richtig: …" | 17,61 | 16,46 | 16,76 |
 
-GEGENPROBE: Ein Hinweis in Hintergrundfarbe misst 1,02 bis 1,12 und fällt
+GEGENPROBE: Ein Hinweis in Hintergrundfarbe misst rund 1,01 und fällt
 durch. Die Messung misst also.
+
+Einmal mass dieselbe Gegenprobe 9,4. Grund war Konfetti nach
+„Geschafft", das über dem Ausschnitt lag. Ein buntes Stück über dem Text
+täuscht genauso einen guten Kontrast vor. Der Durchlauf misst deshalb mit
+„Bewegung reduzieren" (`reducedMotion`, dann kommt kein Konfetti). Danach
+lief er zweimal hintereinander mit denselben Werten.
 
 ### Geprüft
 
