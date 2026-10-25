@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-FjgYE7Hob8O7VBW58TGDkwp/qfUqWFt6yZxhx7VFONw='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-X2vCI3S3tq3mfmBEwr7hNC86IeliCgjvLXgWEaomBO8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2115,11 +2115,11 @@ body.neu #view-docs #docCatRow{margin-top:var(--s8)}
    sichtbar nichts. Mein Test hat das nicht gefunden, weil er die
    Klasse .show geprueft hat statt der Sichtbarkeit: die Klasse sass
    richtig, sie hatte nur keine Wirkung. */
-#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#schnellModal,#neuModal,#vorfallModal,#zfModal,#bestellModal,#aktionModal{
+#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#schnellModal,#neuModal,#findeModal,#vorfallModal,#zfModal,#bestellModal,#aktionModal{
   position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
   padding:var(--s20);background:var(--scrim);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#schnellModal.show,#neuModal.show,#vorfallModal.show,#zfModal.show,#bestellModal.show,#aktionModal.show{display:flex}
+#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#schnellModal.show,#neuModal.show,#findeModal.show,#vorfallModal.show,#zfModal.show,#bestellModal.show,#aktionModal.show{display:flex}
 /* Runde 146: der Link aus der Bestätigungs- oder Passwort-Mail. Er muss
    VOR der Anmeldung und über dem Startbild stehen (#splash 1000,
    #loadingWrap 999). */
@@ -9432,6 +9432,39 @@ body.neu .np-punkt{width:8px;height:8px;border-radius:var(--r-rund);background:v
 .neu-eintrag li{margin:var(--s2) 0}
 .ne-zeigen{min-height:44px}
 
+/* ── Findetest (Runde 265) ──
+   Die Uhr steht in der Kopfzeile als eigenes Stück zwischen Marke und
+   Profil (im Fluss, nicht darübergelegt – darübergelegt deckte sie bei
+   430 und 820 px den Schriftzug der Marke zu, und der ist ein Knopf). Unten lag sie in der ersten Fassung auf den Schnellzugriffen
+   von „Heute" – also auf einem der Wege, die sie messen soll. Am Handy
+   nur Sekunden und ein ×, am Rechner mit Ziel und Tipps. */
+.ft-zeile{display:flex;align-items:center;gap:var(--s12);padding:var(--s8) 0;border-top:1px solid var(--line)}
+.ft-zeile:first-child{border-top:none}
+.ft-zeile .ft-was{flex:1;min-width:0}
+.ft-zeile .ft-was b{display:block;font-size:var(--t-md)}
+.ft-zeile .ft-was i{display:block;font-style:normal;font-size:var(--t-xs);color:var(--text-2)}
+.ft-zeile .btn{min-height:44px;min-width:64px}
+.ft-ergebnis{margin:0 0 var(--s12);padding:var(--s8) var(--s12);border-radius:var(--r-md);
+  background:var(--bg-3);font-weight:700}
+.ft-fuss{display:flex;flex-wrap:wrap;gap:var(--s8);margin-top:var(--s12)}
+.ft-fuss .btn{min-height:44px}
+.ft-uhr{flex:0 1 auto;min-width:0;margin:0 auto;
+  display:flex;align-items:center;gap:var(--s4);
+  padding:0 0 0 var(--s12);border-radius:var(--r-rund);
+  background:var(--bg-2);border:1px solid var(--line-2);box-shadow:var(--e3)}
+.ft-uhr[hidden]{display:none}
+.ft-uhr-txt{min-width:0;display:flex;flex-direction:column;line-height:var(--lh-1);
+  font-variant-numeric:tabular-nums;font-weight:700}
+.ft-uhr-txt b,#ftUhrTipps,.ft-auf-wort{display:none}
+.ft-uhr .btn{min-height:44px;min-width:44px;padding:0 var(--s10);border:none;background:none;box-shadow:none;flex:0 0 auto}
+@media(min-width:821px){
+  .ft-uhr{max-width:420px;padding-left:var(--s16)}
+  .ft-uhr-txt{font-weight:400}
+  .ft-uhr-txt b{display:block;font-size:var(--t-sm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ft-uhr-txt > span{font-size:var(--t-xs);color:var(--text-2)}
+  #ftUhrTipps,.ft-auf-wort{display:inline}
+}
+
 /* ── Schnellzugriffe (Runde 103) ──
    Vier gleich breite Felder: drei Ziele und „Anpassen". Zeichen über
    dem Wort, weil bei 320px ein Feld nur 66px breit ist — daneben
@@ -13303,6 +13336,25 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
     <p class="hint" style="margin:0 0 12px" id="neuStand"></p>
     <div id="neuListe"></div>
   </div>
+</div>
+
+<!-- Findetest (Runde 265): die Stoppuhr zum Selbsttesten. -->
+<div id="findeModal" role="dialog" aria-modal="true" aria-labelledby="ftTitel">
+  <div class="pm-box">
+    <button class="lb-close" id="ftClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <h3 id="ftTitel" style="margin-bottom:4px">Findetest</h3>
+    <p class="hint" style="margin:0 0 12px">Gib das Handy jemandem aus dem Team. Ein Tipp auf „Los“ startet auf „Heute“ die Uhr; sie hält von selbst an, wenn das Ziel offen ist. Suche und Formi bitte nicht benutzen.</p>
+    <p class="ft-ergebnis" id="ftErgebnis" hidden></p>
+    <div id="ftListe"></div>
+    <div class="ft-fuss">
+      <button type="button" class="btn btn-ghost btn-sm" id="ftKopieren">Ergebnisse kopieren</button>
+      <button type="button" class="btn btn-ghost btn-sm" id="ftLeeren">Ergebnisse löschen</button>
+    </div>
+  </div>
+</div>
+<div class="ft-uhr" id="ftUhr" hidden role="status">
+  <span class="ft-uhr-txt"><b id="ftUhrZiel"></b><span><span id="ftUhrZeit">0 s</span><span id="ftUhrTipps"></span></span></span>
+  <button type="button" class="btn btn-ghost btn-sm" id="ftAufgeben" aria-label="Aufgeben"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg><span class="ft-auf-wort">Aufgeben</span></button>
 </div>
 
 <!-- DATENSCHUTZVORFALL MELDEN (P-02, Runde 113). Aus dem Betrieb:
@@ -19349,7 +19401,7 @@ var DIALOGE = ['profileModal','personModal','devModal','pollModal','todoEditModa
                'aboModal','zugangModal','ownTodoModal','probeModal',
                'fwdModal','keysModal','rechtModal','searchOverlay',
                'msgSheet','todoSheet','docSheet','werkbankModal','glockeModal',
-               'putzModal','schnellModal','neuModal','vorfallModal','zfModal',
+               'putzModal','schnellModal','neuModal','findeModal','vorfallModal','zfModal',
                'bestellModal','shiftSheet'];
 
 function closeAllModals(){
@@ -22652,6 +22704,9 @@ function allesGruppen(){
     /* Runde 103: jede Auslieferung, nachvollziehbar. */
     {label:'Was ist neu', neu:true, roh:ikon('stern'),
      was: NEUIGKEITEN.length ? 'Zuletzt: '+NEUIGKEITEN[0].titel : 'Was sich zuletzt geändert hat'},
+    /* Runde 265: die Stoppuhr zum Selbsttesten. */
+    {label:'Findetest', findetest:true, roh:ikon('uhr'),
+     was:'Stoppen, wie lange man zu einem Ziel braucht'},
     /* Runde 113 (P-02). Für jeden, nicht nur die Leitung: eine Datenpanne
        bemerkt oft, wer am Empfang sitzt. */
     /* Seit Runde 126 „Problem melden" — jedes Problem, nicht nur der
@@ -22720,6 +22775,7 @@ function allesZielAttr(e){
   return ' data-alles="'+esc(e.view||'')+'"'+
     (e.hilfe   ?' data-al-hilfe="1"':'')+
     (e.neu     ?' data-al-neu="1"':'')+
+    (e.findetest?' data-al-findetest="1"':'')+
     (e.vorfall ?' data-al-vorfall="1"':'')+
     (e.teamtab?' data-al-teamtab="'+esc(e.teamtab)+'"':'')+
     (e.ichtab ?' data-al-ichtab="'+esc(e.ichtab)+'"':'')+
@@ -22752,6 +22808,7 @@ function allesZiel(el){
      ist — also wird hier nicht gewechselt, sondern geöffnet. */
   if(el.getAttribute('data-al-hilfe')){ hilfeOeffnen(); return; }
   if(el.getAttribute('data-al-neu')){ neuOeffnen(); return; }
+  if(el.getAttribute('data-al-findetest')){ findeOeffnen(); return; }
   if(el.getAttribute('data-al-vorfall')){ vorfallOeffnen(); return; }
   showView(view);
   var t=el.getAttribute('data-al-teamtab');
@@ -22795,6 +22852,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-25-findetest', datum:'25.10.2026', titel:'Findetest: stoppen, wie schnell man etwas findet', wo:'home', punkte:[
+    'Unter „Alles → Was muss ich wissen? → Findetest" gibt es eine Stoppuhr. Du wählst ein Ziel, zum Beispiel „Ein Gerät defekt melden", und tippst auf „Los".',
+    'Die Uhr startet auf „Heute" und hält von selbst an, sobald das Ziel offen ist. Oben in der Kopfzeile siehst du die Sekunden. Mit „Aufgeben" brichst du ab.',
+    'Die letzten fünf Zeiten je Ziel bleiben auf dem Gerät. Mit „Ergebnisse kopieren" kannst du sie weiterschicken, zum Beispiel im Chat.'
+  ]},
   { id:'2026-10-24-iphone-rand', datum:'24.10.2026', titel:'Am iPhone nichts mehr abgeschnitten', wo:'home', punkte:[
     'Auf iPhones mit Home-Leiste (der Strich unten) lag die unterste Reihe jeder Seite halb unter der Leiste – auf „Heute" die Schnellzugriffe. Jetzt steht alles darüber, auch in der Dichte „kompakt".',
     'Hinweise unten (z. B. „Aufgaben-Erinnerung …") waren auf dem Handy breiter als der Bildschirm und am Anfang und Ende abgeschnitten. Jetzt brechen sie in zwei Zeilen um.',
@@ -23603,6 +23665,101 @@ function neuOeffnen(){
   neuPilleSetzen();
 }
 function neuSchliessen(){ var m=$('neuModal'); if(m) m.classList.remove('show'); }
+
+/* ══ FINDETEST (Runde 265) ═══════════════════════════════════════════
+   Aus dem Betrieb, 23.10.2026, auf „Erst mit echten Leuten messen":
+   „ich kann leider nur selber testen aktuell". Also misst die App selbst:
+   ein Ziel wählen, „Los" – die Uhr läuft ab „Heute" und hält an, sobald
+   die Zielansicht offen ist. Gezählt werden Zeit und Tipps.
+
+   Die Uhr fragt alle 250 ms currentView ab, statt sich in showView zu
+   hängen: so bleibt der eine Weg durch showView unberührt, und kein
+   Fehler hier kann die Navigation stören.
+
+   Die Ergebnisse bleiben auf dem Gerät (PREFS.findetest) – es geht um
+   den Aufbau der App, nicht um die Person, die gesucht hat. */
+var FINDE_ZIELE = [
+  { id:'putz',   was:'Den Putzplan öffnen',          view:'putzplan' },
+  { id:'schicht',was:'Sehen, wer morgen arbeitet',   view:'team' },
+  { id:'dm',     was:'Jemandem direkt schreiben',    view:'dm' },
+  { id:'geraet', was:'Ein Gerät defekt melden',      view:'geraete' },
+  { id:'doku',   was:'Ein Dokument finden',          view:'docs' }
+];
+var _ft = null;
+function findeSek(ms){ return Math.max(1, Math.round(ms/1000)); }
+function findeRender(){
+  var box=$('ftListe'); if(!box) return;
+  var erg=PREFS.findetest||{};
+  box.innerHTML = FINDE_ZIELE.map(function(z){
+    var an = ansichtAn(z.view);
+    var r = (erg[z.id]||[])[0];
+    var info = !an ? 'Bei euch ausgeschaltet'
+      : (r ? (r.ok ? 'Zuletzt '+r.s+' s, '+r.t+' Tipp'+(r.t===1?'':'s') : 'Zuletzt aufgegeben nach '+r.s+' s') : 'Noch nicht gemessen');
+    return '<div class="ft-zeile"><span class="ft-was"><b>'+esc(z.was)+'</b><i>'+esc(info)+'</i></span>'+
+      (an ? '<button type="button" class="btn btn-primary btn-sm" data-ft-los="'+esc(z.id)+'">Los</button>' : '')+'</div>';
+  }).join('');
+  box.querySelectorAll('[data-ft-los]').forEach(function(b){
+    b.addEventListener('click', function(){ findeStart(b.getAttribute('data-ft-los')); });
+  });
+}
+function findeOeffnen(ergebnis){
+  var m=$('findeModal'); if(!m) return;
+  var e=$('ftErgebnis');
+  if(e){ e.hidden=!ergebnis; e.textContent=ergebnis||''; }
+  findeRender();
+  m.classList.add('show');
+}
+function findeSchliessen(){ var m=$('findeModal'); if(m) m.classList.remove('show'); }
+function findeTipp(ev){
+  if(!_ft) return;
+  var u=$('ftUhr'); if(u && u.contains(ev.target)) return;
+  _ft.tipps++;
+}
+function findeStart(id){
+  var z=FINDE_ZIELE.filter(function(x){ return x.id===id; })[0]; if(!z) return;
+  findeSchliessen();
+  closeAllModals();
+  showView('home');
+  _ft={ z:z, start:Date.now(), tipps:0 };
+  $('ftUhrZiel').textContent='Finde: '+z.was;
+  $('ftUhrZeit').textContent='0 s';
+  $('ftUhrTipps').textContent='';
+  /* Einmal in die Kopfzeile umhängen, gleich hinter die Marke. */
+  var uhr=$('ftUhr'), marke=$('tbHome');
+  if(marke && uhr.previousElementSibling!==marke) marke.parentNode.insertBefore(uhr, marke.nextSibling);
+  uhr.hidden=false;
+  document.addEventListener('pointerdown', findeTipp, true);
+  _ft.uhr=setInterval(function(){
+    if(!_ft) return;
+    var ms=Date.now()-_ft.start;
+    $('ftUhrZeit').textContent=Math.floor(ms/1000)+' s';
+    $('ftUhrTipps').textContent=' · '+_ft.tipps+' Tipp'+(_ft.tipps===1?'':'s');
+    if(currentView===_ft.z.view) findeEnde(true);
+  }, 250);
+}
+function findeEnde(ok){
+  if(!_ft) return;
+  var f=_ft; _ft=null;
+  clearInterval(f.uhr);
+  document.removeEventListener('pointerdown', findeTipp, true);
+  $('ftUhr').hidden=true;
+  var r={ ok:ok, s:findeSek(Date.now()-f.start), t:f.tipps, d:Date.now() };
+  var erg=PREFS.findetest||{};
+  erg[f.z.id]=[r].concat(erg[f.z.id]||[]).slice(0,5);
+  PREFS.findetest=erg; savePrefs();
+  if(ok) tick(8);
+  setTimeout(function(){
+    findeOeffnen(ok ? 'Geschafft: „'+f.z.was+'" in '+r.s+' s mit '+r.t+' Tipp'+(r.t===1?'':'s')+'.'
+                    : 'Aufgegeben: „'+f.z.was+'" nach '+r.s+' s.');
+  }, ok ? 600 : 0);
+}
+function findeText(){
+  var erg=PREFS.findetest||{};
+  return 'Findetest, '+new Date().toLocaleDateString('de-DE')+'\n'+FINDE_ZIELE.map(function(z){
+    var l=(erg[z.id]||[]).map(function(r){ return r.ok ? r.s+' s/'+r.t+' Tipps' : 'aufgegeben ('+r.s+' s)'; });
+    return z.was+': '+(l.length ? l.join(', ') : '–');
+  }).join('\n');
+}
 
 /* ══ AUSKUNFT NACH ART. 15 (P-10, Runde 114) ══════════════════════════
    Der Server (auskunftErstellen) sammelt, die App macht daraus EINE
@@ -55107,6 +55264,16 @@ function bindActions(){
   var vs=$('vfSenden'); if(vs) vs.addEventListener('click', vorfallSenden);
   var vm=$('vorfallModal'); if(vm) vm.addEventListener('click', function(e){ if(e.target===vm) vorfallSchliessen(); });
   var nm=$('neuModal'); if(nm) nm.addEventListener('click', function(e){ if(e.target===nm) neuSchliessen(); });
+  // ── Findetest (Runde 265) ──
+  var ftc=$('ftClose'); if(ftc) ftc.addEventListener('click', findeSchliessen);
+  var ftm=$('findeModal'); if(ftm) ftm.addEventListener('click', function(e){ if(e.target===ftm) findeSchliessen(); });
+  var fta=$('ftAufgeben'); if(fta) fta.addEventListener('click', function(){ findeEnde(false); });
+  var ftk=$('ftKopieren'); if(ftk) ftk.addEventListener('click', function(){
+    Promise.resolve(copyText(findeText())).then(function(){ toast('Ergebnisse kopiert'); }, function(){ toast('Kopieren ging nicht', true); });
+  });
+  var ftl=$('ftLeeren'); if(ftl) ftl.addEventListener('click', function(){
+    PREFS.findetest={}; savePrefs(); findeOeffnen(); toast('Ergebnisse gelöscht');
+  });
 
   // ── Schnellzugriffe wählen ──
   var szl=$('schnellListe');

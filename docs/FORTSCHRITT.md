@@ -22935,3 +22935,67 @@ Polster für Formi; sie bleibt als Wache.
 **Nicht getestet:** Safari am iPhone selbst. Der Rand ist nachgestellt,
 nicht gemessen; ob Safari 26 mit schwebender Adressleiste unten einen
 Rand meldet, zeigt nur das Gerät.
+
+## Runde 265 — Findetest: die Stoppuhr zum Selbsttesten (25.10.2026)
+
+Aus dem Betrieb, 23.10.2026, auf meinen Vorschlag „erst mit echten
+Leuten messen, dann umbauen": „ich kann leider nur selber testen
+akruell". Zugesagt war eine kleine Stoppuhr-Seite. Die anonyme Zählung,
+welche Seiten geöffnet werden, gibt es schon (`nutzAnsicht` in
+`showView`); sie musste nicht neu gebaut werden.
+
+**Was gebaut wurde**
+
+- „Alles → Was muss ich wissen? → Findetest": ein Fenster mit fünf
+  typischen Zielen (Putzplan, wer morgen arbeitet, Direktnachricht,
+  Gerät defekt melden, Dokument). Ziele, die eine Firma abgeschaltet
+  hat, stehen mit „Bei euch ausgeschaltet" da, ohne „Los".
+- „Los" schliesst alles, springt auf „Heute" und startet die Uhr. Sie
+  zählt Sekunden und Tipps (`pointerdown`, Fangphase, ohne die Uhr
+  selbst) und hält von selbst an, sobald `currentView` das Ziel ist.
+  Danach öffnet das Fenster wieder mit „Geschafft: … in 7 s mit 2
+  Tipps". „Aufgeben" (das × an der Uhr) merkt „aufgegeben".
+- Die letzten fünf Ergebnisse je Ziel stehen in `PREFS.findetest`, also
+  nur auf dem Gerät. „Ergebnisse kopieren" legt sie als Text in die
+  Zwischenablage, zum Weiterschicken.
+
+**Warum so**
+
+- **Am Ziel anhalten statt „Fertig" drücken lassen:** Wer drückt, misst
+  auch sein Zögern beim Drücken – und vergisst es manchmal. Die Ansicht
+  ist das, was sich sicher feststellen lässt.
+- **Abfragen alle 250 ms statt eines Hakens in `showView`:** Durch
+  `showView` geht jeder Weg der App. Ein Fehler im Test-Werkzeug soll
+  dort nichts stören können. 250 ms Ungenauigkeit sind bei Zeiten von
+  mehreren Sekunden ohne Belang.
+- **Auf dem Gerät, nicht in der Datenbank:** Es geht um den Aufbau der
+  App, nicht um die Person, die gesucht hat. Keine neue Sammlung, keine
+  neue Regel.
+- **Die Uhr in der Kopfzeile:** In der ersten Fassung lag sie unten
+  links über der Leiste – und damit auf den Schnellzugriffen von
+  „Heute", einem der Wege, die sie messen soll. Darübergelegt in der
+  Kopfzeile deckte sie bei 430 und 820 px den Schriftzug der Marke zu
+  (ein Knopf). Jetzt steht sie als eigenes Stück im Fluss der Kopfzeile
+  zwischen Marke und Profil: am Handy nur „12 s ×", am Rechner mit Ziel
+  und Tipps.
+- **Suche und Formi** sind nicht gesperrt, nur im Fenster ausgeschlossen
+  („bitte nicht benutzen"). Beide ersetzen jeden Weg; wer sie nimmt,
+  misst sie, nicht die Navigation.
+
+**Tests**
+
+- Neu: `test-findetest` (38 Zusicherungen, als Mitarbeiter): fünf
+  Ziele, jedes „Los" ≥ 44 × 44 in normal und kompakt; die Uhr steht auf
+  „Heute" im Bild, ihr × trifft ≥ 44 × 44, und sie liegt auf keinem
+  Bedienelement – geprüft wird jeder sichtbare Knopf, Link und Eintrag,
+  nicht eine Liste (die erste Liste hatte die Schnellzugriffe
+  übersehen) – bei 320 / 390 / 430 / 820 / 1280 / 1440 / 1920 px;
+  über „Alles → Geräte" hält sie nach 2 Tipps an, das Ergebnis übersteht
+  das Neuladen; „Aufgeben" und „Ergebnisse kopieren".
+- Bildschirmfotos bei 320, 430, 820, 1440, 1920 px angesehen. Die
+  „Los"-Knöpfe waren in der ersten Fassung hell auf hell (kein
+  `btn-primary`); im Test fiel das nicht auf, auf dem Bild sofort.
+
+**Nicht getestet:** am echten iPhone. Ob `pointerdown` dort jeden Tipp
+genau einmal zählt (auch beim Scrollen mit dem Finger: das zählt als
+Tipp), zeigt nur das Gerät.
