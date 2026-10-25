@@ -90,6 +90,14 @@ Workers AI, **nicht** über GitHub Actions.
   10.000 Neuronen 0,011 $ je 1.000). Dann die Grenzen per Variable hoch
   setzen.
 
+## Systemtext ausprobieren (ab 2.26)
+
+- `POST /api/probe {frage, system}` beantwortet mit einem eigenen
+  Systemtext; `{frage, zusatz}` hängt etwas an den echten an; `verlauf`
+  ([{text, antwort}]) spielt ein Gespräch vor. Nur Leitstand-Schlüssel,
+  nichts wird gespeichert, das Team bekommt immer den echten Text.
+- `POST /api/systemtext` liefert den echten Text zum Abwandeln.
+
 ## Variablen
 
 | Name | Wofür |

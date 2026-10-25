@@ -566,7 +566,7 @@ const ZUSTAND = () => {
       await wt(500);
       [...document.querySelectorAll('#side [data-group="g-team"]')].find(x => x.getClientRects().length).click(); await wt(1800);
       /* Die nächste Woche: dort ist kein Tag vorbei. Vergangene Tage ohne
-         Schicht haben seit Runde RUNDE_NR keine Leiste mehr. */
+         Schicht haben seit Runde 269 keine Leiste mehr. */
       document.getElementById('shiftNext').click(); await wt(300);
       return [...document.querySelectorAll('.wp-besetzt .wp-band')].map(x => x.getAttribute('aria-label'));
     });
@@ -620,7 +620,7 @@ const ZUSTAND = () => {
   }
 
   console.log('\n── 13. Feinschliff: leere Vergangenheit, geschlossen mit Schicht, zugeklappte Karten ──');
-  /* Runde RUNDE_NR — aus dem Betrieb: „mach weiter mit dem design“. */
+  /* Runde 269 — aus dem Betrieb: „mach weiter mit dem design“. */
   {
     const p = await oeffne(b, 'mitarbeiter', 1440, 900);
     const r = await p.evaluate(async () => {

@@ -1,5 +1,5 @@
 /**
- * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.25)
+ * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.26)
  * Cloudflare Worker: WhatsApp (Text + Sprachnachrichten), Studio-Chat-Schnittstelle,
  * Leitstand-Webseite, Speicher in D1, Antworten über Workers AI.
  *
@@ -51,10 +51,16 @@ const MAX_LAGE_ZEICHEN = 9000;
    das gesparte Kontingent geht ins Nachdenken. */
 export const KI_WISSEN_MAX = 5;
 const KI_WISSEN_ZEICHEN = 7000;
+/* 2.26: Einträge aus Schulungsfragen („Richtig ist: …") sind Antworten auf
+   eine Prüfungsfrage, keine Abläufe. Am 25.10. gab Formi auf „Gerät piept
+   dreimal" nur „schau unter Hilfe im Studio" — die Antwort der Schulungs-
+   frage. Sie kommen deshalb hinter die echten Abläufe. */
+export function istQuizEintrag(w) { return /^\s*Richtig ist:/.test(String(w && w.inhalt || "")); }
 export function kiWissen(wissen) {
   const raus = [];
   let z = 0;
-  for (const w of (wissen || []).slice(0, KI_WISSEN_MAX)) {
+  const liste = (wissen || []).filter(w => !istQuizEintrag(w)).concat((wissen || []).filter(istQuizEintrag));
+  for (const w of liste.slice(0, KI_WISSEN_MAX)) {
     const l = String(w.thema || "").length + String(w.inhalt || "").length;
     if (raus.length && z + l > KI_WISSEN_ZEICHEN) break;
     raus.push(w); z += l;
@@ -541,7 +547,7 @@ Fragt jemand, was du kannst, antworte IMMER aus dieser Liste — auch wenn im ST
 Fragt jemand, wie etwas geht, das in dieser Liste steht (z. B. Aufgabe anlegen, krank melden, Erinnerung), sag ihm, dass er es dir einfach hier im Formi-Fenster sagen kann, mit einem Beispielsatz (z. B. "Leg eine Aufgabe an: Briefkasten leeren in Hürth bis Freitag"). Aufgaben und Ankündigungen kann nur die Leitung anlegen. Das zählt als beantwortet: "art" "smalltalk".
 
 SO DENKST DU (still, vor jeder Antwort)
-1. Was will ${v || "die Person"} wirklich? Lies wie ein erfahrener Kollege, der die Situation vor Augen hat, nicht wie eine Suchmaschine. Umgangssprache, Tippfehler und halbe Sätze sind normal. Stell dir die Szene vor: Wer steht wo, was passiert gerade, was ist jetzt wichtig?
+1. Was will ${v || "die Person"} wirklich? Lies wie ein erfahrener Kollege, der die Situation vor Augen hat, nicht wie eine Suchmaschine. Umgangssprache, Tippfehler und halbe Sätze sind normal. Stell dir die Szene vor: Wer steht wo, was passiert gerade, was ist jetzt wichtig? Achte auf den Zeitpunkt: vor, während oder nach dem Training — nach dem Training stoppt man kein Training mehr.
 2. Ist es dringend (einem Kunden geht es schlecht, etwas ist kaputt, gleich kommt jemand)? Dann zuerst, was SOFORT zu tun ist.
 3. Passt ein Eintrag aus dem STUDIO-WISSEN zu GENAU dieser Situation? Die Einträge kommen aus einer Suche und sind oft nur ähnlich: ein Ablauf für Schwindel passt nicht zu Durchfall, einer für Krampf nicht zu Nasenbluten. Nutze nur, was wirklich passt; Unpassendes lässt du komplett weg und erwähnst es nicht.
 4. Fehlt dir etwas, das die Antwort wirklich ändern würde? Dann sag zuerst, was auf jeden Fall gilt, und stell am Ende EINE kurze, konkrete Rückfrage. Fehlt nichts Entscheidendes, frag nicht.
@@ -549,6 +555,10 @@ SO DENKST DU (still, vor jeder Antwort)
 
 SO ANTWORTEST DU
 - Wie ein Mensch, der neben einem steht: direkt auf den Punkt, natürliche Sätze, eigene Worte. Keine Floskeln, keine Belehrungen, keine Hinweise, nach denen niemand gefragt hat.
+- 2.26 (gemessen am 25.10. mit /api/probe): Kein Schluss-Absatz "Kurz gesagt …" und keine Zusammenfassung der eigenen Liste. Kein Lob für eine Frage ("Stark, dass du …").
+- Verweise nie NUR auf eine andere Stelle ("schau unter Hilfe im Studio", "frag die Leitung"), wenn du die Schritte kennst oder vernünftig ableiten kannst — gib sie selbst; der Verweis darf danach kommen.
+- Angemessen bleiben: die Leitung informieren, wenn es zählt; den Regionalleiter nur bei Verträgen, Kündigung, Pausen oder wenn das Wissen es ausdrücklich verlangt; 112 nur bei echten Warnzeichen — und die nennst du dann konkret.
+- Du sprichst die Person mit "du" an. Was sie einem Kunden sagen kann, steht als Zitat in der Sie-Form.
 - Deutsch, Du-Form. ${tonRegel}${charakter}
 - Abläufe als nummerierte Schritte in der Reihenfolge, in der man sie wirklich tut. Kein Markdown, keine Sternchen.
 - Länge nach Bedarf: eine einfache Frage kurz; wenn jemand etwas erklärt, geschrieben (Text, Mail, Post, Plan) oder durchdacht haben will, ausführlich und konkret — bis ca. 350 Wörter.
@@ -739,7 +749,7 @@ export function sparWissen(wissen) {
 
 function istKontingentFehler(e) { return /4006|neuron|allocation|quota/i.test(String(e && e.message || e)); }
 
-async function frageKI(env, { text, studio, wissen, verlauf, vorname, ton, kanal, lage, vorbilder, spar }) {
+async function frageKI(env, { text, studio, wissen, verlauf, vorname, ton, kanal, lage, vorbilder, spar, systemProbe }) {
   /* 2.24 spar: weniger mitschicken — die Eingabe ist der grösste Posten. */
   if (spar) {
     wissen = sparWissen(wissen);
@@ -754,7 +764,11 @@ async function frageKI(env, { text, studio, wissen, verlauf, vorname, ton, kanal
     : "(Zu dieser Nachricht steht nichts im Studio-Wissen.)";
   const v = vornameSauber(vorname) || "Mitarbeiter";
   const verlaufText = verlauf.length ? verlauf.map(x => `${v}: ${x.text}\nFormi: ${x.antwort}`).join("\n") : "";
-  const system = formiSystem({ ton, vorname, kanal });
+  /* 2.26: Nur /api/probe (Leitstand-Schlüssel) kann einen anderen
+     Systemtext mitgeben — so lässt sich ein neuer Text ausprobieren, ohne
+     dass Semih für jeden Versuch einspielen muss. Das Team bekommt immer
+     formiSystem. */
+  const system = systemProbe ? String(systemProbe).slice(0, 30000) : formiSystem({ ton, vorname, kanal });
   /* 2.19: Die Lage aus der App (nur, was diese Person ohnehin sieht) —
      nur im Gespräch mit der KI, nie gespeichert. */
   const lageText = lage ? kuerze(String(lage), MAX_LAGE_ZEICHEN) : "";
@@ -2049,6 +2063,7 @@ async function api(request, env, url) {
     if (pfad === "/api/lernlauf") return json(await lernlauf(env, { tests: 5, luecken: 5 }));
     /* 2.19: Probefrage aus dem Leitstand — dieselbe Antwort wie in der App,
        aber nichts wird gespeichert, keine offene Frage. Zeigt Modell und Zeit. */
+    if (pfad === "/api/systemtext") return json({ text: formiSystem({ ton: b.ton === "sachlich" ? "sachlich" : "locker", vorname: "Semih", kanal: "app" }) });
     if (pfad === "/api/probe") {
       const q = kuerze(String(b.frage || ""), 1000);
       if (!q) return json({ fehler: "frage fehlt" }, 400);
@@ -2057,9 +2072,12 @@ async function api(request, env, url) {
       const wissen = await findeWissen(env, q);
       const vorbilder = b.ohneBeispiele ? [] : await vorbilderLaden(env, q, wissen);
       try {
-        const e = await frageKI(env, { text: q, studio: "", wissen, verlauf: [], vorname: "Semih", ton: b.ton === "sachlich" ? "sachlich" : "locker", kanal: "app", lage: b.lage ? String(b.lage) : "", vorbilder, spar: !!b.spar });
+        const tonP = b.ton === "sachlich" ? "sachlich" : "locker";
+        const systemProbe = typeof b.system === "string" && b.system.trim() ? b.system
+          : (typeof b.zusatz === "string" && b.zusatz.trim() ? formiSystem({ ton: tonP, vorname: "Semih", kanal: "app" }) + "\n\n" + b.zusatz : "");
+        const e = await frageKI(env, { text: q, studio: "", wissen, verlauf: Array.isArray(b.verlauf) ? b.verlauf.slice(-5).map(x => ({ text: String(x.text || ""), antwort: String(x.antwort || "") })) : [], vorname: "Semih", ton: tonP, kanal: "app", lage: b.lage ? String(b.lage) : "", vorbilder, spar: !!b.spar, systemProbe });
         _denkenAus = false;
-        return json({ ms: Date.now() - t0, modell: _letztesModell, denken: b.ohneDenken ? "standard" : "low", wissen: wissen.map(w => ({ id: w.id, thema: w.thema })), beispiele: vorbilder.map(v => v.frage), ergebnis: e });
+        return json({ ms: Date.now() - t0, modell: _letztesModell, denken: b.ohneDenken ? "standard" : (denkenFuer(env).reasoning.effort), wissen: kiWissen(wissen).map(w => ({ id: w.id, thema: w.thema })), beispiele: vorbilder.map(v => v.frage), eigenerText: !!(b.system || b.zusatz), ergebnis: e });
       } catch (e) { _denkenAus = false; return json({ ms: Date.now() - t0, modell: _letztesModell, fehler: String(e && e.message || e).slice(0, 200) }, 502); }
     }
     if (pfad === "/api/vektoren") {
