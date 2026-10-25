@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-xfCc0D0X+WyLQHRnC1IuxCpbRYtRvXNtF3xkGE8AS9I='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-EVXBzmKk3Yy5gnyFbaczF1rxGWK8gSfuH0BDfO2yXhM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -9432,7 +9432,7 @@ body.neu .neu-pille[hidden]{display:none}
    test-neu-design). Die Liste bleibt unter „Alles → Was ist neu". */
 @media(max-height:640px){ body.neu .neu-pille{display:none} }
 body.neu .np-punkt{width:8px;height:8px;border-radius:var(--r-rund);background:var(--accent)}
-/* ── „Was ist neu" als Patchnotes (Runde 271) ──
+/* ── „Was ist neu" als Patchnotes (Runde 272) ──
    Aus dem Betrieb, 25.10.2026: „sorg bitte dafür das diese was ist neu
    nachrichten mehr wie patchnotes aussehen und nicht wie ki infos".
    Nach Tagen gruppiert („Update · 25. Oktober"); je Änderung eine Zeile
@@ -22841,6 +22841,11 @@ var NEUIGKEITEN = [
     'Kurze Titel, Einzelheiten zum Aufklappen.',
     'Zu finden unter Alles → Was ist neu.'
   ]},
+  { id:'2026-10-25-datev-handbuch', datum:'25.10.2026', art:'besser', titel:'DATEV-Export nach Handbuch geprüft', wo:'zeitteam', punkte:[
+    'Urlaubstage mit einer Nachkommastelle, wie LODAS es verlangt.',
+    'Personalnummern 1–5 Ziffern, Beraternummer 4–7; zu lange Nummern werden gemeldet.',
+    'Noch nicht in einem echten LODAS getestet – Probedatei fürs Lohnbüro liegt bereit.'
+  ]},
   { id:'2026-10-25-formi-redet', datum:'25.10.2026', art:'besser', titel:'Formi: natürlichere Antworten', wo:'gehirn', punkte:[
     'Antworten in normalen Sätzen, Listen nur noch für echte Abläufe.',
     'Keine Angebote mehr für Dinge, die Formi nicht kann.',
@@ -23744,7 +23749,7 @@ function vorfallSenden(){
     $('vfFehler').textContent=fnFehler(e)+' Wenn es nicht klappt: sofort der Geschäftsführung Bescheid sagen.';
   });
 }
-/* Runde 271: Patchnotes. `art` steht ab dem 22.10.2026 an jedem Eintrag;
+/* Runde 272: Patchnotes. `art` steht ab dem 22.10.2026 an jedem Eintrag;
    ältere Einträge raten sie aus dem Titel (nur für die Marke). */
 var NEU_ART = { neu:'Neu', besser:'Verbessert', fix:'Behoben' };
 function neuArt(n){
@@ -43216,8 +43221,8 @@ function datevFormHTML(){
   var leute=_zkKonto.zeilen;
   return '<details class="nachfrage zk-datev"'+(_datevOffen?' open':'')+' id="zkDatev">'+
     '<summary class="nachfrage-text">DATEV-Einstellungen</summary>'+
-    '<p class="hint">Alle Nummern bekommst du vom Lohnbüro. Die Datei ist nach dem DATEV-Handbuch (LODAS) gebaut, '+
-      'aber nicht gegen LODAS getestet – bitte einmal vom Lohnbüro mit einer Probedatei bestätigen lassen.</p>'+
+    '<p class="hint">Alle Nummern bekommst du vom Lohnbüro: Beraternummer 4–7 Ziffern, Mandant 1–5, Lohnart 1–4, Personalnummer 1–5 (so lang wie in LODAS). '+
+      'Die Datei ist nach dem DATEV-Handbuch (LODAS) gebaut, aber nicht in einem echten LODAS eingespielt – bitte einmal vom Lohnbüro in einen Testmandanten einspielen lassen.</p>'+
     '<div class="st-antrag-reihe">'+
       '<div class="field"><label for="dvBerater">Beraternummer</label><input class="inp" id="dvBerater" inputmode="numeric" maxlength="7" value="'+esc(d.beraterNr||'')+'" /></div>'+
       '<div class="field"><label for="dvMandant">Mandantennummer</label><input class="inp" id="dvMandant" inputmode="numeric" maxlength="5" value="'+esc(d.mandantenNr||'')+'" /></div>'+
@@ -43226,24 +43231,37 @@ function datevFormHTML(){
     '<label class="ich-schalter"><input type="checkbox" id="dvUrlaub"'+(d.urlaubstage?' checked':'')+' /><span>Urlaubstage mitschicken (Schlüssel 71)</span></label>'+
     '<div class="zk-datev-leute">'+leute.map(function(z){
       return '<div class="field"><label for="dvp-'+esc(z.uid)+'">'+esc(z.name)+'</label>'+
-        '<input class="inp" id="dvp-'+esc(z.uid)+'" data-dvpnr="'+esc(z.uid)+'" inputmode="numeric" maxlength="10" placeholder="Personalnr." value="'+esc(pn[z.uid]||'')+'" /></div>';
+        '<input class="inp" id="dvp-'+esc(z.uid)+'" data-dvpnr="'+esc(z.uid)+'" inputmode="numeric" maxlength="5" placeholder="Personalnr." value="'+esc(pn[z.uid]||'')+'" /></div>';
     }).join('')+'</div>'+
     '<button type="button" class="btn btn-primary" data-zkdatevsichern>Einstellungen speichern</button>'+
   '</details>';
 }
 function datevSichern(btn){
   var nur=function(id, n){ return String(($(id)||{}).value||'').replace(/\D/g,'').slice(0,n); };
-  var pn={};
+  /* Runde 271: die Längen aus dem DATEV-Schnittstellenhandbuch LODAS
+     (Fach 2 „Abschnitt Allgemein", Fach 4 pnr#psd). Eine zu lange
+     Personalnummer schneidet LODAS LINKS ab („Numerische Felder werden
+     links abgeschnitten") — aus 100023 würde 23, und die Stunden landen
+     bei jemand anderem. Deshalb wird hier abgewiesen, nicht gekürzt. */
+  var pn={}, falsch=[];
   document.querySelectorAll('[data-dvpnr]').forEach(function(f){
-    var v=String(f.value||'').replace(/\D/g,'').slice(0,10);
-    if(v) pn[f.getAttribute('data-dvpnr')]=v;
+    var roh=String(f.value||'').trim();
+    if(!roh) return;
+    if(!datevPnrOk(roh)){ falsch.push(roh); return; }
+    pn[f.getAttribute('data-dvpnr')]=String(+roh);
   });
+  var bn=nur('dvBerater',99), mn=nur('dvMandant',99), la=nur('dvLohnart',99);
+  var fehler = falsch.length ? 'Personalnummer „'+falsch[0]+'" geht nicht: 1 bis 5 Ziffern, nicht 0.'
+    : (bn && (bn.length<4 || bn.length>7)) ? 'Die Beraternummer hat 4 bis 7 Ziffern.'
+    : (mn && mn.length>5) ? 'Die Mandantennummer hat höchstens 5 Ziffern.'
+    : (la && la.length>4) ? 'Die Lohnart hat höchstens 4 Ziffern.' : '';
+  if(fehler){ toast(fehler, true); return; }
   /* Personalnummern von Leuten, die in diesem Monat nicht in der Liste
      stehen, bleiben erhalten — sonst löschte ein Blick auf einen Monat
      mit wenig Leuten die Nummern der anderen. */
   var alt=(_datev && _datev.personalNr)||{};
   Object.keys(alt).forEach(function(uid){ if(!document.querySelector('[data-dvpnr="'+uid+'"]')) pn[uid]=alt[uid]; });
-  var neu={ beraterNr:nur('dvBerater',7), mandantenNr:nur('dvMandant',5), lohnartStunden:nur('dvLohnart',4),
+  var neu={ beraterNr:bn, mandantenNr:mn, lohnartStunden:la,
             urlaubstage:!!($('dvUrlaub')||{}).checked, personalNr:pn, geaendert:Date.now(), geaendertVon:session.uid };
   withBusy(btn, function(){
     return S('lohnEinstellungen').doc('datev').set(neu)
@@ -43253,6 +43271,7 @@ function datevSichern(btn){
 }
 /* Die Datei selbst. Nur Ziffern, Semikolons und Kopfzeilen — reines
    ASCII, damit „ANSI" keine Frage der Kodierung ist. */
+function datevPnrOk(v){ return /^\d{1,5}$/.test(String(v||'')) && +v>0; }
 function datevText(k, d){
   var monatsErster='01.'+k.monat.slice(5,7)+'.'+k.monat.slice(0,4);
   var dez=function(min){ return (Math.round(min/60*100)/100).toFixed(2).replace('.',','); };
@@ -43264,15 +43283,19 @@ function datevText(k, d){
   var ohne=[];
   k.zeilen.forEach(function(z){
     var pnr=(d.personalNr||{})[z.uid];
-    if(!pnr){ if(z.ist || z.urlaubTage) ohne.push(z.name); return; }
+    /* Eine vor Runde 271 gespeicherte Nummer kann länger sein — sie kommt
+       nicht in die Datei, sondern in die Meldung (siehe datevSichern). */
+    if(!pnr || !datevPnrOk(pnr)){ if(z.ist || z.urlaubTage) ohne.push(z.name); return; }
     if(z.ist) zeilen.push('1;'+monatsErster+';'+dez(z.ist)+';01;'+d.lohnartStunden+';'+pnr+';');
-    if(d.urlaubstage && z.urlaubTage) zeilen.push('1;'+monatsErster+';'+z.urlaubTage.toFixed(2).replace('.',',')+';71;;'+pnr+';');
+    /* Schlüssel 71 (genommene Urlaubstage): laut Handbuch höchstens
+       „99,5" — eine Nachkommastelle, in halben Tagen. */
+    if(d.urlaubstage && z.urlaubTage) zeilen.push('1;'+monatsErster+';'+(Math.round(Math.min(z.urlaubTage, 99.5)*2)/2).toFixed(1).replace('.',',')+';71;;'+pnr+';');
   });
   return { text: zeilen.join('\r\n')+'\r\n', ohne: ohne };
 }
 function zkDatevExport(){
   var k=_zkKonto, d=_datev||{};
-  if(!d.beraterNr || !d.mandantenNr || !d.lohnartStunden){
+  if(!d.beraterNr || !d.mandantenNr || !d.lohnartStunden || !/^\d{4,7}$/.test(String(d.beraterNr))){
     _datevOffen=true; zkKontoZeichnen();
     var f=$('zkDatev'); if(f) f.scrollIntoView({ block:'start' });
     toast('Erst Berater-, Mandantennummer und Lohnart eintragen – die gibt das Lohnbüro.', true); return;
@@ -43286,7 +43309,7 @@ function zkDatevExport(){
   var url=URL.createObjectURL(blob), a=document.createElement('a');
   a.href=url; a.download='DATEV-LODAS-'+k.monat+'.txt'; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(function(){ URL.revokeObjectURL(url); },1500);
-  toast(r.ohne.length ? 'DATEV-Datei erstellt. Ohne Personalnummer und deshalb NICHT drin: '+r.ohne.join(', ')
+  toast(r.ohne.length ? 'DATEV-Datei erstellt. Ohne gültige Personalnummer und deshalb NICHT drin: '+r.ohne.join(', ')
                       : 'DATEV-Datei erstellt ✓ Bitte beim ersten Mal vom Lohnbüro prüfen lassen.', !!r.ohne.length);
 }
 function kontoDateiName(endung){ return 'Stunden-'+_zkKonto.monat+'.'+endung; }

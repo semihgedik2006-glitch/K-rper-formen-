@@ -14,7 +14,7 @@
     4. jedes `wo` führt beim Chef zu einem Ziel (schnellKatalog, so wie
        „Zeigen ›" in renderNeu) – dafür einmal die App im Browser.
 
-   Runde 271, aus dem Betrieb (25.10.2026): „sorg bitte dafür das diese
+   Runde 272, aus dem Betrieb (25.10.2026): „sorg bitte dafür das diese
    was ist neu nachrichten mehr wie patchnotes aussehen und nicht wie ki
    infos die nur an mich gerichtet sind eigentlich". Ab dem 22.10.2026:
     5. jeder Eintrag hat `art` (neu / besser / fix), Titel ≤ 60 Zeichen,
