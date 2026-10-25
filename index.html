@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-wQ9KM8GltwOgnNZIrtXaBXhvO0NdnesxooPGEOfFoUI='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-xfCc0D0X+WyLQHRnC1IuxCpbRYtRvXNtF3xkGE8AS9I='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -9432,16 +9432,46 @@ body.neu .neu-pille[hidden]{display:none}
    test-neu-design). Die Liste bleibt unter „Alles → Was ist neu". */
 @media(max-height:640px){ body.neu .neu-pille{display:none} }
 body.neu .np-punkt{width:8px;height:8px;border-radius:var(--r-rund);background:var(--accent)}
-.neu-eintrag{padding:var(--s12) 0;border-top:1px solid var(--line)}
-.neu-eintrag:first-child{border-top:none;padding-top:0}
-.ne-kopf{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s8);flex-wrap:wrap}
-.ne-kopf b{font-size:var(--t-md)}
-.ne-kopf span{font-size:var(--t-xs);color:var(--text-2)}
-.ne-kopf i{font-style:normal;color:var(--accent-d);font-weight:700}
-.neu-eintrag ul{margin:var(--s6) 0 var(--s8);padding-left:var(--s20);font-size:var(--t-sm);
-  color:var(--text);line-height:var(--lh)}
+/* ── „Was ist neu" als Patchnotes (Runde 271) ──
+   Aus dem Betrieb, 25.10.2026: „sorg bitte dafür das diese was ist neu
+   nachrichten mehr wie patchnotes aussehen und nicht wie ki infos".
+   Nach Tagen gruppiert („Update · 25. Oktober"); je Änderung eine Zeile
+   mit Art (Neu / Verbessert / Behoben) und kurzem Titel, die Einzelheiten
+   klappen auf. Das jüngste Update und alles „neu für dich" ist offen.
+   Die Art-Marken sind bewusst NICHT rot/bernstein/grün: Statusfarben nur
+   für Status (CLAUDE.md). */
+#neuModal .pm-box{max-width:640px}
+.neu-tag{margin:var(--s20) 0 var(--s4);display:flex;align-items:baseline;justify-content:space-between;gap:var(--s8);flex-wrap:wrap}
+.neu-tag:first-child{margin-top:0}
+.neu-tag h4{margin:0;font-size:var(--t-md);font-weight:800}
+.neu-tag span{font-size:var(--t-xs);color:var(--text-2)}
+.neu-tag i{font-style:normal;color:var(--accent-d);font-weight:700}
+.neu-eintrag{border-top:1px solid var(--line)}
+.neu-eintrag>summary{list-style:none;cursor:pointer;min-height:44px;display:flex;align-items:center;gap:var(--s10);
+  padding:var(--s6) 0;-webkit-tap-highlight-color:transparent}
+.neu-eintrag>summary::-webkit-details-marker{display:none}
+.neu-eintrag>summary b{flex:1;min-width:0;font-size:var(--t-sm);font-weight:650;line-height:1.35;
+  -webkit-hyphens:auto;hyphens:auto;overflow-wrap:anywhere}
+.neu-eintrag li{-webkit-hyphens:auto;hyphens:auto;overflow-wrap:anywhere}
+.neu-eintrag>summary::after{content:'';flex:none;width:8px;height:8px;margin-right:var(--s4);
+  border-right:2px solid var(--text-2);border-bottom:2px solid var(--text-2);transform:rotate(45deg) translateY(-2px);
+  transition:transform .2s var(--spring)}
+.neu-eintrag[open]>summary::after{transform:rotate(225deg) translateY(-2px)}
+@media(hover:hover){ .neu-eintrag>summary:hover b{color:var(--accent-d)} }
+.neu-eintrag>summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:var(--r-sm)}
+.ne-art{flex:none;box-sizing:border-box;width:96px;white-space:nowrap;text-align:center;font-size:var(--t-xs);font-weight:700;letter-spacing:0;
+  padding:3px 6px;border-radius:var(--r-rund);border:1px solid var(--line-2);color:var(--text-2)}
+.ne-art.neu{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.ne-art.besser{color:var(--accent-d);border-color:var(--accent-d)}
+.neu-eintrag ul{margin:0 0 var(--s8);padding-left:calc(96px + var(--s10) + var(--s16));font-size:var(--t-sm);
+  color:var(--text-2);line-height:var(--lh)}
 .neu-eintrag li{margin:var(--s2) 0}
-.ne-zeigen{min-height:44px}
+.ne-zeigen{min-height:44px;margin:0 0 var(--s8) calc(96px + var(--s10))}
+@media(max-width:420px){
+  .neu-eintrag ul{padding-left:var(--s20)}
+  .ne-zeigen{margin-left:0}
+  .ne-art{width:92px;padding:3px 2px}
+}
 
 /* ── Schnellzugriffe (Runde 103) ──
    Vier gleich breite Felder: drei Ziele und „Anpassen". Zeichen über
@@ -22806,429 +22836,366 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
-  { id:'2026-10-25-formi-redet', datum:'25.10.2026', titel:'Formi redet jetzt wie ein Kollege', wo:'gehirn', punkte:[
-    'Statt langer Listen antwortet Formi in normalen Sätzen – das Wichtigste zuerst, Schritte nur, wenn es wirklich ein Ablauf ist.',
-    'Formi bietet nichts mehr an, was er gar nicht kann, und hängt nicht mehr an jede Antwort „dokumentieren und Leitung informieren".',
-    'Er achtet darauf, ob etwas vor, während oder nach dem Training passiert, und reagiert bei Menschlichem (jemand ist traurig, gestresst) auch menschlich.'
-  ]},
-  { id:'2026-10-25-schichtplan-feinschliff', datum:'25.10.2026', titel:'Schichtplan: ruhiger und klarer', wo:'team', punkte:[
-    'Unter Plan → Schichten haben vergangene Tage ohne Schicht keine leere Leiste mehr.',
-    'Ist ein Studio geschlossen und trotzdem jemand eingeteilt, steht dort jetzt in Orange „geschlossen – trotzdem 3 Schichten" statt nur „geschlossen".',
-    'Im Schichtplaner sind „Fragen zum Plan" und „Regeln & Sonderfälle" zugeklappt nur noch eine schmale Zeile und stehen am Rechner nebeneinander.' ] },
-  { id:'2026-10-25-push-ziele', datum:'25.10.2026', titel:'Jede Meldung aufs Handy führt jetzt direkt hin', wo:'home', punkte:[
-    'Tippst du auf eine Meldung, landest du dort, worum es geht: Chat und Erwähnung im Chat, Direktnachricht in „Direkt", neue und fällige Aufgaben bei den Aufgaben, Infos der Leitung bei den Infos.',
-    'Defekt gemeldet → Geräte, Material fehlt → Material, „Kurz auffrischen" → Schulung, Formis Erinnerung → Formi, „dein Tag" und Geburtstag → Heute.',
-    'Formis Feierabend-Check führt zur Übergabe, wenn sie fehlt, sonst zum Putzplan. „X hat Y erledigt" führt zu den Aufgaben oder zum Putzplan – je nachdem, was abgehakt wurde.',
-    'Für die Leitung: Nachweise, neue Anmeldung, Löschantrag und Kennzahlen öffnen die Verwaltung.'
-  ]},
-  { id:'2026-10-25-schichtplaner-abdeckung', datum:'25.10.2026', titel:'Schichtplaner: Öffnungszeit ohne Schicht wird gemeldet', wo:'planer', punkte:[
-    'Unter „Zu klären" steht jetzt oben, wenn die Schichtzeiten die Öffnungszeit nicht abdecken – zum Beispiel „Sa 14–15 Uhr (geöffnet 09–15)", weil die Samstagsschicht schon um 14 Uhr endet. Das liegt an den Schichtzeiten, nicht an der Einteilung, und wird im Excel-Blatt „Schichten" behoben.',
-    'Unter „Stunden im Studio" zeigt ein Pfeil, wer deutlich unter (↓, weniger als 85 %) oder über (↑, mehr als 115 %) seinem Soll liegt.' ] },
-  { id:'2026-10-24-iphone-rand', datum:'24.10.2026', titel:'Am iPhone nichts mehr abgeschnitten', wo:'home', punkte:[
-    'Auf iPhones mit Home-Leiste (der Strich unten) lag die unterste Reihe jeder Seite halb unter der Leiste – auf „Heute" die Schnellzugriffe. Jetzt steht alles darüber, auch in der Dichte „kompakt".',
-    'Hinweise unten (z. B. „Aufgaben-Erinnerung …") waren auf dem Handy breiter als der Bildschirm und am Anfang und Ende abgeschnitten. Jetzt brechen sie in zwei Zeilen um.',
-    'Fenster und Blätter passen jetzt auch dann ganz aufs Bild, wenn in Safari die Adressleiste zu sehen ist.',
-    'Im Plan lief das Datum der Woche („19.10. – 25.10.") auf vielen Handys unter den Pfeil. „Heute" steht dort jetzt in der zweiten Zeile.'
-  ]},
-  { id:'2026-10-24-formi-bewegung', datum:'24.10.2026', titel:'Formi leiser: kein „Hey Formi", kein Vorlesen, Bewegung einstellbar', wo:'profil', punkte:[
-    'Formi hört nicht mehr auf „Hey Formi" und liest nichts mehr vor. Sprechen statt Tippen geht weiter: im Formi-Fenster auf „Sprechen" tippen oder gedrückt halten.',
-    'Neu ist der Schalter „Formis Bewegung" mit Stark, Mittel und Keine, unter Persönlich → Profil → Aussehen und in Formis Einstellungen. Stark: Formi zeigt öfter etwas von sich. Keine: Formi steht still, was er dir meldet, siehst du trotzdem.',
-    'Der Leuchtrand, wenn Formi arbeitet, ist jetzt eine feine Lichtlinie, die um den Bildschirm läuft – ruhiger und sparsamer für das Gerät.'
-  ]},
-  { id:'2026-10-24-formi-versteht', datum:'24.10.2026', titel:'Formi denkt erst nach, dann antwortet er', wo:'gehirn', punkte:[
-    'Formi überlegt jetzt zuerst, was du wirklich meinst und ob etwas dringend ist – und nimmt aus unserem Wissen nur, was zu genau deiner Situation passt.',
-    'Fehlt etwas Wichtiges, sagt Formi dir erst, was auf jeden Fall gilt, und fragt dann einmal kurz nach.',
-    'Bei Gesundheitsfragen, zu denen wir noch nichts festgelegt haben, gibt Formi vernünftige erste Schritte und sagt dazu, dass das noch nicht geprüft ist.',
-    'Keine Datenschutz-Hinweise mehr, wenn du nur fragst, was du bei einem Kunden tun sollst.'
-  ]},
-  { id:'2026-10-24-schulung-mitnehmen', datum:'24.10.2026', titel:'Schulung: am Ende steht, was du mitnimmst', wo:'schulung', punkte:[
-    'Nach einer Schulung stehen unter den Zahlen jetzt die Fragen, die nicht auf Anhieb geklappt haben – mit der richtigen Antwort und der Erklärung dazu. Wer alles beim ersten Mal wusste, sieht diesen Kasten nicht.',
-    'Diese Fragen kommen beim „Kurz auffrischen" als Erstes wieder dran.'
-  ]},
-  { id:'2026-10-23-vier-raeume', datum:'23.10.2026', titel:'Weniger Knöpfe für Mitarbeiter', wo:'home', punkte:[
-    'Wer nichts verwaltet, hat unten (am Rechner links) nur noch vier Räume: Heute, Zeiten, Plan und Nachrichten.',
-    'Aufgaben und Putzplan hakst du direkt auf „Heute" ab. Die ganzen Listen, Material, Geräte, Dokumente und Schulung findest du über „Alles" oben links – zwei Tipps.',
-    'Offene Aufgaben zeigt jetzt ein Punkt an „Heute". Leitung und Geschäftsführung behalten alle Räume.'
-  ]},
-  { id:'2026-10-23-leer-naechster-schritt', datum:'23.10.2026', titel:'Leere Listen zeigen, was du als Nächstes tun kannst', wo:'todos', punkte:[
-    'Findet die Suche nichts, steht unter Formi ein Knopf „Suche leeren". Zeigt ein Filter nichts, bringt „Alle zeigen" alles zurück.',
-    'Ist eine Liste noch ganz leer, führt ein Knopf direkt zum Eintragen – zum Beispiel „Gerät eintragen" oder „To-do eintragen". Das Feld ist dann gleich zum Tippen bereit.'
-  ]},
-  { id:'2026-10-23-linien-symbole', datum:'23.10.2026', titel:'Alle Symbole in einer Linie', wo:'home', punkte:[
-    'Die kleinen Zeichen auf den Knöpfen sind jetzt überall gleich kräftig und haben runde Enden – egal wie groß sie stehen. Das wirkt ruhiger, so wie die Symbole auf dem iPhone.',
-    'Auch „⋯", „+" und das Verwalten-Zeichen sind keine Schriftzeichen mehr, sondern gezeichnete Symbole im selben Stil.'
-  ]},
-  { id:'2026-10-23-schrift-wie-iphone', datum:'23.10.2026', titel:'Schriftgröße wie am iPhone', wo:'home', punkte:[
-    'Hast du am iPhone eine größere (oder kleinere) Schrift eingestellt, übernimmt die App sie jetzt – bis zur Stufe „Sehr groß".',
-    'Bei der normalen iPhone-Schrift ändert sich nichts. Unter Profil → Aussehen → Schriftgröße kannst du weiter eine feste Größe wählen.'
-  ]},
-  { id:'2026-10-23-ziehen-aktualisieren', datum:'23.10.2026', titel:'Oben nach unten ziehen zum Aktualisieren', wo:'todos', punkte:[
-    'Ganz oben in einer Liste nach unten ziehen, bis der Kreis voll ist, und loslassen: Die App sucht nach einer neuen Version und sagt dir, ob alles aktuell ist.',
-    'Die Listen selbst sind wie bisher immer live – Änderungen der anderen kommen auch ohne Ziehen an.'
-  ]},
-  { id:'2026-10-23-wischen', datum:'23.10.2026', titel:'Aufgaben wischen wie in Mail', wo:'todos', punkte:[
-    'Eine Aufgabe nach rechts wischen hakt sie ab – wenn der Haken größer wird, reicht Loslassen.',
-    'Nach links wischen zeigt „Mehr" und „Löschen". Das geht auch im Putzplan. Alles bleibt wie bisher auch über „⋯" erreichbar.'
-  ]},
-  { id:'2026-10-23-glas-leiste', datum:'23.10.2026', titel:'Die untere Leiste am Handy ist aus Glas', wo:'todos', punkte:[
-    'Beim Scrollen läuft die Liste jetzt unter der unteren Leiste weiter und schimmert weich verschwommen durch – wie bei den Apps auf dem iPhone. Ganz unten steht der letzte Eintrag wie bisher frei.',
-    'Lieber ohne Durchschimmern? Unter Profil → Aussehen → „Untere Leiste am Handy" auf „Deckend" stellen.'
-  ]},
-  { id:'2026-10-23-blaetter', datum:'23.10.2026', titel:'Fenster von unten lassen sich ziehen', wo:'todos', punkte:[
-    'Fenster, die am Handy von unten hochkommen (zum Beispiel „…" an einer Aufgabe oder dein Profil), haben oben einen kleinen Strich. Daran kannst du sie ziehen.',
-    'Nach unten ziehen oder schnell wischen schliesst das Fenster. Bei langen Fenstern hält ein mittlerer Zug auf halber Höhe, nach oben wird es wieder ganz gross.',
-    'Schliessen geht weiter wie bisher mit dem Knopf oder einem Tipp daneben.'
-  ]},
-  { id:'2026-10-23-grosser-titel', datum:'23.10.2026', titel:'Grosser Titel oben, wie in den iPhone-Apps', wo:'todos', punkte:[
-    'Oben auf jeder Seite steht der Name jetzt gross und fett, zum Beispiel „Studio" oder „Zeiten" – so wie bei Mail oder den Einstellungen auf dem iPhone.',
-    'Scrollst du nach unten, wird der Titel klein und macht Platz. Oben angekommen, ist er wieder gross.'
-  ]},
-  { id:'2026-10-23-fluessiger', datum:'23.10.2026', titel:'Alles reagiert schneller, Formi jubelt ohne Ruckeln', wo:'home', punkte:[
-    'Die App rechnet bei jeder kleinen Änderung nicht mehr die ganze Seite neu. Seitenwechsel und Tippen fühlen sich dadurch spürbar flüssiger an, besonders auf älteren Handys.',
-    'Wenn Formi sich freut oder jubelt (zum Beispiel nach einer erledigten Aufgabe), läuft das jetzt ohne Hänger. Formi sieht genau so aus wie vorher.'
-  ]},
-  { id:'2026-10-23-formi-insel', datum:'23.10.2026', titel:'Formi bei der Arbeit zusehen: Insel, Leuchtrand und ein echter Sog', wo:'home', punkte:[
-    'Wenn Formi etwas für dich tut, erscheint oben eine schwarze Insel wie beim iPhone: Darin steht, was er gerade macht. Ist er fertig, wird sie grösser und zeigt das Ergebnis, zum Beispiel „Abgehakt · Hürth – Spiegel putzen".',
-    'Solange Formi arbeitet, leuchtet der ganze Bildschirmrand in seinen Farben, das Licht kreist um den Rand. Ist er fertig, flammt es kurz auf und geht aus.',
-    'Was Formi abhakt, zerfällt in einzelne Buchstaben und fällt in Formi in der Insel. Was er anlegt, kommt Buchstabe für Buchstabe aus ihm heraus.',
-    'Auch was du selbst abhakst, zerfällt jetzt in Buchstaben, die sich als leuchtender Faden um Formi wickeln, bevor sie im Loch verschwinden.',
-    'Am Rechner und auf Android krümmt Formi das Bild um sich herum wie ein echtes schwarzes Loch – und wenn er etwas schluckt, wird die Krümmung kurz stärker.'
-  ]},
-  { id:'2026-10-23-chat-blasen', datum:'23.10.2026', titel:'Nachrichten sehen aus wie auf dem iPhone', wo:'chat', punkte:[
-    'Im Chat stehen die Nachrichten jetzt als runde Blasen ohne Rahmen: die der anderen grau, deine eigenen in deiner Akzentfarbe. Name, Studio und Uhrzeit stehen klein über der Blase.',
-    'Schreibt jemand mehrere Nachrichten hintereinander, rücken sie eng zusammen. Uhrzeit und Häkchen deiner eigenen Nachrichten stehen unter der letzten.',
-    'Tippst du auf eine Nachricht, öffnet sich das Menü direkt an ihr: oben die Reaktionen, darunter Antworten, Weiterleiten, Kopieren und mehr. Am Rechner geht es auch mit der rechten Maustaste.'
-  ]},
-  { id:'2026-10-23-schulung-bescheinigung', datum:'23.10.2026', titel:'Schulung: deine eigene Bescheinigung zum Drucken', wo:'schulung', punkte:[
-    'Unter Wissen → Schulung, im Kasten „Schon geschafft" (bisher „Was du schon gemacht hast"), steht rechts oben ein Drucker-Zeichen: „Bescheinigung drucken". Es druckt ein Blatt mit allen Schulungen, die du bestanden hast – mit Datum, Ergebnis, Dauer und bis wann sie gilt.',
-    'Was als Pflicht noch offen ist, steht ehrlich darunter. Unten ist Platz, damit die Studioleitung unterschreibt.'
-  ]},
-  { id:'2026-10-23-federn', datum:'23.10.2026', titel:'Bewegungen gleiten wie auf dem iPhone', wo:'home', punkte:[
-    'Seitenwechsel, Blätter, Haken und Schalter bewegen sich jetzt wie echte Federn: Seiten gleiten ruhig aus, Haken und Schalter federn ganz leicht nach.',
-    'Am deutlichsten siehst du es, wenn du unten zwischen Heute, Studio und Zeiten wechselst. Formi bewegt sich wie bisher.'
-  ]},
-  { id:'2026-10-23-leiste-fuenf', datum:'23.10.2026', titel:'Unten nur noch fünf Knöpfe', wo:'home', punkte:[
-    'Auf dem Handy stehen unten jetzt fünf Knöpfe: Heute, Studio, Zeiten, Plan und Nachrichten. Jeder ist dadurch breiter und leichter zu treffen.',
-    '„Wissen" (Dokumente, Schulung, Formi) findest du über die drei Striche oben links am Seitenkopf („Alles“), zwei Tipps. Am Rechner steht es weiter links in der Seitenleiste.'
-  ]},
-  { id:'2026-10-23-schichtplaner-fragen-app', datum:'23.10.2026', titel:'Schichtplaner: Fragen in der App beantworten, Probe zurücknehmen', wo:'planer', punkte:[
-    'Im Schichtplaner (Verwaltung) gibt es die Karte „Fragen zum Plan": dieselben 24 Fragen wie im PDF, in fünf Reitern. Bei jeder steht, was die App heute annimmt – ein Tipp auf „passt" genügt, sonst eine eigene Antwort. Oben steht, wie viele schon beantwortet sind.',
-    'Nach dem Veröffentlichen gibt es „Veröffentlichung zurücknehmen": Die Schichten des Monats verschwinden wieder aus dem Team-Plan, der Entwurf im Planer bleibt. So lässt sich gefahrlos ausprobieren. Von Hand eingetragene Schichten bleiben stehen.',
-    'Öffnungszeiten, die nur in der Excel-Vorlage (Blatt „Studios") stehen, zählen jetzt auch für die Besetzungs-Leiste unter Plan → Schichten.' ] },
-  { id:'2026-10-23-aufgaben-gruppen', datum:'23.10.2026', titel:'Aufgaben und Putzplan als ruhige Gruppen', wo:'todos', punkte:[
-    'Unter „Studio" stehen die Aufgaben und der Putzplan jetzt genauso wie auf der Startseite: jede Gruppe (z. B. Täglich, Wöchentlich) ist eine gerundete Fläche, die Zeilen darin trennt nur eine feine Linie.',
-    'Am Rechner ist „+ Neu" oben rechts jetzt der eine gefüllte Knopf der Ansicht. Filter, Drucken und „Wer hakt ab?" bleiben daneben als ruhige Umrandung.',
-    'Abhaken, Wischen und das Menü „…" funktionieren wie bisher.'
-  ]},
-  { id:'2026-10-23-erinnerung-tipp', datum:'23.10.2026', titel:'Ein Tipp auf die Stempel-Erinnerung öffnet „Zeiten"', wo:'zeit', punkte:[
-    'Tippst du auf die Erinnerung „Feierabend vergessen?" oder „Schon eingestempelt?" auf dem Handy, öffnet die App jetzt direkt die Seite „Zeiten" – dort stempelst du oder beantragst eine Korrektur.',
-    'Für die Geschäftsführung: Entfernst du unter Verwaltung → Team einen Zugang, verschwinden mit ihm auch das Soll je Wochentag, der Urlaubsanspruch und die DATEV-Personalnummer dieser Person. Stempelzeiten und Monatsabschlüsse bleiben, wie es die Aufbewahrungsfrist verlangt.'
-  ]},
-  { id:'2026-10-23-formi-seit-du-weg', datum:'23.10.2026', titel:'Formi sagt dir, was seit deiner letzten Schicht passiert ist', wo:'home', punkte:[
-    'Warst du länger als 12 Stunden weg, steht auf „Heute" eine Zeile von Formi: „Seit Mittwoch: 3 Übergaben, 1 Ankündigung" – darunter das Wichtigste wörtlich, mit wem es geschrieben hat und wann. Ein Tipp öffnet die Übergaben.',
-    'Benachrichtigungen, die die App selbst schickt (fällige Aufgaben, Erinnerungen, Nachweise, Formis Tagesmeldung), kommen jetzt als „Formi · …" mit Formis Gesicht. Nachrichten von Menschen sehen aus wie bisher.',
-    'Was du abhakst, fällt jetzt wie in ein echtes schwarzes Loch: es kreist immer schneller um Formi, richtet sich zum Loch aus, wird lang gezogen, schwenkt in die Scheibe ein und verlangsamt kurz vor dem Rand.'
-  ]},
-  { id:'2026-10-23-gruppen-titel', datum:'23.10.2026', titel:'Startseite aufgeräumt: Abschnitte als ruhige Gruppen', wo:'home', punkte:[
-    'Auf der Startseite steht jeder Abschnitt (Überfällig, Heute, Putzplan …) jetzt in einer einzigen gerundeten Fläche. Die Zeilen darin sind nur noch durch eine feine Linie getrennt – keine einzelnen bunten Karten mehr.',
-    'Die Überschriften sind normale, gut lesbare Wörter statt kleiner GROSSBUCHSTABEN. Die Anzahl steht leise daneben, rechts geht es mit „Alle“ zur ganzen Liste.',
-    'Rot bleibt, wo etwas wirklich überfällig ist: im Zeichen und in der Zeile darunter. Auch die kleinen Überschriften in Aufgaben, Nachrichten, Verwaltung und in der Seitenleiste schreiben jetzt normal.'
-  ]},
-  { id:'2026-10-23-heute-haken', datum:'23.10.2026', titel:'Auf „Heute" direkt abhaken', wo:'home', punkte:[
-    'Links neben jeder Aufgabe und jedem Putzpunkt auf „Heute" steht jetzt ein Kreis. Ein Tipp darauf hakt ab – ohne erst in „Studio" zu wechseln.',
-    'Aus Versehen? Unten erscheint „Rückgängig". Ein Tipp auf die Zeile selbst öffnet sie wie bisher.'
-  ]},
-  { id:'2026-10-23-systemschrift', datum:'23.10.2026', titel:'Neue Schrift: klarer, ruhiger, wie bei Apple', wo:'home', punkte:[
-    'Die ganze App schreibt jetzt in der Schrift deines Geräts: auf iPhone, iPad und Mac ist das Apples eigene Schrift, auf Windows-Rechnern und Android eine sehr ähnliche (Inter).',
-    'Überschriften sind nicht mehr so schmal und gedrängt, sondern gut lesbar, und etwas weniger fett.',
-    'Nur der Schriftzug „STUDIOCHAT" oben links bleibt in der alten, schmalen Schrift. Das ist der erste Schritt, damit sich die App mehr wie eine App von Apple anfühlt. Weitere folgen.'
-  ]},
-  { id:'2026-10-23-stempel-erinnerung', datum:'23.10.2026', titel:'Stempel vergessen? Die App erinnert dich – aufs Handy, per Mail und mit Formi', wo:'zeit', punkte:[
-    'Hat deine Schicht vor 15 Minuten begonnen und du hast noch nicht eingestempelt, kommt eine Erinnerung aufs Handy.',
-    'Ist deine Schicht seit 30 Minuten vorbei und du bist noch eingestempelt, kommt „Feierabend vergessen?" aufs Handy und als Mail. Ohne Schicht kommt sie nach 10 Stunden.',
-    'Ist die App offen, sagt es Formi. Wer Urlaub hat oder krank ist, bekommt nichts.',
-    'Abschalten: Einstellungen → Meldungen → „Stempel-Erinnerung" (Handy und Formi) und Einstellungen → Mails → „Feierabend vergessen".'
-  ]},
-  { id:'2026-10-23-formi-schwarzes-loch', datum:'23.10.2026', titel:'Formi ist jetzt ein echtes schwarzes Loch', wo:'todos', punkte:[
-    'Hakst du etwas ab, fliegt es als Schriftzug in einer Spirale zu Formi, wird dabei lang gezogen und verschwindet im Loch.',
-    'Je mehr du heute erledigst, desto heller strahlt Formi. Beim großen Jubel schießt es zwei Lichtstrahlen nach oben und unten, und eine Welle läuft durch die ganze App.',
-    'Kleinigkeiten: ein heller Lichtring am Rand des Lochs, ab und zu entweichen winzige Teilchen, kommt die Maus nah, wird Formi zu ihr hingezogen – und öffnet Formi eine Seite, kommt sie aus seinem Loch heraus.'
-  ]},
-  { id:'2026-10-23-neues-design-fuer-alle', datum:'23.10.2026', titel:'Das neue Design gilt jetzt für alle', wo:'home', punkte:[
-    'Alle sehen ab sofort das neue Design: unten die sechs Räume, oben links der Griff zu „Alles", auf „Heute" die Liste des Tages.',
-    'Die Geschäftsführung kann es für eine Übergangszeit auf ihrem eigenen Gerät zurückstellen: Verwaltung → System → Design.',
-    'Nebenbei: In „Nachrichten" ist der Kopf am Handy schmaler, damit der Chat mehr Platz hat.'
-  ]},
-  { id:'2026-10-23-formi-meldet-sich', datum:'23.10.2026', titel:'Formi trägt für dich ein – und meldet sich von selbst', wo:'gehirn', punkte:[
-    'Sag Formi z. B. „Nur noch 2 Westen M" oder „Hatte gerade ein Probetraining mit Abschluss" – Formi zeigt dir vorher, was eingetragen wird, und du bestätigst mit einem Tipp.',
-    'Morgens um 7 sagt Formi dir, was dein Tag bringt. Läuft eine Frist ab, während du Dienst hast, sagt Formi Bescheid – und am Schichtende, wenn die Übergabe oder Putzpunkte noch fehlen.',
-    'Die Leitung bekommt sofort Bescheid, wenn ein Gerät defekt gemeldet wird oder Material fehlt.',
-    'Zu viel? Profil → Mitteilungen → „Formi meldet sich" ausschalten.'
-  ]},
-  { id:'2026-10-23-formi-spart', datum:'23.10.2026', titel:'Formi fällt nicht mehr den ganzen Tag aus', wo:'gehirn', punkte:[
-    'Formi hat pro Tag nur ein begrenztes Rechenkontingent. Bisher war danach bis in die Nacht Schluss.',
-    'Jetzt schaltet Formi rechtzeitig auf ein sparsameres Modell um und antwortet weiter – etwas knapper. Kurz vor der Grenze kommt die passende Antwort direkt aus unserem Wissen („Ich spare heute Rechenzeit …“).',
-    'Weiß Formi dann etwas nicht, wird die Frage gespeichert und beantwortet, statt verloren zu gehen.'
-  ]},
-  { id:'2026-10-23-formi-fenster-neu', datum:'23.10.2026', titel:'Formi-Fenster neu und mehr Formi in der ganzen App', wo:'gehirn', punkte:[
-    'Das Formi-Fenster ist neu: oben eine Bühne mit großem Formi, die Vorschläge sind Karten mit Symbol, das Gespräch steht in Sprechblasen, und unten gibt es nur noch eine Zeile: Foto, Feld, Sprechen und ein runder Senden-Knopf mit Pfeil.',
-    'Formi ist überall dabei: neben deinem Gruß auf „Heute", in jedem Hinweis unten, zufrieden über leeren Listen.',
-    'Beim Seitenwechsel wirbelt es kurz aus der Kugel, Karten leuchten beim Erscheinen einmal in Formis Farben auf, und Hauptknöpfe sprühen beim Drücken kleine Funken.'
-  ]},
-  { id:'2026-10-23-formi-geprueft', datum:'23.10.2026', titel:'Formi hat für euch gelernt', wo:'gehirn', punkte:[
-    'Formi hat rund 450 typische Fragen aus dem Studioalltag mit geprüften Antworten geübt: Gerät defekt, Kunde mit Attest, Einwände im Beratungsgespräch, Westen waschen und vieles mehr.',
-    'Fragst du etwas Ähnliches, antwortet Formi jetzt mit denselben geprüften Schritten – nur in seinem eigenen Ton.'
-  ]},
-  { id:'2026-10-23-formi-gesicht', datum:'23.10.2026', titel:'Formi hat ein neues, süßeres Gesicht – und lebt von selbst', wo:'home', punkte:[
-    'Formi hat leuchtende Kulleraugen mit Glanzpunkten und Bäckchen. Freut es sich, werden die Augen zu ^ ^, beim Schlafen gehen sie zu.',
-    'Auch wenn du nichts tust, macht Formi ab und zu etwas: summt ein Lied, fängt einen Funken aus seiner Scheibe, niest Sterne, zwinkert, legt den Kopf schief oder hüpft.',
-    'Formi reagiert auf dich: Bei einem Fehler wird es verlegen, bei einer neuen Meldung staunt es. Scrollst du ganz wild, wird ihm schwindelig. Tipp im Formi-Fenster auf Formi, dann kichert es – dreimal schnell, und es wird schwindelig.',
-    'Zu viel? Formi öffnen → Regler oben → „Gefühle der Kugel" auf „Aus" – dann bleibt Formi still.'
-  ]},
-  { id:'2026-10-23-formi-gefuehle-antworten', datum:'23.10.2026', titel:'Formi antwortet persönlicher – und zeigt dabei Gefühle', wo:'gehirn', punkte:[
-    'Formi antwortet jetzt ausführlicher und persönlicher: spricht dich mit Namen an, bezieht sich auf das, was du vorher gesagt hast, und auf deinen Tag in der App („du hast ja heute bis 14 Uhr").',
-    'Formi zeigt Gefühle: Freude, Begeisterung, Mitgefühl, auch mal Verwirrung – in Worten und im Gesicht oben im Formi-Fenster (z. B. ein ? über dem Kopf oder ein Freudensprung).',
-    'Formi merkt sich das Gespräch jetzt zwei Stunden statt einer halben, und antwortet schneller als gestern.'
-  ]},
-  { id:'2026-10-23-leiste-schmal', datum:'23.10.2026', titel:'Kleine Handys: Knöpfe unten wieder gut zu treffen', wo:'home', punkte:[
-    'Seit „Zeiten" einen eigenen Knopf hat, stehen unten sechs Knöpfe. Auf sehr schmalen Handys war „Plan" dadurch knapp zu schmal – jetzt ist jeder Knopf mindestens 48 Punkte breit.',
-    'Im bisherigen Aussehen lag Formi auf sehr schmalen Handys ein kleines Stück auf der unteren Leiste. Er sitzt jetzt darüber.'
-  ]},
-  { id:'2026-10-23-formi-zeigwie', datum:'23.10.2026', titel:'„Zeig mir wie": Formi führt dich durch die App', wo:'gehirn', punkte:[
-    'Schreib Formi zum Beispiel „Zeig mir, wie ich eine Aufgabe anlege". Formi zeigt dir den Weg Schritt für Schritt auf den echten Seiten. Fragst du „Wie melde ich mich krank?", antwortet Formi wie gewohnt, und darunter steht „Zeig’s mir in der App ›".',
-    'Um die Stelle, die gerade dran ist, liegt Formis bunter Ring, und ein kleiner Formi fliegt von Schritt zu Schritt. Unten steht „Schritt 2 von 4" mit „Weiter" und „Abbrechen".',
-    'Du kannst dabei sofort selbst tippen, ein Rundgang trägt nichts ein. Es gibt fünf Rundgänge: Aufgabe anlegen, krank oder Urlaub melden, Übergabe schreiben, Schichten ansehen und abgeben, im Putzplan abhaken. Schreibst du Formi nur „Zeig mir, wie …", bekommst du alle zur Auswahl.'
-  ]},
-  { id:'2026-10-23-formi-ueberall', datum:'23.10.2026', titel:'Formi beim Stempeln, bei der Anmeldung, im hellen Stil und in der Schulung', wo:'zeit', punkte:[
-    'Stempeln: Beim Kommen begrüßt dich Formi, in der Pause ruht die Scheibe, beim Feierabend fliegt deine Tageszeit (z. B. „7:42 h") in das Loch, und Formi sagt sie dir. Am Terminal sagt Formi „Feierabend" mit deinem Vornamen.',
-    'Anmeldung: Statt des Logos steht Formi über dem Formular. Die Augen folgen dem, was du bei der E-Mail tippst. Beim Passwort hält Formi die Augen zu, zeigst du das Passwort an, linst es mit einem Auge. Bei einem Fehler erschrickt es kurz.',
-    'Heller Stil: Formi ist dort ein weißes Loch – heller Kern, dunkles Gesicht, und die Scheibe in kräftigeren Farben, damit man sie auf Weiß sieht.',
-    'Schulung: Nach einer falschen Antwort steht Formi im Hinweis und grübelt mit („Formi denkt mit:"). Am Ende steht Formi über dem Ergebnis: bestanden stolz mit Konfetti, nicht bestanden guckt es mit – ohne Träne, du kannst es ja jederzeit noch einmal machen.'
-  ]},
-  { id:'2026-10-23-formi-scheibe', datum:'23.10.2026', titel:'Formi hat jetzt eine echte Akkretionsscheibe – und viel mehr Gefühle', wo:'home', punkte:[
-    'Um Formi liegt jetzt eine flache, schräge Scheibe wie bei Bildern echter schwarzer Löcher: Der vordere Teil läuft vor dem Gesicht vorbei, der hintere liegt dahinter, über dem Loch steht ein heller Lichtbogen. Innen kreist das Gas schneller als außen, und links leuchtet es heller, weil es dort auf dich zukommt.',
-    'Was du abhakst, fällt als Funken ins Loch – kurz vor dem Rand werden die Funken langsamer, länger und röter und verlöschen dort. Genau so sieht es bei einem echten schwarzen Loch von außen aus. Die Scheibe flammt dabei auf.',
-    'Je mehr heute erledigt ist (Aufgaben und Putzplan), desto heller und voller wird die Scheibe, und das Loch wächst ein kleines Stück mit.',
-    'Neue Gefühle: Formi ist traurig, wenn ein Haken zurückgenommen wird (mit Träne), langweilt sich nach einer halben Minute Stille, schläft mit aufsteigenden z, ist verwirrt mit Fragezeichen, wenn es etwas nicht versteht oder sich nicht sicher ist, stolz und verliebt (Herzchen) bei einem Danke oder „Passt".',
-    'Ohne Netz ist Formi traurig und sagt es einmal, die Scheibe wird leise. Kommt das Netz zurück, freut es sich.',
-    'Nebenbei: Bei offenem Formi läuft die App flüssiger – ein unsichtbares Gesicht hat sich bisher im Hintergrund weitergedreht.'
-  ]},
-  { id:'2026-10-23-nachts-lautlos', datum:'23.10.2026', titel:'Nachts lautlos', wo:'profil', punkte:[
-    'Meldungen aufs Handy kommen zwischen 22 und 6 Uhr ohne Ton und Vibration. Sie sind trotzdem da, wenn du morgens draufschaust.',
-    'Wer nachts doch einen Ton möchte: Profil → Meldungen → „Nachts lautlos" ausschalten. Die Wahl gilt für dieses Gerät.'
-  ]},
-  { id:'2026-10-23-was-ist-neu-zeigen', datum:'23.10.2026', titel:'„Was ist neu": jeder Eintrag führt hin', wo:'home', punkte:[
-    'Ein Eintrag („Soll je Wochentag") stand doppelt in der Liste, einmal davon leer. Das ist bereinigt.',
-    'Bei sieben Einträgen fehlte der Knopf „Zeigen ›" – jetzt führt jeder Eintrag dorthin, wo die Neuerung steht, auch ins Profil.'
-  ]},
-  { id:'2026-10-23-alles-aushaenge', datum:'23.10.2026', titel:'„Alles": die Zeile „Infos" heisst jetzt so', wo:'ann', punkte:[
-    'Unter „Alles" stand eine Zeile „Aushänge" – sie öffnete aber die Infos der Leitung. Sie heisst jetzt „Infos". Die Aushänge selbst findest du wie bisher unter „Schwarzes Brett".'
-  ]},
-  { id:'2026-10-23-zeiten-bereich', datum:'23.10.2026', titel:'Zeiten mit eigenem Knopf: stempeln, Konto im Plus oder Minus, Resturlaub', wo:'zeit', punkte:[
-    'Unten (am Rechner links) gibt es jetzt den Knopf „Zeiten". Dort stempelst du, siehst heute, die Woche und den Monat – alles, was vorher unter Heute → Ich → Zeiten stand.',
-    'Neu ist „Mein Konto": eine große Zahl, ob du im Plus oder im Minus bist. Der laufende Monat heißt „vorläufig", bis die Geschäftsführung ihn abschließt. Darunter dein Resturlaub für dieses Jahr.',
-    'Für die Leitung steht unter „Zeiten" ein zweiter Reiter „Team": wer gerade da ist, Korrekturanträge, Monat & Konto, Abschluss, Excel und DATEV. Das ist der bisherige Reiter Verwaltung → Zeiten, jetzt an einem Ort.',
-    'Die Geschäftsführung trägt unter Team → Monat & Konto → „Soll je Wochentag" jetzt auch den Urlaubsanspruch im Jahr ein. Am Rechner führt die Taste Z direkt zu den eigenen Zeiten.'
-  ]},
-  { id:'2026-10-23-ein-gruss', datum:'23.10.2026', titel:'Startseite und Formi grüssen gleich', wo:'home', punkte:[
-    'Spät in der Nacht stand oben „Guten Morgen" und Formi sagte gleichzeitig „Guten Abend … Früh dran!". Jetzt grüssen beide gleich, und Formi hat für die Nacht eigene Sätze.'
-  ]},
-  { id:'2026-10-23-erstes-oeffnen', datum:'23.10.2026', titel:'Beim ersten Öffnen springt die App nicht mehr zurück', wo:'home', punkte:[
-    'Wer die App zum ersten Mal auf einem Gerät öffnet, wurde nach etwa zwei Sekunden einmal neu geladen – was man gerade eintippte, war weg. Das passiert nicht mehr.',
-    'Kommt eine neue Fassung der App, lädt sie wie bisher einmal neu, damit man sie sofort sieht.'
-  ]},
-  { id:'2026-10-23-formi-reihe', datum:'23.10.2026', titel:'Handy: mehr vom Tag auf „Heute"', wo:'home', punkte:[
-    'Auf „Heute" ist der Kopf oben schmaler, das Datum steht dort nicht mehr doppelt.',
-    'Formi sitzt jetzt rechts neben den Schnellzugriffen statt über einem eigenen leeren Streifen. Dadurch passt ein Block mehr ins Bild – bei den meisten Handys auch der Putzplan.',
-    'Auf allen anderen Seiten und am Rechner bleibt Formi, wo er war.'
-  ]},
-  { id:'2026-10-23-formi-wie-chatgpt', datum:'23.10.2026', titel:'Formi antwortet jetzt richtig – und kennt deine App', wo:'gehirn', punkte:[
-    'Formi hat ein stärkeres KI-Modell bekommen und antwortet so ausführlich wie ChatGPT: Training, Kundengespräch, Texte, Mails, Social Media – einfach fragen.',
-    'Formi kennt jetzt, was du in der App siehst: deinen Dienst, wer heute arbeitet, offene Aufgaben, Putzplan, fehlendes Material, deine Schulungen, die Ankündigungen und Übergaben. Frag z. B. „Was ist heute in Hürth noch offen?" oder „Welche Schulung fehlt mir?".',
-    'Ist etwas nicht von uns geprüft, sagt Formi das dazu („Nicht geprüft" oder „Allgemeines Wissen") – antwortet aber trotzdem.',
-    'Chats und Direktnachrichten liest Formi nicht.'
-  ]},
-  { id:'2026-10-23-auffrischen-push', datum:'23.10.2026', titel:'Kurz auffrischen: Erinnerung aufs Handy', wo:'schulung', punkte:[
-    'Wenn Fragen aus deinen Schulungen warten, kommt morgens eine kurze Nachricht aufs Handy – höchstens alle drei Tage, nur wenn dein Zugang mit deinem Schulungs-Eintrag verknüpft ist.',
-    'Abschalten: Profil → Meldungen → „Kurz auffrischen".'
-  ]},
-  { id:'2026-10-22-soll-wochentag', datum:'22.10.2026', titel:'Soll je Wochentag; Zeiten korrigiert nur die Geschäftsführung', wo:'zeitteam', punkte:[
-    'Unter Verwaltung → Zeiten → Monat & Konto → „Soll je Wochentag" trägt die Geschäftsführung je Person ein, wie viele Stunden an welchem Tag geplant sind – auch samstags. Feiertage zählen automatisch mit 0. Urlaub und Krankheit schreiben genau die Stunden dieses Tages gut.',
-    'Wer dort nichts eingetragen hat, für den rechnet das Konto weiter mit den Wochenstunden aus dem Schichtplaner.',
-    'Stempel nachtragen oder für ungültig erklären kann jetzt nur noch die Geschäftsführung. Die Studioleitung sieht die Zeiten ihres Studios weiter. Fehlt jemandem ein Stempel, beantragt er ihn selbst unter Zeiten (seit 23.10. eigener Knopf).'
-  ]},
-  { id:'2026-10-22-formi-ruhig', datum:'22.10.2026', titel:'Formi ohne großes HUD: ruhig, klar, schneller', wo:'gehirn', punkte:[
-    'Das große Vollbild mit Leinwänden, Ringen und Uhr ist weg. Formi ist jetzt immer das ruhige Fenster – am Rechner die Spalte rechts, am Handy ein Blatt von unten.',
-    'Der Knopf oben (früher „Groß") heißt jetzt „Mehr Platz": am Handy die ganze Höhe, am Rechner ein größeres Fenster bzw. eine breitere Spalte. Dann stehen oben auch die fünf Kacheln „Heute im Studio".',
-    'Sprechen geht jetzt am Knopf „Sprechen": kurz tippen oder gedrückt halten und beim Loslassen abschicken.',
-    'Nebenbei: Formi läuft spürbar flüssiger, weil im Hintergrund nichts mehr gezeichnet wird.'
-  ]},
-  { id:'2026-10-22-formi-schwarzes-loch', datum:'22.10.2026', titel:'Formi ist jetzt ein echtes schwarzes Loch – und die Suche fragt Formi', wo:'home', punkte:[
-    'Der bunte Ring um Formi ist eine Akkretionsscheibe: Er dreht sich ständig, innen schneller als aussen, die eine Seite leuchtet heller und am Rand des Lochs liegt ein heller Lichtring – wie bei einem echten schwarzen Loch.',
-    'Freut sich Formi, wird es zum weissen Loch und stösst eine Lichtwelle in die App hinaus. Danach wird es wieder schwarz, zieht das Licht zusammen und saugt die Teilchen spiralig wieder ein.',
-    'Stellst du Formi eine Frage, lösen sich die Buchstaben aus dem Feld und fallen in einer Spirale ins Loch. Kommt die Antwort, wird das Loch weiss und spuckt sie dir aus.',
-    'Suchen und Fragen in einem Feld: Tippst du in der Suche eine Frage („wer hat heute Dienst?"), steht Formi ganz oben – die Eingabetaste bringt sie direkt ins Formi-Feld, du schickst sie dort ab. Genauso bei einem Auftrag („hak … ab"): gespeichert wird erst, wenn du es bestätigst.' ] },
-  { id:'2026-10-22-formi-welt-2', datum:'22.10.2026', titel:'Die ganze App in Formis Farben', wo:'home', punkte:[
-    'Karten und Zeilen haben jetzt einen fast schwarzen Kern wie Formis Inneres und eine schillernde Kante in Formis vier Farben. Die Farbe links am Rand sagt weiter, worum es geht – rot ist überfällig, orange heute.',
-    'Wo du bist, steht in Formis Farben: der Raum links, der Strich unter dem offenen Reiter, der Seitentitel. Die grossen Knöpfe wie „Senden" auch.',
-    'Beim Abhaken stieben kleine Teilchen aus dem Haken. Ist der Putzplan eines Studios oder sind alle Aufgaben geschafft, feiert Formi mit.',
-    'Der bunte Ring bleibt Formi vorbehalten – so erkennst du Formi weiter auf einen Blick. Hell oder Dunkel wie bisher: Profil → Aussehen.' ] },
-  { id:'2026-10-22-schulung-nachweis', datum:'22.10.2026', titel:'Für die Leitung: Nachweis der Unterweisung zum Drucken', wo:'schulung', punkte:[
-    'Unter Wissen → Schulung → Verwalten → „Pflicht" gibt es „Nachweis drucken": Modul wählen, dann kommt ein Blatt zum Abheften – was in der Schulung drin war, wer sie wann bestanden hat (mit Ergebnis und Dauer) und eine Spalte zum Unterschreiben.',
-    'Bei Pflichtschulungen steht darunter, wer sie noch nicht hat. Testläufe mit dem Testcode stehen nicht darauf.',
-    'Ob das Blatt eine bestimmte Vorschrift erfüllt, prüft die App nicht – das steht auch unten auf dem Blatt.'
-  ]},
-  { id:'2026-10-22-datev', datum:'22.10.2026', titel:'Stunden als DATEV-Datei fürs Lohnbüro', wo:'zeitteam', punkte:[
-    'Für die Geschäftsführung: Verwaltung → Zeiten → Monat & Konto → „DATEV". Die Datei (LODAS) enthält je Person die Stunden des Monats und auf Wunsch die Urlaubstage – nur Nummern, keine Namen.',
-    'Beim ersten Mal öffnen sich die DATEV-Einstellungen: Beraternummer, Mandantennummer, Lohnart für Stunden und die Personalnummern. Diese Nummern gibt euch das Lohnbüro. Sehen kann sie nur die Geschäftsführung.',
-    'Bitte die erste Datei vom Lohnbüro prüfen lassen: Sie ist nach dem DATEV-Handbuch gebaut, aber noch nie in ein echtes DATEV eingespielt worden. Wer keine Personalnummer hat, steht nicht in der Datei – die App sagt, wer fehlt.'
-  ]},
-  { id:'2026-10-22-formi-fenster-ruhiger', datum:'22.10.2026', titel:'Formi-Fenster aufgeräumt, Formi in leeren Listen', wo:'home', punkte:[
-    'Öffnest du Formi, begrüsst dich oben ein grosses Formi-Gesicht, das dir mit den Augen folgt. Die drei Zeilen „Aufgaben offen / Putzplan / Material" stehen dort nicht mehr – das zeigt schon die Formi-Zeile auf der Startseite.',
-    'Oben im kleinen Formi-Fenster sind nur noch drei Knöpfe: „…", Gross und Schliessen. Hinter „…" findest du Einstellungen, gespeicherte Gespräche und den Ton.',
-    'Ist eine Liste leer, sitzt dort Formi mit „Frag Formi". Beim Laden der App dreht sich Formis Ring, und vor jeder Antwort steht Formis Gesicht.' ] },
-  { id:'2026-10-22-stundenkonto', datum:'22.10.2026', titel:'Stundenkonto, Monatsabschluss und Export fürs Lohnbüro', wo:'zeitteam', punkte:[
-    'Für die Geschäftsführung: Verwaltung → Zeiten → oben „Monat & Konto". Je Person stehen dort die gestempelten Stunden (nach der Pausenregel), das Soll aus den Wochenstunden im Schichtplaner, Urlaub und Krankheit, der Saldo, der Übertrag aus dem Vormonat und das Konto.',
-    '„Excel" und „CSV" laden den Monat für das Lohnbüro herunter – Stunden als Dezimalzahlen mit Komma, in Excel zusätzlich jeder Tag einzeln.',
-    'Ist ein Monat vorbei, schliesst „Monat abschliessen" ihn ab. Danach lässt sich darin nichts mehr nachtragen, stornieren oder beantragen; sein Konto ist der Übertrag für den nächsten Monat. „Wieder öffnen …" geht nur mit Grund.'
-  ]},
-  { id:'2026-10-22-schulung-pflicht', datum:'22.10.2026', titel:'Für die Leitung: Pflichtschulungen auf einen Blick', wo:'schulung', punkte:[
-    'Unter Wissen → Schulung → Verwalten gibt es den Reiter „Pflicht": je Person und Pflichtschulung erledigt (✓), offen mit Frist, angefangen oder überfällig. Am Reiter steht, wie viel überfällig ist.',
-    '„Erinnern" neben einer Person gibt eine fertige Nachricht weiter – mit den offenen Schulungen und dem Code. Du schickst sie selbst, per WhatsApp, Mail oder wie du willst.',
-    'Unter „Auswertung" führt „Bearbeiten" bei einer Frage, die im Team oft danebengeht, direkt zu dieser Frage im Modul.'
-  ]},
-  { id:'2026-10-22-schichtplaner-fragen', datum:'22.10.2026', titel:'Schichtplaner: neue Vorlage mit allen Fragen', wo:'planer', punkte:[
-    'Die Excel-Vorlage im Schichtplaner (Verwaltung → Schichtplaner → „Vorlage herunterladen") hat ein neues Blatt „Fragen": 24 Fragen, nach denen der erste Plan ohne Nacharbeit läuft.',
-    'Bei jeder Frage steht, was die App heute annimmt. Passt das, reicht als Antwort „passt".' ] },
-  { id:'2026-10-22-formi-augen', datum:'22.10.2026', titel:'Formis Augen leben: Pupillen, Brauen, Umsehen', wo:'home', punkte:[
-    'Formis Augen haben jetzt Pupillen mit Lichtpunkt und Brauen. Die Pupillen folgen der Maus, kommst du nah heran, werden die Augen gross. Steht alles still, schaut Formi sich um und blinzelt manchmal zweimal.',
-    'Formi schaut hin, wo etwas passiert – zu einem Hinweis unten oder zur Glocke, wenn eine neue Meldung kommt. Nach einer Minute ohne Bedienung wird es müde, später schläft es ein.',
-    'Dasselbe Gesicht steht jetzt auch oben im Formi-Fenster, links in der Formi-Zeile und fliegt als kleiner Formi los, wenn es eine Seite für dich öffnet. Denkt Formi nach, schauen die Augen nach oben; spricht es, bewegt sich der Mund.',
-    'Der Ring schimmert in der Farbe des Bereichs, in dem du bist, und wird abends wärmer. Morgens gähnt Formi einmal.' ] },
-  { id:'2026-10-22-korrekturantrag', datum:'22.10.2026', titel:'Fehlenden Stempel selbst beantragen', wo:'zeit', punkte:[
-    'Feierabend vergessen? Unter Heute → Ich → Zeiten gibt es „Korrektur beantragen": Tag, was fehlt, Uhrzeit und ein kurzer Grund. Bei einem Tag mit „Feierabend fehlt" reicht ein Tipp auf den Tag und dann auf „Feierabend beantragen" – Tag und Art sind schon eingetragen.',
-    'Beantragen geht bis 31 Tage zurück. Darunter siehst du, ob dein Antrag noch wartet, angenommen oder abgelehnt wurde – mit Antwort. Solange er wartet, kannst du ihn zurückziehen.',
-    'Für die Geschäftsführung: Verwaltung → Zeiten zeigt oben die offenen Anträge mit „Annehmen" und „Ablehnen …". Angenommen wird daraus ein Stempel mit dem Vermerk „nachgetragen"; abgelehnt nur mit kurzer Begründung. Den eigenen Antrag entscheidet jemand anderes.'
-  ]},
-  { id:'2026-10-22-pausenregel', datum:'22.10.2026', titel:'Pausen wie bei Crewmeister, Hinweise zum Arbeitszeitgesetz', wo:'zeit', punkte:[
-    'Wer länger als 6 Stunden arbeitet, braucht 30 Minuten Pause, über 9 Stunden 45 Minuten. Hast du weniger gestempelt, wird nur der fehlende Teil abgezogen – an dem Tag steht dann „Pause +0:30". Deine Stempel selbst bleiben unverändert.',
-    'Es wird nie mehr abgezogen, als nötig ist: Aus 6:10 Stunden ohne Pause werden 6:00 Stunden, nicht 5:40.',
-    'An einem Tag stehen jetzt Hinweise, wenn er über 10 Stunden ging, wenn mehr als 6 Stunden am Stück ohne Pause gearbeitet wurde oder wenn seit dem letzten Feierabend weniger als 11 Stunden Ruhe lagen.',
-    'Unter Heute → Ich → Zeiten erinnert dich die App ab 5½ Stunden am Stück an die Pause. Die Leitung sieht unter „Jetzt im Studio", wer schon über 6 Stunden ohne Pause ist.'
-  ]},
-  { id:'2026-10-22-schichtplan-besetzung', datum:'22.10.2026', titel:'Schichtplan: auf einen Blick, wann niemand da ist', wo:'team:schicht', punkte:[
-    'Unter Plan → Schichten hat jeder Tag jetzt eine Leiste: Sie zeigt, wann jemand eingeteilt ist – je kräftiger, desto mehr Leute. Ist das Studio offen und niemand eingeteilt, ist die Stelle orange gestreift, und darunter steht zum Beispiel „07–09 niemand".',
-    'In der Ansicht „Personen" steht diese Leiste als letzte Zeile „Besetzt" unter allen Personen.',
-    'Jede Schicht in „Personen" hat unten einen kleinen Strich: Er zeigt, wo im Tag sie liegt – links früh, rechts spät.',
-    'Bezug sind die Öffnungszeiten des Studios (Verwaltung → Studios → Zeiten). Sind sie nicht eingetragen, gibt es keine Lücken-Markierung.' ] },
-  { id:'2026-10-22-schulung-animation', datum:'22.10.2026', titel:'Schulung: Animationen statt „Video folgt"', wo:'schulung', punkte:[
-    'In den drei Pflichtschulungen („Dein erster Tag im Studio", „Hygiene nach jedem Training", „Wenn einem Kunden schlecht wird") stand bei fünf Schritten noch „Video folgt". Dort läuft jetzt eine kurze Animation: Bild für Bild ein Zeichen und ein Satz.',
-    'Die Sätze kommen aus dem Mitarbeiter-Handbuch – unter jedem Bild steht, aus welchem Eintrag von „Hilfe im Studio".',
-    'Mit „Pause" anhalten, mit ‹ und › selbst blättern. Weiter geht es, wenn jedes Bild einmal zu sehen war. Kommt später ein echtes Video, steht es an derselben Stelle.'
-  ]},
-  { id:'2026-10-22-schulung-lernen', datum:'22.10.2026', titel:'Schulung: kurz auffrischen in Runden, Fristen und Weitermachen', wo:'schulung', punkte:[
-    'Unter Wissen → Schulung steht „Kurz auffrischen" jetzt als kleine Runde: bis zu drei Fragen aus dem, was du schon bestanden hast, nach jeder Antwort gleich die Lösung. Was danebenging, kommt nach zwei Tagen wieder, was sitzt, erst nach einer Woche, einem Monat, drei Monaten.',
-    'Ohne eigenen Zugang geht das am Studio-Tablet mit deinem Schulungs-Code – „Mit Code auffrischen". Mit Zugang steht auf der Startseite eine Zeile, wenn Fragen warten.',
-    'Pflichtschulungen haben eine Frist: 14 Tage ab dem Tag, an dem die Leitung dich angelegt hat, frühestens bis 5.11. Du siehst „bis …" unter „Das steht für dich an".',
-    'Lange Schulungen wie „Das Beratungsgespräch" musst du nicht am Stück machen: „Später weiter" drücken, beim nächsten Mal mit deinem Code geht es dort weiter, wo du warst.',
-    'Am Rechner stehen die Module jetzt rechts neben dem, was für dich ansteht, und in einer Schulung links das Inhaltsverzeichnis. Tasten: 1–4 antworten, Pfeil nach rechts weiter.',
-    'Für die Leitung: unter Verwalten → Auswertung „Fragen, die im Team nicht sitzen" – ohne Namen, erst ab drei Antworten. Und je Teilnehmer, welche Pflichtschulung noch offen oder überfällig ist.'
-  ]},
-  { id:'2026-10-22-formi-blase-rechts', datum:'22.10.2026', titel:'Formis Sprechblase am Rechner neben Formi', wo:'home', punkte:[
-    'Am Rechner sagt Formi seine kurzen Sätze jetzt rechts neben sich, in die Seite hinein. Vorher stand die Blase schmal in der linken Leiste und lag auf „Tastenkürzel".' ] },
-  { id:'2026-10-22-formi-seitenleiste', datum:'22.10.2026', titel:'Am Rechner: Formi unten links, mehr Platz für die Liste', wo:'home', punkte:[
-    'Am Rechner sitzt Formi jetzt unten in der linken Leiste statt unten rechts. Formi verdeckt damit nichts mehr, und jede Seite reicht bis ganz nach unten – die Startseite und die Aufgaben zeigen eine Zeile mehr.',
-    'Am Handy bleibt Formi, wo es war.',
-    'Auf einem neuen Gerät ist die Meldung „Alle Chat-Nachrichten" erst einmal aus – gemeldet wird, was dich persönlich betrifft: Erwähnungen, Direktnachrichten, Infos der Leitung, neue Aufgaben. Einschalten: dein Bild oben rechts → Meldungen. Wer schon eingestellt hat, behält seine Wahl.' ] },
-  { id:'2026-10-22-schichtplaner-anfang', datum:'22.10.2026', titel:'Schichtplaner: klarer Anfang, Regeln in Reitern', wo:'planer', punkte:[
-    'Ist im Schichtplaner (Verwaltung) noch kein Team eingelesen, steht dort jetzt „So fängst du an": Vorlage herunterladen, ausfüllen, einlesen – in drei Schritten, mit den Knöpfen direkt daneben.',
-    'Unter „Plan erstellen" steht, warum der Knopf noch grau ist. Neben dem Monat steht, ob es schon einen Plan gibt, ob er ein Entwurf ist oder wann er veröffentlicht wurde.',
-    'Regeln & Sonderfälle haben vier Reiter – Einstellungen, Feste Einteilungen, Sondertage, Notiz – statt vier Formularen auf einmal. Ohne Team bleiben sie weg, bis es eingelesen ist.' ] },
-  { id:'2026-10-22-formi-kumpel', datum:'22.10.2026', titel:'Formi hat jetzt Charakter: der Kumpel aus dem Studio', wo:'gehirn', punkte:[
-    'Formi antwortet jetzt wie ein Kollege, mit dem man gern Schicht hat: locker, direkt, mit einem Spruch, wenn er passt – und sofort ernst, wenn es um einen Notfall, Gesundheit oder Ärger geht.',
-    'Neben der Kugel erscheint ab und zu eine kleine Sprechblase: morgens ein Gruß, beim ersten Haken des Tages ein Lob, bei einer Haken-Serie ein Spruch. Höchstens eine alle 45 Sekunden.',
-    'Zu viel? Formi öffnen → Regler oben → „Gefühle der Kugel" auf „Aus" oder Ton „sachlich" – dann bleibt Formi still.'
-  ]},
-  { id:'2026-10-22-formi-gesicht', datum:'22.10.2026', titel:'Formi hat jetzt ein Gesicht – und wird bei Freude zum weissen Loch', wo:'home', punkte:[
-    'Im schwarzen Loch der Kugel unten rechts wohnt jetzt ein kleines Gesicht. Es schaut der Maus nach, blinzelt, lacht, staunt, erschrickt und schläft ein, wenn du die App eine Weile liegen lässt.',
-    'Hakst du etwas ab, freut sich Formi: das Loch wird kurz weiss und spuckt bunte Teilchen aus, dann wird es wieder schwarz und saugt sie ein. Ist der Putzplan für heute fertig, wird daraus ein grosses Feuerwerk.',
-    'Ab und zu dreht sich der Ring einmal langsam und ein paar Krümel fallen ins Loch, so lebt es ein bisschen.',
-    'Zu viel? Formi öffnen → Regler oben → „Gefühle der Kugel" auf „Aus".' ] },
-  { id:'2026-10-22-formi-angedockt', datum:'22.10.2026', titel:'Am Rechner: Formi sitzt jetzt rechts neben der Seite', wo:'home', punkte:[
-    'Auf einem breiten Bildschirm (ab 1440 Pixel) öffnet sich Formi als Spalte am rechten Rand. Die Seite rückt zur Seite und bleibt ganz sichtbar, statt unter dem Fenster zu verschwinden.',
-    'Formi bleibt dort offen, während du in der App weiterklickst. Auf kleineren Bildschirmen und am Handy bleibt alles wie bisher.' ] },
-  { id:'2026-10-22-schichtplan-raster', datum:'22.10.2026', titel:'Schichtplan: die Woche nach Personen, Schicht antippen', wo:'team:schicht', punkte:[
-    'Unter Plan → Schichten gibt es am Rechner zwei Ansichten: „Tage" wie bisher und neu „Personen" – links stehen die Leute, daneben ihre sieben Tage, rechts die Stunden der Woche. Steht im Schichtplaner ein Wochen-Soll, sieht die Geschäftsführung es bei allen und jede Person bei sich selbst; weichen die Stunden deutlich ab, ist die Zahl farbig. Die gewählte Ansicht merkt sich dein Gerät.',
-    'Eine Schicht antippen öffnet sie: „Ich kann nicht" zum Tauschen, „Ich übernehme", und für die Leitung Bestätigen und Entfernen. Das Kreuz und der Knopf an jeder Zeile sind dafür weg.',
-    'Für die Leitung: In der Ansicht „Personen" in ein leeres Feld klicken – Tag und Person sind schon gesetzt, die Schichtzeiten aus dem Schichtplaner stehen zum Antippen bereit. Am Handy gibt es dafür das ＋ am Tag oder „＋ Schicht" oben.',
-    'Oben steht die Kalenderwoche, die Zahl der Schichten gilt jetzt für diese Woche (vorher zählte sie alle). Urlaub und Krankheit stehen grau schraffiert statt rot und orange. Am Rechner: Pfeiltasten blättern, H springt zu heute, V wechselt die Ansicht.',
-    'Im Schichtplaner (Verwaltung) steht der Monat jetzt Woche für Woche: oben die Kalenderwochen mit ihren offenen Lücken, „Ganzer Monat" zeigt alles wie bisher.' ] },
-  { id:'2026-10-22-formi-alle-uebernehmen', datum:'22.10.2026', titel:'Formi lernt: alle aus einer Schulung auf einmal', wo:'gehirn', punkte:[
-    'In der Karte „Formi lernt" steht unter einem Vorschlag aus einer Schulung jetzt „Alle … übernehmen". Zweimal tippen, und alle Vorschläge aus dieser Schulung werden Wissen – statt jeden einzeln freizugeben.',
-    'Was nicht passt, vorher einzeln verwerfen. Eigene Vorschläge bleiben stehen, bis jemand anderes aus der Leitung sie freigibt.'
-  ]},
-  { id:'2026-10-22-stempelseite', datum:'22.10.2026', titel:'Stempeln wie bei Crewmeister: Pause oder Feierabend', wo:'zeit', punkte:[
-    'Feierabend lässt sich jetzt direkt stempeln – am Terminal und am Handy. Nach dem Kommen stehen zwei Knöpfe da: „Pause" und „Feierabend". Bisher ging am Terminal immer nur Pause und Zurück, der Feierabend musste von der Leitung nachgetragen werden.',
-    'Am Terminal steht an den Namen nicht mehr, wer im Dienst ist. Name antippen, PIN, „Weiter" – dann siehst du deinen eigenen Stand („Im Dienst seit 08:26") und tippst, was du stempeln willst.',
-    'Neu unter Heute → Ich → „Zeiten": oben dein Stand jetzt, wie lange du heute gearbeitet hast und was laut Schichtplan geplant ist. Darunter deine Woche mit Plan neben den gestempelten Stunden, daneben der Monat. Am Rechner steht beides nebeneinander.',
-    'Für Leitung und Geschäftsführung: Verwaltung → Zeiten zeigt oben „Jetzt im Studio" – wer im Dienst ist, wer Pause macht, und wer laut Plan schon da sein müsste und noch nicht gestempelt hat.'
-  ]},
-  { id:'2026-10-22-formi-gefuehle-schalter', datum:'22.10.2026', titel:'Formis Gefühle lassen sich abstellen', wo:'gehirn', punkte:[
-    'Ist dir die Kugel zu lebendig? Öffne Formi, tippe oben auf den Regler (Persönlichkeit und Stimme) und stelle „Gefühle der Kugel" auf „Aus". Dann schaut, blinzelt und freut sie sich nicht mehr und schläft nicht ein.',
-    'Der Punkt „Formi hat etwas für dich" und der Hinweis „über Formi" bleiben. Die Wahl gilt nur für dein Gerät.' ] },
-  { id:'2026-10-22-zusammengelegt', datum:'22.10.2026', titel:'Noch weniger Knöpfe: Bestand, Chats und Pinnwand', wo:'todos', punkte:[
-    'Unter „Studio" heisst es jetzt „Bestand": Material und Geräte liegen dort zusammen, oben schaltest du zwischen beiden um.',
-    'Unter „Nachrichten" gibt es nur noch „Chats" und „Pinnwand". In den Chats steht „Direkt" in derselben Zeile wie Studios und Gruppen; am Rechner stehen deine letzten Direktnachrichten links in der Liste mit drin.',
-    'Die Pinnwand vereint die Infos der Leitung und die Aushänge vom Team (das frühere Schwarze Brett unter „Plan").',
-    'Erledigte Aufgaben stehen eingeklappt unter „3 erledigt" am Ende ihrer Gruppe – ein Tipp klappt sie auf. Was du gerade abgehakt hast, bleibt noch eine Minute stehen.',
-    'Am Raum „Studio" steht ein Punkt statt einer Zahl. Wie viel offen ist, steht direkt oben auf der Seite.',
-    'Am Handy stehen Bearbeiten und Löschen bei Aufgaben und im Putzplan hinter „…". Abmelden findest du jetzt über dein Bild oben rechts, ganz unten.' ] },
-  { id:'2026-10-22-formi-lebt', datum:'22.10.2026', titel:'Formi lebt: es schaut, freut sich und meldet sich oben', wo:'home', punkte:[
-    'Wo oben auf der Startseite bisher bunte Hinweis-Balken standen, steht jetzt eine Zeile von Formi: links der bunte Ring, daneben z. B. „1 Aufgabe ist überfällig" oder „5 Artikel fehlen". Antippen führt direkt hin, der Ring öffnet Formi.',
-    'Die Kugel unten rechts hat jetzt ein Auge: Sie schaut der Maus nach, blinzelt, freut sich bei jedem Haken, staunt, wenn du schnell hintereinander abhakst, feiert, wenn der Putzplan für heute fertig ist, und erschrickt bei einer Fehlermeldung. Lässt du die App eine Weile liegen, schläft sie ein.',
-    'Ein kleiner violetter Punkt an der Kugel heisst: Formi hat etwas für dich. Er verschwindet, sobald du Formi öffnest.',
-    'Was Formi für dich abgehakt oder angelegt hat, steht in Aufgaben und Putzplan mit „über Formi" und dem kleinen Ring.',
-    'Öffnet Formi eine Seite für dich, flackert sie kurz wie ein Glitch: Dann weisst du, dass gerade Formi am Werk war. Wer am Gerät „Bewegung reduzieren" eingestellt hat, sieht nichts davon.' ] },
-  { id:'2026-10-22-formi-findet-besser', datum:'22.10.2026', titel:'Formi findet die passende Antwort öfter', wo:'gehirn', punkte:[
-    'Fragst du in eigenen Worten – etwa „Was mache ich, wenn ein Kunde im letzten Moment absagt?" oder „Darf eine Schwangere trainieren?" –, findet Formi jetzt eher den richtigen Eintrag, auch wenn deine Wörter dort nicht vorkommen.',
-    'Fragen, die mit dem Studio nichts zu tun haben, ziehen keine unpassenden Einträge mehr mit.'
-  ]},
-  { id:'2026-10-22-fuenf-raeume', datum:'22.10.2026', titel:'Weniger Knöpfe: fünf Räume statt dreizehn Punkte', wo:'home', punkte:[
-    'Links am Rechner und unten am Handy stehen jetzt dieselben fünf Räume: Heute, Studio, Plan, Nachrichten, Wissen. Wer leitet, hat dazu die Verwaltung. Weggefallen ist nichts, es ist nur einsortiert.',
-    'Putzplan, Aufgaben, Material, Geräte und Probetraining liegen unter „Studio" als Reiter nebeneinander. „Ich" und „Persönlich" findest du unter „Heute", Dokumente, Schulung und Hilfe unter „Wissen", Chats, Direktnachrichten und Infos unter „Nachrichten".',
-    'Am Rechner stehen die Reiter jetzt oben neben dem Seitentitel statt in einer eigenen Zeile – so bleibt mehr Platz für die Liste. Deine Schnellzugriffe stehen weiter links unter den Räumen.',
-    'Etwas nicht gefunden? Die drei Striche links neben dem Seitentitel zeigen alles auf einen Blick, jedes Ziel ist zwei Tipps entfernt. Der Bericht an dich liegt jetzt unter Verwaltung → System → Bericht.' ] },
-  { id:'2026-10-22-formi-lernt-leitung', datum:'22.10.2026', titel:'Formi lernt dazu – die Studioleitung gibt frei', wo:'gehirn', punkte:[
-    'Für die Studioleitung: Bei Formi (große Ansicht) steht die Karte „Formi lernt". Dort zeigt Formi, was es dazulernen möchte – zum Beispiel Inhalte aus den Schulungen oder Korrekturen aus dem Team. Text bei Bedarf ändern, dann „Übernehmen" oder „Verwerfen".',
-    'Mit „Wissen vorschlagen" schreibst du selbst auf, was Formi wissen soll. Freigeben muss das jemand anderes aus der Leitung – so schauen immer zwei drauf.',
-    'Nichts davon wird Wissen, bevor ein Mensch „Übernehmen" drückt.'
-  ]},
-  { id:'2026-10-22-formi-nur-kugel', datum:'22.10.2026', titel:'Formi gibt es jetzt nur noch als Kugel', wo:'home', punkte:[
-    'Der runde Formi-Knopf oben auf der Startseite (und oben am Rechner) ist weg – Formi öffnest du über die bunte Kugel unten rechts, am Rechner auch mit der Taste J.',
-    'Die Kugel verdeckt nichts mehr: Am Ende jeder Seite ist unten Platz, und wenn unten „Rückgängig" oder ein Hinweis erscheint, rutscht sie kurz nach oben.'
-  ]},
-  { id:'2026-10-22-formi-fenster', datum:'22.10.2026', titel:'Auch Fenster, Suche und Anmeldung im Formi-Look', wo:'home', punkte:[
-    'Fenster wie Einstellungen oder „Aufgabe bearbeiten", die Menüs hinter „…", die Suche und die Anmeldeseite haben jetzt dieselbe Glas-Optik mit leuchtender Oberkante wie der Rest der App.',
-    'Die Anmeldeseite steht im selben Sternenraum wie die App.' ] },
-  { id:'2026-10-22-stil-formi', datum:'22.10.2026', titel:'Neuer Look: die ganze App in Formis Welt', wo:'home', punkte:[
-    'Die App sieht jetzt aus wie Formi: dunkler Raum mit leisem Sternenfeld, Flächen wie Glas mit einer Lichtkante, Ecken wie im Cockpit über jeder Seite.',
-    'Mehr Bewegung, aber nur wenn du etwas tust: Beim Öffnen einer Seite bauen sich die Zeilen kurz nacheinander auf, und unter der Kopfzeile läuft ein Lichtimpuls in der Farbe des Bereichs.',
-    'Hell oder Dunkel wie bisher? Profil (dein Bild oben rechts) → Aussehen → Hell, Dunkel oder Automatisch. Wer dort schon ausdrücklich Hell oder Dunkel gewählt hatte, behält das.' ] },
-  { id:'2026-10-22-formi-kugel', datum:'22.10.2026', titel:'Formi wohnt jetzt unten rechts in der App', wo:'home', punkte:[
-    'Unten rechts schwebt auf jeder Seite eine kleine bunte Kugel mit schwarzem Kern – das ist Formi. Ein Tipp öffnet Formi als kleines Fenster; die App bleibt dahinter sichtbar und bedienbar.',
-    'Sagst du „öffne den Putzplan" oder „zu den Aufgaben", fährt ein leuchtender Punkt zum richtigen Knopf, tippt drauf, und die echte Seite geht auf. Am Rechner bleibt Formi daneben offen, am Handy wird es wieder zur Kugel.',
-    'Lieber groß? Oben im Formi-Fenster macht der Knopf mit den vier Ecken Vollbild daraus – und wieder klein. Dein Gerät merkt sich die Wahl.'
-  ]},
-  { id:'2026-10-22-verwaltung-gruppen', datum:'22.10.2026', titel:'Verwaltung geordnet, ruhigere Listen am Rechner', wo:'chef:ueberblick', punkte:[
-    'Die Startseite der Verwaltung ist in vier Gruppen geordnet: Jeden Tag, Team & Studios, Zahlen, Einstellungen. Man liest die Überschriften statt elf Kacheln.',
-    'Am grossen Bildschirm stehen die Bereiche der Verwaltung links als Liste – mit denselben Gruppen –, rechts der Inhalt. Vorher lagen zwei Reiterzeilen übereinander.',
-    'In Aufgaben und Putzplan erscheinen Griff, Stift und Papierkorb am Rechner erst, wenn du mit der Maus über die Zeile fährst (oder sie mit der Tastatur wählst). Am Handy bleibt alles wie gewohnt.',
-    'Kleinigkeiten: „‹ Übersicht" in der Verwaltung ist jetzt gut zu treffen, und bei den Chef-Zugängen stehen Name und Mail sauber untereinander.' ] },
-  { id:'2026-10-22-formi-antwortet-besser', datum:'22.10.2026', titel:'Formi: stellt sich richtig vor und erfindet nichts mehr', wo:'gehirn', punkte:[
-    'Formi stellt sich nicht mehr mit deinem Namen vor („Hallo, ich bin Semih").',
-    'Weiß Formi etwas über unser Studio nicht, sagt es das ehrlich, statt etwas zu erfinden – und gibt die Frage an Semih weiter.',
-    '„Was geht" und Ähnliches landen nicht mehr als offene Frage bei Semih. Darunter steht nur dann „ging an Semih", wenn die Frage wirklich weitergegeben wurde.',
-    'Fragst du „Was kannst du?", nennt Formi, was es wirklich kann, und sagt dir, wie du es im Formi-Fenster erledigen lässt. Nach der Uhrzeit kannst du jetzt auch fragen.'
+  { id:'2026-10-25-was-ist-neu-patchnotes', datum:'25.10.2026', art:'besser', titel:'„Was ist neu" als Update-Liste', wo:'home', punkte:[
+    'Nach Tagen sortiert, jede Änderung mit „Neu", „Verbessert" oder „Behoben".',
+    'Kurze Titel, Einzelheiten zum Aufklappen.',
+    'Zu finden unter Alles → Was ist neu.'
+  ]},
+  { id:'2026-10-25-formi-redet', datum:'25.10.2026', art:'besser', titel:'Formi: natürlichere Antworten', wo:'gehirn', punkte:[
+    'Antworten in normalen Sätzen, Listen nur noch für echte Abläufe.',
+    'Keine Angebote mehr für Dinge, die Formi nicht kann.',
+    'Achtet darauf, ob etwas vor, während oder nach dem Training passiert.'
+  ]},
+  { id:'2026-10-25-schichtplan-feinschliff', datum:'25.10.2026', art:'besser', titel:'Schichtplan: übersichtlicher', wo:'team:schicht', punkte:[
+    'Vergangene Tage ohne Schicht ohne leere Leiste.',
+    'Geschlossenes Studio mit Schichten: Hinweis „geschlossen – trotzdem 3 Schichten".',
+    'Schichtplaner: „Fragen zum Plan" und „Regeln" zugeklappt schmaler, am Rechner nebeneinander.'
+  ]},
+  { id:'2026-10-25-push-ziele', datum:'25.10.2026', art:'besser', titel:'Push-Meldungen öffnen die richtige Stelle', wo:'home', punkte:[
+    'Ein Tipp auf eine Meldung führt direkt zu Chat, Aufgabe, Info, Gerät, Material oder Schulung.',
+    'Feierabend-Check öffnet die Übergabe bzw. den Putzplan.',
+    'Leitung: Nachweise, Anmeldungen, Löschanträge und Kennzahlen öffnen die Verwaltung.'
+  ]},
+  { id:'2026-10-25-schichtplaner-abdeckung', datum:'25.10.2026', art:'neu', titel:'Schichtplaner: Lücken in der Öffnungszeit', wo:'planer', punkte:[
+    '„Zu klären" meldet Öffnungszeiten ohne Schicht, z. B. „Sa 14–15 Uhr".',
+    '„Stunden im Studio": Pfeil bei deutlich unter (↓) oder über (↑) Soll.'
+  ]},
+  { id:'2026-10-24-iphone-rand', datum:'24.10.2026', art:'fix', titel:'iPhone: nichts mehr abgeschnitten', wo:'home', punkte:[
+    'Unterste Reihe liegt nicht mehr unter der Home-Leiste.',
+    'Hinweise unten brechen um statt abgeschnitten zu werden.',
+    'Fenster passen auch bei sichtbarer Safari-Adressleiste.',
+    'Plan: Datum der Woche überlappt nicht mehr den Pfeil.'
+  ]},
+  { id:'2026-10-24-formi-bewegung', datum:'24.10.2026', art:'besser', titel:'Formi: ruhiger, Bewegung einstellbar', wo:'profil', punkte:[
+    '„Hey Formi" und Vorlesen entfernt; Sprechen per Knopf bleibt.',
+    'Neu: „Formis Bewegung" (Stark, Mittel, Keine) unter Profil → Aussehen.',
+    'Leuchtrand bei der Arbeit jetzt als feine Lichtlinie.'
+  ]},
+  { id:'2026-10-24-formi-versteht', datum:'24.10.2026', art:'besser', titel:'Formi: versteht Fragen besser', wo:'gehirn', punkte:[
+    'Nutzt nur Wissen, das zur Situation passt.',
+    'Fragt einmal kurz nach, wenn etwas Wichtiges fehlt.',
+    'Gesundheitsfragen ohne festen Ablauf: erste Schritte mit Hinweis „Nicht geprüft".'
+  ]},
+  { id:'2026-10-24-schulung-mitnehmen', datum:'24.10.2026', art:'neu', titel:'Schulung: Fragen zum Nachlesen am Ende', wo:'schulung', punkte:[
+    'Nach der Schulung stehen die verpassten Fragen mit Lösung und Erklärung.',
+    'Diese Fragen kommen beim „Kurz auffrischen" zuerst.'
+  ]},
+  { id:'2026-10-23-vier-raeume', datum:'23.10.2026', art:'besser', titel:'Mitarbeiter: nur noch vier Räume', wo:'home', punkte:[
+    'Unten bzw. links: Heute, Zeiten, Plan, Nachrichten.',
+    'Aufgaben und Putzplan direkt auf „Heute" abhaken; alles andere über „Alles".',
+    'Leitung und Geschäftsführung behalten alle Räume.'
+  ]},
+  { id:'2026-10-23-leer-naechster-schritt', datum:'23.10.2026', art:'besser', titel:'Leere Listen mit nächstem Schritt', wo:'todos', punkte:[
+    'Leere Suche: „Suche leeren". Leerer Filter: „Alle zeigen".',
+    'Leere Liste: Knopf direkt zum Eintragen.'
+  ]},
+  { id:'2026-10-23-linien-symbole', datum:'23.10.2026', art:'besser', titel:'Einheitliche Symbole', wo:'home', punkte:[
+    'Alle Symbole gleich kräftig, mit runden Enden.',
+    '„⋯", „+" und Verwalten als gezeichnete Symbole.'
+  ]},
+  { id:'2026-10-23-schrift-wie-iphone', datum:'23.10.2026', art:'neu', titel:'Schriftgröße vom iPhone', wo:'home', punkte:[
+    'Die App übernimmt die eingestellte iPhone-Schriftgröße (bis „Sehr groß").',
+    'Feste Größe weiter unter Profil → Aussehen → Schriftgröße.'
+  ]},
+  { id:'2026-10-23-ziehen-aktualisieren', datum:'23.10.2026', art:'neu', titel:'Zum Aktualisieren nach unten ziehen', wo:'todos', punkte:[
+    'Oben in einer Liste nach unten ziehen: prüft auf eine neue App-Version.',
+    'Listen bleiben wie bisher live.'
+  ]},
+  { id:'2026-10-23-wischen', datum:'23.10.2026', art:'neu', titel:'Aufgaben wischen', wo:'todos', punkte:[
+    'Nach rechts wischen: abhaken.',
+    'Nach links wischen: „Mehr" und „Löschen" – auch im Putzplan.'
+  ]},
+  { id:'2026-10-23-glas-leiste', datum:'23.10.2026', art:'besser', titel:'Handy: untere Leiste durchscheinend', wo:'todos', punkte:[
+    'Die Liste scheint beim Scrollen weich durch die Leiste.',
+    'Abschaltbar: Profil → Aussehen → „Untere Leiste am Handy" → Deckend.'
+  ]},
+  { id:'2026-10-23-blaetter', datum:'23.10.2026', art:'neu', titel:'Fenster von unten ziehbar', wo:'todos', punkte:[
+    'Am Strich oben ziehen; nach unten wischen schließt.',
+    'Lange Fenster halten auf halber Höhe.'
+  ]},
+  { id:'2026-10-23-grosser-titel', datum:'23.10.2026', art:'besser', titel:'Großer Seitentitel', wo:'todos', punkte:[
+    'Seitenname oben groß und fett, beim Scrollen klein.'
+  ]},
+  { id:'2026-10-23-fluessiger', datum:'23.10.2026', art:'besser', titel:'Schneller und flüssiger', wo:'home', punkte:[
+    'Seitenwechsel und Tippen spürbar flüssiger, vor allem auf älteren Handys.',
+    'Formis Jubel läuft ohne Ruckeln.'
+  ]},
+  { id:'2026-10-23-formi-insel', datum:'23.10.2026', art:'neu', titel:'Formi: Insel und Leuchtrand bei der Arbeit', wo:'home', punkte:[
+    'Oben zeigt eine Insel, was Formi gerade erledigt, und danach das Ergebnis.',
+    'Bildschirmrand leuchtet, solange Formi arbeitet.',
+    'Abgehaktes zerfällt in Buchstaben und fällt in Formi.'
+  ]},
+  { id:'2026-10-23-chat-blasen', datum:'23.10.2026', art:'besser', titel:'Chat: Nachrichten als Blasen', wo:'chat', punkte:[
+    'Eigene Nachrichten in Akzentfarbe, andere grau; mehrere Nachrichten rücken zusammen.',
+    'Tipp auf eine Nachricht: Reaktionen, Antworten, Weiterleiten, Kopieren. Am Rechner auch per Rechtsklick.'
+  ]},
+  { id:'2026-10-23-schulung-bescheinigung', datum:'23.10.2026', art:'neu', titel:'Schulung: eigene Bescheinigung drucken', wo:'schulung', punkte:[
+    'Wissen → Schulung → „Schon geschafft" → „Bescheinigung drucken".',
+    'Mit Datum, Ergebnis, Dauer, Gültigkeit und Feld zum Unterschreiben.'
+  ]},
+  { id:'2026-10-23-federn', datum:'23.10.2026', art:'besser', titel:'Weichere Bewegungen', wo:'home', punkte:[
+    'Seiten, Fenster, Haken und Schalter bewegen sich wie Federn.'
+  ]},
+  { id:'2026-10-23-leiste-fuenf', datum:'23.10.2026', art:'besser', titel:'Handy: fünf Knöpfe unten', wo:'home', punkte:[
+    'Heute, Studio, Zeiten, Plan, Nachrichten – breiter und leichter zu treffen.',
+    '„Wissen" über „Alles" oben links.'
+  ]},
+  { id:'2026-10-23-schichtplaner-fragen-app', datum:'23.10.2026', art:'neu', titel:'Schichtplaner: Fragen direkt in der App', wo:'planer', punkte:[
+    'Karte „Fragen zum Plan": 24 Fragen direkt in der App beantworten.',
+    'Neu: „Veröffentlichung zurücknehmen" – der Entwurf bleibt.',
+    'Öffnungszeiten aus der Excel-Vorlage zählen für die Besetzungs-Leiste.'
+  ]},
+  { id:'2026-10-23-aufgaben-gruppen', datum:'23.10.2026', art:'besser', titel:'Aufgaben und Putzplan in Gruppen', wo:'todos', punkte:[
+    'Gruppen (Täglich, Wöchentlich …) als ruhige Flächen wie auf der Startseite.',
+    'Am Rechner ist „+ Neu" der Hauptknopf.'
+  ]},
+  { id:'2026-10-23-erinnerung-tipp', datum:'23.10.2026', art:'besser', titel:'Stempel-Erinnerung öffnet „Zeiten"', wo:'zeit', punkte:[
+    'Tipp auf „Feierabend vergessen?" oder „Schon eingestempelt?" öffnet „Zeiten".',
+    'Gelöschter Zugang: Soll, Urlaubsanspruch und Personalnummer werden mit entfernt; Stempel bleiben.'
+  ]},
+  { id:'2026-10-23-formi-seit-du-weg', datum:'23.10.2026', art:'neu', titel:'Formi: Was seit deiner letzten Schicht passiert ist', wo:'home', punkte:[
+    'Nach über 12 Stunden Abwesenheit: Übergaben und Ankündigungen auf einen Blick auf „Heute".',
+    'Meldungen der App kommen als „Formi · …".'
+  ]},
+  { id:'2026-10-23-gruppen-titel', datum:'23.10.2026', art:'besser', titel:'Startseite: ruhigere Abschnitte', wo:'home', punkte:[
+    'Jeder Abschnitt als eine Fläche, Zeilen mit feiner Linie getrennt.',
+    'Überschriften in normaler Schrift statt GROSSBUCHSTABEN.'
+  ]},
+  { id:'2026-10-23-heute-haken', datum:'23.10.2026', art:'neu', titel:'Auf „Heute" abhaken', wo:'home', punkte:[
+    'Kreis links an jeder Aufgabe und jedem Putzpunkt hakt direkt ab.',
+    '„Rückgängig" erscheint unten.'
+  ]},
+  { id:'2026-10-23-systemschrift', datum:'23.10.2026', art:'besser', titel:'Neue Schrift', wo:'home', punkte:[
+    'Systemschrift des Geräts (Apple bzw. Inter) – klarer und ruhiger.'
+  ]},
+  { id:'2026-10-23-stempel-erinnerung', datum:'23.10.2026', art:'neu', titel:'Erinnerung bei vergessenem Stempel', wo:'zeit', punkte:[
+    '15 Minuten nach Schichtbeginn ohne Stempel: Erinnerung aufs Handy.',
+    '30 Minuten nach Schichtende noch eingestempelt: „Feierabend vergessen?" per Handy und Mail.',
+    'Abschaltbar unter Einstellungen → Meldungen bzw. Mails.'
+  ]},
+  { id:'2026-10-23-formi-schwarzes-loch', datum:'23.10.2026', art:'besser', titel:'Formi: Abhaken mit Effekt', wo:'todos', punkte:[
+    'Abgehaktes fliegt in einer Spirale in Formi.',
+    'Je mehr heute erledigt ist, desto heller leuchtet Formi.'
+  ]},
+  { id:'2026-10-23-neues-design-fuer-alle', datum:'23.10.2026', art:'neu', titel:'Neues Design für alle', wo:'home', punkte:[
+    'Neues Design ab sofort für alle aktiv.',
+    'Geschäftsführung kann es übergangsweise zurückstellen: Verwaltung → System → Design.'
+  ]},
+  { id:'2026-10-23-formi-meldet-sich', datum:'23.10.2026', art:'neu', titel:'Formi trägt ein und meldet sich', wo:'gehirn', punkte:[
+    'Material und Probetraining über Formi eintragen – mit Vorschau.',
+    'Meldungen: morgens dein Tag, Frist vorbei, Feierabend-Check; Leitung: Defekt und fehlendes Material.',
+    'Abschaltbar: Profil → Mitteilungen → „Formi meldet sich".'
+  ]},
+  { id:'2026-10-23-formi-spart', datum:'23.10.2026', art:'fix', titel:'Formi bleibt den ganzen Tag erreichbar', wo:'gehirn', punkte:[
+    'Antwortet auch an vollen Tagen weiter, notfalls kürzer.',
+    'Unbeantwortete Fragen werden gespeichert und nachgeholt.'
+  ]},
+  { id:'2026-10-23-formi-fenster-neu', datum:'23.10.2026', art:'besser', titel:'Formi-Fenster neu gestaltet', wo:'gehirn', punkte:[
+    'Vorschläge als Karten, Gespräch in Sprechblasen, eine Eingabezeile unten.',
+    'Formi erscheint auch bei Gruß, Hinweisen und leeren Listen.'
+  ]},
+  { id:'2026-10-23-formi-geprueft', datum:'23.10.2026', art:'besser', titel:'Formi: mehr geprüfte Antworten', wo:'gehirn', punkte:[
+    'Rund 450 typische Fragen aus dem Studioalltag mit geprüften Antworten hinterlegt.'
+  ]},
+  { id:'2026-10-23-formi-gesicht', datum:'23.10.2026', art:'besser', titel:'Formi: neues Gesicht', wo:'home', punkte:[
+    'Neue Augen und Mimik; Formi reagiert auf Haken, Fehler und Meldungen.',
+    'Abschaltbar: Formi → Regler → „Gefühle der Kugel" → Aus.'
+  ]},
+  { id:'2026-10-23-formi-gefuehle-antworten', datum:'23.10.2026', art:'besser', titel:'Formi: persönlichere Antworten', wo:'gehirn', punkte:[
+    'Bezieht sich auf das bisherige Gespräch und deinen Tag in der App.',
+    'Gesprächsverlauf wird zwei Stunden gemerkt.'
+  ]},
+  { id:'2026-10-23-leiste-schmal', datum:'23.10.2026', art:'fix', titel:'Kleine Handys: Knöpfe unten gut treffbar', wo:'home', punkte:[
+    'Jeder Knopf unten mindestens 48 Punkte breit.',
+    'Formi liegt nicht mehr auf der unteren Leiste.'
+  ]},
+  { id:'2026-10-23-formi-zeigwie', datum:'23.10.2026', art:'neu', titel:'Formi: „Zeig mir wie"', wo:'gehirn', punkte:[
+    'Formi zeigt Abläufe Schritt für Schritt auf den echten Seiten, z. B. „Zeig mir, wie ich eine Aufgabe anlege".',
+    'Fünf Rundgänge; ein Rundgang trägt nichts ein.'
+  ]},
+  { id:'2026-10-23-formi-ueberall', datum:'23.10.2026', art:'neu', titel:'Formi beim Stempeln, Anmelden und in der Schulung', wo:'zeit', punkte:[
+    'Stempeln: Formi begrüßt dich und nennt die Tageszeit beim Feierabend.',
+    'Anmeldung und Schulung mit Formi; im hellen Stil als weißes Loch.'
+  ]},
+  { id:'2026-10-23-formi-scheibe', datum:'23.10.2026', art:'besser', titel:'Formi: neue Scheibe, mehr Gefühle', wo:'home', punkte:[
+    'Neue Scheibe um Formi, die mit erledigten Aufgaben heller wird.',
+    'Neue Gefühle: traurig, gelangweilt, verwirrt, stolz; ohne Netz zeigt Formi es an.',
+    'Bei offenem Formi läuft die App flüssiger.'
+  ]},
+  { id:'2026-10-23-nachts-lautlos', datum:'23.10.2026', art:'neu', titel:'Nachts lautlos', wo:'profil', punkte:[
+    'Meldungen zwischen 22 und 6 Uhr ohne Ton und Vibration.',
+    'Abschaltbar: Profil → Meldungen → „Nachts lautlos".'
+  ]},
+  { id:'2026-10-23-was-ist-neu-zeigen', datum:'23.10.2026', art:'fix', titel:'„Was ist neu": jeder Eintrag mit „Zeigen ›"', wo:'home', punkte:[
+    'Doppelter Eintrag entfernt; alle Einträge führen zur Neuerung.'
+  ]},
+  { id:'2026-10-23-alles-aushaenge', datum:'23.10.2026', art:'fix', titel:'„Alles": Zeile „Infos" richtig benannt', wo:'ann', punkte:[
+    'Die Zeile heißt jetzt „Infos"; Aushänge weiter unter „Schwarzes Brett".'
+  ]},
+  { id:'2026-10-23-zeiten-bereich', datum:'23.10.2026', art:'neu', titel:'Eigener Bereich „Zeiten"', wo:'zeit', punkte:[
+    'Neuer Knopf „Zeiten": stempeln, Tag, Woche, Monat.',
+    '„Mein Konto": Plus/Minus und Resturlaub.',
+    'Leitung: Reiter „Team" mit Anwesenheit, Anträgen, Abschluss, Excel und DATEV.'
+  ]},
+  { id:'2026-10-23-ein-gruss', datum:'23.10.2026', art:'fix', titel:'Gleicher Gruß auf Startseite und bei Formi', wo:'home', punkte:[
+    'Nachts kein „Guten Morgen" mehr neben „Guten Abend".'
+  ]},
+  { id:'2026-10-23-erstes-oeffnen', datum:'23.10.2026', art:'fix', titel:'Kein Neuladen beim ersten Öffnen', wo:'home', punkte:[
+    'Die App lädt beim ersten Öffnen nicht mehr nach zwei Sekunden neu.'
+  ]},
+  { id:'2026-10-23-formi-reihe', datum:'23.10.2026', art:'besser', titel:'Handy: mehr Platz auf „Heute"', wo:'home', punkte:[
+    'Schmalerer Kopf, Formi neben den Schnellzugriffen – ein Block mehr passt ins Bild.'
+  ]},
+  { id:'2026-10-23-formi-wie-chatgpt', datum:'23.10.2026', art:'besser', titel:'Formi: ausführlichere Antworten, kennt deine App', wo:'gehirn', punkte:[
+    'Hilft auch bei Training, Kundengesprächen, Texten und Mails.',
+    'Kennt deinen Dienst, offene Aufgaben, Putzplan, Material, Schulungen und Übergaben.',
+    'Liest keine Chats und Direktnachrichten.'
+  ]},
+  { id:'2026-10-23-auffrischen-push', datum:'23.10.2026', art:'neu', titel:'Schulung: Erinnerung zum Auffrischen', wo:'schulung', punkte:[
+    'Push, wenn Fragen zum Auffrischen warten – höchstens alle drei Tage.',
+    'Abschaltbar: Profil → Meldungen → „Kurz auffrischen".'
+  ]},
+  { id:'2026-10-22-soll-wochentag', datum:'22.10.2026', art:'neu', titel:'Soll je Wochentag', wo:'zeitteam', punkte:[
+    'Geschäftsführung trägt Sollstunden je Wochentag ein; Feiertage zählen 0.',
+    'Stempel nachtragen nur noch durch die Geschäftsführung; Mitarbeiter beantragen selbst.'
+  ]},
+  { id:'2026-10-22-formi-ruhig', datum:'22.10.2026', art:'besser', titel:'Formi: ruhiges Fenster statt Vollbild', wo:'gehirn', punkte:[
+    'Formi immer als Fenster bzw. Spalte; „Mehr Platz" vergrößert.',
+    'Sprechen per Knopf „Sprechen".'
+  ]},
+  { id:'2026-10-22-formi-schwarzes-loch', datum:'22.10.2026', art:'neu', titel:'Formi in der Suche', wo:'home', punkte:[
+    'Fragen in der Suche („wer hat heute Dienst?") gehen direkt an Formi.',
+    'Neue Animation von Formi beim Fragen und Antworten.'
+  ]},
+  { id:'2026-10-22-formi-welt-2', datum:'22.10.2026', art:'besser', titel:'Neue Farben in der ganzen App', wo:'home', punkte:[
+    'Karten mit dunklem Kern und farbiger Kante; aktiver Bereich in Formis Farben.',
+    'Kleiner Effekt beim Abhaken.'
+  ]},
+  { id:'2026-10-22-schulung-nachweis', datum:'22.10.2026', art:'neu', titel:'Leitung: Unterweisungsnachweis drucken', wo:'schulung', punkte:[
+    'Schulung → Verwalten → „Pflicht" → „Nachweis drucken": Inhalt, Teilnehmer, Ergebnis, Unterschriftsspalte.'
+  ]},
+  { id:'2026-10-22-datev', datum:'22.10.2026', art:'neu', titel:'DATEV-Export', wo:'zeitteam', punkte:[
+    'Verwaltung → Zeiten → Monat & Konto → „DATEV" (LODAS): Stunden und Urlaubstage je Personalnummer.',
+    'Erste Datei bitte vom Lohnbüro prüfen lassen.'
+  ]},
+  { id:'2026-10-22-formi-fenster-ruhiger', datum:'22.10.2026', art:'besser', titel:'Formi-Fenster aufgeräumt', wo:'home', punkte:[
+    'Weniger Knöpfe oben; Einstellungen hinter „…".',
+    'Leere Listen zeigen „Frag Formi".'
+  ]},
+  { id:'2026-10-22-stundenkonto', datum:'22.10.2026', art:'neu', titel:'Stundenkonto und Monatsabschluss', wo:'zeitteam', punkte:[
+    'Je Person: Stunden, Soll, Urlaub, Krankheit, Saldo und Konto.',
+    'Export als Excel und CSV; Monat abschließen und mit Grund wieder öffnen.'
+  ]},
+  { id:'2026-10-22-schulung-pflicht', datum:'22.10.2026', art:'neu', titel:'Leitung: Pflichtschulungen im Überblick', wo:'schulung', punkte:[
+    'Reiter „Pflicht": Stand je Person und Schulung, Überfälliges gezählt.',
+    '„Erinnern" erzeugt eine fertige Nachricht.'
+  ]},
+  { id:'2026-10-22-schichtplaner-fragen', datum:'22.10.2026', art:'neu', titel:'Schichtplaner: Vorlage mit Fragen', wo:'planer', punkte:[
+    'Excel-Vorlage mit neuem Blatt „Fragen" (24 Fragen für den ersten Plan).'
+  ]},
+  { id:'2026-10-22-formi-augen', datum:'22.10.2026', art:'besser', titel:'Formi: lebendige Augen', wo:'home', punkte:[
+    'Pupillen folgen der Maus, Formi blinzelt, schaut zu neuen Meldungen und schläft bei Ruhe ein.'
+  ]},
+  { id:'2026-10-22-korrekturantrag', datum:'22.10.2026', art:'neu', titel:'Fehlenden Stempel beantragen', wo:'zeit', punkte:[
+    '„Korrektur beantragen" unter Zeiten – bis 31 Tage zurück, mit Status.',
+    'Geschäftsführung nimmt an oder lehnt mit Begründung ab.'
+  ]},
+  { id:'2026-10-22-pausenregel', datum:'22.10.2026', art:'neu', titel:'Automatische Pausenregel', wo:'zeit', punkte:[
+    'Ab 6 Stunden 30 Minuten, ab 9 Stunden 45 Minuten Pause – nur Fehlendes wird abgezogen.',
+    'Hinweise bei über 10 Stunden, fehlender Pause oder zu kurzer Ruhezeit.'
+  ]},
+  { id:'2026-10-22-schichtplan-besetzung', datum:'22.10.2026', art:'neu', titel:'Schichtplan: Besetzung je Tag', wo:'team:schicht', punkte:[
+    'Leiste je Tag zeigt die Besetzung; Lücken in der Öffnungszeit orange markiert.'
+  ]},
+  { id:'2026-10-22-schulung-animation', datum:'22.10.2026', art:'neu', titel:'Schulung: Animationen statt „Video folgt"', wo:'schulung', punkte:[
+    'Fünf Schritte in den Pflichtschulungen mit kurzer Bild-Animation.'
+  ]},
+  { id:'2026-10-22-schulung-lernen', datum:'22.10.2026', art:'neu', titel:'Schulung: Auffrischen, Fristen, später weiter', wo:'schulung', punkte:[
+    '„Kurz auffrischen" in kleinen Runden.',
+    'Pflichtschulungen mit Frist (14 Tage).',
+    'Lange Schulungen: „Später weiter".'
+  ]},
+  { id:'2026-10-22-formi-blase-rechts', datum:'22.10.2026', art:'fix', titel:'Rechner: Formis Sprechblase verdeckt nichts mehr', wo:'home', punkte:[
+    'Die Blase steht jetzt neben Formi in der Seite.'
+  ]},
+  { id:'2026-10-22-formi-seitenleiste', datum:'22.10.2026', art:'besser', titel:'Rechner: Formi unten links', wo:'home', punkte:[
+    'Formi verdeckt keine Inhalte mehr.',
+    'Neue Geräte: „Alle Chat-Nachrichten" zunächst aus.'
+  ]},
+  { id:'2026-10-22-schichtplaner-anfang', datum:'22.10.2026', art:'besser', titel:'Schichtplaner: einfacher Einstieg', wo:'planer', punkte:[
+    '„So fängst du an" in drei Schritten.',
+    'Regeln & Sonderfälle in vier Reitern.'
+  ]},
+  { id:'2026-10-22-formi-kumpel', datum:'22.10.2026', art:'neu', titel:'Formi mit eigenem Charakter', wo:'gehirn', punkte:[
+    'Formi antwortet locker wie ein Kollege, bei Ernstem sachlich.',
+    'Kurze Sprechblasen an der Kugel (Gruß, Lob).',
+    'Abschaltbar: Formi → Regler → „Gefühle der Kugel".'
+  ]},
+  { id:'2026-10-22-formi-gesicht', datum:'22.10.2026', art:'neu', titel:'Formi mit Gesicht', wo:'home', punkte:[
+    'Formi hat ein Gesicht und reagiert auf Haken und Ruhe.',
+    'Abschaltbar: Formi → Regler → „Gefühle der Kugel".'
+  ]},
+  { id:'2026-10-22-formi-angedockt', datum:'22.10.2026', art:'besser', titel:'Rechner: Formi als Spalte rechts', wo:'home', punkte:[
+    'Ab 1440 Pixel Breite öffnet Formi als Spalte neben der Seite.'
+  ]},
+  { id:'2026-10-22-schichtplan-raster', datum:'22.10.2026', art:'neu', titel:'Schichtplan: Ansicht nach Personen', wo:'team:schicht', punkte:[
+    'Neue Ansicht „Personen" mit Wochenstunden.',
+    'Schicht antippen: tauschen, übernehmen, bestätigen.',
+    'Tastenkürzel: Pfeile, H (heute), V (Ansicht).'
+  ]},
+  { id:'2026-10-22-formi-alle-uebernehmen', datum:'22.10.2026', art:'neu', titel:'Leitung: Formi-Vorschläge gesammelt freigeben', wo:'gehirn', punkte:[
+    '„Alle übernehmen" für alle Vorschläge aus einer Schulung.'
+  ]},
+  { id:'2026-10-22-stempelseite', datum:'22.10.2026', art:'neu', titel:'Feierabend selbst stempeln', wo:'zeit', punkte:[
+    'Nach dem Kommen: „Pause" und „Feierabend" – am Terminal und am Handy.',
+    'Eigene Übersicht: heute, Woche, Monat.',
+    'Leitung: „Jetzt im Studio".'
+  ]},
+  { id:'2026-10-22-formi-gefuehle-schalter', datum:'22.10.2026', art:'neu', titel:'Formis Gefühle abschaltbar', wo:'gehirn', punkte:[
+    'Formi → Regler → „Gefühle der Kugel" → Aus. Gilt je Gerät.'
+  ]},
+  { id:'2026-10-22-zusammengelegt', datum:'22.10.2026', art:'besser', titel:'Weniger Knöpfe: Bestand, Chats, Pinnwand', wo:'todos', punkte:[
+    '„Bestand" vereint Material und Geräte.',
+    'Nachrichten: „Chats" und „Pinnwand".',
+    'Erledigte Aufgaben eingeklappt am Ende der Gruppe.'
+  ]},
+  { id:'2026-10-22-formi-lebt', datum:'22.10.2026', art:'neu', titel:'Formi-Zeile auf der Startseite', wo:'home', punkte:[
+    'Formi zeigt oben, was ansteht, z. B. „1 Aufgabe ist überfällig".',
+    'Von Formi Erledigtes ist mit „über Formi" markiert.'
+  ]},
+  { id:'2026-10-22-formi-findet-besser', datum:'22.10.2026', art:'besser', titel:'Formi findet passendere Antworten', wo:'gehirn', punkte:[
+    'Findet den richtigen Eintrag auch bei eigenen Worten.'
+  ]},
+  { id:'2026-10-22-fuenf-raeume', datum:'22.10.2026', art:'besser', titel:'Navigation: fünf Räume', wo:'home', punkte:[
+    'Heute, Studio, Plan, Nachrichten, Wissen (plus Verwaltung für die Leitung).',
+    'Alles über „Alles" in zwei Tipps erreichbar.'
+  ]},
+  { id:'2026-10-22-formi-lernt-leitung', datum:'22.10.2026', art:'neu', titel:'Leitung: Formi-Wissen freigeben', wo:'gehirn', punkte:[
+    'Karte „Formi lernt": Vorschläge prüfen, ändern, übernehmen oder verwerfen.',
+    'Eigene Vorschläge gibt jemand anderes aus der Leitung frei.'
+  ]},
+  { id:'2026-10-22-formi-nur-kugel', datum:'22.10.2026', art:'besser', titel:'Formi nur noch über die Kugel', wo:'home', punkte:[
+    'Formi öffnen über die Kugel unten rechts oder Taste J.'
+  ]},
+  { id:'2026-10-22-formi-fenster', datum:'22.10.2026', art:'besser', titel:'Neuer Look für Fenster und Anmeldung', wo:'home', punkte:[
+    'Fenster, Menüs, Suche und Anmeldung im neuen Design.'
+  ]},
+  { id:'2026-10-22-stil-formi', datum:'22.10.2026', art:'neu', titel:'Neuer Look', wo:'home', punkte:[
+    'Neues dunkles Design mit Glas-Flächen.',
+    'Hell, Dunkel oder Automatisch unter Profil → Aussehen.'
+  ]},
+  { id:'2026-10-22-formi-kugel', datum:'22.10.2026', art:'neu', titel:'Formi als Kugel in der App', wo:'home', punkte:[
+    'Kugel unten rechts öffnet Formi; die App bleibt dahinter bedienbar.',
+    'Formi öffnet Seiten auf Zuruf („öffne den Putzplan").'
+  ]},
+  { id:'2026-10-22-verwaltung-gruppen', datum:'22.10.2026', art:'besser', titel:'Verwaltung neu geordnet', wo:'chef:ueberblick', punkte:[
+    'Vier Gruppen: Jeden Tag, Team & Studios, Zahlen, Einstellungen.',
+    'Am Rechner Bereiche links als Liste.'
+  ]},
+  { id:'2026-10-22-formi-antwortet-besser', datum:'22.10.2026', art:'fix', titel:'Formi: korrekte Vorstellung, keine erfundenen Antworten', wo:'gehirn', punkte:[
+    'Stellt sich nicht mehr mit deinem Namen vor.',
+    'Sagt ehrlich, wenn es etwas nicht weiß.',
+    '„Was kannst du?" nennt die echten Funktionen.'
   ]},
   { id:'2026-10-21-kanalspalte', datum:'21.10.2026', titel:'Nachrichten am Rechner: alle Kanäle links in einer Liste', wo:'chat', punkte:[
     'Am Rechner stehen in den Nachrichten alle Kanäle jetzt links untereinander – Studios und Gruppen, jeweils mit der letzten Nachricht darunter. Rechts läuft der Chat.',
@@ -23777,28 +23744,56 @@ function vorfallSenden(){
     $('vfFehler').textContent=fnFehler(e)+' Wenn es nicht klappt: sofort der Geschäftsführung Bescheid sagen.';
   });
 }
+/* Runde 271: Patchnotes. `art` steht ab dem 22.10.2026 an jedem Eintrag;
+   ältere Einträge raten sie aus dem Titel (nur für die Marke). */
+var NEU_ART = { neu:'Neu', besser:'Verbessert', fix:'Behoben' };
+function neuArt(n){
+  if(NEU_ART[n.art]) return n.art;
+  var t=(n.titel||'').toLowerCase();
+  if(/behoben|wieder |nicht mehr|fehler|repariert|kein .*mehr/.test(t)) return 'fix';
+  if(/^neu|neue[rs]? |jetzt auch|eigene[rs]? /.test(t)) return 'neu';
+  return 'besser';
+}
+var NEU_MONATE=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+function neuTagText(datum){
+  var d=String(datum).split('.'), m=NEU_MONATE[(+d[1])-1];
+  return m ? +d[0]+'. '+m+(+d[2]!==new Date().getFullYear() ? ' '+d[2] : '') : datum;
+}
 function renderNeu(){
   var box=$('neuListe'), stand=$('neuStand'); if(!box) return;
   var gesehen=PREFS.neuGesehen||'';
   var kat=schnellKatalog();
-  if(stand) stand.textContent = NEUIGKEITEN.length
-    ? 'Stand der App: '+NEUIGKEITEN[0].datum+' · '+NEUIGKEITEN[0].titel : '';
   var neuBis = -1;
   NEUIGKEITEN.forEach(function(n, i){ if(neuBis<0 && n.id===gesehen) neuBis=i; });
-  box.innerHTML = NEUIGKEITEN.map(function(n, i){
+  var frischZahl = !gesehen ? 0 : (neuBis<0 ? NEUIGKEITEN.length : neuBis);
+  if(stand) stand.textContent = NEUIGKEITEN.length
+    ? 'Stand der App: '+neuTagText(NEUIGKEITEN[0].datum)+
+      (frischZahl ? ' · '+frischZahl+(frischZahl===1?' Änderung':' Änderungen')+' neu für dich' : '') : '';
+  var html='', tag='', erster='';
+  NEUIGKEITEN.forEach(function(n, i){
     var frisch = gesehen && (neuBis<0 || i<neuBis);
+    if(!erster) erster=n.datum;
+    if(n.datum!==tag){
+      tag=n.datum;
+      var anz=0, f=0;
+      NEUIGKEITEN.forEach(function(x, k){ if(x.datum===tag){ anz++; if(gesehen && (neuBis<0 || k<neuBis)) f++; } });
+      html+='<div class="neu-tag"><h4>Update · '+esc(neuTagText(tag))+'</h4><span>'+anz+(anz===1?' Änderung':' Änderungen')+
+        (f?' · <i>neu für dich</i>':'')+'</span></div>';
+    }
+    var art=neuArt(n);
     var ziel = n.wo && (n.wo==='home' ? { e:{ view:'home' } } : kat.nach[n.wo]);
-    return '<section class="neu-eintrag'+(frisch?' frisch':'')+'">'+
-      '<div class="ne-kopf"><b>'+esc(n.titel)+'</b><span>'+esc(n.datum)+
-        (frisch?' · <i>neu für dich</i>':'')+'</span></div>'+
+    var offen = n.datum===erster || frisch;
+    html+='<details class="neu-eintrag'+(frisch?' frisch':'')+'"'+(offen?' open':'')+' data-art="'+art+'">'+
+      '<summary class="ne-kopf"><span class="ne-art '+art+'">'+NEU_ART[art]+'</span><b>'+esc(n.titel)+'</b></summary>'+
       '<ul>'+n.punkte.map(function(t){ return '<li>'+esc(t)+'</li>'; }).join('')+'</ul>'+
       (ziel ? '<button type="button" class="btn btn-ghost btn-sm ne-zeigen"'+
         allesZielAttr(ziel.e)+'>Zeigen ›</button>'
       /* Runde 224: Das Profil ist keine Seite, sondern ein Fenster – drei
          Einträge mit wo:'profil' hatten deshalb nie „Zeigen ›". */
       : (n.wo==='profil' ? '<button type="button" class="btn btn-ghost btn-sm ne-zeigen" data-neu-profil="1">Zeigen ›</button>' : ''))+
-      '</section>';
-  }).join('');
+      '</details>';
+  });
+  box.innerHTML = html;
   box.querySelectorAll('[data-alles]').forEach(function(b){
     b.addEventListener('click', function(){ neuSchliessen(); allesZiel(b); });
   });
