@@ -22973,3 +22973,54 @@ Vorrang …“). Der Pfeil ↑ macht es jetzt sichtbar.
   Neuigkeiten-Eintrag kam während des Laufs in index.html, ohne die
   Sicherheitsregel neu zu setzen — genau die Falle aus CLAUDE.md.
   Wiederholt nach `csp.js --setzen`.)
+
+## Runde 266 — Formi live gemessen, nachgeschärft, Probe mit eigenem Systemtext (Worker 2.26, 25.10.2026)
+
+**Gemessen mit `/api/probe` (2.25 live, gpt-oss-120b, Denken „low", 5–10 s
+je Antwort)**
+- **Durchfall:** brauchbar. Gerät aus, Toilette, Reinigung und Termin
+  verschieben kamen. Aber noch „hinsetzen", 112 schon bei „schwach", der
+  Regionalleiter soll informiert werden, und kein „Nicht geprüft".
+- **Fieber, Herzschrittmacher mit Bescheinigung, „die weste geht nicht"**:
+  gut. Bei der Weste kam die Rückfrage, wie gewünscht.
+- **Partner-Einwand:** inhaltlich gut, aber Du und Sie gemischt.
+- **„gerät piept dreimal":** schlecht. Formi sagte nur „schau unter Hilfe
+  im Studio" — die Antwort einer Schulungsfrage („Richtig ist: …").
+- **„Kundin weint nach dem Training":** „Stoppe das Training sofort" und
+  eine Liste wie aus dem Handbuch. Den Zeitpunkt (nach dem Training) hat
+  Formi nicht erfasst.
+- **Denken „medium"** (Probe `ohneDenken`): nicht erkennbar besser, eher
+  mehr Floskeln („Stark, dass du das sofort regelst!").
+- Die Durchfall-Frage vom 24.10. steht nicht im Verlauf des Workers. Sie
+  ist also in der App beim Vorsortieren (Gemini) hängen geblieben.
+  Bestätigt damit die Gemini-Regel aus Runde 262.
+
+**Geändert (2.26)**
+- Systemtext:
+  - Zeitpunkt beachten (vor, während oder nach dem Training).
+  - Kein „Kurz gesagt …", kein Lob für eine Frage.
+  - Nie NUR auf eine andere Stelle verweisen.
+  - Angemessen eskalieren: Regionalleiter nur bei Verträgen, Kündigung,
+    Pausen; 112 nur bei echten Warnzeichen, und die konkret nennen.
+  - Du zur Person, Zitate für Kunden in der Sie-Form.
+- Einträge aus Schulungsfragen („Richtig ist:") kommen hinter die echten
+  Abläufe (`kiWissen`).
+- `/api/probe` nimmt `system` (eigener Systemtext) oder `zusatz` (an den
+  echten angehängt) und `verlauf`. Das geht nur mit dem Leitstand-Schlüssel
+  und wird nie gespeichert. Den aktuellen Text liefert `/api/systemtext`.
+  Damit lässt sich ein neuer Text ausprobieren, ohne dass Semih für jeden
+  Versuch einspielen muss.
+
+**Warum keine weitere Regel-Flut:** Jede Regel behebt einen Fall und kann
+einen anderen verschlechtern. Mit der Probe lässt sich jetzt jede Änderung
+gegen dieselben Fragen messen, bevor sie live geht.
+
+**Ehrlich:** gpt-oss-120b bleibt die Grenze. „So wie Claude" ist damit
+nicht zu erreichen. Die Empfehlung Claude Haiku (≈ 1 $ je 1.000 Antworten)
+steht weiter, entschieden ist „Gratis bleiben".
+
+**Geprüft:** `test-formi-worker` 164. Neu geprüft:
+- Ein eigener Systemtext ersetzt den echten nur für diese Probe; die
+  Gegenprobe bekommt danach wieder den echten.
+- Ohne Leitstand-Schlüssel gibt es 401.
+- Quiz-Einträge kommen nach hinten, und die neuen Regeln stehen im Text.

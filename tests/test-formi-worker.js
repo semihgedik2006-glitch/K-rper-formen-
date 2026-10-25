@@ -143,6 +143,8 @@ function ki(antworten) {
   pruefe(/praktische, vernünftige erste Schritte/.test(sys) && /Beginne dann mit "Nicht geprüft:"/.test(sys) && /Keine Diagnosen, keine Medikamente/.test(sys), 'Systemtext: Gesundheit ohne Wissen — gesunder Menschenverstand, markiert, ohne Diagnose');
   pruefe(/durchfall/.test(sys) && /"hinsetzen lassen" ist der Ablauf bei Schwindel/.test(sys), 'Systemtext: das Durchfall-Beispiel mit gutem und schlechtem Weg steht drin');
   pruefe(w.kiWissen(Array.from({ length: 8 }, (_, i) => ({ thema: 't' + i, inhalt: 'x'.repeat(100) }))).length === 5 && w.kiWissen([{ thema: 'a', inhalt: 'x'.repeat(9000) }, { thema: 'b', inhalt: 'y' }]).length === 1, 'an die KI höchstens 5 Einträge und 7.000 Zeichen (ein langer bleibt)');
+  pruefe(w.kiWissen([{ thema: 'Quiz', inhalt: 'Richtig ist: In der App nachsehen.' }, { thema: 'Gerät aus', inhalt: '1. Akku prüfen' }])[0].thema === 'Gerät aus', '2.26: Einträge aus Schulungsfragen („Richtig ist:") kommen hinter echte Abläufe');
+  pruefe(/nach dem Training stoppt man kein Training mehr/.test(sys) && /Verweise nie NUR auf eine andere Stelle/.test(sys) && /Kein Schluss-Absatz "Kurz gesagt/.test(sys), '2.26: Zeitpunkt beachten, nicht nur verweisen, kein „Kurz gesagt"');
   pruefe(w.denkenFuer({}).reasoning.effort === 'low' && w.denkenFuer({ FORMI_DENKEN: 'medium' }).reasoning.effort === 'medium' && w.denkenFuer({ FORMI_DENKEN: 'quatsch' }).reasoning.effort === 'low', 'Nachdenken per FORMI_DENKEN umstellbar, sonst „low"');
   pruefe(!/oder sag "Das weiß ich noch nicht sicher"/.test(sys), 'Systemtext: „weiß ich nicht sicher" nur ohne Wissen');
 
@@ -446,6 +448,15 @@ function ki(antworten) {
       pruefe(bsp[0] !== undefined && !/Beispielantwort GUT/.test(bsp[0]), 'Gegenprobe: zu einer fremden Frage kein Westen-Beispiel');
       const pr = await (await w.default.fetch(new Request('https://x.test/api/probe', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': 'admin' }, body: JSON.stringify({ frage: 'Wie wasche ich die Westen?' }) }), env2, { waitUntil() {} })).json();
       pruefe(Array.isArray(pr.beispiele) && pr.beispiele.includes('Wie wasche ich die Westen richtig?'), 'Probe im Leitstand zeigt, welche Beispiele mitgingen');
+      /* 2.26: Probe mit eigenem Systemtext — zum Ausprobieren ohne Einspielen. */
+      bsp.length = 0;
+      const prS = await (await w.default.fetch(new Request('https://x.test/api/probe', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': 'admin' }, body: JSON.stringify({ frage: 'Wie wasche ich die Westen?', system: 'TESTSYSTEM-XYZ' }) }), env2, { waitUntil() {} })).json();
+      pruefe(prS.eigenerText === true && /TESTSYSTEM-XYZ/.test(bsp[0] || '') && !/SO DENKST DU/.test(bsp[0] || ''), 'Probe: ein mitgegebener Systemtext ersetzt den echten (nur für diese Probe)');
+      bsp.length = 0;
+      await frag('Wie wasche ich die Westen?');
+      pruefe(/SO DENKST DU/.test(bsp[0] || '') && !/TESTSYSTEM-XYZ/.test(bsp[0] || ''), 'Gegenprobe: die nächste echte Frage hat wieder den echten Systemtext');
+      const prOhne = await w.default.fetch(new Request('https://x.test/api/probe', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-studio-key': 'k' }, body: JSON.stringify({ frage: 'x', system: 'BOESE' }) }), env2, { waitUntil() {} });
+      pruefe(prOhne.status === 401 || prOhne.status === 403, 'Probe mit eigenem Systemtext nur mit Leitstand-Schlüssel (Studio-Schlüssel: ' + prOhne.status + ')');
 
       /* 2.24 Notbremse. Aus dem Betrieb (23.10.2026): „können wir die
          tageskontigenten nicht erhöhen irgendwie ?" → „Gratis + Notbremse". */
