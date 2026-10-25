@@ -221,6 +221,11 @@ const ZUSTAND = () => {
     const p = await oeffne(b, 'chef', 1440, 900);
     const r = await p.evaluate(async () => {
       const w = ms => new Promise(r => setTimeout(r, ms));
+      /* Am Wochenende hat die laufende Woche keinen Werktag mehr vor sich —
+         dann die nächste Woche (gefunden an einem Sonntag, 25.10.2026). */
+      const werktag = () => [...document.querySelectorAll('#shiftGrid [data-wpneu]')].some(z => {
+        const d = new Date(z.getAttribute('data-wpneu').split('|')[0] + 'T12:00'); return d.getDay() >= 1 && d.getDay() <= 5; });
+      if (!werktag()) { document.getElementById('shiftNext').click(); await w(300); }
       const zellen = [...document.querySelectorAll('#shiftGrid [data-wpneu]')];
       // eine Zelle an einem Werktag (Mo–Fr), nicht Samstag
       const leer = zellen.find(z => { const d = new Date(z.getAttribute('data-wpneu').split('|')[0] + 'T12:00'); return d.getDay() >= 1 && d.getDay() <= 5; }) || zellen[0];
@@ -560,6 +565,9 @@ const ZUSTAND = () => {
       await db.collection('config').doc('schichtplaner').set({ studios }, { merge: true });
       await wt(500);
       [...document.querySelectorAll('#side [data-group="g-team"]')].find(x => x.getClientRects().length).click(); await wt(1800);
+      /* Die nächste Woche: dort ist kein Tag vorbei. Vergangene Tage ohne
+         Schicht haben seit Runde 269 keine Leiste mehr. */
+      document.getElementById('shiftNext').click(); await wt(300);
       return [...document.querySelectorAll('.wp-besetzt .wp-band')].map(x => x.getAttribute('aria-label'));
     });
     console.log('  ' + JSON.stringify(r));
@@ -567,6 +575,98 @@ const ZUSTAND = () => {
       r.length === 7 && r.slice(0, 6).every(x => /^Geöffnet 10–12 Uhr/.test(x || '')), JSON.stringify(r));
     pruefe('„zu“ im Excel heisst geschlossen', /^Geschlossen/.test(r[6] || ''), r[6]);
     pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await c.close();
+  }
+
+  console.log('\n── 12. Planer: decken die Schichtzeiten die Öffnungszeit ab? ──');
+  /* Runde 265 — aus dem Betrieb: „mach weiter mit dem was offen war“.
+     Demo: geöffnet Mo–Fr 7–21, Sa 9–15; Schichten Früh 7–14, Spät 14–21
+     (Mo–Fr), Samstag 9–14. Erwartet: genau „Sa 14–15“. */
+  {
+    const c = await b.newContext({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
+    const p = await c.newPage();
+    p._fehler = []; p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
+    await p.route('**://www.gstatic.com/**', r => r.abort());
+    await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
+    await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
+    await p.waitForTimeout(3200);
+    const r = await p.evaluate(async () => {
+      const wt = ms => new Promise(r => setTimeout(r, ms));
+      const g = document.getElementById('bereichKopf'); if (g && g.offsetParent) { g.click(); await wt(700); }
+      [...document.querySelectorAll('[data-alles="planer"]')].find(e => e.offsetParent).click(); await wt(2500);
+      document.getElementById('spLos').click(); await wt(4000);
+      const abd = [...document.querySelectorAll('.spl-abdeckung > span')].map(x => x.textContent);
+      const team = document.querySelector('#spTabelle').closest('.spl-plan').querySelector('details.spl-team'); if (team) team.open = true;
+      const std = [...document.querySelectorAll('#spTeam .z')].map(z => z.textContent);
+      // GEGENPROBE: Samstag in der Öffnung bis 14 Uhr → keine Lücke mehr
+      const db = firebase.firestore().collection('firmen').doc('koerperformen');
+      const st = await db.collection('config').doc('studios').get();
+      const liste = st.data().liste.map(x => Object.assign({}, x, { oeffnung: Object.assign({}, x.oeffnung, { sa: '09:00-14:00' }) }));
+      await db.collection('config').doc('studios').set(Object.assign({}, st.data(), { liste })); await wt(600);
+      document.getElementById('spMonatVor').click(); await wt(900);
+      document.getElementById('spMonatZurueck').click(); await wt(1800);
+      return { abd, std, nachher: document.querySelectorAll('.spl-abdeckung').length };
+    });
+    console.log('  ' + JSON.stringify({ abd: r.abd, std: r.std.slice(0, 8), nachher: r.nachher }));
+    pruefe('genau eine Lücke: „Sa 14–15 Uhr (geöffnet 09–15)“', r.abd.length === 1 && /^Sa 14–15 Uhr/.test(r.abd[0]) && /09–15/.test(r.abd[0]), JSON.stringify(r.abd));
+    pruefe('GEGENPROBE: Samstag nur bis 14 Uhr geöffnet → kein Hinweis mehr', r.nachher === 0, String(r.nachher));
+    const falsch = r.std.filter(t => { const m = /([\d,]+) \/ ([\d,]+) Std\./.exec(t); if (!m) return false;
+      const ist = parseFloat(m[1].replace(',', '.')), soll = parseFloat(m[2].replace(',', '.'));
+      const soll2 = ist < soll * 0.85 ? '↓' : (ist > soll * 1.15 ? '↑' : '');
+      return soll2 !== (/↓/.test(t) ? '↓' : (/↑/.test(t) ? '↑' : '')); });
+    pruefe('Stunden: ↓ unter 85 %, ↑ über 115 % des Solls – genau dort', r.std.length > 3 && !falsch.length, JSON.stringify(falsch));
+    pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await c.close();
+  }
+
+  console.log('\n── 13. Feinschliff: leere Vergangenheit, geschlossen mit Schicht, zugeklappte Karten ──');
+  /* Runde 269 — aus dem Betrieb: „mach weiter mit dem design“. */
+  {
+    const p = await oeffne(b, 'mitarbeiter', 1440, 900);
+    const r = await p.evaluate(async () => {
+      const wt = ms => new Promise(r => setTimeout(r, ms));
+      const out = { leerVorbeiMitLeiste: 0, leerVorbei: 0, zuMitSchicht: [], zuOhne: [] };
+      for (let i = 0; i < 3; i++) {
+        document.querySelectorAll('#shiftGrid .shift-day').forEach(d => {
+          const vorbei = d.dataset.tag < new Date().toISOString().slice(0, 10);
+          const n = d.querySelectorAll('.shift-entry').length;
+          if (vorbei && !n) { out.leerVorbei++; if (d.querySelector('.wp-band')) out.leerVorbeiMitLeiste++; }
+          const t = d.querySelector('.wp-band-txt'); if (!t || !/geschlossen/.test(t.textContent)) return;
+          (n ? out.zuMitSchicht : out.zuOhne).push({ n, t: t.textContent, warn: t.classList.contains('luecke') });
+        });
+        document.getElementById(i ? 'shiftNext' : 'shiftPrev').click(); await wt(200);
+        if (!i) { document.getElementById('shiftPrev').click(); await wt(200); }
+      }
+      return out;
+    });
+    console.log('  ' + JSON.stringify(r));
+    pruefe('vergangene Tage ohne Schicht haben keine leere Leiste', r.leerVorbei > 0 && r.leerVorbeiMitLeiste === 0, JSON.stringify(r));
+    pruefe('geschlossen, aber eingeteilt: „geschlossen – trotzdem n …“ in Bernstein',
+      r.zuMitSchicht.every(x => x.warn && /trotzdem/.test(x.t)) && r.zuOhne.every(x => !x.warn && !/trotzdem/.test(x.t)) && (r.zuMitSchicht.length + r.zuOhne.length) > 0,
+      JSON.stringify(r));
+    await p._ctx.close();
+  }
+  {
+    const c = await b.newContext({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
+    const p = await c.newPage();
+    await p.route('**://www.gstatic.com/**', r => r.abort());
+    await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
+    await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
+    await p.waitForTimeout(3200);
+    const r = await p.evaluate(async () => {
+      const wt = ms => new Promise(r => setTimeout(r, ms));
+      const g = document.getElementById('bereichKopf'); if (g && g.offsetParent) { g.click(); await wt(700); }
+      [...document.querySelectorAll('[data-alles="planer"]')].find(e => e.offsetParent).click(); await wt(2500);
+      const f = document.getElementById('spFragen'), rg = document.getElementById('spRegeln');
+      const a = f.getBoundingClientRect(), b2 = rg.getBoundingClientRect();
+      f.open = true; await wt(200);
+      const offen = { f: f.getBoundingClientRect().width, r: rg.getBoundingClientRect().top > f.getBoundingClientRect().bottom - 1 };
+      f.open = false;
+      return { hf: Math.round(a.height), hr: Math.round(b2.height), nebeneinander: Math.abs(a.top - b2.top) < 2 && b2.left > a.right, offen };
+    });
+    console.log('  ' + JSON.stringify(r));
+    pruefe('zugeklappt höchstens 70 px hoch (vorher 106)', r.hf <= 70 && r.hr <= 70, JSON.stringify(r));
+    pruefe('zugeklappt am Rechner nebeneinander, aufgeklappt untereinander', r.nebeneinander && r.offen.r, JSON.stringify(r));
     await c.close();
   }
 

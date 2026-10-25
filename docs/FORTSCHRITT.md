@@ -22936,6 +22936,7 @@ Polster für Formi; sie bleibt als Wache.
 nicht gemessen; ob Safari 26 mit schwebender Adressleiste unten einen
 Rand meldet, zeigt nur das Gerät.
 
+<<<<<<< HEAD
 ## Runde 265 — Findetest: die Stoppuhr zum Selbsttesten (25.10.2026)
 
 Aus dem Betrieb, 23.10.2026, auf meinen Vorschlag „erst mit echten
@@ -22999,3 +23000,492 @@ welche Seiten geöffnet werden, gibt es schon (`nutzAnsicht` in
 
 **Nicht getestet:** am echten iPhone. Ob Safari dort jeden Tipp genau
 einmal als Klick meldet, zeigt nur das Gerät.
+=======
+## Runde 265 — Schichtplaner: Öffnungszeit ohne Schicht, Stunden über Soll (25.10.2026)
+
+**Aus dem Betrieb:** „mach weiter mit dem was offen war dann“. Offen
+waren aus dem Vorschlag von Runde 206: der Planer prüft die Öffnungszeit,
+Monatsstunden je Person; Studioleitungen planen lassen und LogX warten
+auf Antworten (Fragen 21 und 24).
+
+**Was gebaut ist**
+- **„Öffnungszeit ohne Schicht“** oben unter „Zu klären“: je Wochentag
+  aus den Schichtzeiten des Studios gegen seine Öffnungszeit gerechnet
+  (Verwaltung → Studios, sonst Excel-Blatt „Studios“, wie die Leiste im
+  Team-Plan; `wpOeffnung` nimmt dafür jetzt ein Studio an). Gleiche
+  Lücken an mehreren Tagen stehen zusammen („Mo–Fr 21–22 Uhr“). In der
+  Demo: „Sa 14–15 Uhr (geöffnet 09–15)“ — die Samstagsschicht endet um 14.
+  **Warum je Wochentag und nicht je Tag:** Eine solche Lücke kommt jede
+  Woche wieder und liegt an der Einrichtung; kein Umbesetzen behebt sie.
+  Als dreissig einzelne „Lücken“ wäre sie in der Liste untergegangen.
+- **Stunden im Studio:** ↓ unter 85 %, ↑ über 115 % des Solls (vorher nur
+  „unter“).
+
+**Gefunden:** In der Demo hat eine Teilzeitkraft 147 von 86 Stunden. Das
+ist so gewollt, solange „Besetzung vor Stunden“ gilt: „über dem Soll“
+ist eine weiche Regel und wird gebrochen, wenn sonst niemand da wäre
+(dann als Rückfrage). Ob das so bleibt, entscheidet Frage 18 („Was hat
+Vorrang …“). Der Pfeil ↑ macht es jetzt sichtbar.
+
+**Geprüft**
+- test-schichtplan-raster, Abschnitt 12: genau „Sa 14–15“; GEGENPROBE
+  Samstag nur bis 14 Uhr geöffnet → kein Hinweis; ↓/↑ genau bei <85 % und
+  >115 %. Dabei gefunden: Abschnitt 4 brauchte an einem Sonntag eine
+  freie Zelle in der laufenden Woche — er blättert jetzt weiter, wenn
+  kein Werktag mehr vor ihm liegt. 106 Prüfungen, grün.
+- test-schichtplaner, test-gestaltung, test-doppelte-namen, test-knoepfe,
+  test-team-woche, test-tausch: grün. (Ein erster Lauf war wertlos: der
+  Neuigkeiten-Eintrag kam während des Laufs in index.html, ohne die
+  Sicherheitsregel neu zu setzen — genau die Falle aus CLAUDE.md.
+  Wiederholt nach `csp.js --setzen`.)
+
+## Runde 266 — Formi live gemessen, nachgeschärft, Probe mit eigenem Systemtext (Worker 2.26, 25.10.2026)
+
+**Gemessen mit `/api/probe` (2.25 live, gpt-oss-120b, Denken „low", 5–10 s
+je Antwort)**
+- **Durchfall:** brauchbar. Gerät aus, Toilette, Reinigung und Termin
+  verschieben kamen. Aber noch „hinsetzen", 112 schon bei „schwach", der
+  Regionalleiter soll informiert werden, und kein „Nicht geprüft".
+- **Fieber, Herzschrittmacher mit Bescheinigung, „die weste geht nicht"**:
+  gut. Bei der Weste kam die Rückfrage, wie gewünscht.
+- **Partner-Einwand:** inhaltlich gut, aber Du und Sie gemischt.
+- **„gerät piept dreimal":** schlecht. Formi sagte nur „schau unter Hilfe
+  im Studio" — die Antwort einer Schulungsfrage („Richtig ist: …").
+- **„Kundin weint nach dem Training":** „Stoppe das Training sofort" und
+  eine Liste wie aus dem Handbuch. Den Zeitpunkt (nach dem Training) hat
+  Formi nicht erfasst.
+- **Denken „medium"** (Probe `ohneDenken`): nicht erkennbar besser, eher
+  mehr Floskeln („Stark, dass du das sofort regelst!").
+- Die Durchfall-Frage vom 24.10. steht nicht im Verlauf des Workers. Sie
+  ist also in der App beim Vorsortieren (Gemini) hängen geblieben.
+  Bestätigt damit die Gemini-Regel aus Runde 262.
+
+**Geändert (2.26)**
+- Systemtext:
+  - Zeitpunkt beachten (vor, während oder nach dem Training).
+  - Kein „Kurz gesagt …", kein Lob für eine Frage.
+  - Nie NUR auf eine andere Stelle verweisen.
+  - Angemessen eskalieren: Regionalleiter nur bei Verträgen, Kündigung,
+    Pausen; 112 nur bei echten Warnzeichen, und die konkret nennen.
+  - Du zur Person, Zitate für Kunden in der Sie-Form.
+- Einträge aus Schulungsfragen („Richtig ist:") kommen hinter die echten
+  Abläufe (`kiWissen`).
+- `/api/probe` nimmt `system` (eigener Systemtext) oder `zusatz` (an den
+  echten angehängt) und `verlauf`. Das geht nur mit dem Leitstand-Schlüssel
+  und wird nie gespeichert. Den aktuellen Text liefert `/api/systemtext`.
+  Damit lässt sich ein neuer Text ausprobieren, ohne dass Semih für jeden
+  Versuch einspielen muss.
+
+**Warum keine weitere Regel-Flut:** Jede Regel behebt einen Fall und kann
+einen anderen verschlechtern. Mit der Probe lässt sich jetzt jede Änderung
+gegen dieselben Fragen messen, bevor sie live geht.
+
+**Ehrlich:** gpt-oss-120b bleibt die Grenze. „So wie Claude" ist damit
+nicht zu erreichen. Die Empfehlung Claude Haiku (≈ 1 $ je 1.000 Antworten)
+steht weiter, entschieden ist „Gratis bleiben".
+
+**Geprüft:** `test-formi-worker` 164. Neu geprüft:
+- Ein eigener Systemtext ersetzt den echten nur für diese Probe; die
+  Gegenprobe bekommt danach wieder den echten.
+- Ohne Leitstand-Schlüssel gibt es 401.
+- Quiz-Einträge kommen nach hinten, und die neuen Regeln stehen im Text.
+## Runde 267 — Formis Daueranimationen nachgemessen; kein Vermessen mehr im Tipp (25.10.2026)
+
+Aus dem Betrieb, 25.10.2026, auf das Angebot „das Ruckeln bei Formis
+Daueranimationen angehen, dafür müsste ich Formi anfassen“: „ja können
+wir so machen“. Selbst testen kann der Betrieb nicht (kein iPhone, kein
+Firebase-Test) — also nachgestellt und gemessen.
+
+**Gemessen, bevor etwas geändert wurde** (Demo Chef, Formi, 390 px,
+CPU ÷4, A-B-B-A in derselben Seite, Median):
+
+- Formis Daueranimationen (zehn `formiDoppler`, vier Drehungen je Formi)
+  **pausiert**: 6,8 gegen 6,9 ms je Bild beim Raumwechsel — kein
+  Unterschied. Formis Kugel ganz ausgeblendet: 6,7 gegen 6,1 ms — knapp
+  über der Streuung (±0,5 ms). Welle, Linse, Formi im Gruss einzeln
+  ausgeblendet: alle innerhalb der Streuung.
+- In einer leeren Seite laufen solche Animationen ganz auf dem
+  Compositor (0 Stilberechnungen in 1 s). In der App werden die
+  Formi-Elemente 8–30-mal je Sekunde mitberechnet — nicht jedes Bild,
+  sondern immer dann, wenn etwas anderes ohnehin eine Stilberechnung
+  auslöst (4–12 ms in einer Sekunde, ungedrosselt).
+- Die Gefühle einzeln, Formis Uhren aus: alle unter 8,3 ms je Bild bis
+  auf „feiert“ (8,3).
+
+**Korrektur zu Runde 264.** Dort stand, Formis Animationen liefen „jedes
+Bild über den Hauptfaden“. Das war aus dem Invalidierungs-Trace eines
+Raumwechsels geschlossen, in dem ohnehin jedes Bild eine Stilberechnung
+hatte. In Ruhe stimmt es nicht (siehe oben). Formi ist beim Raumwechsel
+ein kleiner Posten.
+
+**Darum ist an Formi nichts geändert.** Ein Umbau ohne messbaren Gewinn
+hätte nur das Risiko, das Aussehen zu verändern.
+
+**Was beim Raumwechsel wirklich kostet** (Profil, ungedrosselt, 15
+Wechsel): der Tipp selbst, 26 ms je Wechsel in `showView`. Davon steckten
+15 ms in `kopfPlusUmhaengen` — nicht im eigenen Code, sondern in einer
+**erzwungenen Vermessung**: `window.innerWidth` zwingt Chromium, die eben
+aufgebaute Seite sofort ganz zu layouten. Die Abfrage hatte ich in Runde
+264 vor die frühen Ausstiege gesetzt, damit lief sie bei jedem Wechsel
+(vorher nur auf Seiten mit Kopfknopf). Hausregel: „im Klick nichts
+vermessen“.
+
+**Geändert.**
+- `mobnavHoeheBeobachten()` ohne Breitenabfrage davor (der Beobachter
+  meldet am Rechner 0, und 0 wird nicht gesetzt).
+- `window.innerWidth > 820` → `!_mobnavBreite.matches` (die Medienabfrage
+  `(max-width:820px)`, die es dort schon gab).
+
+**Nachher.** `showView` 26 → 14 ms je Wechsel im Profil. Auf Bild-Ebene
+(Trace, drei Läufe je Seite gegen `main`): 390 px 14,8 / 16,4 / 15,1 gegen
+14,2 / 15,2 / 14,2 ms je Bild, 1440 px 21,4 / 19,0 / 19,8 gegen 22,8 /
+20,5 / 18,1 — **kein messbarer Gewinn**. Das Layout fällt jetzt im
+nächsten Bild an statt im Tipp, kostet aber gleich viel. Behauptet wird
+also: die Hausregel ist eingehalten, nicht: es ruckelt weniger.
+
+**Was bleibt.** Beim Raumwechsel ist der grösste Posten der Aufbau der
+neuen Seite selbst (Stil und Layout für mehrere hundert Elemente). Das
+wäre ein eigener Umbau (Seiten vorbereitet halten statt neu bauen) — eine
+Frage an den Betrieb, nicht nebenbei.
+
+**Tests:** block-a (38), ganze-seite (45), gruppen-aufgaben (166),
+p1-aufgaben (27), raeume (31), iphone-rand (35), csp, formi-kugel (70),
+knoepfe — alle grün.
+
+**Nicht getestet:** iPhone, Safari.
+
+## Runde 268 — Jede Push-Meldung führt direkt hin (25.10.2026)
+
+Aus dem Betrieb, 25.10.2026: „ja mach den rest auch mit ziel" — auf den
+offenen Punkt aus Runde 243 („die anderen Meldungen öffnen beim Antippen
+nur die App").
+
+### Was gebaut wurde
+
+Alle 23 Aufrufe von `sendPush` und `formiPush` tragen jetzt ein Ziel
+(das Feld `data.ziel` aus Runde 243; der Service Worker öffnet `#ziel`
+oder schickt es der offenen App):
+
+| Meldung | Ziel |
+|---|---|
+| Chat, Erwähnung | `chat` |
+| Direktnachricht | `dm` |
+| Neue / fällige Aufgabe, Erinnerung, Frist vorbei | `todos` |
+| „X hat Y erledigt" | `todos` oder `putzplan` — je nach Pfad des Auslösers (`putzId`) |
+| Infos der Leitung, „noch nicht bestätigt" | `ann` |
+| Geburtstag, „Formi: dein Tag" | `home` |
+| Nachweis läuft ab (an die Person) | `ich` |
+| Nachweise, Neue Anmeldung, Löschantrag, Kennzahlen (an die Leitung) | `chef` |
+| Kurz auffrischen | `schulung` |
+| Formis Erinnerung („erinnere mich …") | `gehirn` |
+| Feierabend-Check | `team` (Übergabe fehlt), sonst `putzplan` |
+| Defekt gemeldet | `geraete` |
+| Material fehlt | `material` |
+| Stempel-Erinnerung (Runde 238) | `zeit` |
+
+`formiPush` reicht das Ziel durch; `erledigtPush` bekommt es vom
+Auslöser.
+
+### Warum so
+
+- **Das Ziel kommt aus den Pfad-Parametern, nicht aus `change.after.ref`.**
+  Die erste Fassung las den Sammlungsnamen am Dokument. Der Regeltest baut
+  das Änderungsobjekt aber ohne `ref` nach (funktionen.test.js), und eine
+  Ausnahme an dieser Stelle hätte die ganze Fertig-Meldung des Studios
+  verschluckt. `ctx.params.putzId` gibt es nur beim Putzplan-Auslöser —
+  dieselbe Aussage, ohne neue Abhängigkeit.
+- **Nachweis an die Person → `ich`, nicht in die Verwaltung.** Die eigenen
+  Nachweise stehen unter „Ich". Den Unterreiter (Meine Daten) kann eine
+  Adresse heute nicht wählen; man landet im Bereich, ein Tipp weiter.
+
+### Geprüft
+
+- `tests/test-push-ziele-alle.js` (neu, ohne Browser): liest
+  `functions/index.js` und verlangt bei JEDEM Push-Aufruf ein Ziel, das es
+  als Ansicht gibt — gezählt, nicht aufgezählt, damit ein neuer Push ohne
+  Ziel beim nächsten Lauf auffällt. Gegenproben am Prüfer: ohne Ziel,
+  unbekannte Ansicht, Grossbuchstaben, Kommas in Texten.
+- Grün: tests/rules/funktionen.test.js (der Fertig-Auslöser mit der
+  nachgebauten Änderung), stempel-erinnerung.test.js, test-push-ziel,
+  test-push-doppelt, test-csp, test-demo.
+
+### Nicht geprüft
+
+- Ein echter Tipp auf echte Meldungen auf einem Handy.
+
+## Runde 269 — Schichtplan: Feinschliff (25.10.2026)
+
+**Aus dem Betrieb:** „mach weiter mit dem design“.
+
+**Gefunden beim Ansehen** (Demo, Sonntag 25.10., 1440 × 900 und 390 × 844)
+- Montag bis Samstag waren vorbei und ohne Schicht; jeder Tag trug eine
+  leere Besetzungs-Leiste — sechs Balken, die aussehen wie ein Laden, das
+  hängt. Jetzt hat ein vergangener Tag ohne Schicht keine Leiste.
+- Sonntag ist laut Öffnungszeit zu, trotzdem standen drei Schichten im
+  Plan; die Leiste sagte nur „geschlossen“. Jetzt: „geschlossen – trotzdem
+  3 Schichten“ in Bernstein — das ist ein Status (Öffnungszeit falsch
+  gepflegt oder Schicht zu viel), und er soll auffallen.
+- Im Planer waren „Fragen zum Plan“ und „Regeln & Sonderfälle“
+  zugeklappt je 106 px hoch bei 44 px Inhalt (`body.neu .card` gibt 30 px
+  Innenabstand). Jetzt 62 px, und am Rechner stehen beide nebeneinander,
+  solange beide zu sind (`:has()`); aufgeklappt wieder untereinander.
+
+**Geprüft**
+- test-schichtplan-raster, Abschnitt 13 (4 neu, 110 gesamt): keine Leiste
+  an 20 leeren vergangenen Tagen; „trotzdem“ genau bei geschlossenen Tagen
+  mit Schicht; Karten 62 px, nebeneinander, aufgeklappt untereinander.
+- Abschnitt 11 (Öffnungszeit aus dem Excel) las die laufende Woche und
+  erwartete 7 Leisten; an einem Sonntag sind sechs davon vorbei und leer.
+  Er liest jetzt die nächste Woche — die Prüfung selbst ist dieselbe.
+- test-schichtplaner, test-gestaltung, test-doppelte-namen, test-knoepfe,
+  test-abgeschnitten, test-team-woche, test-tausch: grün.
+
+
+## Runde 270 — Formi redet wie ein Kollege (Worker 2.27, 25.10.2026)
+
+Aus dem Betrieb: „wir sorgen einfach dafür das er schritt für schritt
+besser wird das soll ja auch ein prozess sein aber mann soll es merken auch".
+
+**Gemessen, vorher (2.26, 10 Fragen, `/api/probe`)**
+- Fast jede Antwort war eine Liste mit 5–7 Punkten. Fast jede endete mit
+  „dokumentieren und Leitung informieren" und „Soll ich das als Aufgabe
+  anlegen?".
+- „kann ich morgen früher gehen" versprach, es „im System einzutragen" —
+  das kann Formi nicht.
+- „Kundin weint nach dem Training" kam mit „Stoppe das Training sofort".
+- „(z. B. ID 97/175)" stand im Text.
+
+**Gemessen, nachher** (neuer Text als `system` in der Probe; 10 bekannte
+plus 5 neue Fragen, die nicht als Beispiel im Text stehen)
+- Antworten in normalen Sätzen statt Listen.
+- „kann ich morgen früher gehen" verweist ehrlich auf die Leitung und bietet
+  den Schichttausch an.
+- Die WhatsApp an den Kunden ist durchgehend in der Sie-Form.
+- „gerät piept dreimal" gibt die Schritte selbst.
+- „kollegin sitzt im pausenraum und weint" — eine neue Frage — kam warm,
+  menschlich und ohne Notfall-Ablauf.
+- Knieschmerzen nach dem Training (Folgefrage im Gespräch): kein „Training
+  abbrechen" mehr.
+- Noch nicht gut:
+  - „kunde muss sich übergeben" übernimmt das Durchfall-Beispiel fast
+    wörtlich. Inhaltlich passt es.
+  - Bei „zu teuer" rutscht einmal ein „Sie" in die Ansprache.
+  - Durchfall mit dem ALTEN Text holt weiter „hinsetzen" und „Thomas
+    informieren" aus den Einträgen „Kunde fühlt sich plötzlich unwohl" und
+    „Notfall im Training". Das sind unsere eigenen Abläufe, kein Fehler der
+    KI.
+- Zeit je Antwort meist 5–14 s, einmal 38 s.
+
+**Geändert (2.27)**
+- `formiSystem` neu geordnet: erst denken, dann reden wie ein Mensch, dann
+  das Wissen, dann vier Beispiele. „Fließtext statt Liste"; keine Angebote,
+  die Formi nicht kann; „dokumentieren" und „Leitung" nur, wenn nötig; 112
+  nur bei echten Notfällen, mit den Zeichen.
+- Alle früheren Zusagen aus dem Betrieb stehen noch drin: Kumpel, Gefühle,
+  80–200 Wörter, Ungeprüftes kennzeichnen. Die 21 alten Prüfungen auf den
+  Systemtext laufen unverändert.
+- `idsEntfernen` erkennt auch „(z. B. ID 97/175)".
+- Drei neue Vorschläge im Leitstand (Quelle „Formi-Test (Claude,
+  25.10.2026)"), die Semih freigibt:
+  - Durchfall/Übergeben
+  - Kunde weint oder ist aufgelöst
+  - Schmerzen nach dem Training
+  Erst mit diesen Einträgen hat Formi für diese Fälle einen eigenen Ablauf
+  statt des Unwohlsein-Ablaufs.
+
+**Der Ablauf ab jetzt** (Schritt für Schritt, und man merkt es):
+1. Feste Testfragen über `/api/probe` laufen lassen.
+2. Den neuen Text als `system` dagegen laufen lassen.
+3. Nur wenn er besser ist, einspielen, mit Neuigkeit in der App.
+4. Fehlt Wissen, wird es ein Vorschlag im Leitstand.
+
+**Geprüft:** `test-formi-worker` 169.
+
+## Runde 271 — DATEV-Datei gegen das LODAS-Handbuch geprüft (25.10.2026)
+
+Aus dem Betrieb, 25.10.2026: „mach den test mit datev wenns geht".
+
+### Was ging und was nicht
+
+Ein echtes LODAS gibt es hier nicht — es läuft beim Steuerberater bzw.
+Lohnbüro. Die DATEV-Community ist von hier aus gesperrt (403). Erreichbar
+waren: das **DATEV-Schnittstellenhandbuch LODAS (SSH), 45. Auflage
+Januar 2016** als Textauszug (silo.tips; der Anhang A.1 mit den
+Nachkommastellen fehlt darin) und die Hilfeseite eines anderen
+Herstellers (Circula), der LODAS-Dateien erzeugt. Dagegen ist die Datei
+jetzt Zeile für Zeile geprüft — im Test, nicht nur gelesen.
+
+### Was übereinstimmte
+
+Abschnitte `[Allgemein]` / `[Satzbeschreibung]` / `[Bewegungsdaten]`,
+`Ziel=LODAS`, Tabelle `u_lod_bwd_buchung_standard` mit **genau der
+Feldreihenfolge des Handbuch-Beispiels** (Zeitraum; Wert; Schlüssel;
+Lohnart; Personalnummer), Schlüssel **01 = Stundenbuchungen** mit
+Lohnart, Schlüssel 71 ohne Lohnart, Monatserster als Zeitraum, ein Monat
+und ein Mandant je Datei, ANSI, CR/LF.
+
+### Was nicht stimmte — behoben
+
+1. **Urlaubstage (71) mit zwei Nachkommastellen** („3,00"). Das Handbuch:
+   „Wert max: 99,5 (Tage) bei Bearbeitungsschlüssel 71" — eine Stelle.
+   Jetzt „3,0", in halben Tagen, höchstens 99,5.
+2. **Personalnummer bis 10 Ziffern.** `pnr#psd` hat 5 Stellen, und
+   „Numerische Felder werden links abgeschnitten" — aus 100023 würde 23,
+   die Stunden landeten bei einer anderen Person, mit nur einer Warnung im
+   Protokoll. Jetzt: Eingabe 1–5 Ziffern, nicht 0, sonst abgewiesen;
+   ältere, zu lange Nummern kommen nicht in die Datei, die Meldung nennt
+   die Person.
+3. **Beraternummer ohne Mindestlänge.** Handbuch: 4–7 Stellen. Jetzt
+   geprüft beim Speichern und beim Export.
+
+### Für das Lohnbüro
+
+`docs/datev/LIES-MICH.md` und `docs/datev/PROBE-LODAS-2026-09.txt`: eine
+Probedatei mit Anleitung (Testmandant, ASCII-Import, was im Protokoll
+stehen muss). Erst wenn das Lohnbüro sie eingespielt hat, ist die Datei
+wirklich geprüft.
+
+### Geprüft
+
+`tests/test-zeiten-verwaltung.js` (84, davon 9 neu): Feldanzahl je Zeile
+gleich der Satzbeschreibung; 01 mit Lohnart und höchstens zwei
+Nachkommastellen; eine echte 71-Zeile (ein Urlaub im Vormonat wird dafür
+angelegt) mit einer Stelle, ≤ 99,5, ohne Lohnart; Berater 4–7, Mandant
+1–5, Personalnummern 1–5. GEGENPROBEN: Personalnummer 123456 und
+Beraternummer 123 werden abgewiesen und nicht gespeichert; alte
+7-stellige Nummern kommen nicht in die Datei, die Meldung nennt, wer
+fehlt. Die alte Prüfung aus Runde 210 verlangte für ALLE Zeilen zwei
+Nachkommastellen — das war die falsche Annahme; sie prüft jetzt 01 mit
+zwei und 71 mit einer.
+
+### Nicht geprüft
+
+- Ein echter Import in LODAS (siehe oben: nur das Lohnbüro kann das).
+- Ob neuere LODAS-Fassungen als 2016 etwas anderes verlangen — das
+  Handbuch sagt selbst, die Schnittstelle sei „nur bis zur unmittelbaren
+  Vorjahres-Vollversion kompatibel".
+
+## Runde 272 — „Seiten vorbereitet halten" gemessen: bringt nichts, nicht eingebaut (25.10.2026)
+
+Aus dem Betrieb, 25.10.2026, auf den Vorschlag aus Runde 267 („Seiten
+vorbereitet halten statt neu bauen"): „ja kannst du angehen". Gebaut,
+gemessen, wieder herausgenommen. Hier steht, warum, damit es niemand ein
+zweites Mal versucht.
+
+**Die Annahme war falsch.** Die Seiten werden beim Wechsel gar nicht neu
+gebaut: alle 40 `.view` liegen ab dem Start im Dokument, `showView`
+schaltet nur `.show` um. Neu gebaut wurde nur ein Teil des Inhalts
+(MutationObserver, 2. Besuch je Bereich): Startseite 432 Elemente, Zeit
+374 („Meine Zeiten" 308), Chat 108, Aufgaben 44, Team 24.
+
+**Versuch 1 — nur neu bauen, wenn sich etwas geändert hat**
+(`htmlWennNeu`: gleicher Text wie zuletzt und Liste seitdem unberührt).
+Neu gebaute Elemente: Zeit 374 → 61, Chat 108 → 34, Start 432 → 240. Das
+Wechsel-Bild (Tipp bis erstes fertiges Bild, CPU ÷4, Mittel über fünf
+Bereiche, Median aus acht Runden): `main` 120,7 / 120,1 ms, Versuch
+115,1 / 117,6 ms; ungedrosselt 27,9 / 29,5 gegen 30,8 / 27,5 ms —
+**innerhalb der Streuung.** Der Browser braucht für 300 neue Zeilen
+weniger, als es aussieht.
+
+**Versuch 2 — verborgene Seiten berechnet halten** (`content-visibility:
+hidden` statt `display:none`, damit Stil und Layout erhalten bleiben).
+Für sich allein, erzwungen gemessen, wird das Zeigen billiger (Chat 6,3 →
+1,3 ms, Aufgaben 4,6 → 2,5 ms, ungedrosselt). Im echten Wechsel aber
+**langsamer**: 128 → 137 ms (390 px) und 126 → 137 ms (1440 px), CPU ÷4,
+A-B-B-A in derselben Seite. Verworfen.
+
+**Wohin das Wechsel-Bild wirklich geht** (Trace vom Tipp bis zum ersten
+Commit, ungedrosselt, 15 Wechsel, 390 px; Posten überlappen, weil
+erzwungene Berechnungen im Skript mitzählen): rund 32 ms, davon Stil
+12,4 ms, Skript 8 ms im Tipp und 8 ms in `requestAnimationFrame`, Malen
+5,8 ms, Layout 2,6 ms. Am Rechner (1440 px) 30 ms, Stil 11 ms.
+
+- **Stil:** Jeder Bereichswechsel setzt `data-bereich` und die
+  Akzentfarben am `<body>` („die Farbe folgt dem Bereich"). Beides sind
+  vererbte Variablen (`--ber`, `--ber-f`, `--accent` …), also rechnet der
+  Browser jedes sichtbare Element neu: `data-bereich` allein 4,2 ms,
+  `--accent` allein 3,7 ms (je erzwungen, ungedrosselt). Das ist der Preis
+  der Bereichsfarbe, keine Ungeschicklichkeit. Den Wirbel-Schimmer
+  (`--fk-ber`) an `.fk-wirbel` statt am `<body>` zu setzen, brachte
+  nichts, weil `--ber` ohnehin wechselt; nicht eingebaut.
+- **Skript:** im Tipp verteilt auf viele kleine Posten (`renderHome`
+  4 ms mit `heutePasst` 3,4 ms, `verlaufMerken`/`pushState` 2 ms,
+  `renderIchZeiten` 1,7 ms). Im nächsten Bild `markerAusfuehren` der
+  unteren Leiste (4,5 ms, `getClientRects`) und `formiLinseLage`
+  (1,5 ms). Beide lesen nach dem Schreiben; das Layout dort fiele im
+  selben Bild sowieso an.
+- **Malen:** während des Wechsels wird die ganze Fläche `#document` fast
+  jedes Bild neu gemalt (22-mal je Wechsel). Ohne alle Übergänge
+  (`transition:none`) sinkt die Arbeit im Wechsel um ein Drittel (448 →
+  307 ms je Wechsel, CPU ÷4); laufend sind Farbübergänge an den Knöpfen
+  oben (`background-color`, `box-shadow`, `color`), weil die Akzentfarbe
+  wechselt. Einzeln abgeschaltet (Seitenanimation, Karten-Staffel,
+  Leuchtstrich, Welle, Wirbel) brachte keiner davon allein etwas
+  Messbares.
+
+**Ergebnis.** Es gibt keinen einzelnen grossen Posten mehr. Ein Wechsel
+kostet hier rund 30 ms, das sind am iPhone mit 120 Hz drei bis vier
+Bilder. Spürbar weniger ginge nur über Gestaltung: die Bereichsfarbe nicht
+mehr bei jedem Wechsel umstellen oder die Farbübergänge der Knöpfe
+weglassen. Das ist eine Frage an den Betrieb, kein Umbau nebenbei.
+
+**Nicht getestet:** iPhone, Safari. WebKit rechnet Stil anders; die
+Zahlen hier gelten für Chromium.
+
+Messskripte (Arbeitsordner, nicht im Repo): Wechsel-Bild per
+`performance.now()` vom Klick bis nach dem ersten `requestAnimationFrame`;
+Zerlegung per Trace (`devtools.timeline`); Selektor-Statistik per
+`disabled-by-default-blink.debug` (1.819 Selektoren mit Treffern, keiner
+über 3 ms in fünf Wechseln).
+
+## Runde 273 — „Was ist neu" als Patchnotes (25.10.2026)
+
+Aus dem Betrieb: „sorg bitte dafür das diese was ist neu nachrichten
+mehr wie patchnotes aussehen und nicht wie ki infos die nur an mich
+gerichtet sind eigentlich".
+
+**Was gefunden wurde.** Die Einträge seit dem 22.10. waren
+Erklärtexte: lange Sätze mit Vorgeschichte („weil …"), Begriffe aus der
+Technik (Rechenkontingent, Modell, „wie ChatGPT"), Tipps zum Abschalten
+in jedem zweiten Eintrag und Sätze, die sich an Semih richteten. Für die
+Leute im Studio ist das Lesestoff, kein Überblick. Dazu zeigte ein
+Eintrag (`schichtplan-feinschliff`, `wo:'team'`) auf ein Ziel, das es
+nicht gibt — `test-neuigkeiten` war auf `main` rot.
+
+**Was gebaut wurde.**
+- `renderNeu()` gruppiert nach Tagen („Update · 25. Oktober", Zahl der
+  Änderungen, „neu für dich"). Jede Änderung ist eine aufklappbare
+  Zeile (`<details>`) mit Art-Marke und kurzem Titel; Einzelheiten und
+  „Zeigen ›" liegen darunter. Das jüngste Update und alles Ungesehene
+  ist offen, der Rest zu — 181 Einträge sind so in Sekunden überflogen.
+- Neues Feld `art` (`neu` / `besser` / `fix` → „Neu", „Verbessert",
+  „Behoben"). Ältere Einträge ohne `art` bekommen die Marke aus dem
+  Titel geraten (`neuArt`), ihr Text bleibt, wie er war.
+- Die 89 Einträge seit dem 22.10. neu geschrieben: Titel ≤ 60 Zeichen,
+  1–4 kurze Punkte, was man sieht und wo. ids und `wo` unverändert, damit
+  „neu für dich" (gemerkt per id) nicht neu aufleuchtet.
+- `wo:'team'` → `wo:'team:schicht'`.
+- Am Rechner ist das Fenster 640 px breit (vorher 420), Marken und
+  Punkte stehen bündig untereinander; am Handy rücken die Punkte nach
+  links.
+
+**Warum so.**
+- Marken in Akzent/neutral, **nicht** rot/grün: Statusfarben nur für
+  Status. „Behoben" ist keine Warnung.
+- Aufklappen statt kürzen allein: die Einzelheiten bleiben für die, die
+  sie suchen, aber der erste Blick zeigt nur Titel.
+- Die Regel steht jetzt in `CLAUDE.md` und wird im Test erzwungen (Art,
+  Längen, verbotene Wörter ab 22.10.) — sonst schreibt die nächste
+  Sitzung wieder Erklärtexte.
+- „Stand der App:" bleibt als Anfang der Zeile (test-block-d prüft es);
+  dahinter steht jetzt das Datum und „N Änderungen neu für dich".
+
+**Gemessen** (`test-neuigkeiten`, Hit-Test): jede Zeile und jedes
+„Zeigen ›" ≥ 44 × 44 und im Bild bei 320 / 390 / 430 / 820 / 1280 /
+1440 / 1920 px, normal und kompakt; Zeile am Handy 230–364 px breit,
+am Rechner 590–604 × 44; keine Marke läuft über, das Fenster schiebt
+nirgends quer (bei 320 px taten es lange Wörter wie
+„Unterweisungsnachweis" — jetzt mit Silbentrennung).
+
+**Geprüft:** `test-neuigkeiten` 12, `test-block-d` 28.
+>>>>>>> origin/main
