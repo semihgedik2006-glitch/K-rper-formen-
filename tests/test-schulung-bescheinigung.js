@@ -141,6 +141,70 @@ const DATUM = /^\d{2}\.\d{2}\.\d{4}$/;
   pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
   await p.close();
 
+  /* ── Runde NN: die Leitung druckt das Blatt je Teilnehmer ──
+     „das was leichter ist für leute ohne zugang": Jamie Kurz hat kein
+     Konto und zwei Module bestanden. */
+  console.log('\n── Leitung: Nachweis je Teilnehmer ──');
+  const tnOeffnen = async (w, h) => {
+    const q = await oeffne(b, w, h, 'chef');
+    await q.evaluate(() => document.getElementById('schVerwaltenBtn').click()); await q.waitForTimeout(700);
+    await q.evaluate(() => document.querySelector('[data-schvwtab="tn"]').click()); await q.waitForTimeout(600);
+    return q;
+  };
+  const zeile = (q, name) => q.evaluate((name) => {
+    const z = [...document.querySelectorAll('#schTnListe .sch-tn-zeile')].find(x => x.querySelector('.sch-tn-name').firstChild.textContent.trim() === name);
+    return z ? { knopf: !!z.querySelector('[data-schtnnachweis]') } : null;
+  }, name);
+  let q = await tnOeffnen(1440, 900);
+  const jamie = await zeile(q, 'Jamie Kurz');
+  pruefe('Jamie Kurz (ohne Zugang, 2 bestanden) hat „Nachweis" in seiner Zeile', jamie && jamie.knopf, JSON.stringify(jamie));
+  await q.evaluate(() => {
+    const z = [...document.querySelectorAll('#schTnListe .sch-tn-zeile')].find(x => /^Jamie Kurz/.test(x.textContent));
+    z.querySelector('[data-schtnnachweis]').click();
+  });
+  await q.waitForTimeout(300);
+  d = await q.evaluate(() => {
+    const pa = document.getElementById('printArea');
+    return { gedruckt: window.__gedruckt, text: pa.innerText,
+      zeilen: [...pa.querySelectorAll('tr')].slice(1).map(tr => [...tr.cells].map(td => td.textContent)) };
+  });
+  pruefe('der Knopf druckt das Blatt für Jamie, nicht für die Leitung', d.gedruckt === 1 && /Jamie Kurz · /.test(d.text) && !/Demo-Geschäftsführung · /.test(d.text), d.text.slice(0, 120));
+  pruefe('zwei Zeilen: Hygiene und „Dein erster Tag"', d.zeilen.length === 2 &&
+    d.zeilen.some(z => /^Hygiene nach jedem Training/.test(z[0])) && d.zeilen.some(z => /^Dein erster Tag im Studio/.test(z[0])), JSON.stringify(d.zeilen));
+  pruefe('offen bei Jamie: Notfall und Beratung — nicht die der Leitung', /Als Pflicht noch offen:.*Wenn einem Kunden schlecht wird.*Beratungsgespräch/.test(d.text) &&
+    !/noch offen:.*Dein erster Tag/.test(d.text), d.text.slice(-300));
+  pruefe('Fusszeile ohne „eigenen"', /erstellt aus den Schulungs-Durchläufen/.test(d.text));
+  const nora = await zeile(q, 'Nora Haas');
+  const ich = await zeile(q, 'Du (Demo-Konto)');
+  pruefe('GEGENPROBE ohne bestandenes Modul kein Knopf (Nora Haas)', nora && !nora.knopf, JSON.stringify(nora));
+  pruefe('… mit einem bestandenen Modul ja (Demo-Konto)', ich && ich.knopf, JSON.stringify(ich));
+  /* Nur Testläufe → kein Knopf: Jamies Durchläufe als Test markieren. */
+  await q.evaluate(() => Promise.all(['lauf1', 'lauf2'].map(id => firebase.firestore().collection('firmen/koerperformen/schulungLaeufe').doc(id).update({ test: true }))));
+  await q.waitForTimeout(700);
+  await q.evaluate(() => document.querySelector('[data-schvwtab="stand"]').click()); await q.waitForTimeout(300);
+  await q.evaluate(() => document.querySelector('[data-schvwtab="tn"]').click()); await q.waitForTimeout(500);
+  const jamie2 = await zeile(q, 'Jamie Kurz');
+  pruefe('GEGENPROBE nur Testläufe → kein Knopf', jamie2 && !jamie2.knopf, JSON.stringify(jamie2));
+  pruefe('ohne Skriptfehler (Leitung)', !q._fehler.length, q._fehler.join(' | '));
+  await q.close();
+  for (const [w, h] of BREITEN) {
+    const r = await tnOeffnen(w, h);
+    for (const dichte of ['normal', 'kompakt']) {
+      await r.evaluate((x) => { document.body.dataset.dichte = x; }, dichte);
+      const m = await r.evaluate(async (SRC) => {
+        const T = eval('(' + SRC + ')');
+        const el = document.querySelector('#schTnListe [data-schtnnachweis]');
+        if (!el) return { fehlt: true };
+        el.scrollIntoView({ block: 'center' });
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        return { t: T(el), quer: document.documentElement.scrollWidth - innerWidth };
+      }, TREFFER.toString());
+      pruefe(w + ' px ' + dichte + ': „Nachweis" (Leitung) ≥ 44 × 44, nichts ragt hinaus',
+        !m.fehlt && m.t.w >= 44 && m.t.h >= 44 && m.quer <= 0, JSON.stringify(m));
+    }
+    await r.close();
+  }
+
   console.log('\n── Fingerziele ──');
   for (const [w, h] of BREITEN) {
     const r = await oeffne(b, w, h, 'mitarbeiter');

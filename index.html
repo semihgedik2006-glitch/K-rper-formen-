@@ -8,7 +8,11 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-blNazGQA+pcTeLH8NFe4LM7sj4T7TZjjLxLfKDWitk8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<<<<<<< Updated upstream
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-FEhdforOsfAPzHAvWjpMY4zoSZUwZFTg7DgD4G/PzAQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+=======
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-rziubqxLmoB3ELJ2AyZlBq65NheLsNVrP9d2hr8TiAs='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+>>>>>>> Stashed changes
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -34567,7 +34571,7 @@ function schMeineZeichnen(){
   var bb=$('schBescheinigung');
   if(bb){
     bb.hidden=!schBescheinigungLaeufe().length;
-    if(!bb._hat){ bb._hat=1; bb.addEventListener('click', schBescheinigungDrucken); }
+    if(!bb._hat){ bb._hat=1; bb.addEventListener('click', function(){ schBescheinigungDrucken(); }); }
   }
 }
 /* ── Die eigene Bescheinigung (Runde 248) ─────────────────────────────
@@ -34580,10 +34584,16 @@ function schMeineZeichnen(){
    Je Modul zählt der LETZTE bestandene Durchlauf, ohne Testläufe —
    dieselbe Regel wie beim Nachweis der Leitung. Was als Pflicht noch
    offen ist, steht darunter: ein Blatt, das nur das Erledigte zeigt,
-   sähe vollständiger aus, als es ist. */
-function schBescheinigungLaeufe(){
+   sähe vollständiger aus, als es ist.
+
+   Seit Runde NN druckt dieselbe Funktion das Blatt auch für die Leitung,
+   je Teilnehmer (Verwalten → Teilnehmer → „Nachweis"). Aus dem Betrieb,
+   „das was leichter ist für leute ohne zugang": wer kein eigenes Konto
+   hat, kann sich das Blatt nicht selbst drucken — die Leitung kann es.
+   `fuer` ist dann der Teilnehmer; ohne `fuer` gilt das eigene Konto. */
+function schBescheinigungLaeufe(quelle){
   var juengst={};
-  _schMeine.forEach(function(l){
+  (quelle||_schMeine).forEach(function(l){
     if(l.test || l.status!=='fertig' || !l.bestanden) return;
     var j=juengst[l.modul];
     if(!j || (l.ende||0)>(j.ende||0)) juengst[l.modul]=l;
@@ -34591,14 +34601,19 @@ function schBescheinigungLaeufe(){
   return Object.keys(juengst).map(function(k){ return juengst[k]; })
     .sort(function(a,b){ return (b.ende||0)-(a.ende||0); });
 }
-function schBescheinigungDrucken(){
+function schTnLaeufe(t){
+  return _schAlleLaeufe.filter(function(l){ return l.teilnehmer===t.id; });
+}
+function schBescheinigungDrucken(fuer){
   var pa=$('printArea'); if(!pa) return;
   var datum=function(ts){ return new Date(ts).toLocaleDateString('de-DE',{ day:'2-digit', month:'2-digit', year:'numeric' }); };
-  var laeufe=schBescheinigungLaeufe();
-  var offen=schModule().filter(function(m){ return m.pflicht && schStand(m).art!=='fertig'; })
-    .map(function(m){ return m.titel||''; });
+  var laeufe=schBescheinigungLaeufe(fuer ? schTnLaeufe(fuer) : null);
+  var offen=schModule().filter(function(m){
+    return m.pflicht && (fuer ? schStandZelle(fuer, m).art : schStand(m).art)!=='fertig';
+  }).map(function(m){ return m.titel||''; });
+  var name=fuer ? (fuer.name||'') : ((session && session.name)||'');
   pa.innerHTML='<h1>Schulungsnachweis</h1>'+
-    '<p class="p-sub">'+esc((session && session.name)||'')+' · '+esc(firmaAnzeige())+' · Stand '+esc(datum(Date.now()))+'</p>'+
+    '<p class="p-sub">'+esc(name)+' · '+esc(firmaAnzeige())+' · Stand '+esc(datum(Date.now()))+'</p>'+
     (laeufe.length
       ? '<table><tr><th>Schulung</th><th>Bestanden am</th><th>Ergebnis</th><th>Dauer</th><th>Gültig bis</th></tr>'+
         laeufe.map(function(l){
@@ -34612,7 +34627,7 @@ function schBescheinigungDrucken(){
       : '<p class="p-note">Noch keine Schulung bestanden.</p>')+
     (offen.length ? '<p class="p-note"><b>Als Pflicht noch offen:</b> '+esc(offen.join(', '))+'</p>' : '')+
     '<p class="p-note">Bestätigt durch die Studioleitung: ______________________________ &nbsp; Datum: ____________</p>'+
-    '<p class="p-foot">'+esc(KONFIG.appName||'StudioChat')+' — erstellt aus den eigenen Schulungs-Durchläufen. '+
+    '<p class="p-foot">'+esc(KONFIG.appName||'StudioChat')+' — erstellt aus den '+(fuer ? '' : 'eigenen ')+'Schulungs-Durchläufen. '+
       'Ob dieses Blatt eine bestimmte Vorschrift erfüllt, prüft die App nicht.</p>';
   window.print();
 }
@@ -35945,6 +35960,8 @@ function schTnListeZeichnen(){
         ? '<button type="button" class="btn btn-ghost btn-sm" data-schkopie="'+esc(t.id)+'">Kopieren</button>'+
           '<button type="button" class="btn btn-ghost btn-sm" data-schteilen="'+esc(t.id)+'">Weitergeben</button>'
         : '')+
+      (schBescheinigungLaeufe(schTnLaeufe(t)).length
+        ? '<button type="button" class="btn btn-ghost btn-sm" data-schtnnachweis="'+esc(t.id)+'">Nachweis</button>' : '')+
       '<button type="button" class="btn btn-ghost btn-sm" data-schneucode="'+esc(t.id)+'">Neuer Code</button>'+
       '<button type="button" class="btn btn-ghost btn-sm" data-schsperre="'+esc(t.id)+'">'+
         (t.gesperrt?'Wieder freigeben':'Stilllegen')+'</button>'+
@@ -35983,6 +36000,9 @@ function schTnListeZeichnen(){
   });
   box.querySelectorAll('[data-schneucode]').forEach(function(b){
     b.addEventListener('click', function(){ schCodeNeu(b.getAttribute('data-schneucode'), b); });
+  });
+  box.querySelectorAll('[data-schtnnachweis]').forEach(function(b){
+    b.addEventListener('click', function(){ schBescheinigungDrucken(tnVon(b,'data-schtnnachweis')); });
   });
   box.querySelectorAll('[data-schsperre]').forEach(function(b){
     b.addEventListener('click', function(){
