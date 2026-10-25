@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════════
-   SCHULUNG: KONTRAST DER NEUEN TEILE IN ALLEN DREI STILEN (Runde 275)
+   SCHULUNG: KONTRAST DER NEUEN TEILE IN ALLEN DREI STILEN (Runde 276)
 
    CLAUDE.md: „Kontrast ≥ 4,5 : 1, nachgemessen an echten Bildpunkten —
    das Rechenmodell allein ist bei Verläufen zu pessimistisch."
