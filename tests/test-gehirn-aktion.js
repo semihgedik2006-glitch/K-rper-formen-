@@ -120,7 +120,7 @@ console.log('── Rückfrage, mehrere Aufträge, Ton (20.10.2026) ──');
   pruefe('Vorname und Ton gehen an das Gehirn, Ton nur locker/sachlich', A({ text: 'x', ton: 'sachlich' }, { name: 'Lea Meier' }).body.vorname === 'Lea' &&
     A({ text: 'x', ton: 'sachlich' }, { name: 'Lea' }).body.ton === 'sachlich' && A({ text: 'x', ton: 'frech' }, { name: 'Lea' }).body.ton === 'locker');
 }
-console.log('── Stimme entfernt (Runde 268) ──');
+console.log('── Stimme entfernt (Runde 274) ──');
 {
   /* Aus dem Betrieb (24.10.2026): „das vor lesen ist auch unnötig". */
   const F = require('fs').readFileSync(require('path').join(__dirname, '..', 'functions', 'index.js'), 'utf8');

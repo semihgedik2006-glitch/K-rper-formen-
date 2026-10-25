@@ -101,6 +101,8 @@ function ki(antworten) {
   pruefe(w.kiErgebnis({ antwort: 'x', art: 'frage', stimmung: 'begeistert', quellen: [] }, '', []).stimmung === 'begeistert' && w.kiErgebnis({ antwort: 'x', art: 'frage', stimmung: 'wütend', quellen: [] }, '', []).stimmung === null, 'Stimmung nur aus der festen Liste');
   /* 2.22: live kam trotz Anweisung „(ID 7)" und „(vgl. ID 57)" in Antworten. */
   pruefe(w.idsEntfernen('Lass ihn ausreden (ID 7). Trennen (vgl. ID 57). Siehe [ID 12, 13] bitte') === 'Lass ihn ausreden. Trennen. Siehe bitte' && w.idsEntfernen('Gerät Nr 5 piept') === 'Gerät Nr 5 piept', 'IDs in Klammern verschwinden, „Gerät Nr 5" bleibt');
+  /* 2.27, live am 25.10.: „die Notfall-Abläufe (z. B. ID 97/175) befolgen". */
+  pruefe(w.idsEntfernen('die Abläufe (z. B. ID 97/175) befolgen') === 'die Abläufe befolgen', '„(z. B. ID 97/175)" verschwindet auch');
   pruefe(w.kiErgebnis({ antwort: 'Mach das so (ID 3).', art: 'frage', quellen: [] }, '', []).antwort === 'Mach das so.', 'die Antwort kommt ohne ID');
   pruefe(/Kündige einen Witz nie an/.test(sys), 'Systemtext: Witze nicht ankündigen, bei Stress keiner');
   const kg = w.kiErgebnis({ antwort: 'x', art: 'frage', grundlage: 'erfunden', abgedeckt: false, quellen: [] }, '', []);
@@ -145,6 +147,13 @@ function ki(antworten) {
   pruefe(w.kiWissen(Array.from({ length: 8 }, (_, i) => ({ thema: 't' + i, inhalt: 'x'.repeat(100) }))).length === 5 && w.kiWissen([{ thema: 'a', inhalt: 'x'.repeat(9000) }, { thema: 'b', inhalt: 'y' }]).length === 1, 'an die KI höchstens 5 Einträge und 7.000 Zeichen (ein langer bleibt)');
   pruefe(w.kiWissen([{ thema: 'Quiz', inhalt: 'Richtig ist: In der App nachsehen.' }, { thema: 'Gerät aus', inhalt: '1. Akku prüfen' }])[0].thema === 'Gerät aus', '2.26: Einträge aus Schulungsfragen („Richtig ist:") kommen hinter echte Abläufe');
   pruefe(/nach dem Training stoppt man kein Training mehr/.test(sys) && /Verweise nie NUR auf eine andere Stelle/.test(sys) && /Kein Schluss-Absatz "Kurz gesagt/.test(sys), '2.26: Zeitpunkt beachten, nicht nur verweisen, kein „Kurz gesagt"');
+  /* 2.27. Aus dem Betrieb (25.10.2026): „wir sorgen einfach dafür das er schritt für schritt besser wird …
+     aber mann soll es merken auch". Gemessen: fast jede Antwort eine 5–7-Punkte-Liste mit „dokumentieren"
+     und „Soll ich das als Aufgabe anlegen?"; „kann ich morgen früher gehen" versprach Unmögliches. */
+  pruefe(/Fließtext statt Liste/.test(sys) && /höchstens 5 kurze Schritte/.test(sys), '2.27: Fließtext statt Liste, Liste nur für echte Abläufe');
+  pruefe(/Biete nichts an, was nicht in WAS DU KANNST steht/.test(sys) && /nicht als Standard-Schluss/.test(sys), '2.27: keine Angebote, die Formi nicht kann, kein Standard-Angebot am Schluss');
+  pruefe(/"kundin weint nach dem training"/.test(sys) && /"kann ich morgen früher gehen"/.test(sys) && /Tausch an/.test(sys), '2.27: Beispiele für Gefühl (weinende Kundin) und für ehrlich Unmögliches (früher gehen → Tausch)');
+  pruefe(/112 nur bei echten Notfällen \(bewusstlos, Atemnot, Brustschmerz/.test(sys), '2.27: 112 nur bei echten Notfällen, mit den Zeichen');
   pruefe(w.denkenFuer({}).reasoning.effort === 'low' && w.denkenFuer({ FORMI_DENKEN: 'medium' }).reasoning.effort === 'medium' && w.denkenFuer({ FORMI_DENKEN: 'quatsch' }).reasoning.effort === 'low', 'Nachdenken per FORMI_DENKEN umstellbar, sonst „low"');
   pruefe(!/oder sag "Das weiß ich noch nicht sicher"/.test(sys), 'Systemtext: „weiß ich nicht sicher" nur ohne Wissen');
 

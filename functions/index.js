@@ -231,12 +231,12 @@ const _neueNachricht = async (snap, ctx) => {
     if (mentioned.length) {
       mentionTokens = await collectTokens(
         d => mentioned.indexOf(d.uid) >= 0 && willHaben(d, 'mentions'), m.uid, firma);
-      await sendPush(mentionTokens, (m.name || 'Jemand') + ' hat dich erwähnt', body);
+      await sendPush(mentionTokens, (m.name || 'Jemand') + ' hat dich erwähnt', body, null, 'chat');
     }
     // ... und werden aus der normalen Meldung herausgenommen, damit sie
     // nicht zweimal benachrichtigt werden
     const rest = tokens.filter(t => mentionTokens.indexOf(t) < 0);
-    await sendPush(rest, 'Neue Nachricht von ' + (m.name || 'Team'), body);
+    await sendPush(rest, 'Neue Nachricht von ' + (m.name || 'Team'), body, null, 'chat');
 };
 const _msg = beideWelten('channels/{channelId}/messages/{msgId}', _neueNachricht);
 exports.onNewMessage = _msg.flach;
@@ -250,7 +250,7 @@ const _neueAufgabe = async (snap, ctx) => {
     const tokens = await collectTokens(
       d => inStudio(d, studioKey) && willHaben(d, 'todos'),
       t.createdByUid, firma);
-    await sendPush(tokens, 'Neue Aufgabe', t.title || '');
+    await sendPush(tokens, 'Neue Aufgabe', t.title || '', null, 'todos');
 
     /* Zusaetzlich per Mail. Push erreicht nur, wer die App installiert
        und Meldungen erlaubt hat; die Mail erreicht alle.
@@ -359,7 +359,7 @@ function tagBerlin(d) {
    Glocke in der App.
 
    Und nicht an den, der es getan hat — der weiss es. */
-async function erledigtPush(firma, studioKey, t) {
+async function erledigtPush(firma, studioKey, t, ziel) {
   const wo = await studioName(firma, studioKey);
   const wer = t.doneBy || 'Jemand';
   const tokens = await collectTokens(
@@ -367,7 +367,7 @@ async function erledigtPush(firma, studioKey, t) {
          willHaben(d, 'erledigt'),
     t.doneByUid || null, firma);
   if (!tokens.length) return;
-  await sendPush(tokens, wo, wer + ' hat „' + (t.title || 'einen Punkt') + '" erledigt');
+  await sendPush(tokens, wo, wer + ' hat „' + (t.title || 'einen Punkt') + '" erledigt', null, ziel || 'todos');
 }
 
 /* ── Welche der drei Meldungen ist faellig? ──
@@ -422,7 +422,9 @@ const _fertigPruefen = async (change, ctx) => {
   const vor = change.before.exists ? (change.before.data() || {}) : null;
   const nach = change.after.exists ? (change.after.data() || {}) : null;
   if (nach && nach.done && (nach.doneAt || 0) > ((vor && vor.doneAt) || 0)) {
-    try { await erledigtPush(firma, studioKey, nach); }
+    /* Runde 268: ein Tipp führt dorthin, wo abgehakt wurde. */
+    const ziel = ctx.params.putzId ? 'putzplan' : 'todos';   // derselbe Auslöser hört auf beide Pfade
+    try { await erledigtPush(firma, studioKey, nach, ziel); }
     catch (e) { console.error('erledigtPush:', e.message); }
   }
 
@@ -592,7 +594,7 @@ const _neuerAushang = async (snap, ctx) => {
     }, a.uid, (ctx && ctx.params && ctx.params.firma) || null);
     /* Runde 135/136: eine als wichtig markierte Ankündigung sagt das schon
        in der Push-Nachricht — und was zu tun ist. */
-    await sendPush(tokens, wichtigTitel(a), wichtigText(a));
+    await sendPush(tokens, wichtigTitel(a), wichtigText(a), null, 'ann');
 };
 const _ann = beideWelten('announcements/{annId}', _neuerAushang);
 exports.onNewAnnouncement = _ann.flach;
@@ -654,7 +656,7 @@ async function wichtigErinnernFirma(firma, jetzt) {
     const fehlen = new Set(wichtigFehlende(a, nutzer));
     if (!fehlen.size) continue;
     const tokens = await collectTokens((d) => fehlen.has(d.uid) && willHaben(d, 'ann'), null, firma);
-    await sendPush(tokens, '‼️ Noch nicht bestätigt · ' + (a.from || 'Leitung'), wichtigText(a));
+    await sendPush(tokens, '‼️ Noch nicht bestätigt · ' + (a.from || 'Leitung'), wichtigText(a), null, 'ann');
     gesendet += tokens.length;
   }
   return gesendet;
@@ -682,7 +684,7 @@ const _neueDm = async (snap, ctx) => {
     const tokens = await collectTokens(
       d => d.uid === recipient && willHaben(d, 'dm'), m.uid, ctx.params.firma || null);
     const body = m.type === 'checklist' ? '📋 Checkliste' : (m.text || '');
-    await sendPush(tokens, m.name || 'Neue Nachricht', body);
+    await sendPush(tokens, m.name || 'Neue Nachricht', body, null, 'dm');
 };
 const _dm = beideWelten('dms/{dmId}/messages/{msgId}', _neueDm);
 exports.onNewDm = _dm.flach;
@@ -740,7 +742,7 @@ async function processBirthdays() {
     }, { merge: true });
     // Push
     const tokens = await collectTokens(d => d.uid === uid, 'system', firma);
-    await sendPush(tokens, gruss, 'Alles Gute zum Geburtstag! 🎉');
+    await sendPush(tokens, gruss, 'Alles Gute zum Geburtstag! 🎉', null, 'home');
     await db.collection('users').doc(uid).update({ lastBdayDM: year });
     sent++;
   }
@@ -782,7 +784,7 @@ exports.dueTaskReminder = region.pubsub
       for (const t of zugewiesen) {
         const tk = await collectTokens(
           d => d.uid === t.assignedTo && willHaben(d, 'todos'), null, firma);
-        await sendPush(tk, 'Aufgabe fällig', t.title || '', 'formi');
+        await sendPush(tk, 'Aufgabe fällig', t.title || '', 'formi', 'todos');
       }
       if (offenFuerAlle.length) {
         const tk = await collectTokens(
@@ -790,7 +792,7 @@ exports.dueTaskReminder = region.pubsub
         const titel = offenFuerAlle.length === 1
           ? offenFuerAlle[0].title
           : offenFuerAlle.length + ' Aufgaben sind heute fällig';
-        await sendPush(tk, 'Erinnerung', titel, 'formi');
+        await sendPush(tk, 'Erinnerung', titel, 'formi', 'todos');
       }
     }
     }
@@ -847,7 +849,7 @@ exports.certExpiry = region
       if (!c.uid) continue;
       try {
         const tk = await collectTokens(d => d.uid === c.uid, null, firma);
-        await sendPush(tk, 'Nachweis ' + frist(c.tage), bezeichnung(c), 'formi');
+        await sendPush(tk, 'Nachweis ' + frist(c.tage), bezeichnung(c), 'formi', 'ich');
       } catch (e) { console.error('Nachweis-Push:', e); }
     }
 
@@ -864,7 +866,7 @@ exports.certExpiry = region
         const text = faellig.length === 1
           ? (faellig[0].name + ': ' + bezeichnung(faellig[0]) + ' ' + frist(faellig[0].tage))
           : (faellig.length + ' Nachweise laufen demnaechst ab');
-        await sendPush(tk, 'Nachweise', text, 'formi');
+        await sendPush(tk, 'Nachweise', text, 'formi', 'chef');
       }
     } catch (e) { console.error('Nachweis-Chefmeldung:', e); }
 
@@ -6987,7 +6989,7 @@ async function auffrischErinnernFirma(firma, jetzt) {
     if (!r.offen) continue;
     const tokens = await collectTokens((d) => d.uid === plan.uid && willHaben(d, 'schulung'), null, firma);
     if (!tokens.length) continue;
-    await sendPush(tokens, '🔁 Kurz auffrischen', auffrischErinnernText(r.offen), 'formi');
+    await sendPush(tokens, '🔁 Kurz auffrischen', auffrischErinnernText(r.offen), 'formi', 'schulung');
     await doc.ref.update({ erinnertAm: jetzt });
     gesendet += tokens.length;
   }
@@ -7226,7 +7228,7 @@ exports.firmaBeitreten = region.https.onCall(async (data, context) => {
     });
     if (chefs.length) {
       const tk = await collectTokens((d) => chefs.indexOf(d.uid) >= 0, null, f);
-      await sendPush(tk, 'Neue Anmeldung', (p.name || 'Jemand') + ' möchte ins Team — bitte freigeben (Verwaltung → Team).');
+      await sendPush(tk, 'Neue Anmeldung', (p.name || 'Jemand') + ' möchte ins Team — bitte freigeben (Verwaltung → Team).', null, 'chef');
     }
   } catch (e) { console.warn('Beitritt-Meldung:', e.message); }
 
@@ -7328,7 +7330,7 @@ exports.loeschungBeantragen = region.https.onCall(async (data, context) => {
     if (andere.length) {
       const tk = await collectTokens((d) => andere.indexOf(d.uid) >= 0, null, f);
       await sendPush(tk, 'Löschung beantragt',
-        (profil.name || 'Jemand') + ' möchte das Konto löschen lassen — ist gesperrt (Verwaltung → Team).');
+        (profil.name || 'Jemand') + ' möchte das Konto löschen lassen — ist gesperrt (Verwaltung → Team).', null, 'chef');
     }
   } catch (e) { console.warn('Löschantrag-Meldung:', e.message); }
   return { ok: true, am: jetzt };
@@ -7774,7 +7776,7 @@ async function kennzahlenErinnernFirma(firma, jetzt) {
     const tokens = await collectTokens((d) => d.uid === uid && willHaben(d, 'todos'), null, firma);
     await sendPush(tokens, '📊 Kennzahlen ' + name,
       'Bitte Mitglieder und Kündigungen eintragen: ' + liste.join(', ') +
-      '. Verwaltung → Kennzahlen, dauert eine Minute.');
+      '. Verwaltung → Kennzahlen, dauert eine Minute.', null, 'chef');
     gesendet += tokens.length;
   }
   return gesendet;
@@ -7974,7 +7976,7 @@ async function gehirnErinnerungenFirma(firma, jetzt) {
     const e = doc.data() || {};
     try {
       const tokens = await collectTokens((d) => d.uid === e.uid, null, firma);
-      await sendPush(tokens, '⏰ Erinnerung', String(e.text || ''), 'formi');
+      await sendPush(tokens, '⏰ Erinnerung', String(e.text || ''), 'formi', 'gehirn');
       n++;
     } catch (err) { console.error('Erinnerung ' + doc.id + ':', err.message); }
     await doc.ref.delete().catch(() => {});
@@ -8053,7 +8055,7 @@ exports.gehirnFoto = region
     return { geraet: String(json.geraet || '').slice(0, 80), text: String(json.text || '').slice(0, 400) };
   });
 
-/* Runde 268: Die Stimm-Function (gehirnStimme, 20.10.2026) ist entfernt —
+/* Runde 274: Die Stimm-Function (gehirnStimme, 20.10.2026) ist entfernt —
    aus dem Betrieb (24.10.2026): „das vor lesen ist auch unnötig". Die App
    ruft sie seit Runde 263 nicht mehr auf; mit --force räumt der Deploy sie
    ab. Der Pfad /api/stimme im Worker bleibt bis zu dessen nächster
@@ -9054,9 +9056,9 @@ function formiSchichtEndeIn(datum, zeit, von, bis) {
   return t > von && t <= bis;
 }
 
-async function formiPush(firma, filter, titel, text) {
+async function formiPush(firma, filter, titel, text, ziel) {
   const tokens = await collectTokens(d => willHaben(d, 'formi') && filter(d), null, firma);
-  await sendPush(tokens, titel, text, 'formi');
+  await sendPush(tokens, titel, text, 'formi', ziel);
   return tokens.length;
 }
 async function formiSchichtenHeute(firma, studioKey, heute) {
@@ -9088,7 +9090,7 @@ async function formiMorgenFirma(firma) {
   let n = 0;
   for (const uid of Object.keys(proPerson)) {
     const text = formiTagText(proPerson[uid]);
-    if (text) n += await formiPush(firma, d => d.uid === uid, '☀️ Formi: dein Tag', text);
+    if (text) n += await formiPush(firma, d => d.uid === uid, '☀️ Formi: dein Tag', text, 'home');
   }
   return n;
 }
@@ -9113,7 +9115,7 @@ async function formiFaelligFirma(firma, jetzt) {
     for (const t of vorbei) {
       const an = t.assignedTo ? [t.assignedTo] : imDienst;
       if (!an.length) continue;
-      n += await formiPush(firma, d => an.indexOf(d.uid) >= 0, '⏰ Frist vorbei', String(t.title || 'Aufgabe').slice(0, 120) + ' ist noch offen.');
+      n += await formiPush(firma, d => an.indexOf(d.uid) >= 0, '⏰ Frist vorbei', String(t.title || 'Aufgabe').slice(0, 120) + ' ist noch offen.', 'todos');
     }
   }
   return n;
@@ -9137,7 +9139,9 @@ async function formiSchichtendeFirma(firma, jetzt) {
     const uebergaben = (await ref.collection('handovers').where('ts', '>=', tagStart).get()).docs.map(d => (d.data() || {}).uid);
     for (const sch of enden) {
       const text = formiSchichtendeText({ studio: name, uebergabe: uebergaben.indexOf(sch.uid) >= 0, putz });
-      if (text) n += await formiPush(firma, d => d.uid === sch.uid, '👋 Formi: Feierabend-Check', text);
+      /* Fehlt die Übergabe, führt der Tipp dorthin (Plan → Übergabe), sonst zum Putzplan. */
+      if (text) n += await formiPush(firma, d => d.uid === sch.uid, '👋 Formi: Feierabend-Check', text,
+        uebergaben.indexOf(sch.uid) >= 0 ? 'putzplan' : 'team');
     }
   }
   return n;
@@ -9154,7 +9158,7 @@ const _formiDefekt = async (snap, ctx) => {
   if (x.art !== 'defekt') return null;
   const firma = ctx.params.firma || null, sk = ctx.params.studioKey;
   const tokens = await collectTokens(d => willHaben(d, 'formi') && formiAnLeitung(sk)(d), x.byUid || null, firma);
-  await sendPush(tokens, '🔧 Defekt gemeldet', String(x.devName || 'Gerät').slice(0, 60) + ': ' + String(x.text || 'defekt').slice(0, 140) + (x.by ? ' (' + String(x.by).split(' ')[0] + ')' : ''), 'formi');
+  await sendPush(tokens, '🔧 Defekt gemeldet', String(x.devName || 'Gerät').slice(0, 60) + ': ' + String(x.text || 'defekt').slice(0, 140) + (x.by ? ' (' + String(x.by).split(' ')[0] + ')' : ''), 'formi', 'geraete');
   return null;
 };
 const _formiDefektW = beideWelten('studios/{studioKey}/deviceLog/{logId}', _formiDefekt);
@@ -9167,7 +9171,7 @@ const _formiMaterial = async (change, ctx) => {
   const firma = ctx.params.firma || null, sk = ctx.params.studioKey;
   const tokens = await collectTokens(d => willHaben(d, 'formi') && formiAnLeitung(sk)(d), null, firma);
   const liste = neu.slice(0, 4).map(x => x.name + ' (' + x.fehlt + ')').join(', ') + (neu.length > 4 ? ' und ' + (neu.length - 4) + ' weitere' : '');
-  await sendPush(tokens, '📦 Material fehlt', liste, 'formi');
+  await sendPush(tokens, '📦 Material fehlt', liste, 'formi', 'material');
   return null;
 };
 const _formiMaterialW = beideWelten('inventory/{studioKey}', _formiMaterial, 'onWrite');

@@ -18,7 +18,7 @@
        erschrickt es. Anmelden-Knopf und Augen-Knopf ≥ 44 × 44 per
        Hit-Test, 320 … 1920 px, normal und kompakt. Der echte Anmeldeweg
        (Firebase) ist hier NICHT prüfbar.
-    3. Heller Stil: seit Runde 268 ein Tintenpunkt (aus dem Betrieb,
+    3. Heller Stil: seit Runde 274 ein Tintenpunkt (aus dem Betrieb,
        24.10.2026, auf Idee 9 „Formi im Hellmodus als Tinte": „mach alles
        davon") — der Kern ist dunkel, das Gesicht leuchtet darin,
        Kontrast an echten Bildpunkten ≥ 4,5 : 1; die Scheibe steht sich
@@ -191,7 +191,7 @@ const LAEUFT_AN = (sel) => {
       await zu(p);
     }
 
-    console.log('\n── 3 Heller Stil: Formi als Tinte (Runde 268) ──');
+    console.log('\n── 3 Heller Stil: Formi als Tinte (Runde 274) ──');
     for (const [w, h] of [[1440, 900], [390, 844]]) {
       const p = await oeffne(b, w, h, { prefs: JSON.stringify({ theme: 'light' }) });
       const r = await p.evaluate(() => {

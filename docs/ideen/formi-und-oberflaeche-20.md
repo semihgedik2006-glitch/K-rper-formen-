@@ -106,26 +106,26 @@ Auf „mach alles davon und alles was noch offen ist" sind alle 20 gebaut:
 
 | Idee | Runde | wo man es sieht |
 |---|---|---|
-| 1 Auf Formi ziehen | 269 | am Rechner eine Aufgabe/einen Putzpunkt auf die Kugel ziehen |
-| 2 Ring beim Lange-Drücken | 269 | Formi gedrückt halten oder Rechtsklick |
-| 3 Tagesstand lesbar | 268 | am Rechner mit der Maus über Formi |
-| 4 Formi statt Ladekreisel | 268 | in jedem Knopf, der länger als 300 ms speichert |
-| 5 Formis Spur | 268 | „über Formi · 09:14" an der Zeile |
-| 6 Morgens aus dem Loch | 269 | erster Blick auf „Heute" am Tag |
-| 7 Schwer bei Stau | 268 | Formis Wirbel ab 8 / 15 offenen Punkten |
-| 8 Insel für Laufendes | 269 | eingestempelt: „Im Dienst seit …" oben |
-| 9 Tinte im hellen Stil | 268 | Stil „Hell" |
-| 10 Ein Formi-Ton | 268 | Formi-Fenster, „erledigt" |
-| 11 Meine Schicht | 271 | „Heute" → Meine Schicht |
-| 12 Liste + Detail am Rechner | 271 | Aufgabe → „…" ab 1100 px |
-| 13 „+" mit Vorschlägen | 270 | „+ Anlegen" auf „Heute" am Rechner |
-| 14 Rückgängig statt Nachfragen | 270 | Löschen von Aufgabe, Ankündigung, Nachricht, Schicht |
-| 15 Glocke gebündelt | 270 | Glocke → „3 neue in Hürth" |
-| 16 Felder, die mitdenken | 270 | Verwaltung → Neue Aufgabe: Studios |
-| 17 Fokus | 270 | Taste F am Rechner |
-| 18 Erste Woche | 269 | neue Konten, „Heute" |
-| 19 Eine Karte mit Kante | 271 | „Heute" und Karten-Seiten |
-| 20 Sprache | 270 | Knöpfe: „Löschen", „Hinzufügen", „Schließen" |
+| 1 Auf Formi ziehen | 275 | am Rechner eine Aufgabe/einen Putzpunkt auf die Kugel ziehen |
+| 2 Ring beim Lange-Drücken | 275 | Formi gedrückt halten oder Rechtsklick |
+| 3 Tagesstand lesbar | 274 | am Rechner mit der Maus über Formi |
+| 4 Formi statt Ladekreisel | 274 | in jedem Knopf, der länger als 300 ms speichert |
+| 5 Formis Spur | 274 | „über Formi · 09:14" an der Zeile |
+| 6 Morgens aus dem Loch | 275 | erster Blick auf „Heute" am Tag |
+| 7 Schwer bei Stau | 274 | Formis Wirbel ab 8 / 15 offenen Punkten |
+| 8 Insel für Laufendes | 275 | eingestempelt: „Im Dienst seit …" oben |
+| 9 Tinte im hellen Stil | 274 | Stil „Hell" |
+| 10 Ein Formi-Ton | 274 | Formi-Fenster, „erledigt" |
+| 11 Meine Schicht | 277 | „Heute" → Meine Schicht |
+| 12 Liste + Detail am Rechner | 277 | Aufgabe → „…" ab 1100 px |
+| 13 „+" mit Vorschlägen | 276 | „+ Anlegen" auf „Heute" am Rechner |
+| 14 Rückgängig statt Nachfragen | 276 | Löschen von Aufgabe, Ankündigung, Nachricht, Schicht |
+| 15 Glocke gebündelt | 276 | Glocke → „3 neue in Hürth" |
+| 16 Felder, die mitdenken | 276 | Verwaltung → Neue Aufgabe: Studios |
+| 17 Fokus | 276 | Taste F am Rechner |
+| 18 Erste Woche | 275 | neue Konten, „Heute" |
+| 19 Eine Karte mit Kante | 277 | „Heute" und Karten-Seiten |
+| 20 Sprache | 276 | Knöpfe: „Löschen", „Hinzufügen", „Schließen" |
 
 Bewusst offen geblieben: die Material-Liste behält ihre Rückfrage (siehe
-Runde 270).
+Runde 276).

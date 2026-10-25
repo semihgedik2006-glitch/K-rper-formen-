@@ -557,7 +557,7 @@ const KUGEL_ANIM = () => {
           f1: finde('Über Formi abgehakt'), f2: finde('Danach von Hand'), f3: finde('Von Formi angelegt'), f4: finde('Ganz normal') };
       });
       pruefe('Aufgaben-Seite offen', spur.view === 'view-todos', spur.view);
-      /* Runde 268, Idee 5 („mach alles davon"): die Spur nennt die Uhrzeit. */
+      /* Runde 274, Idee 5 („mach alles davon"): die Spur nennt die Uhrzeit. */
       pruefe('über Formi abgehakt: „über Formi · Uhrzeit"', /^über Formi · \S/.test(spur.f1 || ''), JSON.stringify(spur));
       pruefe('danach von Hand neu abgehakt: keine Spur', spur.f2 === '', JSON.stringify(spur));
       pruefe('von Formi angelegt: „über Formi angelegt"', /^über Formi angelegt( · \S.*)?$/.test(spur.f3 || ''), JSON.stringify(spur));
