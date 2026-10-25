@@ -23024,8 +23024,132 @@ steht weiter, entschieden ist „Gratis bleiben".
   Gegenprobe bekommt danach wieder den echten.
 - Ohne Leitstand-Schlüssel gibt es 401.
 - Quiz-Einträge kommen nach hinten, und die neuen Regeln stehen im Text.
+## Runde 267 — Formis Daueranimationen nachgemessen; kein Vermessen mehr im Tipp (25.10.2026)
 
-## Runde 267 — Formi redet wie ein Kollege (Worker 2.27, 25.10.2026)
+Aus dem Betrieb, 25.10.2026, auf das Angebot „das Ruckeln bei Formis
+Daueranimationen angehen, dafür müsste ich Formi anfassen“: „ja können
+wir so machen“. Selbst testen kann der Betrieb nicht (kein iPhone, kein
+Firebase-Test) — also nachgestellt und gemessen.
+
+**Gemessen, bevor etwas geändert wurde** (Demo Chef, Formi, 390 px,
+CPU ÷4, A-B-B-A in derselben Seite, Median):
+
+- Formis Daueranimationen (zehn `formiDoppler`, vier Drehungen je Formi)
+  **pausiert**: 6,8 gegen 6,9 ms je Bild beim Raumwechsel — kein
+  Unterschied. Formis Kugel ganz ausgeblendet: 6,7 gegen 6,1 ms — knapp
+  über der Streuung (±0,5 ms). Welle, Linse, Formi im Gruss einzeln
+  ausgeblendet: alle innerhalb der Streuung.
+- In einer leeren Seite laufen solche Animationen ganz auf dem
+  Compositor (0 Stilberechnungen in 1 s). In der App werden die
+  Formi-Elemente 8–30-mal je Sekunde mitberechnet — nicht jedes Bild,
+  sondern immer dann, wenn etwas anderes ohnehin eine Stilberechnung
+  auslöst (4–12 ms in einer Sekunde, ungedrosselt).
+- Die Gefühle einzeln, Formis Uhren aus: alle unter 8,3 ms je Bild bis
+  auf „feiert“ (8,3).
+
+**Korrektur zu Runde 264.** Dort stand, Formis Animationen liefen „jedes
+Bild über den Hauptfaden“. Das war aus dem Invalidierungs-Trace eines
+Raumwechsels geschlossen, in dem ohnehin jedes Bild eine Stilberechnung
+hatte. In Ruhe stimmt es nicht (siehe oben). Formi ist beim Raumwechsel
+ein kleiner Posten.
+
+**Darum ist an Formi nichts geändert.** Ein Umbau ohne messbaren Gewinn
+hätte nur das Risiko, das Aussehen zu verändern.
+
+**Was beim Raumwechsel wirklich kostet** (Profil, ungedrosselt, 15
+Wechsel): der Tipp selbst, 26 ms je Wechsel in `showView`. Davon steckten
+15 ms in `kopfPlusUmhaengen` — nicht im eigenen Code, sondern in einer
+**erzwungenen Vermessung**: `window.innerWidth` zwingt Chromium, die eben
+aufgebaute Seite sofort ganz zu layouten. Die Abfrage hatte ich in Runde
+264 vor die frühen Ausstiege gesetzt, damit lief sie bei jedem Wechsel
+(vorher nur auf Seiten mit Kopfknopf). Hausregel: „im Klick nichts
+vermessen“.
+
+**Geändert.**
+- `mobnavHoeheBeobachten()` ohne Breitenabfrage davor (der Beobachter
+  meldet am Rechner 0, und 0 wird nicht gesetzt).
+- `window.innerWidth > 820` → `!_mobnavBreite.matches` (die Medienabfrage
+  `(max-width:820px)`, die es dort schon gab).
+
+**Nachher.** `showView` 26 → 14 ms je Wechsel im Profil. Auf Bild-Ebene
+(Trace, drei Läufe je Seite gegen `main`): 390 px 14,8 / 16,4 / 15,1 gegen
+14,2 / 15,2 / 14,2 ms je Bild, 1440 px 21,4 / 19,0 / 19,8 gegen 22,8 /
+20,5 / 18,1 — **kein messbarer Gewinn**. Das Layout fällt jetzt im
+nächsten Bild an statt im Tipp, kostet aber gleich viel. Behauptet wird
+also: die Hausregel ist eingehalten, nicht: es ruckelt weniger.
+
+**Was bleibt.** Beim Raumwechsel ist der grösste Posten der Aufbau der
+neuen Seite selbst (Stil und Layout für mehrere hundert Elemente). Das
+wäre ein eigener Umbau (Seiten vorbereitet halten statt neu bauen) — eine
+Frage an den Betrieb, nicht nebenbei.
+
+**Tests:** block-a (38), ganze-seite (45), gruppen-aufgaben (166),
+p1-aufgaben (27), raeume (31), iphone-rand (35), csp, formi-kugel (70),
+knoepfe — alle grün.
+
+**Nicht getestet:** iPhone, Safari.
+
+## Runde 268 — Jede Push-Meldung führt direkt hin (25.10.2026)
+
+Aus dem Betrieb, 25.10.2026: „ja mach den rest auch mit ziel" — auf den
+offenen Punkt aus Runde 243 („die anderen Meldungen öffnen beim Antippen
+nur die App").
+
+### Was gebaut wurde
+
+Alle 23 Aufrufe von `sendPush` und `formiPush` tragen jetzt ein Ziel
+(das Feld `data.ziel` aus Runde 243; der Service Worker öffnet `#ziel`
+oder schickt es der offenen App):
+
+| Meldung | Ziel |
+|---|---|
+| Chat, Erwähnung | `chat` |
+| Direktnachricht | `dm` |
+| Neue / fällige Aufgabe, Erinnerung, Frist vorbei | `todos` |
+| „X hat Y erledigt" | `todos` oder `putzplan` — je nach Pfad des Auslösers (`putzId`) |
+| Infos der Leitung, „noch nicht bestätigt" | `ann` |
+| Geburtstag, „Formi: dein Tag" | `home` |
+| Nachweis läuft ab (an die Person) | `ich` |
+| Nachweise, Neue Anmeldung, Löschantrag, Kennzahlen (an die Leitung) | `chef` |
+| Kurz auffrischen | `schulung` |
+| Formis Erinnerung („erinnere mich …") | `gehirn` |
+| Feierabend-Check | `team` (Übergabe fehlt), sonst `putzplan` |
+| Defekt gemeldet | `geraete` |
+| Material fehlt | `material` |
+| Stempel-Erinnerung (Runde 238) | `zeit` |
+
+`formiPush` reicht das Ziel durch; `erledigtPush` bekommt es vom
+Auslöser.
+
+### Warum so
+
+- **Das Ziel kommt aus den Pfad-Parametern, nicht aus `change.after.ref`.**
+  Die erste Fassung las den Sammlungsnamen am Dokument. Der Regeltest baut
+  das Änderungsobjekt aber ohne `ref` nach (funktionen.test.js), und eine
+  Ausnahme an dieser Stelle hätte die ganze Fertig-Meldung des Studios
+  verschluckt. `ctx.params.putzId` gibt es nur beim Putzplan-Auslöser —
+  dieselbe Aussage, ohne neue Abhängigkeit.
+- **Nachweis an die Person → `ich`, nicht in die Verwaltung.** Die eigenen
+  Nachweise stehen unter „Ich". Den Unterreiter (Meine Daten) kann eine
+  Adresse heute nicht wählen; man landet im Bereich, ein Tipp weiter.
+
+### Geprüft
+
+- `tests/test-push-ziele-alle.js` (neu, ohne Browser): liest
+  `functions/index.js` und verlangt bei JEDEM Push-Aufruf ein Ziel, das es
+  als Ansicht gibt — gezählt, nicht aufgezählt, damit ein neuer Push ohne
+  Ziel beim nächsten Lauf auffällt. Gegenproben am Prüfer: ohne Ziel,
+  unbekannte Ansicht, Grossbuchstaben, Kommas in Texten.
+- Grün: tests/rules/funktionen.test.js (der Fertig-Auslöser mit der
+  nachgebauten Änderung), stempel-erinnerung.test.js, test-push-ziel,
+  test-push-doppelt, test-csp, test-demo.
+
+### Nicht geprüft
+
+- Ein echter Tipp auf echte Meldungen auf einem Handy.
+
+
+## Runde 269 — Formi redet wie ein Kollege (Worker 2.27, 25.10.2026)
 
 Aus dem Betrieb: „wir sorgen einfach dafür das er schritt für schritt
 besser wird das soll ja auch ein prozess sein aber mann soll es merken auch".
