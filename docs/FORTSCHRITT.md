@@ -23551,3 +23551,76 @@ einmal als Klick meldet, zeigt nur das Gerät.
   66 Zeichen, ein Punkt 270 Zeichen, `wo:'team'` ohne Ziel. Nach den
   Patchnote-Regeln (CLAUDE.md, 25.10.2026) umgeschrieben: `art:'neu'`,
   drei kurze Punkte, `wo:'team:abwesend'`. Danach 12 grün.
+
+## Runde 276 — Schulung: Nachweis je Person für die Leitung; Kontrast in allen drei Stilen (25.10.2026)
+
+Aus dem Betrieb, 25.10.2026: „jo mach weiter und teste".
+
+### 1. „Nachweis" in der Teilnehmerliste
+
+Die eigene Bescheinigung (Runde 248) half nur Leuten mit Zugang. Wer
+kein Konto hat, und gerade für diese Leute sind die Codes gedacht („das
+was leichter ist für leute ohne zugang"), konnte sie nicht drucken. Unter
+Verwalten → „Teilnehmer" trägt jetzt jede Person, die mindestens ein
+Modul bestanden hat (ohne Testläufe), einen Knopf „Nachweis". Er druckt
+dasselbe Blatt.
+
+**Warum so entschieden:**
+- **Eine Funktion, zwei Wege.** `schBescheinigungDrucken(fuer)`: ohne
+  `fuer` das eigene Konto (`_schMeine`), mit `fuer` der Teilnehmer
+  (`_schAlleLaeufe`). Was „offen" heisst, rechnet für die Leitung
+  `schStandZelle`, dieselbe Rechnung wie im Reiter „Pflicht". So
+  widersprechen sich Blatt und Tabelle nicht.
+- **Kein Knopf ohne Inhalt.** Wer nichts bestanden hat, bekommt keinen
+  „Nachweis", der ein leeres Blatt druckt.
+- **Kein neuer Datenweg.** Die Leitung liest die Durchläufe ohnehin
+  (Auswertung, Pflicht-Reiter).
+
+### 2. Kontrast nachgemessen, auch im hellen Stil
+
+Runde 261 hatte offen gelassen: „Das helle Design habe ich nicht
+gemessen." `tests/test-schulung-kontrast.js` misst jetzt an echten
+Bildpunkten. Gemessen werden die Teile der Runden 248 und 261: das
+Drucker-Zeichen, „Schon geschafft" und „Das nimmst du mit" mit Frage,
+„Richtig: …" und Hinweis. Die Stile sind formi, dark und light, je bei 390
+und 1440 px.
+
+**Messverfahren:** Hintergrund ist die häufigste Farbe im Ausschnitt,
+Schrift die Farbe mit dem grössten Abstand dazu. Das ist bei
+kantengeglätteter Schrift eher günstig gerechnet. Es misst den Kern der
+Buchstaben, nicht ihre Ränder.
+
+| Teil | formi | dark | light |
+|---|---|---|---|
+| Drucker-Zeichen (Grenze 3 : 1) | 5,44 | 4,69 | 5,99 |
+| Satz unter „Das nimmst du mit" | 14,01 | 11,52 | 11,89 |
+| Hinweis | 13,0 | 12,15 | 10,42 |
+| Frage / „Richtig: …" | 17,61 | 16,46 | 16,76 |
+
+GEGENPROBE: Ein Hinweis in Hintergrundfarbe misst rund 1,01 und fällt
+durch. Die Messung misst also.
+
+Einmal mass dieselbe Gegenprobe 9,4. Grund war Konfetti nach
+„Geschafft", das über dem Ausschnitt lag. Ein buntes Stück über dem Text
+täuscht genauso einen guten Kontrast vor. Der Durchlauf misst deshalb mit
+„Bewegung reduzieren" (`reducedMotion`, dann kommt kein Konfetti). Danach
+lief er zweimal hintereinander mit denselben Werten.
+
+### Geprüft
+
+- `tests/test-schulung-bescheinigung.js` (53, 23 neu):
+  - Jamie Kurz (ohne Zugang) hat „Nachweis"; das Blatt ist seins: Name,
+    zwei Zeilen, offen Notfall und Beratung, Fusszeile ohne „eigenen".
+  - GEGENPROBEN: Ohne bestandenes Modul kein Knopf (Nora Haas); nur
+    Testläufe → kein Knopf.
+  - „Nachweis" ≥ 44 × 44 per Hit-Test bei 320 / 390 / 430 / 820 / 1280 /
+    1440 / 1920 px, normal und kompakt.
+  - Gegenprobe am Code: Mit den eigenen statt den Durchläufen des
+    Teilnehmers fallen zwei Prüfungen.
+- `tests/test-schulung-kontrast.js` (53, neu), siehe oben.
+- Vor dem Bauen auf `main` gelaufen und grün: alle `test-schulung*`,
+  test-auffrischen, test-pc-spalten, test-pc-durchsicht (mit `ZEIT=600`).
+
+### Nicht geprüft
+
+- Der Druck auf echtes Papier. Geprüft ist das Druckbild im Browser.
