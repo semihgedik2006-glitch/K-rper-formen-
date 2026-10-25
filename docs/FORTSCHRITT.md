@@ -22936,71 +22936,6 @@ Polster für Formi; sie bleibt als Wache.
 nicht gemessen; ob Safari 26 mit schwebender Adressleiste unten einen
 Rand meldet, zeigt nur das Gerät.
 
-<<<<<<< HEAD
-## Runde 265 — Findetest: die Stoppuhr zum Selbsttesten (25.10.2026)
-
-Aus dem Betrieb, 23.10.2026, auf meinen Vorschlag „erst mit echten
-Leuten messen, dann umbauen": „ich kann leider nur selber testen
-akruell". Zugesagt war eine kleine Stoppuhr-Seite. Die anonyme Zählung,
-welche Seiten geöffnet werden, gibt es schon (`nutzAnsicht` in
-`showView`); sie musste nicht neu gebaut werden.
-
-**Was gebaut wurde**
-
-- „Alles → Was muss ich wissen? → Findetest": ein Fenster mit fünf
-  typischen Zielen (Putzplan, wer morgen arbeitet, Direktnachricht,
-  Gerät defekt melden, Dokument). Ziele, die eine Firma abgeschaltet
-  hat, stehen mit „Bei euch ausgeschaltet" da, ohne „Los".
-- „Los" schliesst alles, springt auf „Heute" und startet die Uhr. Sie
-  zählt Sekunden und Tipps (echte Klicks, `isTrusted`, Fangphase, ohne
-  die Uhr selbst; Wischen zum Scrollen zählt nicht, und die Klicks, die
-  die App selbst auslöst, auch nicht) und hält von selbst an, sobald `currentView` das Ziel ist.
-  Danach öffnet das Fenster wieder mit „Geschafft: … in 7 s mit 2
-  Tipps". „Aufgeben" (das × an der Uhr) merkt „aufgegeben".
-- Die letzten fünf Ergebnisse je Ziel stehen in `PREFS.findetest`, also
-  nur auf dem Gerät. „Ergebnisse kopieren" legt sie als Text in die
-  Zwischenablage, zum Weiterschicken.
-
-**Warum so**
-
-- **Am Ziel anhalten statt „Fertig" drücken lassen:** Wer drückt, misst
-  auch sein Zögern beim Drücken – und vergisst es manchmal. Die Ansicht
-  ist das, was sich sicher feststellen lässt.
-- **Abfragen alle 250 ms statt eines Hakens in `showView`:** Durch
-  `showView` geht jeder Weg der App. Ein Fehler im Test-Werkzeug soll
-  dort nichts stören können. 250 ms Ungenauigkeit sind bei Zeiten von
-  mehreren Sekunden ohne Belang.
-- **Auf dem Gerät, nicht in der Datenbank:** Es geht um den Aufbau der
-  App, nicht um die Person, die gesucht hat. Keine neue Sammlung, keine
-  neue Regel.
-- **Die Uhr in der Kopfzeile:** In der ersten Fassung lag sie unten
-  links über der Leiste – und damit auf den Schnellzugriffen von
-  „Heute", einem der Wege, die sie messen soll. Darübergelegt in der
-  Kopfzeile deckte sie bei 430 und 820 px den Schriftzug der Marke zu
-  (ein Knopf). Jetzt steht sie als eigenes Stück im Fluss der Kopfzeile
-  zwischen Marke und Profil: am Handy nur „12 s ×", am Rechner mit Ziel
-  und Tipps.
-- **Suche und Formi** sind nicht gesperrt, nur im Fenster ausgeschlossen
-  („bitte nicht benutzen"). Beide ersetzen jeden Weg; wer sie nimmt,
-  misst sie, nicht die Navigation.
-
-**Tests**
-
-- Neu: `test-findetest` (38 Zusicherungen, als Mitarbeiter): fünf
-  Ziele, jedes „Los" ≥ 44 × 44 in normal und kompakt; die Uhr steht auf
-  „Heute" im Bild, ihr × trifft ≥ 44 × 44, und sie liegt auf keinem
-  Bedienelement – geprüft wird jeder sichtbare Knopf, Link und Eintrag,
-  nicht eine Liste (die erste Liste hatte die Schnellzugriffe
-  übersehen) – bei 320 / 390 / 430 / 820 / 1280 / 1440 / 1920 px;
-  über „Alles → Geräte" hält sie nach 2 Tipps an, das Ergebnis übersteht
-  das Neuladen; „Aufgeben" und „Ergebnisse kopieren".
-- Bildschirmfotos bei 320, 430, 820, 1440, 1920 px angesehen. Die
-  „Los"-Knöpfe waren in der ersten Fassung hell auf hell (kein
-  `btn-primary`); im Test fiel das nicht auf, auf dem Bild sofort.
-
-**Nicht getestet:** am echten iPhone. Ob Safari dort jeden Tipp genau
-einmal als Klick meldet, zeigt nur das Gerät.
-=======
 ## Runde 265 — Schichtplaner: Öffnungszeit ohne Schicht, Stunden über Soll (25.10.2026)
 
 **Aus dem Betrieb:** „mach weiter mit dem was offen war dann“. Offen
@@ -23488,4 +23423,131 @@ nirgends quer (bei 320 px taten es lange Wörter wie
 „Unterweisungsnachweis" — jetzt mit Silbentrennung).
 
 **Geprüft:** `test-neuigkeiten` 12, `test-block-d` 28.
->>>>>>> origin/main
+
+## Runde 274 — Uni und Weiterbildung melden, Fragen finden, LogX Studio für Studio (26.10.2026)
+
+**Aus dem Betrieb:** „fragen zum plan finde ich nicht und die logx
+screenshots kann ich dir nur von hürth geben … wir ja 14 studios sind und
+ich nur die sehe die für mich relevant sind … es wäre cool wenn der
+schichtplan den du erstellst auch so aufgeteilt ist für studio für studio
+… bei der abwesendheit fehlt das man sich für uni oder sonstige
+weiterbildungen auch melden kann was bei uns aber auch sehr wichtig ist“.
+
+**Was gebaut ist**
+- **Abwesenheit: „Uni / Berufsschule“ und „Weiterbildung“** (`type:
+  'schule'` / `'weiterbildung'`). Wie Urlaub ein Antrag — die Regel lässt
+  Selbstgenehmigung nur bei „krank“ zu, und daran ändert sich nichts; die
+  Regeln prüfen die Art nicht, also keine Regeländerung nötig. Der Planer
+  nimmt jede Abwesenheit als harte Grenze, also auch diese; im Grund
+  heisst sie jetzt „Uni/Schule“ bzw. „Weiterbildung“ statt „Urlaub“
+  (`abwText` im Rechenkern). Die Bezeichnungen standen an vier Stellen
+  einzeln — jetzt `ABW_ART`/`ABW_NAME` für alle. Die Abwesenheitsliste
+  zeigte die Art bisher **gar nicht**; jetzt steht sie vor dem Datum.
+  **Nicht** gebaut: Uni nur für einige Stunden eines Tages (z. B. „Di
+  8–12“). Regelmässige Uni-Zeiten gehören in die Spalte „Sperrzeiten“ der
+  Excel-Vorlage; einzelne Tage hier.
+- **„Fragen zum Plan“ oben im Kopf** des Planers: eine Zeile mit „x von 24
+  beantwortet – noch n offen“; ein Tipp klappt die Karte auf, springt in die
+  erste Gruppe mit offener Frage und rollt hin. Vorher stand die Karte
+  zugeklappt unter „So fängst du an“ bzw. unter den Schritten.
+- **LogX Studio für Studio:** „nur dieses Studio“ kopiert das gewählte
+  Studio; „alle Studios“ ordnet nach Studio, dann Datum (`alsTabelle(plan,
+  studio, { jeStudio:true })`) — so überträgt man Block für Block. Die
+  bisherige Ordnung nach Datum bleibt der Standard des Rechenkerns (der
+  Rechentest prüft sie).
+
+**Zu den LogX-Bildschirmfotos nur aus Hürth:** reichen. Gebraucht wird
+das *Format* (Felder, Kürzel, Import), und das ist in jedem Studio gleich.
+
+**Geprüft**
+- test-schichtplan-raster, Abschnitt 14 (10 neu, 120 gesamt): Arten in der
+  Auswahl; Uni melden → Antrag mit Art in der Liste und „Uni/Schule
+  (beantragt)“ im Raster; Fragen-Zeile ohne Rollen im Bild, ein Tipp öffnet
+  und rollt hin; „nur dieses Studio“ nur dessen Zeilen; „alle“ genau ein
+  Block je Studio (14 Blöcke, 582 Zeilen).
+- test-schichtplaner-rechnung (+3, 85): Ausfall „Uni/Schule“ bzw.
+  „Weiterbildung“; beim Neu-Erstellen nicht eingeteilt. Gegenprobe: ohne
+  `abwText` → „Urlaub“ → rot.
+- test-schichtplaner, test-team-bereich7, test-gehirn (327), test-doppelte-
+  namen, test-knoepfe, test-team-woche, test-tausch: grün.
+- **test-gestaltung rot — auf main genauso** (in einem unveränderten
+  Stand von main nachgemessen, dieselben Meldungen): „FESTER ABSTAND 3px
+  (2×), 6px, 2px“ und „line-height 1.35“ stammen aus Runde 273 („Was ist
+  neu“ als Patchnotes, `.neu-eintrag`). Nicht von hier, nicht angefasst.
+
+## Runde 275 — Findetest: die Stoppuhr zum Selbsttesten (25./26.10.2026)
+
+Aus dem Betrieb, 23.10.2026, auf meinen Vorschlag „erst mit echten
+Leuten messen, dann umbauen": „ich kann leider nur selber testen
+akruell". Zugesagt war eine kleine Stoppuhr-Seite. Die anonyme Zählung,
+welche Seiten geöffnet werden, gibt es schon (`nutzAnsicht` in
+`showView`); sie musste nicht neu gebaut werden.
+
+**Was gebaut wurde**
+
+- „Alles → Was muss ich wissen? → Findetest": ein Fenster mit fünf
+  typischen Zielen (Putzplan, wer morgen arbeitet, Direktnachricht,
+  Gerät defekt melden, Dokument). Ziele, die eine Firma abgeschaltet
+  hat, stehen mit „Bei euch ausgeschaltet" da, ohne „Los".
+- „Los" schliesst alles, springt auf „Heute" und startet die Uhr. Sie
+  zählt Sekunden und Tipps (echte Klicks, `isTrusted`, Fangphase, ohne
+  die Uhr selbst; Wischen zum Scrollen zählt nicht, und die Klicks, die
+  die App selbst auslöst, auch nicht) und hält von selbst an, sobald `currentView` das Ziel ist.
+  Danach öffnet das Fenster wieder mit „Geschafft: … in 7 s mit 2
+  Tipps". „Aufgeben" (das × an der Uhr) merkt „aufgegeben".
+- Die letzten fünf Ergebnisse je Ziel stehen in `PREFS.findetest`, also
+  nur auf dem Gerät. „Ergebnisse kopieren" legt sie als Text in die
+  Zwischenablage, zum Weiterschicken.
+
+**Warum so**
+
+- **Am Ziel anhalten statt „Fertig" drücken lassen:** Wer drückt, misst
+  auch sein Zögern beim Drücken – und vergisst es manchmal. Die Ansicht
+  ist das, was sich sicher feststellen lässt.
+- **Abfragen alle 250 ms statt eines Hakens in `showView`:** Durch
+  `showView` geht jeder Weg der App. Ein Fehler im Test-Werkzeug soll
+  dort nichts stören können. 250 ms Ungenauigkeit sind bei Zeiten von
+  mehreren Sekunden ohne Belang.
+- **Auf dem Gerät, nicht in der Datenbank:** Es geht um den Aufbau der
+  App, nicht um die Person, die gesucht hat. Keine neue Sammlung, keine
+  neue Regel.
+- **Die Uhr in der Kopfzeile:** In der ersten Fassung lag sie unten
+  links über der Leiste – und damit auf den Schnellzugriffen von
+  „Heute", einem der Wege, die sie messen soll. Darübergelegt in der
+  Kopfzeile deckte sie bei 430 und 820 px den Schriftzug der Marke zu
+  (ein Knopf). Jetzt steht sie als eigenes Stück im Fluss der Kopfzeile
+  zwischen Marke und Profil: am Handy nur „12 s ×", am Rechner mit Ziel
+  und Tipps.
+- **Suche und Formi** sind nicht gesperrt, nur im Fenster ausgeschlossen
+  („bitte nicht benutzen"). Beide ersetzen jeden Weg; wer sie nimmt,
+  misst sie, nicht die Navigation.
+
+**Tests**
+
+- Neu: `test-findetest` (38 Zusicherungen, als Mitarbeiter): fünf
+  Ziele, jedes „Los" ≥ 44 × 44 in normal und kompakt; die Uhr steht auf
+  „Heute" im Bild, ihr × trifft ≥ 44 × 44, und sie liegt auf keinem
+  Bedienelement – geprüft wird jeder sichtbare Knopf, Link und Eintrag,
+  nicht eine Liste (die erste Liste hatte die Schnellzugriffe
+  übersehen) – bei 320 / 390 / 430 / 820 / 1280 / 1440 / 1920 px;
+  über „Alles → Geräte" hält sie nach 2 Tipps an, das Ergebnis übersteht
+  das Neuladen; „Aufgeben" und „Ergebnisse kopieren".
+- Bildschirmfotos bei 320, 430, 820, 1440, 1920 px angesehen. Die
+  „Los"-Knöpfe waren in der ersten Fassung hell auf hell (kein
+  `btn-primary`); im Test fiel das nicht auf, auf dem Bild sofort.
+
+**Nicht getestet:** am echten iPhone. Ob Safari dort jeden Tipp genau
+einmal als Klick meldet, zeigt nur das Gerät.
+=======
+
+**Beim Zusammenführen mit main (bis Runde 274)**
+
+- test-gestaltung war auf `main` rot (Runde 273, `.neu-eintrag`: „3px
+  6px", „3px 2px", „line-height 1.35"). Auf die Leiter gesetzt: `--s2`
+  / `--s6` und `--lh-eng` (1,25). Die Marke wird dadurch 1 px niedriger
+  pro Seite, die Titelzeile etwas enger. Danach grün.
+- test-neuigkeiten war auf `main` rot (4 von 12): der Eintrag aus Runde
+  274 (Uni/Weiterbildung) stand noch im alten Stil – ohne `art`, Titel
+  66 Zeichen, ein Punkt 270 Zeichen, `wo:'team'` ohne Ziel. Nach den
+  Patchnote-Regeln (CLAUDE.md, 25.10.2026) umgeschrieben: `art:'neu'`,
+  drei kurze Punkte, `wo:'team:abwesend'`. Danach 12 grün.
