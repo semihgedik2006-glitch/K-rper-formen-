@@ -23235,3 +23235,67 @@ plus 5 neue Fragen, die nicht als Beispiel im Text stehen)
 4. Fehlt Wissen, wird es ein Vorschlag im Leitstand.
 
 **Geprüft:** `test-formi-worker` 169.
+
+## Runde 271 — DATEV-Datei gegen das LODAS-Handbuch geprüft (25.10.2026)
+
+Aus dem Betrieb, 25.10.2026: „mach den test mit datev wenns geht".
+
+### Was ging und was nicht
+
+Ein echtes LODAS gibt es hier nicht — es läuft beim Steuerberater bzw.
+Lohnbüro. Die DATEV-Community ist von hier aus gesperrt (403). Erreichbar
+waren: das **DATEV-Schnittstellenhandbuch LODAS (SSH), 45. Auflage
+Januar 2016** als Textauszug (silo.tips; der Anhang A.1 mit den
+Nachkommastellen fehlt darin) und die Hilfeseite eines anderen
+Herstellers (Circula), der LODAS-Dateien erzeugt. Dagegen ist die Datei
+jetzt Zeile für Zeile geprüft — im Test, nicht nur gelesen.
+
+### Was übereinstimmte
+
+Abschnitte `[Allgemein]` / `[Satzbeschreibung]` / `[Bewegungsdaten]`,
+`Ziel=LODAS`, Tabelle `u_lod_bwd_buchung_standard` mit **genau der
+Feldreihenfolge des Handbuch-Beispiels** (Zeitraum; Wert; Schlüssel;
+Lohnart; Personalnummer), Schlüssel **01 = Stundenbuchungen** mit
+Lohnart, Schlüssel 71 ohne Lohnart, Monatserster als Zeitraum, ein Monat
+und ein Mandant je Datei, ANSI, CR/LF.
+
+### Was nicht stimmte — behoben
+
+1. **Urlaubstage (71) mit zwei Nachkommastellen** („3,00"). Das Handbuch:
+   „Wert max: 99,5 (Tage) bei Bearbeitungsschlüssel 71" — eine Stelle.
+   Jetzt „3,0", in halben Tagen, höchstens 99,5.
+2. **Personalnummer bis 10 Ziffern.** `pnr#psd` hat 5 Stellen, und
+   „Numerische Felder werden links abgeschnitten" — aus 100023 würde 23,
+   die Stunden landeten bei einer anderen Person, mit nur einer Warnung im
+   Protokoll. Jetzt: Eingabe 1–5 Ziffern, nicht 0, sonst abgewiesen;
+   ältere, zu lange Nummern kommen nicht in die Datei, die Meldung nennt
+   die Person.
+3. **Beraternummer ohne Mindestlänge.** Handbuch: 4–7 Stellen. Jetzt
+   geprüft beim Speichern und beim Export.
+
+### Für das Lohnbüro
+
+`docs/datev/LIES-MICH.md` und `docs/datev/PROBE-LODAS-2026-09.txt`: eine
+Probedatei mit Anleitung (Testmandant, ASCII-Import, was im Protokoll
+stehen muss). Erst wenn das Lohnbüro sie eingespielt hat, ist die Datei
+wirklich geprüft.
+
+### Geprüft
+
+`tests/test-zeiten-verwaltung.js` (84, davon 9 neu): Feldanzahl je Zeile
+gleich der Satzbeschreibung; 01 mit Lohnart und höchstens zwei
+Nachkommastellen; eine echte 71-Zeile (ein Urlaub im Vormonat wird dafür
+angelegt) mit einer Stelle, ≤ 99,5, ohne Lohnart; Berater 4–7, Mandant
+1–5, Personalnummern 1–5. GEGENPROBEN: Personalnummer 123456 und
+Beraternummer 123 werden abgewiesen und nicht gespeichert; alte
+7-stellige Nummern kommen nicht in die Datei, die Meldung nennt, wer
+fehlt. Die alte Prüfung aus Runde 210 verlangte für ALLE Zeilen zwei
+Nachkommastellen — das war die falsche Annahme; sie prüft jetzt 01 mit
+zwei und 71 mit einer.
+
+### Nicht geprüft
+
+- Ein echter Import in LODAS (siehe oben: nur das Lohnbüro kann das).
+- Ob neuere LODAS-Fassungen als 2016 etwas anderes verlangen — das
+  Handbuch sagt selbst, die Schnittstelle sei „nur bis zur unmittelbaren
+  Vorjahres-Vollversion kompatibel".
