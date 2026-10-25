@@ -22951,8 +22951,9 @@ welche Seiten geöffnet werden, gibt es schon (`nutzAnsicht` in
   Gerät defekt melden, Dokument). Ziele, die eine Firma abgeschaltet
   hat, stehen mit „Bei euch ausgeschaltet" da, ohne „Los".
 - „Los" schliesst alles, springt auf „Heute" und startet die Uhr. Sie
-  zählt Sekunden und Tipps (`pointerdown`, Fangphase, ohne die Uhr
-  selbst) und hält von selbst an, sobald `currentView` das Ziel ist.
+  zählt Sekunden und Tipps (echte Klicks, `isTrusted`, Fangphase, ohne
+  die Uhr selbst; Wischen zum Scrollen zählt nicht, und die Klicks, die
+  die App selbst auslöst, auch nicht) und hält von selbst an, sobald `currentView` das Ziel ist.
   Danach öffnet das Fenster wieder mit „Geschafft: … in 7 s mit 2
   Tipps". „Aufgeben" (das × an der Uhr) merkt „aufgegeben".
 - Die letzten fünf Ergebnisse je Ziel stehen in `PREFS.findetest`, also
@@ -22996,6 +22997,5 @@ welche Seiten geöffnet werden, gibt es schon (`nutzAnsicht` in
   „Los"-Knöpfe waren in der ersten Fassung hell auf hell (kein
   `btn-primary`); im Test fiel das nicht auf, auf dem Bild sofort.
 
-**Nicht getestet:** am echten iPhone. Ob `pointerdown` dort jeden Tipp
-genau einmal zählt (auch beim Scrollen mit dem Finger: das zählt als
-Tipp), zeigt nur das Gerät.
+**Nicht getestet:** am echten iPhone. Ob Safari dort jeden Tipp genau
+einmal als Klick meldet, zeigt nur das Gerät.
