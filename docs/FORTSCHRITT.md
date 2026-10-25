@@ -23300,7 +23300,80 @@ zwei und 71 mit einer.
   Handbuch sagt selbst, die Schnittstelle sei „nur bis zur unmittelbaren
   Vorjahres-Vollversion kompatibel".
 
-## Runde 272 — „Was ist neu" als Patchnotes (25.10.2026)
+## Runde 272 — „Seiten vorbereitet halten" gemessen: bringt nichts, nicht eingebaut (25.10.2026)
+
+Aus dem Betrieb, 25.10.2026, auf den Vorschlag aus Runde 267 („Seiten
+vorbereitet halten statt neu bauen"): „ja kannst du angehen". Gebaut,
+gemessen, wieder herausgenommen. Hier steht, warum, damit es niemand ein
+zweites Mal versucht.
+
+**Die Annahme war falsch.** Die Seiten werden beim Wechsel gar nicht neu
+gebaut: alle 40 `.view` liegen ab dem Start im Dokument, `showView`
+schaltet nur `.show` um. Neu gebaut wurde nur ein Teil des Inhalts
+(MutationObserver, 2. Besuch je Bereich): Startseite 432 Elemente, Zeit
+374 („Meine Zeiten" 308), Chat 108, Aufgaben 44, Team 24.
+
+**Versuch 1 — nur neu bauen, wenn sich etwas geändert hat**
+(`htmlWennNeu`: gleicher Text wie zuletzt und Liste seitdem unberührt).
+Neu gebaute Elemente: Zeit 374 → 61, Chat 108 → 34, Start 432 → 240. Das
+Wechsel-Bild (Tipp bis erstes fertiges Bild, CPU ÷4, Mittel über fünf
+Bereiche, Median aus acht Runden): `main` 120,7 / 120,1 ms, Versuch
+115,1 / 117,6 ms; ungedrosselt 27,9 / 29,5 gegen 30,8 / 27,5 ms —
+**innerhalb der Streuung.** Der Browser braucht für 300 neue Zeilen
+weniger, als es aussieht.
+
+**Versuch 2 — verborgene Seiten berechnet halten** (`content-visibility:
+hidden` statt `display:none`, damit Stil und Layout erhalten bleiben).
+Für sich allein, erzwungen gemessen, wird das Zeigen billiger (Chat 6,3 →
+1,3 ms, Aufgaben 4,6 → 2,5 ms, ungedrosselt). Im echten Wechsel aber
+**langsamer**: 128 → 137 ms (390 px) und 126 → 137 ms (1440 px), CPU ÷4,
+A-B-B-A in derselben Seite. Verworfen.
+
+**Wohin das Wechsel-Bild wirklich geht** (Trace vom Tipp bis zum ersten
+Commit, ungedrosselt, 15 Wechsel, 390 px; Posten überlappen, weil
+erzwungene Berechnungen im Skript mitzählen): rund 32 ms, davon Stil
+12,4 ms, Skript 8 ms im Tipp und 8 ms in `requestAnimationFrame`, Malen
+5,8 ms, Layout 2,6 ms. Am Rechner (1440 px) 30 ms, Stil 11 ms.
+
+- **Stil:** Jeder Bereichswechsel setzt `data-bereich` und die
+  Akzentfarben am `<body>` („die Farbe folgt dem Bereich"). Beides sind
+  vererbte Variablen (`--ber`, `--ber-f`, `--accent` …), also rechnet der
+  Browser jedes sichtbare Element neu: `data-bereich` allein 4,2 ms,
+  `--accent` allein 3,7 ms (je erzwungen, ungedrosselt). Das ist der Preis
+  der Bereichsfarbe, keine Ungeschicklichkeit. Den Wirbel-Schimmer
+  (`--fk-ber`) an `.fk-wirbel` statt am `<body>` zu setzen, brachte
+  nichts, weil `--ber` ohnehin wechselt; nicht eingebaut.
+- **Skript:** im Tipp verteilt auf viele kleine Posten (`renderHome`
+  4 ms mit `heutePasst` 3,4 ms, `verlaufMerken`/`pushState` 2 ms,
+  `renderIchZeiten` 1,7 ms). Im nächsten Bild `markerAusfuehren` der
+  unteren Leiste (4,5 ms, `getClientRects`) und `formiLinseLage`
+  (1,5 ms). Beide lesen nach dem Schreiben; das Layout dort fiele im
+  selben Bild sowieso an.
+- **Malen:** während des Wechsels wird die ganze Fläche `#document` fast
+  jedes Bild neu gemalt (22-mal je Wechsel). Ohne alle Übergänge
+  (`transition:none`) sinkt die Arbeit im Wechsel um ein Drittel (448 →
+  307 ms je Wechsel, CPU ÷4); laufend sind Farbübergänge an den Knöpfen
+  oben (`background-color`, `box-shadow`, `color`), weil die Akzentfarbe
+  wechselt. Einzeln abgeschaltet (Seitenanimation, Karten-Staffel,
+  Leuchtstrich, Welle, Wirbel) brachte keiner davon allein etwas
+  Messbares.
+
+**Ergebnis.** Es gibt keinen einzelnen grossen Posten mehr. Ein Wechsel
+kostet hier rund 30 ms, das sind am iPhone mit 120 Hz drei bis vier
+Bilder. Spürbar weniger ginge nur über Gestaltung: die Bereichsfarbe nicht
+mehr bei jedem Wechsel umstellen oder die Farbübergänge der Knöpfe
+weglassen. Das ist eine Frage an den Betrieb, kein Umbau nebenbei.
+
+**Nicht getestet:** iPhone, Safari. WebKit rechnet Stil anders; die
+Zahlen hier gelten für Chromium.
+
+Messskripte (Arbeitsordner, nicht im Repo): Wechsel-Bild per
+`performance.now()` vom Klick bis nach dem ersten `requestAnimationFrame`;
+Zerlegung per Trace (`devtools.timeline`); Selektor-Statistik per
+`disabled-by-default-blink.debug` (1.819 Selektoren mit Treffern, keiner
+über 3 ms in fünf Wechseln).
+
+## Runde 273 — „Was ist neu" als Patchnotes (25.10.2026)
 
 Aus dem Betrieb: „sorg bitte dafür das diese was ist neu nachrichten
 mehr wie patchnotes aussehen und nicht wie ki infos die nur an mich

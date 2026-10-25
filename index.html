@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-EVXBzmKk3Yy5gnyFbaczF1rxGWK8gSfuH0BDfO2yXhM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-QuF5ARXqu2Nh/bWW9k9JU55AntQFHaPrPU7BY2ipCco='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -9432,7 +9432,7 @@ body.neu .neu-pille[hidden]{display:none}
    test-neu-design). Die Liste bleibt unter „Alles → Was ist neu". */
 @media(max-height:640px){ body.neu .neu-pille{display:none} }
 body.neu .np-punkt{width:8px;height:8px;border-radius:var(--r-rund);background:var(--accent)}
-/* ── „Was ist neu" als Patchnotes (Runde 272) ──
+/* ── „Was ist neu" als Patchnotes (Runde 273) ──
    Aus dem Betrieb, 25.10.2026: „sorg bitte dafür das diese was ist neu
    nachrichten mehr wie patchnotes aussehen und nicht wie ki infos".
    Nach Tagen gruppiert („Update · 25. Oktober"); je Änderung eine Zeile
@@ -23749,7 +23749,7 @@ function vorfallSenden(){
     $('vfFehler').textContent=fnFehler(e)+' Wenn es nicht klappt: sofort der Geschäftsführung Bescheid sagen.';
   });
 }
-/* Runde 272: Patchnotes. `art` steht ab dem 22.10.2026 an jedem Eintrag;
+/* Runde 273: Patchnotes. `art` steht ab dem 22.10.2026 an jedem Eintrag;
    ältere Einträge raten sie aus dem Titel (nur für die Marke). */
 var NEU_ART = { neu:'Neu', besser:'Verbessert', fix:'Behoben' };
 function neuArt(n){
