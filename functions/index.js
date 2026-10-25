@@ -8053,7 +8053,7 @@ exports.gehirnFoto = region
     return { geraet: String(json.geraet || '').slice(0, 80), text: String(json.text || '').slice(0, 400) };
   });
 
-/* Runde 265: Die Stimm-Function (gehirnStimme, 20.10.2026) ist entfernt —
+/* Runde 268: Die Stimm-Function (gehirnStimme, 20.10.2026) ist entfernt —
    aus dem Betrieb (24.10.2026): „das vor lesen ist auch unnötig". Die App
    ruft sie seit Runde 263 nicht mehr auf; mit --force räumt der Deploy sie
    ab. Der Pfad /api/stimme im Worker bleibt bis zu dessen nächster

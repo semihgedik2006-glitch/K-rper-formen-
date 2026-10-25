@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════════
-   FORMI-FEINSCHLIFF (Runde 265) — Ideen 3, 4, 5, 7 aus
+   FORMI-FEINSCHLIFF (Runde 268) — Ideen 3, 4, 5, 7 aus
    docs/ideen/formi-und-oberflaeche-20.md
 
    Aus dem Betrieb (25.10.2026) auf die 20 Ideen: „mach alles davon und

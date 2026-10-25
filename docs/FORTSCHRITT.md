@@ -22936,7 +22936,7 @@ Polster für Formi; sie bleibt als Wache.
 nicht gemessen; ob Safari 26 mit schwebender Adressleiste unten einen
 Rand meldet, zeigt nur das Gerät.
 
-## Runde 265 — Formi-Feinschliff (Ideen 3, 4, 5, 7, 9, 10) und Offenes (25.10.2026)
+## Runde 268 — Formi-Feinschliff (Ideen 3, 4, 5, 7, 9, 10) und Offenes (25.10.2026)
 
 **Aus dem Betrieb**, auf die 20 Ideen: „mach alles davon und alles was
 noch offen ist". Gebaut wird in vier Runden; das hier ist die erste.
@@ -22979,11 +22979,11 @@ noch offen ist". Gebaut wird in vier Runden; das hier ist die erste.
   Aufrufer kostet er nichts.
 
 **Geprüft:**
-siehe Runde 268 (ein gemeinsamer Durchlauf für 265–268).
+siehe Runde 271 (ein gemeinsamer Durchlauf für 268–271).
 
 **Nicht geprüft:** echte Handys, echter Klang am Gerät.
 
-## Runde 266 — Formi als Werkzeug (Ideen 1, 2, 6, 8, 18) (25.10.2026)
+## Runde 269 — Formi als Werkzeug (Ideen 1, 2, 6, 8, 18) (25.10.2026)
 
 **Aus dem Betrieb:** „mach alles davon und alles was noch offen ist".
 
@@ -23026,7 +23026,7 @@ siehe Runde 268 (ein gemeinsamer Durchlauf für 265–268).
   Klick kam an**, obwohl der Hit-Test vorher stimmte. Jetzt steht die
   Lage in `translate`. Der Durchlauf klickt mit der echten Maus.
 
-## Runde 267 — Oberfläche leichter (Ideen 13, 14, 15, 16, 17, 20) (25.10.2026)
+## Runde 270 — Oberfläche leichter (Ideen 13, 14, 15, 16, 17, 20) (25.10.2026)
 
 **Gebaut:**
 - **Idee 13:** „+ Anlegen" auf „Heute" (am Rechner) mit einem Menü: nur,
@@ -23050,7 +23050,7 @@ siehe Runde 268 (ein gemeinsamer Durchlauf für 265–268).
   „Löschen", „ansehen" wird „Ansehen", „Hinzu" wird „Hinzufügen",
   „Schliessen" wird „Schließen".
 
-## Runde 268 — Meine Schicht, Liste + Detail am Rechner, eine Karte (Ideen 11, 12, 19) (25.10.2026)
+## Runde 271 — Meine Schicht, Liste + Detail am Rechner, eine Karte (Ideen 11, 12, 19) (25.10.2026)
 
 **Gebaut:**
 - **Idee 11:** Der Schalter „Überblick / Meine Schicht" steht oben auf
@@ -23072,7 +23072,7 @@ siehe Runde 268 (ein gemeinsamer Durchlauf für 265–268).
 - *`.main` bekommt 400 px Rand* (einmal beim Öffnen, keine Bewegung über
   Breite). So rutscht die Liste nicht unter das Detail.
 
-**Geprüft (Runden 265–268):**
+**Geprüft (Runden 268–271):**
 ERGEBNIS_HIER
 
 **Nicht geprüft:** echte Handys, Ziehen mit dem Finger (gibt es nicht),

@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════════
-   OBERFLÄCHE LEICHTER (Runde 267) — Ideen 13, 14, 15, 16, 17, 20 aus
+   OBERFLÄCHE LEICHTER (Runde 270) — Ideen 13, 14, 15, 16, 17, 20 aus
    docs/ideen/formi-und-oberflaeche-20.md
 
    Aus dem Betrieb (25.10.2026): „mach alles davon".

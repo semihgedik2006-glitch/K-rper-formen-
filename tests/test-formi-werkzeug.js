@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════════
-   FORMI ALS WERKZEUG (Runde 266) — Ideen 1, 2, 6, 8, 18 aus
+   FORMI ALS WERKZEUG (Runde 269) — Ideen 1, 2, 6, 8, 18 aus
    docs/ideen/formi-und-oberflaeche-20.md
 
    Aus dem Betrieb (25.10.2026): „mach alles davon und alles was noch
