@@ -23024,3 +23024,63 @@ steht weiter, entschieden ist „Gratis bleiben".
   Gegenprobe bekommt danach wieder den echten.
 - Ohne Leitstand-Schlüssel gibt es 401.
 - Quiz-Einträge kommen nach hinten, und die neuen Regeln stehen im Text.
+
+## Runde 267 — Formi redet wie ein Kollege (Worker 2.27, 25.10.2026)
+
+Aus dem Betrieb: „wir sorgen einfach dafür das er schritt für schritt
+besser wird das soll ja auch ein prozess sein aber mann soll es merken auch".
+
+**Gemessen, vorher (2.26, 10 Fragen, `/api/probe`)**
+- Fast jede Antwort war eine Liste mit 5–7 Punkten. Fast jede endete mit
+  „dokumentieren und Leitung informieren" und „Soll ich das als Aufgabe
+  anlegen?".
+- „kann ich morgen früher gehen" versprach, es „im System einzutragen" —
+  das kann Formi nicht.
+- „Kundin weint nach dem Training" kam mit „Stoppe das Training sofort".
+- „(z. B. ID 97/175)" stand im Text.
+
+**Gemessen, nachher** (neuer Text als `system` in der Probe; 10 bekannte
+plus 5 neue Fragen, die nicht als Beispiel im Text stehen)
+- Antworten in normalen Sätzen statt Listen.
+- „kann ich morgen früher gehen" verweist ehrlich auf die Leitung und bietet
+  den Schichttausch an.
+- Die WhatsApp an den Kunden ist durchgehend in der Sie-Form.
+- „gerät piept dreimal" gibt die Schritte selbst.
+- „kollegin sitzt im pausenraum und weint" — eine neue Frage — kam warm,
+  menschlich und ohne Notfall-Ablauf.
+- Knieschmerzen nach dem Training (Folgefrage im Gespräch): kein „Training
+  abbrechen" mehr.
+- Noch nicht gut:
+  - „kunde muss sich übergeben" übernimmt das Durchfall-Beispiel fast
+    wörtlich. Inhaltlich passt es.
+  - Bei „zu teuer" rutscht einmal ein „Sie" in die Ansprache.
+  - Durchfall mit dem ALTEN Text holt weiter „hinsetzen" und „Thomas
+    informieren" aus den Einträgen „Kunde fühlt sich plötzlich unwohl" und
+    „Notfall im Training". Das sind unsere eigenen Abläufe, kein Fehler der
+    KI.
+- Zeit je Antwort meist 5–14 s, einmal 38 s.
+
+**Geändert (2.27)**
+- `formiSystem` neu geordnet: erst denken, dann reden wie ein Mensch, dann
+  das Wissen, dann vier Beispiele. „Fließtext statt Liste"; keine Angebote,
+  die Formi nicht kann; „dokumentieren" und „Leitung" nur, wenn nötig; 112
+  nur bei echten Notfällen, mit den Zeichen.
+- Alle früheren Zusagen aus dem Betrieb stehen noch drin: Kumpel, Gefühle,
+  80–200 Wörter, Ungeprüftes kennzeichnen. Die 21 alten Prüfungen auf den
+  Systemtext laufen unverändert.
+- `idsEntfernen` erkennt auch „(z. B. ID 97/175)".
+- Drei neue Vorschläge im Leitstand (Quelle „Formi-Test (Claude,
+  25.10.2026)"), die Semih freigibt:
+  - Durchfall/Übergeben
+  - Kunde weint oder ist aufgelöst
+  - Schmerzen nach dem Training
+  Erst mit diesen Einträgen hat Formi für diese Fälle einen eigenen Ablauf
+  statt des Unwohlsein-Ablaufs.
+
+**Der Ablauf ab jetzt** (Schritt für Schritt, und man merkt es):
+1. Feste Testfragen über `/api/probe` laufen lassen.
+2. Den neuen Text als `system` dagegen laufen lassen.
+3. Nur wenn er besser ist, einspielen, mit Neuigkeit in der App.
+4. Fehlt Wissen, wird es ein Vorschlag im Leitstand.
+
+**Geprüft:** `test-formi-worker` 169.
