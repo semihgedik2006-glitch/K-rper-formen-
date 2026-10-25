@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-blNazGQA+pcTeLH8NFe4LM7sj4T7TZjjLxLfKDWitk8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-iQomjv8spJbFgTSAef4wnbW0HTmlI9+ZORxygolo+PE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -4010,6 +4010,13 @@ button.ich-zeile:active{opacity:.7}
 .spl-fragen > summary span svg{width:20px;height:20px}
 .spl-fragen > summary small{font-family:var(--font-body);font-weight:600;font-size:var(--t-xs);color:var(--text-3)}
 .spl-fragen .hint{margin:var(--s8) 0 0}
+/* Zugeklappt sind „Fragen“ und „Regeln“ nur eine Zeile — vorher je 105 px
+   hoch bei 44 px Inhalt (Runde RUNDE_NR). Am Rechner nebeneinander. */
+.spl > .spl-fragen:not([open]),.spl > .spl-regeln:not([open]),body.neu .spl > .spl-fragen:not([open]),body.neu .spl > .spl-regeln:not([open]){padding-top:var(--s8);padding-bottom:var(--s8)}
+@media (min-width:1100px){
+  .spl:has(> .spl-fragen:not([open])):has(> .spl-regeln:not([open])){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--s16)}
+  .spl:has(> .spl-fragen:not([open])):has(> .spl-regeln:not([open])) > *:not(.spl-fragen):not(.spl-regeln){grid-column:1 / -1}
+}
 #spFragenReiter .pm-tab small{font-size:var(--t-2xs);color:var(--text-3);font-weight:700}
 /* Am Handy nur der Buchstabe – fünf Wörter passen bei 320 px nicht. */
 @media (max-width:819px){ #spFragenReiter .spl-lang{display:none} #spFragenReiter .pm-tab small{display:none} }
@@ -22799,6 +22806,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-25-schichtplan-feinschliff', datum:'25.10.2026', titel:'Schichtplan: ruhiger und klarer', wo:'team', punkte:[
+    'Unter Plan → Schichten haben vergangene Tage ohne Schicht keine leere Leiste mehr.',
+    'Ist ein Studio geschlossen und trotzdem jemand eingeteilt, steht dort jetzt in Orange „geschlossen – trotzdem 3 Schichten" statt nur „geschlossen".',
+    'Im Schichtplaner sind „Fragen zum Plan" und „Regeln & Sonderfälle" zugeklappt nur noch eine schmale Zeile und stehen am Rechner nebeneinander.' ] },
   { id:'2026-10-25-schichtplaner-abdeckung', datum:'25.10.2026', titel:'Schichtplaner: Öffnungszeit ohne Schicht wird gemeldet', wo:'planer', punkte:[
     'Unter „Zu klären" steht jetzt oben, wenn die Schichtzeiten die Öffnungszeit nicht abdecken – zum Beispiel „Sa 14–15 Uhr (geöffnet 09–15)", weil die Samstagsschicht schon um 14 Uhr endet. Das liegt an den Schichtzeiten, nicht an der Einteilung, und wird im Excel-Blatt „Schichten" behoben.',
     'Unter „Stunden im Studio" zeigt ein Pfeil, wer deutlich unter (↓, weniger als 85 %) oder über (↑, mehr als 115 %) seinem Soll liegt.' ] },
@@ -38668,6 +38679,9 @@ function wpBesetzung(key, schichten){
 /* Die Leiste: ein Balken über den Tag, dunkler, wo mehr Leute da sind;
    die Öffnungszeit als Rahmen, eine Lücke darin bernstein. */
 function wpBandHTML(key, schichten, vorbei){
+  /* Runde RUNDE_NR: ein vergangener Tag ohne Schicht hat nichts zu zeigen —
+     eine leere Leiste sah dort aus wie ein Ladebalken, der hängt. */
+  if(vorbei && !schichten.length) return '';
   var bz=wpBesetzung(key, schichten), span=bz.bis-bz.von;
   function pct(m){ return ((m-bz.von)/span*100).toFixed(2)+'%'; }
   var teile=bz.stuecke.filter(function(x){ return x.n || (x.offen && !vorbei); }).map(function(x){
@@ -38676,7 +38690,10 @@ function wpBandHTML(key, schichten, vorbei){
   }).join('');
   var rahmen=bz.oe && !bz.oe.zu ? '<i class="wp-band-offen" style="left:'+pct(bz.oe.von)+';width:'+(((bz.oe.bis-bz.oe.von)/span)*100).toFixed(2)+'%"></i>' : '';
   var text='';
-  if(bz.oe && bz.oe.zu) text='<small class="wp-band-txt">geschlossen</small>';
+  /* Geschlossen, aber jemand eingeteilt: das ist ein Status (Bernstein). */
+  if(bz.oe && bz.oe.zu) text=schichten.length
+    ? '<small class="wp-band-txt luecke">geschlossen – trotzdem '+schichten.length+(schichten.length===1?' Schicht':' Schichten')+'</small>'
+    : '<small class="wp-band-txt">geschlossen</small>';
   else if(bz.luecken.length && !vorbei){
     text='<small class="wp-band-txt luecke">'+bz.luecken.slice(0,2).map(function(l){ return wpUhr(l.a)+'–'+wpUhr(l.b); }).join(', ')+
       (bz.luecken.length>2?' …':'')+' niemand</small>';
