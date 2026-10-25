@@ -576,7 +576,7 @@ const ZUSTAND = () => {
   }
 
   console.log('\n── 12. Planer: decken die Schichtzeiten die Öffnungszeit ab? ──');
-  /* Runde RUNDE_NR — aus dem Betrieb: „mach weiter mit dem was offen war“.
+  /* Runde 265 — aus dem Betrieb: „mach weiter mit dem was offen war“.
      Demo: geöffnet Mo–Fr 7–21, Sa 9–15; Schichten Früh 7–14, Spät 14–21
      (Mo–Fr), Samstag 9–14. Erwartet: genau „Sa 14–15“. */
   {

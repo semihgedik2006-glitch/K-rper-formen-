@@ -22936,7 +22936,7 @@ Polster für Formi; sie bleibt als Wache.
 nicht gemessen; ob Safari 26 mit schwebender Adressleiste unten einen
 Rand meldet, zeigt nur das Gerät.
 
-## Runde RUNDE_NR — Schichtplaner: Öffnungszeit ohne Schicht, Stunden über Soll (25.10.2026)
+## Runde 265 — Schichtplaner: Öffnungszeit ohne Schicht, Stunden über Soll (25.10.2026)
 
 **Aus dem Betrieb:** „mach weiter mit dem was offen war dann“. Offen
 waren aus dem Vorschlag von Runde 206: der Planer prüft die Öffnungszeit,
