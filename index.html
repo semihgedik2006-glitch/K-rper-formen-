@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-SaWL01lNms12KP5PBPmB8Wdz5/RTiKmLzWjyZiDMoeU='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-UTHaOx8f+vYwO4624rA6SoWM1CmdTNvUom4jeG2WeRg='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2148,11 +2148,11 @@ body.neu #view-docs #docCatRow{margin-top:var(--s8)}
    sichtbar nichts. Mein Test hat das nicht gefunden, weil er die
    Klasse .show geprueft hat statt der Sichtbarkeit: die Klasse sass
    richtig, sie hatte nur keine Wirkung. */
-#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#schnellModal,#neuModal,#findeModal,#vorfallModal,#zfModal,#bestellModal,#aktionModal{
+#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#schnellModal,#neuModal,#findeModal,#installModal,#vorfallModal,#zfModal,#bestellModal,#aktionModal{
   position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
   padding:var(--s20);background:var(--scrim);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#schnellModal.show,#neuModal.show,#findeModal.show,#vorfallModal.show,#zfModal.show,#bestellModal.show,#aktionModal.show{display:flex}
+#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#schnellModal.show,#neuModal.show,#findeModal.show,#installModal.show,#vorfallModal.show,#zfModal.show,#bestellModal.show,#aktionModal.show{display:flex}
 /* Runde 146: der Link aus der Bestätigungs- oder Passwort-Mail. Er muss
    VOR der Anmeldung und über dem Startbild stehen (#splash 1000,
    #loadingWrap 999). */
@@ -9701,6 +9701,22 @@ body.neu .np-punkt{width:8px;height:8px;border-radius:var(--r-rund);background:v
   background:var(--bg-3);font-weight:700}
 .ft-fuss{display:flex;flex-wrap:wrap;gap:var(--s8);margin-top:var(--s12)}
 .ft-fuss .btn{min-height:44px}
+/* Als App installieren (Runde 288). Das eigene Gerät steht offen oben,
+   die anderen zugeklappt darunter – für die, die es jemandem im Team
+   zeigen wollen. */
+#installModal .pm-box{max-width:560px}
+#installModal.show{z-index:220}
+.in-ok{margin:0 0 var(--s12);padding:var(--s8) var(--s12);border-radius:var(--r-md);
+  background:var(--bg-3);font-weight:700}
+.in-jetzt{margin:0 0 var(--s12)}
+.in-jetzt .btn{min-height:44px}
+.in-weg{border-top:1px solid var(--line)}
+.in-weg summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:700;list-style:none}
+.in-weg summary::-webkit-details-marker{display:none}
+.in-weg summary::after{content:'›';margin-left:auto;padding-left:var(--s8);color:var(--text-2);transition:transform .2s}
+.in-weg[open] summary::after{transform:rotate(90deg)}
+.in-weg ol{margin:0 0 var(--s12);padding-left:1.4em;display:flex;flex-direction:column;gap:var(--s6)}
+.in-weg li{line-height:var(--lh)}
 .ft-uhr{flex:0 1 auto;min-width:0;margin:0 auto;
   display:flex;align-items:center;gap:var(--s4);
   padding:0 0 0 var(--s12);border-radius:var(--r-rund);
@@ -13757,6 +13773,15 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
       <button type="button" class="btn btn-ghost btn-sm" id="ftKopieren">Ergebnisse kopieren</button>
       <button type="button" class="btn btn-ghost btn-sm" id="ftLeeren">Ergebnisse löschen</button>
     </div>
+  </div>
+</div>
+<!-- Als App installieren (Runde 288). Inhalt aus installRender(). -->
+<div id="installModal" role="dialog" aria-modal="true" aria-labelledby="inTitel">
+  <div class="pm-box">
+    <button class="lb-close" id="inClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <h3 id="inTitel" style="margin-bottom:4px">Als App installieren</h3>
+    <p class="hint" style="margin:0 0 12px">Mit eigenem Symbol auf dem Startbildschirm öffnet StudioChat ohne Adressleiste, startet auch bei schlechtem Netz und kann am iPhone Meldungen schicken.</p>
+    <div id="inListe"></div>
   </div>
 </div>
 <div class="ft-uhr" id="ftUhr" hidden role="status">
@@ -19874,7 +19899,7 @@ var DIALOGE = ['profileModal','personModal','devModal','pollModal','todoEditModa
                'aboModal','zugangModal','ownTodoModal','probeModal',
                'fwdModal','keysModal','rechtModal','searchOverlay',
                'msgSheet','todoSheet','docSheet','werkbankModal','glockeModal',
-               'putzModal','schnellModal','neuModal','findeModal','vorfallModal','zfModal',
+               'putzModal','schnellModal','neuModal','findeModal','installModal','vorfallModal','zfModal',
                'bestellModal','shiftSheet'];
 
 function closeAllModals(){
@@ -22763,7 +22788,12 @@ function _localNotify(title, body){
 
 /* Berechtigung anfragen + FCM-Token holen und speichern (für Hintergrund-Push) */
 function enablePush(){
-  if(!('Notification' in window)){ toast('Dein Browser kann keine Benachrichtigungen.',true); return; }
+  if(!('Notification' in window)){
+    /* Runde 288: Safari am iPhone kennt Meldungen nur in der installierten
+       App. „Kann keine" stimmte dort nicht – es fehlt ein Schritt. */
+    if(installGeraet()==='ios'){ installOeffnen(); toast('Am iPhone gibt es Meldungen, sobald StudioChat als App installiert ist.'); return; }
+    toast('Dein Browser kann keine Benachrichtigungen.',true); return;
+  }
   Notification.requestPermission().then(function(perm){
     if(perm!=='granted'){ toast('Benachrichtigungen nicht erlaubt.',true); return; }
     $('notifBanner').classList.remove('show');
@@ -23198,6 +23228,10 @@ function allesGruppen(){
     /* Runde 275: die Stoppuhr zum Selbsttesten. */
     {label:'Findetest', findetest:true, roh:ikon('uhr'),
      was:'Stoppen, wie lange man zu einem Ziel braucht'},
+    /* Runde 288: der kostenlose Weg aufs Handy (Recherche App Store,
+       26.10.2026). Ein Fenster, keine Seite – wie „Was ist neu". */
+    {label:'Als App installieren', installieren:true, roh:ikon('laden'),
+     was: installGeraet()==='app' ? 'Läuft schon als App ✓' : 'Mit eigenem Symbol auf den Startbildschirm'},
     /* Runde 113 (P-02). Für jeden, nicht nur die Leitung: eine Datenpanne
        bemerkt oft, wer am Empfang sitzt. */
     /* Seit Runde 126 „Problem melden" — jedes Problem, nicht nur der
@@ -23267,6 +23301,7 @@ function allesZielAttr(e){
     (e.hilfe   ?' data-al-hilfe="1"':'')+
     (e.neu     ?' data-al-neu="1"':'')+
     (e.findetest?' data-al-findetest="1"':'')+
+    (e.installieren?' data-al-installieren="1"':'')+
     (e.vorfall ?' data-al-vorfall="1"':'')+
     (e.teamtab?' data-al-teamtab="'+esc(e.teamtab)+'"':'')+
     (e.ichtab ?' data-al-ichtab="'+esc(e.ichtab)+'"':'')+
@@ -23300,6 +23335,7 @@ function allesZiel(el){
   if(el.getAttribute('data-al-hilfe')){ hilfeOeffnen(); return; }
   if(el.getAttribute('data-al-neu')){ neuOeffnen(); return; }
   if(el.getAttribute('data-al-findetest')){ findeOeffnen(); return; }
+  if(el.getAttribute('data-al-installieren')){ installOeffnen(); return; }
   if(el.getAttribute('data-al-vorfall')){ vorfallOeffnen(); return; }
   showView(view);
   var t=el.getAttribute('data-al-teamtab');
@@ -23343,6 +23379,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-26-als-app-installieren', datum:'26.10.2026', art:'neu', titel:'Anleitung: StudioChat als App installieren', wo:'installieren', punkte:[
+    'Alles → Als App installieren: Schritt für Schritt für iPhone, Android und Rechner, das eigene Gerät steht oben.',
+    'Wo der Browser es kann, installiert „Jetzt installieren“ die App mit einem Klick.',
+    'Am iPhone zeigt Einstellungen → Meldungen den Weg, solange die App noch nicht installiert ist.'
+  ]},
   { id:'2026-10-26-schnellantworten', datum:'26.10.2026', art:'neu', titel:'Schnellantworten im Chat', wo:'chat', punkte:[
     'Über dem Schreibfeld stehen „Bin dabei", „Erledigt ✓" und „Komme 10 Min später". Ein Tipp setzt den Satz ins Feld.',
     'Gesendet wird wie immer mit dem Pfeil — vorher lässt sich der Satz noch ändern. Auch bei Direktnachrichten.'
@@ -24247,6 +24288,82 @@ function findeOeffnen(ergebnis){
   m.classList.add('show');
 }
 function findeSchliessen(){ var m=$('findeModal'); if(m) m.classList.remove('show'); }
+
+/* ══ ALS APP INSTALLIEREN (Runde 288) ════════════════════════════════
+   Aus der App-Store-Recherche vom 26.10.2026: in den App Store geht es
+   nur mit dem Entwicklerkonto (99 $ im Jahr). Kostenlos geht der
+   Startbildschirm – die App ist dafür schon gebaut (Manifest, Service
+   Worker, Offline-Start). Gefehlt hat nur, dass man weiss, wie.
+
+   Auf Chrome, Edge und Android meldet der Browser per
+   beforeinstallprompt, dass er installieren kann; dann gibt es den
+   Knopf „Jetzt installieren". Safari kennt das nicht – dort bleiben die
+   Schritte. Am iPhone gibt es Meldungen NUR in der installierten App,
+   deshalb führt „Meldungen aktivieren" dort hierher (enablePush). */
+var _installEreignis = null;
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault(); _installEreignis = e; installRender();
+});
+window.addEventListener('appinstalled', function(){
+  _installEreignis = null; installRender(); toast('StudioChat ist installiert ✓');
+});
+function installGeraet(){
+  var ua = navigator.userAgent || '';
+  if((window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true) return 'app';
+  /* iPadOS gibt sich als Mac aus; der Unterschied ist der Touchscreen. */
+  if(/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return 'ios';
+  if(/Android/.test(ua)) return 'android';
+  return 'rechner';
+}
+/* Feste Texte, keine Eingaben – deshalb dürfen sie <b> tragen. */
+var INSTALL_WEGE = {
+  ios: { titel:'iPhone und iPad', schritte:[
+    'Die App in <b>Safari</b> öffnen.',
+    'Auf <b>Teilen</b> tippen: das Quadrat mit dem Pfeil nach oben, am iPhone unten, am iPad oben.',
+    '<b>Zum Home-Bildschirm</b> wählen. Steht es nicht da, in der Liste nach unten wischen.',
+    'Erscheint der Schalter „Als Web-App öffnen“, eingeschaltet lassen. Dann <b>Hinzufügen</b>.'
+  ]},
+  android: { titel:'Android', schritte:[
+    'In <b>Chrome</b> oben rechts auf <b>⋮</b> tippen.',
+    '<b>App installieren</b> oder <b>Zum Startbildschirm hinzufügen</b> wählen.',
+    'Mit <b>Installieren</b> bestätigen.'
+  ]},
+  rechner: { titel:'Rechner', schritte:[
+    '<b>Chrome oder Edge:</b> rechts in der Adressleiste auf das Symbol mit Bildschirm und Pfeil, dann <b>Installieren</b>.',
+    '<b>Safari am Mac:</b> im Menü <b>Ablage → Zum Dock hinzufügen</b>.',
+    '<b>Firefox</b> kann keine Web-Apps installieren. Dafür Chrome, Edge oder Safari nehmen.'
+  ]}
+};
+function installRender(){
+  var box=$('inListe'); if(!box) return;
+  var g=installGeraet(), html='';
+  if(g==='app') html='<p class="in-ok">Du nutzt StudioChat schon als App.</p>';
+  else if(_installEreignis) html='<div class="in-jetzt"><button type="button" class="btn btn-primary" id="inJetzt">Jetzt installieren</button></div>';
+  var reihe=['ios','android','rechner'];
+  if(g!=='app') reihe=[g].concat(reihe.filter(function(k){ return k!==g; }));
+  html+=reihe.map(function(k, i){
+    var w=INSTALL_WEGE[k], hier=(g!=='app' && i===0);
+    return '<details class="in-weg" data-in-weg="'+k+'"'+(hier?' open':'')+'><summary>'+
+      (hier?'So geht es hier · ':'')+w.titel+'</summary><ol>'+
+      w.schritte.map(function(t){ return '<li>'+t+'</li>'; }).join('')+'</ol></details>';
+  }).join('');
+  box.innerHTML=html;
+  var j=$('inJetzt'); if(j) j.addEventListener('click', installJetzt);
+}
+function installJetzt(){
+  var e=_installEreignis; if(!e) return;
+  _installEreignis=null;
+  e.prompt();
+  /* Den Dank sagt appinstalled; hier nur neu zeichnen, damit der Knopf
+     nach „Abbrechen" nicht ins Leere zeigt. */
+  Promise.resolve(e.userChoice).then(installRender, installRender);
+}
+function installOeffnen(){
+  var m=$('installModal'); if(!m) return;
+  installRender();
+  m.classList.add('show');
+}
+function installSchliessen(){ var m=$('installModal'); if(m) m.classList.remove('show'); }
 /* Gezählt wird der Klick, nicht das Berühren: Wischen zum Scrollen ist
    kein Tipp. isTrusted lässt die Klicks aus, die die App selbst auslöst
    (allesZiel klickt danach den Unterreiter an). */
@@ -24571,7 +24688,7 @@ var SCHNELL_VORSCHLAG = {
 };
 var SCHNELL_UMZUG = { 'ich:daten':'zeit', 'ich:zeiten':'zeit', 'chef:zeiten':'zeitteam' };
 function schnellSchluessel(e){
-  var basis = e.hilfe ? 'hilfe' : (e.neu ? 'neu' : (e.vorfall ? 'vorfall' : (e.view||'')));
+  var basis = e.hilfe ? 'hilfe' : (e.neu ? 'neu' : (e.vorfall ? 'vorfall' : (e.installieren ? 'installieren' : (e.view||''))));
   var unter = e.teamtab || e.ichtab || e.cgo || '';
   return unter ? basis+':'+unter : basis;
 }
@@ -55186,10 +55303,19 @@ function buildNotifyOptions(){
      ohnehin der richtigere Ort: Einstellungen sind der Ort, an dem man
      etwas einstellt. */
   var st=$('notifyState'), erl=$('notifyAsk');
-  if(erl) erl.style.display =
-    (('Notification' in window) && Notification.permission==='default') ? '' : 'none';
+  /* Runde 288: Safari am iPhone hat Meldungen nur in der installierten
+     App. „Unterstützt keine" stimmte dort nicht, und der Knopf fehlte
+     genau dort, wo man nachsieht. */
+  var iosOhneApp = !('Notification' in window) && installGeraet()==='ios';
+  if(erl){
+    erl.style.display =
+      ((('Notification' in window) && Notification.permission==='default') || iosOhneApp) ? '' : 'none';
+    erl.textContent = iosOhneApp ? 'Als App installieren' : 'Meldungen erlauben';
+  }
   if(st){
-    if(!('Notification' in window)){
+    if(iosOhneApp){
+      st.textContent='Am iPhone gibt es Meldungen, sobald StudioChat als App auf dem Home-Bildschirm liegt.';
+    } else if(!('Notification' in window)){
       st.textContent='Dieses Gerät unterstützt keine Meldungen.';
     } else if(Notification.permission==='denied'){
       st.textContent='Meldungen sind für StudioChat gesperrt. Das lässt sich nur in den Einstellungen des Geräts wieder erlauben.';
@@ -56722,6 +56848,9 @@ function bindActions(){
   var vs=$('vfSenden'); if(vs) vs.addEventListener('click', vorfallSenden);
   var vm=$('vorfallModal'); if(vm) vm.addEventListener('click', function(e){ if(e.target===vm) vorfallSchliessen(); });
   var nm=$('neuModal'); if(nm) nm.addEventListener('click', function(e){ if(e.target===nm) neuSchliessen(); });
+  // ── Als App installieren (Runde 288) ──
+  var inc=$('inClose'); if(inc) inc.addEventListener('click', installSchliessen);
+  var inm=$('installModal'); if(inm) inm.addEventListener('click', function(e){ if(e.target===inm) installSchliessen(); });
   // ── Findetest (Runde 275) ──
   var ftc=$('ftClose'); if(ftc) ftc.addEventListener('click', findeSchliessen);
   var ftm=$('findeModal'); if(ftm) ftm.addEventListener('click', function(e){ if(e.target===ftm) findeSchliessen(); });

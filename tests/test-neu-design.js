@@ -173,9 +173,9 @@ async function seite(b, stub, such, breite) {
            Betrieb: „es soll einen knopf geben der mir nach ausfüllung
            sofort eine mail schickt". */
         /* Runde 275: „Findetest" ist ebenfalls ein Fenster (nachgezogen
-           in Runde 285). */
+           in Runde 285). Runde 288: „Als App installieren" auch. */
         fenster: !!(z.getAttribute('data-al-hilfe') || z.getAttribute('data-al-neu') || z.getAttribute('data-al-vorfall') ||
-          z.getAttribute('data-al-findetest')),
+          z.getAttribute('data-al-findetest') || z.getAttribute('data-al-installieren')),
       })),
       abgeschnitten: zeilen.some(z => {
         const t = z.querySelector('b');
@@ -290,6 +290,18 @@ async function seite(b, stub, such, breite) {
           ladeZu: document.getElementById('allesLade').hidden,
         };
         if (auf) document.getElementById('ftClose').click();
+        return raus;
+      }
+      /* „Als App installieren" (Runde 288) ebenso. */
+      if (z.getAttribute('data-al-installieren')) {
+        const auf = document.getElementById('installModal').classList.contains('show');
+        const raus = {
+          name, tipps, reiterOk,
+          view: auf ? 'FENSTER-AUF' : 'FENSTER-ZU',
+          ziel: 'FENSTER-AUF',
+          ladeZu: document.getElementById('allesLade').hidden,
+        };
+        if (auf) document.getElementById('inClose').click();
         return raus;
       }
       /* „Datenschutzvorfall melden" (seit 25.9., Runde 113) ebenso. */
