@@ -24520,12 +24520,16 @@ Attrappe geladen: damals waren die Funktionen selbst die Knöpfe unten
 Startseite und kein „Alles" dazwischen. Das ist der Vorschlag „Wie am
 Anfang".
 
+Danach, mitten in der Runde: „Es soll wirklich am Ende so eine Art
+‚OG' Modus geben für Leute die null Verständnis für irgendwas haben und
+es soll so simpel und leicht wie möglich gestaltet sein dafür".
+
 **Was gebaut wurde (Grundgerüst)**
 
 - **„Alles → Meine Sachen → App gestalten"**: eine Tafel, keine
   Abdunklung. Am Handy endet sie über der unteren Leiste, am Rechner
   liegt sie rechts (480 px). So ist die echte App die Vorschau.
-- **Sieben Vorschläge**: Wie am Anfang, Schlicht, Ganz minimal, Putzen
+- **Acht Vorschläge**: OG-Modus, Wie am Anfang, Schlicht, Ganz minimal, Putzen
   zuerst, Hell und ruhig, Lebendig, Wie ausgeliefert. Jeder zeigt seine
   Leiste als kleine Zeichenreihe. Ein Tipp probiert aus; „Zurück zu
   vorher" nimmt den letzten Vorschlag zurück.
@@ -24536,6 +24540,16 @@ Anfang".
   funktionieren auch mit Vorlesehilfe. Links am Rechner steht dieselbe
   Reihe.
 - **Beim Öffnen**: Heute oder eine Seite.
+- **OG-Modus** (erster Vorschlag, auch als Schalter): drei grosse
+  Knöpfe mit Wort (Aufgaben · Putzplan · Chat), Start in den Aufgaben,
+  Schrift 125 %, hell mit einer festen Farbe. Auf den Seiten bleibt nur
+  das Abhaken: keine Reiter, kein „Wer hakt ab?", kein Filter, kein
+  Drucken, keine Ziehgriffe, kein „Ich übernehme das", kein „…", keine
+  Suche, kein „+ Neu", kein Formi, keine Schnellzugriffe, keine
+  Tastenkürzel. Der Kopf heisst wie der Knopf („Aufgaben" statt
+  „Studio"). Alles andere bleibt über ☰ → „Alles" erreichbar – auch
+  „App gestalten", um wieder herauszukommen. Wer „zu kompliziert" oder
+  „versteh das nicht" zu Formi sagt, bekommt ihn als ersten Vorschlag.
 - **Weniger**: „Ganz minimal" (ohne Formi-Kugel samt Sprechblase, ohne
   Schnellzugriffe), dazu beide einzeln.
 - **Aussehen**: Farben (Formi/Dunkel/Hell/Gerät), Akzentfarbe (je
@@ -24584,7 +24598,7 @@ Anfang".
 
 **Tests**
 
-- Neu: `test-aufbau` (36 Zusicherungen, als Mitarbeiter): ausgelieferte
+- Neu: `test-aufbau` (54 Zusicherungen, als Mitarbeiter): ausgelieferte
   Leiste unverändert; Tafel bei 320 / 390 / 430 / 820 / 1280 / 1440 /
   1920 px in normal und kompakt – jeder Knopf ≥ 44 × 44 per Hit-Test,
   untere Leiste frei, kein Querlauf; „Wie am Anfang" (5 Knöpfe ≥ 44 bei
@@ -24592,7 +24606,12 @@ Anfang".
   nach dem Neuladen Start im Chat); Plus/Minus/Pfeil/Start; „Ganz
   minimal", „Zurück zu vorher", „Wie ausgeliefert"; Hell und Kompakt;
   Formi: Vorschläge ohne KI, normale Frage unberührt, Editor-Knopf,
-  „Doch normal fragen" geht an die KI.
+  „Doch normal fragen" geht an die KI; OG-Modus bei 320 / 390 / 1440 px
+  (drei Knöpfe ≥ 44, Schrift 125 %, Kopf „Aufgaben", alles Genannte weg,
+  jeder Haken ≥ 44 × 44, Abhaken geht, „App gestalten" über ☰).
 - Bildschirmfotos bei 390 und 1440 px angesehen. Dabei gefunden: im
-  Minimal-Modus sprach Formis Blase ohne Kugel – jetzt mit weg.
+  Minimal-Modus sprach Formis Blase ohne Kugel – jetzt mit weg. Im
+  OG-Modus standen am Rechner die Schnellzugriffe noch links (die Regel
+  war schwächer als `body.neu .side-schnell`), und der Kopf hiess
+  „Studio" – beides behoben und jetzt im Test.
 - **Nicht getestet:** am echten iPhone.

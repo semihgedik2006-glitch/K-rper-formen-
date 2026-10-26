@@ -1,4 +1,4 @@
-/* ══ APP GESTALTEN: DER EIGENE AUFBAU (Runde 280) ════════════════════
+/* ══ APP GESTALTEN: DER EIGENE AUFBAU (Runde 288) ════════════════════
    Aus dem Betrieb, 26.10.2026: „formi soll mehrere möglichkeiten
    vorschlagen und man soll über einen editor … alles ändern, verschieben
    und anpassen können", „je mehr design optionen es gibt desto besser
@@ -24,8 +24,13 @@
        „Alles wie ausgeliefert" die ausgelieferte Leiste.
     6. Aussehen: „Hell" schaltet body.light, „Kompakt" die Dichte.
     7. Formi: „die app ist mir zu unübersichtlich" bringt drei Vorschläge
+       (bei „zu kompliziert" den OG-Modus zuerst)
        und „Im Editor anpassen", ohne KI; „wann arbeite ich morgen" nicht.
        „Doch normal fragen" schickt den Satz an die KI weiter.
+    8. OG-Modus bei 320 / 390 / 1440: drei Knöpfe, Start in den Aufgaben,
+       Schrift 125 %, Kopf „Aufgaben", keine Reiter/Filter/Drucken/Suche/Formi/
+       Ziehgriffe/Schnellzugriffe/„+ Neu",
+       jeder Haken ≥ 44 × 44; Abhaken geht; „App gestalten" bleibt über ☰.
    ══════════════════════════════════════════════════════════════════ */
 const { chromium } = require('playwright');
 const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
@@ -198,7 +203,9 @@ const tippe = async (p, sel) => { await p.evaluate((sel) => document.querySelect
       });
     };
     const d = await frag('die app ist mir zu unübersichtlich');
-    pruefe('Design-Wunsch: drei Vorschläge und „Im Editor anpassen", ohne KI', JSON.stringify(d.vor) === '["anfang","schlicht","minimal"]' && d.editor && d.ki === 0, JSON.stringify(d));
+    pruefe('Design-Wunsch: drei Vorschläge und „Im Editor anpassen", ohne KI', JSON.stringify(d.vor) === '["anfang","schlicht","og"]' && d.editor && d.ki === 0, JSON.stringify(d));
+    const k = await frag('das ist mir alles zu kompliziert');
+    pruefe('„zu kompliziert": der OG-Modus zuerst', k.vor[0] === 'og', JSON.stringify(k));
     const n = await frag('wann arbeite ich morgen');
     pruefe('normale Frage: keine Vorschläge', !n.vor.length, JSON.stringify(n));
     await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf [data-geditor]')][0].click()); await p.waitForTimeout(400);
@@ -209,6 +216,40 @@ const tippe = async (p, sel) => { await p.evaluate((sel) => document.querySelect
     await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf [data-gnormal]')][0].click()); await p.waitForTimeout(900);
     pruefe('„Doch normal fragen" geht an die KI', await p.evaluate(() => window.__ki) > vorher);
     pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await p._ctx.close();
+  }
+
+  console.log('\n── 8 OG-Modus ──');
+  /* Aus dem Betrieb, 26.10.2026: „so eine Art ‚OG' Modus … für Leute die
+     null Verständnis für irgendwas haben … so simpel und leicht wie
+     möglich". */
+  for (const [w, h] of [[320, 568], [390, 844], [1440, 900]]) {
+    const p = await oeffne(b, w, h);
+    await editor(p);
+    await tippe(p, '#aufbauTafel [data-abvor="og"]');
+    await p.click('#abClose'); await p.waitForTimeout(500);
+    const m = await p.evaluate((SRC) => {
+      const T = eval('(' + SRC + ')');
+      const sicht = (sel) => [...document.querySelectorAll(sel)].some(e => e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden');
+      const leiste = [...document.querySelectorAll(innerWidth <= 820 ? '.mobnav .mn-reihe [data-group]' : '#side > [data-group]')].filter(e => e.getClientRects().length);
+      const haken = [...document.querySelectorAll('#view-todos .check')].filter(e => e.getClientRects().length);
+      return { ansicht: (document.querySelector('.view.show') || {}).id, leiste: leiste.map(e => e.textContent.trim()),
+        knoepfe: leiste.map(e => T(e)), schrift: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fs')),
+        weg: ['#subnavZeile', '.pp-filter-knopf', '#tdPrint', '.pp-wer-knopf', '#searchBtn', '#formiKugel', '.swipe-body .griff', '.side-schnell', '.schnell', '.kopf-plus', '.side-fuss'].filter(sicht),
+        titel: (document.getElementById('bkTitel') || {}).textContent,
+        haken: haken.map(e => { e.scrollIntoView({ block: 'center' }); return T(e); }), quer: document.documentElement.scrollWidth - innerWidth };
+    }, TREFFER.toString());
+    pruefe(w + ' px: drei Knöpfe ' + m.leiste.join(' · ') + ', Start in den Aufgaben, Kopf „' + m.titel + '"', JSON.stringify(m.leiste) === JSON.stringify(['Aufgaben', 'Putzplan', 'Chat']) && m.ansicht === 'view-todos' && m.titel === 'Aufgaben', JSON.stringify(m));
+    pruefe(w + ' px: jeder Knopf ≥ 44 × 44, Schrift 125 %', m.knoepfe.every(x => x.w >= 44 && x.h >= 44) && m.schrift === 125, JSON.stringify(m.knoepfe) + ' ' + m.schrift);
+    pruefe(w + ' px: keine Reiter, kein Filter, kein Drucken, keine Suche, kein Formi, kein Ziehen, keine Schnellzugriffe, kein „+ Neu"', !m.weg.length, m.weg.join(', '));
+    pruefe(w + ' px: jeder Haken ≥ 44 × 44, kein Querlauf', m.haken.length > 0 && m.haken.every(x => x.w >= 44 && x.h >= 44) && m.quer <= 0, JSON.stringify(m.haken) + ' quer ' + m.quer);
+    if (w === 390) {
+      await p.evaluate(() => [...document.querySelectorAll('#view-todos .check')].find(e => e.getClientRects().length).click()); await p.waitForTimeout(600);
+      pruefe('Abhaken geht', await p.evaluate(() => (window.__schreib || []).some(x => /\/todos\//.test(x.pfad) && x.daten && x.daten.done === true)));
+      await editor(p);
+      pruefe('über ☰ bleibt „App gestalten" erreichbar', await p.evaluate(() => !document.getElementById('aufbauTafel').hidden));
+    }
+    pruefe(w + ' px: ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await p._ctx.close();
   }
 

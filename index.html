@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-76BeU+cDHOF6aIU/sKpdbpfwHk4ExrLkPSY6ItAE68E='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Gm++8ztygsArTOzYUNheTv6vXcQSg98LA9dw96gyUUM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -9718,7 +9718,7 @@ body.neu .np-punkt{width:8px;height:8px;border-radius:var(--r-rund);background:v
   #ftUhrTipps,.ft-auf-wort{display:inline}
 }
 
-/* ── App gestalten (Runde 280) ──
+/* ── App gestalten (Runde 288) ──
    Eine Tafel statt eines Fensters: keine Abdunklung, damit man die
    Änderung an der echten App sieht. Am Handy endet sie über der
    unteren Leiste (die ist die Vorschau), am Rechner liegt sie rechts. */
@@ -9767,9 +9767,24 @@ body.neu .np-punkt{width:8px;height:8px;border-radius:var(--r-rund);background:v
 .ab-chips{display:flex;flex-wrap:wrap;gap:var(--s8)}
 .ab-fuss{display:flex;flex-wrap:wrap;gap:var(--s8);margin-top:var(--s20)}
 .ab-fuss .btn{min-height:44px}
-/* Schlank: nur, wer es so eingestellt hat (Runde 280). */
-body.ohne-schnell .schnell,
-body.ohne-schnell .side-schnell{display:none}
+/* Schlank: nur, wer es so eingestellt hat (Runde 288). */
+body.neu.ohne-schnell .schnell,
+body.neu.ohne-schnell .side-schnell{display:none}
+/* OG-Modus (Runde 288): nur noch, was man zum Abhaken braucht. Alles,
+   was hier wegfällt, bleibt über ☰ → „Alles" erreichbar. */
+body.og .pp-wer-knopf,
+body.og .pp-filter-knopf,
+body.og #tdPrint,
+body.og #ppPrint,
+body.og .swipe-body .griff,
+body.og .t-nimm,
+body.og .t-mehr,
+body.og #searchBtn,
+body.og .daumen-dock,
+body.neu.og .kopf-plus,
+body.og .side-fuss{display:none}
+body.neu.og .mn-reihe button span:not(.badge):not(.ndot){font-size:var(--t-sm);font-weight:700}
+body.neu.og .mobnav button svg{width:28px;height:28px}
 /* Ohne Kugel auch ohne ihre Sprechblase – sonst spräche sie aus dem Nichts. */
 body.ohne-formi .formi-blase{display:none}
 
@@ -13819,7 +13834,7 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
   <button type="button" class="btn btn-ghost btn-sm" id="ftAufgeben" aria-label="Aufgeben"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg><span class="ft-auf-wort">Aufgeben</span></button>
 </div>
 
-<!-- App gestalten (Runde 280): der eigene Aufbau, nur für dieses Gerät.
+<!-- App gestalten (Runde 288): der eigene Aufbau, nur für dieses Gerät.
      Keine Abdunklung dahinter: die App bleibt sichtbar und zeigt jede
      Änderung sofort – am Handy bleibt die untere Leiste frei. -->
 <section class="aufbau-tafel" id="aufbauTafel" hidden role="dialog" aria-labelledby="abTitel">
@@ -15542,9 +15557,10 @@ function applyPrefs(){
 }
 (function initTheme(){
   loadPrefs(); applyPrefs();
-  /* Runde 280: der eigene Aufbau, bevor irgendetwas gezeichnet wird. */
+  /* Runde 288: der eigene Aufbau, bevor irgendetwas gezeichnet wird. */
   var _ab=PREFS.aufbau||{};
   document.body.classList.toggle('ab-minimal', !!_ab.minimal);
+  document.body.classList.toggle('og', !!_ab.og);
   document.body.classList.toggle('ohne-schnell', _ab.schnell===false || !!_ab.minimal);
   document.body.classList.toggle('ohne-formi', _ab.formi===false || !!_ab.minimal);
   /* Vor allem anderen: Adresse, Gerät und Demo kennen die Antwort ohne
@@ -22633,7 +22649,7 @@ function showApp(){
   stErinnerungStarten();      // Runde 238: Stempel vergessen? Formi sagt es
   startPresence();            // "ich bin online" melden
   startNutzung();             // anonyme Zählung: welche Funktion wird benutzt
-  /* Runde 280: wer sich „Beim Öffnen: Chat" (o. ä.) eingestellt hat,
+  /* Runde 288: wer sich „Beim Öffnen: Chat" (o. ä.) eingestellt hat,
      landet dort; sonst wie immer auf „Heute". */
   showView(aufbauStart() || 'home');
   birthdayCheck();
@@ -23313,7 +23329,7 @@ function allesGruppen(){
      was:'Nachweise, Stammdaten, alles über mich als Datei'},
     {label:'Persönlich',    view:'persoenlich', ikon:'persoenlich',
      was:'Nur für dich, niemand sonst sieht es'},
-    /* Runde 280. */
+    /* Runde 288. */
     {label:'App gestalten', aufbau:true, roh:ikon('regler'),
      was:'Leiste, Start und Aussehen – nur auf diesem Gerät'},
   ]);
@@ -23422,7 +23438,7 @@ function renderAlles(){
    genauso neu. */
 var NEUIGKEITEN = [
   { id:'2026-10-26-app-gestalten', datum:'26.10.2026', art:'neu', titel:'App gestalten: Leiste, Start und Aussehen selbst wählen', wo:'home', punkte:[
-    'Alles → Meine Sachen → App gestalten: sieben fertige Vorschläge, z. B. „Wie am Anfang" oder „Ganz minimal".',
+    'Alles → Meine Sachen → App gestalten: acht Vorschläge, z. B. „OG-Modus" (ganz einfach) oder „Wie am Anfang".',
     'Eigene Leiste mit bis zu 5 Knöpfen, Startseite, Farben, Hintergrund, Schrift – nur auf diesem Gerät.',
     'Wer Formi nach Design oder Aufbau der App fragt, bekommt die Vorschläge direkt angeboten.'
   ]},
@@ -24384,7 +24400,7 @@ function findeText(){
   }).join('\n');
 }
 
-/* ══ APP GESTALTEN (Runde 280) ═══════════════════════════════════════
+/* ══ APP GESTALTEN (Runde 288) ═══════════════════════════════════════
    Aus dem Betrieb, 26.10.2026: „thomas fand die app ganz am anfang viel
    viel übersichtlicher" – dann: „formi soll mehrere möglichkeiten
    vorschlagen und man soll über einen editor … alles ändern, verschieben
@@ -24408,10 +24424,19 @@ var AUFBAU_SEITEN = [
   { v:'zeit', name:'Stempeln' }, { v:'dm', name:'Direkt' }, { v:'docs', name:'Dokumente' },
   { v:'schulung', name:'Schulung' }, { v:'gehirn', name:'Formi' }, { v:'probe', name:'Probetraining' }
 ];
-var AUFBAU_STANDARD = { leiste:null, start:'home', minimal:false, formi:true, schnell:true, vorschlag:'standard' };
+var AUFBAU_STANDARD = { leiste:null, start:'home', minimal:false, formi:true, schnell:true, og:false, vorschlag:'standard' };
 /* Die Vorschläge. `prefs` sind die Aussehen-Einstellungen, die es schon
    gibt (Profil → Aussehen) – ein Vorschlag setzt sie nur gemeinsam. */
 var AUFBAU_VORSCHLAEGE = [
+  /* Aus dem Betrieb, 26.10.2026: „Es soll wirklich am Ende so eine Art
+     ‚OG' Modus geben für Leute die null Verständnis für irgendwas haben
+     und es soll so simpel und leicht wie möglich gestaltet sein dafür".
+     Drei grosse Knöpfe mit Wort, sehr grosse Schrift, hell, und auf den
+     Seiten nur noch Abhaken: keine Reiter, kein Filter, kein Drucken,
+     kein Ziehen, keine Suche, kein Formi. Alles andere bleibt über ☰. */
+  { id:'og', name:'OG-Modus', was:'So einfach wie möglich: drei grosse Knöpfe, nur abhaken',
+    leiste:['v-todos','v-putzplan','v-chat'], start:'todos', minimal:true, formi:false, schnell:false, og:true,
+    prefs:{ fs:'125', theme:'light', accent:'blau', appbg:'keiner', glas:'deckend', dichte:'normal' } },
   { id:'anfang', name:'Wie am Anfang', was:'Jede Funktion ein Knopf, Start im Chat',
     leiste:['v-chat','v-todos','v-ann','v-material','v-putzplan'], start:'chat', minimal:false, formi:true, schnell:true,
     prefs:{ theme:'dark', appbg:'keiner', accent:'cyan' } },
@@ -24475,6 +24500,7 @@ function aufbauStart(){
 function aufbauAnwenden(){
   var a=aufbau();
   document.body.classList.toggle('ab-minimal', !!a.minimal);
+  document.body.classList.toggle('og', !!a.og);
   document.body.classList.toggle('ohne-schnell', a.schnell===false || !!a.minimal);
   document.body.classList.toggle('ohne-formi', a.formi===false || !!a.minimal);
   if(typeof session!=='undefined' && session && $('side')){ buildNav(); }
@@ -24492,7 +24518,7 @@ function aufbauVorschlag(id){
   var v=AUFBAU_VORSCHLAEGE.filter(function(x){ return x.id===id; })[0]; if(!v) return;
   PREFS.aufbauVorher=aufbauSchnappschuss();
   Object.keys(v.prefs||{}).forEach(function(k){ PREFS[k]=v.prefs[k]; });
-  PREFS.aufbau={ leiste:v.leiste ? v.leiste.slice() : null, start:v.start, minimal:v.minimal, formi:v.formi, schnell:v.schnell, vorschlag:v.id };
+  PREFS.aufbau={ leiste:v.leiste ? v.leiste.slice() : null, start:v.start, minimal:v.minimal, formi:v.formi, schnell:v.schnell, og:!!v.og, vorschlag:v.id };
   savePrefs(); applyPrefs(); aufbauAnwenden();
   if(v.start) showView(aufbauStart() || 'home');
 }
@@ -24552,6 +24578,7 @@ function aufbauRender(){
     return '<button type="button" class="ab-schalter" data-abschalter="'+key+'" aria-pressed="'+an+'"><span class="ab-name"><b>'+esc(name)+'</b><i>'+esc(was)+'</i></span><span class="sw'+(an?' on':'')+'"><i></i></span></button>';
   };
   h+='<h4>Weniger</h4>'+
+    schalter('og', 'OG-Modus', 'Grosse Knöpfe, nur abhaken – ohne Reiter, Filter, Suche', !!a.og)+
     schalter('minimal', 'Ganz minimal', 'Ohne Formi-Kugel und Schnellzugriffe', !!a.minimal)+
     schalter('formi', 'Formi unten zeigen', 'Die Kugel unten in der Ecke', a.formi!==false && !a.minimal)+
     schalter('schnell', 'Schnellzugriffe zeigen', 'Die Reihe auf „Heute" und am Rechner links', a.schnell!==false && !a.minimal);
@@ -24594,6 +24621,7 @@ function aufbauKlick(e){
   else if((x=b.getAttribute('data-abschalter'))){
     var a=aufbau(), t={ vorschlag:'eigen' };
     if(x==='minimal') t.minimal=!a.minimal;
+    else if(x==='og') t.og=!a.og;
     else { t[x]=!(a[x]!==false && !a.minimal); if(t[x]) t.minimal=false; }
     aufbauSetzen(t);
   }
@@ -24605,11 +24633,11 @@ function aufbauKlick(e){
   tick(6);
   aufbauRender();
 }
-/* Formi hört zu (Runde 280): „wenn man irgendwas mit design und der app
+/* Formi hört zu (Runde 288): „wenn man irgendwas mit design und der app
    erwähnt". Erkannt wird auf dem Gerät, ohne KI – sofort und auch ohne
    Netz. Absichtlich NICHT: „verschieben" allein (Fristen, Schichten),
    „Farbe" allein (das Studio-Logo). */
-var AUFBAU_WUNSCH = /\b(design|layout|aussehen|optik|übersichtlich\w*|unübersichtlich\w*|minimal\w*|schlichter|aufgeräumt\w*|überladen|zu voll|zu viele? (knöpfe|sachen|kram|zeug|funktionen)|dunkelmodus|hellmodus|dark ?mode|wie (am anfang|früher)|leiste|startseite|app (gestalten|anpassen|umbauen|einrichten)|knöpfe? (verschieben|anordnen|umstellen))\b/i;
+var AUFBAU_WUNSCH = /\b(design|layout|aussehen|optik|übersichtlich\w*|unübersichtlich\w*|minimal\w*|schlichter|aufgeräumt\w*|überladen|zu voll|zu kompliziert|kompliziert|einfacher|ganz einfach|og[- ]?modus|versteh\w* (die app|das|hier) nicht|zu viele? (knöpfe|sachen|kram|zeug|funktionen)|dunkelmodus|hellmodus|dark ?mode|wie (am anfang|früher)|leiste|startseite|app (gestalten|anpassen|umbauen|einrichten)|knöpfe? (verschieben|anordnen|umstellen))\b/i;
 function aufbauWunsch(text){ return AUFBAU_WUNSCH.test(String(text||'')); }
 
 /* ══ AUSKUNFT NACH ART. 15 (P-10, Runde 114) ══════════════════════════
@@ -25154,7 +25182,7 @@ function allesLadeUmschalten(){
    buildNav und nicht an der Stelle, an der sie aufgefallen ist. */
 function navAktivSetzen(){
   var g=groupOfView(currentView);
-  /* Runde 280: trägt die eigene Leiste die Seite selbst (v-…), ist das
+  /* Runde 288: trägt die eigene Leiste die Seite selbst (v-…), ist das
      der aktive Knopf – nicht der Raum, zu dem sie sonst gehört. */
   var id = document.querySelector('[data-group="v-'+currentView+'"]') ? 'v-'+currentView : g.id;
   document.querySelectorAll('[data-group]').forEach(function(t){
@@ -25211,7 +25239,7 @@ function seitenGruppen(gruppen){
 function buildNav(){
   var side=$('side'), mob=$('mobnav'); side.innerHTML=''; mob.innerHTML='';
   var gruppen=navGruppen();
-  /* Runde 280: die eigene Leiste gilt links genauso wie unten. */
+  /* Runde 288: die eigene Leiste gilt links genauso wie unten. */
   (aufbauGruppen() || seitenGruppen(gruppen)).forEach(function(g){ side.appendChild(navKnopf(g,'seite')); });
   /* Die Schnellzugriffe bleiben am Rechner hier, unter den Räumen
      (Runde 116). Runde 184 hatte sie auf „Heute“ verlegt und damit zwei
@@ -25770,8 +25798,11 @@ function bereichKopfSetzen(){
      nichts gescrollt war. Gesehen im Bild, nicht gedacht. */
   kopf.classList.remove('eng');
   document.body.setAttribute('data-bereich', g.id);
-  var ik=$('bkIkon'); if(ik) ik.innerHTML=gruppeSvg(g);
-  var ti=$('bkTitel'); if(ti) ti.textContent=gruppeLabel(g);
+  /* Runde 288: steht die Seite selbst als Knopf in der eigenen Leiste,
+     heisst der Kopf wie der Knopf („Putzplan" statt „Studio"). */
+  var ein = document.querySelector('[data-group="v-'+currentView+'"]') && aufbauEinzel(currentView);
+  var ik=$('bkIkon'); if(ik) ik.innerHTML=gruppeSvg(ein || g);
+  var ti=$('bkTitel'); if(ti) ti.textContent=ein ? ein.label : gruppeLabel(g);
   var su=$('bkSub');
   if(su){
     var t=bereichUnterzeile(g);
@@ -25945,7 +25976,9 @@ function buildSubNav(){
      und genau dort stempelt man, sieht seine Zeiten und Notizen. Sechs
      Durchläufe (test-handy-stempeln, test-kalender, test-notizen …)
      fielen darüber. Ein Tipp für das tägliche Ziel geht vor 40 px. */
-  if(views.length<2){
+  /* Runde 288: im OG-Modus gar keine Reiter – die drei Knöpfe unten
+     sind die ganze Navigation (der Rest über ☰). */
+  if(views.length<2 || document.body.classList.contains('og')){
     umschalterZeichnen(views);
     bar.innerHTML=''; bar.style.display='none';
     /* Die ganze Zeile weg, nicht nur die Leiste — sonst bliebe „Alle"
@@ -26295,7 +26328,7 @@ function hudBewegung(id){
 /* Auffällige Marker (Punkte) auf der Navigation aktualisieren */
 function updateNavMarkers(){
   var map={ chat:unread.chat, ann:unread.ann };
-  /* Runde 280: einzelne Seiten in der eigenen Leiste tragen ihren Punkt selbst. */
+  /* Runde 288: einzelne Seiten in der eigenen Leiste tragen ihren Punkt selbst. */
   map['v-chat']=unread.chat && currentView!=='chat'; map['v-ann']=unread.ann && currentView!=='ann';
   // Gruppen erben den Marker ihrer Ansichten
   NAVGROUPS.forEach(function(g){
@@ -29582,7 +29615,7 @@ function gehirnZeichnenInRoh(box, tippen){
     } else if(v.art==='idee'){
       antwort='<div class="gehirn-antwort">'+kopf+'<p class="ga-text">Danke! Deine Idee ist bei der Leitung gelandet.</p></div>';
     } else if(v.art==='design'){
-      /* Runde 280: drei Vorschläge zum Ausprobieren, dazu der Editor. */
+      /* Runde 288: drei Vorschläge zum Ausprobieren, dazu der Editor. */
       antwort='<div class="gehirn-antwort">'+kopf+'<p class="ga-text">Das kannst du dir selbst einstellen – nur auf diesem Gerät. Drei Möglichkeiten zum Ausprobieren:</p>'+
         '<div class="ab-vorschlaege">'+(v.vorschlaege||[]).map(function(id){
           var x=AUFBAU_VORSCHLAEGE.filter(function(y){ return y.id===id; })[0]; if(!x) return '';
@@ -29769,7 +29802,7 @@ function gehirnTippen(el, text){
   }
   requestAnimationFrame(schritt);
 }
-/* „Doch normal fragen" (Runde 280): der nächste Satz geht an die KI,
+/* „Doch normal fragen" (Runde 288): der nächste Satz geht an die KI,
    auch wenn er nach dem Aussehen der App klingt. */
 var _gNormal=false;
 function gehirnSenden(art, feldId){
@@ -29792,12 +29825,13 @@ function gehirnSenden(art, feldId){
   }
   gehirnZeichnen();
   gehirnNachUnten();
-  /* Runde 280: geht es um das Aussehen der App, schlägt Formi sofort
+  /* Runde 288: geht es um das Aussehen der App, schlägt Formi sofort
      Möglichkeiten vor – ohne KI. „Doch normal fragen" schickt den Satz
      danach wie bisher los. */
   if(art==='auto' && !v.normal && aufbauWunsch(text)){
     v.art='design'; v.laeuft=false; _gLaeuft=false;
-    v.vorschlaege=['anfang','schlicht','minimal'];
+    /* „zu kompliziert" u. ä.: zuerst der OG-Modus. */
+    v.vorschlaege = /komplizi|einfach|versteh|og[- ]?modus/i.test(text) ? ['og','anfang','minimal'] : ['anfang','schlicht','og'];
     gehirnSchritt(v, 'Erkannt: Aussehen der App', true);
     if(gehirnSichtbar()){ gehirnZeichnen(); gehirnNachUnten(); }
     gehirnVerlaufSichern();
@@ -57078,7 +57112,7 @@ function bindActions(){
   var vm=$('vorfallModal'); if(vm) vm.addEventListener('click', function(e){ if(e.target===vm) vorfallSchliessen(); });
   var nm=$('neuModal'); if(nm) nm.addEventListener('click', function(e){ if(e.target===nm) neuSchliessen(); });
   // ── Findetest (Runde 275) ──
-  // ── App gestalten (Runde 280) ──
+  // ── App gestalten (Runde 288) ──
   var abc=$('abClose'); if(abc) abc.addEventListener('click', aufbauSchliessen);
   var abi=$('abInhalt'); if(abi) abi.addEventListener('click', aufbauKlick);
   document.addEventListener('keydown', function(e){ if(e.key==='Escape' && $('aufbauTafel') && !$('aufbauTafel').hidden) aufbauSchliessen(); });
