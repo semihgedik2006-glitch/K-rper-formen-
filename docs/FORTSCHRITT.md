@@ -24799,3 +24799,102 @@ gleichzeitig): rot waren
   `test-gehirn` — gegen `main` **nicht** verglichen;
 - nur unter Last rot, einzeln grün: `test-navigation`, `test-fuehrung`,
   `test-leiter-aufgaben`, `test-schichtplan-raster`.
+
+## Runde 292 — App gestalten als Baukasten: Ziehen, eigene Gruppen, Startseite, Entwurf, Designs teilen (26.10.2026)
+
+**Aus dem Betrieb, 26.10.2026:**
+- „das editor menü kein richtiges menü und man kann nicht alles genau so
+  anpassen wie man möchte es soll so ein menü mässig sein wo man drag and
+  drop machen kann und wo man alles da hin packen kann wo man möchte und
+  auch eigene gruppen erstellen kann und wirlich alles in diesem editor
+  einstellen und bearbeiten kann und erst danach bestäigt man es oder
+  verwirft es wieder"
+- Auf die drei Rückfragen (Handy 5 / Rechner 8 Knöpfe, Startseite gleich
+  mit, keine Untergruppen): „ja so, man soll gruppen aber auch bennen
+  können und seine designs speichern können das man wechseln kann nach
+  bedarf und das andere das auch sehen und nutzen können"
+
+**Was gebaut wurde**
+
+- **Ein ganzer Bildschirm statt einer Tafel.** Am Rechner drei Spalten,
+  jede scrollt für sich: Bausteine · deine App · Vorschau, Vorschläge und
+  Designs. Am Handy eine Spalte, Vorschau und Vorschläge zuerst.
+- **Entwurf.** Alles im Editor ändert nur `_abE`. Oben „Verwerfen" und
+  „Übernehmen" (gesperrt, solange nichts geändert ist); die Kopfzeile
+  sagt „Entwurf – noch nicht übernommen". Schliessen mit Änderungen
+  fragt nach. Nach „Übernehmen" geht es gleich zur neuen Startseite,
+  wenn die sich geändert hat. „Zurück zum letzten Stand" bleibt.
+- **Ziehen und Ablegen** mit Maus (ab 6 px Bewegung) und Finger (am
+  Griff ⋮⋮, sofort; sonst scrollt der Finger). Ziele: die Leiste, jede
+  eigene Gruppe, die Startseite, zurück in die Bausteine (= heraus).
+  Eine Marke zeigt die Einfügestelle.
+- **Antippen statt Ziehen**: jeder Baustein öffnet ein Menü – „In die
+  Leiste", „Nach vorn/hinten", „Aus der Leiste nehmen", „In ‚Mein Tag'"
+  usw. Derselbe Weg in den Daten (`aufbauVerschieben`) wie beim Ziehen.
+- **Eigene Gruppen** (höchstens 6, je bis 8 Seiten, eine Ebene): Name,
+  Zeichen (antippen wechselt), Seiten hineinziehen. In der App ein
+  Knopf; der Kopf heisst wie die Gruppe, die Reiter sind genau ihre
+  Seiten, der Knopf trägt den Ungelesen-Punkt seiner Seiten.
+- **Leiste bis 8**: am Rechner alle links; am Handy ab sechs Einträgen
+  vier und „Mehr" (eine kleine Liste über der Leiste; steht man auf
+  einer Seite dahinter, trägt „Mehr" die Marke).
+- **Startseite „Heute"**: die Blöcke (Seit du weg warst, Überfällig,
+  Heute, Zum Übernehmen, Putzplan, Neu für dich, Zu erledigen, Offen,
+  Heute im Studio) ordnen und einzeln ausblenden. `renderHeute` sammelt
+  die Blöcke jetzt erst und zeichnet sie dann in dieser Reihenfolge –
+  `heutePasst()` danach unverändert.
+- **Meine Designs** (auf dem Gerät, höchstens 12): Entwurf unter einem
+  Namen speichern; „Nutzen" wechselt sofort, „Bearbeiten" lädt in den
+  Entwurf, „Löschen" fragt per zweitem Tipp nach.
+- **Vom Team**: „Teilen" legt das Design in die neue Sammlung `designs`
+  (Name, Name der Person, Aufbau, Aussehen). Alle Aktiven der Firma
+  sehen die Liste, „Ausprobieren" lädt in den Entwurf, „Nutzen" sofort.
+  Entfernen darf, wer geteilt hat, und der Chef.
+
+**Warum so**
+
+- **Entwurf statt sofort**: so gewünscht – und eine App, die sich bei
+  jedem Tipp im Editor umbaut, lässt einen beim Ausprobieren den Faden
+  verlieren. Die Vorschau zeigt Leiste, Startseite und Farben aus dem
+  Entwurf.
+- **Ziehen UND Antippen**: Ziehen ist am Rechner schnell; am Handy ist
+  ein Ziehweg über eine lange Liste fummelig, und für Vorlesehilfen geht
+  er gar nicht. Beide Wege enden in derselben Funktion.
+- **Fremde Designs sind Eingaben von aussen.** `aufbauBereinigen` lässt
+  nur bekannte Seiten, Räume und gültige Gruppen-Kennungen durch, kürzt
+  Namen, verwirft unbekannte Farben und Felder (test-baukasten 7 lädt
+  ein absichtlich kaputtes). Die Regel hält zusätzlich Form und Grösse.
+- **`designs` steht in BEIDEN Regelpfaden** (flach und
+  `firmen/<kennung>/`), mit `designOk()`; der Kreuztest kennt die
+  Sammlung, die drei Attrappen bedienen sie in `get()` UND
+  `onSnapshot`. Die nächtliche Sicherung nimmt sie ohne Zutun mit
+  (`listCollections`); in die Auskunft nach Art. 15 gehört sie nicht
+  (ein Name und ein Oberflächen-Aufbau).
+
+**Gefunden**
+
+- Am Handy lagen Formis Kugel und Blase über der „Mehr"-Liste – sie
+  treten jetzt beiseite, solange sie offen ist (im Test).
+- test-neu-design schloss die Tafel über „×" – das heisst jetzt
+  „Verwerfen" (nachgezogen, nicht gelockert).
+- Im Gesamtlauf: im Modus „Meine Schicht" rutschte der Block „Meine
+  Schicht" durch die neue Sortierung ans Ende (test-schicht-detail,
+  4 rot). Blöcke, die nicht in der Liste stehen, bleiben jetzt vorn –
+  wie vorher. Danach 42 grün.
+
+**Tests**
+
+- Neu: `test-baukasten` (30 Zusicherungen): Ziehen mit der Maus, App
+  unverändert bis „Übernehmen", „Verwerfen"; eigene Gruppe benennen,
+  füllen, in die Leiste, Kopf/Reiter/aktiv; Antippen-Menü (≥ 44 × 44);
+  Ziehen mit dem Finger (echte Touch-Ereignisse); Startseite ordnen und
+  ausblenden; mehr als fünf → „Mehr"; Designs speichern/nutzen/teilen
+  (nur erlaubte Felder), vom Team ausprobieren/nutzen; kaputtes Design.
+- Neu: `tests/rules/designs.test.js` (34, beide Welten); Kreuztest um
+  `designs` ergänzt (457 grün). Der ganze Regelsatz lief hier im
+  Emulator: alle Dateien grün.
+- `test-aufbau` auf den Entwurf umgestellt (Zitat im Test): Vorschläge
+  wirken erst nach „Übernehmen"; Abschnitt 4 (Plus/Minus) ist in
+  test-baukasten aufgegangen. 51 grün.
+- **Nicht getestet:** am echten iPhone (Ziehen mit dem Finger ist mit
+  CDP-Touch-Ereignissen in Chromium nachgestellt).
