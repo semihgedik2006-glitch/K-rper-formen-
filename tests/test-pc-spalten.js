@@ -76,12 +76,9 @@ async function zu(p, v) {
      Betrieb: „das problem mit dem zu viel bleibt immer noch bestehen“ –
      „deine 2 fragen können wir so umsetzten“. Der Weg ändert sich, die
      Messung nicht. */
-  const reiter = v === 'geraete' ? 'material' : v;
-  await p.evaluate((v) => { const b = document.querySelector('#subnav [data-subview="' + v + '"]') || document.querySelector('[data-subview="' + v + '"]'); if (b) b.click(); }, reiter);
-  if (v === 'geraete') {
-    await p.waitForTimeout(500);
-    await p.evaluate(() => { const u = document.querySelector('#view-material .umschalter [data-umschalt="geraete"]'); if (u) u.click(); });
-  }
+  /* Runde 293 (aus dem Betrieb, 26.10.2026, nach dem Findetest: „ja können
+     wir so machen"): Material und Geräte sind wieder zwei Reiter. */
+  await p.evaluate((v) => { const b = document.querySelector('#subnav [data-subview="' + v + '"]') || document.querySelector('[data-subview="' + v + '"]'); if (b) b.click(); }, v);
   await p.waitForTimeout(1300);
 }
 const kasten = (p, sel) => p.evaluate((sel) => {

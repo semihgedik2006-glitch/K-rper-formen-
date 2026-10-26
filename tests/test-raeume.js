@@ -35,10 +35,11 @@ const SP = __dirname;
    bekommt oder unter „Alles" liegt: „eigener knopf". Gestempelt wird
    jeden Tag zweimal — deshalb direkt hinter „Studio". Die Knöpfe treffen
    weiter ≥ 44 × 44 bei 320 px (Abschnitt 7). */
-const RAEUME = ['Heute', 'Studio', 'Zeiten', 'Plan', 'Nachrichten', 'Wissen'];
+/* Runde 293, aus dem Betrieb, 26.10.2026, auf die Empfehlung nach dem Findetest: „ja können wir so machen" – „Plan" heisst „Schichtplan", „Wissen" heisst „Dokumente", „Bestand" ist wieder Material und Geräte. */
+const RAEUME = ['Heute', 'Studio', 'Zeiten', 'Schichtplan', 'Nachrichten', 'Dokumente'];
 /* Am Handy unten ohne „Wissen“ (Runde 246, aus dem Betrieb 23.10.2026, 08:07:
    „ja so wie du empfohlen hast klingt super“) – es liegt dort unter ☰ „Alles“. */
-const HANDY = RAEUME.filter(r => r !== 'Wissen');
+const HANDY = RAEUME.filter(r => r !== 'Dokumente');
 
 let gut = 0, schlecht = 0;
 function pruefe(was, bedingung, hinweis) {
@@ -89,7 +90,7 @@ const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel
     const p = await oeffne(b, 1440, 900, { stub });
     const s = await leiste(p, '#side > [data-group]');
     /* Runde 260, aus dem Betrieb 23.10.2026 auf „Mitarbeiter unten nur Heute, Zeiten, Plan, Nachrichten?": „ja" – Studio und Wissen liegen für Mitarbeiter unter „Alles". */
-    const soll = leitung ? RAEUME.concat('Verwaltung') : RAEUME.filter(r => r !== 'Studio' && r !== 'Wissen');
+    const soll = leitung ? RAEUME.concat('Verwaltung') : RAEUME.filter(r => r !== 'Studio' && r !== 'Dokumente');
     pruefe((leitung ? 'Leitung' : 'Mitarbeiter') + ': ' + s.join(' · '), JSON.stringify(s) === JSON.stringify(soll), JSON.stringify(s));
     const extra = await p.evaluate(() => ({ schnell: !!document.querySelector('#side .side-schnell'),
       putz: !!document.querySelector('#side [data-group="g-putz"]'), alles: !!document.querySelector('#side [data-group="g-alles"]') }));
@@ -158,7 +159,7 @@ const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel
       dreiTipps.every(v => v === 'geraete' || v === 'dm'), dreiTipps.join(', '));
     pruefe('Putzplan liegt im Raum Studio', besucht.putzplan === 'g-arbeit', besucht.putzplan);
     pruefe('Ich und Persönlich liegen unter Heute', besucht.ich === 'g-start' && besucht.persoenlich === 'g-start');
-    pruefe('Schulung, Dokumente und Formi liegen unter Wissen', besucht.schulung === 'g-wissen' && besucht.docs === 'g-wissen' && besucht.gehirn === 'g-wissen', JSON.stringify(besucht));
+    pruefe('Schulung, Dokumente und Formi liegen unter Dokumente (früher „Wissen")', besucht.schulung === 'g-wissen' && besucht.docs === 'g-wissen' && besucht.gehirn === 'g-wissen', JSON.stringify(besucht));
     await zu(p);
   }
 

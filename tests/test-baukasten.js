@@ -170,7 +170,7 @@ const menue = async (p, text) => {
     for (let i = 1; i <= 12; i++) { await tp('touchMove', pos.x + (pos.zx - pos.x) * i / 12, pos.y + (pos.zy - pos.y) * i / 12); await p.waitForTimeout(20); }
     await tp('touchEnd'); await p.waitForTimeout(400);
     const f = await entwurfLeiste(p);
-    pruefe('mit dem Finger am Griff gezogen: Nachrichten nach vorn (' + f.join(' · ') + ')', JSON.stringify(f) === JSON.stringify(['Nachrichten', 'Heute', 'Zeiten', 'Plan']), JSON.stringify(f));
+    pruefe('mit dem Finger am Griff gezogen: Nachrichten nach vorn (' + f.join(' · ') + ')', JSON.stringify(f) === JSON.stringify(['Nachrichten', 'Heute', 'Zeiten', 'Schichtplan']), JSON.stringify(f));
     await tippe(p, '#abVerwerfen');
     await editor(p);
     await tippe(p, '#abInhalt [data-abzieh="neu:v-putzplan"]');

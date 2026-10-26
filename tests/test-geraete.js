@@ -26,14 +26,10 @@ async function lauf(stub, wer) {
      immer noch bestehen"): Material und Geräte sind EIN Reiter
      „Bestand"; Geräte erreicht man über den Umschalter oben in der
      Seite. Weiterhin geprüft: der Weg muss da sein. */
-  const sub = await page.$('#subnav [data-paar="bestand"]');
-  if (!sub) { errs.push('Geraete-Seite ist in der Unter-Navigation nicht erreichbar (kein Reiter „Bestand")'); }
-  else {
-    await sub.click(); await page.waitForTimeout(600);
-    const um = await page.$('#view-material .umschalter [data-umschalt="geraete"]');
-    if (!um) errs.push('Geraete-Seite ist nicht erreichbar (kein Umschalter „Geräte" im Bestand)');
-    else { await um.click(); await page.waitForTimeout(800); }
-  }
+  /* Runde 293, aus dem Betrieb, 26.10.2026, auf die Empfehlung nach dem Findetest: „ja können wir so machen" – „Plan" heisst „Schichtplan", „Wissen" heisst „Dokumente", „Bestand" ist wieder Material und Geräte. */
+  const sub = await page.$('#subnav [data-subview="geraete"]');
+  if (!sub) { errs.push('Geraete-Seite ist in der Unter-Navigation nicht erreichbar (kein Reiter „Geräte")'); }
+  else { await sub.click(); await page.waitForTimeout(800); }
 
   // Auf das Studio wechseln, fuer das die Testdaten liegen (Huerth = studio-6).
   // Der Chef landet sonst alphabetisch zuerst bei Bruehl.

@@ -90,7 +90,8 @@ async function tippe(p, wort) {
     {
       const pm = await start(b, 'mitarbeiter', 390, 844);
       const m = await pm.evaluate(LAGE);
-      pruefe('Mitarbeiter: unten Heute · Zeiten · Plan · Nachrichten', m.reihe.join('|') === 'Heute|Zeiten|Plan|Nachrichten', m.reihe.join('|'));
+      /* Runde 293, aus dem Betrieb, 26.10.2026, auf die Empfehlung nach dem Findetest: „ja können wir so machen" – „Plan" heisst „Schichtplan", „Wissen" heisst „Dokumente", „Bestand" ist wieder Material und Geräte. */
+      pruefe('Mitarbeiter: unten Heute · Zeiten · Schichtplan · Nachrichten', m.reihe.join('|') === 'Heute|Zeiten|Schichtplan|Nachrichten', m.reihe.join('|'));
       const szm = await pm.evaluate(() => [...document.querySelectorAll('#schnellLeiste .sz-wort')].map(x => x.textContent));
       pruefe('der Schnellzugriff-Vorschlag (Mitarbeiter): Meine Woche, Mein Kalender, Geräte',
         szm.slice(0, 3).join('|') === 'Meine Woche|Mein Kalender|Geräte', szm.join('|'));
@@ -106,8 +107,8 @@ async function tippe(p, wort) {
        Runde 246 (23.10.2026), Plan „Studio Chat wie von Apple": fünf statt
        sechs, „Wissen" liegt unter ☰ (am Rechner weiter links). Aus dem
        Betrieb, 08:07: „ja so wie du empfohlen hast klingt super". */
-    pruefe('unten stehen Heute · Studio · Zeiten · Plan · Nachrichten',
-      a.reihe.join('|') === 'Heute|Studio|Zeiten|Plan|Nachrichten', a.reihe.join('|'));
+    pruefe('unten stehen Heute · Studio · Zeiten · Schichtplan · Nachrichten',
+      a.reihe.join('|') === 'Heute|Studio|Zeiten|Schichtplan|Nachrichten', a.reihe.join('|'));
 
     await tippe(p, 'Studio');
     const au = await p.evaluate(LAGE);

@@ -61,10 +61,10 @@ function pruefe(was, bedingung, hinweis) {
    geprüft, nicht als siebter Bereich. */
 const ERWARTET = {
   'g-start':  { name: 'Heute',       dunkel: '#60A5FA', hell: '#1D4ED8' },
-  'g-wissen': { name: 'Wissen',      dunkel: '#A78BFA', hell: '#6D28D9' },
+  'g-wissen': { name: 'Dokumente',   dunkel: '#A78BFA', hell: '#6D28D9' },
   'g-komm':   { name: 'Nachrichten', dunkel: '#2DD4BF', hell: '#0F766E' },
   'g-arbeit': { name: 'Studio',      dunkel: '#FB923C', hell: '#C2410C' },
-  'g-team':   { name: 'Plan',        dunkel: '#F472B6', hell: '#BE185D' },
+  'g-team':   { name: 'Schichtplan', dunkel: '#F472B6', hell: '#BE185D' },
   'g-chef':   { name: 'Verwaltung',  dunkel: '#94A3B8', hell: '#475569' }
 };
 

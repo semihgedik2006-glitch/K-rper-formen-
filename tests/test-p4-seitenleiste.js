@@ -106,8 +106,9 @@ async function trefferSeite(p) {
     // Runde 184: „das problem mit dem zu viel bleibt immer noch bestehen" — fünf Räume plus Verwaltung.
     /* Runde 222 (23.10.2026): „Zeiten" als eigener Raum direkt hinter
        „Studio" — aus dem Betrieb auf die Rückfrage: „eigener knopf". */
-    pruefe('Reihenfolge nach Nutzung: Heute, Studio, Zeiten, Plan, Nachrichten, Wissen, Verwaltung',
-      a.reihe.join('|') === 'Heute|Studio|Zeiten|Plan|Nachrichten|Wissen|Verwaltung', a.reihe.join('|'));
+    /* Runde 293, aus dem Betrieb, 26.10.2026, auf die Empfehlung nach dem Findetest: „ja können wir so machen" – „Plan" heisst „Schichtplan", „Wissen" heisst „Dokumente", „Bestand" ist wieder Material und Geräte. */
+    pruefe('Reihenfolge nach Nutzung: Heute, Studio, Zeiten, Schichtplan, Nachrichten, Dokumente, Verwaltung',
+      a.reihe.join('|') === 'Heute|Studio|Zeiten|Schichtplan|Nachrichten|Dokumente|Verwaltung', a.reihe.join('|'));
     pruefe('Schnellzugriffe in der Seitenleiste (Vorschlag Chef) und „Anpassen"',
       a.schnell.join('|') === 'Überblick|Schichtplan|Anliegen|Anpassen', a.schnell.join('|'));
     const unten = await p.evaluate(() => {
@@ -161,8 +162,8 @@ async function trefferSeite(p) {
     if (rolle === 'mitarbeiter')
       // Runde 184: dieselben fünf Räume wie am Handy, ohne Verwaltung.
       /* Runde 260, aus dem Betrieb 23.10.2026 auf „Mitarbeiter unten nur Heute, Zeiten, Plan, Nachrichten?": „ja". */
-      pruefe('Mitarbeiter: Heute, Zeiten, Plan, Nachrichten',
-        a.reihe.join('|') === 'Heute|Zeiten|Plan|Nachrichten', a.reihe.join('|'));
+      pruefe('Mitarbeiter: Heute, Zeiten, Schichtplan, Nachrichten',
+        a.reihe.join('|') === 'Heute|Zeiten|Schichtplan|Nachrichten', a.reihe.join('|'));
     for (const dichte of ['normal', 'kompakt']) {
       await p.evaluate((d) => { document.body.dataset.dichte = d; }, dichte);
       await p.waitForTimeout(200);

@@ -84,19 +84,16 @@ const TREFFER = (el) => {
 (async () => {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
 
-  console.log('\n── 1 Bestand ──');
+  console.log('\n── 1 Studio: Material und Geräte (seit Runde 293 wieder zwei Reiter) ──');
   {
     const p = await oeffne(b, 1440, 900);
     await tippe(p, '#side [data-group="g-arbeit"]');
     let s = await stand(p);
-    pruefe('Studio: Aufgaben | Putzplan | Bestand | Probetraining', s.reiter.map(x => x.replace('*', '')).join('|') === 'Aufgaben|Putzplan|Bestand|Probetraining', s.reiter.join('|'));
-    await tippe(p, '#subnav [data-paar="bestand"]');
+    /* Runde 293, aus dem Betrieb, 26.10.2026, auf die Empfehlung nach dem Findetest: „ja können wir so machen" – „Plan" heisst „Schichtplan", „Wissen" heisst „Dokumente", „Bestand" ist wieder Material und Geräte. */
+    pruefe('Studio: Aufgaben | Putzplan | Material | Geräte | Probetraining', s.reiter.map(x => x.replace('*', '')).join('|') === 'Aufgaben|Putzplan|Material|Geräte|Probetraining', s.reiter.join('|'));
+    await tippe(p, '#subnav [data-subview="geraete"]');
     s = await stand(p);
-    const um = await p.evaluate(() => [...document.querySelectorAll('#view-material .umschalter [data-umschalt]')].map(e => e.textContent + (e.classList.contains('active') ? '*' : '')));
-    pruefe('„Bestand" öffnet Material, Umschalter „Material | Geräte"', s.ansicht === 'view-material' && um.join('|') === 'Material*|Geräte', s.ansicht + ' ' + um.join('|'));
-    await tippe(p, '#view-material .umschalter [data-umschalt="geraete"]');
-    s = await stand(p);
-    pruefe('„Geräte" öffnet die Geräte, die Marke bleibt auf „Bestand"', s.ansicht === 'view-geraete' && s.reiter.indexOf('Bestand*') >= 0, JSON.stringify(s));
+    pruefe('„Geräte" öffnet die Geräte und trägt die Marke', s.ansicht === 'view-geraete' && s.reiter.indexOf('Geräte*') >= 0, JSON.stringify(s));
     pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await zu(p);
   }
@@ -264,7 +261,6 @@ const TREFFER = (el) => {
     for (const dichte of ['normal', 'kompakt']) {
       await p.evaluate((d) => { document.body.dataset.dichte = d; }, dichte);
       const zuMessen = [
-        ['#subnav [data-paar="bestand"]', '#view-material .umschalter [data-umschalt]'],
         ['#subnav [data-subview="ann"]', '#view-ann .umschalter [data-pinteil]'],
         ['#subnav [data-paar="chats"]', '#view-dm .umschalter [data-chatart]']
       ];

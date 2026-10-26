@@ -24898,3 +24898,61 @@ gleichzeitig): rot waren
   test-baukasten aufgegangen. 51 grün.
 - **Nicht getestet:** am echten iPhone (Ziehen mit dem Finger ist mit
   CDP-Touch-Ereignissen in Chromium nachgestellt).
+
+## Runde 293 — Klarere Namen nach dem Findetest: Dokumente, Schichtplan, Material und Geräte (27.10.2026)
+
+**Gemessen (Findetest, 26.10.2026, aus dem Betrieb geschickt):**
+
+| Ziel | Zeit | Tipps |
+|---|---|---|
+| Putzplan öffnen | 3 s | 2 |
+| Direkt schreiben | 4 s | 2 |
+| Gerät defekt melden | 7 s | 8 |
+| Wer arbeitet morgen | 9 s | 4 |
+| Dokument finden | 46 s | 22 |
+
+Dazu: test-findewege misst für dieselben Ziele höchstens zwei Tipps –
+der Weg war also kurz, aber nicht zu finden. Das spricht für die
+Namen, nicht für die Tiefe.
+
+**Auf die Empfehlung aus dem Betrieb: „ja können wir so machen".**
+
+**Was geändert wurde**
+
+- **„Wissen" heisst „Dokumente".** Schulung und Formi bleiben als Reiter
+  darin; Dokumente ist der erste. „Wissen" sagte nicht, dass dort
+  Dateien liegen (46 s, 22 Tipps).
+- **„Plan" heisst „Schichtplan".** „Plan" konnte auch der Putzplan oder
+  der Schichtplaner sein (4 Tipps für eine tägliche Frage). Das Wort
+  passt bei 320 px in die Leiste (test-quer, test-abgeschnitten,
+  test-fingerziele grün).
+- **„Bestand" ist aufgelöst**: Material und Geräte sind wieder zwei
+  Reiter unter „Studio" (Runde 187 hatte sie zusammengelegt). „Bestand"
+  klang nach Material, nicht nach einem kaputten Gerät (8 Tipps). Der
+  Preis: ein Reiter mehr; am Handy bricht die Reiterzeile bei 320 px in
+  zwei Zeilen um, wie vorher schon bei „Probetraining".
+- Hinweistexte in der App nachgezogen („Schichtplan → Schichten",
+  „Dokumente → Schulung" in der Schulungs-Mail).
+
+**Nicht gemacht – und warum:** Der vorgeschlagene zusätzliche Reiter
+„Dokumente" unter „Studio". Eine Seite gehört in dieser App genau einem
+Raum (groupOfView): stünde „Dokumente" in zwei Räumen, sprängen Marke,
+Farbe und Reiter beim Öffnen in den falschen. Unter „Alles → Was ist im
+Studio?" steht „Dokumente" ohnehin; ob der neue Name reicht, zeigt der
+nächste Findetest.
+
+**Tests**
+
+- Nachgezogen, jeweils mit dem Zitat: test-raeume, test-navigation
+  (jetzt fünf Reiter unter Studio, „Geräte" öffnet die Geräte),
+  test-p4-seitenleiste, test-p5-leiste, test-neu-design, test-aufbau,
+  test-baukasten, test-zusammengelegt (Abschnitt 1 neu: Material und
+  Geräte als zwei Reiter), test-geraete, test-geraete-bereich6,
+  test-oberflaeche, test-pc-spalten (Weg zu den Geräten), test-akzent
+  (nur die Namen in der Tabelle).
+- Grün: dazu abgeschnitten, quer, findewege, fingerziele, knoepfe,
+  findetest, gestaltung, neuigkeiten, csp, akzent (einzeln).
+  test-pc-spalten bleibt rot wie auf `main` („Handy: Material
+  untereinander").
+- **Nicht gemessen:** ob es jetzt schneller geht. Das zeigt nur ein
+  neuer Findetest – am besten mit jemandem, der ihn noch nicht kennt.

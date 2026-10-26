@@ -25,11 +25,10 @@ async function start(stub, errs) {
   /* Runde 187 (aus dem Betrieb: „das problem mit dem zu viel bleibt
      immer noch bestehen"): Material und Geräte sind EIN Reiter
      „Bestand"; Geräte über den Umschalter oben in der Seite. */
-  const s = await page.$('#subnav [data-paar="bestand"]');
-  if (s) { await s.click(); await page.waitForTimeout(600); }
-  const um = await page.$('#view-material .umschalter [data-umschalt="geraete"]');
-  if (um) { await um.click(); await page.waitForTimeout(1600); }
-  else errs.push('Geräte nicht erreichbar: kein Umschalter „Geräte" im Bestand');
+  /* Runde 293, aus dem Betrieb, 26.10.2026, auf die Empfehlung nach dem Findetest: „ja können wir so machen" – „Plan" heisst „Schichtplan", „Wissen" heisst „Dokumente", „Bestand" ist wieder Material und Geräte. */
+  const s = await page.$('#subnav [data-subview="geraete"]');
+  if (s) { await s.click(); await page.waitForTimeout(1600); }
+  else errs.push('Geräte nicht erreichbar: kein Reiter „Geräte"');
   return { b, page };
 }
 

@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-8hIT3IPHCz0zfWUmbLMAkUQeAVdwVLLDyBjz4KGdCXc='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-hvLkK2A1VWRb34wVPSkJTyYTPnP8uJN+sYRkqQDkG7s='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -20007,7 +20007,7 @@ function renderKeysHelp(){
     .map(function(x){ return '<div class="key-row"><kbd>'+esc(x.k)+'</kbd><span>'+esc(x.t)+'</span></div>'; }).join('');
   box.innerHTML=
     '<p class="hint" style="margin:0 0 10px">Fest eingebaut:</p>'+fest+
-    '<p class="hint" style="margin:16px 0 10px">Im Schichtplan (Plan → Schichten):</p>'+plan+
+    '<p class="hint" style="margin:16px 0 10px">Im Schichtplan (Schichtplan → Schichten):</p>'+plan+
     '<p class="hint" style="margin:16px 0 10px">Frei belegbar – auf „ändern" tippen und die neue Taste drücken. '+
       'Die Belegung gilt nur auf diesem Gerät.</p>'+frei+
     '<button class="btn btn-ghost btn-sm" id="keysReset" style="width:100%;margin-top:14px">Auf Standard zurücksetzen</button>';
@@ -23102,14 +23102,22 @@ var NAVGROUPS = [
      „Studio": gestempelt wird jeden Tag, zweimal. */
   {id:'g-zeit', label:'Zeiten', views:['zeit','zeitteam'],
    icon:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'},
-  {id:'g-team', label:'Plan', views:['team'],
+  /* Runde 293: „Schichtplan" statt „Plan". Im Findetest am 26.10.2026
+     brauchte „Sehen, wer morgen arbeitet" 9 s und 4 Tipps – „Plan" kann
+     auch der Putzplan oder der Schichtplaner sein. Aus dem Betrieb auf
+     die Empfehlung: „ja können wir so machen". */
+  {id:'g-team', label:'Schichtplan', views:['team'],
    icon:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>'},
   {id:'g-komm', label:'Nachrichten', views:['chat','dm','ann'],
    icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>'},
   /* Die Schulung stand am 22.9. bewusst NICHT unter den Aufgaben („weil
      das nicht zu Aufgaben zählt halt“). Daran ändert sich nichts: Sie
      steht jetzt unter „Wissen“ neben Dokumenten und Formi. */
-  {id:'g-wissen', label:'Wissen', views:['docs','schulung','gehirn'],
+  /* Runde 293: „Dokumente" statt „Wissen". Im Findetest am 26.10.2026
+     brauchte „Ein Dokument finden" 46 s und 22 Tipps – der schlechteste
+     Wert von fünf. „Wissen" sagt nicht, dass dort Dateien liegen.
+     Schulung und Formi bleiben als Reiter darin. */
+  {id:'g-wissen', label:'Dokumente', views:['docs','schulung','gehirn'],
    icon:'<path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/>'},
   {id:'g-chef', label:'Verwaltung', views:['chef','planer','archive'], manageOnly:true,
    icon:'<path d="m3 6 4 4 5-7 5 7 4-4-2 13H5L3 6Z"/>'},
@@ -23577,6 +23585,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-27-namen-klarer', datum:'27.10.2026', art:'besser', titel:'Klarere Namen: Dokumente, Schichtplan, Material und Geräte', wo:'home', punkte:[
+    'Der Bereich „Wissen" heisst jetzt „Dokumente" – Schulung und Formi stehen weiter darin.',
+    '„Plan" heisst jetzt „Schichtplan".',
+    'Unter „Studio" sind Material und Geräte wieder zwei eigene Reiter statt „Bestand".'
+  ]},
   { id:'2026-10-26-baukasten', datum:'26.10.2026', art:'neu', titel:'App gestalten: Baukasten mit Ziehen, Gruppen und Designs', wo:'home', punkte:[
     'Bausteine in die Leiste oder in eigene, benannte Gruppen ziehen; die Startseite „Heute" frei ordnen und Blöcke ausblenden.',
     'Alles ist erst ein Entwurf mit Vorschau – „Übernehmen" oder „Verwerfen".',
@@ -26555,9 +26568,12 @@ function bereichKopfSetzen(){
    Schritt steht sichtbar in der Seite (Umschalter), nicht versteckt.
    Der Umschalter ist dieselbe Bauform wie „Studios | Gruppen" im Chat —
    eine Form für dieselbe Sache, kein neues Bedienelement. */
+/* Runde 293: „Bestand" ist wieder aufgelöst – Material und Geräte sind
+   zwei Reiter. Im Findetest am 26.10.2026 brauchte „Ein Gerät defekt
+   melden" 8 Tipps: „Bestand" klingt nach Material, nicht nach einem
+   kaputten Gerät. Aus dem Betrieb auf die Empfehlung: „ja können wir so
+   machen". Ein Reiter mehr unter „Studio" ist der Preis dafür. */
 var REITER_PAARE = [
-  { id:'bestand', label:'Bestand', views:['material','geraete'],
-    teile:[{ view:'material', label:'Material' }, { view:'geraete', label:'Geräte' }] },
   { id:'chats', label:'Chats', views:['chat','dm'] }
 ];
 function reiterPaar(v){
@@ -38096,7 +38112,7 @@ function schErinnernText(t){
   }).filter(Boolean);
   var vorname=String(t.name||'').split(' ')[0];
   return 'Hallo '+vorname+', bitte denk an '+(offen.length===1 ? 'die Pflichtschulung ' : 'die Pflichtschulungen ')+
-    offen.join(', ')+'. Du findest sie in StudioChat unter Wissen → Schulung'+
+    offen.join(', ')+'. Du findest sie in StudioChat unter Dokumente → Schulung'+
     (t.code ? ', dein Code ist '+t.code : '')+'. Danke!';
 }
 function schErinnern(id){
@@ -49287,7 +49303,7 @@ function spSchritteZeichnen(){
   if(anf){
     anf.hidden=!!_sp.team.length;
     var d=$('spAnfangDanach');
-    if(d) d.textContent='Danach: Das Team trägt bis zum '+fristText+' seine Wünsche ein (Plan → Schichten → „Meine Wünsche"), dann „Plan erstellen". '+
+    if(d) d.textContent='Danach: Das Team trägt bis zum '+fristText+' seine Wünsche ein (Schichtplan → Schichten → „Meine Wünsche"), dann „Plan erstellen". '+
       'Der Planer verteilt die Schichten und zeigt nur, was ein Mensch klären muss.';
     ikonenEinsetzen(anf);
   }
