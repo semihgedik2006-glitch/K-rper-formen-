@@ -129,12 +129,18 @@ self.addEventListener('fetch', function (e) {
       h.indexOf('google-analytics') >= 0 || h.indexOf('analytics.google') >= 0) return;
 
   // HTML/Navigation: erst Netz, offline aus dem Cache.
-  // cache:'no-store' ist Pflicht — sonst liefert der Browser trotz „Netz
-  // zuerst" bis zu zehn Minuten lang seine eigene Kopie (max-age aus der
-  // Antwort des Hosters).
+  // cache:'no-cache' statt undefined ist Pflicht — sonst liefert der
+  // Browser trotz „Netz zuerst" bis zu zehn Minuten lang seine eigene
+  // Kopie (max-age aus der Antwort des Hosters). Bis zum 26.10.2026
+  // stand hier 'no-store': dann holt der Browser jedes Mal die ganze
+  // Seite (943 KB gzip) und kann nie ein 304 bekommen. Mit 'no-cache'
+  // fragt er mit dem ETag nach; ist nichts geaendert, antwortet der
+  // Hoster 304 und der Browser nimmt seine Kopie — gleich frisch, aber
+  // ohne den Inhalt zu laden. Eine neue Auslieferung aendert den ETag,
+  // also kommt sie weiterhin sofort an.
   if (e.request.mode === 'navigate') {
     e.respondWith(
-      fetch(e.request, { cache: 'no-store' }).then(function (r) {
+      fetch(e.request, { cache: 'no-cache' }).then(function (r) {
         const cp = r.clone(); caches.open(CACHE).then(function (c) { c.put(e.request, cp); });
         return r;
       }).catch(function () { return caches.match(e.request).then(function (m) { return m || caches.match('./index.html'); }); })
