@@ -8,6 +8,11 @@ hier stehen die Einzelbefunde und der Weg, sie abzuarbeiten).
 > fehlen würde und gib mir konkrete fragen und eine liste was noch fehlt
 > und wie wir sie am besten angehen schritt für schritt“
 
+> **Stand 26.10.2026, abends:** Die Antworten auf die Fragen stehen in
+> `entscheidungen.md`, die Namensrecherche in `name-recherche.md`.
+> V8 (Kreuztest) ist erledigt: der Durchlauf liest alle 71 Pfade des
+> Firmen-Zweigs aus den Regeln.
+
 **„Veröffentlichung“ heisst hier:** eine fremde Firma bekommt einen
 Zugang, unterschreibt, zahlt — und nichts davon fällt uns danach auf die
 Füsse.
@@ -48,7 +53,7 @@ dem dritten Kunden), **Kann**. Jede Zeile hat eine Fundstelle.
 | **V5** | **Die 115 Lösungen sind das Körperformen-Mitarbeiterhandbuch im Wortlaut** — und werden **jeder Firma** angezeigt. Ausserdem liegt die Datei öffentlich im Repository und auf dem Hoster | `loesungen-basis.js` Kopf: „Quelle: Körper Formen — Mitarbeiter-Handbuch … der Wortlaut ist der des Handbuchs“; `index.html` lädt ohne Firmenprüfung | wem das Handbuch gehört, ist offen — und es ginge an Wettbewerber |
 | **V6** | **Die Demo ist Körperformen**: Name, Slogan „EMS-Training in Köln und Umgebung“, die 14 echten Standorte | `demo-daten.js` Zeilen 99, 574, 1390 | einem Wettbewerber die eigenen Standorte vorzuführen — und die Marke ohne Absprache zu zeigen |
 | **V7** | **Premium sperrt nur Nachweise und Auswertung.** Zeiterfassung, DATEV-Datei, Schulungen mit Video und der Schichtplaner stehen jeder Stufe offen | `index.html` `PREMIUM_TABS = ['nachweise','report']` | was ein Kunde einmal hat, bekommt er nicht weggenommen (Bestandsschutz) — die Stufen müssen **vor** dem ersten Kunden stehen |
-| **V8** | **Der Kreuztest der Firmengrenze ist eine Handliste**: 34 Einträge, unter `firmen/{f}` stehen **56 Sammlungen** | `tests/rules/kreuz.test.js`, `firestore.rules` | keine nachgewiesene Lücke, aber eine neue Sammlung kann ungeprüft durchrutschen — fünfmal passiert (`CLAUDE.md`) |
+| **V8** ✅ | **Der Kreuztest der Firmengrenze ist eine Handliste** *(erledigt 26.10.: liest jetzt alle Pfade aus den Regeln)*: 34 Einträge, unter `firmen/{f}` stehen **56 Sammlungen** | `tests/rules/kreuz.test.js`, `firestore.rules` | keine nachgewiesene Lücke, aber eine neue Sammlung kann ungeprüft durchrutschen — fünfmal passiert (`CLAUDE.md`) |
 | **V9** | **Die Adresse heisst `formenchat`** — `formenchat.web.app`, Anmeldefenster von Google zeigen `formenchat.firebaseapp.com` | `konfig.js` `firebase.authDomain`, Hosting | ein fremder Kunde sieht den Namen eines anderen Betriebs |
 | **V10** | **„Zugang anfragen“ führt ins Leere**: `vertriebMail` ist leer, das Fenster zeigt nur einen Hinweis | `konfig.js` | der einzige Weg, wie ein Interessent sich aus der App meldet |
 | **V11** | **Der Name „StudioChat“ ist nicht geprüft** — gleichnamiges Softwareprodukt `studiochat.io` | `docs/MARKE.md` | Umbenennen wird mit jedem Kunden teurer |

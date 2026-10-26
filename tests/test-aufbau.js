@@ -1,4 +1,4 @@
-/* ══ APP GESTALTEN: DER EIGENE AUFBAU (Runde 288) ════════════════════
+/* ══ APP GESTALTEN: DER EIGENE AUFBAU (Runde 289) ════════════════════
    Aus dem Betrieb, 26.10.2026: „formi soll mehrere möglichkeiten
    vorschlagen und man soll über einen editor … alles ändern, verschieben
    und anpassen können", „je mehr design optionen es gibt desto besser

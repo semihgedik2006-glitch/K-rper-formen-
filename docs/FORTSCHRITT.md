@@ -24496,7 +24496,83 @@ lokal grün; `test-abo-leiter` und `test-stripe-felder` brauchen vorher
 der Anwalt ist der längste Weg und braucht nur die Entwürfe, nicht den
 fertigen Code — deshalb wird er in Woche 1 angefragt.
 
-## Runde 288 — App gestalten: eigene Leiste, Start, minimal, Aussehen; Formi schlägt vor (26.10.2026)
+## Antworten zur Veröffentlichung, Namensrecherche, Kreuztest vollständig (26.10.2026)
+
+Aus dem Betrieb: die 18 Fragen aus `docs/verkauf/StudioChat-Startklar.pdf`
+handschriftlich beantwortet, „nur f13 bleibt offen“.
+
+**Festgehalten** in `docs/verkauf/entscheidungen.md`, je Antwort mit dem,
+was daraus folgt. Zwei Antworten haben Folgen, die man leicht übersieht:
+- **F1 „Handbuch für alle mit Premium“** ist nur dann ein Schloss, wenn
+  `loesungen-basis.js` nicht mehr öffentlich ausgeliefert wird — sonst ist
+  es wie die Auswertung (P-14) nur ausgeblendet.
+- **F8 „Formi auch zu Premium“** heisst: Formi für fremde Firmen bauen —
+  eigener Bereich je Firma im Worker, Cloudflare als Unterauftragnehmer,
+  eine Kostengrenze je Firma. Das ist ein eigener, grosser Baustein.
+
+**Namensrecherche** (`docs/verkauf/name-recherche.md`): Empfehlung
+„Studiotakt“. **Dabei gelernt:** die Websuche fand „Studiolotse“ nicht —
+erst der Aufruf von `studiolotse.de` zeigte eine Software für
+Fitnessstudios unter genau diesem Namen. Deshalb wurde jeder Kandidat
+zusätzlich über seine Adresse geprüft. Die Markenregister sind von hier
+nicht erreichbar; die Registersuche ist als Schritt 2 für den Betreiber
+oder den Anwalt beschrieben.
+
+**Gebaut: Kreuztest vollständig** (`tests/rules/kreuz.test.js`, Befund V8).
+Der Durchlauf liest jeden `match` unter `firmen/{f}` aus `firestore.rules`
+(Klammern gezählt, Kommentare entfernt, Platzhalter wie `{f}` und
+`{rest=**}` keine Blöcke) und verlangt zu jedem einen Eintrag. 37 Pfade
+sind dazugekommen; die 18, die niemand lesen darf, stehen in
+`NIEMAND_LIEST`. Ergebnis lokal im Emulator: **71 Pfade, 451 bestanden,
+0 gefallen**. Gegenprobe: eine erfundene Sammlung `probeNeu` in einer
+Kopie der Regeln macht den Durchlauf rot („kein Eintrag in SAMMLUNGEN
+passt“); danach die Regeln unverändert zurückgesetzt.
+
+**Warum aus den Regeln lesen und nicht die Liste pflegen:** die Handliste
+war nicht falsch, sie war nur nie vollständig — 22 Sammlungen kamen dazu,
+ohne dass jemand die Liste anfasste. Eine Prüfung, die man vergessen
+kann, wird vergessen.
+## Runde 288 — App-Store-Recherche und „Als App installieren“ (26.10.2026)
+
+Aus dem Betrieb: „kannst du schauen was nötig ist um die app auch im
+appstore zu kriegen und ob es da eventuell umwege gibt das wir das
+kostenlos hinkriegen“ — und auf die Empfehlung „Anleitung in die App“:
+„ja mach das“.
+
+**Recherche (Übersichtsseite, ausserhalb des Repos):** In den App Store
+geht es auf keinem Weg kostenlos. TestFlight, nicht gelistete Apps und
+der EU-Webvertrieb brauchen alle das Entwicklerkonto (99 $/Jahr); einen
+Erlass gibt es nur für Gemeinnützige, Bildung und Behörden. Kostenlos
+ist der Startbildschirm: in Chromium 0 Installierbarkeitsfehler,
+Offline-Start mit Antwort 200. Ab iOS 26 legt Safari jede Seite als
+Web-App ab. Die Probe einer iOS-Hülle (Capacitor 8, Bau auf einem
+GitHub-Mac, unsigniert für den Simulator) war grün in ~1,5 min und
+steht im geschlossenen Entwurf #343 — ein eigener Mac ist also nicht nötig.
+
+**Gebaut:** „Alles → Als App installieren“ öffnet ein Fenster mit den
+Schritten für iPhone, Android und Rechner; das eigene Gerät steht offen
+oben. Meldet der Browser `beforeinstallprompt`, gibt es „Jetzt
+installieren“. Läuft die App schon installiert, sagt das Fenster es.
+
+**Gefunden:** Am iPhone ohne installierte App stand unter Einstellungen
+→ Meldungen „Dieses Gerät unterstützt keine Meldungen“ und der Knopf
+fehlte. Das stimmte nicht: Safari kann Meldungen, nur eben erst in der
+installierten App. Dort steht jetzt der Weg, und der Knopf öffnet die
+Anleitung (über dem Profilfenster — die Gegenprobe ohne den eigenen
+z-index macht `test-installieren` rot).
+
+**Warum ein Fenster und kein Hinweisstreifen:** Die Startseite muss auf
+einen Bildschirm passen; ein weiterer Streifen hätte einen Block
+verdrängt. Der Weg über „Alles“ und über die Meldungen ist dort, wo man
+ihn sucht.
+
+**Nicht geprüft:** Safari am echten iPhone und `beforeinstallprompt` aus
+einem echten Browser (im Test künstlich ausgelöst).
+
+Tests: `tests/test-installieren.js` (neu, 10 Prüfungen, Hit-Test bei
+320–1920 px normal/kompakt), `test-neu-design` kennt das neue Fenster.
+
+## Runde 289 — App gestalten: eigene Leiste, Start, minimal, Aussehen; Formi schlägt vor (26.10.2026)
 
 **Aus dem Betrieb, 26.10.2026:**
 - „thomas fand die app ganz am anfang viel viel übersichtlicher und
