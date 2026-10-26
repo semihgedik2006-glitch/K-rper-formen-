@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-SQ60eWzNVyUdTtj65bHC2ZvH5kLGRumtEItTJJlwUX8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-SaWL01lNms12KP5PBPmB8Wdz5/RTiKmLzWjyZiDMoeU='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1406,6 +1406,16 @@ html.demo #terminalSchirm{top:44px}
   background:var(--bg-2);border:1px solid var(--line-2);border-radius:var(--r-md);
   box-shadow:var(--e1-oben)}
 .at-list.show{display:flex}
+/* ── Schnellantworten über dem Schreibfeld (Runde 287) ──
+   Eine Zeile Knöpfe, seitlich schiebbar wie die Filter unter Aufgaben;
+   jeder 44 px hoch. Sichtbar nur, solange das Feld leer ist — wer tippt,
+   braucht keine Vorschläge, und die Zeile Höhe gehört dann dem Verlauf. */
+.schnell-antworten{display:flex;gap:var(--s8);flex-wrap:nowrap;flex-shrink:0;overflow-x:auto;scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;padding:var(--s4) calc(var(--rand) + var(--sar)) var(--s4) calc(var(--rand) + var(--sal));
+  background:var(--bg-soft)}
+.schnell-antworten::-webkit-scrollbar{display:none}
+.schnell-antworten .chip{flex:0 0 auto;white-space:nowrap}
+.schnell-antworten[hidden]{display:none}
 .at-item{display:flex;align-items:center;gap:var(--s10);width:100%;min-height:44px;padding:var(--s6) var(--s10);
   background:none;border:none;border-radius:var(--r-sm);cursor:pointer;text-align:left;color:var(--text)}
 .at-item.on{background:rgba(var(--akz-rgb),.12)}
@@ -1487,6 +1497,17 @@ html.demo #terminalSchirm{top:44px}
     gap:var(--s16);align-items:start}
   .sch-oben > .card{margin-bottom:0}
   .sch-oben:has(> .card:not([hidden]):not([style*="none"])){margin-bottom:var(--s20)}
+}
+/* Am Handy stehen „Reicht noch" und die Einkaufsliste UNTER der Tabelle
+   (Runde 287, P-23). Vorher standen sie darüber: bei 430 × 844 begann
+   die erste Materialzeile erst bei 697 px, im unteren Sechstel. Die
+   Tabelle ist die Hauptsache dieser Seite („Trage ein, was da ist"),
+   die beiden Karten sind das Ergebnis daraus — der Hinweis „N Artikel
+   fehlen" mit dem Knopf „nur diese zeigen" bleibt oben. Am Rechner
+   (ab 1100 px) ändert sich nichts: dort stehen die Karten rechts. */
+@media (max-width:1099px){
+  #view-material .scroll-area{display:flex;flex-direction:column}
+  #view-material .scroll-area > .mat-seite{order:1}
 }
 .todo-progress{display:flex;align-items:center;gap:var(--s12);margin:var(--s2) 0 var(--s12);padding:var(--s10) var(--s12);
   background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius)}
@@ -8765,6 +8786,10 @@ body.neu .heute-ruhe.lade-ruhe{padding:var(--s12) var(--s16);margin-bottom:var(-
   background:rgba(var(--akz-rgb),.12);color:var(--accent-2)}
 .doc .doc-ic svg{width:20px;height:20px}
 .doc-info{flex:1;min-width:0}
+/* Der Name als Knopf (Runde 287): sieht aus wie vorher, nur der Fokusring
+   zeigt ihn. Höhe mindestens 44 px, damit er auch mit dem Finger trifft. */
+button.doc-info{display:block;text-align:left;background:none;border:0;padding:0;margin:0;color:inherit;font:inherit;cursor:pointer;min-height:44px;border-radius:var(--r-sm)}
+button.doc-info .doc-meta{display:block}
 /* Silbentrennung statt harter Umbruch: „Gerätewartung Anleitung" wurde
    vorher mitten im Wort zerschnitten. */
 .doc-info b{font-family:var(--font-head);font-size:var(--t-md);display:block;
@@ -9583,6 +9608,24 @@ body.neu .heute-rest{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s8
   margin-top:calc(-1 * var(--s8))}
 body.neu .heute-rest .hr-wort{font-family:var(--font-head);font-weight:600;
   font-size:var(--t-sm);color:var(--text-2);margin-right:var(--s4)}
+/* Am Handy EINE Zeile, die seitlich schiebt (Runde 287, P-22). Vorher
+   brachen die Knöpfe um: bei sieben weggefallenen Kategorien wuchs
+   „Ausserdem" auf vier Zeilen (200 px) und verdrängte genau die Blöcke,
+   für die es Platz machen sollte — bei 390 × 844 blieben zwei Blöcke.
+   Jetzt kostet der Rest immer eine Zeile, egal wie viele Knöpfe; der
+   angeschnittene letzte Knopf zeigt, dass es weitergeht (dasselbe
+   Muster wie die Filter unter Aufgaben). Die Zeile läuft bis an den
+   Bildschirmrand, damit nichts an einer Kante „abgeschnitten" wirkt.
+   Die Trefferfläche jedes Knopfes bleibt 44 px hoch — das Rollfeld
+   bekommt oben und unten Luft, damit es den Schatten nicht kappt. */
+@media (max-width:699px){
+  body.neu .heute-rest{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;
+    scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;
+    margin-left:calc(-1 * var(--rand));margin-right:calc(-1 * var(--rand));
+    padding:var(--s4) var(--rand)}
+  body.neu .heute-rest::-webkit-scrollbar{display:none}
+  body.neu .heute-rest .hr-wort,body.neu .heute-rest .chip{flex:0 0 auto;white-space:nowrap}
+}
 /* ── „Neu" im Bereichskopf und das Fenster „Was ist neu" (Runde 103) ──
    Die Pille sitzt rechts im Kopf der Startseite, wo auf anderen Seiten
    „+ Neu" steht — kein zusätzlicher Platz, auf PC und Handy dieselbe
@@ -11653,7 +11696,10 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
           <button class="pin-go" id="pinGo" title="Zur Nachricht springen">Ansehen</button>
           <button class="pin-x" id="pinOff" title="Loslösen" aria-label="Loslösen"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
         </div>
-        <div class="chat-scroll" id="chatScroll"></div>
+        <!-- tabindex="0" (Runde 287): der Verlauf rollt mit Pfeiltasten und
+             Bild-auf/ab, ohne erst hineinzuklicken; ohne tabindex ist ein
+             rollbarer Bereich für die Tastatur unsichtbar (axe). -->
+        <div class="chat-scroll" id="chatScroll" tabindex="0" aria-label="Nachrichtenverlauf"></div>
         <button class="scroll-fab" id="scrollFab" aria-label="Nach unten">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
           <!-- Zeigt, wie viele neue Nachrichten unten warten -->
@@ -11683,6 +11729,10 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
         </div>
         <!-- Vorschläge beim Tippen von „@" – erscheinen direkt über dem Feld -->
         <div class="at-list" id="atList"></div>
+        <!-- Schnellantworten (Runde 287): drei Sätze, die im Studio ständig
+             getippt werden. Ein Tipp setzt den Satz ins Feld — gesendet wird
+             mit dem Knopf, den alle kennen (siehe schnellAntwortenBinden). -->
+        <div class="schnell-antworten" id="schnellAntworten" role="group" aria-label="Schnellantworten"><button type="button" class="chip" data-schnell>Bin dabei</button><button type="button" class="chip" data-schnell>Erledigt ✓</button><button type="button" class="chip" data-schnell>Komme 10 Min später</button></div>
         <div class="chat-input">
           <input type="file" accept="image/*" class="hidden-file" id="chatFile" />
           <div class="attach-wrap">
@@ -12272,6 +12322,7 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
             <div class="sp" data-sp><audio id="dmRecAudio" preload="metadata"></audio><button class="sp-play" type="button" aria-label="Abspielen"><svg class="sp-an" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg><svg class="sp-aus" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg></button><input class="sp-schieber" type="range" min="0" max="1000" value="0" step="1" aria-label="Position in der Aufnahme" /><span class="sp-zeit">0:00</span><button class="sp-tempo" type="button" aria-label="Abspielgeschwindigkeit">1×</button></div>
             <button class="rec-x" id="dmRecDiscard" aria-label="Verwerfen">Verwerfen</button>
           </div>
+          <div class="schnell-antworten" id="dmSchnellAntworten" role="group" aria-label="Schnellantworten"><button type="button" class="chip" data-schnell>Bin dabei</button><button type="button" class="chip" data-schnell>Erledigt ✓</button><button type="button" class="chip" data-schnell>Komme 10 Min später</button></div>
           <div class="chat-input">
             <button class="attach-btn" data-ikon="mikrofon" id="dmMic" aria-label="Sprachnachricht aufnehmen" title="Sprachnachricht aufnehmen">
               
@@ -23292,6 +23343,26 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-26-schnellantworten', datum:'26.10.2026', art:'neu', titel:'Schnellantworten im Chat', wo:'chat', punkte:[
+    'Über dem Schreibfeld stehen „Bin dabei", „Erledigt ✓" und „Komme 10 Min später". Ein Tipp setzt den Satz ins Feld.',
+    'Gesendet wird wie immer mit dem Pfeil — vorher lässt sich der Satz noch ändern. Auch bei Direktnachrichten.'
+  ]},
+  { id:'2026-10-26-startseite-ausserdem', datum:'26.10.2026', art:'besser', titel:'Startseite am Handy: mehr vom Tag direkt sichtbar', wo:'home', punkte:[
+    'Die Knöpfe unter „Ausserdem" stehen in einer Zeile, die sich seitlich schieben lässt — sie nehmen keine vier Zeilen mehr ein.',
+    'Dadurch bleiben am Handy drei Blöcke stehen statt zwei.'
+  ]},
+  { id:'2026-10-26-bestand-handy', datum:'26.10.2026', art:'besser', titel:'Bestand am Handy: die Tabelle steht weiter oben', wo:'material', punkte:[
+    '„Reicht noch" und die Einkaufsliste stehen am Handy unter der Tabelle, nicht mehr darüber.',
+    'Der Hinweis „N Artikel fehlen" mit „nur diese zeigen" bleibt oben.'
+  ]},
+  { id:'2026-10-26-zaehler-symbol', datum:'26.10.2026', art:'neu', titel:'Zähler und Schnellstarts am App-Symbol', wo:'chat', punkte:[
+    'Auf dem Startbildschirm zeigt das App-Symbol die Zahl der ungelesenen Nachrichten (Android, Rechner; iPhone ab iOS 16.4).',
+    'Langes Drücken auf das Symbol öffnet „Stempeln", „Nachrichten" oder „Heute" direkt (Android, Rechner).'
+  ]},
+  { id:'2026-10-26-weniger-laden', datum:'26.10.2026', art:'besser', titel:'Neue Fassungen laden 40 % weniger', wo:'home', punkte:[
+    'Gibt es eine neue Fassung, lädt die App nur noch rund 570 statt 940 KB.',
+    'Dokumente: der Dateiname ist jetzt der Knopf; der Nachrichtenverlauf lässt sich per Tastatur erreichen.'
+  ]},
   { id:'2026-10-26-chat-liste', datum:'26.10.2026', art:'neu', titel:'Chat am Handy: erst die Liste, dann die Unterhaltung', wo:'chat', punkte:[
     'Nachrichten am Handy: zuerst alle Chats untereinander, mit letzter Nachricht, Uhrzeit und Zahl der ungelesenen.',
     'Ein Tipp öffnet den Chat fast über den ganzen Bildschirm. Oben links „‹ Chats" führt zurück, die Zurück-Geste auch.',
@@ -26377,6 +26448,7 @@ function renderChannelBadges(){
     b.appendChild(s);
   });
   kanalSpalteZeichnen();
+  appZaehlerSetzen();
 }
 
 /* ══ WO DARF ICH SCHREIBEN? (Runde 145) ═══════════════════════════════
@@ -27307,10 +27379,15 @@ function renderDocs(docs){
        sichtbar, der Rest zieht in dasselbe Aktionsblatt wie im Chat. */
     /* Die ganze Zeile öffnet das Dokument – ein eigener „Öffnen"-Knopf nahm
        96 Pixel vom Namen weg, und man tippt ohnehin auf den Eintrag. */
-    return '<div class="doc" data-id="'+esc(d.id)+'" role="button" tabindex="0">'+
-      '<div class="doc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>'+
-      '<div class="doc-info"><b>'+esc(d.name||d.fileName)+'</b>'+
-      '<div class="doc-meta">'+esc(meta)+'</div></div>'+
+    /* Runde 287: die Zeile war selbst ein Knopf (role="button") und trug
+       den Knopf „Mehr" IN sich — ein Bedienelement im Bedienelement, das
+       Vorlesefunktionen teils überspringen (axe „nested-interactive").
+       Jetzt ist der Name der Knopf; die Zeile bleibt mit der Maus
+       anklickbar, ist aber für Tastatur und Vorleser kein Element mehr. */
+    return '<div class="doc" data-id="'+esc(d.id)+'">'+
+      '<div class="doc-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>'+
+      '<button type="button" class="doc-info doc-oeffnen"><b>'+esc(d.name||d.fileName)+'</b>'+
+      '<span class="doc-meta">'+esc(meta)+'</span></button>'+
       '<div class="doc-actions">'+
       (chef?'<button class="t-mehr doc-mehr" title="Mehr" aria-label="Mehr">'+ikon('mehr')+'</button>':'')+
       '<span class="doc-go" aria-hidden="true">›</span></div></div>';
@@ -27322,12 +27399,12 @@ function renderDocs(docs){
       if(d.kind==='link'){ window.open(safeUrlRoh(d.url), '_blank', 'noopener'); return; }
       openDocFile(d);
     }
+    /* Ein Klick irgendwo auf die Zeile öffnet; der Knopf im Namen löst
+       dasselbe Klick-Ereignis aus (Enter und Leertaste tun das von
+       selbst), also reicht EIN Beobachter an der Zeile. */
     node.addEventListener('click',function(e){
       if(e.target.closest('.doc-mehr')) return;
       oeffnen();
-    });
-    node.addEventListener('keydown',function(e){
-      if(e.key==='Enter'||e.key===' '){ e.preventDefault(); oeffnen(); }
     });
     var mehr=node.querySelector('.doc-mehr');
     if(mehr) mehr.addEventListener('click',function(e){ e.stopPropagation(); docBlattOeffnen(d); });
@@ -54582,7 +54659,44 @@ function dmUnreadCount(){
 function updateDmBadge(){
   var n=dmUnreadCount();
   document.querySelectorAll('[data-badge="dm"],[data-mbadge="dm"]').forEach(function(b){ b.textContent=n; b.style.display=n?'grid':'none'; });
+  appZaehlerSetzen();
 }
+/* ── Zähler am App-Symbol (Runde 287) ─────────────────────────────────
+   Wie bei WhatsApp: die rote Zahl am Symbol auf dem Home-Bildschirm.
+   Gezählt werden nur Nachrichten an mich — ungelesene Direktnachrichten
+   und fremde Nachrichten in meinen Kanälen —, keine Aufgaben: eine Zahl,
+   die nie auf null geht, sagt nichts mehr (Runde 187, Punkt statt Zahl).
+
+   Der Browser kann das nur, wenn die App installiert ist (iPhone ab
+   iOS 16.4 mit erlaubten Mitteilungen, Android, Rechner). Sonst tut die
+   Funktion nichts, ohne Fehler. Der Service Worker zählt bei jeder
+   Push-Meldung weiter, solange die App zu ist (sw.js); sobald sie offen
+   ist, setzt sie hier die echte Zahl und merkt sie sich im Vorrat
+   „kf-einst", damit der Service Worker von dort weiterzählt. */
+var _appZaehlerLetzter=-1;
+function appZaehlerZahl(){
+  if(!session) return 0;
+  var n=dmUnreadCount();
+  try{ alleKanaele().forEach(function(c){ n+=kanalUngelesen(c.id); }); }catch(e){}
+  return n;
+}
+function appZaehlerSetzen(){
+  var n=appZaehlerZahl();
+  if(n===_appZaehlerLetzter) return;
+  _appZaehlerLetzter=n;
+  try{
+    if(n>0 && navigator.setAppBadge) navigator.setAppBadge(n).catch(function(){});
+    else if(!n && navigator.clearAppBadge) navigator.clearAppBadge().catch(function(){});
+  }catch(e){}
+  if('caches' in window){
+    try{
+      caches.open('kf-einst').then(function(c){
+        return c.put('zaehler.json', new Response(JSON.stringify({ n:n }), { headers:{ 'Content-Type':'application/json' } }));
+      }).catch(function(){});
+    }catch(e){}
+  }
+}
+window.__appZaehler=function(){ return appZaehlerZahl(); };
 
 function bindDmPersonClicks(box){
   box.querySelectorAll('.dm-person').forEach(function(el){
@@ -55791,6 +55905,34 @@ function bindActions(){
   });
   ta.addEventListener('click', atPruefen);
   ta.addEventListener('blur', function(){ setTimeout(atSchliessen,120); });
+
+  /* ── Schnellantworten (Runde 287) ──
+     Ein Tipp setzt den Satz ins Feld und gibt dem Feld den Fokus; gesendet
+     wird mit dem Senden-Knopf oder Enter. Nicht gleich abschicken: ein
+     „Erledigt ✓" an die falsche Gruppe lässt sich so noch löschen, und
+     „10 Min" lässt sich auf „20" ändern. Die Reihe verschwindet, sobald
+     im Feld etwas steht (auch nach dem Tipp), und kommt wieder, wenn es
+     leer ist — auch nach dem Senden, deshalb hört sie auch auf den
+     Senden-Knopf. Dieselbe Reihe für Studio-Chat und Direktnachricht. */
+  function schnellAntwortenBinden(reiheId, feldId, sendenId){
+    var reihe=$(reiheId), feld=$(feldId), senden=$(sendenId);
+    if(!reihe || !feld) return;
+    function pruefen(){ reihe.hidden = !!feld.value.trim(); }
+    reihe.querySelectorAll('[data-schnell]').forEach(function(k){
+      k.addEventListener('click', function(){
+        feld.value=k.textContent.trim();
+        feld.dispatchEvent(new Event('input',{bubbles:true}));
+        feld.focus();
+        pruefen();
+      });
+    });
+    feld.addEventListener('input', pruefen);
+    if(senden) senden.addEventListener('click', function(){ setTimeout(pruefen,0); });
+    feld.addEventListener('keydown', function(e){ if(e.key==='Enter'&&!e.shiftKey) setTimeout(pruefen,0); });
+    pruefen();
+  }
+  schnellAntwortenBinden('schnellAntworten','chatText','chatSend');
+  schnellAntwortenBinden('dmSchnellAntworten','dmText','dmSend');
 
   /* ── Sprachnachricht aufnehmen ──
      Zwei Wege, beide vertraut:

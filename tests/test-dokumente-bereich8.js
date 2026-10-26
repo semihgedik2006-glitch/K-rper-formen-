@@ -51,7 +51,10 @@ async function start(stub, errs) {
         maxZeilen: Math.max(...namen.map(n => Math.round(n.getBoundingClientRect().height / 22))),
         katEinzeilig: (() => { const r = document.getElementById('docCatRow'); return r ? r.getBoundingClientRect().height < 55 : false; })(),
         mehrKnoepfe: document.querySelectorAll('.doc-mehr').length,
-        zeileKlickbar: docs[0] ? docs[0].getAttribute('role') === 'button' : false,
+        /* Runde 287: nicht mehr die ganze Zeile ist Knopf (darin sass
+           der „…"-Knopf — Vorlesen meldete „Knopf im Knopf"), sondern
+           der Name. Der Klick auf die Zeile bleibt. */
+        zeileKlickbar: docs[0] ? !!docs[0].querySelector('button.doc-info') && docs[0].getAttribute('role') !== 'button' : false,
       };
     });
     console.log('LISTE:', JSON.stringify(liste));
@@ -59,7 +62,7 @@ async function start(stub, errs) {
     if (liste.maxZeilen > 2) errs.push('Ein Name braucht ' + liste.maxZeilen + ' Zeilen');
     if (!liste.katEinzeilig) errs.push('Die Kategorie-Leiste bricht um');
     if (liste.mehrKnoepfe) errs.push('Mitarbeiter sieht ' + liste.mehrKnoepfe + ' Verwaltungs-Menues');
-    if (!liste.zeileKlickbar) errs.push('Die Zeile ist nicht als Knopf ausgezeichnet');
+    if (!liste.zeileKlickbar) errs.push('Der Dateiname ist kein Knopf (oder die Zeile ist noch einer)');
     if (liste.bildschirme > 1.3) errs.push('Die Seite ist ' + liste.bildschirme + ' Bildschirme lang');
 
     // Ein Tipp auf die Zeile muss die Datei holen
