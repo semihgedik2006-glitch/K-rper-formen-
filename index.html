@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-a5XU0KjKejx7IKJorsZYO1zD0hB8AikU89/ov0QYTI0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-jSb3u647epviGdh/QPWIvyl6VBAS00QeHYB2ndlAPSM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -11840,7 +11840,7 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
             <div class="mat-head" id="matHead"><span>Material</span><span>Soll</span><span>Ist</span><span>Fehlt</span><span></span></div>
             <div class="mat-table" id="matTable"></div>
             <div class="mat-add">
-              <input class="inp" id="matNewName" type="text" placeholder="Eigenes Material …" maxlength="60" />
+              <input class="inp" id="matNewName" type="text" placeholder="Eigenes Material …" aria-label="Eigenes Material" maxlength="60" />
               <button class="btn btn-ghost btn-sm" id="matAdd">+ Hinzufügen</button>
             </div>
             <p class="mat-saved" id="matSaved"></p>
@@ -11957,7 +11957,7 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
           <div id="devWo" style="display:none"></div>
 
           <div class="mat-bar">
-            <select class="inp" id="devStudio"></select>
+            <select class="inp" id="devStudio" aria-label="Studio"></select>
           </div>
 
           <div class="mat-alert" id="devAlert" style="display:none"></div>
@@ -23215,6 +23215,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-26-zeiten-minus', datum:'26.10.2026', art:'fix', titel:'Keine Minus-Stunden mehr unter „Jetzt im Studio"', wo:'zeitteam', punkte:[
+    'Zeiten → Team: direkt nach dem Einstempeln stand manchmal „-1:-1 h". Jetzt steht dort 0:00 h.',
+    'Vorführung: die Geschäftsführung hat heute eine Schicht statt vierzehn gleichzeitig.',
+    'Geräte und Material: Studio-Auswahl und „Eigenes Material" werden vom Bildschirmleser benannt.'
+  ]},
   { id:'2026-10-26-zoom-vorlesen', datum:'26.10.2026', art:'besser', titel:'Vergrössern mit zwei Fingern, Vorlesen im Bestand', wo:'material', punkte:[
     'Die App lässt sich am Handy mit zwei Fingern vergrössern.',
     'Bestand: Soll, Ist und Fehlt sowie die Studio-Auswahl werden mit Namen vorgelesen.',
@@ -43665,7 +43670,11 @@ function zeitUhr(ts){
   return new Date(ts||0).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
 }
 function stundenText(ms){
-  var min=Math.round((ms||0)/60000);
+  /* Runde 283: nie unter null. Ein Stempel, der eine Minute in der Zukunft
+     liegt (Uhr am Terminal vorgestellt, Server etwas voraus), ergab
+     „seit 00:01 · -1:-1 h" — gesehen unter Zeiten → Team, kurz nach
+     Mitternacht. Eine Dauer ist nie negativ. */
+  var min=Math.max(0, Math.round((ms||0)/60000));
   return Math.floor(min/60)+':'+('0'+(min%60)).slice(-2)+' h';
 }
 
@@ -43725,8 +43734,12 @@ function zeitenTage(rows, heute, jetzt){
     });
     var offen = !!vorher && vorher!=='gehen';
     var laeuft = offen && tag===heute;
-    if(laeuft && (vorher==='kommen'||vorher==='zurueck')){ arbeit += jetzt-seit; stueck += jetzt-seit; }
-    if(laeuft && vorher==='pause') pause += jetzt-seit;
+    /* Runde 283: der laufende Teil zählt erst ab „jetzt" — liegt der
+       letzte Stempel (Uhrenversatz) kurz in der Zukunft, ist er 0 und
+       nicht negativ. */
+    var lauf=Math.max(0, jetzt-seit);
+    if(laeuft && (vorher==='kommen'||vorher==='zurueck')){ arbeit += lauf; stueck += lauf; }
+    if(laeuft && vorher==='pause') pause += lauf;
     amStueck=Math.max(amStueck, stueck);
     var roh=arbeit, abzug=0;
     if(!offen){
