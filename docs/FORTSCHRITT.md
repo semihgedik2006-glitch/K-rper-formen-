@@ -24266,3 +24266,171 @@ sie das neue.
 
 **Nicht getestet:** echtes iPhone und Safari (Zurück-Wischgeste am
 Rand), echtes Firebase.
+
+## Runde 287 — Zweite Prüfung umgesetzt: kleinere Auslieferung, Zähler am Symbol, Safari-Motor, Startseite und Bestand am Handy (26.10.2026)
+
+**Aus dem Betrieb:** „setzte alle deine ideen um und sorge dafür das es
+ein gutes nutzer gefühl in der app gibt, schau was jetzt schon
+verbessert wurde aber" — die Ideenliste aus Runde 282 (Fable-Prüfung),
+abzüglich dessen, was seither schon gebaut war: der schnellere Start
+Teil a (Runde 284, PR #337) und die roten Tests (Runde 285, PR #340).
+Die Chat-Ansicht am Handy (Liste → Unterhaltung) kam parallel als
+Runde 286 (PR #341); dieser Stand setzt darauf auf. Dazu, auf Wunsch
+der Koordination, Schritt 3 der Liste: Schnellantworten im Chat.
+
+### 1. Kommentare beim Ausliefern entfernen (Teil b des schnellen Starts)
+
+`index.html` ist 3,15 MB, 943 KB gepackt — 34 % davon Erklärungen für
+Entwickler, die jede Person bei jeder neuen Fassung mitlädt. Neu:
+`tools/ausliefern.js` streicht sie, aber **nur im Workflow „hosting"**,
+nie im Repo. Das Repo behält jede Erklärung; die Begründungen sind der
+Teil, der in einem halben Jahr zählt.
+
+Gemessen: index.html 3120 → 2242 KB, gepackt 938 → 572 KB (−39 %);
+werbung.html 61 → 55 KB.
+
+**Warum nicht ein regulärer Ausdruck über die Datei:** ein `//` in
+einer Adresse, ein `/*` in einer Zeichenkette, ein `<!--` in einem
+Skript — jedes davon hätte den Code zerrissen, leise, erst auf dem
+Handy. Deshalb drei Wege: Skriptblöcke zerlegt acorn (nur was der
+Zerleger als Kommentar meldet, fällt), Stilblöcke ein kleiner Leser,
+der Zeichenketten und `url(…)` kennt, HTML-Kommentare ausserhalb der
+Blöcke. Zeilenumbrüche bleiben, damit eine Fehlermeldung im Browser auf
+dieselbe Zeile zeigt wie im Repo.
+
+**Wie geprüft** (`tests/test-ausliefern-kommentare.js`, 25 grün): nicht,
+ob Kommentare weg sind — das wäre leicht —, sondern ob der **Code gleich
+geblieben** ist: dieselbe Folge von Sprachzeichen (Token) vor und nach
+dem Streichen, in jedem der drei Skriptblöcke, gleiche Zeilenzahl, dazu
+gebaute Fälle (Adresse mit //, Vorlage mit ${}, regulärer Ausdruck mit
+/*) und eine Gegenprobe: der naive Weg zerreisst die Adresse, sonst
+prüfte der Test nichts. Danach zwölf Durchläufe gegen die
+entkommentierte Datei (Chat, Dialoge, CSP, Final, Formi, Leiter,
+Mitarbeiter, iPhone-Rand, XSS, Schulung, Startseite, Chat-iMessage):
+alle grün.
+
+Im Workflow steht der Schritt vor dem Ausliefern, danach läuft
+`tools/csp.js --setzen` neu — die Prüfsumme hängt am Skripttext, ohne
+sie bliebe die App weiss. acorn kommt per `npm install --no-save` im
+Workflow und steht zusätzlich in `tests/rules/package.json`, damit der
+Test auch dort läuft.
+
+**Nicht gemessen:** die Ladezeit live. Die Zahl steht erst nach der
+nächsten Auslieferung (Abruf über `formenchat.web.app`, Content-Length).
+
+### 2. Zähler am App-Symbol
+
+Wer die App auf dem Startbildschirm hat, sieht jetzt die Zahl der
+ungelesenen Nachrichten am Symbol (Direktnachrichten plus Kanäle,
+`appZaehlerZahl()`), wie bei Nachrichten-Apps. Gesetzt in der App bei
+jeder Änderung der Abzeichen (`updateDmBadge`, `renderChannelBadges`),
+und vom Service Worker hochgezählt, wenn eine Mitteilung im Hintergrund
+ankommt (`zaehlerWeiter`, nur Ziel „chat"/„dm"). Der Stand liegt als
+`zaehler.json` im Zwischenspeicher `kf-einst`, damit der Service Worker
+ihn kennt, ohne die App zu öffnen. Wo `setAppBadge` fehlt (Firefox,
+Safari am Mac ohne Dock-App), passiert nichts. **Am iPhone nicht
+geprüft** — dort braucht es die App auf dem Startbildschirm und iOS
+16.4 oder neuer.
+
+### 3. Schnellstarts am App-Symbol
+
+Langes Drücken auf das Symbol (Android, Rechner) zeigt „Stempeln",
+„Nachrichten", „Heute" (`manifest.json`, `shortcuts`). Die Ziele laufen
+über den bestehenden `#ziel`-Weg. Am iPhone gibt es diese Funktion
+nicht, das ist bekannt.
+
+### 4. Dokumentenliste und Chat-Verlauf per Tastatur
+
+Vorlesen (axe) hatte die Dokumentzeile als „interaktives Element in
+interaktivem Element" gemeldet: die ganze Zeile war Knopf, und darin
+sass der „…"-Knopf. Jetzt ist der Name der Knopf (`button.doc-info`),
+die Zeile selbst nicht mehr; der Klick auf die Zeile bleibt. Und
+`#chatScroll` ist per Tab erreichbar (Pfeiltasten rollen den Verlauf),
+vorher kam man mit der Tastatur nicht hinein.
+
+### 5. Die App im Safari-Motor (WebKit)
+
+Jeder Durchlauf bis hierher lief in Chromium, und in jedem Bericht
+stand „Safari nicht prüfbar". Playwright bringt WebKit mit — denselben
+Motor wie Safari am iPhone. `tests/test-safari-motor.js` lädt die App
+als Chef und Mitarbeiter bei 390 × 844 (Handy-Agent) und bei 1440 × 900,
+wechselt in jeden Raum und prüft: keine Seitenfehler, Ansicht offen,
+erste Zeile wirklich gezeichnet (derselbe Ausschnitt als PNG grösser als
+mit unsichtbarer Zeile — ein erster Schnappschuss kam am 26.10. leer
+zurück, weil er zu früh war), nicht breiter als das Fenster, untere
+Leiste im Bild und jeder ihrer Knöpfe trifft sich selbst. **63 grün,
+kein Befund.** Was WebKit nicht kann: den iPhone-Rand, die Adressleiste
+von iOS, Berührungen wie am Gerät — das bleibt ungeprüft. Fehlt WebKit
+auf einem Rechner, sagt der Test das laut und überspringt.
+
+### 6. „Ausserdem" als schiebbare Zeile (P-22)
+
+Die Startseite streicht Kategorien von unten, jede wird ein Knopf unter
+„Ausserdem". Die Knöpfe brachen um: bei sieben Kategorien vier Zeilen
+(200 px) — und verdrängten damit genau die Blöcke, für die sie Platz
+machen sollten. Jetzt am Handy (unter 700 px) **eine Zeile, die
+seitlich schiebt**, wie die Filter unter Aufgaben; der angeschnittene
+letzte Knopf zeigt, dass es weitergeht. Die Zeile läuft bis an den
+Bildschirmrand (negative Ränder), damit nichts an einer Kante
+„abgeschnitten" wirkt.
+
+Gemessen (Chef, normal und kompakt): 390 × 844 **drei Blöcke statt
+zwei**, 430 × 932 vier, 320 × 568 ein Block und die Zeile (vorher passte
+dort nicht einmal der letzte Block). Jeder Knopf 44 px hoch; jeder
+sichtbare trifft sich selbst in Mitte, oberer und unterer Kante. Am
+Rechner (ab 700 px) unverändert, dort passt alles ohnehin. Die
+Variante „kleinere Knöpfe mit unsichtbarer Trefferfläche" verworfen:
+ein unsichtbar vergrösserter Knopf wurde hier schon einmal vom
+Rollbereich abgeschnitten (CLAUDE.md, „alle 5 ›").
+
+### 7. Bestand am Handy (P-23)
+
+Bei 430 × 844 begann die erste Materialzeile bei 697 px, weil „Reicht
+noch" und die Einkaufsliste über der Tabelle standen. Die Tabelle ist
+die Hauptsache dieser Seite („Trage ein, was da ist"), die Karten sind
+das Ergebnis daraus — am Handy stehen sie jetzt **unter** der Tabelle
+(`order`), der Hinweis „N Artikel fehlen" mit „nur diese zeigen" bleibt
+oben. Gemessen: 430 → 548 px, 390 → 574, 320 → 585; am Rechner ab
+1100 px unverändert (Karten rechts). Die zweite Reiterzeile
+(„Probetraining" bricht um) bleibt: das Umbrechen der Reiter ist so
+gewollt.
+
+### 8. Schnellantworten im Chat
+
+Drei Sätze, die im Studio ständig getippt werden, stehen über dem
+Schreibfeld: „Bin dabei", „Erledigt ✓", „Komme 10 Min später" — im
+Studio-Chat und bei Direktnachrichten. **Ein Tipp setzt den Satz ins
+Feld, gesendet wird mit dem Pfeil.** Nicht sofort abschicken, mit
+Absicht: ein „Erledigt ✓" an die falsche Gruppe lässt sich so noch
+löschen, und „10 Min" lässt sich auf „20" ändern; Senden bleibt der
+eine Knopf, den alle kennen. Die Reihe verschwindet, sobald im Feld
+etwas steht, und kommt nach dem Senden wieder.
+
+Gemessen (`tests/test-schnellantworten.js`, 156 grün): bei 320 / 390 /
+430 / 820 / 1280 / 1440 / 1920, normal und kompakt, Chat und
+Direktnachricht — Reihe über dem leeren Feld, jeder Knopf 44 px hoch,
+die sichtbaren treffen sich selbst (Mitte und beide Kanten), die Reihe
+nicht breiter als das Fenster (bei 320 schiebt sie), Tipp → Text im
+Feld mit Fokus, Reihe weg; Feld leer → Reihe da; Enter schickt den Satz
+ab. Gegenprobe: ohne Knöpfe zählt die Messung 0.
+
+### Ein Fund durch die Tests, kein Fund aus der Absicht
+
+Die erste Fassung von Punkt 7 hatte die Handy-Regel für den Bestand
+**in** den `@media (min-width:1100px)`-Block geschrieben — mit einer
+schliessenden Klammer zu früh. Folge: die Zwei-Spalten-Regeln für
+Geräte, Dokumente und Archiv galten plötzlich am Handy; im Archiv stand
+„Erledigte Aufgaben" in einer 50-px-Spalte, und der „Material"-Knopf
+der vierten Sicherung lag unter Formis Sprechblase (trifft nur 32 px).
+`test-fingerziele` hat es gefunden — gegen `main` grün, gegen den
+Arbeitsstand rot, zweimal, nicht unter Last. Behoben, bevor etwas
+davon ausgeliefert war. Bleibt als Mahnung: eine CSS-Änderung in einem
+Media-Block misst man in **allen** Ansichten, nicht nur in der, die man
+ändert.
+
+### Nicht getestet
+
+Echtes iPhone (Zähler am Symbol, Rand), echtes Firebase, Ladezeit nach
+der Auslieferung. WebKit hier ohne iOS-Rand. `test-rahmen` bleibt bei
+„Aufgaben ab 387 px (Grenze 380)" rot — auf `main` genauso (gemessen),
+Grund ist die zweite Reiterzeile, die so gewollt ist.

@@ -2,7 +2,7 @@
    - Caching: HTML immer frisch (network-first), statische Dateien offline-fähig
    - Push: Firebase Cloud Messaging im Hintergrund
    Bei Code-Änderungen VERSION hochzählen. */
-const VERSION = 'v35';
+const VERSION = 'v36';
 const CACHE = 'studiochat-' + VERSION;
 /* loesungen-basis.js liegt mit im Vorrat: die 115 Einträge sind genau
    das, was jemand im Studio braucht, wenn das WLAN gerade der Grund
@@ -45,6 +45,23 @@ function einstLesen() {
   return caches.open(EINST).then(function (c) { return c.match('einst.json'); })
     .then(function (r) { return r ? r.json() : {}; }).catch(function () { return {}; });
 }
+/* Zähler am App-Symbol (Runde 287). Die App legt die echte Zahl der
+   ungelesenen Nachrichten in „zaehler.json" ab, wenn sie offen ist. Ist
+   sie zu, zählt jede Push-Meldung einer Nachricht hier eins weiter —
+   nur Nachrichten (ziel chat/dm), keine Erinnerungen von Formi. Kann der
+   Browser kein Abzeichen (ältere Geräte), passiert nichts. */
+function zaehlerWeiter(ziel) {
+  if (!self.navigator || !self.navigator.setAppBadge) return Promise.resolve();
+  if (ziel !== 'chat' && ziel !== 'dm') return Promise.resolve();
+  return caches.open(EINST).then(function (c) {
+    return c.match('zaehler.json').then(function (r) { return r ? r.json() : { n: 0 }; }).catch(function () { return { n: 0 }; })
+      .then(function (d) {
+        const n = (Number(d && d.n) || 0) + 1;
+        return c.put('zaehler.json', new Response(JSON.stringify({ n: n }), { headers: { 'Content-Type': 'application/json' } }))
+          .then(function () { return self.navigator.setAppBadge(n); });
+      });
+  }).catch(function () {});
+}
 messaging.onBackgroundMessage(function (payload) {
   const d = (payload && payload.data) || {};
   const n = (payload && payload.notification) || {};
@@ -66,7 +83,7 @@ messaging.onBackgroundMessage(function (payload) {
     /* Runde 243: wohin ein Tipp führt (z. B. 'zeit' bei der
        Stempel-Erinnerung). Fehlt es, öffnet die App wie bisher. */
     data: { ziel: zielPruefen(d.ziel) }
-  }); });
+  }).then(function () { return zaehlerWeiter(zielPruefen(d.ziel)); }); });
 });
 /* Kurze, stabile Zahl aus einer Zeichenkette. Kein Sicherheitszweck —
    sie muss nur fuer denselben Text immer gleich herauskommen. */

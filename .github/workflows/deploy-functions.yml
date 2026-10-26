@@ -167,6 +167,18 @@ jobs:
       - name: Firebase CLI installieren
         run: npm install -g firebase-tools
 
+      # Runde 287: die Erklärungen für Entwickler (34 % der Datei) bleiben
+      # im Repo und gehen nicht mit aufs Handy. tools/ausliefern.js streicht
+      # sie nur in dieser Arbeitskopie; danach MUSS die Sicherheitsregel
+      # neu gerechnet werden, weil ihre Prüfsumme am Skripttext hängt.
+      # Gemessen: index.html 938 → 572 KB gepackt.
+      - name: Kommentare entfernen (nur in der Auslieferung)
+        run: |
+          npm install --no-save --no-audit --no-fund acorn@8.15.0
+          node tools/ausliefern.js --setzen
+          node tools/csp.js --setzen
+          node tools/csp.js
+
       - name: App deployen
         run: firebase deploy --only hosting --project formenchat --non-interactive --force
         env:
