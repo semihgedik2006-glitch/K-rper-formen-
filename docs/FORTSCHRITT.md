@@ -24006,3 +24006,53 @@ erneut: grün bis auf `test-gleiten-rahmen`, `test-wischen`,
 
 **Nicht getestet:** iPhone und Safari selbst, echtes Firebase, die
 Regeln im Emulator (laufen in CI).
+
+## Runde 284 — Schnellerer Start: 304 statt ganzer Seite (26.10.2026)
+
+**Aus dem Betrieb:** „ja dann lass uns das so machen wie da steht" — zur
+Liste aus dem Vergleich der beiden Prüfungen, Schritt „Schnellerer
+Start, Teil a: Server darf ‚unverändert' antworten (no-cache statt
+no-store)". Der Fund stammt aus Runde 283: `index.html` ist 3,15 MB
+(943 KB gzip) und kam mit `no-store`; der Service Worker holte sie mit
+`cache:'no-store'`. Ein 304 war damit unmöglich — jedes Öffnen lud die
+ganze Seite.
+
+**Geändert (drei Stellen, keine Logik):**
+- `firebase.json`: `/`, `/index.html` und `**/*.html` von
+  `no-cache, no-store, must-revalidate` auf `no-cache, must-revalidate`.
+  `sw.js` und `konfig.js` bleiben bei `no-store` — klein, und konfig.js
+  entscheidet über die Datenbank.
+- `sw.js`: der Navigations-Abruf holt mit `cache:'no-cache'` statt
+  `'no-store'`. Der Browser fragt weiterhin jedes Mal beim Server nach
+  (`If-None-Match`), nimmt bei 304 aber seine eigene Kopie.
+- `index.html`: das `<meta http-equiv="Cache-Control">` angeglichen
+  (Browser beachten es über HTTP kaum; es soll nur nicht widersprechen).
+
+**Warum das sicher ist:** Frische hängt am ETag, nicht an der Zeit.
+`no-cache` heisst „nie ungefragt", nicht „nie speichern". Nach einer
+Auslieferung ändert sich der ETag, die neue Fassung kommt beim nächsten
+Öffnen wie bisher. Genau dieses Prinzip trägt die Inhaltsdateien
+(Schulungen, Handbuch) seit dem 24.9.2026 — `test-zwischenspeicher`
+spielt die Auslieferung weiter durch.
+
+**Gemessen** (`tests/test-zwischenspeicher.js`, neuer Abschnitt „Das
+zweite Öffnen der App": eigener Server mit den Kopfzeilen aus
+`firebase.json` und einem ETag wie beim Hoster, App öffnen, Service
+Worker einrichten lassen, noch einmal öffnen; der Server zählt, was er
+geantwortet hat):
+- Stand jetzt: zweites Öffnen → `304`, die Seite geht nicht noch einmal
+  über die Leitung.
+- Gegenprobe mit dem alten Stand (`no-store` in Kopfzeile und Service
+  Worker): zweites Öffnen → wieder `200`, die ganze Seite. Ohne diese
+  Gegenprobe wäre der Durchlauf auch grün, wenn er den Unterschied
+  gar nicht sieht.
+
+**Nicht gemessen:** die Zeit am echten Gerät und auf dem Hoster — der
+Hoster von Firebase setzt den ETag selbst, hier ist er nachgestellt.
+Was der Hoster live schickt, lässt sich nach der Auslieferung mit
+`curl -sI https://formenchat.web.app/` nachsehen (Erwartung:
+`cache-control: no-cache, must-revalidate` und ein `etag`).
+
+**Teil b (Kommentare beim Ausliefern entfernen, ≈ 40 % kleiner) ist
+bewusst nicht hier:** er braucht einen Bauschritt mit neuer
+CSP-Prüfsumme und steht in der Liste unter „Später".
