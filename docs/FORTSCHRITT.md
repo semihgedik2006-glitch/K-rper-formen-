@@ -24084,8 +24084,16 @@ jeder Auslieferung; falls das einmal nicht greift, ist ein alter Stand
 nach höchstens zehn Minuten weg — deshalb kurz und nicht eine Woche.
 `sw.js` bleibt bei `cache:'no-cache'` im Navigations-Abruf.
 
-**Prüfung live nach dieser Auslieferung** (steht unten, sobald gemessen):
-`curl -sI https://formenchat.web.app/` zweimal → zweites Mal
-`x-cache: HIT`; dann mit `If-None-Match: <etag>` → 304. Und der ETag
-muss sich gegenüber dem Stand vor der Auslieferung geändert haben —
-das zeigt, dass das Verteilnetz geleert wurde.
+**Live gemessen nach der Auslieferung von PR #338** (26.10.2026, `curl`
+gegen `https://formenchat.web.app/`):
+
+| Schritt | Ergebnis |
+|---|---|
+| ETag vor der Auslieferung | `451393b8…` |
+| ETag nach der Auslieferung | `1d38292c…` — das Verteilnetz wurde geleert |
+| erster Abruf | `cache-control: public, max-age=0, must-revalidate, s-maxage=600`, `x-cache: MISS` |
+| zweiter Abruf | `x-cache: HIT` |
+| Abruf mit `If-None-Match` | **304, 0 Byte** (unkomprimiert und komprimiert) |
+
+Vorher ging bei jedem Öffnen die ganze Seite über die Leitung (713 KB
+br bzw. 3,19 MB roh). Nicht gemessen: die Zeit am echten Gerät.
