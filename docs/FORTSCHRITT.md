@@ -23848,6 +23848,13 @@ Danach einzeln wiederholt und grün: `test-formi-werkzeug` 56,
 `test-abgeschnitten`, `test-quer`, `test-csp`, `test-gruppen-titel`,
 `test-startseite-putz`, `test-tagesgruss`, `test-gehirn-aktion`.
 
+**Letzter Stand** (nach dem Übernehmen von `main` bis Runde 277): 48
+Tests, alle grün — darunter die neuen von `main` (`test-chat-imessage`,
+`test-findetest`, `test-schulung-bescheinigung`, `test-schulung-kontrast`,
+`test-schichtplaner-rechnung`). Beim Zusammenführen fehlte einmal eine
+schliessende Klammer in `NEUIGKEITEN`; die App startete gar nicht, und
+jeder Test fiel — gefunden vom Durchlauf, nicht vom Auge.
+
 **Im ersten Durchlauf gefunden und behoben:**
 - *„Meine Schicht" kostete am Handy eine Kategorie.* Der Schalter oben
   (66 px) schob „Zum Übernehmen" bzw. „Putzplan" nach „Ausserdem"
