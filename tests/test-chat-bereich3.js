@@ -30,6 +30,39 @@ async function start(stub, errs) {
   const errs = [];
   const { b, page } = await start('stub-chef.js', errs);
 
+  // ── 0. Am Handy zuerst die Liste, dann die Unterhaltung (Runde 286) ──
+  // Freigegeben am 26.10.2026: „ja dann lass uns das so machen wie da
+  // steht" — Plan: „Chat am Handy: erst die Liste, dann die Unterhaltung
+  // (wie in der Nachrichten-App)". Seither beginnt der Chat mit der Liste;
+  // der Verlauf wird in der geöffneten Unterhaltung gemessen.
+  const liste = await page.evaluate(() => {
+    const zeilen = [...document.querySelectorAll('#kanalSpalte .ks-zeile')].filter(z => z.getClientRects().length);
+    return {
+      zeilen: zeilen.length,
+      erste: zeilen[0] ? zeilen[0].querySelector('b').textContent : '',
+      kleinste: zeilen.length ? Math.min(...zeilen.map(z => Math.round(z.getBoundingClientRect().height))) : 0,
+      verlaufZuSehen: document.getElementById('chatScroll').getClientRects().length > 0,
+    };
+  });
+  console.log('LISTE:', JSON.stringify(liste));
+  if (!liste.zeilen) errs.push('Am Handy steht keine Chatliste da');
+  if (liste.verlaufZuSehen) errs.push('Der Verlauf steht schon neben der Liste');
+  if (!/Allgemein/.test(liste.erste)) errs.push('Allgemein steht nicht vorn in der Liste: ' + liste.erste);
+  if (liste.kleinste < 44) errs.push('Zeile der Chatliste nur ' + liste.kleinste + ' px hoch');
+  await page.evaluate(() => document.querySelector('#kanalSpalte [data-kanalwahl="allgemein"]').click());
+  await page.waitForTimeout(700);
+  const kopf = await page.evaluate(() => {
+    const z = document.getElementById('chatZurueck');
+    const r = z.getBoundingClientRect();
+    const t = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    return { name: document.getElementById('chatKopfName').textContent, w: Math.round(r.width), h: Math.round(r.height),
+             trifft: !!t && z.contains(t), listeWeg: !document.getElementById('kanalSpalte').getClientRects().length };
+  });
+  console.log('UNTERHALTUNG:', JSON.stringify(kopf));
+  if (!/Allgemein/.test(kopf.name)) errs.push('Der Kopf nennt den Kanal nicht: ' + kopf.name);
+  if (kopf.w < 44 || kopf.h < 44 || !kopf.trifft) errs.push('„‹ Chats" trifft man nicht sicher: ' + JSON.stringify(kopf));
+  if (!kopf.listeWeg) errs.push('Die Liste bleibt in der Unterhaltung stehen');
+
   // ── 1. Wie viel Platz bekommt der Verlauf? ──
   const platz = await page.evaluate(() => {
     const sc = document.getElementById('chatScroll');
@@ -131,18 +164,29 @@ async function start(stub, errs) {
   if (!nachReply.leiste) errs.push('Die Antwort-Leiste erscheint nicht');
   await page.evaluate(() => document.getElementById('cbCancel').click());
 
-  // ── 4. Kanalordnung: Allgemein vorn, offener Kanal sichtbar ──
-  const kanaele = await page.evaluate(() => {
-    const wrap = document.getElementById('chatChannels');
-    const aktiv = wrap.querySelector('.chan.active');
-    return {
-      reihe: [...wrap.querySelectorAll('.chan')].map(c => c.textContent.trim()).slice(0, 4),
-      aktivImBild: aktiv ? aktiv.getBoundingClientRect().left >= wrap.getBoundingClientRect().left - 2 : false,
-    };
-  });
-  console.log('KANAELE:', JSON.stringify(kanaele));
-  if (!/Allgemein/.test(kanaele.reihe[0])) errs.push('Allgemein steht nicht vorn: ' + kanaele.reihe[0]);
-  if (!kanaele.aktivImBild) errs.push('Der offene Kanal liegt ausserhalb des Bildes');
+  // ── 4. Zurück zur Liste: Knopf und Zurück-Geste (Runde 286) ──
+  // Die Kanalzeile gibt es am Handy nicht mehr; ihre Prüfung („Allgemein
+  // vorn") steht oben an der Liste.
+  await page.evaluate(() => document.getElementById('chatZurueck').click());
+  await page.waitForTimeout(500);
+  const zurueck = await page.evaluate(() => ({
+    liste: document.getElementById('view-chat').classList.contains('liste'),
+    ansicht: document.querySelector('.view.show').id,
+  }));
+  console.log('ZURUECK:', JSON.stringify(zurueck));
+  if (!zurueck.liste || zurueck.ansicht !== 'view-chat') errs.push('„‹ Chats" führt nicht zur Liste: ' + JSON.stringify(zurueck));
+  await page.evaluate(() => document.querySelector('#kanalSpalte [data-kanalwahl="allgemein"]').click());
+  await page.waitForTimeout(500);
+  await page.goBack();
+  await page.waitForTimeout(500);
+  const geste = await page.evaluate(() => ({
+    liste: document.getElementById('view-chat').classList.contains('liste'),
+    ansicht: document.querySelector('.view.show').id,
+  }));
+  console.log('ZURUECK-GESTE:', JSON.stringify(geste));
+  if (!geste.liste || geste.ansicht !== 'view-chat') errs.push('Die Zurück-Geste führt nicht zur Liste: ' + JSON.stringify(geste));
+  await page.evaluate(() => document.querySelector('#kanalSpalte [data-kanalwahl="allgemein"]').click());
+  await page.waitForTimeout(500);
 
   // ── 5. Gruppierung: Folgenachricht wiederholt den Kopf nicht ──
   // Im Stub folgt m6 (Ben) direkt auf m5 (ebenfalls Ben) – nur diese eine

@@ -80,16 +80,33 @@ const stand = (p) => p.evaluate(() => {
   const da = (el) => !!el && el.getClientRects().length > 0 && getComputedStyle(el).display !== 'none';
   const sp = document.getElementById('kanalSpalte');
   const zeile = document.querySelector('#view-chat .chan-zeile');
-  const verlauf = document.getElementById('chatScroll').getBoundingClientRect();
+  const vel = document.getElementById('chatScroll');
+  const verlauf = vel.getBoundingClientRect();
   const spr = sp.getBoundingClientRect();
   return {
     ansicht: (document.querySelector('.view.show') || {}).id,
     spalte: da(sp), zeilen: sp.querySelectorAll('.ks-zeile').length,
     leiste: da(zeile), arten: da(document.getElementById('chatArten')),
+    verlauf: vel.getClientRects().length > 0,
     daneben: verlauf.left >= spr.right - 1, ueberlauf: document.documentElement.scrollWidth > innerWidth + 1,
     aktiv: (sp.querySelector('.ks-zeile.an') || {}).dataset ? sp.querySelector('.ks-zeile.an').dataset.kanalwahl : null,
   };
 });
+
+/* Am Handy (Runde 286): erste Unterhaltung öffnen, Kopf prüfen, zurück. */
+async function oeffnenUndZurueck(p) {
+  await p.evaluate(() => document.querySelector('#kanalSpalte [data-kanalwahl]').click());
+  await p.waitForTimeout(500);
+  const auf = await p.evaluate(() => ({
+    verlauf: document.getElementById('chatScroll').getClientRects().length > 0,
+    liste: document.getElementById('kanalSpalte').getClientRects().length > 0,
+    name: document.getElementById('chatKopfName').textContent,
+  }));
+  await p.evaluate(() => document.getElementById('chatZurueck').click());
+  await p.waitForTimeout(400);
+  const zurueck = await p.evaluate(() => document.getElementById('kanalSpalte').getClientRects().length > 0);
+  return auf.verlauf && !auf.liste && !!auf.name && zurueck;
+}
 
 (async () => {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
@@ -106,7 +123,12 @@ const stand = (p) => p.evaluate(() => {
           s.spalte && s.zeilen >= 3 && !s.leiste && !s.arten, JSON.stringify(s));
         pruefe(nm + ': Verlauf steht rechts neben der Spalte', s.daneben, JSON.stringify(s));
       } else {
-        pruefe(nm + ': keine Spalte, die Leiste bleibt', !s.spalte && s.leiste, JSON.stringify(s));
+        /* Runde 286: am Handy ist dieselbe Liste der Einstieg — erst die
+           Liste, dann die Unterhaltung. Die Kanalzeile gibt es dort
+           nicht mehr. */
+        pruefe(nm + ': die Liste füllt die Ansicht, keine Kanalzeile',
+          s.spalte && s.zeilen >= 3 && !s.leiste && !s.arten && !s.verlauf, JSON.stringify(s));
+        pruefe(nm + ': ein Tipp öffnet die Unterhaltung, „‹ Chats" führt zurück', await oeffnenUndZurueck(p), JSON.stringify(s));
       }
       pruefe(nm + ': kein Querlauf', !s.ueberlauf);
       pruefe(nm + ': keine Fehler', !p._fehler.length, p._fehler.join(' | '));

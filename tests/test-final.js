@@ -5,6 +5,21 @@
    Offen als P-20 in docs/BEKANNTE-PROBLEME.md. */
 const { chromium } = require('playwright');
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
+
+/* ── Runde 286: am Handy beginnt der Chat mit der Liste ──
+   Freigegeben am 26.10.2026 („so machen wie da steht"): wie in der
+   Nachrichten-App steht zuerst die Liste aller Unterhaltungen; ein Tipp
+   öffnet eine. Die Direktnachrichten liegen in derselben Liste unter
+   „Alle Direktnachrichten ›" (am Rechner weiter „Direkt"). */
+const chatAufmachen = (p) => p.evaluate(() => {
+  const z = document.querySelector('#view-chat.liste #kanalSpalte [data-kanalwahl]');
+  if (z) z.click();
+}).then(() => p.waitForTimeout(500));
+const dmAufmachen = (p) => p.evaluate(() => {
+  const d = [...document.querySelectorAll('#kanalDirekt, #kanalSpalte [data-dmalle]')].find(x => x.getClientRects().length);
+  if (d) d.click();
+}).then(() => p.waitForTimeout(500));
+
 const SP = process.env.SP || __dirname;
 
 (async () => {
@@ -38,7 +53,8 @@ const SP = process.env.SP || __dirname;
     const ziel = view === 'dm' ? 'chat' : view;
     const sub = await page.$('#subnav [data-subview="' + ziel + '"]');
     if (sub) { await sub.click(); await page.waitForTimeout(500); }
-    if (view === 'dm') { await page.click('#kanalDirekt'); await page.waitForTimeout(500); }
+    if (view === 'dm') await dmAufmachen(page);
+    if (view === 'chat') await chatAufmachen(page);
   }
 
   // Alle Ansichten einmal durchklicken

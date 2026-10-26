@@ -113,9 +113,15 @@ const TREFFER = (el) => {
       pruefe('Rechner: die Kanalspalte hat einen Abschnitt „Direkt" mit dem Weg zu allen', spalte.kopf.indexOf('Direkt') >= 0 && spalte.alle, JSON.stringify(spalte));
       await tippe(p, '#kanalSpalte [data-dmalle]');
     } else {
-      const da = await p.evaluate(() => { const k = document.getElementById('kanalDirekt'); return !!k && !!k.getClientRects().length; });
-      pruefe('Handy: „Direkt" steht fest vorn in der Kanalzeile', da);
-      await tippe(p, '#kanalDirekt');
+      /* Runde 286: am Handy gibt es die Kanalzeile nicht mehr. Die
+         Direktnachrichten stehen in derselben Liste unter „Direkt". */
+      const da = await p.evaluate(() => ({
+        kopf: [...document.querySelectorAll('#kanalSpalte .ks-gruppe')].map(e => e.textContent),
+        alle: !!document.querySelector('#kanalSpalte [data-dmalle]'),
+      }));
+      pruefe('Handy: die Chatliste hat einen Abschnitt „Direkt" mit dem Weg zu allen',
+        da.kopf.indexOf('Direkt') >= 0 && da.alle, JSON.stringify(da));
+      await tippe(p, '#kanalSpalte [data-dmalle]');
     }
     s = await stand(p);
     pruefe(w + ' px: Direkt öffnet die Direktnachrichten, Marke bleibt auf „Chats"', s.ansicht === 'view-dm' && s.reiter.indexOf('Chats*') >= 0, JSON.stringify(s));

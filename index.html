@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Yl5jlXYKWKxqGNGUrKY2IdN0vQsAym7qH2N1Fyae6NA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-SQ60eWzNVyUdTtj65bHC2ZvH5kLGRumtEItTJJlwUX8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2699,16 +2699,15 @@ body.neu #view-docs #docCatRow{margin-top:var(--s8)}
 .ln-tel{white-space:nowrap}
 
 /* Tag-Trenner im Chat (Heute / Gestern / Datum).
-   Seit Runde 107 kleben sie oben, solange man in ihrem Tag liest
-   (DESIGN-IDEEN Nr. 10) — dann weiss man beim Zurückscrollen immer,
-   wo man zeitlich steht. Deckend statt durchscheinend, sonst liefen
-   die Nachrichten sichtbar darunter durch. Alle gleich breit: der
-   nächste Trenner schiebt sich genau über den vorigen, und von dem
-   ragt links und rechts nichts heraus. */
-.day-sep{align-self:center;margin:var(--s8) 0 var(--s4);padding:var(--s2) var(--s12);border-radius:var(--r-pille);
-  background:var(--bg-2);color:var(--text-3);font-size:var(--t-2xs);font-weight:600;
-  border:1px solid var(--line);position:sticky;top:var(--s6);z-index:3;
-  min-width:11em;text-align:center;box-shadow:var(--e1)}
+   Runde 107 liess sie oben kleben, solange man in ihrem Tag las. In der
+   Prüfung vom 26.10.2026 lag „Gestern" dadurch über Namen und Nachricht
+   und verdeckte sie. Seit Runde 286 („Datum als Zeile statt schwebend",
+   Plan vom 26.10.2026, freigegeben) wie in der Nachrichten-App: eine
+   kleine graue Zeile zwischen den Nachrichten, die mitrollt und nichts
+   verdeckt. Ohne Fläche und Rahmen — nur Text. */
+.day-sep{align-self:stretch;margin:var(--s12) 0 var(--s4);padding:0;
+  color:var(--text-3);font-size:var(--t-2xs);font-weight:600;letter-spacing:var(--ls-s);
+  text-align:center;position:static;background:none;border:none;box-shadow:none}
 
 /* „Nach unten"-Knopf im Chat */
 #view-chat{position:relative}
@@ -4919,6 +4918,74 @@ body.formi:not(.light).hud-impuls .topbar::after{animation:hudImpuls .9s var(--e
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ks-zahl{flex:0 0 auto;min-width:20px;height:20px;padding:0 var(--s6);display:grid;place-items:center;
   border-radius:var(--r-pille);background:var(--warm);color:#20120A;font-size:var(--t-2xs);font-weight:800}
+/* Uhrzeit der letzten Nachricht, rechts neben dem Namen — wie in jeder
+   Nachrichten-App. Am Rechner dieselbe Zeile, nur schmaler. */
+.ks-oben{display:flex;align-items:baseline;gap:var(--s8);min-width:0}
+.ks-oben b{flex:1;min-width:0}
+.ks-zeit{flex:0 0 auto;font-size:var(--t-2xs);color:var(--text-3);font-variant-numeric:tabular-nums}
+.ks-zeile.neu .ks-zeit{color:var(--accent-d);font-weight:700}
+
+/* ── Chat am Handy: erst die Liste, dann die Unterhaltung (Runde 286) ──
+   Aus der Prüfung vom 26.10.2026: am Handy bekam der Verlauf nur 36 bis
+   45 % des Bildschirms. Der Rest waren Bereichszeile, Reiter, Studios |
+   Gruppen und die Kanalzeile — vier Zeilen Navigation über jeder
+   Nachricht. Freigegeben mit „so machen wie da steht" (Plan vom
+   26.10.2026): wie in der Nachrichten-App zuerst die Liste aller
+   Unterhaltungen, ein Tipp öffnet eine, „‹ Chats" führt zurück.
+
+   Die Liste ist dieselbe wie die Kanalspalte am Rechner (Runde 172) —
+   ein Ort, ein Inhalt. In der Unterhaltung bleibt oben nur eine Zeile
+   mit dem Weg zurück und dem Namen; die untere Leiste bleibt, damit
+   jeder andere Bereich einen Tipp entfernt ist.
+
+   Nur bis 820 px. Darüber gilt, was schon galt: ab 1100 px Liste links
+   und Verlauf rechts nebeneinander, dazwischen die Kanalzeile. */
+.chat-kopf{display:none}
+@media(max-width:820px){
+  #view-chat.liste .kanal-spalte{display:block;flex:1;min-height:0;overflow-y:auto;
+    overscroll-behavior:contain;padding:var(--s4) calc(var(--rand) + var(--sar)) var(--s16) calc(var(--rand) + var(--sal))}
+  #view-chat.liste > :not(.kanal-spalte):not(.notif-banner):not(.lade-fehler){display:none !important}
+  #view-chat.liste .ks-gruppe{margin:var(--s16) var(--s4) var(--s4)}
+  #view-chat.liste .ks-gruppe:first-child{margin-top:var(--s8)}
+  /* Zeilen wie in der Nachrichten-App: gross genug für den Daumen, eine
+     Haarlinie dazwischen statt Kacheln. */
+  #view-chat.liste .ks-zeile{min-height:64px;margin:0;padding:var(--s10) var(--s8);border-radius:0;
+    border-bottom:1px solid var(--line)}
+  #view-chat.liste .ks-zeile.an{background:none;color:var(--text)}
+  #view-chat.liste .ks-zeile:active{background:var(--auf-1)}
+  #view-chat.liste .ks-txt{gap:var(--s2)}
+  #view-chat.liste .ks-txt b{font-size:var(--t-md)}
+  #view-chat.liste .ks-txt i{font-size:var(--t-sm)}
+  #view-chat.liste .ks-zeit{font-size:var(--t-xs)}
+
+  #view-chat.offen .kanal-spalte,#view-chat.offen #chatArten,#view-chat.offen .chan-zeile,
+  #view-chat.offen .notif-banner{display:none !important}
+  #view-chat.offen .chat-kopf{display:grid}
+  /* Die Bereichszeile und die Reiter darüber gehören zur Liste. In der
+     Unterhaltung sagt der eigene Kopf, wo man ist. !important, weil
+     buildSubNav() display direkt am Element setzt. */
+  body.chat-offen #bereichZeile,body.chat-offen #subnavZeile{display:none !important}
+  /* Die untere Leiste trägt den Rand des iPhones schon (.main hat unten
+     ihre Höhe). Das Eingabefeld trug ihn ein zweites Mal: 34 leere
+     Pixel zwischen Feld und Leiste. */
+  #view-chat .chat-input,#dmConvo .chat-input{padding-bottom:var(--s10)}
+}
+.chat-kopf{grid-template-columns:1fr minmax(0,auto) 1fr;align-items:center;gap:var(--s4);min-height:52px;box-sizing:border-box;flex-shrink:0;
+  padding:var(--s4) calc(var(--rand) + var(--sar)) var(--s4) calc(var(--s4) + var(--sal));
+  border-bottom:1px solid var(--line)}
+.chat-zurueck{justify-self:start;display:inline-flex;align-items:center;gap:var(--s2);min-height:44px;min-width:44px;
+  padding:0 var(--s10) 0 var(--s4);border:none;background:none;color:var(--accent-d);cursor:pointer;
+  font-family:var(--font-body);font-size:var(--t-md);font-weight:600;border-radius:var(--r-sm)}
+.chat-zurueck svg{width:24px;height:24px;flex:0 0 auto}
+.chat-zurueck:active{opacity:.6}
+.chat-zurueck:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.ck-zahl{min-width:20px;height:20px;padding:0 var(--s6);display:grid;place-items:center;margin-left:var(--s4);
+  border-radius:var(--r-pille);background:var(--warm);color:#20120A;font-size:var(--t-2xs);font-weight:800}
+.ck-zahl[hidden]{display:none}
+.ck-titel{min-width:0;display:flex;flex-direction:column;align-items:center;text-align:center}
+.ck-titel b{max-width:100%;font-size:var(--t-md);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ck-titel span{font-size:var(--t-2xs);color:var(--text-3);white-space:nowrap}
+.ck-titel span:empty{display:none}
 
 /* Reiter im Einstellungs-Fenster */
 /* Vier Reiter passten auf einem 390er-Handy nicht nebeneinander –
@@ -11532,6 +11599,16 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
       <section class="view" id="view-chat">
         <!-- Kanäle als Spalte, nur am Rechner (Runde 172). -->
         <nav class="kanal-spalte" id="kanalSpalte" aria-label="Kanäle"></nav>
+        <!-- Kopf der offenen Unterhaltung, nur am Handy (Runde 286): der
+             Weg zurück zur Liste und der Name des Kanals. Er ersetzt dort
+             Bereichszeile, Reiter, Studios/Gruppen und Kanalzeile. -->
+        <div class="chat-kopf" id="chatKopf">
+          <button type="button" class="chat-zurueck" id="chatZurueck" aria-label="Zurück zu den Chats">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+            <span>Chats</span><span class="ck-zahl" id="chatKopfZahl" hidden></span>
+          </button>
+          <div class="ck-titel"><b id="chatKopfName"></b><span id="chatKopfSub"></span></div>
+        </div>
         <!-- Die Glocke stand hier als eigenes SVG, obwohl es sie im Satz
              gibt: zwei Fassungen desselben Bildes. data-ikon holt sie
              von dort. -->
@@ -23215,6 +23292,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-26-chat-liste', datum:'26.10.2026', art:'neu', titel:'Chat am Handy: erst die Liste, dann die Unterhaltung', wo:'chat', punkte:[
+    'Nachrichten am Handy: zuerst alle Chats untereinander, mit letzter Nachricht, Uhrzeit und Zahl der ungelesenen.',
+    'Ein Tipp öffnet den Chat fast über den ganzen Bildschirm. Oben links „‹ Chats" führt zurück, die Zurück-Geste auch.',
+    'Das Datum („Heute", „Gestern") steht als kleine graue Zeile zwischen den Nachrichten und verdeckt nichts mehr.'
+  ]},
   { id:'2026-10-26-gruss-feierabend', datum:'26.10.2026', art:'fix', titel:'Formi grüsst nur noch einmal am Tag', wo:'zeit', punkte:[
     'Heute: nach dem Tagesgruss kam beim ersten Blick auf die Startseite manchmal ein zweites „Hallo". Jetzt nicht mehr.',
     'Vorführung → Zeiten: ein Tag mit fehlendem Feierabend steht jetzt jeden Tag da, auch montags.'
@@ -25694,6 +25776,11 @@ function showView(id, fromKey, ausVerlauf){
   /* Für die Regeln „Chat auf kleinen Handys" (Runde 127): nur ein
      Klassenname, kein Messen. */
   document.body.classList.toggle('im-chat', id==='chat');
+  /* Runde 286: am Handy beginnt der Chat mit der Liste. Wer eine
+     bestimmte Unterhaltung meint (Suche), öffnet sie danach selbst. */
+  if(id==='chat') _chatOffen=false;
+  if(id!=='dm') _dmAusListe=false;
+  chatZustand();
   /* Runde 237: Formi im Bereichskopf nur auf der Startseite. */
   document.body.classList.toggle('auf-start', id==='home');
   /* Die Farbe des Bereichs, bevor irgendetwas gezeichnet wird — sonst
@@ -25743,8 +25830,9 @@ function showView(id, fromKey, ausVerlauf){
   if(id==='ann'){ unread.ann=false; markAnnouncementsRead(); }
   updateNavMarkers();
   if(id==='chat'){
-    markChannelRead(currentChannel);
+    if(!chatInListe()) markChannelRead(currentChannel);
     kanalReihenfolge();
+    kanalSpalteZeichnen();
     setTimeout(scrollBottom,60);
     // Am Rechner springt der Schreibcursor ins Feld – aber nur, wenn man
     // per Maus hierherkam. Wer mit der Tastatur navigiert, will weiter
@@ -26002,7 +26090,8 @@ function buildChannels(){
      Chefrunde, solange er auf „Studios" steht. */
   _chanList=studioKanaele().concat(gruppen).map(function(c){ return c.id; });
   watchChannelUnread();
-  markChannelRead(currentChannel);   // zeichnet über renderChannelBadges auch die Spalte
+  if(chatInListe()) renderChannelBadges();
+  else markChannelRead(currentChannel);   // zeichnet über renderChannelBadges auch die Spalte
 }
 
 /* Umschalten zwischen Studios und Gruppen. */
@@ -26121,7 +26210,7 @@ function watchChannelUnread(){
 /* Ungelesen in einem Kanal: fremde Nachrichten seit dem letzten Lesen.
    Der offene Kanal gilt als gelesen. */
 function kanalUngelesen(ch){
-  if(ch===currentChannel) return 0;
+  if(ch===currentChannel && !chatInListe()) return 0;
   var since=chanLastRead(ch);
   return (_chanLast[ch]||[]).filter(function(m){
     return m.uid!==session.uid && (m.ts||0)>since;
@@ -26136,7 +26225,9 @@ function kanalSpalteZeichnen(){
   var alle=alleKanaele();
   var an=alle.length>=3;
   view.classList.toggle('mit-spalte', an);
-  if(!an){ box.innerHTML=''; return; }
+  /* Am Handy ist dieselbe Liste der Einstieg in den Chat (Runde 286) —
+     dort auch mit zwei Kanälen. Leer bleibt sie nur ohne Kanal. */
+  if(!alle.length){ box.innerHTML=''; return; }
   var studios=alle.filter(function(c){ return c.art==='studios'; });
   var gruppen=alle.filter(function(c){ return c.art==='gruppen'; });
   function zeile(c){
@@ -26151,7 +26242,9 @@ function kanalSpalteZeichnen(){
     return '<button type="button" class="ks-zeile'+(c.id===currentChannel?' an':'')+(n?' neu':'')+'"'+
       (c.id===currentChannel?' aria-current="true"':'')+
       ' data-kanalwahl="'+esc(c.id)+'" data-kanalart="'+esc(c.art)+'">'+
-      '<span class="ks-txt"><b>'+esc(c.label)+'</b><i>'+esc(vorschau)+'</i></span>'+
+      '<span class="ks-txt"><span class="ks-oben"><b>'+esc(c.label)+'</b>'+
+      (letzte && letzte.ts ? '<span class="ks-zeit">'+esc(listenZeit(letzte.ts))+'</span>' : '')+
+      '</span><i>'+esc(vorschau)+'</i></span>'+
       (n ? '<span class="ks-zahl" aria-label="'+n+' ungelesen">'+(n>9?'9+':n)+'</span>' : '')+
       '</button>';
   }
@@ -26174,7 +26267,9 @@ function kanalSpalteZeichnen(){
     var neu=(t.lastTs||0) > ((t.readTs&&t.readTs[session.uid])||0) && t.lastSender!==session.uid;
     var vorschau=(t.lastSender===session.uid?'Du: ':'')+(t.last||'');
     return '<button type="button" class="ks-zeile'+(neu?' neu':'')+'" data-dmuid="'+esc(peer)+'" data-dmname="'+esc(nm)+'">'+
-      '<span class="ks-txt"><b>'+esc(nm)+'</b><i>'+esc(vorschau)+'</i></span>'+
+      '<span class="ks-txt"><span class="ks-oben"><b>'+esc(nm)+'</b>'+
+      (t.lastTs ? '<span class="ks-zeit">'+esc(listenZeit(t.lastTs))+'</span>' : '')+
+      '</span><i>'+esc(vorschau)+'</i></span>'+
       (neu ? '<span class="ks-punkt" aria-label="ungelesen"></span>' : '')+'</button>';
   }).join('');
   html+='<button type="button" class="ks-zeile ks-alle" data-dmalle="1"><span class="ks-txt"><b>'+
@@ -26187,14 +26282,83 @@ function kanalSpalteZeichnen(){
     box.addEventListener('click', function(e){
       var d=e.target.closest('[data-dmuid],[data-dmalle]');
       if(d){
+        _dmAusListe=chatHandy();
         showView('dm');
         if(d.dataset.dmuid) openDm(d.dataset.dmuid, d.dataset.dmname);
         tick(8); return;
       }
       var z=e.target.closest('[data-kanalwahl]'); if(!z) return;
-      if(z.dataset.kanalwahl===currentChannel) return;
-      kanalWaehlen(z.dataset.kanalwahl, z.dataset.kanalart);
+      if(z.dataset.kanalwahl!==currentChannel) kanalWaehlen(z.dataset.kanalwahl, z.dataset.kanalart);
+      /* Am Handy öffnet derselbe Tipp die Unterhaltung — auch für den
+         Kanal, der schon geladen ist. */
+      chatUnterhaltungZeigen();
     });
+  }
+  chatKopfSetzen();
+}
+/* Zeit in der Liste: heute die Uhrzeit, gestern das Wort, sonst der Tag. */
+function listenZeit(ts){
+  var d=new Date(ts), w=tagWort(d);
+  return w==='heute' ? fmtUhr(d) : (w==='gestern' ? 'Gestern' : fmtTag(d));
+}
+
+/* ── Chat am Handy: Liste oder Unterhaltung (Runde 286) ──
+   Ein Zustand, zwei Klassen an der Ansicht (.liste / .offen) und eine
+   am body (.chat-offen, für die Bereichszeile darüber). Was daraus
+   folgt, entscheidet das Stylesheet — und nur bis 820 px. Darüber ist
+   der Zustand da, ändert aber nichts.
+
+   Die Unterhaltung bekommt einen eigenen Verlaufseintrag: die
+   Zurück-Geste des Handys führt zur Liste, nicht aus dem Chat heraus. */
+var _chatOffen=false, _dmAusListe=false;
+var _chatHandyMq=window.matchMedia ? window.matchMedia('(max-width:820px)') : null;
+function chatHandy(){ return !!(_chatHandyMq && _chatHandyMq.matches); }
+/* Steht am Handy gerade die Liste da? Dann ist der geladene Kanal nicht
+   zu sehen — er darf nicht als gelesen gelten. */
+function chatInListe(){ return chatHandy() && !_chatOffen; }
+function chatZustand(){
+  var v=$('view-chat'); if(!v) return;
+  v.classList.toggle('liste', !_chatOffen);
+  v.classList.toggle('offen', _chatOffen);
+  document.body.classList.toggle('chat-offen', _chatOffen && currentView==='chat');
+}
+function chatUnterhaltungZeigen(ohneVerlauf){
+  var war=_chatOffen;
+  _chatOffen=true;
+  chatZustand();
+  chatKopfSetzen();
+  if(!war && chatHandy()){
+    if(!ohneVerlauf){ try{ history.pushState({v:'chat', u:1}, '', location.hash); }catch(e){} }
+    markChannelRead(currentChannel);
+    lesestandSchreiben();
+    setTimeout(scrollBottom, 60);
+  }
+}
+function chatListeZeigen(){
+  if(!_chatOffen) return;
+  _chatOffen=false;
+  cancelCompose();
+  chatZustand();
+  kanalSpalteZeichnen();
+}
+function chatKopfSetzen(){
+  var nm=$('chatKopfName'); if(!nm) return;
+  var c=alleKanaele().filter(function(x){ return x.id===currentChannel; })[0];
+  nm.textContent = c ? c.label : '';
+  var sub=$('chatKopfSub');
+  if(sub){
+    /* kanalMitglieder zählt die anderen; man selbst gehört dazu. */
+    var leute=c ? kanalMitglieder(c.id).length+1 : 0;
+    sub.textContent = leute>1 ? leute+' Personen' : '';
+  }
+  /* Neben „‹ Chats" steht, wie viel woanders ungelesen wartet. */
+  var z=$('chatKopfZahl');
+  if(z){
+    var n=0;
+    alleKanaele().forEach(function(x){ if(x.id!==currentChannel) n+=kanalUngelesen(x.id); });
+    z.hidden=!n; z.textContent = n>99 ? '99+' : String(n);
+    var zb=$('chatZurueck');
+    if(zb) zb.setAttribute('aria-label', 'Zurück zu den Chats'+(n ? ', '+n+' ungelesen' : ''));
   }
 }
 function renderChannelBadges(){
@@ -32487,6 +32651,7 @@ function gehirnSucheOeffnen(i, n){
   jarvisZu();
   if(r.kanal && r.kanal!==currentChannel){ var k=document.querySelector('.chan[data-chan="'+r.kanal+'"]'); if(k) k.click(); }
   showView(r.view);
+  if(r.view==='chat') chatUnterhaltungZeigen();
 }
 /* Schicht abgeben: dieselben Felder wie „Ich kann nicht" im Team-Bereich
    (tausch, tauschVon, tauschTs) — die Leitung bestätigt wie bisher. */
@@ -38486,6 +38651,7 @@ function lesestandSchreiben(){
      ist — deshalb zusätzlich: ist die Chat-Ansicht wirklich offen? */
   var v=$('view-chat');
   if(!ch || !session || currentView!=='chat' || document.hidden || !v || !v.classList.contains('show')) return;
+  if(chatInListe()) return;   // am Handy steht die Liste da, nicht der Verlauf
   var neueste=0;
   (_curMsgs||[]).forEach(function(m){ if(m.uid!==session.uid && (m.ts||0)>neueste) neueste=m.ts||0; });
   if(!neueste || neueste <= (_lesestandGeschrieben[ch]||0)) return;
@@ -52694,8 +52860,15 @@ function verlaufStarten(){
       return;
     }
     var z=(e.state && e.state.v) || 'home';
+    /* Runde 286: aus der Unterhaltung zurück in die Chatliste. */
+    if(z==='chat' && currentView==='chat'){
+      if(e.state && e.state.u) chatUnterhaltungZeigen(true); else chatListeZeigen();
+      tick(6);
+      return;
+    }
     if(z===currentView) return;
     showView(z, true, true);
+    if(z==='chat' && e.state && e.state.u) chatUnterhaltungZeigen(true);
     tick(6);
   });
 
@@ -54288,6 +54461,7 @@ function sucheZeichnen(box, res){
         if(knopf) knopf.click();
       }
       showView(el.dataset.view);
+      if(el.dataset.view==='chat') chatUnterhaltungZeigen();
     });
   });
 }
@@ -55512,7 +55686,16 @@ function bindActions(){
 
   // Direktnachrichten
   var dmSearch=$('dmSearch'); if(dmSearch) dmSearch.addEventListener('input',function(){ renderDmPeople(this.value); });
-  var dmBack=$('dmBack'); if(dmBack) dmBack.addEventListener('click',closeDmConvo);
+  /* Aus der Chatliste geöffnet: zurück in die Chatliste, wie es in der
+     Nachrichten-App jeder erwartet (Runde 286). */
+  var dmBack=$('dmBack'); if(dmBack) dmBack.addEventListener('click',function(){
+    if(_dmAusListe && chatHandy()){ _dmAusListe=false; showView('chat'); return; }
+    closeDmConvo();
+  });
+  var cz=$('chatZurueck'); if(cz) cz.addEventListener('click', function(){
+    if(history.state && history.state.u) history.back(); else chatListeZeigen();
+    tick(6);
+  });
   var dmSend=$('dmSend'); if(dmSend) dmSend.addEventListener('click',sendDm);
   var dmCl=$('dmChecklist'); if(dmCl) dmCl.addEventListener('click',function(){
     if(!_dmPeer) return;

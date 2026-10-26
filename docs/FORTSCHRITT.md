@@ -24187,3 +24187,82 @@ kippen, wenn vier Browser sich vier Kerne teilen.
 
 **Nicht getestet:** echtes iPhone und Safari, echtes Firebase. Die
 Leistungsmessungen nur in Chromium ohne Bildschirm (60 Hz).
+
+---
+
+## Runde 286 — Chat am Handy: erst die Liste, dann die Unterhaltung (26.10.2026)
+
+Aus der Prüfung vom 26.10.2026 (Idee 1 und 3), freigegeben mit „ja dann
+lass uns das so machen wie da steht".
+
+**Befund vorher (390 × 844, nachgestellter iPhone-Rand, Demo-Chef):** der
+Verlauf hatte 276 px — 33 % des Fensters, 54 % der Ansicht. Darüber vier
+Zeilen Navigation: Bereichszeile (48), Reiter Chats | Pinnwand (40),
+Studios | Gruppen (40), Kanalzeile (60). Der Tag-Trenner klebte oben und
+lag über Name und Nachricht.
+
+**Gebaut:**
+- Bis 820 px beginnt der Chat mit der **Liste aller Unterhaltungen**
+  (Studios, Gruppen, Direkt), jede Zeile mit letzter Nachricht, Uhrzeit
+  und Zahl der ungelesenen. Es ist **dieselbe Liste wie die Kanalspalte
+  am Rechner** (Runde 172, `kanalSpalteZeichnen`) — ein Ort, ein Inhalt.
+  Sie wird jetzt auch bei weniger als drei Kanälen gezeichnet; die
+  Spalte am Rechner erscheint weiter erst ab drei (`mit-spalte`).
+- Ein Tipp öffnet die Unterhaltung. Dort ersetzt **eine** Kopfzeile
+  „‹ Chats · Kanalname · n Personen" die vier Zeilen. Neben „‹ Chats"
+  steht, wie viel woanders ungelesen wartet.
+- Die Unterhaltung hat einen eigenen Verlaufseintrag: die Zurück-Geste
+  führt zur Liste, nicht aus dem Chat. Eine Direktnachricht, die aus der
+  Liste geöffnet wurde, führt mit ← ebenfalls zur Liste zurück.
+- Suchtreffer im Chat öffnen die Unterhaltung direkt.
+- Das Eingabefeld trug am Handy den iPhone-Rand unten ein zweites Mal
+  (die untere Leiste trägt ihn schon): 34 leere Pixel, entfernt.
+- **Tag-Trenner als kleine graue Zeile**, rollt mit, ohne Fläche.
+
+**Warum die untere Leiste in der Unterhaltung bleibt:** die
+Nachrichten-App blendet ihre Leiste aus. Hier hängt an der Leiste die
+Navigation in jeden anderen Bereich, und Formi sitzt in ihrer Nähe —
+Formi wird in einer anderen Sitzung gestaltet und sollte nicht
+umziehen. Auch mit Leiste reicht der Platz deutlich.
+
+**Warum „gelesen" sich ändert:** solange am Handy die Liste dasteht,
+gilt der geladene Kanal nicht als gelesen (`chatInListe()` in
+`kanalUngelesen`, `lesestandSchreiben`, `buildChannels`, `showView`).
+Sonst hätte das blosse Öffnen der Liste „Gelesen" an die anderen
+gemeldet. Am Rechner unverändert.
+
+**Gemessen (Verlauf in der geöffneten Unterhaltung, mit iPhone-Rand):**
+
+| Breite × Höhe | vorher | nachher | Anteil der Ansicht |
+|---|---|---|---|
+| 320 × 640 | — | 247 px | 68 % |
+| 390 × 844 | 276 px | 451 px | 80 % |
+| 430 × 932 | — | 539 px | 82 % |
+| 820 × 1180 | — | 787 px | 87 % |
+
+„‹ Chats" 86 × 44 px, per Hit-Test getroffen; Listenzeilen 64 px.
+Rechner 1280 / 1440 / 1920: Kanalspalte und Verlauf wie bisher, die
+Spalte zeigt jetzt zusätzlich die Uhrzeit.
+
+**Tests:** `test-chat-bereich3` (vorher rot) prüft jetzt Liste,
+Zurück-Knopf, Zurück-Geste und den Platz — Grenze 55 % unverändert.
+`test-design-107` Teil 1 prüfte das Kleben des Trenners; er prüft jetzt
+das Gegenteil (rollt mit, verdeckt keine Nachricht), mit dem Zitat der
+Freigabe im Test.
+
+Zwölf weitere Durchläufe öffneten den Chat und erwarteten sofort den
+Verlauf oder klickten auf die Kanalzeile bzw. „Direkt" (`test-all`,
+`-final`, `-mitarbeiter`, `-ui`, `-block5`, `-chat-blasen`,
+`-chat-imessage`, `-chat-antworten`, `-chat-klein`, `-sprachabspieler`,
+`-umfrage`, `-kanalspalte`, `-zusammengelegt`). Sie öffnen jetzt erst
+die Unterhaltung bzw. „Alle Direktnachrichten ›" aus der Liste; ihre
+Zusicherungen sind unverändert, ausser wo sie genau das alte Verhalten
+prüften (Kanalzeile am Handy, Reiter in der Unterhaltung) — dort prüfen
+sie das neue.
+
+55 Chat-nahe Durchläufe gelaufen: alle grün bis auf `rahmen` und
+`gruppen-titel` (auf `main` identisch rot, P-22/P-23) und `federn`
+(unter Last rot, einzeln grün).
+
+**Nicht getestet:** echtes iPhone und Safari (Zurück-Wischgeste am
+Rand), echtes Firebase.
