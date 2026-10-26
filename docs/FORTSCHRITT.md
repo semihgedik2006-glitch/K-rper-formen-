@@ -24580,3 +24580,18 @@ heissen, und der Durchlauf bekommt die Prüfung „`aufbau.start='chat'`,
 kein Link → Chat“ dazu. Ebenfalls nicht geprüft: der echte Anmeldeweg
 (Firebase lädt hier nicht) — der Durchlauf geht über den Demo-Zugang, der
 dieselbe Startroutine nimmt.
+
+**Gesamtdurchlauf** (hier, 264 Durchläufe, in zwei Teilen — `alle.sh`
+wurde nach 30 min vom Läufer abgebrochen, der Rest lief mit vier
+gleichzeitig): rot waren
+- auf `main` genauso rot: `test-bestellung` (`#bsLiefAendern` 52×40 bei
+  390 px kompakt), `test-pc-spalten`, `test-rahmen`, `test-schrift-geraet`,
+  `test-nebenseiten` (Gegenprobe meldet sich im Text, Exit 0);
+- fehlende Module in dieser Umgebung (`firebase-functions`, `nodemailer`,
+  `acorn`, Regel-Emulator): `test-abo-leiter`, `test-gehirn-aktion`,
+  `test-stripe-felder`, `test-mail-versand`, `test-paywall`,
+  `test-ausliefern-kommentare`, `test-regelumgebung`;
+- Zeitgrenze 420 s unter Last: `test-formi-verdeckt`, `test-formi-zeigwie`,
+  `test-gehirn` — gegen `main` **nicht** verglichen;
+- nur unter Last rot, einzeln grün: `test-navigation`, `test-fuehrung`,
+  `test-leiter-aufgaben`, `test-schichtplan-raster`.
