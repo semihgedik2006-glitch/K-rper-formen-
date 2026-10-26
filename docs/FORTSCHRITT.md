@@ -23876,3 +23876,70 @@ jeder Test fiel — gefunden vom Durchlauf, nicht vom Auge.
 
 **Nicht geprüft:** echte Handys, Ziehen mit dem Finger (gibt es nicht),
 echte Spracherkennung.
+## Runde 282 — Zweite Prüfung: Zoom-Sperre weg, Vorlesen im Bestand, doppelte Putzpunkte (26.10.2026)
+
+Aus dem Betrieb, 26.10.2026: „prüfe und sammle ideen auch mit fable
+einmal bitte extra" — eine zweite, unabhängige Prüfung neben dem Faden
+„App auf Fehler prüfen und Ideen sammeln".
+
+**Wie geprüft.** Eigener Durchlauf über alle 21 Ansichten bei 390 × 844
+(nachgestellter iPhone-Rand 59/34, als Chef und als Mitarbeiter) und
+1440 × 900: Seitenfehler, axe-core (WCAG 2.1 AA), Trefferflächen per
+`elementFromPoint` (fünf Punkte je Bedienelement), Überlauf, Tastatur
+(14 × Tab: Fokus immer sichtbar). Dazu die Regeldateien durchgelesen
+(beide Bäume verglichen: nur `users`, `beitritt`, `firmenArchiv` flach
+und `abo` je Firma — alles Absicht und so dokumentiert), die 64
+Callable-Functions auf eine Anmeldeprüfung in den ersten 30 Zeilen
+abgesucht (alle haben eine), die Speicherregeln (alles zu) und ein
+Schlüssel-Scan über das Repo (nur die öffentlichen Firebase-Web-Keys in
+`konfig.js`, das ist in Ordnung).
+
+**Gefunden und behoben.**
+- **Zoom war gesperrt.** `maximum-scale=1.0` im Viewport: Android-Chrome
+  liess die App nicht mit zwei Fingern vergrössern (WCAG 1.4.4, axe
+  „critical"). Gestrichen. Die Sorge, dass Safari dann beim Tippen
+  hineinzoomt, greift nicht: `input, textarea, select` haben 16 px.
+- **48 namenlose Zahlenfelder im Bestand** (Soll / Ist / Fehlt je
+  Artikel) und drei Auswahlfelder ohne Namen (`matStudio`, `matSort`,
+  `teamStudio`). Vorlesefunktion sagte nur „Eingabefeld". Jetzt
+  `aria-label` mit Artikelname („Soll Handtücher").
+- **„Böden wischen · Böden wischen"** auf Heute → Putzplan, wenn zwei
+  Räume denselben Punkt offen haben: die Unterzeile nimmt jetzt die
+  ersten zwei verschiedenen Titel.
+
+**Gefunden, nicht geändert (gehört in eine Entscheidung).**
+- **Jeder App-Start lädt die ganze Seite neu.** `index.html` ist 3,15 MB,
+  943 KB gzip, und wird mit `no-store` ausgeliefert, der Service Worker
+  holt sie mit `cache:'no-store'`. Es gibt also nie ein 304. Gemessen:
+  34 % der Datei sind Kommentare; ohne sie wären es 543 KB gzip. Zwei
+  Hebel, beide ohne Umbau: `no-cache` statt `no-store` (304 bei
+  unverändertem Stand, wie bei den Inhaltsdateien seit 24.9. schon
+  bewiesen) und Kommentare erst beim Ausliefern entfernen (Repo bleibt,
+  Prüfsumme der CSP neu rechnen). Nicht hier gemacht: beides lässt sich
+  nur live messen.
+- **Schwebende Knöpfe decken Zeilen ab.** Am Handy liegen „+ Aufgabe"
+  und Formi unten rechts; die „…"-Knöpfe der Zeilen darunter sind beim
+  Scrollen zeitweise verdeckt (390/430 px, Aufgaben und Putzplan; im
+  Plan der „+"-Knopf am Montag unter Formi bei 430 px). Am Ende der
+  Liste trifft alles (98 px Platz unten, gemessen). Das ist das übliche
+  Verhalten schwebender Knöpfe, eine Änderung wäre Gestaltung.
+- **Dokumentenliste**: jede Zeile ist `role="button"` und enthält den
+  Knopf „Mehr" — ein Bedienelement im Bedienelement (axe
+  „nested-interactive"). Vorlesefunktionen überspringen den inneren
+  Knopf teils. Lösung wäre ein echter Knopf für den Namen statt der
+  ganzen Zeile.
+- `#chatScroll` ist per Tastatur nicht erreichbar (kein `tabindex`).
+- Auf `main` rot, nicht von dieser Runde: test-abo-stufe und
+  test-admin-firmen (alte Navigation, P-20), test-akzent (ein
+  Farbwechsel-Zwischenwert, unter Last) und test-abgeschnitten
+  (`#app` 844 > 820 px im Putzplan bei 820 px — einzeln nicht
+  nachstellbar, siehe unten).
+
+**Geprüft:** test-neuigkeiten (12), test-csp, test-material-bereich5,
+test-material-name, test-gestaltung, test-knoepfe, test-iphone-rand,
+test-p3-startseite, test-startseite-putz, test-team-woche,
+test-abgeschnitten, test-fingerziele, test-xss, test-startzahlen,
+test-quer, test-akzent, test-geraete — Ergebnis im Pull Request.
+
+**Nicht geprüft:** Safari und ein echtes iPhone; die Regeln gegen das
+echte Firebase; die Ladezeit live.

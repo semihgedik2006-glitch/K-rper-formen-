@@ -2,13 +2,16 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+<!-- Ohne maximum-scale: wer schlecht sieht, darf die App mit zwei Fingern vergrössern
+     (Runde 282). Beim Tippen zoomt das iPhone trotzdem nicht: alle Eingabefelder
+     haben 16 px Schrift (input,textarea,select im Stylesheet). -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#12131C" />
 <meta name="robots" content="noindex, nofollow" />
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-ukcXN/gxnYWhIvurlr8hjfztdQ3IHO9npJ/l5BpTY/g='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-a5XU0KjKejx7IKJorsZYO1zD0hB8AikU89/ov0QYTI0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -11771,13 +11774,13 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
                Die Suche schrumpft auf ihre Lupe, solange nichts
                drinsteht (siehe .werkzeugzeile im Stylesheet). -->
           <div class="mat-bar werkzeugzeile">
-            <select class="inp" id="matStudio"></select>
+            <select class="inp" id="matStudio" aria-label="Studio"></select>
             <div class="todo-search klein">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
               <input id="matSearch" type="search" placeholder="Material suchen …" aria-label="Material suchen" autocomplete="off" />
             </div>
             <span class="todo-count" id="matCount"></span>
-            <select class="chip" id="matSort" style="padding-right:26px"></select>
+            <select class="chip" id="matSort" style="padding-right:26px" aria-label="Sortierung"></select>
           </div>
           <div class="mat-alert" id="matAlert" style="display:none"></div>
 
@@ -11989,7 +11992,7 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
           <div id="teamWartet" style="display:none"></div>
 
           <div class="mat-bar">
-            <select class="inp" id="teamStudio"></select>
+            <select class="inp" id="teamStudio" aria-label="Studio"></select>
           </div>
           <div class="pm-tabs" id="teamTabs" style="margin:0 0 14px">
             <!-- Kein data-ikon an diesen vier: mit Symbol passt der vierte
@@ -23212,6 +23215,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-26-zoom-vorlesen', datum:'26.10.2026', art:'besser', titel:'Vergrössern mit zwei Fingern, Vorlesen im Bestand', wo:'material', punkte:[
+    'Die App lässt sich am Handy mit zwei Fingern vergrössern.',
+    'Bestand: Soll, Ist und Fehlt sowie die Studio-Auswahl werden mit Namen vorgelesen.',
+    'Heute → Putzplan: gleiche Putzpunkte stehen nicht mehr doppelt in einer Zeile.'
+  ]},
   { id:'2026-10-26-abwesend-uni', datum:'26.10.2026', art:'neu', titel:'Uni und Weiterbildung als Abwesenheit melden', wo:'team:abwesend', punkte:[
     'Plan → Abwesend → „Abwesenheit melden": neu „Uni / Berufsschule" und „Weiterbildung", als Antrag wie Urlaub.',
     'Schichtplaner: „Fragen zum Plan" oben im Kopf, mit der Zahl der offenen Fragen.',
@@ -40711,7 +40719,11 @@ function renderHeuteJetzt(){
         putz.push({ art:'putz', ziel:'putzplan', sk:x.sk, ikon:allesIkon('putzplan'),
           anzahl:n,
           titel:studioName(x.sk)+' · '+(n===1?'1 Punkt offen':n+' Punkte offen'),
-          unter:x.liste.slice(0,2).map(function(t){ return t.title||t.text||'Putzpunkt'; }).join(' · ') });
+          /* Zwei Punkte mit demselben Titel (etwa „Böden wischen" in zwei
+             Räumen) standen als „Böden wischen · Böden wischen" da. Jetzt
+             die ersten zwei VERSCHIEDENEN Titel (Runde 282). */
+          unter:x.liste.map(function(t){ return t.title||t.text||'Putzpunkt'; })
+            .filter(function(t,i,a){ return a.indexOf(t)===i; }).slice(0,2).join(' · ') });
       });
     } else if(putzJe.length){
       putzJe[0].liste.forEach(function(t){
@@ -50402,13 +50414,17 @@ function renderMaterial(){
     if(_matNurFehlende && fehlt<=0) return '';
     shown++;
     var lim=it.limit||0, warn=fehlt>0?' data-warn="1"':'';
-    var soll='<input class="num limit" type="number" min="0" inputmode="numeric" data-idx="'+idx+'" data-f="limit" value="'+lim+'"'+(chef?'':' readonly')+' />';
-    var have='<input class="num have" type="number" min="0" inputmode="numeric" data-idx="'+idx+'" data-f="have" value="'+(it.have||0)+'" />';
+    /* Jedes Zahlenfeld sagt der Vorlesefunktion, was es ist und wozu es
+       gehört („Soll Handtücher") — vorher 48 namenlose Felder je Studio
+       (Runde 282, gemessen mit axe). */
+    var artikel=esc(it.name||'Artikel');
+    var soll='<input class="num limit" type="number" min="0" inputmode="numeric" data-idx="'+idx+'" data-f="limit" value="'+lim+'"'+(chef?'':' readonly')+' aria-label="Soll '+artikel+'" />';
+    var have='<input class="num have" type="number" min="0" inputmode="numeric" data-idx="'+idx+'" data-f="have" value="'+(it.have||0)+'" aria-label="Ist '+artikel+'" />';
     // Mit gesetztem Soll ist „Fehlt" ein Rechenergebnis. Ohne Soll bleibt es
     // eingebbar, sonst könnte man Fehlendes gar nicht melden.
     var fehltZelle = lim>0
       ? '<div class="num computed" data-fehlt="'+idx+'"'+warn+'>'+fehlt+'</div>'
-      : '<input class="num need" type="number" min="0" inputmode="numeric" data-idx="'+idx+'" data-f="need" value="'+(it.need||0)+'"'+warn+' title="Wie viele fehlen?" />';
+      : '<input class="num need" type="number" min="0" inputmode="numeric" data-idx="'+idx+'" data-f="need" value="'+(it.need||0)+'"'+warn+' title="Wie viele fehlen?" aria-label="Fehlt '+artikel+'" />';
     /* Der Name war bis zum 18.8. reiner Text. Wer sich vertippt hatte,
        musste die Zeile loeschen und neu anlegen — und verlor dabei Soll
        und Ist. Aus dem Betrieb gemeldet: „es ist voll der Film, wenn man
