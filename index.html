@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-SaWL01lNms12KP5PBPmB8Wdz5/RTiKmLzWjyZiDMoeU='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-pvFDjiHUanDFvoRpjjVJNvtqFWjwTQOr6qV/4FlUMbY='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -22549,7 +22549,9 @@ function showApp(){
   applyRoleVisibility();                    // Chef-eigene Karten für Leiter ausblenden
   bindActions();
   foldAufbauen();
-  verlaufStarten();
+  /* Hat der Start schon ein Ziel geöffnet (Link oder zuletzt offene
+     Seite), darf „Heute" unten es nicht wieder überschreiben. */
+  var startZiel = verlaufStarten();
   startListeners();
   listenAllUsers();
   listenDmThreads();
@@ -22562,7 +22564,10 @@ function showApp(){
   stErinnerungStarten();      // Runde 238: Stempel vergessen? Formi sagt es
   startPresence();            // "ich bin online" melden
   startNutzung();             // anonyme Zählung: welche Funktion wird benutzt
-  showView('home');
+  /* Runde 289: vorher stand hier showView('home') ohne Bedingung — seit
+     August hat es jedes Ziel aus verlaufStarten() sofort überschrieben.
+     Ein Link auf #putzplan landete auf „Heute" (tests/test-start-ziel.js). */
+  if(!startZiel) showView('home');
   birthdayCheck();
   /* Die Führung, aber erst nach zwei Sekunden und nur beim ersten Mal.
      SOFORT WÄRE FALSCH: die Startseite baut sich noch auf, und ein
@@ -23343,6 +23348,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-26-start-ziel', datum:'26.10.2026', art:'fix', titel:'Links und Meldungen öffnen wieder die richtige Seite', wo:'putzplan', punkte:[
+    'Ein Link wie …/#putzplan oder ein Tipp auf eine Meldung öffnet direkt diese Seite, nicht mehr „Heute".',
+    'Wer die App innerhalb von zwei Stunden wieder öffnet, landet auf der zuletzt offenen Seite (z. B. Putzplan, Aufgaben, Bestand).',
+    'Nach längerer Pause und beim Chat startet die App wie gewohnt auf „Heute".'
+  ]},
   { id:'2026-10-26-schnellantworten', datum:'26.10.2026', art:'neu', titel:'Schnellantworten im Chat', wo:'chat', punkte:[
     'Über dem Schreibfeld stehen „Bin dabei", „Erledigt ✓" und „Komme 10 Min später". Ein Tipp setzt den Satz ins Feld.',
     'Gesendet wird wie immer mit dem Pfeil — vorher lässt sich der Satz noch ändern. Auch bei Direktnachrichten.'
@@ -52908,9 +52918,17 @@ function verlaufStarten(){
   // dort landen. Danach erst die zuletzt offene Ansicht.
   var ausLink=(location.hash||'').replace('#','');
   var ziel = (ausLink && document.getElementById('view-'+ausLink)) ? ausLink : letzteAnsichtHolen();
-  if(ziel && ziel!==currentView){
+  var gezeigt=false;
+  /* Nicht mit currentView vergleichen: das steht vor dem ersten
+     showView noch auf seinem Anfangswert 'chat' — ein Link auf #chat
+     wurde deshalb übersprungen. */
+  if(ziel){
     // Rollen prüfen: der Verwaltungsbereich ist nicht für jeden
-    if((ziel!=='chef' && ziel!=='archive') || canManage()) showView(ziel, true, true);
+    if((ziel!=='chef' && ziel!=='archive') || canManage()){
+      showView(ziel, true, true);
+      // showView lenkt eine abgeschaltete Ansicht auf „Heute" um
+      gezeigt = currentView===ziel;
+    }
   }
 
   try{ history.replaceState({v:currentView||'home'}, '', '#'+(currentView||'home')); }catch(e){}
@@ -52970,6 +52988,8 @@ function verlaufStarten(){
       }
     }).observe(el, { attributes:true, attributeFilter:['class'] });
   });
+  // Runde 289: dem Aufrufer sagen, ob schon ein Ziel offen ist.
+  return gezeigt;
 }
 
 /* ============================================================

@@ -24532,3 +24532,51 @@ passt“); danach die Regeln unverändert zurückgesetzt.
 war nicht falsch, sie war nur nie vollständig — 22 Sammlungen kamen dazu,
 ohne dass jemand die Liste anfasste. Eine Prüfung, die man vergessen
 kann, wird vergessen.
+
+## Runde 289 — Der Start überschreibt sein eigenes Ziel nicht mehr (26.10.2026)
+
+**Befund.** `verlaufStarten()` öffnet beim Start ein Ziel aus der Adresse
+(`#putzplan`, `#chat` …) oder die zuletzt offene Seite (`WIEDER_OEFFNEN`,
+höchstens zwei Stunden alt). Dreizehn Zeilen weiter unten stand in der
+Startroutine ein `showView('home')` ohne Bedingung — es hat jedes dieser
+Ziele sofort wieder überschrieben. Ein Link auf den Putzplan landete auf
+„Heute“, ebenso ein Tipp auf eine Push-Meldung bei geschlossener App
+(`sw.js` öffnet `./index.html#zeit`). Kein Test hat es gesehen, weil
+„Heute“ ja auch eine richtige Seite ist und kein Durchlauf mit einer
+Adresse samt `#…` startete.
+
+Nachgestellt vor der Änderung (neuer Durchlauf `tests/test-start-ziel.js`):
+5 von 10 Prüfungen rot — `#putzplan`, `#chat`, `#chef` als Chef und die
+gemerkte Seite landeten alle auf `#home`.
+
+**Entscheidung (Betrieb, 26.10.2026):** die zuletzt offene Seite wird
+wiederhergestellt, wie ursprünglich gebaut — obwohl man seit Monaten
+immer auf „Heute“ gestartet ist. Links landen in jedem Fall am Ziel.
+
+**Gebaut.**
+- `verlaufStarten()` gibt zurück, ob es ein Ziel geöffnet hat; die
+  Startroutine zeigt „Heute“ nur, wenn nicht.
+- Dabei gefunden: `if(ziel && ziel!==currentView)` hat `#chat` nie
+  geöffnet — `currentView` steht vor dem ersten `showView` auf seinem
+  Anfangswert `'chat'`. Der Vergleich ist weg; ob das Ziel wirklich offen
+  ist, entscheidet `currentView===ziel` *nach* `showView` (das lenkt eine
+  abgeschaltete Ansicht selbst auf „Heute“ um).
+- Unverändert: die Führung beim ersten Start geht weiterhin über „Heute“
+  (`tourSchrittZeigen`). Der Durchlauf setzt deshalb `kf_tour` — ein
+  wiederkehrender Benutzer, wie in den Attrappen.
+
+**Der Durchlauf** (`tests/test-start-ziel.js`, Demo, 1280 × 800): ohne
+Ziel → Heute; `#putzplan` schlägt eine gemerkte Seite; `#chat` → Chat;
+gemerkt vor 10 min → dorthin; vor 3 h → Heute; gemerkter Chat → Heute
+(nicht in `WIEDER_OEFFNEN`); `#chef` ohne Verwaltungsrecht → nicht dorthin,
+als Chef → dorthin. Danach 10 von 10 grün.
+
+**Nicht geprüft:** die eigene Startseite aus `kf_prefs.aufbau.start`
+(`aufbauStart()`). Die gibt es auf `main` noch nicht — nur auf dem Zweig
+`claude/happy-albattani-645msn` (Runde 288, ohne PR). Dort steht
+`showView(aufbauStart() || 'home')` an genau dieser Stelle; beim
+Zusammenführen muss die Zeile `if(!startZiel) showView(aufbauStart() || 'home');`
+heissen, und der Durchlauf bekommt die Prüfung „`aufbau.start='chat'`,
+kein Link → Chat“ dazu. Ebenfalls nicht geprüft: der echte Anmeldeweg
+(Firebase lädt hier nicht) — der Durchlauf geht über den Demo-Zugang, der
+dieselbe Startroutine nimmt.
