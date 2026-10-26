@@ -37,6 +37,7 @@
       "storage-videos.rules",
       "LICENSE",
       "functions/**",
+      "app-huelle/**",
       "tests/**",
       "tools/**",
       "docs/**",

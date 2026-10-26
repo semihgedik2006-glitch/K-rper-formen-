@@ -1,0 +1,9 @@
+{
+  "appId": "app.studiochat.ios",
+  "appName": "StudioChat",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#0b0a1c"
+  }
+}

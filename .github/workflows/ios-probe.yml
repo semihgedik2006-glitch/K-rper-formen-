@@ -1,0 +1,51 @@
+name: iOS-Probebau
+
+# Probe, ob sich die App als iOS-App bauen lässt – auf einem Mac von
+# GitHub, ohne eigenen Mac und ohne Apple-Entwicklerkonto. Gebaut wird
+# für den Simulator und unsigniert: das beweist, dass Hülle und Web-App
+# zusammen kompilieren. Für den App Store fehlt danach nur noch das
+# Signieren (braucht das Konto für 99 $/Jahr). Siehe docs/APPSTORE.md.
+#
+# Das Repository ist öffentlich, deshalb kosten die Mac-Minuten hier
+# nichts.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'app-huelle/**'
+      - '.github/workflows/ios-probe.yml'
+
+jobs:
+  bauen:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Hülle vorbereiten
+        working-directory: app-huelle
+        run: |
+          npm ci
+          node web-kopieren.js
+          npx cap sync ios
+      - name: Xcode-Version
+        run: xcodebuild -version
+      - name: Für den Simulator bauen (unsigniert)
+        working-directory: app-huelle/ios/App
+        run: |
+          xcodebuild -project App.xcodeproj -scheme App \
+            -sdk iphonesimulator -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
+      - name: App-Paket ablegen
+        working-directory: app-huelle/ios/App
+        run: |
+          ls -la build/Build/Products/Debug-iphonesimulator/
+          du -sh build/Build/Products/Debug-iphonesimulator/App.app
+          cd build/Build/Products/Debug-iphonesimulator && zip -qr ../../../../StudioChat-Simulator.zip App.app
+      - uses: actions/upload-artifact@v4
+        with:
+          name: StudioChat-Simulator
+          path: app-huelle/ios/App/StudioChat-Simulator.zip
