@@ -172,7 +172,10 @@ async function seite(b, stub, such, breite) {
            (Runde 113) eine dritte: „Datenschutzvorfall melden" — aus dem
            Betrieb: „es soll einen knopf geben der mir nach ausfüllung
            sofort eine mail schickt". */
-        fenster: !!(z.getAttribute('data-al-hilfe') || z.getAttribute('data-al-neu') || z.getAttribute('data-al-vorfall')),
+        /* Runde 275: „Findetest" ist ebenfalls ein Fenster (nachgezogen
+           in Runde 285). */
+        fenster: !!(z.getAttribute('data-al-hilfe') || z.getAttribute('data-al-neu') || z.getAttribute('data-al-vorfall') ||
+          z.getAttribute('data-al-findetest')),
       })),
       abgeschnitten: zeilen.some(z => {
         const t = z.querySelector('b');
@@ -275,6 +278,18 @@ async function seite(b, stub, such, breite) {
           ladeZu: document.getElementById('allesLade').hidden,
         };
         if (auf) document.getElementById('neuClose').click();
+        return raus;
+      }
+      /* „Findetest" (Runde 275) ebenso. */
+      if (z.getAttribute('data-al-findetest')) {
+        const auf = document.getElementById('findeModal').classList.contains('show');
+        const raus = {
+          name, tipps, reiterOk,
+          view: auf ? 'FENSTER-AUF' : 'FENSTER-ZU',
+          ziel: 'FENSTER-AUF',
+          ladeZu: document.getElementById('allesLade').hidden,
+        };
+        if (auf) document.getElementById('ftClose').click();
         return raus;
       }
       /* „Datenschutzvorfall melden" (seit 25.9., Runde 113) ebenso. */

@@ -43,7 +43,13 @@ const TREFFER = (el) => {
 
 (async () => {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 430, height: 932 } });
+  /* Runde 285: am Rechner (1440 × 900) statt 430 × 932. Am Handy passt
+     „Neu für dich" seit dem Umbau der Startseite nicht mehr auf den
+     Bildschirm und steht als Knopf unter „Ausserdem" — so will es die
+     Regel der Startseite (nichts verschwindet stumm). Die Danke-Zeile
+     selbst ist dann nicht da; geprüft wird sie, wo sie steht. Am Handy
+     prüft der zweite Teil („Was ist neu") weiter mit. */
+  const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
   const fehler = [];
   p.on('pageerror', e => fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
@@ -131,7 +137,7 @@ const TREFFER = (el) => {
      Der Knopf heisst seit Runde 184 „Heute" statt „Start" (aus dem
      Betrieb, 22.10.2026: „das problem mit dem zu viel bleibt immer noch
      bestehen"; die Raumnamen „passen"). */
-  await p.evaluate(() => [...document.querySelectorAll('.mobnav button')].find(x => /Heute/.test(x.textContent)).click());
+  await p.evaluate(() => [...document.querySelectorAll('#side button, .mobnav button')].find(x => /Heute/.test(x.textContent)).click());
   await p.waitForTimeout(800);
   const nochmal = await p.evaluate(() =>
     [...document.querySelectorAll('#heuteListe .heute-zeile')].some(x => /sagt Danke/.test(x.textContent)));

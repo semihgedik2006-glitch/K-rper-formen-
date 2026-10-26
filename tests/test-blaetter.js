@@ -91,6 +91,28 @@ async function ziehe(p, g, dy, schritte, pause) {
   await p.waitForTimeout(600);
 }
 
+/* Runde 285: Das Schnippen mit FESTER Zeit. Die App rechnet das Tempo
+   aus e.timeStamp (Runde 258). Über p.mouse.move bekommt jedes Ereignis
+   aber die Zeit, zu der Playwright es abschicken KONNTE — unter Last
+   (Gesamtlauf, vier Tests parallel) lagen zwischen zwei Bewegungen
+   80–150 ms, und aus „80 px in 40 ms" wurde ein mittlerer Zug, der
+   richtig halb einrastet. Rot war dann der Test, nicht das Blatt. Über
+   das Chrome-Protokoll trägt jedes Ereignis seine eigene Zeit: unten,
+   zwei Bewegungen im Abstand von 16 ms, los — wie ein Finger. */
+async function schnippe(p, g, dy) {
+  const cdp = await p.context().newCDPSession(p);
+  const t0 = Date.now() / 1000;
+  const m = (type, y, t, buttons) => cdp.send('Input.dispatchMouseEvent',
+    { type, x: g.gx, y, button: 'left', buttons, clickCount: 1, timestamp: t0 + t });
+  await m('mouseMoved', g.gy, 0, 0);
+  await m('mousePressed', g.gy, 0.010, 1);
+  await m('mouseMoved', g.gy + dy / 2, 0.026, 1);
+  await m('mouseMoved', g.gy + dy, 0.042, 1);
+  await m('mouseReleased', g.gy + dy, 0.050, 0);
+  await cdp.detach();
+  await p.waitForTimeout(600);
+}
+
 (async () => {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
   try {
@@ -129,7 +151,7 @@ async function ziehe(p, g, dy, schritte, pause) {
           await (id === 'todoSheet' ? aufgabenBlatt(p) : profil(p));
           const neu = await p.evaluate(GRIFF, id);
           pruefe(w + ' #' + id + ': öffnet wieder ganz (Rast „' + neu.rast + '", ' + neu.kartenH + ' px)', neu.offen && neu.rast === 'voll' && Math.abs(neu.kartenH - g.kartenH) <= 2, JSON.stringify(neu));
-          await ziehe(p, neu, 80, 2, 0);
+          await schnippe(p, neu, 80);
           const zu2 = await p.evaluate((id) => document.getElementById(id).classList.contains('show'), id);
           pruefe(w + ' #' + id + ': schnell 80 px geschnippt → zu', !zu2);
           if (zu2) { await p.keyboard.press('Escape'); await p.waitForTimeout(400); }

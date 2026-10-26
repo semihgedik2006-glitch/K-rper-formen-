@@ -13,8 +13,10 @@
     3. Ein kurzer Zug nach links (30 px) federt zurück, nichts bleibt offen.
     4. Ein Tipp auf die offene Zeile schliesst sie nur (öffnet nichts);
        eine zweite Zeile zu öffnen schliesst die erste.
-    5. „Mehr" öffnet dasselbe Blatt wie ⋯; „Löschen" fragt nach wie der
-       Papierkorb (abgebrochen: die Aufgabe bleibt).
+    5. „Mehr" öffnet dasselbe Blatt wie ⋯; „Löschen" tut dasselbe wie der
+       Papierkorb: seit Runde 280 (Idee 14, „Rückgängig statt
+       Nachfragen") ohne Rückfrage, dafür acht Sekunden „Rückgängig" —
+       und das holt die Aufgabe zurück (Runde 285 nachgezogen).
     6. Senkrecht wischen scrollt und öffnet nichts.
     7. Jede Wisch-Aktion gibt es an der Zeile auch sichtbar (⋯, Papierkorb).
     8. Vor dem ersten Wischen steht kein Aktionsfeld im Dokument.
@@ -160,19 +162,29 @@ function kontrast(a, b) { const x = lum(farbe(a)), y = lum(farbe(b)); return (Ma
       pruefe(w + ': „Mehr" öffnet dasselbe Blatt wie ⋯ (darin auch „Löschen") und schliesst die Zeile', nachMehr[0] && !nachMehr[1] && nachMehr[2], JSON.stringify(nachMehr));
       await p.keyboard.press('Escape'); await p.waitForTimeout(400);
 
-      /* 5b. Löschen fragt nach (abbrechen: bleibt) */
+      /* 5b. Löschen wie der Papierkorb: weg, „Rückgängig" holt es zurück.
+         Bis Runde 280 fragte es nach; ein Dialog wäre jetzt ein Fehler. */
       z = await zeile(p, '#todoArea .todo', 1);
       los = await wische(p, z, -170, 8, 20); await los();
       let gefragt = '';
-      p.once('dialog', d => { gefragt = d.message(); d.dismiss(); });
+      const dialogWeg = d => { gefragt = d.message(); d.dismiss(); };
+      p.on('dialog', dialogWeg);
       const wegPos = await p.evaluate(() => { const k = document.querySelector('[data-wt] .sk-weg'); if (!k) return null; const r = k.getBoundingClientRect(); return [r.left + r.width / 2, r.top + Math.min(22, r.height / 2)]; });
       /* Oben im Knopf getippt: die Formi-Kugel schwebt unten rechts und
          darf eine hohe Zeile zum Teil decken (bei 320 px die Mitte von
          „Löschen") — das ist ihr Platz, nicht ein Fehler des Felds. */
       if (process.env.DEBUG) console.log(JSON.stringify(await p.evaluate((pos) => { const t = pos && document.elementFromPoint(pos[0], pos[1]); return [pos, t && (t.className || t.tagName), [...document.querySelectorAll('.show')].map(e => e.id || e.className).slice(0, 6), document.querySelector('[data-wt]').className]; }, wegPos)));
       if (wegPos) await tippe(p, wegPos[0], wegPos[1]);
-      const noch = await p.evaluate((id) => [...document.querySelectorAll('#todoArea .todo')].some(x => x.dataset.id === id), z.id);
-      pruefe(w + ': „Löschen" fragt nach wie der Papierkorb, abgebrochen bleibt die Aufgabe', !!wegPos && /löschen/i.test(gefragt) && noch, JSON.stringify([gefragt, noch]));
+      await p.waitForTimeout(500);
+      const da = (id) => [...document.querySelectorAll('#todoArea .todo')].some(x => x.dataset.id === id);
+      const weg = await p.evaluate((id) => ({ noch: [...document.querySelectorAll('#todoArea .todo')].some(x => x.dataset.id === id),
+        undo: document.getElementById('undoBar').classList.contains('show') }), z.id);
+      if (weg.undo) await p.evaluate(() => document.getElementById('undoBtn').click());
+      await p.waitForTimeout(700);
+      const zurueck = await p.evaluate(da, z.id);
+      p.off('dialog', dialogWeg);
+      pruefe(w + ': „Löschen" wie der Papierkorb: ohne Rückfrage weg, „Rückgängig" holt die Aufgabe zurück',
+        !!wegPos && !gefragt && !weg.noch && weg.undo && zurueck, JSON.stringify([gefragt, weg, zurueck]));
 
       /* 3. kurzer Zug nach links: zurück */
       z = await zeile(p, '#todoArea .todo', 1);

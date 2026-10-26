@@ -24097,3 +24097,93 @@ gegen `https://formenchat.web.app/`):
 
 Vorher ging bei jedem Öffnen die ganze Seite über die Leitung (713 KB
 br bzw. 3,19 MB roh). Nicht gemessen: die Zeit am echten Gerät.
+
+## Runde 285 — Rote Tests aufgeräumt (26.10.2026)
+
+**Aus dem Betrieb:** „ja dann lass uns das so machen wie da steht" —
+Schritt 1 der Liste aus dem Vergleich der beiden Prüfungen: die roten
+Tests auf `main` klären, reparieren oder veraltete Tests anpassen.
+
+**Ausgangslage** (Gesamtlauf auf `main`, 260 Durchläufe, vier
+parallel): 33 rot. Danach jeder rote einzeln nachgelaufen, die langen
+mit mehr Zeit.
+
+**Nur unter Last rot, einzeln grün (12)** — kein Eingriff: ems-schulung,
+federn, formi-app, formi-eigenleben, formi-kugel, ganze-seite, glas,
+p4-seitenleiste, pc-spalten, schichtplan-raster, formi-angedockt und
+pc-durchsicht (die letzten beiden brauchen 350–600 s, siehe unten).
+Zeitabhängige Prüfungen (Arbeit je Bild, „Kugel gleitet in 160 ms")
+kippen, wenn vier Browser sich vier Kerne teilen.
+
+**Veraltete Tests, angepasst (die App war richtig):**
+- *abo-stufe, admin-firmen:* griffen nach `.mobnav`, die es im neuen
+  Design nicht gibt, fanden keine Kachel und meldeten sechs bzw. drei
+  Fehler. Jetzt über die Seitenleiste bei 1440 × 900 (P-20).
+- *block-d:* „Neu für dich" passt bei 430 × 932 nicht mehr auf die
+  Startseite und steht als Knopf unter „Ausserdem" — so will es die
+  Regel der Seite. Der Danke-Teil prüft jetzt am Rechner, der „Was ist
+  neu"-Teil weiter an beiden Geräten.
+- *eigene-reihenfolge:* Mitarbeiter haben seit Runde 260 keinen Raum
+  „Studio"; der Test blieb auf „Heute" und zog an Zeilen ausser Bild.
+  Jetzt über „Alles". Und **P-21 „Wisch am Griff hakt ab" ist geklärt:**
+  der Test mass den Griff direkt nach dem Rollen, während der
+  Bereichskopf sich noch zusammenzog (58 px). Der Finger setzte auf der
+  Zeile auf. Mit Pause grün.
+- *aufgaben-wie-putzplan:* „t-mehr 44×30" bzw. 44×39 bei 320 px
+  kompakt, nur im Gesamtlauf. Nachgestellt mit CPU ÷6: die Meldung vom
+  Studiowechsel stand noch, Formi rückt dann 72 px höher und lag mit
+  5–14 px auf dem „…" der mittleren Zeile. Der Test misst jetzt erst,
+  wenn keine Meldung mehr steht, und wartet nach dem Rollen zwei Bilder.
+  Die Überdeckung selbst ist echt, aber kurz und Formis Platz — P-24.
+- *blaetter:* das schnelle Schnippen ging über `mouse.move`. Unter Last
+  lagen 80–150 ms zwischen zwei Bewegungen, aus dem Schnippen wurde ein
+  mittlerer Zug, und das Blatt rastete richtig halb ein. Jetzt über das
+  Chrome-Protokoll mit festen Zeitstempeln (16 ms Abstand), die die App
+  über `e.timeStamp` liest.
+- *formi-feinschliff:* rechnete mit „25.10. 09:14" fest — ab dem 26.
+  stand dort richtig „gestern 09:14". Jetzt heute 09:14.
+- *wischen:* erwartete beim Wisch-Löschen eine Rückfrage. Seit Runde 280
+  (Idee 14 „Rückgängig statt Nachfragen") wird sofort gelöscht, acht
+  Sekunden „Rückgängig". Der Test prüft jetzt genau das, mit Rückholen.
+  Der Kommentar in der App sagte noch „fragt nach" — angeglichen.
+- *neu-design:* „Findetest" (Runde 275) öffnet ein Fenster und war im
+  Test noch nicht als solches bekannt.
+- *gleiten-rahmen:* verbot jede Endlos-Animation, also auch Formis
+  Scheibe. Die dreht seit Runde 226 mit Absicht (test-formi-lebt
+  verlangt es). Formi-Figuren sind ausgenommen; was die Scheibe kostet,
+  misst test-formi-physik. Die Gegenprobe (altes Glühen) greift weiter.
+- *alle.sh:* Zeitgrenze 240 → 420 s. Sieben Durchläufe brauchen
+  inzwischen länger und zählten mit Exit-Code 124 als rot, obwohl ihre
+  Prüfungen grün waren.
+
+**Echte Fehler in der App, behoben:**
+- **Formi grüsste zweimal am Tag.** Der Morgen-Gruss aus Runde 279
+  („Das Wichtigste zuerst") fragte nicht, ob heute schon gegrüsst wurde.
+  Wer morgens woanders anfing und später auf „Heute" kam, bekam ein
+  zweites „Hallo" — und das blockierte 45 s lang das Lob für den ersten
+  Haken. Jetzt nur, wenn heute noch kein Gruss kam (test-formi-kumpel:
+  auf `main` 2 rot, hier grün).
+- **Die Vorführung hatte montags keinen fehlenden Feierabend.** Der
+  offene Tag stand fest „vor acht Tagen" — montags ein Sonntag, und an
+  jedem vierten Tag würfelte der Zufall ihn als frei weg. Jetzt der
+  erste Werktag ab acht Tagen zurück, nie frei; `zufall()` wird
+  trotzdem gezogen, damit sich nichts anderes verschiebt
+  (test-zeiten-verwaltung: auf `main` 4 rot, hier grün).
+
+**Bleibt rot, mit Absicht nicht gelockert:**
+- *chat-bereich3* (Verlauf 54 % statt 55 %) — das löst der nächste
+  Schritt „Chat am Handy: erst die Liste, dann die Unterhaltung" (P-21).
+- *formi-reihe, neu-design (320 × 568), gruppen-titel (390)* — eine
+  Ursache: „Ausserdem" wächst am Handy auf vier Zeilen und verdrängt die
+  Blöcke (neu: P-22). Gestaltungsfrage.
+- *rahmen* — am Handy beginnt der Bestand erst bei 697 px (neu: P-23).
+- *formi-physik, gehirn* — Arbeit je Bild bei CPU ÷4 über 8,3 ms, wenn
+  Formi offen ist oder denkt. Formi wird in einer eigenen Sitzung
+  gestaltet; hier nicht angefasst.
+- *regelumgebung* — in dieser Umgebung fehlt `npm install` unter
+  `tests/rules`; die Regeln laufen in der Prüfung auf GitHub.
+- *formi-verdeckt* — misst 32.000 Bedienelemente in 999 Ansichten und
+  brauchte hier über 700 s; bis dahin 29 von 29 grün, kein Befund.
+
+**Nicht getestet:** echtes iPhone und Safari, echtes Firebase. Die
+Leistungsmessungen nur in Chromium ohne Bildschirm (60 Hz).

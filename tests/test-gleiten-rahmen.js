@@ -112,8 +112,16 @@ const GLEITEN = async () => {
   }
 
   console.log('\n── 2. Keine Endlos-Animation ──');
+  /* Runde 285: Formis Scheibe ist ausgenommen (jede Formi-Figur, .fk-koerper). Seit Runde 226 dreht
+     sie sich mit Absicht endlos — „Formi als echtes schwarzes Loch:
+     Akkretionsscheibe", vom Betrieb so gewünscht; test-formi-lebt
+     verlangt, dass sie dreht (und bei „weniger Bewegung" steht). Das
+     ist eine Endlos-Animation MIT Grund. Was sie je Bild kostet, misst
+     test-formi-physik (Grenze 8,3 ms). Alles andere bleibt verboten,
+     die Gegenprobe unten (altes Glühen) ebenso. */
   const endlos = () => document.getAnimations()
     .filter(a => a.playState === 'running' && a.effect && a.effect.getTiming().iterations === Infinity)
+    .filter(a => !(a.effect.target && a.effect.target.closest && a.effect.target.closest('#formiKugel, .fk-koerper')))
     .map(a => (a.animationName || a.transitionProperty) + ' @' + ((a.effect.target && (a.effect.target.className || a.effect.target.tagName)) || '?').toString().slice(0, 30));
   for (const [w, h, g] of [[1440, 900, 'g-start'], [1440, 900, 'g-arbeit'], [390, 844, 'g-arbeit']]) {
     const p = await oeffne(b, w, h);

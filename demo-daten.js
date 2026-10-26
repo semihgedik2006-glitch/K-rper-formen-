@@ -1283,18 +1283,31 @@
        Endzeit fehlt — das ist der Teil, den ein Chef sehen will. */
     var meinStudio = (ICH.studioKeys || [])[0] || sk(6);
     var eigen = 0;
+    /* Runde 285: Der offene Tag stand fest „vor acht Tagen". An einem
+       Montag ist das ein Sonntag (zu), und an jedem vierten Tag würfelte
+       zufall() ihn als frei weg — dann hatte die Vorführung keinen
+       fehlenden Feierabend (test-zeiten-verwaltung, 26.10.2026). Jetzt:
+       der erste Werktag ab acht Tagen zurück, und er wird nie frei. */
+    var offenerTag = 8;
+    while (offenerTag < 11) {
+      var to = new Date(); to.setDate(to.getDate() - offenerTag);
+      if (to.getDay() !== 0) break;
+      offenerTag++;
+    }
     for (var d = 45; d >= 1; d--) {
       var tagD = new Date(); tagD.setDate(tagD.getDate() - d);
       var wt = tagD.getDay();
       if (wt === 0) continue;                       // sonntags zu
-      if (zufall() < 0.25) continue;                // frei, krank, Urlaub
+      /* zufall() wird trotzdem gezogen: sonst verschöbe sich alles, was
+         danach gewürfelt wird. */
+      if (zufall() < 0.25 && d !== offenerTag) continue;   // frei, krank, Urlaub
       var tag = tagD.toLocaleDateString('sv-SE');
       function um(std, min) {
         var x = new Date(tagD); x.setHours(std, min, 0, 0); return x.getTime();
       }
       var an = 8 + zahl(0, 1);
       stempel(ICH, meinStudio, 'kommen', um(an, zahl(0, 50)), tag, 'demo-t6');
-      if (d === 8) continue;                        // der vergessene Feierabend
+      if (d === offenerTag) continue;               // der vergessene Feierabend
       stempel(ICH, meinStudio, 'pause', um(an + 4, zahl(0, 20)), tag, 'demo-t6');
       stempel(ICH, meinStudio, 'zurueck', um(an + 4, 30 + zahl(0, 15)), tag, 'demo-t6');
       stempel(ICH, meinStudio, 'gehen', um(an + 8, zahl(0, 40)), tag, 'demo-t6');

@@ -9,6 +9,11 @@
 
    Die Gegenrichtung zählt hier am meisten: ein Chef ohne admin-Feld darf
    den Bereich gar nicht sehen.
+
+   Runde 285: Der Weg in die Verwaltung führt über die Seitenleiste am
+   Rechner (`#side`), bei 1440 × 900. Die bisherige untere Leiste
+   `.mobnav` gibt es im neuen Design nicht mehr — der Test kam nie im
+   Reiter „Firmen" an und meldete ihn als fehlend (P-20).
    ───────────────────────────────────────────────────────────────────── */
 const { chromium } = require('playwright');
 const path = require('path');
@@ -23,7 +28,7 @@ const errs = [];
 async function start(opt) {
   opt = opt || {};
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-  const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+  const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
   page.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 200)));
   page.on('console', m => {
     if (m.type() === 'error' && !/ERR_|Failed to load/.test(m.text())) {
@@ -48,7 +53,7 @@ async function start(opt) {
 
 async function zumFirmenReiter(page) {
   await page.evaluate(() => {
-    const g = document.querySelector('.mobnav [data-group="g-chef"]');
+    const g = document.querySelector('#side [data-group="g-chef"]');
     if (g) g.click();
   });
   await page.waitForTimeout(400);

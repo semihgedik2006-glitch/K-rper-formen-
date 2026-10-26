@@ -638,6 +638,11 @@ wuensche, tausch, kopf-bericht, funktionen-schalter, sprachabspieler,
 startlesen, startuebergabe, formi-lebt, einrichtung, scrollkopf,
 recht-firma, block-a, p4-seitenleiste, p5-leiste.
 
+Runde 285: Zwei weitere, die `kf_neu=0` gar nicht setzten und deshalb
+im neuen Design ins Leere griffen (abo-stufe, admin-firmen), gehen jetzt
+über die Seitenleiste am Rechner. Ebenso die Mitarbeiter-Teile von
+eigene-reihenfolge (über „Alles").
+
 In block-a, p4 und p5 betrifft es nur die Gegenprobe „bisheriges Design“.
 Die übrigen Teile laufen über `?neu=1`, und die Adresse gewinnt.
 
@@ -659,12 +664,69 @@ schritte fehlen“ auf „Heute“ statt als Karte.
   Bereichskopf und Reiter sind je 44 px hoch, kleiner geht es nicht. Was
   noch helfen könnte: die Reihe „Studios | Gruppen“ und die Kanalreihe
   zusammenlegen.
-- **Wisch am Verschiebe-Griff hakt eine Aufgabe ab**
-  (`test-eigene-reihenfolge`, Handy, nur im neuen Design). Der Griff
-  stoppt `touchstart`, trotzdem wird abgehakt. Gemessen: Der Finger
-  trifft den Griff bei x = 19. Die Ursache ist noch nicht gefunden. Im
-  Spiel ist vermutlich etwas, das nur das neue Design an der linken Kante
-  hört.
+- ~~**Wisch am Verschiebe-Griff hakt eine Aufgabe ab**~~ — **geklärt in
+  Runde 285: ein Messfehler des Tests.** Der Test mass die Lage des
+  Griffs direkt nach `scrollIntoView`. Im neuen Design zieht sich dabei
+  der Bereichskopf im nächsten Bild zusammen, die Liste rückt 58 px hoch
+  (Griff gemessen bei y = 467, danach 409–453). Der Finger setzte unter
+  dem Griff auf der Zeile auf, und das Wischen hakte richtig ab. Mit
+  einer Pause vor dem Messen ist alles grün. Dieselbe Falle steckte in
+  test-aufgaben-wie-putzplan (Trefferfläche „…" unter Last 44 × 30).
+
+## P-22 · Startseite am Handy: „Ausserdem" frisst die Blöcke
+
+| | |
+|---|---|
+| **Schweregrad** | **MITTEL**: nichts ist weg, aber am Handy steht vom Tag kaum noch etwas direkt da |
+| **Seit** | älter als Commit 611b725 („Meine Schicht unter Ausserdem", auf dem Stand davor schon so); gefunden in Runde 285 |
+
+Die Startseite kürzt erst die Blöcke auf eine Zeile und streicht dann
+von unten ganze Kategorien. Jede gestrichene wird ein Knopf unter
+„Ausserdem". Die Knöpfe sind 44 px hoch und brechen um. Bei sieben
+Kategorien wächst „Ausserdem" auf vier Zeilen (200 px) und verdrängt
+weitere Blöcke.
+
+Gemessen (Attrappe Chef, 390 × 844): zwei Blöcke (Überfällig, Heute),
+dazu sieben Knöpfe. Bei 320 × 568 passt selbst der letzte Block nicht
+mehr (343 > 265 px). Demo-Mitarbeiter bei 430 × 932: drei Blöcke,
+„Neu für dich" nur als Knopf, und dieser Knopf führt in den Chat, auch
+wenn darin ein „Danke" zu einer Aufgabe steht.
+
+Rot deswegen, mit Absicht nicht gelockert: test-formi-reihe (390 Chef,
+mindestens drei Blöcke), test-neu-design (320 × 568 passt ohne
+Scrollen), test-gruppen-titel (390: „Alle N" und Zahl, 0 Blöcke mit
+Ausgang).
+
+Vorschlag: „Ausserdem" als eine Zeile, die seitlich schiebt (wie die
+Reiter), oder kleinere Knöpfe mit unsichtbarer 44-px-Trefferfläche. Das
+ist eine Gestaltungsentscheidung, deshalb noch nicht gebaut.
+
+## P-24 · Formi über dem „…", solange eine Meldung steht
+
+| | |
+|---|---|
+| **Schweregrad** | **NIEDRIG**: nur für die drei Sekunden einer Meldung, nur bei kleinen Handys |
+| **Seit** | gefunden in Runde 285 (`test-aufgaben-wie-putzplan` im Gesamtlauf) |
+
+Steht unten eine Meldung, rückt Formi 72 px höher, damit sie nicht auf
+der Meldung liegt (test-ganze-seite). Bei 320 × 640 liegt die Kugel dann
+mit 5–14 px auf dem „…" einer Aufgabe in der Mitte der Liste (gemessen
+44 × 39 statt 44 × 44). Formi wird in einer eigenen Sitzung gestaltet,
+deshalb hier nur festgehalten.
+
+## P-23 · Bestand am Handy: die Liste beginnt im unteren Sechstel
+
+| | |
+|---|---|
+| **Schweregrad** | **NIEDRIG bis MITTEL** |
+| **Seit** | gefunden in Runde 285 (`test-rahmen`) |
+
+Bei 430 × 844 beginnt die erste Materialzeile bei 697 px (Grenze 580,
+früher 607). Darüber: Reiter in zwei Zeilen („Probetraining" bricht um),
+Studio-Auswahl mit Suche, der Hinweis „2 Artikel fehlen" und die beiden
+Karten „Reicht noch" und „Einkaufsliste". Am Rechner stehen die Karten
+rechts daneben, am Handy über der Liste. Die Aufgaben beginnen bei
+388 px (Grenze 380), auch wegen der zweiten Reiterzeile.
 
 ---
 
