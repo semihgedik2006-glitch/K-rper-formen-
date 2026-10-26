@@ -56,6 +56,11 @@ const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linu
   await page.waitForTimeout(2800);
   await page.evaluate(() => document.querySelector('.mobnav [data-group="g-komm"]').click());
   await page.waitForTimeout(1300);
+  /* Runde 286: am Handy beginnt der Chat mit der Liste („erst die Liste,
+     dann die Unterhaltung", freigegeben 26.10.2026) — erst die
+     Unterhaltung öffnen. */
+  await page.evaluate(() => { const z = document.querySelector('#view-chat.liste #kanalSpalte [data-kanalwahl]'); if (z) z.click(); });
+  await page.waitForTimeout(600);
 
   /* ── 1: kein eingebauter Abspieler mehr ── */
   const alt = await page.evaluate(() =>

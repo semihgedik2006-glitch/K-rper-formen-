@@ -659,11 +659,10 @@ schritte fehlen“ auf „Heute“ statt als Karte.
 | **Schweregrad** | **NIEDRIG bis MITTEL** |
 | **Seit** | 23.10.2026, gefunden beim Umstellen auf das neue Design für alle |
 
-- **Chatverlauf am Handy nur 52 % der Ansicht** (`test-chat-bereich3`,
-  Grenze 55 %). Der Kopf in „Nachrichten“ ist schon schmal (49 → 52 %).
-  Bereichskopf und Reiter sind je 44 px hoch, kleiner geht es nicht. Was
-  noch helfen könnte: die Reihe „Studios | Gruppen“ und die Kanalreihe
-  zusammenlegen.
+- ~~**Chatverlauf am Handy nur 52 % der Ansicht**~~ — **behoben in
+  Runde 286** (26.10.2026): am Handy erst die Chatliste, dann die
+  Unterhaltung mit eigenem Kopf „‹ Chats“. Der Verlauf hat jetzt 77 %
+  der Ansicht (`test-chat-bereich3`, Grenze 55 % unverändert).
 - ~~**Wisch am Verschiebe-Griff hakt eine Aufgabe ab**~~ — **geklärt in
   Runde 285: ein Messfehler des Tests.** Der Test mass die Lage des
   Griffs direkt nach `scrollIntoView`. Im neuen Design zieht sich dabei

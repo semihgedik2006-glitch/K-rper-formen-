@@ -59,6 +59,11 @@ async function oeffne(b, w, h, touch) {
   await p.waitForTimeout(400);
   await p.evaluate(() => { if (!document.querySelector('#view-chat.show')) { const z = document.querySelector('[data-alles="chat"]'); if (z) z.click(); } });
   await p.waitForTimeout(900);
+  /* Runde 286: am Handy beginnt der Chat mit der Liste („erst die Liste,
+     dann die Unterhaltung", freigegeben 26.10.2026). Für diesen Durchlauf
+     gleich die erste Unterhaltung öffnen. */
+  await p.evaluate(() => { const z = document.querySelector('#view-chat.liste #kanalSpalte [data-kanalwahl]'); if (z) z.click(); });
+  await p.waitForTimeout(600);
   p._cdp = await ctx.newCDPSession(p);
   return p;
 }

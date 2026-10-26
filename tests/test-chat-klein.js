@@ -4,14 +4,16 @@
    Aus dem Betrieb, 27.9.2026, auf „auf so kleinen Bildschirmen die
    Kopfzeile im Chat einklappen": ja. Bei 320 × 640 blieben vom Verlauf
    rund 135 px.
-   1. 320 × 640 im Chat: die Bereichszeile ist weg, Chat / Direkt / Infos
-      bleiben, der Verlauf ist mindestens 200 px hoch.
-   2. Beim Tippen weichen auch die Reiter und „Meldungen an?"; danach
-      kommen sie zurück — mit 400 ms Verzögerung, damit ein Tipp auf eine
-      Nachricht nicht ins Leere geht.
+   Seit Runde 286 beginnt der Chat am Handy mit der Liste; den Platz
+   schafft dort die geöffnete Unterhaltung, in der Bereichszeile UND
+   Reiter weichen. Geprüft wird deshalb jetzt:
+   1. 320 × 640 in der Liste: die Bereichszeile ist weg, die Reiter
+      bleiben, die Liste scrollt nicht quer.
+   2. In der Unterhaltung: Bereichszeile und Reiter weg, der Verlauf ist
+      mindestens 200 px hoch — und das Tippen kostet ihn nichts mehr.
    3. GEGENPROBEN: auf der Startseite bleibt die Bereichszeile; bei
-      390 × 844 und am Rechner ändert sich im Chat nichts.
-   4. Nichts ragt hinaus; die Kanal-Knöpfe treffen weiter ≥ 44 px hoch.
+      390 × 844 und am Rechner ändert sich an der Liste nichts.
+   4. Nichts ragt hinaus; die Zeilen der Liste treffen ≥ 44 px hoch.
    ══════════════════════════════════════════════════════════════════ */
 const { chromium } = require('playwright');
 const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
@@ -57,24 +59,24 @@ const lage = (p) => p.evaluate(() => {
     const start = await p.evaluate(() => { const e = document.getElementById('bereichZeile'); return !!e && !!e.getClientRects().length; });
     pruefe('3. GEGENPROBE Startseite: die Bereichszeile steht', start);
     await zumChat(p);
+    const l0 = await lage(p);
+    pruefe('1. in der Liste: Bereichszeile weg, Reiter da, kein Querlauf', !l0.bereich && l0.reiter && l0.quer <= 0, JSON.stringify(l0));
+    const zeilen = await p.evaluate(() => [...document.querySelectorAll('#kanalSpalte .ks-zeile')]
+      .filter(e => e.getClientRects().length).map(e => Math.round(e.getBoundingClientRect().height)));
+    pruefe('4. Zeilen der Liste ≥ 44 px hoch (' + zeilen.slice(0, 3).join(', ') + ')', zeilen.length && zeilen.every(h => h >= 44), JSON.stringify(zeilen.slice(0, 5)));
+    await p.evaluate(() => document.querySelector('#kanalSpalte [data-kanalwahl]').click());
+    await p.waitForTimeout(600);
     const l1 = await lage(p);
-    pruefe('1. im Chat: Bereichszeile weg, Reiter da, Verlauf ' + l1.verlauf + ' px (≥ 200, vorher rund 135)', !l1.bereich && l1.reiter && l1.verlauf >= 200 && l1.quer <= 0, JSON.stringify(l1));
+    pruefe('2. in der Unterhaltung: Bereichszeile und Reiter weg, Verlauf ' + l1.verlauf + ' px (≥ 200, vorher rund 135)',
+      !l1.bereich && !l1.reiter && l1.verlauf >= 200 && l1.quer <= 0, JSON.stringify(l1));
     await p.evaluate(() => document.getElementById('chatText').focus());
     await p.waitForTimeout(200);
     const l2 = await lage(p);
-    pruefe('2. beim Tippen: auch Reiter und „Meldungen an?" weichen, Verlauf ' + l2.verlauf + ' px', !l2.reiter && !l2.hinweis && l2.verlauf > l1.verlauf, JSON.stringify(l2));
+    pruefe('2. beim Tippen kostet nichts mehr Platz, Verlauf bleibt ' + l2.verlauf + ' px', l2.verlauf >= l1.verlauf, JSON.stringify(l2));
     await p.evaluate(() => document.getElementById('chatText').blur());
-    /* Nicht sofort: wer auf eine Nachricht tippt, verlässt damit das
-       Feld — kämen die Reiter im selben Augenblick zurück, rutschte die
-       Nachricht unter dem Finger weg (so gefunden in
-       test-chat-antworten bei 320 px). */
-    const sofort = await lage(p);
-    pruefe('2. direkt nach dem Verlassen des Feldes verschiebt sich noch nichts', !sofort.reiter && sofort.verlauf === l2.verlauf, JSON.stringify(sofort));
     await p.waitForTimeout(600);
     const l3 = await lage(p);
-    pruefe('2. kurz danach sind die Reiter zurück', l3.reiter && !l3.bereich, JSON.stringify(l3));
-    const kanal = await p.evaluate(() => [...document.querySelectorAll('.chan')].filter(e => e.getClientRects().length).map(e => Math.round(e.getBoundingClientRect().height)));
-    pruefe('4. Kanal-Knöpfe ≥ 44 px hoch (' + kanal.join(', ') + ')', kanal.length && kanal.every(h => h >= 44), JSON.stringify(kanal));
+    pruefe('2. nach dem Verlassen des Feldes verschiebt sich nichts', l3.verlauf === l1.verlauf && !l3.reiter, JSON.stringify(l3));
     /* Weg aus dem Chat: die Bereichszeile kommt zurück. */
     await p.evaluate(() => { const s = [...document.querySelectorAll('[data-group="g-start"]')].find(x => x.getClientRects().length); if (s) s.click(); });
     await p.waitForTimeout(500);
