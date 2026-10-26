@@ -8,7 +8,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-BbenPGdz9q4kEXE6FAcG6wxD8xcjW45pcupdYSe1vtA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-ukcXN/gxnYWhIvurlr8hjfztdQ3IHO9npJ/l5BpTY/g='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -751,6 +751,15 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;
 .spinner{width:44px;height:44px;border:3px solid var(--line-2);border-top-color:var(--accent);
   border-radius:var(--r-rund);animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+/* Runde 278, Idee 4: wartet ein Knopf, dreht darin eine kleine Formi-
+   Scheibe (Ring in Formis Farben um ein schwarzes Loch) — kein Standard-
+   Kreisel. Der Text bleibt für Vorlesegeräte, sichtbar nur die Scheibe. */
+.btn.laedt{position:relative;color:transparent!important}
+.btn.laedt > *{opacity:0}
+.btn.laedt::after{content:"";position:absolute;left:50%;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:var(--r-rund);
+  background:radial-gradient(circle, #02040A 0 34%, transparent 37%), conic-gradient(#5FE1FF, #B69CFF, #FF8FC8, rgba(95,225,255,0));
+  animation:spin .9s linear infinite}
+@media (prefers-reduced-motion:reduce){ .btn.laedt::after{animation:none} }
 .formi-lade .formi-figur{--fg:64px;display:block}
 .formi-lade .fk-wirbel{animation-duration:1.4s}
 .formi-lade .fk-gesicht{transform:translate(9%,-11%)}
@@ -6555,23 +6564,14 @@ html.fk-still .fk-bahn,html.fk-still .fk-bahn i{animation:none}
    - das Gesicht wird dunkel. Ohne mix-blend-mode: mit „difference" würden
      die Augen auf dem hellen Kern schwarz mit heller Pupille.
    Nur Farben – Bewegung, Grössen und Trefferfläche bleiben dieselben. */
-body.light .fk-pupille{background:radial-gradient(circle, #FFFFFF 0 46%, #F6F1FF 66%, #E6DCFF);
-  box-shadow:0 0 0 1px rgba(91,62,190,.55), 0 0 8px 2px rgba(255,255,255,.9)}
-body.light .formi-figur .fk-pupille{box-shadow:0 0 0 1px rgba(91,62,190,.55)}
-body.light .fk-innen{background:radial-gradient(circle, #FFFFFF 0 56%, rgba(255,255,255,0) 62%),
+/* Runde 278, Idee 9 — „Formi im Hellmodus als Tinte" (aus dem Betrieb,
+   24.10.2026: „mach alles davon"): statt des weissen Lochs (Runde 226)
+   ein tiefer Tintenpunkt; das Gesicht leuchtet darin wie im dunklen Stil.
+   Die Scheibe bleibt in satten Tönen, die auf Weiss stehen. */
+body.light .fk-pupille{background:radial-gradient(circle at 50% 45%, #1E1640 0 40%, #120C2A 70%, #0A0618);
+  box-shadow:0 0 0 1px rgba(91,62,190,.45)}
+body.light .fk-innen{background:radial-gradient(circle, #120C2A 0 56%, rgba(18,12,42,0) 62%),
     conic-gradient(from 30deg, rgba(232,150,40,.85), rgba(240,110,40,.25), rgba(214,70,140,.7), rgba(40,150,210,.25), rgba(232,150,40,.85))}
-/* Heller Stil: dunkle Augen auf dem weissen Loch – so gross wie vor
-   Runde 231, sonst ist der Kern nicht mehr hell (test-formi-ideen). */
-body.light .fk-auge{top:24%;width:23%;height:31%;background:radial-gradient(circle at 50% 42%, #3A2E6E 0 30%, #1B1433 100%);box-shadow:none}
-body.light .fk-auge.l{left:19%}
-body.light .fk-auge.r{right:19%}
-body.light .fk-froh{top:31%;width:23%}
-body.light .fk-froh.l{left:19%}
-body.light .fk-froh.r{right:19%}
-body.light .fk-backe{opacity:.55}
-body.light .fk-auge b{background:#FFFFFF}
-body.light .fk-braue{background:#1B1433}
-body.light .fk-mund,body.light .fk-froh{border-color:#1B1433;filter:none}
 body.light .fk-flach{background:radial-gradient(14% 34% at 8% 50%, rgba(200,90,10,.85), rgba(200,90,10,0)),
     radial-gradient(closest-side, rgba(220,120,20,0) 0 57%, rgba(220,120,20,.95) 61%, rgba(185,70,10,.95) 68%,
       rgba(165,30,100,.95) 80%, rgba(85,45,180,.85) 91%, rgba(85,45,180,0) 100%)}
@@ -6594,6 +6594,84 @@ html.fk-still .fk-wirbel,html.fk-still .fk-innen{animation:none}
 /* Was ins Loch fällt (formiSchlucken). */
 .formi-schluck{position:fixed;left:0;top:0;z-index:1180;pointer-events:none;white-space:nowrap;transform-origin:50% 50%;will-change:transform;
   font-weight:700;font-size:var(--t-sm);color:#E8F8FF;text-shadow:0 0 10px rgba(182,156,255,.9)}
+/* ── Meine Schicht, Liste + Detail, eine Karte (Runde 281) ── */
+/* Idee 11: der Schalter oben auf „Heute". */
+.heute-modus{display:inline-flex;gap:var(--s4);padding:var(--s4);margin:0 0 var(--s12);border-radius:var(--r-pille);background:var(--bg-soft);border:1px solid var(--line)}
+.heute-modus button{min-height:44px;padding:0 var(--s16);border:0;border-radius:var(--r-pille);background:none;color:var(--text-2);font:inherit;font-size:var(--t-sm);font-weight:600;cursor:pointer}
+.heute-modus button[aria-pressed="true"]{background:var(--bg-2);color:var(--text)}
+/* Idee 12: am Rechner dockt das Blatt rechts an — ohne Schleier, die
+   Liste bleibt bedienbar. */
+@media (min-width:1100px){
+  /* Eine Breite für Blatt und Platz daneben — sonst rutscht die Liste darunter. */
+  body{--dock-breit:400px}
+  body.neu .msg-sheet.angedockt{left:auto;right:0;top:var(--dock-oben, 0px);bottom:0;width:var(--dock-breit);background:none;
+    -webkit-backdrop-filter:none;backdrop-filter:none;align-items:stretch;justify-content:stretch;pointer-events:none}
+  body.neu .msg-sheet.angedockt .ms-card{pointer-events:auto;max-width:none;width:100%;max-height:none;height:100%;border-radius:0;
+    border-width:0 0 0 1px;animation:dockRein .24s var(--ease-ios)}
+  body.neu .msg-sheet.angedockt .blatt-griff{display:none}
+  body.detail-offen .main{margin-right:var(--dock-breit)}
+  body.neu .msg-sheet.angedockt .tb-mehr{display:block}
+}
+@keyframes dockRein{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}
+.tb-mehr{display:none;padding:var(--s10) var(--s4);border-bottom:1px solid var(--line);color:var(--text-2);font-size:var(--t-sm)}
+.tb-mehr:empty{display:none !important}
+.tb-mehr p{margin:0 0 var(--s8);white-space:pre-wrap;color:var(--text)}
+.tb-mehr ol{margin:0 0 var(--s8);padding-left:var(--s20)}
+.tb-mehr li.ok{text-decoration:line-through;color:var(--text-3)}
+.tb-mehr small{color:var(--text-3)}
+.im-detail{outline:2px solid var(--accent);outline-offset:-2px}
+/* Idee 19: pro Ansicht EINE Fläche mit Formis schillernder Kante — die
+   erste. Alle weiteren stehen ruhig mit Haarlinie auf dem Grund. */
+body.formi:not(.light).neu .heute-block ~ .heute-block .heute-liste,
+body.formi:not(.light).neu .heute-spalte + .heute-spalte .heute-liste{border-color:var(--line-2);background:var(--formi-kern)}
+body.formi:not(.light) .card ~ .card,body.formi:not(.light) .chef-card ~ .chef-card{border-color:var(--line-2);background:var(--formi-kern)}
+/* ── Oberfläche leichter (Runde 280) ── */
+/* Idee 15: die Glocke gebündelt. */
+.gl-gruppe{border-top:1px solid var(--line)}
+.gl-gruppe:first-child{border-top:none}
+.gl-gruppe > summary{display:flex;gap:var(--s10);align-items:flex-start;min-height:44px;padding:var(--s10) var(--s8);cursor:pointer;list-style:none}
+.gl-gruppe > summary::-webkit-details-marker{display:none}
+.gl-gruppe.neu > summary{background:var(--tipp-1);border-left:3px solid var(--accent)}
+.gl-gruppe > .gl-zeile{padding-left:var(--s24)}
+/* Idee 17: Fokus — nur die Seite. */
+body.fokus .side,body.fokus .topbar,body.fokus .mobnav{display:none !important}
+body.fokus .heute-spalten > .heute-spalte + .heute-spalte{display:none}
+body.fokus .heute-spalten{grid-template-columns:1fr !important}
+/* unten mittig: oben lag er über Seitenkopf und Menü */
+.fokus-aus{position:fixed;left:50%;bottom:var(--s16);translate:-50% 0;z-index:1100;min-height:44px;background:var(--bg-2);box-shadow:var(--schatten-knopf, 0 4px 16px rgba(0,0,0,.18))}
+.fokus-aus[hidden]{display:none}
+/* Idee 13: „+" auf Heute nur am Rechner; das Menü darunter. */
+@media (max-width:820px){ #homeNeu{display:none !important} }
+.knopf-menu{position:fixed;left:0;top:0;z-index:1196;display:flex;flex-direction:column;min-width:220px;padding:var(--s6);
+  border-radius:var(--r-lg);background:var(--bg-2);border:1px solid var(--line-2)}
+.km-eintrag{min-height:44px;padding:var(--s10) var(--s16);border:0;border-radius:var(--r-md);background:none;color:var(--text);font:inherit;
+  font-size:var(--t-sm);font-weight:600;text-align:left;cursor:pointer}
+.km-eintrag:hover,.km-eintrag:focus-visible{background:var(--bg-soft);outline:none}
+/* ── Formi als Werkzeug (Runde 279) ── */
+/* Idee 2 / 1: das Menü über der Kugel — eine Spalte schwarzer Knöpfe
+   (Formis Farbe), leicht im Bogen. Der Hintergrund fängt nur den Klick
+   zum Schliessen. */
+.formi-ring-menu{position:fixed;inset:0;z-index:1195}
+.frm-knopf,.frm-kopf{position:fixed;left:0;top:0;white-space:nowrap;max-width:calc(100vw - 32px);overflow:hidden;text-overflow:ellipsis}
+.frm-knopf{min-height:44px;padding:var(--s10) var(--s16);border-radius:var(--r-pille);border:1px solid rgba(182,156,255,.5);
+  background:rgba(2,4,10,.94);color:#F4F9FF;font:inherit;font-size:var(--t-sm);font-weight:600;cursor:pointer;text-align:left}
+.frm-knopf:hover,.frm-knopf:focus-visible{border-color:#5FE1FF;outline:none}
+.frm-knopf:active{scale:.97}
+.frm-kopf{margin:0;padding:var(--s4) var(--s10);border-radius:var(--r-pille);background:rgba(2,4,10,.8);color:#C9D6EE;font-size:var(--t-xs);font-weight:600}
+/* Idee 1: zieht man etwas, wartet die Kugel; darüber zieht sie an. */
+.formi-kugel.fk-wartet{transform:scale(1.08)}
+.formi-kugel.fk-zieht{transform:scale(1.24)}
+[draggable="true"].todo,[draggable="true"].pp-item{-webkit-user-drag:element}
+/* Idee 8: Laufendes in der Insel — ohne Rand, ohne Strom. */
+.formi-insel.laufend .fi-t{font-weight:600;color:#DDE8FF}
+/* Idee 18: die erste Woche mit Formi. */
+.formi-woche{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s12);padding:var(--s12) var(--s16);margin:0 0 var(--s16);
+  border-radius:var(--r-lg);border:1px solid var(--line-2);background:var(--bg-soft)}
+.fw-figur{--fg:40px;flex:none}
+.fw-text{flex:1;min-width:180px;display:flex;flex-direction:column;gap:var(--s2)}
+.fw-text small{font-size:var(--t-xs);color:var(--text-2);font-weight:600}
+.fw-text b{font-size:var(--t-md)}
+.fw-knoepfe{display:flex;gap:var(--s8);flex-wrap:wrap}
 /* ── Gezeitenstrom, Lichtkrümmung, Insel, Leuchtrand (Runde 250) ──────
    Der Strom: jeder Buchstabe des Titels fällt einzeln (formiStrom). Beim
    Messen stehen sie in einer Zeile (.mass), danach einzeln frei. */
@@ -6873,6 +6951,19 @@ body.light .fk-zeichen.tropfen path{fill:#1E8FD0}
 .formi-kugel:hover{transform:scale(1.05)}
 .formi-kugel:active{transform:scale(.94)}
 .formi-kugel:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+/* Runde 278, Idee 3: der Tagesstand als Schild über der Kugel, nur beim
+   Darüberfahren oder mit der Tastatur. Keine Trefferfläche. */
+.fk-stand{position:absolute;left:50%;bottom:100%;margin-bottom:var(--s10);translate:-50% 0;white-space:nowrap;pointer-events:none;
+  padding:var(--s4) var(--s10);border-radius:var(--r-pille);background:rgba(2,4,10,.86);color:#F4F9FF;font-size:var(--t-xs);font-weight:600;
+  opacity:0;transform:translateY(4px);transition:opacity .15s ease, transform .15s ease}
+.fk-stand:empty{display:none}
+@media (hover:hover){ .formi-kugel:hover .fk-stand{opacity:1;transform:none} }
+.formi-kugel:focus-visible .fk-stand{opacity:1;transform:none}
+@media (max-width:899px){ .fk-stand{left:auto;right:0;translate:none} }
+/* Idee 7: staut sich viel, wird Formi schwer — der Wirbel langsamer. */
+.formi-kugel.fk-stau-1 .fk-wirbel{animation-duration:9s}
+.formi-kugel.fk-stau-2 .fk-wirbel{animation-duration:13s}
+.formi-kugel.fk-stau-2 .fk-innen{opacity:.75}
 /* Über der Leiste unten: sie ist gemessen 68 px hoch (+ Rand unten),
    in BEIDEN Dichten — --s72 schrumpft in „kompakt" auf 50 und hätte die
    Kugel auf die Leiste gesetzt (test-formi-kugel). */
@@ -10739,6 +10830,12 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
       <!-- START -->
       <section class="view" id="view-home">
         <div class="view-head shrink"><div class="vh-line"><div class="vh-text"><h2 id="homeGreet">Start</h2><p id="homeSub">Dein Überblick für heute.</p></div>
+            <!-- Runde 280, Idee 13: derselbe „+"-Knopf an derselben Stelle
+                 wie überall, auf „Heute" mit Vorschlägen (was man von hier
+                 aus am häufigsten anlegt). Nur am Rechner; am Handy liegt
+                 dort der Platz der Startseite, und Formis Ring (lange
+                 drücken) gibt dieselben Wege. -->
+            <button class="kopf-plus" id="homeNeu" aria-haspopup="menu" title="Etwas anlegen" aria-label="Etwas anlegen"><span class="kp-zeichen">+</span><span class="kp-wort"> Anlegen</span></button>
 </div></div>
         <div class="scroll-area" data-shrinks="1">
 
@@ -11277,7 +11374,7 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
                 <input class="inp" id="ichTodoNeu" maxlength="140"
                   placeholder="Was willst du erledigen?" />
                 <input class="inp ich-datum" id="ichTodoDatum" type="date" aria-label="Bis wann (optional)" />
-                <button class="btn btn-primary btn-sm" id="ichTodoAdd">Hinzu</button>
+                <button class="btn btn-primary btn-sm" id="ichTodoAdd">Hinzufügen</button>
               </div>
             </div>
             <div class="ich-blatt">
@@ -11340,7 +11437,7 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
               <div class="ich-neu-zeile">
                 <input class="inp" id="zielTitel" maxlength="120"
                   placeholder="Was willst du erreichen?" />
-                <button class="btn btn-primary btn-sm" id="zielAdd">Hinzu</button>
+                <button class="btn btn-primary btn-sm" id="zielAdd">Hinzufügen</button>
               </div>
               <div class="chip-row" id="zielArtWahl" style="margin-top:var(--s8)">
                 <button type="button" class="chip an" data-zielart="privat"
@@ -11397,7 +11494,7 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
               <div class="ich-neu-zeile">
                 <input class="inp" id="wunschText" maxlength="200"
                   placeholder="Was wünschst du dir?" />
-                <button class="btn btn-primary btn-sm" id="wunschAdd">Hinzu</button>
+                <button class="btn btn-primary btn-sm" id="wunschAdd">Hinzufügen</button>
               </div>
               <div class="chip-row" id="wunschArtWahl" style="margin-top:var(--s8)">
                 <button type="button" class="chip an" data-wunschart="frei"
@@ -11473,7 +11570,7 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
         <div class="pin-bar" id="pinBar">
           <span class="pin-ico"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17v5"/><path d="M5 12h14l-2-3V4H7v5z"/></svg></span>
           <span class="pin-txt" id="pinText"></span>
-          <button class="pin-go" id="pinGo" title="Zur Nachricht springen">ansehen</button>
+          <button class="pin-go" id="pinGo" title="Zur Nachricht springen">Ansehen</button>
           <button class="pin-x" id="pinOff" title="Loslösen" aria-label="Loslösen"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
         </div>
         <div class="chat-scroll" id="chatScroll"></div>
@@ -14384,6 +14481,7 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
         <button class="btn btn-ghost btn-sm" id="tbGrundWeg">Löschen</button>
       </div>
     </div>
+    <div class="tb-mehr" id="tbMehr"></div>
     <div class="ms-acts" id="tbActs"></div>
     <button class="btn btn-ghost" id="tbClose" style="width:100%">Abbrechen</button>
   </div>
@@ -14681,7 +14779,7 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
      als Auge (Pupille mit Lichtpunkt) und ein Punkt „hat etwas für dich".
      Alles Schmuck: aria-hidden, keine Trefferfläche (pointer-events:none). -->
 <button type="button" class="formi-kugel" id="formiKugel" hidden aria-haspopup="dialog" aria-controls="jarvis"
-  aria-label="Formi öffnen" title="Formi — frag mich oder sag, was ich tun soll"><span class="fk-koerper" aria-hidden="true"><span class="fk-scheibe hinten"><span class="fk-halb"><span class="fk-flach"><span class="fk-bahn"><i style="--w:20deg;--p:0.944"></i><i style="--w:140deg;--p:0.611"></i><i style="--w:260deg;--p:0.278"></i></span><span class="fk-bahn innen"><i style="--w:80deg;--p:0.778"></i><i style="--w:260deg;--p:0.278"></i></span></span></span></span><span class="fk-wirbel"></span><span class="fk-innen"></span><span class="fk-licht"></span><span class="fk-bogen"></span><span class="fk-geist a"></span><span class="fk-geist b"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-braue l"></i><i class="fk-braue r"></i><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i><i class="fk-froh l"></i><i class="fk-froh r"></i><i class="fk-backe l"></i><i class="fk-backe r"></i></span></span></span><span class="fk-scheibe vorn"><span class="fk-halb"><span class="fk-flach"><span class="fk-bahn"><i style="--w:20deg;--p:0.944"></i><i style="--w:140deg;--p:0.611"></i><i style="--w:260deg;--p:0.278"></i></span><span class="fk-bahn innen"><i style="--w:80deg;--p:0.778"></i><i style="--w:260deg;--p:0.278"></i></span></span></span></span></span><span class="fk-punkt" aria-hidden="true"></span></button>
+  aria-label="Formi öffnen" title="Formi — frag mich oder sag, was ich tun soll"><span class="fk-koerper" aria-hidden="true"><span class="fk-scheibe hinten"><span class="fk-halb"><span class="fk-flach"><span class="fk-bahn"><i style="--w:20deg;--p:0.944"></i><i style="--w:140deg;--p:0.611"></i><i style="--w:260deg;--p:0.278"></i></span><span class="fk-bahn innen"><i style="--w:80deg;--p:0.778"></i><i style="--w:260deg;--p:0.278"></i></span></span></span></span><span class="fk-wirbel"></span><span class="fk-innen"></span><span class="fk-licht"></span><span class="fk-bogen"></span><span class="fk-geist a"></span><span class="fk-geist b"></span><span class="fk-loch"><span class="fk-pupille"><span class="fk-weiss"></span><span class="fk-gesicht"><i class="fk-braue l"></i><i class="fk-braue r"></i><i class="fk-auge l"><b></b></i><i class="fk-auge r"><b></b></i><i class="fk-mund"></i><i class="fk-froh l"></i><i class="fk-froh r"></i><i class="fk-backe l"></i><i class="fk-backe r"></i></span></span></span><span class="fk-scheibe vorn"><span class="fk-halb"><span class="fk-flach"><span class="fk-bahn"><i style="--w:20deg;--p:0.944"></i><i style="--w:140deg;--p:0.611"></i><i style="--w:260deg;--p:0.278"></i></span><span class="fk-bahn innen"><i style="--w:80deg;--p:0.778"></i><i style="--w:260deg;--p:0.278"></i></span></span></span></span></span><span class="fk-punkt" aria-hidden="true"></span><span class="fk-stand" aria-hidden="true"></span></button>
 <span id="formiKugelHat" hidden>Formi hat etwas für dich</span>
 <!-- Lichtkrümmung ums Loch (Runde 250): ein eigener Kreis unter der Kugel —
      in der Kugel selbst sieht backdrop-filter in Chromium nichts von der
@@ -16868,7 +16966,7 @@ function renderFirmen(){
         : '<div class="fm-knoepfe">'+
           '<button class="mini-x" data-fsperr="'+esc(f.id)+'" data-fakt="'+(gesperrt?'1':'0')+'">'+
             (gesperrt?'freigeben':'sperren')+'</button>'+
-          '<button class="mini-x weg" data-fweg="'+esc(f.id)+'">löschen</button>'+
+          '<button class="mini-x weg" data-fweg="'+esc(f.id)+'">Löschen</button>'+
         '</div>')+
     '</div>';
   }).join('');
@@ -19441,6 +19539,7 @@ var AKTIONEN=[
       showView('chef', true); showChefTab('erstellen');
       setTimeout(function(){ var f=$('bcText'); if(f) f.focus(); },320); }},
   {id:'jarvis', std:'j', t:'Formi öffnen', tun:function(){ jarvisAuf(); }},
+  {id:'fokus',  std:'f', t:'Fokus: nur die Liste (noch einmal F oder Esc beendet)', tun:function(){ fokusUmschalten(); }},
   {id:'hilfe',  std:'?', t:'Diese Übersicht',       tun:function(){ oeffneKeysModal(); }}
 ];
 /* Fest verdrahtet und nicht änderbar – die brauchen wir, um überhaupt
@@ -19450,6 +19549,70 @@ var KEYS_FEST=[
   {k:'Esc', t:'Aus dem Schreibfeld heraus / Fenster schließen'}
 ];
 
+/* ── Fokus (Runde 280, Idee 17) ──────────────────────────────────────
+   Am Rechner blendet F alles aus ausser der aktuellen Seite: keine
+   Seitenleiste, keine Kopfleiste, keine rechte Spalte auf „Heute".
+   Formi bleibt als Kugel. Oben links steht „Fokus beenden" (44 px). */
+function fokusUmschalten(an){
+  if(an===undefined) an=!document.body.classList.contains('fokus');
+  if(an && window.innerWidth<900) return;
+  document.body.classList.toggle('fokus', !!an);
+  var b=$('fokusAus');
+  if(an && !b){
+    b=document.createElement('button'); b.type='button'; b.id='fokusAus'; b.className='btn btn-ghost fokus-aus';
+    b.textContent='Fokus beenden · F'; b.addEventListener('click', function(){ fokusUmschalten(false); });
+    document.body.appendChild(b);
+  }
+  if(b) b.hidden=!an;
+  if(typeof renderHeute==='function' && currentView==='home') renderHeute();
+  tick(6);
+}
+document.addEventListener('keydown', function(e){
+  if(e.key==='Escape' && document.body.classList.contains('fokus') && !document.querySelector('.show[id$="Modal"], #searchOverlay.show')) fokusUmschalten(false);
+});
+/* Das Menü am „+" auf Heute: nur, was diese Person darf. */
+function homeNeuEintraege(){
+  var l=[];
+  if(ansichtAn('todos')) l.push({ text:'Aufgabe', tun:function(){ showView('todos', true); setTimeout(function(){ var b=$('todoNew'); if(b) b.click(); }, 260); } });
+  if(ansichtAn('team')){
+    l.push({ text:'Übergabe schreiben', tun:function(){ showView('team', true); setTimeout(function(){ var t=document.querySelector('[data-teamtab="uebergabe"]'); if(t) t.click(); setTimeout(function(){ var f=$('hoNew'); if(f) f.focus(); }, 200); }, 260); } });
+    l.push({ text:'Krank oder Urlaub melden', tun:function(){ showView('team', true); setTimeout(function(){ var t=document.querySelector('[data-teamtab="abwesend"]'); if(t) t.click(); }, 260); } });
+  }
+  if(ansichtAn('geraete')) l.push({ text:'Defekt melden', tun:function(){ showView('geraete', true); } });
+  if(canManage() && ansichtAn('chef')) l.push({ text:'Ankündigung', tun:function(){ showView('chef', true); showChefTab('erstellen'); setTimeout(function(){ var f=$('bcText'); if(f) f.focus(); }, 320); } });
+  return l;
+}
+/* Ein kleines Menü unter einem Knopf (Runde 280). */
+function menuAn(anker, eintraege, name){
+  menuZu();
+  var r=anker.getBoundingClientRect();
+  var box=document.createElement('div'); box.className='knopf-menu'; box.id='knopfMenu'; box.setAttribute('role', 'menu'); box.setAttribute('aria-label', name||'Menü');
+  box.innerHTML=eintraege.map(function(e, i){ return '<button type="button" role="menuitem" class="km-eintrag" data-km="'+i+'">'+esc(e.text)+'</button>'; }).join('');
+  document.body.appendChild(box);
+  var w=box.offsetWidth, h=box.offsetHeight;
+  var x=Math.max(16, Math.min(innerWidth-16-w, r.right-w)), y=r.bottom+8;
+  if(y+h>innerHeight-16) y=Math.max(16, r.top-8-h);
+  box.style.transform='translate('+Math.round(x)+'px,'+Math.round(y)+'px)';
+  var kn=[].slice.call(box.querySelectorAll('.km-eintrag'));
+  kn.forEach(function(b, i){ b.addEventListener('click', function(){ menuZu(); eintraege[i].tun(); }); });
+  box.addEventListener('keydown', function(e){
+    if(e.key==='Escape'){ e.preventDefault(); menuZu(); anker.focus(); }
+    if(e.key==='ArrowDown' || e.key==='ArrowUp'){ e.preventDefault(); var i=kn.indexOf(document.activeElement), j=(i+(e.key==='ArrowDown'?1:-1)+kn.length)%kn.length; kn[j].focus(); }
+  });
+  setTimeout(function(){ document.addEventListener('pointerdown', menuDraussen, true); }, 0);
+  anker.setAttribute('aria-expanded', 'true'); box._anker=anker;
+  if(kn[0]) kn[0].focus({ preventScroll:true });
+}
+function menuDraussen(e){ var b=$('knopfMenu'); if(b && !b.contains(e.target) && e.target!==b._anker && !(b._anker && b._anker.contains(e.target))) menuZu(); }
+document.addEventListener('click', function(e){
+  var hn=e.target && e.target.closest && e.target.closest('#homeNeu'); if(!hn) return;
+  if($('knopfMenu')){ menuZu(); return; }
+  menuAn(hn, homeNeuEintraege(), 'Neu anlegen');
+});
+function menuZu(){
+  var b=$('knopfMenu'); document.removeEventListener('pointerdown', menuDraussen, true);
+  if(b){ if(b._anker) b._anker.setAttribute('aria-expanded', 'false'); if(b.parentNode) b.parentNode.removeChild(b); }
+}
 function aktionById(id){
   for(var i=0;i<AKTIONEN.length;i++){ if(AKTIONEN[i].id===id) return AKTIONEN[i]; }
   return null;
@@ -20396,7 +20559,11 @@ function withBusy(btn, fn){
   btn.dataset.busy='1';
   var label=btn.textContent, wasDisabled=btn.disabled;
   btn.disabled=true; btn.style.opacity='.6';
+  /* Runde 278, Idee 4: dauert es länger als 300 ms, dreht im Knopf eine
+     kleine Formi-Scheibe statt eines Standard-Kreisels. */
+  var ladeUhr=setTimeout(function(){ if(btn.dataset.busy==='1'){ btn.classList.add('laedt'); btn.setAttribute('aria-busy', 'true'); btn.style.opacity=''; } }, 300);
   var done=function(){
+    clearTimeout(ladeUhr); btn.classList.remove('laedt'); btn.removeAttribute('aria-busy');
     btn.dataset.busy=''; btn.disabled=wasDisabled;
     btn.style.opacity=''; if(btn.textContent!==label) btn.textContent=label;
   };
@@ -22402,13 +22569,25 @@ function meldListe(){
     box.innerHTML=emptyMini('Seit dem Öffnen hat hier noch niemand etwas abgehakt.');
     return;
   }
-  box.innerHTML=_meldungen.map(function(m){
+  function zeile(m){
     var neu = (m.ts||0) > _meldGelesen;
     var zeichen = m.art==='putz' ? ikon('tropfen') : ikon('hakenKreis');
     return '<div class="gl-zeile'+(neu?' neu':'')+'">'+
       '<span class="gl-ico">'+zeichen+'</span>'+
       '<span class="gl-txt"><b>'+esc(m.text)+'</b>'+
       '<span>'+esc(m.wo||'')+' · '+esc(fmtDateTime(m.ts))+'</span></span></div>';
+  }
+  /* Runde 280, Idee 15: je Studio gebündelt — „3 neue in Hürth" als EINE
+     Zeile, aufklappbar. Ein einzelner Eintrag steht wie bisher. */
+  var gruppen=[], nach={};
+  _meldungen.forEach(function(m){ var k=m.wo||''; if(!nach[k]){ nach[k]=[]; gruppen.push(k); } nach[k].push(m); });
+  box.innerHTML=gruppen.map(function(k){
+    var l=nach[k]; if(l.length<2) return zeile(l[0]);
+    var neu=l.filter(function(m){ return (m.ts||0) > _meldGelesen; }).length;
+    var satz = neu ? neu+' neue'+(k ? ' in '+k : '') : l.length+' Meldungen'+(k ? ' in '+k : '');
+    return '<details class="gl-gruppe'+(neu?' neu':'')+'"><summary><span class="gl-ico">'+ikon('hakenKreis')+'</span>'+
+      '<span class="gl-txt"><b>'+esc(satz)+'</b><span>zuletzt '+esc(fmtDateTime(l[0].ts))+' · '+l.length+' insgesamt</span></span></summary>'+
+      l.map(zeile).join('')+'</details>';
   }).join('');
 }
 
@@ -22424,6 +22603,8 @@ function glockeAuf(){
      als gelesen markiert und der Unterschied waere nie zu sehen. */
   setTimeout(meldMarker, 50);
 }
+/* Für die Durchläufe (Runde 280): Meldungen einspielen. */
+window.__oberflaeche={ meld:function(ts, art, text, wo){ meldHinzu(ts, art, text, wo); }, glocke:function(){ glockeAuf(); } };
 function glockeZu(){
   var f=$('glockeModal'); if(f) f.classList.remove('show');
 }
@@ -23050,6 +23231,34 @@ var NEUIGKEITEN = [
   { id:'2026-10-25-schulung-nachweis-person', datum:'25.10.2026', art:'neu', titel:'Leitung: Schulungsnachweis für jede Person', wo:'schulung', punkte:[
     'Verwalten → Teilnehmer: „Nachweis" druckt alle bestandenen Schulungen einer Person.',
     'Auch für alle ohne eigenen Zugang.'
+  ]},
+  { id:'2026-10-25-meine-schicht', datum:'25.10.2026', art:'neu', titel:'„Meine Schicht" auf der Startseite', wo:'home', punkte:[
+    'Auf „Heute" zwischen „Überblick" und „Meine Schicht" wechseln, am Handy unter „Ausserdem".',
+    '„Meine Schicht" zeigt alles fürs eigene Studio in einer Liste, jeden Putzpunkt mit Haken.',
+    'Ruhiger: nur die erste Gruppe hat noch den farbigen Rand.'
+  ]},
+  { id:'2026-10-25-rechner-anlegen-fokus', datum:'25.10.2026', art:'neu', titel:'Am Rechner: Anlegen-Menü, Fokus, Detail daneben', wo:'home', punkte:[
+    '„+ Anlegen" oben auf „Heute": Aufgabe, Übergabe, Krank oder Urlaub, Defekt, Ankündigung.',
+    'Taste F blendet alles außer der Seite aus. F oder Esc beendet den Fokus.',
+    'Aufgaben öffnen sich rechts neben der Liste, mit Beschreibung und Schritten. Esc schließt.'
+  ]},
+  { id:'2026-10-25-loeschen-glocke', datum:'25.10.2026', art:'besser', titel:'Löschen ohne Nachfrage, Glocke nach Studio', wo:'home', punkte:[
+    'Aufgaben, Ankündigungen, Nachrichten und Schichten löschen ohne Nachfrage, 8 Sekunden lang „Rückgängig".',
+    'Glocke fasst je Studio zusammen, z. B. „3 neue in Hürth" zum Aufklappen.',
+    'Neue Aufgabe: die zuletzt gewählten Studios sind schon angehakt.',
+    'Dauert Speichern länger, dreht im Knopf ein kleiner Kreis.'
+  ]},
+  { id:'2026-10-25-formi-werkzeug', datum:'25.10.2026', art:'neu', titel:'Formi: gedrückt halten und draufziehen', wo:'home', punkte:[
+    'Formi gedrückt halten (am Rechner Rechtsklick): die vier häufigsten Aufträge zum Antippen.',
+    'Am Rechner Aufgaben und Putzpunkte auf Formi ziehen: abhaken, erinnern oder nachfragen.',
+    'Eingestempelt: am Rechner steht oben „Im Dienst seit …".',
+    'In der ersten Woche zeigt Formi auf „Heute" jeden Tag einen kurzen Rundgang.'
+  ]},
+  { id:'2026-10-25-formi-tagesstand', datum:'25.10.2026', art:'besser', titel:'Formi zeigt den Tagesstand', wo:'home', punkte:[
+    'Maus über Formi zeigt z. B. „7 von 11 heute erledigt". Bei viel Offenem dreht Formi schwerer.',
+    'Beim ersten Blick am Tag kommen die drei wichtigsten Zeilen aus Formi heraus.',
+    'Von Formi Erledigtes zeigt die Uhrzeit, z. B. „über Formi · 09:14".',
+    'Heller Stil: Formi als dunkler Punkt mit hellen Augen. Nur noch ein Ton, wenn etwas erledigt ist.'
   ]},
   { id:'2026-10-25-was-ist-neu-patchnotes', datum:'25.10.2026', art:'besser', titel:'„Was ist neu" als Update-Liste', wo:'home', punkte:[
     'Nach Tagen sortiert, jede Änderung mit „Neu", „Verbessert" oder „Behoben".',
@@ -26060,6 +26269,8 @@ function buildChefSelects(){
       if(!cb.checked){ $('ntAllStudios').checked=false; $('ntAllWrap').classList.remove('on'); }
     });
     var span=document.createElement('span'); span.textContent=x.name+(x.ok?'':' — nicht freigeschaltet');
+    /* Runde 280, Idee 16: die zuletzt gewählten Studios sind schon an. */
+    if(x.ok && ntStudiosZuletzt().indexOf(x.key)>=0){ cb.checked=true; lab.classList.add('on'); }
     lab.appendChild(cb); lab.appendChild(span); ns.appendChild(lab);
   });
   var hin=$('ntZuordHinweis');
@@ -26079,6 +26290,9 @@ function buildChefSelects(){
   });
 }
 
+function ntStudiosZuletzt(){
+  try{ var l=JSON.parse(localStorage.getItem('kf_nt_studios')||'[]'); return Array.isArray(l) ? l : []; }catch(e){ return []; }
+}
 /* Material: Studio-Auswahl (Chef: alle, Mitarbeiter: eigene) */
 function buildMaterialSelect(){
   var sel=$('matStudio'); if(!sel) return;
@@ -26951,10 +27165,10 @@ function docBlattOeffnen(d){
     return '<button class="ms-act'+(e.warn?' warn':'')+'" data-dba="'+e.id+'">'+
       '<span class="ms-ico">'+e.ico+'</span><span>'+esc(e.txt)+'</span></button>';
   }).join('');
-  blatt.classList.add('show');
+  blatt.classList.add('show'); blattAndocken(blatt);
   tick(8);
 }
-function docBlattSchliessen(){ var b=$('docSheet'); if(b) b.classList.remove('show'); _dbDoc=null; }
+function docBlattSchliessen(){ var b=$('docSheet'); if(b) b.classList.remove('show'); blattAbdocken(b); _dbDoc=null; }
 function docBlattAktion(was){
   var d=_dbDoc; if(!d) return;
   docBlattSchliessen();
@@ -28962,6 +29176,7 @@ function gehirnSenden(art, feldId){
   /* Runde 226: ein Danke an Formi – Herzchen. */
   if(/\b(danke|dankesch[oö]n|merci|thx|thanks)\b/i.test(text) && typeof formiFuehlt==='function') setTimeout(function(){ formiFuehlt('verliebt'); }, 300);
   jvThema(jvThemaAusText(text));
+  if(art==='auto') formiAuftragMerken(text);
   var v={ text:text, art:art, laeuft:true, schritte:[], _z:Date.now() };
   _gVerlauf.push(v); _gLaeuft=true; if(f) f.value='';
   gehirnSchritt(v, art==='auto' ? 'Lese deinen Satz …' : 'Suche im Studio-Wissen …');
@@ -29547,7 +29762,10 @@ function formiKugelZeigen(){
   /* Runde 250: die Lichtkrümmung ums Loch (einmal gebaut). */
   formiLinseBauen();
   requestAnimationFrame(formiLinseLage);
-  if(!k._gebunden){ k._gebunden=true; k.addEventListener('click', function(){ jarvisAuf(); }); formiLebtStart(); }
+  if(!k._gebunden){ k._gebunden=true;
+    /* Runde 279: nach dem Lange-Drücken öffnet der Klick nicht auch noch das Fenster. */
+    k.addEventListener('click', function(){ if(Date.now()-_frm.schluck<700) return; jarvisAuf(); });
+    formiKugelRingBinden(k); formiKugelZielBinden(k); formiLebtStart(); }
   k.hidden=!(gehirnVerfuegbar() && !jarvisOffen() && currentView!=='gehirn' && currentView!=='chat');
   document.body.classList.toggle('formi-kugel-an', !k.hidden);
 }
@@ -29997,7 +30215,26 @@ function formiTagesStand(keys, heuteFertig, offen){
   var anteil=alle ? fertig/alle : 0;
   var stufe=!fertig ? 0 : anteil>=1 ? 4 : anteil>=.66 ? 3 : anteil>=.33 ? 2 : 1;
   _fl.tagAnteil=anteil;
-  var k=$('formiKugel'); if(!k || _fl.tagStufe===stufe) return stufe;
+  /* Runde 278, Idee 3: der Stand ist lesbar — beim Darüberfahren (Rechner)
+     und mit der Tastatur. Idee 7: staut sich viel, wird Formi
+     schwer (der Wirbel langsamer), ohne rote Zahl. */
+  var k0=$('formiKugel');
+  if(k0){
+    var satz = alle ? fertig+' von '+alle+' heute erledigt' : 'Heute ist noch nichts offen';
+    if(_fl.tagSatz!==satz){
+      _fl.tagSatz=satz;
+      /* Der Name bleibt „Formi öffnen" (test-formi-lebt); der Stand steht
+         im Schild und auf „Heute". */
+      var st=k0.querySelector('.fk-stand'); if(st) st.textContent=satz;
+    }
+    var rest=offen+putzOffen, stau = rest>=15 ? 2 : rest>=8 ? 1 : 0;
+    if(_fl.stau!==stau){
+      if(_fl.stau) k0.classList.remove('fk-stau-'+_fl.stau);
+      if(stau) k0.classList.add('fk-stau-'+stau);
+      _fl.stau=stau;
+    }
+  }
+  var k=k0; if(!k || _fl.tagStufe===stufe) return stufe;
   if(_fl.tagStufe!=null) k.classList.remove('fk-tag-'+_fl.tagStufe);
   k.classList.add('fk-tag-'+stufe); _fl.tagStufe=stufe;
   return stufe;
@@ -30875,6 +31112,7 @@ function formiInselLage(fi){
       var q=el.getBoundingClientRect(); if(q.width && q.right>l && q.left<re) frei=false;
     });
     oben = frei ? Math.max(6, r.top+(r.height-40)/2) : Math.max(8, r.bottom+8);
+    _fi.imKopf=frei;
   }
   fi.style.top=Math.round(oben)+'px';
   fi.style.left=Math.round(mitte)+'px';
@@ -30893,6 +31131,7 @@ function formiInselZeigen(){
 }
 function formiInselArbeit(text){
   formiRand(true);
+  var fl=$('formiInsel'); if(fl) fl.classList.remove('laufend');
   if(!formiInselDarf()){ formiInselWeg(); return; }
   var fi=formiInselZeigen(); if(!fi) return;
   var t=fi.querySelector('.fi-klein .fi-t'); if(t && t.textContent!==text) t.textContent=text;
@@ -30904,6 +31143,7 @@ function formiInselErgebnis(o){
   formiRand(false, true);
   if(!formiInselDarf()) return;
   var fi=formiInselZeigen(); if(!fi) return;
+  fi.classList.remove('laufend');
   fi.classList.toggle('fehler', o.ok===false);
   var was=fi.querySelector('.fi-was'), b=fi.querySelector('.fi-titel');
   if(was) was.textContent=o.was||'';
@@ -30931,6 +31171,12 @@ function formiInselErgebnis(o){
 }
 function formiInselWeg(){
   var fi=$('formiInsel'); clearTimeout(_fi.uhr);
+  /* Runde 279: läuft etwas (eingestempelt) und steht die Insel in der
+     Kopfleiste, kehrt sie dorthin zurück statt zu verschwinden. */
+  if(fi && _fi.laufend && _fi.imKopf && _fi.stand!=='laufend' && _fi.stand!=='weg' && formiInselDarf()){
+    fi.classList.remove('fehler'); _fi.stand='weg'; formiLaufendZeigen(); if(_fi.stand==='laufend') return;
+  }
+  if(fi) fi.classList.remove('laufend');
   if(!fi || _fi.stand==='weg'){ if(fi) fi.hidden=true; _fi.stand='weg'; return; }
   _fi.stand='weg';
   formiInselMorph('punkt');
@@ -30967,6 +31213,227 @@ function formiRand(an, fertig){
     r.classList.remove('an', 'blitz');
     _fi.randUhr=setTimeout(function(){ _fi.ani.forEach(function(a){ try{ a.cancel(); }catch(e){} }); _fi.ani=[]; r.hidden=true; }, 700);
   }, fertig ? 500 : 0);
+}
+/* ── Formi als Werkzeug (Runde 279) ───────────────────────────────────
+   Aus dem Betrieb (25.10.2026) auf die 20 Ideen: „mach alles davon".
+   Idee 1 — auf Formi ziehen: am Rechner eine Aufgabe oder einen
+   Putzpunkt auf die Kugel ziehen; Formi bietet Abhaken, Erinnern und
+   Fragen an.
+   Idee 2 — lange drücken (oder Rechtsklick): die vier Aufträge, die
+   diese Person am häufigsten gibt, stehen über der Kugel.
+   Beides öffnet nichts Neues: es ist derselbe Formi mit denselben
+   Rechten, nur ein kürzerer Weg. Gezählt wird je Gerät. */
+var FORMI_RING_STD=['Was ist heute noch offen?', 'Öffne den Putzplan', 'Wer hat heute Dienst?', 'Schreib eine Übergabe'];
+var _frm={ offen:false, schluck:0, druckUhr:0, zug:null };
+function formiAuftragMerken(text){
+  var k=String(text||'').replace(/\s+/g, ' ').trim().slice(0, 60); if(k.length<3) return;
+  try{
+    var m=JSON.parse(localStorage.getItem('kf_formi_auftraege')||'{}')||{};
+    m[k]=(m[k]||0)+1;
+    var alle=Object.keys(m);
+    if(alle.length>40) alle.sort(function(a, b){ return m[a]-m[b]; }).slice(0, alle.length-40).forEach(function(x){ delete m[x]; });
+    localStorage.setItem('kf_formi_auftraege', JSON.stringify(m));
+  }catch(e){}
+}
+function formiRingEintraege(){
+  var m={}; try{ m=JSON.parse(localStorage.getItem('kf_formi_auftraege')||'{}')||{}; }catch(e){}
+  var l=Object.keys(m).filter(function(k){ return m[k]>=2; }).sort(function(a, b){ return m[b]-m[a]; }).slice(0, 4);
+  FORMI_RING_STD.forEach(function(x){ if(l.length<4 && l.indexOf(x)<0) l.push(x); });
+  return l;
+}
+function formiFrag(text, sofort){
+  jarvisAuf();
+  setTimeout(function(){
+    var f=$('jarvisFeld'); if(!f) return;
+    f.value=text;
+    if(sofort) gehirnSenden('auto', 'jarvisFeld');
+    else { try{ f.focus(); f.setSelectionRange(text.length, text.length); }catch(e){} }
+  }, 60);
+}
+/* Das Menü über der Kugel: eine Spalte von Knöpfen, leicht im Bogen,
+   immer zur Bildmitte hin. eintraege: [{ text, tun }]. */
+function formiRingAuf(eintraege, kopf){
+  var k=$('formiKugel'); if(!k || k.hidden || !k.getClientRects().length || _frm.offen) return false;
+  formiRingZu();
+  var r=k.getBoundingClientRect(), rechts=r.left+r.width/2>innerWidth/2;
+  var box=document.createElement('div'); box.className='formi-ring-menu'; box.id='formiRing';
+  box.setAttribute('role', 'menu'); box.setAttribute('aria-label', kopf || 'Formis Aufträge');
+  box.innerHTML=(kopf ? '<p class="frm-kopf">'+esc(kopf)+'</p>' : '')+eintraege.map(function(e, i){
+    return '<button type="button" class="frm-knopf" role="menuitem" data-frm="'+i+'">'+esc(e.text)+'</button>';
+  }).join('');
+  document.body.appendChild(box);
+  /* erst alles lesen … */
+  var kn=[].slice.call(box.querySelectorAll('.frm-knopf')), kp=box.querySelector('.frm-kopf');
+  var hoch=kn.map(function(b){ return b.offsetHeight; }), breit=kn.map(function(b){ return b.offsetWidth; });
+  /* … dann schreiben: von unten nach oben über der Kugel, je höher, desto
+     weiter zur Mitte (der Bogen). */
+  var unten=r.top-12, rand=16;
+  kn.forEach(function(b, i){
+    var y=unten-(i+1)*(hoch[i]+10)+10, bogen=Math.round(Math.sin((i+1)/kn.length*Math.PI/2)*28);
+    var x = rechts ? r.right-breit[i]-bogen : r.left+bogen;
+    x=Math.max(rand, Math.min(innerWidth-rand-breit[i], x)); y=Math.max(rand, y);
+    /* Die Lage über `translate`, nicht `transform`: sonst skalierte das
+       Nachgeben beim Drücken (scale) die ganze Verschiebung mit, und der
+       Knopf rutschte unter dem Finger weg (gemessen: kein Klick). */
+    b.style.translate=Math.round(x)+'px '+Math.round(y)+'px';
+    if(!gehirnWenigBewegung() && b.animate) try{ b.animate([{ opacity:0, transform:'translate('+(r.left+r.width/2-x-breit[i]/2).toFixed(0)+'px,'+(r.top+r.height/2-y-hoch[i]/2).toFixed(0)+'px) scale(.6)' }, { opacity:1, transform:'none' }],
+      { duration:320, delay:i*40, easing:'cubic-bezier(.32,1.28,.5,1)', fill:'backwards' }); }catch(e){}
+  });
+  if(kp){ var ky=unten-kn.length*(hoch[0]+10)-kp.offsetHeight-6, kw=kp.offsetWidth;
+    kp.style.translate=Math.round(Math.max(rand, Math.min(innerWidth-rand-kw, rechts ? r.right-kw : r.left)))+'px '+Math.round(Math.max(rand, ky))+'px'; }
+  kn.forEach(function(b, i){ b.addEventListener('click', function(e){ e.stopPropagation(); formiRingZu(); eintraege[i].tun(); }); });
+  box.addEventListener('click', function(e){ if(e.target===box) formiRingZu(); });
+  box.addEventListener('keydown', function(e){
+    if(e.key==='Escape'){ e.preventDefault(); formiRingZu(); k.focus(); }
+    if(e.key==='ArrowDown' || e.key==='ArrowUp'){ e.preventDefault(); var i=kn.indexOf(document.activeElement), j=(i+(e.key==='ArrowUp'?1:-1)+kn.length)%kn.length; kn[j].focus(); }
+  });
+  _frm.offen=true; tick(8);
+  if(kn[0]) kn[0].focus({ preventScroll:true });
+  return true;
+}
+function formiRingZu(){
+  var b=$('formiRing'); if(b && b.parentNode) b.parentNode.removeChild(b);
+  _frm.offen=false;
+}
+function formiRingAuftraege(){
+  return formiRingAuf(formiRingEintraege().map(function(t){ return { text:t, tun:function(){ formiFrag(t, true); } }; }), _fl.tagSatz || '');
+}
+function formiKugelRingBinden(k){
+  function los(){ clearTimeout(_frm.druckUhr); _frm.druckUhr=0; }
+  k.addEventListener('pointerdown', function(e){
+    if(e.button>0) return;
+    los();
+    _frm.druckUhr=setTimeout(function(){ _frm.druckUhr=0; if(formiRingAuftraege()) _frm.schluck=Date.now(); }, 480);
+  });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(function(t){ k.addEventListener(t, los); });
+  k.addEventListener('contextmenu', function(e){ e.preventDefault(); los(); formiRingAuftraege(); });
+  k.addEventListener('keydown', function(e){ if(e.key==='ContextMenu' || (e.shiftKey && e.key==='F10')){ e.preventDefault(); formiRingAuftraege(); } });
+}
+/* Idee 1: am Rechner auf Formi ziehen. Gezogen wird die ganze Zeile —
+   nicht vom Griff (der sortiert) und nicht aus Feldern oder Knöpfen. */
+var _fzMaus=window.matchMedia ? window.matchMedia('(hover:hover) and (pointer:fine)') : null;
+function formiZiehenBinden(box, klasse){
+  if(!box || !_fzMaus || !_fzMaus.matches) return;
+  if(!box._fzGebunden){
+    box._fzGebunden=true;
+    box.addEventListener('pointerdown', function(e){ _frm.vonGriff=!!(e.target.closest && e.target.closest('[data-griff], button, input, textarea, select, a')); }, true);
+  }
+  box.querySelectorAll('.'+klasse).forEach(function(z){
+    if(z._fzZiehbar) return; z._fzZiehbar=true;
+    z.setAttribute('draggable', 'true');
+    z.addEventListener('dragstart', function(e){
+      if(_frm.vonGriff){ e.preventDefault(); return; }
+      var t=z.querySelector('.t-title, .pp-title, .pp-name');
+      var titel=t ? [].filter.call(t.childNodes, function(n){ return n.nodeType===3; }).map(function(n){ return n.nodeValue; }).join(' ').trim() || t.textContent.trim() : '';
+      _frm.zug={ art: klasse==='todo' ? 'aufgabe' : 'putzplan', id:z.dataset.id, sk: klasse==='todo' ? z.dataset.sid : _ppStudioKey, titel:titel, zeile:z };
+      try{ e.dataTransfer.setData('text/plain', titel); e.dataTransfer.effectAllowed='move'; }catch(x){}
+      var k=$('formiKugel'); if(k) k.classList.add('fk-wartet');
+    });
+    z.addEventListener('dragend', function(){ var k=$('formiKugel'); if(k) k.classList.remove('fk-wartet', 'fk-zieht'); setTimeout(function(){ _frm.zug=null; }, 50); });
+  });
+}
+function formiKugelZielBinden(k){
+  k.addEventListener('dragover', function(e){ if(!_frm.zug) return; e.preventDefault(); try{ e.dataTransfer.dropEffect='move'; }catch(x){} k.classList.add('fk-zieht'); });
+  k.addEventListener('dragleave', function(){ k.classList.remove('fk-zieht'); });
+  k.addEventListener('drop', function(e){
+    if(!_frm.zug) return; e.preventDefault();
+    k.classList.remove('fk-zieht', 'fk-wartet');
+    var z=_frm.zug; _frm.zug=null;
+    formiUmgebung(k, 'sog');
+    formiRingAuf([
+      { text:'Abhaken', tun:function(){ formiZugAbhaken(z); } },
+      { text:'Erinnere mich daran', tun:function(){ formiFrag('Erinnere mich heute um 15 Uhr an „'+z.titel+'"', false); } },
+      { text:'Frag Formi dazu', tun:function(){ formiFrag('Was muss ich bei „'+z.titel+'" beachten?', false); } }
+    ], '„'+(z.titel.length>34 ? z.titel.slice(0, 33)+'…' : z.titel)+'"');
+  });
+}
+function formiZugAbhaken(z){
+  var arbeit;
+  if(z.art==='aufgabe') arbeit=aufgabeHaken(z.sk, z.id, true, true);
+  else {
+    var t=(cachedClean[z.sk]||[]).filter(function(x){ return x.id===z.id; })[0];
+    if(!t){ toast('Den Punkt gibt es nicht mehr.', true); return; }
+    arbeit=gehirnAbhakenSchreiben('putzplan', z.sk, t, true);
+  }
+  formiInselErgebnis({ was:'Abgehakt · '+studioName(z.sk), titel:z.titel, zeile:z.zeile });
+  jvTon('fertig');
+  Promise.resolve(arbeit).catch(function(e){ toast(e && e.message ? e.message : errMsg(e), true); });
+}
+
+/* ── Idee 6: morgens kommt der Tag aus dem Loch (Runde 279) ───────────
+   Beim ersten Blick auf „Heute" an einem Tag kommen die ersten drei
+   Zeilen aus Formi heraus (weisses Loch), einmal, kurz. Danach nie
+   wieder an diesem Tag. Nur transform/opacity. */
+function formiMorgen(box){
+  if(!box || gehirnWenigBewegung() || _fl.gefuehleAus || !document.body.animate) return;
+  var tag=ymd(new Date());
+  try{ if(localStorage.getItem('kf_formi_morgen')===tag) return; }catch(e){ return; }
+  var zeilen=[].slice.call(box.querySelectorAll('.heute-liste > .heute-zeile, .heute-liste > .hz-mit-haken')).slice(0, 3);
+  if(!zeilen.length) return;
+  requestAnimationFrame(function(){
+    var m=formiKugelMitte(); if(!m) return;
+    try{ localStorage.setItem('kf_formi_morgen', tag); }catch(e){}
+    var lage=zeilen.map(function(z){ var q=z.getBoundingClientRect(); return { x:q.left+q.width/2, y:q.top+q.height/2 }; });
+    zeilen.forEach(function(z, i){
+      try{ z.animate([{ transform:'translate('+Math.round(m.x-lage[i].x)+'px,'+Math.round(m.y-lage[i].y)+'px) scale(.08)', opacity:0 },
+        { transform:'none', opacity:1 }], { duration:620, delay:120+i*140, easing:'cubic-bezier(.2,.8,.2,1)', fill:'backwards' }); }catch(e){}
+    });
+    var k=$('formiKugel'); if(k) formiUmgebung(k, 'schub');
+    formiSagt(jvGruss()+'! Das Wichtigste zuerst.', true);  /* derselbe Gruss wie oben (Runde 221) */
+  });
+}
+
+/* ── Idee 8: die Insel für Laufendes (Runde 279) ──────────────────────
+   Wer eingestempelt ist, sieht es in der Insel: „Im Dienst seit 06:58".
+   Am Rechner steht sie dafür dauerhaft in der Kopfleiste (dort ist Platz),
+   am Handy kurz, wenn sich der Stand ändert — dauerhaft läge sie über dem
+   Inhalt. Formis Arbeit geht immer vor. */
+function formiLaufend(text){
+  text=text||'';
+  if(_fi.laufend===text) return;
+  _fi.laufend=text; _fi.laufendAb=Date.now();
+  if(_fi.stand==='weg' || _fi.stand==='laufend') formiLaufendZeigen();
+}
+function formiLaufendZeigen(){
+  var fi=$('formiInsel'); if(!fi) return;
+  if(!_fi.laufend || !formiInselDarf()){ if(_fi.stand==='laufend'){ _fi.stand='klein'; formiInselWeg(); } return; }
+  fi=formiInselZeigen(); if(!fi) return;
+  var dauerhaft=!!_fi.imKopf;
+  if(!dauerhaft && Date.now()-(_fi.laufendAb||0)>4500){ if(_fi.stand==='laufend'){ _fi.stand='klein'; formiInselWeg(); } return; }
+  var t=fi.querySelector('.fi-klein .fi-t'); if(t) t.textContent=_fi.laufend;
+  fi.classList.add('laufend');
+  if(_fi.stand!=='laufend' && _fi.stand!=='klein') formiInselMorph('klein');
+  _fi.stand='laufend';
+  if(!dauerhaft){ clearTimeout(_fi.uhr); _fi.uhr=setTimeout(function(){ if(_fi.stand==='laufend'){ _fi.stand='klein'; formiInselWeg(); } }, 4500); }
+}
+
+/* ── Idee 18: die erste Woche mit Formi (Runde 279) ───────────────────
+   Wer neu im Team ist (Konto jünger als 5 Tage, createdAt im Profil),
+   bekommt auf „Heute" je Tag EINEN Rundgang angeboten — eine Minute,
+   in der Reihenfolge, die man in den ersten Tagen braucht. Ältere Konten
+   ohne createdAt sehen nichts. „Später" blendet ihn für heute aus. */
+var FORMI_WOCHE=['putzen', 'aufgabe', 'uebergabe', 'schicht', 'abwesend'];
+function formiWocheHeute(){
+  if(!session || !session.createdAt || !gehirnVerfuegbar()) return null;
+  var tag=Math.floor((Date.now()-session.createdAt)/86400000); if(tag<0 || tag>4) return null;
+  var heute=ymd(new Date());
+  try{ if(localStorage.getItem('kf_formi_woche_'+session.uid)===heute) return null; }catch(e){ return null; }
+  var id=FORMI_WOCHE.slice(tag).concat(FORMI_WOCHE.slice(0, tag)).filter(function(x){ var w=FORMI_WIE[x]; return w && (!w.an || w.an()); })[0];
+  return id ? { id:id, tag:tag+1, name:FORMI_WIE[id].name } : null;
+}
+function formiWocheHTML(){
+  var w=formiWocheHeute(); if(!w) return '';
+  return '<div class="formi-woche" role="group" aria-label="Erste Woche mit Formi">'+
+    '<span class="formi-figur fw-figur" aria-hidden="true">'+formiFigurInnen(false, true)+'</span>'+
+    '<div class="fw-text"><small>Erste Woche mit Formi · Tag '+w.tag+' von 5</small><b>Heute zeige ich dir: '+esc(w.name)+'</b></div>'+
+    '<div class="fw-knoepfe"><button type="button" class="btn btn-primary" data-fwstart="'+esc(w.id)+'">Zeig’s mir · 1 Min.</button>'+
+    '<button type="button" class="btn btn-ghost" data-fwspaeter>Später</button></div></div>';
+}
+function formiWocheBinden(box){
+  var s=box.querySelector('[data-fwstart]'), sp=box.querySelector('[data-fwspaeter]');
+  function merken(){ try{ localStorage.setItem('kf_formi_woche_'+session.uid, ymd(new Date())); }catch(e){} }
+  if(s) s.addEventListener('click', function(){ merken(); formiWieStarten(s.getAttribute('data-fwstart')); });
+  if(sp) sp.addEventListener('click', function(){ merken(); renderHeute(); });
 }
 /* Was Formi gerade tut, aus dem Verlauf gelesen. Gebündelt: mehrere
    Aufrufe in einem Zug ergeben EINE Prüfung danach. */
@@ -31361,6 +31828,14 @@ window.__formiLebt = {
   /* Runde 250: Insel, Rand und Linse für die Durchläufe. */
   insel: function(){ var fi=$('formiInsel'), r=$('formiRand'); return { stand:_fi.stand, hidden:!fi || fi.hidden, klasse:fi ? fi.className : '', titel:fi ? fi.querySelector('.fi-titel').textContent : '', was:fi ? fi.querySelector('.fi-was').textContent : '', klein:fi ? fi.querySelector('.fi-t').textContent : '', rand:!!(r && !r.hidden && r.classList.contains('an')) }; },
   inselErgebnis: function(o){ formiInselErgebnis(o); },
+  /* Runde 278: Tagesstand/Stau, Formi im Knopf, Spur (Durchläufe). */
+  tagSetzen: function(fertig, offen){ _fl.tagStufe=null; return formiTagesStand([], fertig, offen); },
+  beschaeftigt: function(sel, ms){ var b=document.querySelector(sel); withBusy(b, function(){ return new Promise(function(r){ setTimeout(r, ms); }); }); },
+  spur: function(t, done){ return formiSpurHTML(t, done); },
+  /* Runde 279 (Durchläufe): Laufendes und ein neues Konto. */
+  laufend: function(t){ formiLaufend(t); },
+  morgen: function(){ try{ localStorage.removeItem('kf_formi_morgen'); }catch(e){} renderHeute(); },
+  neuImTeam: function(ts){ session.createdAt=ts; try{ localStorage.removeItem('kf_formi_woche_'+session.uid); }catch(e){} renderHeute(); },
   inselArbeit: function(t){ formiInselArbeit(t); },
   linsePuls: function(){ formiLinsePuls(0); },
   schlucken: function(sel){ formiSchlucken(document.querySelector(sel)); },
@@ -32946,21 +33421,21 @@ function jvTonKnopf(){
   b.setAttribute('aria-label', _jvTonAn ? 'Töne ausschalten' : 'Töne einschalten');
   b.innerHTML=_jvTonAn ? ikon('ton') : ikon('stumm');
 }
+/* Runde 278, Idee 10: EIN Formi-Ton für „erledigt" (tief, kurz, zwei
+   Anschläge wie beim Bezahlen am Handy) und einer für Fehler. Öffnen,
+   Schliessen, Senden und Schritte sind still. */
+var JV_TON_ART={ fertig:'erledigt', komplett:'erledigt', fehler:'fehler' };
 function jvTon(art){
-  if(!_jvTonAn || !jarvisOffen() && art!=='zu') return;
+  art=JV_TON_ART[art]; if(!art) return;
+  if(!_jvTonAn || !jarvisOffen()) return;
   try{
     var AC=window.AudioContext || window.webkitAudioContext; if(!AC) return;
     if(!_jvKlang) _jvKlang=new AC();
     var c=_jvKlang; if(c.state==='suspended' && c.resume) c.resume();
     var t0=c.currentTime+0.01;
     var TOENE={
-      auf:[[220,660,0,.42,.05,'sine'],[330,990,.08,.42,.035,'triangle']],
-      zu:[[660,200,0,.3,.04,'sine']],
-      senden:[[880,1320,0,.09,.05,'triangle']],
-      schritt:[[1500,1500,0,.035,.025,'sine']],
-      fertig:[[660,660,0,.12,.045,'sine'],[990,990,.1,.22,.045,'sine']],
-      komplett:[[523,523,0,.12,.045,'sine'],[659,659,.1,.12,.045,'sine'],[784,784,.2,.12,.045,'sine'],[1047,1047,.3,.35,.05,'triangle']],
-      fehler:[[300,180,0,.28,.05,'sawtooth']]
+      erledigt:[[392,392,0,.16,.05,'sine'],[587,587,.11,.32,.05,'sine']],
+      fehler:[[220,160,0,.26,.04,'sine']]
     }[art];
     if(!TOENE) return;
     TOENE.forEach(function(x){
@@ -36378,7 +36853,7 @@ function schCodeAnzeigen(name, code){
       'unter „Code zeigen".</p>'+
     '<b id="schCodeText">'+esc(code)+'</b>'+
     '<button type="button" class="btn btn-ghost btn-sm" id="schCodeKopie">Kopieren</button> '+
-    '<button type="button" class="btn btn-ghost btn-sm" id="schCodeZu">Schliessen</button>'+
+    '<button type="button" class="btn btn-ghost btn-sm" id="schCodeZu">Schließen</button>'+
     '</div>';
   var k=$('schCodeKopie');
   if(k) k.addEventListener('click', function(){
@@ -38492,8 +38967,10 @@ function msgBlattAktion(was){
     return;
   }
   if(was==='del'){
-    if(!confirm('Nachricht löschen?')) return;
-    S('channels').doc(currentChannel).collection('messages').doc(m.id).delete()
+    /* Runde 280: sofort löschen, mit „Rückgängig" (dieselbe Kennung). */
+    var mref=S('channels').doc(currentChannel).collection('messages').doc(m.id), mkopie=JSON.parse(JSON.stringify(m));
+    mref.delete()
+      .then(function(){ offerUndoDoc(mref, mkopie, 'Nachricht'); })
       .catch(function(err){ toast('Löschen fehlgeschlagen: '+errMsg(err),true); });
   }
 }
@@ -39390,15 +39867,17 @@ function schichtBlattOeffnen(id){
   acts.querySelectorAll('[data-shdel]').forEach(function(b){
     b.addEventListener('click', function(){ schichtEntfernen(b.getAttribute('data-shdel')); });
   });
-  blatt.classList.add('show');
+  blatt.classList.add('show'); blattAndocken(blatt);
   tick(8);
 }
-function schichtBlattSchliessen(){ var b=$('shiftSheet'); if(b) b.classList.remove('show'); _shBlatt=null; }
+function schichtBlattSchliessen(){ var b=$('shiftSheet'); if(b) b.classList.remove('show'); blattAbdocken(b); _shBlatt=null; }
 function schichtEntfernen(id){
-  if(!confirm('Schicht entfernen?')) return;
-  S('studios').doc(_teamStudioKey).collection('shifts').doc(id)
-    .delete().then(function(){ toast('Schicht entfernt'); })
-    .catch(function(e){ toast(errMsg(e),true); });
+  /* Runde 280: ohne Rückfrage, mit „Rückgängig". */
+  var ref=S('studios').doc(_teamStudioKey).collection('shifts').doc(id);
+  ref.get().then(function(d){
+    var kopie=d.exists ? Object.assign({ id:id }, d.data()) : null;
+    return ref.delete().then(function(){ if(kopie) offerUndoDoc(ref, kopie, 'Schicht'); else toast('Schicht entfernt'); });
+  }).catch(function(e){ toast(errMsg(e),true); });
 }
 /* Eintragen: Tag und Person sind gesetzt, wenn man aus einer Zelle kommt.
    Die Schichtzeiten aus dem Schichtplaner stehen als Vorlagen darüber —
@@ -39597,7 +40076,7 @@ function renderAbsences(){
     var ico='';
     var mine=a.uid===session.uid;
     var st=absStatus(a);
-    var del=(mine||canManage())?'<button class="mini-x" data-absdel="'+esc(a.id)+'">löschen</button>':'';
+    var del=(mine||canManage())?'<button class="mini-x" data-absdel="'+esc(a.id)+'">Löschen</button>':'';
     var f=a.from.split('-').reverse().join('.'), t=a.to.split('-').reverse().join('.');
     var chip='<span class="abs-status '+st+'">'+esc(ABS_LABEL[st]||st)+'</span>';
     // Entscheiden darf nur die Verwaltung – und nur bei offenen Anträgen
@@ -39660,7 +40139,7 @@ function renderHandovers(){
     'für die nächste Schicht.', 'Übergabe schreiben', '#hoAdd'); return; }
   box.innerHTML=list.map(function(h){
     var mine=h.uid===session.uid;
-    var del=(mine||canManage())?'<button class="mini-x" data-hodel="'+esc(h.id)+'">löschen</button>':'';
+    var del=(mine||canManage())?'<button class="mini-x" data-hodel="'+esc(h.id)+'">Löschen</button>':'';
     /* Der Toast ist nach 2,7 Sekunden weg. Wer beim Auftauchen nicht
        hinsieht, soll die Erwaehnung spaeter trotzdem WIEDERFINDEN — im
        Chat leistet das .msg.mentioned, hier bisher nichts. */
@@ -39682,7 +40161,7 @@ function renderBoard(){
   if(!_board.length){ box.innerHTML=emptyMini('Noch nichts angepinnt.','Etwas anpinnen','#bbAdd'); return; }
   box.innerHTML=_board.map(function(b){
     var mine=b.uid===session.uid;
-    var del=(mine||isChef())?'<button class="mini-x" data-bbdel="'+esc(b.id)+'">löschen</button>':'';
+    var del=(mine||isChef())?'<button class="mini-x" data-bbdel="'+esc(b.id)+'">Löschen</button>':'';
     var michGemeint = Array.isArray(b.mentions) && b.mentions.indexOf(session.uid)>=0;
     /* Eine Umfrage hat keinen Text — die Frage steht in der Umfrage.
        Ohne diese Abfrage stuende darueber ein leerer Absatz. */
@@ -39905,6 +40384,61 @@ function formiSeitZeile(){
     ikon:'<span class="formi-figur mini" aria-hidden="true">'+formiFigurInnen()+'</span>',
     titel:'Seit '+formiSeitWann(seit)+': '+teile.join(', '), wann:formiSeitWann(seit), anzahl:teile.join(', '),
     unter:'„'+zitat+'" — '+top.quelle+', '+uhr };
+}
+/* ── Meine Schicht (Runde 281, Idee 11) ───────────────────────────────
+   „Alles, was ich in meiner Schicht tun muss, in EINER Liste mit Haken,
+   in der Reihenfolge des Tages." Ein Schalter oben auf „Heute":
+   Überblick (die Gruppen wie bisher) oder Meine Schicht. Die Liste gilt
+   für MEIN Studio (gewählt in Formis Einstellungen, sonst das erste):
+   zuerst Lesen (Übergaben seit gestern), dann Überfälliges, Heutiges,
+   jeder offene Putzpunkt einzeln, dann der Rest mit Frist. Je Gerät
+   gemerkt. */
+function heuteModus(){ try{ return localStorage.getItem('kf_heute_modus')==='schicht' ? 'schicht' : 'ueberblick'; }catch(e){ return 'ueberblick'; } }
+/* Am Handy kostete der Schalter oben eine ganze Kategorie (sie rutschte
+   nach „Ausserdem", gefunden von test-gruppen-titel/-startseite-putz).
+   Dort steht er im Überblick deshalb selbst als Knopf unter „Ausserdem";
+   in „Meine Schicht" oben — dort ist ohnehin nur eine Liste. */
+function heuteModusSchmal(){ return !!(window.matchMedia && matchMedia('(max-width:699px)').matches); }
+function heuteModusHTML(){
+  var m=heuteModus();
+  if(m==='ueberblick' && heuteModusSchmal()) return '';
+  return '<div class="heute-modus" role="group" aria-label="Ansicht">'+
+    '<button type="button" data-hmodus="ueberblick" aria-pressed="'+(m==='ueberblick')+'">Überblick</button>'+
+    '<button type="button" data-hmodus="schicht" aria-pressed="'+(m==='schicht')+'">Meine Schicht</button></div>';
+}
+function heuteModusBinden(box){
+  box.querySelectorAll('[data-hmodus]').forEach(function(b){
+    b.addEventListener('click', function(){ try{ localStorage.setItem('kf_heute_modus', b.getAttribute('data-hmodus')); }catch(e){} tick(6); renderHeute(); });
+  });
+}
+/* Mein Studio: das in Formis Einstellungen gewählte; sonst das, in dem
+   gerade am meisten offen ist (Putzplan und Aufgaben). */
+function meineSchichtStudio(keys){
+  var w=(typeof gehirnMeinStudio==='function' && gehirnMeinStudio()); if(w) return w;
+  var best='', n=-1;
+  (keys||[]).forEach(function(k){
+    var o=(cachedClean[k]||[]).filter(function(t){ return !isDone(t) && !ppPausiert(t); }).length+(cachedTodos[k]||[]).filter(function(t){ return !isDone(t) && !isArchived(t); }).length;
+    if(o>n){ n=o; best=k; }
+  });
+  return best;
+}
+function meineSchichtZeilen(keys, ueber, heute, ohneFrist, fseit){
+  var mein=meineSchichtStudio(keys);
+  if(!mein) return [];
+  var l=[];
+  if(fseit) l.push(Object.assign({}, fseit, { titel:fseit.anzahl || fseit.titel }));
+  function nurMein(x){ return !x.hak || x.hak.sk===mein; }
+  ueber.filter(nurMein).forEach(function(x){ l.push(x); });
+  heute.filter(nurMein).forEach(function(x){ l.push(x); });
+  if(ansichtAn('putzplan')){
+    var rang={daily:0, weekly:1};
+    (cachedClean[mein]||[]).filter(function(t){ return !isDone(t) && !ppPausiert(t); })
+      .sort(function(a,b){ var ra=(a.recurring in rang)?rang[a.recurring]:2, rb=(b.recurring in rang)?rang[b.recurring]:2; return ra-rb || (a.ts||0)-(b.ts||0); })
+      .forEach(function(t){ l.push({ art:'putz', ziel:'putzplan', sk:mein, ikon:allesIkon('putzplan'), anzahl:1, hak:{ b:'putz', sk:mein, id:t.id },
+        titel:t.title||t.text||'Putzpunkt', unter:'Putzplan · '+(repLabelFor(t) || 'einmalig') }); });
+  }
+  ohneFrist.filter(nurMein).forEach(function(x){ l.push(x); });
+  return l;
 }
 function heuteHakenBinden(b){
   b.addEventListener('click', function(e){
@@ -40272,6 +40806,15 @@ function renderHeuteJetzt(){
      Handy fiele dieser Block meist nach „Ausserdem", deshalb steht die
      eine Zeile dort ganz oben. Sie ist das Erste, was man zum
      Schichtbeginn braucht. */
+  /* Runde 281: „Meine Schicht" — eine Liste statt der Gruppen. */
+  var schichtModus = heuteModus()==='schicht';
+  if(schichtModus){
+    ohneFrist.sort(function(a,b){ return a.ts-b.ts; });
+    var ms=meineSchichtZeilen(keys, ueber, heute, ohneFrist, fseit);
+    var msK=meineSchichtStudio(keys);
+    block('Meine Schicht'+(msK ? ' · '+studioName(msK) : ''), 'heute', ms, ms, 'todos', null, ms.length);
+    fseit=null; ueber=[]; heute=[]; putz=[]; lesen=[]; sonst=[]; ohneFrist=[];
+  }
   if(fseit && breit) lesen.unshift(fseit);
   /* Am Handy steht „Seit Mittwoch" in der Überschrift, die Zeile nennt
      nur die Zahlen — sonst schnitt die schmale Zeile den Titel ab. */
@@ -40335,12 +40878,16 @@ function renderHeuteJetzt(){
       '<div><b>Alles erledigt</b>'+
       '<span>Keine offene Aufgabe, nichts über der Frist, nichts Ungelesenes.</span></div></div>';
   }
+  html=formiWocheHTML()+heuteModusHTML()+html;
   box.innerHTML=html;
+  heuteModusBinden(box);
 
   box.querySelectorAll('[data-heute]').forEach(heuteTippBinden);
   box.querySelectorAll('[data-hhak]').forEach(heuteHakenBinden);
+  formiWocheBinden(box);
 
   heutePasst(box);
+  formiMorgen(box);
 }
 
 function heuteYmdT(){ return ymd(new Date()); }
@@ -40450,6 +40997,7 @@ function heutePasst(box){
      versteckt, wäre clientHeight 0 — und die Schleife würde die ganze
      Liste abräumen. Dieselbe Klasse Fehler wie beim gleitenden Marker
      (siehe gruppenMarker). */
+  heuteRestZeichnen(box, []);   // der Schalter „Meine Schicht" (Handy) zählt beim Messen mit
   if(sa.clientHeight < 120) return;
 
   /* ZUERST KÜRZEN, DANN STREICHEN.
@@ -40581,9 +41129,11 @@ function heutePasst(box){
    für gekürzte Blöcke, nicht für gestrichene. */
 function heuteRestZeichnen(box, liste){
   var alt=box.querySelector('.heute-rest'); if(alt) alt.remove();
-  if(!liste.length) return;
+  var schicht = heuteModus()==='ueberblick' && heuteModusSchmal();
+  if(!liste.length && !schicht) return;
   box.insertAdjacentHTML('beforeend',
     '<div class="heute-rest"><span class="hr-wort">Ausserdem</span>'+
+    (schicht ? '<button type="button" class="chip heute-rest-knopf" data-hmodus="schicht" aria-pressed="false">Meine Schicht ›</button>' : '')+
     liste.map(function(x){
       return '<button type="button" class="chip heute-rest-knopf" data-heute="'+esc(x.ziel)+'"'+
         (x.f?' data-hf="'+esc(x.f)+'"':'')+'>'+esc(x.titel)+
@@ -40591,6 +41141,7 @@ function heuteRestZeichnen(box, liste){
     }).join('')+'</div>');
   box.querySelectorAll('.heute-rest [data-heute]').forEach(heuteTippBinden);
   box.querySelectorAll('.heute-rest [data-hhak]').forEach(heuteHakenBinden);
+  heuteModusBinden(box.querySelector('.heute-rest'));
 }
 
 /* Wurde in einem Block gekürzt, MUSS der Weg zum Rest dastehen. Eine
@@ -41641,10 +42192,16 @@ function aufgabeFehlerText(e, sk){
    Ring. „über Formi" — die Person bleibt die, in deren Namen es geschah. */
 function formiSpurHTML(t, done){
   if(!t) return '';
-  if(done && t.formiAt && t.formiAt===t.doneAt)
-    return '<span class="formi-spur" title="Über Formi abgehakt"><i class="formi-ring-mini" aria-hidden="true"></i>über Formi</span>';
-  if(t.vonFormi)
-    return '<span class="formi-spur" title="Über Formi angelegt"><i class="formi-ring-mini" aria-hidden="true"></i>über Formi angelegt</span>';
+  /* Runde 278, Idee 5: mit Uhrzeit und für wen — nachvollziehbar, was
+     Formi getan hat. */
+  if(done && t.formiAt && t.formiAt===t.doneAt){
+    var uhr=fmtTime(t.formiAt), wer=t.doneBy ? ' für '+String(t.doneBy).split(' ')[0] : '';
+    return '<span class="formi-spur" title="Formi hat das um '+esc(uhr)+' Uhr'+esc(wer)+' abgehakt"><i class="formi-ring-mini" aria-hidden="true"></i>über Formi · '+esc(uhr)+'</span>';
+  }
+  if(t.vonFormi){
+    var wann=t.ts ? fmtTime(t.ts) : '', von=t.createdBy ? ' für '+String(t.createdBy).split(' ')[0] : '';
+    return '<span class="formi-spur" title="Formi hat das'+(wann ? ' um '+esc(wann)+' Uhr' : '')+esc(von)+' angelegt"><i class="formi-ring-mini" aria-hidden="true"></i>über Formi angelegt'+(wann ? ' · '+esc(wann) : '')+'</span>';
+  }
   return '';
 }
 function aufgabeHaken(sk, id, done, vonFormi){
@@ -44676,6 +45233,8 @@ function stJetztZeichnen(){
   /* Runde 226: Formi ruht mit in der Pause; nach dem Feierabend-Stempel
      (höchstens eine Minute her) fliegt die Zeit des Tages ins Loch. */
   if(typeof formiPause==='function') formiPause(st.art==='pause');
+  /* Runde 279, Idee 8: was läuft, steht in der Insel. */
+  if(typeof formiLaufend==='function') formiLaufend(!st.art || st.art==='gehen' ? '' : st.art==='pause' ? 'Pause seit '+zeitUhr(st.seit) : 'Im Dienst seit '+zeitUhr(st.beginn||st.seit));
   if(_fl.feierabend && st.art==='gehen' && Date.now()-_fl.feierabend<60000 && ist && tag) formiFeierabend(ist, stundenText(tag.arbeit));
   /* § 4 ArbZG, solange es noch hilft: ab 5:30 h am Stück ein Hinweis,
      über 6 h steht er in Bernstein. Nach dem Feierabend sagen es die
@@ -46302,7 +46861,8 @@ function todoFinden(sk, id){
    Rückfrage, Papierkorb, acht Sekunden „Rückgängig". */
 function todoLoeschen(t, sk){
   if(!t || !sk) return;
-  if(!confirm('Aufgabe löschen?\n\n„'+(t.title||'')+'"')) return;
+  /* Runde 280, Idee 14 — „Rückgängig statt Nachfragen": gelöscht wird
+     sofort, acht Sekunden lang holt „Rückgängig" alles zurück. */
   var backup=JSON.parse(JSON.stringify(t));
   S('studios').doc(sk).collection('todos').doc(t.id).delete()
     .then(function(){ toTrash('todos', sk, backup); offerUndoTodo(sk, backup); })
@@ -46310,6 +46870,7 @@ function todoLoeschen(t, sk){
 }
 
 function bindTodoClicks(area){
+  formiZiehenBinden(area, 'todo');
   area.querySelectorAll('.todo').forEach(function(node){
     var id=node.dataset.id, sk=node.dataset.sid;
     var chk=node.querySelector('.check');
@@ -46608,7 +47169,7 @@ function renderAnnouncements(anns){
     });
     area.querySelectorAll('.ann-del').forEach(function(b){
       b.addEventListener('click',function(){
-        if(!confirm('Ankündigung löschen?\n\nSie verschwindet bei allen Mitarbeitern.')) return;
+        /* Runde 280: ohne Rückfrage — „Rückgängig" holt sie zurück. */
         var id=b.dataset.id, backup=copyOf(_allAnns, id);
         S('announcements').doc(id).delete()
           .then(function(){
@@ -47847,7 +48408,7 @@ function spWahlZeichnen(){
         spIni(x.id, x.name)+'<span><b>'+esc(x.name)+'</b><small>'+esc(info)+'</small></span></button>'+zeile+'</div>';
     }).join('')+'</div>'+
     (w.ohne?'<button type="button" class="btn btn-ghost btn-sm" data-spweg="1" style="margin-top:var(--s8);width:100%">Austragen (Lücke lassen)</button>':'')+
-    '<button type="button" class="btn btn-ghost btn-sm" data-spzu="1" style="margin-top:var(--s8);width:100%">Schliessen</button>';
+    '<button type="button" class="btn btn-ghost btn-sm" data-spzu="1" style="margin-top:var(--s8);width:100%">Schließen</button>';
   box.hidden=false;
   box.innerHTML=html;
   ikonenEinsetzen(box);
@@ -50807,6 +51368,7 @@ function renderPutzplan(){
     box.innerHTML=list.map(zeile).join('');
   }
   bindPutzplanClicks(box);
+  formiZiehenBinden(box, 'pp-item');
   ziehenBinden(box, 'pp-item', 'putz', function(z){ return _ppStudioKey+'/'+z.dataset.id; }, function(){
     reiheAufraeumen('putz'); renderPutzplan();
   });
@@ -51424,7 +51986,7 @@ function notizenZeichnen(box, liste, sk, art){
   box.innerHTML=liste.map(function(n){
     var mine=n.byUid===session.uid;
     var canDel = chef || (mine && (Date.now()-(n.ts||0) < 3600000));
-    var del = canDel ? '<button class="'+K+'-del" '+A+'del="'+esc(n.id)+'">löschen</button>' : '';
+    var del = canDel ? '<button class="'+K+'-del" '+A+'del="'+esc(n.id)+'">Löschen</button>' : '';
     /* „Wischmopp ist kaputt" landete bisher hier und blieb liegen. Bei
        den Geraeten gibt es den Weg schon — eine Defektmeldung erzeugt
        eine Aufgabe —, beim Putzplan fehlte er.
@@ -51797,7 +52359,7 @@ function renderDevices(){
       al.style.display='block';
       al.innerHTML='<span>'+ikon('warnung')+' <b>'+esc(kaputteListe.map(function(d){ return d.name||'Gerät'; }).join(', '))+
         '</b> '+(kaputt===1?'ist':'sind')+' defekt</span>'+
-        '<button class="mat-alert-go" data-devgo="'+esc(kaputteListe[0].id)+'">ansehen</button>';
+        '<button class="mat-alert-go" data-devgo="'+esc(kaputteListe[0].id)+'">Ansehen</button>';
       var go=al.querySelector('[data-devgo]');
       if(go) go.addEventListener('click',function(){ openDeviceModal(go.getAttribute('data-devgo')); });
     } else al.style.display='none';
@@ -52154,6 +52716,36 @@ function todoGrundSetzen(text, btn){
   });
 }
 
+/* ── Liste + Detail am Rechner (Runde 281, Idee 12) ──────────────────
+   Aus dem Betrieb (25.10.2026) auf die 20 Ideen: „mach alles davon".
+   Ab 1100 px öffnen Aufgabe, Putzpunkt, Schicht und Dokument nicht mehr
+   als Blatt über der Liste, sondern rechts daneben: die Liste bleibt
+   sichtbar und bedienbar, ein Klick auf die nächste Zeile wechselt das
+   Detail. Am Handy bleibt es das Blatt von unten. */
+var _blattMq=window.matchMedia ? window.matchMedia('(min-width:1100px)') : null;
+function blattAndocken(blatt){
+  if(!blatt || !_blattMq || !_blattMq.matches || !layoutNeu()) return false;
+  ['todoSheet', 'shiftSheet', 'docSheet'].forEach(function(id){ var b=$(id); if(b && b!==blatt && b.classList.contains('angedockt')){ b.classList.remove('show', 'angedockt'); } });
+  var kopf=document.querySelector('.topbar'), oben=kopf && kopf.getClientRects().length ? Math.round(kopf.getBoundingClientRect().bottom) : 0;
+  blatt.style.setProperty('--dock-oben', oben+'px');
+  blatt.classList.add('angedockt');
+  document.body.classList.add('detail-offen');
+  return true;
+}
+function blattAbdocken(blatt){
+  if(blatt) blatt.classList.remove('angedockt');
+  if(!document.querySelector('.msg-sheet.angedockt.show')) document.body.classList.remove('detail-offen');
+  [].forEach.call(document.querySelectorAll('.im-detail'), function(z){ z.classList.remove('im-detail'); });
+}
+function blattZeileMarkieren(zeile){
+  [].forEach.call(document.querySelectorAll('.im-detail'), function(z){ z.classList.remove('im-detail'); });
+  if(zeile && document.body.classList.contains('detail-offen')) zeile.classList.add('im-detail');
+}
+document.addEventListener('keydown', function(e){
+  if(e.key!=='Escape') return;
+  var b=document.querySelector('.msg-sheet.angedockt.show'); if(!b) return;
+  if(b.id==='todoSheet') todoBlattSchliessen(); else if(b.id==='docSheet') docBlattSchliessen(); else if(b.id==='shiftSheet') schichtBlattSchliessen();
+});
 function todoBlattOeffnen(t, sk){
   _tbTodo=t; _tbSk=sk;
   var blatt=$('todoSheet'); if(!blatt) return;
@@ -52191,10 +52783,20 @@ function todoBlattOeffnen(t, sk){
     gb.style.display = done ? 'none' : '';
     var gf=$('tbGrund'); if(gf) gf.value = t.grund || '';
   }
+  /* Runde 281: angedockt ist Platz für das Detail — Beschreibung und
+     Schritte, wie sie in der Aufgabe stehen. */
+  var mehr=$('tbMehr');
+  if(mehr){
+    var schr=(t.steps||[]).map(function(x){ return '<li'+(x.d?' class="ok"':'')+'>'+esc(x.t||'')+'</li>'; }).join('');
+    mehr.innerHTML=(t.desc ? '<p>'+esc(t.desc)+'</p>' : '')+(schr ? '<ol>'+schr+'</ol>' : '')+
+      (t.createdBy ? '<small>Angelegt von '+esc(t.createdBy)+(t.ts ? ' · '+esc(fmtDateTime(t.ts)) : '')+'</small>' : '');
+  }
   blatt.classList.add('show');
+  blattAndocken(blatt);
+  blattZeileMarkieren(document.querySelector('.todo[data-id="'+String(t.id).replace(/["\\]/g, '')+'"]'));
   tick(8);
 }
-function todoBlattSchliessen(){ var b=$('todoSheet'); if(b) b.classList.remove('show'); _tbTodo=null; _tbSk=null; _tbPpZeile=null; }
+function todoBlattSchliessen(){ var b=$('todoSheet'); if(b) b.classList.remove('show'); blattAbdocken(b); _tbTodo=null; _tbSk=null; _tbPpZeile=null; }
 var _tbPpZeile=null;
 function ppBlattOeffnen(t, zeile){
   var blatt=$('todoSheet'); if(!blatt || !zeile) return;
@@ -52211,7 +52813,7 @@ function ppBlattOeffnen(t, zeile){
     return '<button class="ms-act'+(e.warn?' warn':'')+'" data-tba="pp-'+e.id+'">'+
       '<span class="ms-ico">'+e.ico+'</span><span>'+esc(e.txt)+'</span></button>';
   }).join('');
-  blatt.classList.add('show');
+  blatt.classList.add('show'); blattAndocken(blatt);
   tick(8);
 }
 
@@ -52245,7 +52847,7 @@ function todoBlattAktion(was){
   }
 
   if(was==='loeschen'){
-    if(!confirm('Aufgabe löschen?\n\n„'+(t.title||'')+'"')) return;
+    /* Runde 280, Idee 14: ohne Rückfrage — acht Sekunden „Rückgängig". */
     // Gelöschtes lässt sich 8 Sekunden lang zurückholen (Papierkorb im Kopf)
     var backup=JSON.parse(JSON.stringify(t));
     ref.delete()
@@ -56614,8 +57216,9 @@ function bindActions(){
             if($('ntZeit')) $('ntZeit').value='';
             if($('ntSteps')) $('ntSteps').value='';
             if($('ntAssign')) $('ntAssign').value='';
-            $('ntAllStudios').checked=false; $('ntAllWrap').classList.remove('on');
-            $('ntStudios').querySelectorAll('input').forEach(function(cb){ cb.checked=false; cb.parentElement.classList.remove('on'); });
+            /* Runde 280: die Studios bleiben gewählt (und gemerkt) — die
+               nächste Aufgabe geht meist an dieselben. */
+            try{ localStorage.setItem('kf_nt_studios', JSON.stringify(targets)); }catch(e){}
             _pendingTaskImg=null; $('ntPreviewWrap').style.display='none'; $('ntPreviewImg').src='';
             saveDraft();
             toast('Aufgabe für '+targets.length+' Studio'+(targets.length>1?'s':'')+' erstellt ✓');

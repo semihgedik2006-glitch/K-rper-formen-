@@ -99,3 +99,33 @@ Jede Idee nennt den Gewinn und, wo es eine gibt, die Studie dahinter.
 Zuerst **11 (Meine Schicht)**, **12 (Liste + Detail am PC)** und **1
 (Auf Formi ziehen)**. Die ersten beiden sparen jeden Tag die meisten
 Tipps. Die dritte macht Formi vom Schmuck zum Werkzeug.
+
+## Stand (25.10.2026)
+
+Auf „mach alles davon und alles was noch offen ist" sind alle 20 gebaut:
+
+| Idee | Runde | wo man es sieht |
+|---|---|---|
+| 1 Auf Formi ziehen | 279 | am Rechner eine Aufgabe/einen Putzpunkt auf die Kugel ziehen |
+| 2 Ring beim Lange-Drücken | 279 | Formi gedrückt halten oder Rechtsklick |
+| 3 Tagesstand lesbar | 278 | am Rechner mit der Maus über Formi |
+| 4 Formi statt Ladekreisel | 278 | in jedem Knopf, der länger als 300 ms speichert |
+| 5 Formis Spur | 278 | „über Formi · 09:14" an der Zeile |
+| 6 Morgens aus dem Loch | 279 | erster Blick auf „Heute" am Tag |
+| 7 Schwer bei Stau | 278 | Formis Wirbel ab 8 / 15 offenen Punkten |
+| 8 Insel für Laufendes | 279 | eingestempelt: „Im Dienst seit …" oben |
+| 9 Tinte im hellen Stil | 278 | Stil „Hell" |
+| 10 Ein Formi-Ton | 278 | Formi-Fenster, „erledigt" |
+| 11 Meine Schicht | 281 | „Heute" → Meine Schicht |
+| 12 Liste + Detail am Rechner | 281 | Aufgabe → „…" ab 1100 px |
+| 13 „+" mit Vorschlägen | 280 | „+ Anlegen" auf „Heute" am Rechner |
+| 14 Rückgängig statt Nachfragen | 280 | Löschen von Aufgabe, Ankündigung, Nachricht, Schicht |
+| 15 Glocke gebündelt | 280 | Glocke → „3 neue in Hürth" |
+| 16 Felder, die mitdenken | 280 | Verwaltung → Neue Aufgabe: Studios |
+| 17 Fokus | 280 | Taste F am Rechner |
+| 18 Erste Woche | 279 | neue Konten, „Heute" |
+| 19 Eine Karte mit Kante | 281 | „Heute" und Karten-Seiten |
+| 20 Sprache | 280 | Knöpfe: „Löschen", „Hinzufügen", „Schließen" |
+
+Bewusst offen geblieben: die Material-Liste behält ihre Rückfrage (siehe
+Runde 280).

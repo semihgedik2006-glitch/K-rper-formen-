@@ -23691,3 +23691,188 @@ Lockerung), 237 grün.
 
 **Nicht getestet:** iPhone und Safari selbst; die Regeln gegen das echte
 Firebase (nur Emulator).
+
+## Runde 278 — Formi-Feinschliff (Ideen 3, 4, 5, 7, 9, 10) und Offenes (25.10.2026)
+
+**Aus dem Betrieb**, auf die 20 Ideen: „mach alles davon und alles was
+noch offen ist". Gebaut wird in vier Runden; das hier ist die erste.
+
+**Gebaut:**
+- **Offenes:**
+  - Die Stimm-Function `gehirnStimme` ist aus `functions/index.js`
+    entfernt; der Deploy mit `--force` räumt sie ab.
+  - `test-mitarbeiter` war schon durch Runde 260 repariert (er geht über
+    „Alles"), nichts zu tun.
+- **Idee 3 – Tagesstand lesbar:** Über der Kugel steht ein Schild „7 von
+  11 heute erledigt". Es erscheint nur beim Darüberfahren (Rechner) oder
+  mit der Tastatur und steht auch im `aria-label` des Knopfs. Es hat
+  keine Trefferfläche.
+- **Idee 7 – Stau:** Ab 8 offenen Punkten dreht der Wirbel 9 s statt 6 s,
+  ab 15 dreht er 13 s und der Kern ist dunkler. Es gibt keine
+  Statusfarbe, nur Bewegung.
+- **Idee 4 – Formi im wartenden Knopf:** `withBusy` zeigt nach 300 ms
+  eine kleine Formi-Scheibe (Ring um ein schwarzes Loch) mit
+  `aria-busy`. Der Text bleibt für Vorlesegeräte.
+- **Idee 5 – Formis Spur:** „über Formi · 09:14", im Titel „für Anna".
+- **Idee 9 – heller Stil als Tinte:** Das Loch ist ein tiefer
+  Tintenpunkt, das Gesicht leuchtet darin wie im dunklen Stil. Die
+  Scheibe behält die satten Töne für Weiss.
+- **Idee 10 – ein Formi-Ton:** Für „erledigt" gibt es zwei tiefe
+  Anschläge, für Fehler einen kurzen tiefen Ton. Öffnen, Schliessen,
+  Senden und Schritte sind still.
+
+**Entschieden und warum:**
+- *Der helle Stil kehrt eine frühere Entscheidung um.* Runde 226 hatte
+  das weisse Loch („ja können wir alles umsetzen", 23.10.). Die neue
+  Antwort „mach alles davon" auf Idee 9 ersetzt sie. Der Test
+  `test-formi-ideen` prüft jetzt das Gegenteil (Kern dunkel, Gesicht ≥
+  4,5 : 1) und nennt beide Zitate.
+- *Der Ton nur bei Formi, nicht bei jedem Haken in der App.* Im Studio
+  stehen Kundinnen daneben, und der Ton ist standardmässig an. Ein Piepen
+  bei jedem Haken wäre zu viel.
+- *Der Worker-Pfad `/api/stimme` bleibt* bis zur nächsten Auslieferung
+  des Workers stehen. Er wird von hier aus nicht ausgeliefert, und ohne
+  Aufrufer kostet er nichts.
+
+**Geprüft:**
+siehe Runde 281 (ein gemeinsamer Durchlauf für 268–271).
+
+**Nicht geprüft:** echte Handys, echter Klang am Gerät.
+
+## Runde 279 — Formi als Werkzeug (Ideen 1, 2, 6, 8, 18) (25.10.2026)
+
+**Aus dem Betrieb:** „mach alles davon und alles was noch offen ist".
+
+**Gebaut:**
+- **Idee 2 – Ring:** Lange drücken (480 ms) oder Rechtsklick auf die
+  Kugel zeigt die vier Aufträge, die diese Person am häufigsten gibt
+  (gezählt je Gerät in `kf_formi_auftraege`, ab zweimal). Fehlen welche,
+  wird mit vier Standards aufgefüllt. Ein Tipp öffnet Formi und schickt
+  den Auftrag ab. Die Knöpfe stehen als Spalte im Bogen über der Kugel,
+  immer zur Bildmitte hin und im Bild. Pfeiltasten und Esc gehen. Den
+  Tagesstand gibt es als Überschrift.
+- **Idee 1 – auf Formi ziehen (Rechner):** Offene Aufgaben und
+  Putzpunkte sind ziehbar, aber nicht vom Griff aus (der sortiert) und
+  nicht aus Knöpfen oder Feldern. Über der Kugel zieht sie an. Fallen
+  gelassen stehen „Abhaken" (mit Formi-Spur, Insel und Strom),
+  „Erinnere mich daran" und „Frag Formi dazu" zur Wahl (vorausgefüllt,
+  nicht abgeschickt).
+- **Idee 6 – morgens:** Beim ersten Blick auf „Heute" an einem Tag kommen
+  die ersten drei Zeilen aus Formi (weisses Loch), dazu ein Satz in der
+  Blase. Danach an dem Tag nicht mehr.
+- **Idee 8 – Laufendes in der Insel:** „Im Dienst seit 06:58" bzw.
+  „Pause seit …" aus dem Stempelstand. Am Rechner (die Insel steht dort
+  in der Kopfleiste) bleibt es dauerhaft, am Handy 4,5 s. Formis Arbeit
+  geht vor, danach kehrt die Insel zum Laufenden zurück.
+- **Idee 18 – erste Woche:** Wer ein Konto mit `createdAt` jünger als 5
+  Tage hat, bekommt auf „Heute" je Tag einen Rundgang („Zeig's mir · 1
+  Min." / „Später"). Die Reihenfolge ist Putzplan, Aufgabe, Übergabe,
+  Schicht, Abwesenheit.
+
+**Entschieden und warum:**
+- *Ziehen nur am Rechner.* Am Handy ist Wischen schon belegt (Abhaken),
+  und Ziehen mit dem Finger kollidiert mit dem Scrollen. Dort gibt es
+  den Ring.
+- *Erste Woche nur mit `createdAt`.* Ältere Konten haben es nicht. Ohne
+  diese Grenze bekäme das ganze bestehende Team auf einmal eine Woche
+  Rundgänge.
+- *Gefunden beim Messen:* Die Knöpfe im Ring standen zuerst über
+  `transform`. Das Nachgeben beim Drücken (`scale`) skalierte die
+  Verschiebung mit, der Knopf rutschte unter der Maus weg, und **kein
+  Klick kam an**, obwohl der Hit-Test vorher stimmte. Jetzt steht die
+  Lage in `translate`. Der Durchlauf klickt mit der echten Maus.
+
+## Runde 280 — Oberfläche leichter (Ideen 13, 14, 15, 16, 17, 20) (25.10.2026)
+
+**Gebaut:**
+- **Idee 13:** „+ Anlegen" auf „Heute" (am Rechner) mit einem Menü: nur,
+  was die Person darf. Darunter liegt ein eigenes kleines Menü
+  (`menuAn`). Es heisst „Anlegen", nicht „Neu", weil daneben schon „•
+  Neu" (Neuigkeiten) steht.
+- **Idee 14:** Aufgabe (Zeile und Blatt), Ankündigung, Nachricht und
+  Schicht werden ohne `confirm()` gelöscht, mit acht Sekunden
+  „Rückgängig" (dieselbe Kennung). Material behält die Rückfrage: Der
+  Knopf liegt dort neben dem Zählfeld, und die Rückfrage war genau gegen
+  diesen Fehlgriff eingebaut.
+- **Idee 15:** Die Glocke bündelt je Studio: „3 neue in Hürth" als
+  `<details>`. Ein einzelner Eintrag steht wie bisher.
+- **Idee 16:** Im Formular „Neue Aufgabe" sind die zuletzt gewählten
+  Studios schon angehakt und bleiben es nach dem Erstellen
+  (`kf_nt_studios`).
+- **Idee 17:** Taste F (änderbar unter Tastenkürzel) blendet Seitenleiste,
+  Kopfleiste und die rechte Spalte auf „Heute" aus. „Fokus beenden"
+  steht oben links. Unter 900 px tut F nichts.
+- **Idee 20:** Knöpfe beginnen gross und sagen ein Verb: „löschen" wird
+  „Löschen", „ansehen" wird „Ansehen", „Hinzu" wird „Hinzufügen",
+  „Schliessen" wird „Schließen".
+
+## Runde 281 — Meine Schicht, Liste + Detail am Rechner, eine Karte (Ideen 11, 12, 19) (25.10.2026)
+
+**Gebaut:**
+- **Idee 11:** Der Schalter „Überblick / Meine Schicht" steht oben auf
+  „Heute" (je Gerät gemerkt). „Meine Schicht" ist eine Liste für mein
+  Studio: das in Formis Einstellungen gewählte, sonst das mit den meisten
+  offenen Punkten. Reihenfolge: seit du weg warst, Überfälliges,
+  Heutiges, jeder offene Putzpunkt einzeln mit Haken, dann der Rest.
+- **Idee 12:** Ab 1100 px docken das Aufgaben-, Schicht- und
+  Dokument-Blatt rechts an (400 px, ohne Schleier). Die Liste daneben
+  bleibt klickbar. Beim Aufgaben-Blatt stehen Beschreibung, Schritte und
+  „Angelegt von" dabei. Esc schliesst.
+- **Idee 19:** Formis schillernde Kante trägt nur noch die erste Gruppe
+  bzw. Karte. Alle weiteren haben eine Haarlinie auf dem Kern.
+
+**Entschieden und warum:**
+- *Andocken statt neuer Seite:* Dieselben Blätter mit denselben Knöpfen,
+  am Rechner nur an einem anderen Ort. Eine zweite Detail-Ansicht
+  daneben wäre doppelt zu pflegen.
+- *`.main` bekommt 400 px Rand* (einmal beim Öffnen, keine Bewegung über
+  Breite). So rutscht die Liste nicht unter das Detail.
+
+**Geprüft (Runden 278–281):**
+Gesamtdurchlauf auf dem Stand nach dem Übernehmen von `main` (Runden
+268–273; 274–277 kamen danach dazu, siehe unten), 45 Tests: 43 grün, 2 rot — beide auch auf einem sauberen
+`main` rot (dort nachgeprüft, nicht von hier):
+- `test-gestaltung`: die neuen Patchnotes-Marken trugen `3px 6px`,
+  `3px 2px` und `line-height:1.35` statt Werten der Leiter. Behoben hier
+  mit `--lh-eng`; die Abstände hat `main` inzwischen selbst auf `--s2`
+  gesetzt, diese Fassung ist übernommen.
+- `test-formi-seit`: Runde 268 gab `sendPush` ein fünftes Argument (das
+  Ziel). Der Test suchte `'formi')` am Zeilenende und fand deshalb keine
+  Formi-Meldung mehr. Er sucht jetzt `'formi'` als viertes Argument mit
+  oder ohne Ziel dahinter — gleich streng, nur an die neue Form
+  angepasst. 58 grün.
+
+Danach einzeln wiederholt und grün: `test-formi-werkzeug` 56,
+`test-oberflaeche-leicht` 28, `test-schicht-detail` 42,
+`test-formi-feinschliff` 19, `test-formi-verdeckt` 42, `test-knoepfe`,
+`test-abgeschnitten`, `test-quer`, `test-csp`, `test-gruppen-titel`,
+`test-startseite-putz`, `test-tagesgruss`, `test-gehirn-aktion`.
+
+**Letzter Stand** (nach dem Übernehmen von `main` bis Runde 277): 48
+Tests, alle grün — darunter die neuen von `main` (`test-chat-imessage`,
+`test-findetest`, `test-schulung-bescheinigung`, `test-schulung-kontrast`,
+`test-schichtplaner-rechnung`). Beim Zusammenführen fehlte einmal eine
+schliessende Klammer in `NEUIGKEITEN`; die App startete gar nicht, und
+jeder Test fiel — gefunden vom Durchlauf, nicht vom Auge.
+
+**Im ersten Durchlauf gefunden und behoben:**
+- *„Meine Schicht" kostete am Handy eine Kategorie.* Der Schalter oben
+  (66 px) schob „Zum Übernehmen" bzw. „Putzplan" nach „Ausserdem"
+  (`test-gruppen-titel`, `test-startseite-putz`). Am Handy (< 700 px)
+  steht im Überblick deshalb nur „Meine Schicht ›" als erster Knopf
+  unter „Ausserdem"; in „Meine Schicht" selbst steht der Schalter oben —
+  dort ist ohnehin nur eine Liste. Nachgemessen: dieselben Blöcke wie
+  vorher auf `main` (Chef 390 px: Überfällig, Heute, Zum Übernehmen;
+  Mitarbeiter 430 px: dazu Putzplan).
+- *Formis Morgengruss rechnete eigene Tageszeit* („Guten Morgen" um
+  3 Uhr) — genau der Fehler aus Runde 221. Jetzt `jvGruss()`.
+- *„Fokus beenden" lag oben links über dem Bereichskopf* (Menü, Titel).
+  Jetzt unten mittig; der Test prüft, dass der Knopf nichts Anklickbares
+  überdeckt (Gegenprobe mit der alten Lage: rot). Gemessen 196 × 46
+  (kompakt 182 × 44) bei 1280 / 1440 / 1920, im Bild, 16 px über der
+  Unterkante.
+- *Fester Abstand 400 px* am angedockten Blatt → `--dock-breit`, eine
+  Grösse für Blatt und Rand der Liste.
+
+**Nicht geprüft:** echte Handys, Ziehen mit dem Finger (gibt es nicht),
+echte Spracherkennung.

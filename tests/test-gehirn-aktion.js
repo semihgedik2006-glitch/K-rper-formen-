@@ -120,12 +120,11 @@ console.log('── Rückfrage, mehrere Aufträge, Ton (20.10.2026) ──');
   pruefe('Vorname und Ton gehen an das Gehirn, Ton nur locker/sachlich', A({ text: 'x', ton: 'sachlich' }, { name: 'Lea Meier' }).body.vorname === 'Lea' &&
     A({ text: 'x', ton: 'sachlich' }, { name: 'Lea' }).body.ton === 'sachlich' && A({ text: 'x', ton: 'frech' }, { name: 'Lea' }).body.ton === 'locker');
 }
-console.log('── Stimme (20.10.2026) ──');
+console.log('── Stimme entfernt (Runde 278) ──');
 {
-  const SP = __intern.gehirnStimmePruefen;
-  pruefe('Stimme: Text gekürzt auf 700, Leerraum zusammengezogen', SP({ text: 'a  b\n' + 'x'.repeat(900) }).text.length === 700 && SP({ text: 'a  b' }).text === 'a b');
-  pruefe('Stimme: nur Stimmen aus der Liste, sonst die erste', SP({ text: 'x', stimme: 'en-US-Evil' }).stimme === __intern.GEHIRN_STIMMEN[0] && SP({ text: 'x', stimme: 'de-DE-Chirp3-HD-Puck' }).stimme === 'de-DE-Chirp3-HD-Puck');
-  pruefe('Stimme: ohne Text nichts', SP({ text: '   ' }) === null);
+  /* Aus dem Betrieb (24.10.2026): „das vor lesen ist auch unnötig". */
+  const F = require('fs').readFileSync(require('path').join(__dirname, '..', 'functions', 'index.js'), 'utf8');
+  pruefe('keine Stimm-Function mehr (gehirnStimme)', !/exports\.gehirnStimme\b/.test(F) && !__intern.gehirnStimmePruefen);
 }
 console.log('── Erinnerung, Tausch, Stichpunkte (20.10.2026) ──');
 {

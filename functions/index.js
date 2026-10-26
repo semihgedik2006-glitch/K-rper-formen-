@@ -8055,41 +8055,11 @@ exports.gehirnFoto = region
     return { geraet: String(json.geraet || '').slice(0, 80), text: String(json.text || '').slice(0, 400) };
   });
 
-/* ── Menschliche Stimme (20.10.2026) ────────────────────────────────
-   Aus dem Betrieb: „lebendig wirkt von der stimme und wie ein echter
-   mensch als assistent". Der Worker holt die Stimme bei Google (nur wenn
-   dort ein Schlüssel hinterlegt ist, sonst {aus:true} → die App nimmt die
-   Stimme des Geräts). Nur deutsche Stimmen aus dieser Liste. */
-const GEHIRN_STIMMEN = ['de-DE-Chirp3-HD-Aoede', 'de-DE-Chirp3-HD-Charon', 'de-DE-Chirp3-HD-Kore', 'de-DE-Chirp3-HD-Puck'];
-function gehirnStimmePruefen(daten) {
-  const d = daten || {};
-  const text = String(d.text || '').replace(/\s+/g, ' ').trim().slice(0, 700);
-  if (!text) return null;
-  const stimme = GEHIRN_STIMMEN.indexOf(d.stimme) >= 0 ? d.stimme : GEHIRN_STIMMEN[0];
-  return { text, stimme };
-}
-exports.gehirnStimme = region
-  .runWith({ timeoutSeconds: 30, memory: '256MB' })
-  .https.onCall(async (data, context) => {
-    const { profil } = await anruferProfil(context);
-    const firma = await firmaVonProfil(profil);
-    if (!gehirnErlaubt(firma)) throw new functions.https.HttpsError('permission-denied', 'Formi ist für diesen Betrieb nicht eingerichtet.');
-    const a = gehirnStimmePruefen(data);
-    if (!a) throw new functions.https.HttpsError('invalid-argument', 'Kein Text zum Vorlesen.');
-    const schluessel = process.env.STUDIO_GEHIRN_KEY || '';
-    if (!schluessel) return { aus: true, grund: 'nicht verbunden' };
-    await tagesGrenze('gehirnStimme', 600, firma);
-    try {
-      const antwort = await fetch((process.env.GEHIRN_URL || GEHIRN_URL_STANDARD).replace(/\/+$/, '') + '/api/stimme', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'x-studio-key': schluessel }, body: JSON.stringify(a)
-      });
-      const json = await antwort.json().catch(() => ({}));
-      if (!antwort.ok || !json.audio) return { aus: true, grund: String(json.grund || json.fehler || ('HTTP ' + antwort.status)).slice(0, 120) };
-      return { audio: String(json.audio), mime: 'audio/mpeg' };
-    } catch (e) {
-      return { aus: true, grund: 'nicht erreichbar' };
-    }
-  });
+/* Runde 278: Die Stimm-Function (gehirnStimme, 20.10.2026) ist entfernt —
+   aus dem Betrieb (24.10.2026): „das vor lesen ist auch unnötig". Die App
+   ruft sie seit Runde 263 nicht mehr auf; mit --force räumt der Deploy sie
+   ab. Der Pfad /api/stimme im Worker bleibt bis zu dessen nächster
+   Auslieferung stehen, ohne Aufrufer. */
 
 exports.gehirnBewerten = region
   .runWith({ timeoutSeconds: 30, memory: '256MB' })
@@ -9333,7 +9303,7 @@ exports.stempelErinnern = region.runWith({ timeoutSeconds: 300, memory: '256MB' 
     return null;
   });
 
-exports.__intern = { stempelErinnerungen, stempelErinnernMail, stempelErinnernFirma, formiTagText, formiSchichtendeText, formiMaterialNeu, formiFristVorbei, formiSchichtEndeIn, abschlussZeilenPruefen, monateVor, eigeneAbschlussZeile, eigeneRegel, antragUhrPruefen, ANTRAG_TAGE_MAX, erlaubteSchritte, schrittWaehlen, tagesStand, gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnStimmePruefen, GEHIRN_STIMMEN, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
+exports.__intern = { stempelErinnerungen, stempelErinnernMail, stempelErinnernFirma, formiTagText, formiSchichtendeText, formiMaterialNeu, formiFristVorbei, formiSchichtEndeIn, abschlussZeilenPruefen, monateVor, eigeneAbschlussZeile, eigeneRegel, antragUhrPruefen, ANTRAG_TAGE_MAX, erlaubteSchritte, schrittWaehlen, tagesStand, gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
                      gehirnVorschlagPruefen, gehirnBefehlPruefen, gehirnWeg, gehirnKontextText, lageberichtOhneKi,
                      geminiSperreAufheben: () => { _geminiAusBis = 0; }, geminiGesperrt: () => Date.now() < _geminiAusBis, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,
                      authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
