@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Jc3zD7Q+Fnr3z+EZO5XaQ8cRzUeqvC7O1tDjOz68GJw='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Yl5jlXYKWKxqGNGUrKY2IdN0vQsAym7qH2N1Fyae6NA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -23215,6 +23215,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-26-gruss-feierabend', datum:'26.10.2026', art:'fix', titel:'Formi grüsst nur noch einmal am Tag', wo:'zeit', punkte:[
+    'Heute: nach dem Tagesgruss kam beim ersten Blick auf die Startseite manchmal ein zweites „Hallo". Jetzt nicht mehr.',
+    'Vorführung → Zeiten: ein Tag mit fehlendem Feierabend steht jetzt jeden Tag da, auch montags.'
+  ]},
   { id:'2026-10-26-schneller-start', datum:'26.10.2026', art:'besser', titel:'Die App startet schneller', wo:'home', punkte:[
     'Beim Öffnen fragt die App nur noch nach, ob es etwas Neues gibt, statt jedes Mal alles neu zu laden.',
     'Gibt es eine neue Fassung, kommt sie wie bisher sofort beim nächsten Öffnen.'
@@ -31396,7 +31400,12 @@ function formiMorgen(box){
         { transform:'none', opacity:1 }], { duration:620, delay:120+i*140, easing:'cubic-bezier(.2,.8,.2,1)', fill:'backwards' }); }catch(e){}
     });
     var k=$('formiKugel'); if(k) formiUmgebung(k, 'schub');
-    formiSagt(jvGruss()+'! Das Wichtigste zuerst.', true);  /* derselbe Gruss wie oben (Runde 221) */
+    /* Runde 285: nur, wenn heute noch nicht gegrüsst wurde — sonst
+       grüsste Formi zweimal am Tag (test-formi-kumpel). Der Tagesgruss
+       mit Namen folgt kurz danach und bleibt der Gruss des Tages. */
+    var gegruesst=false;
+    try{ gegruesst = localStorage.getItem('kf_formi_gruss')===tag; }catch(e){}
+    if(!gegruesst) formiSagt(jvGruss()+'! Das Wichtigste zuerst.', true);  /* derselbe Gruss wie oben (Runde 221) */
   });
 }
 
@@ -46662,8 +46671,9 @@ function todoHTML(t,sk,chefView,mitStudio,ziehbar){
    Seit Runde 255 auch nach links, wie in Mail: dahinter stehen „Mehr"
    und — wer darf — „Löschen". Beides gibt es an der Zeile auch ohne
    Wischen (⋯ und Papierkorb); die Knöpfe hier drücken genau diese.
-   Löschen fragt weiter nach (kein Löschen durch blosses Durchwischen:
-   was nicht umkehrbar ist, braucht einen Tipp).
+   Löschen braucht einen Tipp (kein Löschen durch blosses Durchwischen)
+   und läuft seit Runde 280 wie der Papierkorb: sofort weg, acht
+   Sekunden „Rückgängig".
    Funktioniert für Aufgaben und Putzplan-Zeilen. */
 var SWIPE_K = 76;          // Breite eines Knopfs im Aktionsfeld (CSS .swipe-k)
 var _swipeOffen = null;

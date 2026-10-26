@@ -104,7 +104,11 @@ async function oeffne(b, w, h, mehr) {
     {
       const p = await oeffne(b, 1440, 900);
       const s = await p.evaluate(() => {
-        const t = new Date(2026, 9, 25, 9, 14).getTime();
+        /* Runde 285: HEUTE um 09:14, nicht der 25.10. fest. Die Spur
+           schreibt bei einem anderen Tag „gestern 09:14" — richtig so;
+           der Test war ab dem 26.10. rot, ohne dass sich etwas änderte. */
+        const h = new Date(); h.setHours(9, 14, 0, 0);
+        const t = h.getTime();
         return { ab: window.__formiLebt.spur({ formiAt: t, doneAt: t, doneBy: 'Anna Meier' }, true), an: window.__formiLebt.spur({ vonFormi: true, ts: t, createdBy: 'Ben Kraus' }, false), nichts: window.__formiLebt.spur({ doneAt: t }, true) };
       });
       pruefe('abgehakt: „über Formi · 09:14", im Titel „für Anna"', /über Formi · 09:14/.test(s.ab) && /für Anna/.test(s.ab), s.ab);

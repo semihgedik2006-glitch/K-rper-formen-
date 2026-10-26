@@ -14,6 +14,12 @@
    sie rechnet aus Daten, die das Team ohnehin sieht, und lässt sich nur
    ausblenden. Der einzige echte Riegel steht in firestore.rules bei den
    Nachweisen und wird dort geprüft.
+
+   Runde 285: Der Weg in die Verwaltung führt über die Seitenleiste am
+   Rechner (`#side`). Die bisherige untere Leiste `.mobnav` gibt es im
+   neuen Design nicht mehr; der Test fand deshalb keine einzige Kachel
+   und meldete sechs Fehler, die in der App nicht bestehen (P-20).
+   Geprüft wird bei 1440 × 900, dem Hauptgerät.
    ───────────────────────────────────────────────────────────────────── */
 const { chromium } = require('playwright');
 const path = require('path');
@@ -28,7 +34,7 @@ const errs = [];
 /* stufe: null = kein Abo hinterlegt, sonst 'basic' | 'premium' */
 async function start(stufe) {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
-  const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+  const page = await b.newPage({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
   page.on('pageerror', e => errs.push('PAGEERROR: ' + e.message.slice(0, 200)));
   await page.route('**://www.gstatic.com/**', r => r.abort());
   await page.route('**fonts.googleapis.com/**', r => r.abort());
@@ -53,7 +59,7 @@ async function start(stufe) {
 
 async function lage(page) {
   await page.evaluate(() => {
-    const g = document.querySelector('.mobnav [data-group="g-chef"]');
+    const g = document.querySelector('#side [data-group="g-chef"]');
     if (g) g.click();
   });
   await page.waitForTimeout(500);
@@ -129,8 +135,9 @@ async function lage(page) {
     const offen = await page.evaluate(async () => {
       const raus = {};
       for (const g of ['g-komm', 'g-arbeit', 'g-team']) {
-        const el = document.querySelector('.mobnav [data-group="' + g + '"]');
-        if (el) el.click();
+        const el = document.querySelector('#side [data-group="' + g + '"]');
+        if (!el) { raus[g] = false; continue; }
+        el.click();
         await new Promise(r => setTimeout(r, 260));
         raus[g] = document.querySelectorAll('.view.show, .view[style*="display: block"]').length > 0
           || !!document.querySelector('#app.show');
