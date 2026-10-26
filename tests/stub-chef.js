@@ -639,6 +639,8 @@ var USERS = [
         var list = gm ? (gm[1] === 'allgemein' ? MESSAGES : [])
           : gh ? ((window.__handovers || (typeof HANDOVERS !== 'undefined' ? HANDOVERS : {}))[gh[1]] || [])
           : path === 'board' ? (typeof BOARD !== 'undefined' ? BOARD : [])
+          /* Geteilte Designs (Runde 291): get() UND onSnapshot */
+          : path === 'designs' ? (window.__designs || [])
           : ga ? (ABSENCES[ga[1]] || [])
           : ms ? (SHIFTS[ms[1]] || [])
           : gc ? (CLEAN[gc[1]] || [])
@@ -802,12 +804,12 @@ var USERS = [
                       haette nichts geprueft. Dieselbe Luecke wie bei den
                       Uebergaben, gefunden beim Bau der Erwaehnungen. */
                    (path==='board' ? (window.__board || []) :
-                   (path==='documents' ? DOCS :
+                   (path==='designs' ? (window.__designs || []) : (path==='documents' ? DOCS :
                    /* Firmen und Archiv: leer, ausser ein Test legt vorher
                       window.__firmen / window.__firmenArchiv hin. So merkt
                       keiner der anderen Durchlaeufe etwas davon. */
                    (path==='firmen' ? (window.__firmen||[]) :
-                   (path==='firmenArchiv' ? (window.__firmenArchiv||[]) : []))))))))))))))))));
+                   (path==='firmenArchiv' ? (window.__firmenArchiv||[]) : [])))))))))))))))))));
         var docs = list.map(function (d) { return { id: d.id, data: function () { return d; } }; });
         /* Zuhoerer merken, damit ein ZWEITER Schnappschuss moeglich ist.
            Die Attrappe feuerte bisher genau einmal je Sammlung. Fuer

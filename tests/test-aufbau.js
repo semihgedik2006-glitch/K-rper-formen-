@@ -17,8 +17,7 @@
        öffnet den Putzplan und markiert genau diesen Knopf; am Rechner
        steht links dieselbe Reihe. Nach dem Neuladen gilt alles noch und
        die App startet im Chat.
-    4. Bearbeiten: Plus nimmt auf, Minus nimmt heraus, Pfeil verschiebt –
-       die Leiste folgt sofort.
+    4. (seit Runde 291 in test-baukasten: Ziehen, Antippen, Gruppen)
     5. „Ganz minimal": zwei Knöpfe, keine Formi-Kugel (auch nicht ihre
        Sprechblase), keine Schnellzugriffe. „Zurück zu vorher" stellt den Stand davor her,
        „Alles wie ausgeliefert" die ausgelieferte Leiste.
@@ -78,6 +77,10 @@ const editor = async (p) => {
   await p.waitForTimeout(300);
 };
 const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel)].filter(e => e.getClientRects().length).map(e => e.textContent.trim()), sel);
+/* Seit Runde 291 ist alles im Editor ein Entwurf; erst „Übernehmen"
+   ändert die App (aus dem Betrieb, 26.10.2026: „… und erst danach
+   bestäigt man es oder verwirft es wieder"). */
+const uebernimm = async (p) => { await p.click('#abUebernehmen'); await p.waitForTimeout(500); };
 const tippe = async (p, sel) => { await p.evaluate((sel) => document.querySelector(sel).scrollIntoView({ block: 'center' }), sel); await p.click(sel); await p.waitForTimeout(350); };
 
 (async () => {
@@ -104,10 +107,11 @@ const tippe = async (p, sel) => { await p.evaluate((sel) => document.querySelect
         const k = [...t.querySelectorAll('button')].filter(e => e.getClientRects().length && !e.disabled);
         const klein = [];
         k.forEach(e => { e.scrollIntoView({ block: 'center' }); const r = T(e); if (r.w < 44 || r.h < 44) klein.push(e.textContent.trim().slice(0, 18) + ' ' + r.w + '×' + r.h); });
-        const nav = document.querySelector('.mobnav'), nr = nav && nav.getClientRects().length ? nav.getBoundingClientRect() : null, tr = t.getBoundingClientRect();
-        return { offen: !t.hidden, n: k.length, klein, leisteFrei: !nr || tr.bottom <= nr.top + 1, quer: document.documentElement.scrollWidth - innerWidth };
+        /* Runde 291: ein ganzer Bildschirm (der Entwurf ist nicht die App). */
+        const tr = t.getBoundingClientRect();
+        return { offen: !t.hidden, n: k.length, klein, voll: tr.top <= 0 && tr.bottom >= innerHeight - 1, quer: document.documentElement.scrollWidth - innerWidth };
       }, TREFFER.toString());
-      pruefe(w + ' px ' + dichte + ': Tafel offen, ' + m.n + ' Knöpfe, jeder ≥ 44 × 44, Leiste frei, kein Querlauf', m.offen && m.n > 30 && !m.klein.length && m.leisteFrei && m.quer <= 0, JSON.stringify(m));
+      pruefe(w + ' px ' + dichte + ': Editor offen über den ganzen Bildschirm, ' + m.n + ' Knöpfe, jeder ≥ 44 × 44, kein Querlauf', m.offen && m.n > 30 && !m.klein.length && m.voll && m.quer <= 0, JSON.stringify(m));
     }
     await p._ctx.close();
   }
@@ -117,9 +121,11 @@ const tippe = async (p, sel) => { await p.evaluate((sel) => document.querySelect
     const p = await oeffne(b, 320, 568);
     await editor(p);
     await tippe(p, '#aufbauTafel [data-abvor="anfang"]');
+    const vorher = await leiste(p, '.mobnav .mn-reihe [data-group]');
+    pruefe('nur im Entwurf: die App behält ihre Leiste, bis „Übernehmen"', JSON.stringify(vorher) === JSON.stringify(['Heute', 'Zeiten', 'Plan', 'Nachrichten']), JSON.stringify(vorher));
+    await uebernimm(p);
     const u = await leiste(p, '.mobnav .mn-reihe [data-group]');
-    pruefe('unten: ' + u.join(' · '), JSON.stringify(u) === JSON.stringify(['Chat', 'Aufgaben', 'Infos', 'Material', 'Putzplan']), JSON.stringify(u));
-    await p.click('#abClose'); await p.waitForTimeout(300);
+    pruefe('nach „Übernehmen" unten: ' + u.join(' · '), JSON.stringify(u) === JSON.stringify(['Chat', 'Aufgaben', 'Infos', 'Material', 'Putzplan']), JSON.stringify(u));
     const t = await p.evaluate((SRC) => { const T = eval('(' + SRC + ')'); return [...document.querySelectorAll('.mobnav .mn-reihe [data-group]')].map(e => [e.textContent.trim(), T(e)]); }, TREFFER.toString());
     pruefe('320 px: jeder der fünf Knöpfe ≥ 44 × 44', t.length === 5 && t.every(x => x[1].w >= 44 && x[1].h >= 44), JSON.stringify(t));
     await p.click('.mobnav [data-group="v-putzplan"]'); await p.waitForTimeout(600);
@@ -135,36 +141,21 @@ const tippe = async (p, sel) => { await p.evaluate((sel) => document.querySelect
     const pc = await oeffne(b, 1440, 900);
     await editor(pc);
     await tippe(pc, '#aufbauTafel [data-abvor="anfang"]');
+    await uebernimm(pc);
     const s = await leiste(pc, '#side > [data-group]');
     pruefe('am Rechner links dieselbe Reihe: ' + s.join(' · '), JSON.stringify(s) === JSON.stringify(['Chat', 'Aufgaben', 'Infos', 'Material', 'Putzplan']), JSON.stringify(s));
     await pc._ctx.close();
   }
 
-  console.log('\n── 4 Bearbeiten ──');
-  {
-    const p = await oeffne(b, 390, 844);
-    await editor(p);
-    await tippe(p, '#aufbauTafel [data-abrein="v-putzplan"]');
-    let u = await leiste(p, '.mobnav .mn-reihe [data-group]');
-    pruefe('Plus: Putzplan hinten dazu (' + u.join(' · ') + ')', JSON.stringify(u) === JSON.stringify(['Heute', 'Zeiten', 'Plan', 'Nachrichten', 'Putzplan']), JSON.stringify(u));
-    pruefe('bei 5 Knöpfen ist jedes weitere Plus gesperrt', await p.evaluate(() => [...document.querySelectorAll('#aufbauTafel [data-abrein]')].every(e => e.disabled)));
-    await tippe(p, '#aufbauTafel [data-abhoch="v-putzplan"]');
-    u = await leiste(p, '.mobnav .mn-reihe [data-group]');
-    pruefe('Pfeil: Putzplan eins nach vorn (' + u.join(' · ') + ')', JSON.stringify(u) === JSON.stringify(['Heute', 'Zeiten', 'Plan', 'Putzplan', 'Nachrichten']), JSON.stringify(u));
-    await tippe(p, '#aufbauTafel [data-abraus="g-zeit"]');
-    u = await leiste(p, '.mobnav .mn-reihe [data-group]');
-    pruefe('Minus: Zeiten heraus (' + u.join(' · ') + ')', JSON.stringify(u) === JSON.stringify(['Heute', 'Plan', 'Putzplan', 'Nachrichten']), JSON.stringify(u));
-    await tippe(p, '#aufbauTafel [data-abstart="putzplan"]');
-    pruefe('Start „Putzplan" gemerkt', await p.evaluate(() => JSON.parse(localStorage.getItem('kf_prefs')).aufbau.start) === 'putzplan');
-    await p._ctx.close();
-  }
+  /* Abschnitt 4 (Plus/Minus/Pfeile) steht seit Runde 291 in test-baukasten:
+     dort wird gezogen, angetippt und erst dann übernommen. */
 
   console.log('\n── 5 Ganz minimal, zurück, ausgeliefert ──');
   {
     const p = await oeffne(b, 390, 844);
     await editor(p);
     await tippe(p, '#aufbauTafel [data-abvor="minimal"]');
-    await p.click('#abClose'); await p.waitForTimeout(300);
+    await uebernimm(p);
     await p.click('.mobnav [data-group="v-todos"]'); await p.waitForTimeout(500);
     const m = await p.evaluate(() => ({ u: [...document.querySelectorAll('.mobnav .mn-reihe [data-group]')].map(e => e.textContent.trim()),
       kugel: !!document.getElementById('formiKugel').getClientRects().length && !document.getElementById('formiKugel').hidden,
@@ -174,17 +165,25 @@ const tippe = async (p, sel) => { await p.evaluate((sel) => document.querySelect
     await editor(p);
     await tippe(p, '#aufbauTafel [data-abzurueck]');
     let u = await leiste(p, '.mobnav .mn-reihe [data-group]');
-    pruefe('„Zurück zu vorher": die Leiste davor (' + u.join(' · ') + ')', JSON.stringify(u) === JSON.stringify(['Heute', 'Zeiten', 'Plan', 'Nachrichten']), JSON.stringify(u));
+    pruefe('„Zurück zum letzten Stand": die Leiste davor (' + u.join(' · ') + ')', JSON.stringify(u) === JSON.stringify(['Heute', 'Zeiten', 'Plan', 'Nachrichten']), JSON.stringify(u));
+    await editor(p);
     await tippe(p, '#aufbauTafel [data-abvor="anfang"]');
-    await tippe(p, '#aufbauTafel .ab-fuss [data-abvor="standard"]');
+    await uebernimm(p);
+    await editor(p);
+    await tippe(p, '#aufbauTafel [data-abvor="standard"]');
+    await uebernimm(p);
     u = await leiste(p, '.mobnav .mn-reihe [data-group]');
     pruefe('„Alles wie ausgeliefert": die ausgelieferte Leiste (' + u.join(' · ') + ')', JSON.stringify(u) === JSON.stringify(['Heute', 'Zeiten', 'Plan', 'Nachrichten']), JSON.stringify(u));
 
     console.log('\n── 6 Aussehen ──');
+    await editor(p);
     await tippe(p, '#aufbauTafel [data-abpref="theme|light"]');
     await tippe(p, '#aufbauTafel [data-abpref="dichte|kompakt"]');
+    const e = await p.evaluate(() => ({ hell: document.body.classList.contains('light'), dichte: document.body.getAttribute('data-dichte') }));
+    pruefe('im Entwurf ändert sich die App noch nicht', !e.hell && e.dichte !== 'kompakt', JSON.stringify(e));
+    await uebernimm(p);
     const a = await p.evaluate(() => ({ hell: document.body.classList.contains('light'), dichte: document.body.getAttribute('data-dichte') }));
-    pruefe('„Hell" und „Kompakt" greifen sofort', a.hell && a.dichte === 'kompakt', JSON.stringify(a));
+    pruefe('nach „Übernehmen" greifen „Hell" und „Kompakt"', a.hell && a.dichte === 'kompakt', JSON.stringify(a));
     pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await p._ctx.close();
   }
@@ -210,7 +209,7 @@ const tippe = async (p, sel) => { await p.evaluate((sel) => document.querySelect
     pruefe('normale Frage: keine Vorschläge', !n.vor.length, JSON.stringify(n));
     await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf [data-geditor]')][0].click()); await p.waitForTimeout(400);
     pruefe('„Im Editor anpassen" öffnet die Tafel', await p.evaluate(() => !document.getElementById('aufbauTafel').hidden));
-    await p.click('#abClose'); await p.waitForTimeout(300);
+    await p.click('#abVerwerfen'); await p.waitForTimeout(300);
     const vorher = await p.evaluate(() => window.__ki);
     await p.click('#formiKugel'); await p.waitForTimeout(1200);
     await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf [data-gnormal]')][0].click()); await p.waitForTimeout(900);
@@ -227,7 +226,7 @@ const tippe = async (p, sel) => { await p.evaluate((sel) => document.querySelect
     const p = await oeffne(b, w, h);
     await editor(p);
     await tippe(p, '#aufbauTafel [data-abvor="og"]');
-    await p.click('#abClose'); await p.waitForTimeout(500);
+    await uebernimm(p);
     const m = await p.evaluate((SRC) => {
       const T = eval('(' + SRC + ')');
       const sicht = (sel) => [...document.querySelectorAll(sel)].some(e => e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden');

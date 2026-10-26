@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-FiyLBUeZrvL2bwazx/ZEXn3fhjIq1O3RGs0LDuCIyjw='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Qzi7rQNfuBislRzQDjPrjP2rD3ndgnT92BW/s+q4odQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -9190,7 +9190,10 @@ body.neu .alles-lade[hidden]{display:none}
    beiseite. */
 body.alles-auf .formi-kugel,
 body.alles-auf .formi-blase,
-body.alles-auf #formiLinseKreis{visibility:hidden}
+body.alles-auf #formiLinseKreis,
+body.ab-mehr-auf .formi-kugel,
+body.ab-mehr-auf .formi-blase,
+body.ab-mehr-auf #formiLinseKreis{visibility:hidden}
 @keyframes ladeRein{from{transform:translateX(-100%)}to{transform:none}}
 @media (prefers-reduced-motion:reduce){
   body.neu .alles-lade{animation:none}
@@ -9747,26 +9750,77 @@ body.neu .np-punkt{width:8px;height:8px;border-radius:var(--r-rund);background:v
   #ftUhrTipps,.ft-auf-wort{display:inline}
 }
 
-/* ── App gestalten (Runde 289) ──
-   Eine Tafel statt eines Fensters: keine Abdunklung, damit man die
-   Änderung an der echten App sieht. Am Handy endet sie über der
-   unteren Leiste (die ist die Vorschau), am Rechner liegt sie rechts. */
-.aufbau-tafel{position:fixed;z-index:205;left:0;right:0;top:0;
-  bottom:var(--mobnav-h, calc(72px + var(--sab)));
-  display:flex;flex-direction:column;background:var(--bg-2);
-  border-bottom:1px solid var(--line-2);box-shadow:var(--e3)}
+/* ── App gestalten: der Baukasten (Runde 291) ──
+   Ein ganzer Bildschirm: was hier passiert, ist ein Entwurf und soll die
+   App dahinter nicht verändern, bis „Übernehmen". Am Rechner drei
+   Spalten (Bausteine · deine App · Vorschau und Designs), jede scrollt
+   für sich; am Handy eine Spalte. */
+.aufbau-tafel{position:fixed;z-index:205;inset:0;display:flex;flex-direction:column;background:var(--bg)}
 .aufbau-tafel[hidden]{display:none}
-@media(min-width:821px){
-  .aufbau-tafel{left:auto;width:min(480px, 100%);bottom:0;border-bottom:none;border-left:1px solid var(--line-2)}
+body.ab-offen{overflow:hidden}
+.ab-kopf{display:flex;align-items:center;gap:var(--s8);flex-wrap:wrap;
+  padding:calc(var(--sat) + var(--s8)) var(--s16) var(--s8);border-bottom:1px solid var(--line);background:var(--bg-2)}
+.ab-titel{flex:1;min-width:0}
+.ab-titel h3{margin:0}
+.ab-titel .hint{margin:0;display:block}
+.ab-kopf .btn{min-height:44px}
+.ab-kopf .btn:disabled{opacity:.45}
+.ab-inhalt{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 var(--s16) calc(var(--s24) + var(--sab));
+  display:flex;flex-direction:column}
+.ab-spalte{padding-bottom:var(--s16)}
+/* Am Handy zuerst Vorschau und Vorschläge, dann die eigene App, dann die Bausteine. */
+.ab-rechts{order:-1}
+.ab-teile{order:2}
+@media(max-width:560px){
+  .ab-titel{flex:1 1 100%}
+  .ab-kopf .btn{flex:1 1 0}
 }
-.ab-kopf{display:flex;align-items:center;gap:var(--s8);
-  padding:calc(var(--sat) + var(--s8)) var(--s16) var(--s8);border-bottom:1px solid var(--line)}
-.ab-kopf h3{flex:1;margin:0}
-.ab-kopf .lb-close{min-width:44px;min-height:44px}
-.ab-inhalt{flex:1;overflow-y:auto;padding:var(--s12) var(--s16) var(--s24);overscroll-behavior:contain}
+@media(min-width:821px){
+  .ab-inhalt{display:grid;grid-template-columns:minmax(220px,300px) minmax(0,1fr) minmax(300px,380px);gap:var(--s24);
+    overflow:hidden;padding-bottom:0}
+  .ab-spalte{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-right:var(--s4)}
+  .ab-rechts{order:3}
+  .ab-teile{order:1}
+  .ab-mitte{order:2}
+}
 .ab-inhalt h4{margin:var(--s20) 0 var(--s8);font-size:var(--t-md)}
-.ab-inhalt h4:first-child{margin-top:var(--s4)}
+.ab-inhalt h4 .hint{font-weight:400;font-size:var(--t-xs)}
 .ab-inhalt .hint{margin:0 0 var(--s8)}
+.ab-zone{display:flex;flex-wrap:wrap;gap:var(--s6);min-height:56px;padding:var(--s6);
+  border:1.5px dashed var(--line-2);border-radius:var(--r-md);background:var(--bg-soft)}
+.ab-zone.ab-ziel-an{border-color:var(--accent);background:rgba(var(--akz-rgb),.08)}
+.ab-zone.ab-ende::after{content:'';flex:0 0 4px;align-self:stretch;border-radius:var(--r-rund);background:var(--accent)}
+.ab-heute{flex-direction:column;flex-wrap:nowrap}
+.ab-chip{display:inline-flex;align-items:center;gap:var(--s6);min-height:44px;padding:0 var(--s12) 0 0;
+  border:1px solid var(--line-2);border-radius:var(--r-md);background:var(--bg-2);color:var(--text);
+  font:inherit;font-size:var(--t-sm);font-weight:600;cursor:grab;box-shadow:var(--e1);user-select:none;-webkit-user-select:none}
+.ab-chip svg{width:18px;height:18px;flex:none}
+.ab-chip > svg{color:var(--accent)}
+.ab-griff{display:grid;place-items:center;align-self:stretch;width:32px;color:var(--text-3);touch-action:none;cursor:grab}
+.ab-griff svg{width:16px;height:16px}
+.ab-chip.ab-davor{box-shadow:-4px 0 0 var(--accent), var(--e1)}
+.ab-heute .ab-chip.ab-davor{box-shadow:0 -4px 0 var(--accent), var(--e1)}
+.ab-chip.ab-quelle{opacity:.35}
+.ab-geist{position:fixed;left:0;top:0;z-index:260;pointer-events:none;opacity:.95;box-shadow:var(--e3);cursor:grabbing}
+body.ab-zieht, body.ab-zieht *{cursor:grabbing}
+.ab-drin{font-size:var(--t-xs);font-weight:700;color:var(--accent-d);padding:var(--s2) var(--s6);
+  border-radius:var(--r-pille);background:rgba(var(--akz-rgb),.12)}
+.ab-leer{align-self:center;color:var(--text-3);font-size:var(--t-sm);padding:0 var(--s8)}
+.ab-gruppe{border:1px solid var(--line-2);border-radius:var(--r-lg);padding:var(--s8);margin-bottom:var(--s8);background:var(--bg-2)}
+.ab-gruppe-kopf{display:flex;align-items:center;gap:var(--s6);margin-bottom:var(--s8);flex-wrap:wrap}
+.ab-gname{flex:1 1 140px;min-width:0;min-height:44px}
+.ab-zeichen,.ab-knopf{min-width:44px;min-height:44px;display:grid;place-items:center;border:1px solid var(--line-2);
+  border-radius:var(--r-md);background:var(--bg-soft);cursor:pointer}
+.ab-zeichen{color:var(--accent)}
+.ab-knopf{color:var(--text-2)}
+.ab-zeichen svg,.ab-knopf svg{width:20px;height:20px}
+.ab-gruppe .btn{min-height:44px}
+.ab-chip-gruppe{margin-top:var(--s8)}
+.ab-neu-gruppe{min-height:44px}
+.ab-hzeile{display:flex;align-items:center;gap:var(--s8)}
+.ab-hzeile .ab-chip{flex:1}
+.ab-hzeile.aus .ab-chip{opacity:.5}
+.ab-schalter-klein{min-width:56px;min-height:44px;display:grid;place-items:center;border:none;background:none;cursor:pointer}
 .ab-vorschlaege{display:grid;grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));gap:var(--s8)}
 .ab-vor{display:flex;flex-direction:column;align-items:stretch;gap:var(--s6);min-height:44px;text-align:left;
   padding:var(--s8);border-radius:var(--r-md);border:1.5px solid var(--line-2);background:var(--bg-soft);
@@ -9778,24 +9832,54 @@ body.neu .np-punkt{width:8px;height:8px;border-radius:var(--r-rund);background:v
   padding:var(--s6) var(--s4);border-radius:var(--r-sm);background:var(--bg-3)}
 .ab-mini svg{width:16px;height:16px}
 .ab-mini svg:first-child{color:var(--accent)}
-.ab-ziel{display:flex;align-items:center;gap:var(--s8);min-height:52px;border-top:1px solid var(--line)}
-.ab-ziel:first-child{border-top:none}
-.ab-ziel > svg{width:20px;height:20px;flex:none;color:var(--text-2)}
-.ab-ziel.unten > svg{color:var(--accent)}
-.ab-ziel .ab-name{flex:1;min-width:0}
-.ab-ziel .ab-name b{display:block;font-size:var(--t-sm)}
-.ab-ziel .ab-name i{display:block;font-style:normal;font-size:var(--t-xs);color:var(--text-2)}
-.ab-ziel .ab-knopf{min-width:44px;min-height:44px;display:grid;place-items:center;border:none;background:none;
-  color:var(--text-2);cursor:pointer;border-radius:var(--r-sm)}
-.ab-ziel .ab-knopf:disabled{opacity:.3;cursor:default}
-.ab-ziel .ab-knopf svg{width:18px;height:18px}
 .ab-schalter{display:flex;align-items:center;gap:var(--s12);min-height:52px;width:100%;
   border:none;background:none;color:var(--text);font:inherit;text-align:left;cursor:pointer;padding:0}
 .ab-schalter .ab-name{flex:1}
 .ab-schalter .ab-name i{display:block;font-style:normal;font-size:var(--t-xs);color:var(--text-2)}
 .ab-chips{display:flex;flex-wrap:wrap;gap:var(--s8)}
-.ab-fuss{display:flex;flex-wrap:wrap;gap:var(--s8);margin-top:var(--s20)}
+.ab-fuss{display:flex;flex-wrap:wrap;gap:var(--s8);margin-top:var(--s16)}
 .ab-fuss .btn{min-height:44px}
+.ab-speichern{display:flex;gap:var(--s8);flex-wrap:wrap;margin-bottom:var(--s8)}
+.ab-speichern .inp{flex:1 1 160px;min-width:0;min-height:44px}
+.ab-speichern .btn{min-height:44px}
+.ab-design{display:flex;align-items:center;gap:var(--s6);flex-wrap:wrap;padding:var(--s6) 0;border-top:1px solid var(--line)}
+.ab-design .btn{min-height:44px}
+.ab-dname{flex:1 1 120px;min-width:0}
+.ab-dname b{display:block;font-size:var(--t-sm)}
+.ab-dname i{display:block;font-style:normal;font-size:var(--t-xs);color:var(--text-2)}
+/* Die Vorschau: ein kleines Handy, gezeichnet aus dem Entwurf. */
+.ab-telefon{--abt-akz:var(--accent);width:220px;max-width:100%;margin:0 auto;border-radius:var(--r-lg);overflow:hidden;
+  border:6px solid var(--bg-3);background:var(--bg);color:var(--text);box-shadow:var(--e3);display:flex;flex-direction:column}
+.ab-telefon.hell{background:#F4F6FA;color:#1A1F2E}
+.abt-kopf{padding:var(--s8);font-weight:800;font-size:var(--t-sm);border-bottom:1px solid var(--line)}
+.abt-inhalt{min-height:150px;padding:var(--s8);display:flex;flex-direction:column;gap:var(--s4)}
+.abt-block{display:block;font-size:var(--t-2xs);padding:var(--s4) var(--s6);border-radius:var(--r-xs);background:var(--bg-3);color:inherit}
+.ab-telefon.hell .abt-block{background:#E2E7F1}
+.abt-block.kurz{width:60%;min-height:14px}
+.abt-leiste{display:flex;justify-content:space-around;border-top:1px solid var(--line);padding:var(--s4) var(--s2)}
+.abt-leiste span{display:flex;flex-direction:column;align-items:center;gap:var(--s2);min-width:0;flex:1;padding:0 var(--s2)}
+.abt-leiste svg{width:18px;height:18px}
+.ab-telefon.og .abt-leiste svg{width:22px;height:22px}
+.abt-leiste i{font-style:normal;font-size:var(--t-2xs);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.abt-leiste span.an{color:var(--abt-akz)}
+.ab-rechner-zeile{text-align:center;margin-top:var(--s8)}
+/* Das Menü an einem Baustein (Antippen statt Ziehen). */
+.ab-menue{position:fixed;left:0;top:0;z-index:250;display:flex;flex-direction:column;min-width:220px;max-width:calc(100vw - 16px);
+  padding:var(--s4);border-radius:var(--r-md);background:var(--bg-2);border:1px solid var(--line-2);box-shadow:var(--e3)}
+.ab-menue-kopf{margin:var(--s4) var(--s8);font-size:var(--t-xs);color:var(--text-2);font-weight:700}
+.ab-menue button{min-height:44px;text-align:left;padding:0 var(--s12);border:none;background:none;color:var(--text);
+  font:inherit;font-size:var(--t-sm);border-radius:var(--r-sm);cursor:pointer}
+.ab-menue button:hover{background:var(--auf-2)}
+.ab-menue .ab-menue-zu{color:var(--text-2)}
+/* „Mehr" in der eigenen Leiste am Handy (mehr als fünf Knöpfe). */
+.ab-mehr-lade{position:fixed;z-index:70;right:var(--s8);bottom:calc(var(--mobnav-h, 70px) + var(--s8));
+  display:flex;flex-direction:column;min-width:200px;padding:var(--s4);border-radius:var(--r-md);
+  background:var(--bg-2);border:1px solid var(--line-2);box-shadow:var(--e3)}
+.ab-mehr-lade button{display:flex;align-items:center;gap:var(--s8);min-height:48px;padding:0 var(--s12);border:none;
+  background:none;color:var(--text);font:inherit;font-size:var(--t-sm);font-weight:600;cursor:pointer;border-radius:var(--r-sm)}
+.ab-mehr-lade button svg{width:22px;height:22px}
+.ab-mehr-lade .badge,.ab-mehr-lade .ndot{display:none}
+
 /* Schlank: nur, wer es so eingestellt hat (Runde 289). */
 body.neu.ohne-schnell .schnell,
 body.neu.ohne-schnell .side-schnell{display:none}
@@ -13877,8 +13961,9 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
      Änderung sofort – am Handy bleibt die untere Leiste frei. -->
 <section class="aufbau-tafel" id="aufbauTafel" hidden role="dialog" aria-labelledby="abTitel">
   <div class="ab-kopf">
-    <h3 id="abTitel">App gestalten</h3>
-    <button class="lb-close" id="abClose" aria-label="Schließen"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <div class="ab-titel"><h3 id="abTitel">App gestalten</h3><span class="hint" id="abStand"></span></div>
+    <button type="button" class="btn btn-ghost btn-sm" id="abVerwerfen">Verwerfen</button>
+    <button type="button" class="btn btn-primary btn-sm" id="abUebernehmen">Übernehmen</button>
   </div>
   <div class="ab-inhalt" id="abInhalt"></div>
 </section>
@@ -23486,6 +23571,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-26-baukasten', datum:'26.10.2026', art:'neu', titel:'App gestalten: Baukasten mit Ziehen, Gruppen und Designs', wo:'home', punkte:[
+    'Bausteine in die Leiste oder in eigene, benannte Gruppen ziehen; die Startseite „Heute" frei ordnen und Blöcke ausblenden.',
+    'Alles ist erst ein Entwurf mit Vorschau – „Übernehmen" oder „Verwerfen".',
+    'Designs speichern, nach Bedarf wechseln und fürs Team teilen; geteilte Designs lassen sich ausprobieren.'
+  ]},
   { id:'2026-10-26-alles-scrollen', datum:'26.10.2026', art:'fix', titel:'„Alles" lässt sich am Rechner scrollen', wo:'home', punkte:[
     'Am Rechner öffnet „Alles" (oben links) jetzt als Schublade, die sich bis zur letzten Zeile scrollen lässt.',
     'Formi tritt beiseite, solange die Schublade offen ist, und verdeckt die unteren Zeilen nicht mehr.'
@@ -24551,14 +24641,24 @@ function findeText(){
    einzelne Seite wird zu einer Gruppe mit nur dieser Ansicht; Reiter,
    Farbe und Richtung fragen weiter NAVGROUPS – an denen ändert sich
    nichts. */
-var AUFBAU_MAX = 5;
+var AUFBAU_MAX_PC = 8, AUFBAU_MAX_HANDY = 5, AUFBAU_GRUPPEN_MAX = 6, AUFBAU_DESIGNS_MAX = 12;
 var AUFBAU_SEITEN = [
   { v:'chat', name:'Chat' }, { v:'todos', name:'Aufgaben' }, { v:'putzplan', name:'Putzplan' },
   { v:'ann', name:'Infos' }, { v:'material', name:'Material' }, { v:'geraete', name:'Geräte' },
   { v:'zeit', name:'Stempeln' }, { v:'dm', name:'Direkt' }, { v:'docs', name:'Dokumente' },
-  { v:'schulung', name:'Schulung' }, { v:'gehirn', name:'Formi' }, { v:'probe', name:'Probetraining' }
+  { v:'schulung', name:'Schulung' }, { v:'gehirn', name:'Formi' }, { v:'probe', name:'Probetraining' },
+  { v:'team', name:'Schichtplan' }, { v:'ich', name:'Ich' }
 ];
-var AUFBAU_STANDARD = { leiste:null, start:'home', minimal:false, formi:true, schnell:true, og:false, vorschlag:'standard' };
+var AUFBAU_STANDARD = { leiste:null, gruppen:[], heute:null, start:'home', minimal:false, formi:true, schnell:true, og:false, vorschlag:'standard' };
+/* Zeichen für eigene Gruppen – dieselben wie die der Seiten (NAV). */
+var AUFBAU_ZEICHEN = ['home','todos','putzplan','chat','team','zeit','material','geraete','docs','schulung','ann','ich','persoenlich','probe','gehirn'];
+/* Die Blöcke der Startseite „Heute" (renderHeute), in der ausgelieferten
+   Reihenfolge. */
+var HEUTE_BLOECKE = [
+  { k:'seit', n:'Seit du weg warst' }, { k:'ueber', n:'Überfällig' }, { k:'heute', n:'Heute' },
+  { k:'tausch', n:'Zum Übernehmen' }, { k:'putz', n:'Putzplan' }, { k:'neu', n:'Neu für dich' },
+  { k:'sonst', n:'Zu erledigen' }, { k:'offen', n:'Offen' }, { k:'band', n:'Heute im Studio (Rechner)' }
+];
 /* Die Vorschläge. `prefs` sind die Aussehen-Einstellungen, die es schon
    gibt (Profil → Aussehen) – ein Vorschlag setzt sie nur gemeinsam. */
 var AUFBAU_VORSCHLAEGE = [
@@ -24611,20 +24711,38 @@ function aufbauEinzel(v){
   if(!it || !s) return null;
   return { id:'v-'+v, label:s.name, views:[v], icon:it.icon, einzel:true };
 }
+/* Eigene Gruppen (Runde 291): Name, Zeichen, Seiten. In der App EIN
+   Knopf, die Seiten darunter als Reiter. Nur eine Ebene – eine Gruppe
+   enthält Seiten, keine Gruppen. */
+function aufbauEigene(a){
+  a=a||aufbau();
+  return (Array.isArray(a.gruppen)?a.gruppen:[]).map(function(x){
+    var views=(x.seiten||[]).filter(function(v){ return aufbauSeite(v) && ansichtAn(v); });
+    var it=navItem(x.ikon)||navItem(views[0])||navItem('home');
+    return { id:x.id, label:x.name||'Gruppe', views:views, icon:it.icon, eigen:true };
+  }).filter(function(g){ return g.views.length; });
+}
 /* Alles, was in die Leiste kann – für diese Person, in fester Reihenfolge. */
-function aufbauKandidaten(){
+function aufbauKandidaten(a){
   var raeume=navGruppen().filter(function(g){ return g.id!=='g-alles'; });
   var seiten=AUFBAU_SEITEN.filter(function(s){ return ansichtAn(s.v); }).map(function(s){ return aufbauEinzel(s.v); }).filter(Boolean);
-  return raeume.concat(seiten);
+  return aufbauEigene(a).concat(raeume, seiten);
+}
+function aufbauGruppenAus(a){
+  if(!a || !Array.isArray(a.leiste) || !a.leiste.length) return null;
+  var nach={};
+  aufbauKandidaten(a).forEach(function(g){ nach[g.id]=g; });
+  var r=a.leiste.map(function(id){ return nach[id]; }).filter(Boolean).slice(0, AUFBAU_MAX_PC);
+  return r.length ? r : null;
 }
 /* Die eigene Leiste oder null (dann gilt die ausgelieferte). */
-function aufbauGruppen(){
-  var a=aufbau();
-  if(!layoutNeu() || !Array.isArray(a.leiste) || !a.leiste.length) return null;
-  var nach={};
-  aufbauKandidaten().forEach(function(g){ nach[g.id]=g; });
-  var r=a.leiste.map(function(id){ return nach[id]; }).filter(Boolean).slice(0, AUFBAU_MAX);
-  return r.length ? r : null;
+function aufbauGruppen(){ return layoutNeu() ? aufbauGruppenAus(aufbau()) : null; }
+/* Liegt die Ansicht in einer eigenen Gruppe der Leiste? Dann führt die
+   Gruppe Kopf und Reiter. */
+function aufbauGruppeFuer(v){
+  var g=aufbauGruppen(); if(!g) return null;
+  for(var i=0;i<g.length;i++){ if(g[i].eigen && g[i].views.indexOf(v)>=0) return g[i]; }
+  return null;
 }
 function aufbauStart(){
   var s=aufbau().start;
@@ -24641,18 +24759,20 @@ function aufbauAnwenden(){
   if(typeof formiKugelZeigen==='function') formiKugelZeigen();
 }
 function aufbauFormiUnten(){ var a=aufbau(); return a.formi!==false && !a.minimal; }
-/* Der Stand vor dem letzten Vorschlag – für „Zurück zu vorher". */
+/* Der Stand vor dem letzten Übernehmen – für „Zurück zu vorher". */
 var AUFBAU_PREFS = ['theme','appbg','accent','glas','dichte','chatbg','fs'];
 function aufbauSchnappschuss(){
   var x={ aufbau:JSON.parse(JSON.stringify(PREFS.aufbau||null)) };
   AUFBAU_PREFS.forEach(function(k){ x[k]=PREFS[k]; });
   return x;
 }
+/* Sofort anwenden (Formis Karte „Ausprobieren"). Im Editor geht ein
+   Vorschlag stattdessen in den Entwurf. */
 function aufbauVorschlag(id){
   var v=AUFBAU_VORSCHLAEGE.filter(function(x){ return x.id===id; })[0]; if(!v) return;
   PREFS.aufbauVorher=aufbauSchnappschuss();
   Object.keys(v.prefs||{}).forEach(function(k){ PREFS[k]=v.prefs[k]; });
-  PREFS.aufbau={ leiste:v.leiste ? v.leiste.slice() : null, start:v.start, minimal:v.minimal, formi:v.formi, schnell:v.schnell, og:!!v.og, vorschlag:v.id };
+  PREFS.aufbau={ leiste:v.leiste ? v.leiste.slice() : null, gruppen:[], heute:null, start:v.start, minimal:v.minimal, formi:v.formi, schnell:v.schnell, og:!!v.og, vorschlag:v.id };
   savePrefs(); applyPrefs(); aufbauAnwenden();
   if(v.start) showView(aufbauStart() || 'home');
 }
@@ -24662,110 +24782,550 @@ function aufbauZurueck(){
   PREFS.aufbau=x.aufbau || null;
   AUFBAU_PREFS.forEach(function(k){ if(x[k]!==undefined) PREFS[k]=x[k]; });
   savePrefs(); applyPrefs(); aufbauAnwenden();
-}
-/* Die aktuelle Leiste als Liste von ids – auch wenn noch die ausgelieferte gilt. */
-function aufbauLeisteJetzt(){
-  var g=aufbauGruppen();
-  if(g) return g.map(function(x){ return x.id; });
-  return neuLeisteGruppen(navGruppen()).map(function(x){ return x.id; });
-}
-function aufbauLeisteAendern(liste){
-  aufbauSetzen({ leiste:liste.slice(0, AUFBAU_MAX), vorschlag:'eigen' });
+  if(currentView==='home' && typeof renderHome==='function') renderHome();
 }
 function aufbauMiniHTML(leiste){
   var nach={};
   aufbauKandidaten().forEach(function(g){ nach[g.id]=g; });
   var gr = leiste ? leiste.map(function(id){ return nach[id]; }).filter(Boolean)
                   : neuLeisteGruppen(navGruppen());
-  return '<span class="ab-mini" aria-hidden="true">'+gr.slice(0, AUFBAU_MAX).map(gruppeSvg).join('')+'</span>';
+  return '<span class="ab-mini" aria-hidden="true">'+gr.slice(0, AUFBAU_MAX_HANDY).map(gruppeSvg).join('')+'</span>';
+}
+/* Die Startseite in der eigenen Reihenfolge: vollständige Liste {k, an}. */
+function aufbauHeuteListe(h){
+  var r=[];
+  (Array.isArray(h)?h:[]).forEach(function(x){
+    if(x && HEUTE_BLOECKE.some(function(b){ return b.k===x.k; }) && !r.some(function(y){ return y.k===x.k; })) r.push({ k:x.k, an:x.an!==false });
+  });
+  HEUTE_BLOECKE.forEach(function(b){ if(!r.some(function(y){ return y.k===b.k; })) r.push({ k:b.k, an:true }); });
+  return r;
+}
+function aufbauNeueId(){ return (Date.now().toString(36)+Math.random().toString(36).slice(2,6)).slice(-10); }
+
+/* ══ DER ENTWURF (Runde 291) ══════════════════════════════════════════
+   Aus dem Betrieb, 26.10.2026: „es soll so ein menü mässig sein wo man
+   drag and drop machen kann und wo man alles da hin packen kann wo man
+   möchte und auch eigene gruppen erstellen kann … und erst danach
+   bestäigt man es oder verwirft es wieder", dazu: „man soll gruppen aber
+   auch bennen können und seine designs speichern können das man wechseln
+   kann nach bedarf und das andere das auch sehen und nutzen können".
+
+   Im Editor ändert sich NUR der Entwurf (_abE). Die App selbst bleibt,
+   wie sie ist, bis „Übernehmen". Fremde Designs (vom Team) laufen durch
+   aufbauBereinigen – sie stehen in der Datenbank und werden behandelt
+   wie jede Eingabe von aussen. */
+var _abE=null, _abAnfang='', _abTeam=[], _abTeamAb=null, _abLoeschen=null;
+var AUFBAU_ERLAUBT = {
+  theme:['formi','dark','light','auto'], dichte:['normal','kompakt'], glas:['glas','deckend'],
+  fs:['90','100','112','125','geraet']
+};
+function aufbauPrefsBereinigen(p){
+  var r={}; p=p||{};
+  AUFBAU_PREFS.forEach(function(k){
+    var v=p[k]; if(v===undefined || v===null) return; v=String(v);
+    var ok = AUFBAU_ERLAUBT[k] ? AUFBAU_ERLAUBT[k].indexOf(v)>=0
+      : k==='accent' ? (v==='bunt' || !!ACCENTS[v])
+      : k==='appbg' ? APP_BGS.some(function(b){ return b.id===v; })
+      : k==='chatbg' ? CHAT_BGS.some(function(b){ return b.id===v && !b.eigen; }) : false;
+    if(ok) r[k]=v;
+  });
+  return r;
+}
+function aufbauBereinigen(x){
+  x=x||{};
+  var e={};
+  e.gruppen=(Array.isArray(x.gruppen)?x.gruppen:[]).slice(0, AUFBAU_GRUPPEN_MAX).map(function(g){
+    g=g||{};
+    return { id: /^e-[a-z0-9]{1,20}$/.test(g.id) ? g.id : 'e-'+aufbauNeueId(),
+      name: String(g.name||'Gruppe').replace(/\s+/g,' ').trim().slice(0,24) || 'Gruppe',
+      ikon: AUFBAU_ZEICHEN.indexOf(g.ikon)>=0 ? g.ikon : 'home',
+      seiten: (Array.isArray(g.seiten)?g.seiten:[]).filter(function(v, i, l){ return !!aufbauSeite(v) && l.indexOf(v)===i; }).slice(0,8) };
+  });
+  var gids=e.gruppen.map(function(g){ return g.id; });
+  e.leiste=(Array.isArray(x.leiste)?x.leiste:[]).filter(function(id, i, l){
+    if(typeof id!=='string' || l.indexOf(id)!==i) return false;
+    if(/^v-/.test(id)) return !!aufbauSeite(id.slice(2));
+    if(/^g-/.test(id)) return NAVGROUPS.some(function(g){ return g.id===id; });
+    return gids.indexOf(id)>=0;
+  }).slice(0, AUFBAU_MAX_PC);
+  e.heute=aufbauHeuteListe(x.heute);
+  e.start = x.start==='home' || aufbauSeite(x.start) ? x.start : 'home';
+  e.minimal=!!x.minimal; e.og=!!x.og; e.formi=x.formi!==false; e.schnell=x.schnell!==false;
+  e.vorschlag = typeof x.vorschlag==='string' ? x.vorschlag.slice(0,30) : 'eigen';
+  return e;
+}
+function aufbauEntwurfAusJetzt(){
+  var e=aufbauBereinigen(aufbau());
+  if(!e.leiste.length) e.leiste=neuLeisteGruppen(navGruppen()).map(function(g){ return g.id; });
+  e.prefs={}; AUFBAU_PREFS.forEach(function(k){ e.prefs[k]=PREFS[k]; });
+  e.prefs=aufbauPrefsBereinigen(e.prefs);
+  return e;
+}
+/* Ein Design (Vorschlag, eigenes, vom Team) in den Entwurf laden. */
+function aufbauEntwurfLaden(aufbauTeil, prefs, name){
+  var e=aufbauBereinigen(aufbauTeil);
+  if(!e.leiste.length) e.leiste=neuLeisteGruppen(navGruppen()).map(function(g){ return g.id; });
+  e.prefs=Object.assign({}, _abE ? _abE.prefs : {}, aufbauPrefsBereinigen(prefs));
+  if(name) e.vorschlag=name;
+  _abE=e;
+}
+function aufbauGeaendert(){ return !!_abE && JSON.stringify(_abE)!==_abAnfang; }
+function aufbauGruppe(gid){ return (_abE.gruppen||[]).filter(function(g){ return g.id===gid; })[0] || null; }
+function aufbauName(id){
+  if(/^v-/.test(id)){ var s=aufbauSeite(id.slice(2)); return s ? s.name : id; }
+  var g=aufbauGruppe(id); if(g) return g.name;
+  for(var i=0;i<NAVGROUPS.length;i++){ if(NAVGROUPS[i].id===id) return gruppeLabel(NAVGROUPS[i]); }
+  return id;
+}
+function aufbauIkon(id){
+  if(/^v-/.test(id)) return allesIkon(id.slice(2));
+  var g=aufbauGruppe(id); if(g) return allesIkon(g.ikon);
+  for(var i=0;i<NAVGROUPS.length;i++){ if(NAVGROUPS[i].id===id) return gruppeSvg(NAVGROUPS[i]); }
+  return '';
+}
+
+/* ── Verschieben: eine Stelle für Ziehen UND Antippen ──
+   token: woher (neu:<id> | leiste:<i> | gruppe:<gid>:<i> | eigen:<gid> | heute:<i>)
+   ziel:  wohin (leiste | gruppe:<gid> | heute | weg), idx: Einfügestelle. */
+function aufbauVerschieben(token, ziel, idx){
+  var e=_abE, t=token.split(':'), art=t[0], id=null, gq=null, iq=-1;
+  if(art==='heute'){
+    if(ziel!=='heute') return false;
+    iq=+t[1]; var b=e.heute.splice(iq,1)[0]; if(!b) return false;
+    if(idx>iq) idx--;
+    e.heute.splice(Math.max(0, Math.min(idx, e.heute.length)), 0, b);
+    return true;
+  }
+  if(art==='neu' || art==='eigen') id=t[1];
+  else if(art==='leiste'){ iq=+t[1]; id=e.leiste[iq]; }
+  else if(art==='gruppe'){ gq=aufbauGruppe(t[1]); iq=+t[2]; if(gq) id='v-'+gq.seiten[iq]; }
+  if(!id) return false;
+  if(ziel==='weg'){
+    if(art==='leiste'){ if(e.leiste.length<=1){ toast('Mindestens ein Knopf bleibt in der Leiste.'); return false; } e.leiste.splice(iq,1); return true; }
+    if(art==='gruppe' && gq){ gq.seiten.splice(iq,1); return true; }
+    return false;
+  }
+  if(ziel==='leiste'){
+    var schon=e.leiste.indexOf(id);
+    if(schon<0 && e.leiste.length>=AUFBAU_MAX_PC){ toast('Die Leiste hat höchstens '+AUFBAU_MAX_PC+' Plätze.'); return false; }
+    if(art==='gruppe' && gq) gq.seiten.splice(iq,1);
+    if(schon>=0){ e.leiste.splice(schon,1); if(idx>schon) idx--; }
+    e.leiste.splice(Math.max(0, Math.min(idx, e.leiste.length)), 0, id);
+    return true;
+  }
+  var gz=/^gruppe:(.+)$/.exec(ziel);
+  if(gz){
+    var g=aufbauGruppe(gz[1]); if(!g) return false;
+    if(!/^v-/.test(id)){ toast('In eine Gruppe kommen einzelne Seiten – keine Räume und keine Gruppen.'); return false; }
+    var v=id.slice(2);
+    if(g.seiten.indexOf(v)<0 && g.seiten.length>=8){ toast('Eine Gruppe hat höchstens 8 Seiten.'); return false; }
+    if(art==='gruppe' && gq){ gq.seiten.splice(iq,1); if(gq===g && idx>iq) idx--; }
+    if(art==='leiste' && e.leiste.length>1) e.leiste.splice(iq,1);
+    var da=g.seiten.indexOf(v); if(da>=0){ g.seiten.splice(da,1); if(idx>da) idx--; }
+    g.seiten.splice(Math.max(0, Math.min(idx, g.seiten.length)), 0, v);
+    return true;
+  }
+  return false;
+}
+
+/* ── Zeichnen ── */
+function aufbauChip(token, id, extra){
+  return '<button type="button" class="ab-chip" data-abzieh="'+esc(token)+'" aria-label="'+esc(aufbauName(id))+' – antippen für Möglichkeiten">'+
+    '<span class="ab-griff" aria-hidden="true">'+ikon('griff')+'</span>'+aufbauIkon(id)+'<span class="ab-chip-wort">'+esc(aufbauName(id))+'</span>'+(extra||'')+'</button>';
+}
+function aufbauVorschauHTML(){
+  var e=_abE;
+  var nach={}; aufbauKandidaten(e).forEach(function(g){ nach[g.id]=g; });
+  var gr=e.leiste.map(function(id){ return nach[id]; }).filter(Boolean);
+  var handy = gr.length>AUFBAU_MAX_HANDY ? gr.slice(0, AUFBAU_MAX_HANDY-1).concat([{ id:'ab-mehr', label:'Mehr', icon:'<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>' }]) : gr;
+  var startName = e.start==='home' ? 'Heute' : ((aufbauSeite(e.start)||{}).name || 'Heute');
+  var inhalt = e.start==='home'
+    ? e.heute.filter(function(b){ return b.an && b.k!=='band'; }).map(function(b){
+        var x=HEUTE_BLOECKE.filter(function(y){ return y.k===b.k; })[0];
+        return '<span class="abt-block">'+esc(x.n)+'</span>'; }).join('')
+    : '<span class="abt-block">'+esc(startName)+'</span><span class="abt-block kurz"></span><span class="abt-block kurz"></span>';
+  var p=e.prefs||{}, hell = p.theme==='light';
+  var akz = (p.accent && p.accent!=='bunt' && ACCENTS[p.accent]) ? (hell ? ACCENTS[p.accent].l : ACCENTS[p.accent].d) : '';
+  return '<div class="ab-telefon'+(hell?' hell':'')+(e.og?' og':'')+'"'+(akz?' style="--abt-akz:'+akz+'"':'')+' aria-label="Vorschau am Handy">'+
+    '<div class="abt-kopf">'+esc(startName)+'</div><div class="abt-inhalt">'+inhalt+'</div>'+
+    '<div class="abt-leiste">'+handy.map(function(g, i){
+      return '<span class="'+(i===0?'an':'')+'">'+gruppeSvg(g)+'<i>'+esc(g.einzel||g.eigen ? g.label : gruppeLabel(g))+'</i></span>';
+    }).join('')+'</div></div>'+
+    '<p class="hint ab-rechner-zeile">Am Rechner links: '+esc(gr.map(function(g){ return g.einzel||g.eigen ? g.label : gruppeLabel(g); }).join(' · '))+'</p>';
 }
 function aufbauRender(){
-  var box=$('abInhalt'); if(!box) return;
-  var a=aufbau(), leiste=aufbauLeisteJetzt(), kand=aufbauKandidaten();
-  var pfeil=function(d){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="'+d+'"/></svg>'; };
-  var h='';
-  h+='<h4>Vorschläge</h4><p class="hint">Tippen probiert aus – nur auf diesem Gerät.</p><div class="ab-vorschlaege">'+
-    AUFBAU_VORSCHLAEGE.map(function(v){
-      return '<button type="button" class="ab-vor'+(a.vorschlag===v.id?' on':'')+'" data-abvor="'+v.id+'" aria-pressed="'+(a.vorschlag===v.id)+'">'+
-        aufbauMiniHTML(v.leiste)+'<b>'+esc(v.name)+'</b><i>'+esc(v.was)+'</i></button>';
+  var box=$('abInhalt'); if(!box || !_abE) return;
+  var e=_abE, h='';
+  var weiter=$('abStand'); if(weiter) weiter.textContent = aufbauGeaendert() ? 'Entwurf – noch nicht übernommen' : 'Noch nichts geändert';
+  var ueb=$('abUebernehmen'); if(ueb) ueb.disabled=!aufbauGeaendert();
+  var kand=aufbauKandidaten(e).filter(function(g){ return !g.eigen; });
+  /* Spalte 1: Bausteine */
+  h+='<div class="ab-spalte ab-teile"><h4>Bausteine</h4>'+
+    '<p class="hint">Ziehen – in die Leiste, in eine Gruppe oder zurück hierher. Oder antippen.</p>'+
+    '<div class="ab-zone ab-vorrat" data-abziel="weg">'+
+    kand.map(function(g){ return aufbauChip('neu:'+g.id, g.id, e.leiste.indexOf(g.id)>=0 ? '<span class="ab-drin">unten</span>' : ''); }).join('')+
+    '</div></div>';
+  /* Spalte 2: deine App */
+  h+='<div class="ab-spalte ab-mitte">';
+  h+='<h4>Unten in der Leiste <span class="hint">'+e.leiste.length+' von '+AUFBAU_MAX_PC+' · am Handy die ersten '+(e.leiste.length>AUFBAU_MAX_HANDY ? (AUFBAU_MAX_HANDY-1)+', der Rest unter „Mehr"' : AUFBAU_MAX_HANDY)+'</span></h4>'+
+    '<div class="ab-zone ab-leiste" data-abziel="leiste">'+e.leiste.map(function(id, i){ return aufbauChip('leiste:'+i, id); }).join('')+'</div>';
+  h+='<h4>Eigene Gruppen</h4><p class="hint">Eine Gruppe ist ein Knopf; ihre Seiten stehen darin als Reiter.</p>';
+  h+=(e.gruppen||[]).map(function(g){
+    var drin=e.leiste.indexOf(g.id)>=0;
+    return '<div class="ab-gruppe" data-abgruppe="'+esc(g.id)+'">'+
+      '<div class="ab-gruppe-kopf">'+
+        '<button type="button" class="ab-zeichen" data-abzeichen="'+esc(g.id)+'" aria-label="Zeichen wechseln">'+allesIkon(g.ikon)+'</button>'+
+        '<input class="inp ab-gname" data-abname="'+esc(g.id)+'" value="'+esc(g.name)+'" maxlength="24" aria-label="Name der Gruppe">'+
+        (drin ? '<span class="ab-drin">unten</span>' : '<button type="button" class="btn btn-ghost btn-sm" data-abgrein="'+esc(g.id)+'">In die Leiste</button>')+
+        '<button type="button" class="ab-knopf" data-abgweg="'+esc(g.id)+'" aria-label="Gruppe „'+esc(g.name)+'" löschen">'+ikon('papierkorb')+'</button>'+
+      '</div>'+
+      '<div class="ab-zone ab-gseiten" data-abziel="gruppe:'+esc(g.id)+'">'+
+        (g.seiten.length ? g.seiten.map(function(v, i){ return aufbauChip('gruppe:'+g.id+':'+i, 'v-'+v); }).join('') : '<span class="ab-leer">Seiten hierher ziehen</span>')+
+      '</div>'+
+      (drin ? '' : '<button type="button" class="ab-chip ab-chip-gruppe" data-abzieh="eigen:'+esc(g.id)+'"><span class="ab-griff" aria-hidden="true">'+ikon('griff')+'</span>'+allesIkon(g.ikon)+'<span class="ab-chip-wort">Gruppe in die Leiste ziehen</span></button>')+
+    '</div>';
+  }).join('');
+  h+=(e.gruppen.length<AUFBAU_GRUPPEN_MAX ? '<button type="button" class="btn btn-ghost btn-sm ab-neu-gruppe" data-abgneu="1">+ Neue Gruppe</button>' : '');
+  h+='<h4>Startseite „Heute"</h4><p class="hint">Reihenfolge ziehen; der Schalter blendet einen Block aus.</p>'+
+    '<div class="ab-zone ab-heute" data-abziel="heute">'+e.heute.map(function(b, i){
+      var x=HEUTE_BLOECKE.filter(function(y){ return y.k===b.k; })[0];
+      return '<div class="ab-hzeile'+(b.an?'':' aus')+'">'+
+        '<button type="button" class="ab-chip ab-chip-heute" data-abzieh="heute:'+i+'"><span class="ab-griff" aria-hidden="true">'+ikon('griff')+'</span><span class="ab-chip-wort">'+esc(x.n)+'</span></button>'+
+        '<button type="button" class="ab-schalter-klein" data-abheutean="'+i+'" aria-pressed="'+b.an+'" aria-label="'+esc(x.n)+' zeigen"><span class="sw'+(b.an?' on':'')+'"><i></i></span></button></div>';
     }).join('')+'</div>';
-  h+='<h4>Unten in der Leiste <span class="hint">('+leiste.length+' von '+AUFBAU_MAX+')</span></h4>'+
-    '<p class="hint">Plus nimmt auf, Minus nimmt heraus, die Pfeile verschieben. Alles andere bleibt über „Alles" erreichbar.</p><div>';
-  var reihe=leiste.map(function(id){ return kand.filter(function(g){ return g.id===id; })[0]; }).filter(Boolean)
-    .concat(kand.filter(function(g){ return leiste.indexOf(g.id)<0; }));
-  h+=reihe.map(function(g){
-    var pos=leiste.indexOf(g.id), unten=pos>=0;
-    return '<div class="ab-ziel'+(unten?' unten':'')+'">'+gruppeSvg(g)+
-      '<span class="ab-name"><b>'+esc(g.einzel ? g.label : gruppeLabel(g))+'</b><i>'+(g.einzel ? 'eine Seite' : 'Raum: '+esc(sichtbareViews(g).map(function(v){ var it=navItem(v); return it ? it.label : v; }).join(', ')))+'</i></span>'+
-      (unten
-        ? '<button type="button" class="ab-knopf" data-abhoch="'+g.id+'" aria-label="'+esc(g.label)+' nach vorn"'+(pos===0?' disabled':'')+'>'+pfeil('M12 19V5M5 12l7-7 7 7')+'</button>'+
-          '<button type="button" class="ab-knopf" data-abrunter="'+g.id+'" aria-label="'+esc(g.label)+' nach hinten"'+(pos===leiste.length-1?' disabled':'')+'>'+pfeil('M12 5v14M19 12l-7 7-7-7')+'</button>'+
-          '<button type="button" class="ab-knopf" data-abraus="'+g.id+'" aria-label="'+esc(g.label)+' aus der Leiste nehmen"'+(leiste.length<=1?' disabled':'')+'>'+pfeil('M5 12h14')+'</button>'
-        : '<button type="button" class="ab-knopf" data-abrein="'+g.id+'" aria-label="'+esc(g.label)+' in die Leiste"'+(leiste.length>=AUFBAU_MAX?' disabled':'')+'>'+pfeil('M12 5v14M5 12h14')+'</button>')+
-      '</div>';
-  }).join('')+'</div>';
   var starts=[['home','Heute']].concat(AUFBAU_SEITEN.filter(function(s){ return ansichtAn(s.v); }).map(function(s){ return [s.v, s.name]; }));
   h+='<h4>Beim Öffnen</h4><div class="ab-chips">'+starts.map(function(x){
-    return '<button type="button" class="chip'+(a.start===x[0]?' on':'')+'" data-abstart="'+x[0]+'" aria-pressed="'+(a.start===x[0])+'">'+esc(x[1])+'</button>';
+    return '<button type="button" class="chip'+(e.start===x[0]?' on':'')+'" data-abstart="'+x[0]+'" aria-pressed="'+(e.start===x[0])+'">'+esc(x[1])+'</button>';
   }).join('')+'</div>';
   var schalter=function(key, name, was, an){
     return '<button type="button" class="ab-schalter" data-abschalter="'+key+'" aria-pressed="'+an+'"><span class="ab-name"><b>'+esc(name)+'</b><i>'+esc(was)+'</i></span><span class="sw'+(an?' on':'')+'"><i></i></span></button>';
   };
   h+='<h4>Weniger</h4>'+
-    schalter('og', 'OG-Modus', 'Grosse Knöpfe, nur abhaken – ohne Reiter, Filter, Suche', !!a.og)+
-    schalter('minimal', 'Ganz minimal', 'Ohne Formi-Kugel und Schnellzugriffe', !!a.minimal)+
-    schalter('formi', 'Formi unten zeigen', 'Die Kugel unten in der Ecke', a.formi!==false && !a.minimal)+
-    schalter('schnell', 'Schnellzugriffe zeigen', 'Die Reihe auf „Heute" und am Rechner links', a.schnell!==false && !a.minimal);
+    schalter('og', 'OG-Modus', 'Grosse Knöpfe, nur abhaken – ohne Reiter, Filter, Suche', !!e.og)+
+    schalter('minimal', 'Ganz minimal', 'Ohne Formi-Kugel und Schnellzugriffe', !!e.minimal)+
+    schalter('formi', 'Formi unten zeigen', 'Die Kugel unten in der Ecke', e.formi!==false && !e.minimal)+
+    schalter('schnell', 'Schnellzugriffe zeigen', 'Die Reihe auf „Heute" und am Rechner links', e.schnell!==false && !e.minimal);
   var chips=function(key, liste){
     return '<div class="ab-chips">'+liste.map(function(x){
-      var on=String(PREFS[key])===String(x[0]);
+      var on=String(e.prefs[key])===String(x[0]);
       return '<button type="button" class="chip'+(on?' on':'')+'" data-abpref="'+key+'|'+x[0]+'" aria-pressed="'+on+'">'+esc(x[1])+'</button>';
     }).join('')+'</div>';
   };
   h+='<h4>Aussehen</h4><p class="hint">Farben</p>'+chips('theme', [['formi','Formi'],['dark','Dunkel'],['light','Hell'],['auto','Wie das Gerät']]);
-  h+='<p class="hint">Akzentfarbe</p>'+chips('accent', [['bunt','Je Bereich']].concat(Object.keys(ACCENTS).map(function(k){ return [k, ACCENTS[k].name || (k.charAt(0).toUpperCase()+k.slice(1))]; })));
+  h+='<p class="hint">Akzentfarbe</p>'+chips('accent', [['bunt','Je Bereich']].concat(Object.keys(ACCENTS).map(function(k){ return [k, ACCENTS[k].name || k]; })));
   h+='<p class="hint">Hintergrund</p>'+chips('appbg', APP_BGS.map(function(b){ return [b.id, b.name]; }));
   h+='<p class="hint">Chat-Hintergrund</p>'+chips('chatbg', CHAT_BGS.filter(function(b){ return !b.eigen; }).map(function(b){ return [b.id, b.name]; }));
   h+='<p class="hint">Schrift</p>'+chips('fs', [['90','Klein'],['100','Normal'],['112','Groß'],['125','Sehr groß']]);
   h+='<p class="hint">Abstände</p>'+chips('dichte', [['normal','Normal'],['kompakt','Kompakt']]);
   h+='<p class="hint">Untere Leiste</p>'+chips('glas', [['glas','Glas'],['deckend','Deckend']]);
-  h+='<div class="ab-fuss">'+
-    (PREFS.aufbauVorher ? '<button type="button" class="btn btn-ghost btn-sm" data-abzurueck="1">Zurück zu vorher</button>' : '')+
-    '<button type="button" class="btn btn-ghost btn-sm" data-abvor="standard">Alles wie ausgeliefert</button></div>';
+  h+='</div>';
+  /* Spalte 3: Vorschau, Vorschläge, Designs */
+  h+='<div class="ab-spalte ab-rechts"><h4>Vorschau</h4>'+aufbauVorschauHTML();
+  h+='<h4>Vorschläge</h4><p class="hint">Lädt in den Entwurf – erst „Übernehmen" ändert die App.</p><div class="ab-vorschlaege">'+
+    AUFBAU_VORSCHLAEGE.map(function(v){
+      return '<button type="button" class="ab-vor'+(e.vorschlag===v.id?' on':'')+'" data-abvor="'+v.id+'" aria-pressed="'+(e.vorschlag===v.id)+'">'+
+        aufbauMiniHTML(v.leiste)+'<b>'+esc(v.name)+'</b><i>'+esc(v.was)+'</i></button>';
+    }).join('')+'</div>';
+  var eigene=PREFS.designs||[];
+  h+='<h4>Meine Designs</h4><p class="hint">Gespeichert auf diesem Gerät. „Nutzen" wechselt sofort.</p>'+
+    '<div class="ab-speichern"><input class="inp" id="abDesignName" maxlength="30" placeholder="Name, z. B. Frühschicht" aria-label="Name des Designs">'+
+    '<button type="button" class="btn btn-sm btn-primary" data-abspeichern="1">Entwurf speichern</button></div>'+
+    (eigene.length ? eigene.map(function(d){
+      return '<div class="ab-design"><span class="ab-dname"><b>'+esc(d.name)+'</b></span>'+
+        '<button type="button" class="btn btn-sm btn-primary" data-abnutzen="lokal:'+esc(d.id)+'">Nutzen</button>'+
+        '<button type="button" class="btn btn-ghost btn-sm" data-abladen="lokal:'+esc(d.id)+'">Bearbeiten</button>'+
+        '<button type="button" class="btn btn-ghost btn-sm" data-abteilen="'+esc(d.id)+'">Teilen</button>'+
+        '<button type="button" class="btn btn-ghost btn-sm" data-ablokalweg="'+esc(d.id)+'">'+(_abLoeschen==='lokal:'+d.id ? 'Wirklich löschen?' : 'Löschen')+'</button></div>';
+    }).join('') : '<p class="hint">Noch keins gespeichert.</p>');
+  h+='<h4>Vom Team</h4><p class="hint">Was andere geteilt haben. Ausprobieren lädt es in den Entwurf.</p>'+
+    (_abTeam.length ? _abTeam.map(function(d){
+      var meins = session && d.uid===session.uid;
+      return '<div class="ab-design"><span class="ab-dname"><b>'+esc(d.name)+'</b><i>von '+esc(d.von||'?')+'</i></span>'+
+        '<button type="button" class="btn btn-sm btn-primary" data-abnutzen="team:'+esc(d.id)+'">Nutzen</button>'+
+        '<button type="button" class="btn btn-ghost btn-sm" data-abladen="team:'+esc(d.id)+'">Ausprobieren</button>'+
+        (meins || isChef() ? '<button type="button" class="btn btn-ghost btn-sm" data-abteamweg="'+esc(d.id)+'">'+(_abLoeschen==='team:'+d.id ? 'Wirklich entfernen?' : 'Nicht mehr teilen')+'</button>' : '')+'</div>';
+    }).join('') : '<p class="hint">Noch nichts geteilt.</p>');
+  h+='<div class="ab-fuss">'+(PREFS.aufbauVorher ? '<button type="button" class="btn btn-ghost btn-sm" data-abzurueck="1">Zurück zum letzten Stand</button>' : '')+'</div>';
+  h+='</div>';
+  /* Fokus und Eingabe im Namensfeld überstehen das Neuzeichnen nicht –
+     wer gerade tippt, verliert sonst die Stelle. */
+  var akt=document.activeElement, fokus = akt && box.contains(akt) && akt.getAttribute ? (akt.getAttribute('data-abname') || (akt.id==='abDesignName' ? '#name' : null)) : null;
+  var wert = fokus==='#name' ? akt.value : null, pos = fokus && akt.selectionStart;
+  var oben=box.scrollTop, spalten=[].map.call(box.querySelectorAll('.ab-spalte'), function(s){ return s.scrollTop; });
   box.innerHTML=h;
+  box.scrollTop=oben;
+  [].forEach.call(box.querySelectorAll('.ab-spalte'), function(s, i){ if(spalten[i]) s.scrollTop=spalten[i]; });
+  if(fokus){
+    var f = fokus==='#name' ? $('abDesignName') : box.querySelector('[data-abname="'+fokus+'"]');
+    if(f){ if(wert!==null) f.value=wert; f.focus(); try{ f.setSelectionRange(pos, pos); }catch(x){} }
+  }
+}
+function aufbauTeamHoeren(){
+  if(_abTeamAb || typeof S!=='function' || !session) return;
+  try{
+    _abTeamAb=S('designs').orderBy('ts','desc').limit(50).onSnapshot(function(snap){
+      _abTeam=[]; snap.forEach(function(d){ var x=d.data()||{}; x.id=d.id; if(x.name && x.aufbau) _abTeam.push(x); });
+      if($('aufbauTafel') && !$('aufbauTafel').hidden) aufbauRender();
+    }, function(err){ console.warn('Designs:', err && err.code); });
+  }catch(e){}
 }
 function aufbauOeffnen(){
   var t=$('aufbauTafel'); if(!t) return;
-  aufbauRender();
+  _abE=aufbauEntwurfAusJetzt(); _abAnfang=JSON.stringify(_abE); _abLoeschen=null;
+  aufbauTeamHoeren();
   t.hidden=false;
-  /* Die Tafel liegt rechts bzw. oben – die Formi-Fenster dürfen nicht darüber stehen. */
+  document.body.classList.add('ab-offen');
+  aufbauRender();
+  /* Die Formi-Fenster dürfen nicht darüber stehen. */
   if(typeof jarvisOffen==='function' && jarvisOffen() && typeof jarvisZu==='function') jarvisZu();
 }
-function aufbauSchliessen(){ var t=$('aufbauTafel'); if(t) t.hidden=true; }
-function aufbauKlick(e){
-  var b=e.target.closest && e.target.closest('button'); if(!b) return;
-  var leiste=aufbauLeisteJetzt(), x;
-  if((x=b.getAttribute('data-abvor'))){ aufbauVorschlag(x); }
-  else if((x=b.getAttribute('data-abzurueck'))){ aufbauZurueck(); }
-  else if((x=b.getAttribute('data-abrein'))){ if(leiste.length<AUFBAU_MAX){ leiste.push(x); aufbauLeisteAendern(leiste); } }
-  else if((x=b.getAttribute('data-abraus'))){ if(leiste.length>1){ leiste.splice(leiste.indexOf(x),1); aufbauLeisteAendern(leiste); } }
-  else if((x=b.getAttribute('data-abhoch'))){ var i=leiste.indexOf(x); if(i>0){ leiste.splice(i,1); leiste.splice(i-1,0,x); aufbauLeisteAendern(leiste); } }
-  else if((x=b.getAttribute('data-abrunter'))){ var j=leiste.indexOf(x); if(j>=0 && j<leiste.length-1){ leiste.splice(j,1); leiste.splice(j+1,0,x); aufbauLeisteAendern(leiste); } }
-  else if((x=b.getAttribute('data-abstart'))){ aufbauSetzen({ start:x, vorschlag:'eigen' }); }
-  else if((x=b.getAttribute('data-abschalter'))){
-    var a=aufbau(), t={ vorschlag:'eigen' };
-    if(x==='minimal') t.minimal=!a.minimal;
-    else if(x==='og') t.og=!a.og;
-    else { t[x]=!(a[x]!==false && !a.minimal); if(t[x]) t.minimal=false; }
-    aufbauSetzen(t);
+function aufbauZu(){
+  var t=$('aufbauTafel'); if(t) t.hidden=true;
+  document.body.classList.remove('ab-offen');
+  _abE=null; aufbauMenueZu();
+  if(_abTeamAb){ try{ _abTeamAb(); }catch(e){} _abTeamAb=null; }
+}
+/* Schliessen = Verwerfen. Mit Änderungen fragt es vorher. */
+function aufbauSchliessen(){
+  if(aufbauGeaendert() && !confirm('Änderungen verwerfen?\n\nDer Entwurf geht verloren, die App bleibt wie sie war.')) return;
+  aufbauZu();
+}
+function aufbauVerwerfen(){ aufbauSchliessen(); }
+/* Den Entwurf (oder ein Design) in die App schreiben. */
+function aufbauAnwendenAus(e){
+  var startVorher=aufbau().start;
+  PREFS.aufbauVorher=aufbauSchnappschuss();
+  var p=aufbauPrefsBereinigen(e.prefs);
+  Object.keys(p).forEach(function(k){ PREFS[k]=p[k]; });
+  var a=aufbauBereinigen(e);
+  PREFS.aufbau={ leiste:a.leiste, gruppen:a.gruppen, heute:a.heute, start:a.start, minimal:a.minimal, formi:a.formi, schnell:a.schnell, og:a.og, vorschlag:a.vorschlag };
+  savePrefs(); applyPrefs(); aufbauAnwenden();
+  /* Ist „Beim Öffnen" neu, geht es gleich dorthin – so sieht man, was
+     man eingestellt hat. */
+  if(a.start!==startVorher) showView(aufbauStart() || 'home');
+  else if(currentView==='home' && typeof renderHome==='function') renderHome();
+}
+function aufbauUebernehmen(){
+  if(!_abE) return;
+  aufbauAnwendenAus(_abE);
+  aufbauZu(); tick(8);
+  toast('Übernommen – „App gestalten" → „Zurück zum letzten Stand" nimmt es zurück.');
+}
+function aufbauDesignFinden(ref){
+  var t=String(ref).split(':'), quelle=t[0], id=t.slice(1).join(':');
+  if(quelle==='lokal') return (PREFS.designs||[]).filter(function(d){ return d.id===id; })[0] || null;
+  return _abTeam.filter(function(d){ return d.id===id; })[0] || null;
+}
+function aufbauDesignSpeichern(){
+  var f=$('abDesignName'), name=String(f && f.value || '').replace(/\s+/g,' ').trim().slice(0,30);
+  if(!name){ toast('Bitte zuerst einen Namen eintippen.', true); if(f) f.focus(); return; }
+  var liste=(PREFS.designs||[]).filter(function(d){ return d.name!==name; });
+  if(liste.length>=AUFBAU_DESIGNS_MAX){ toast('Höchstens '+AUFBAU_DESIGNS_MAX+' Designs – bitte erst eins löschen.', true); return; }
+  var a=aufbauBereinigen(_abE);
+  liste.unshift({ id:'d'+aufbauNeueId(), name:name, aufbau:a, prefs:aufbauPrefsBereinigen(_abE.prefs), ts:Date.now() });
+  PREFS.designs=liste; savePrefs();
+  if(f) f.value='';
+  toast('„'+name+'" gespeichert.');
+}
+function aufbauDesignTeilen(id){
+  var d=(PREFS.designs||[]).filter(function(x){ return x.id===id; })[0]; if(!d || !session) return;
+  S('designs').add({ uid:session.uid, von:String(session.name||'').slice(0,80), name:d.name,
+    aufbau:aufbauBereinigen(d.aufbau), prefs:aufbauPrefsBereinigen(d.prefs), ts:Date.now() })
+    .then(function(){ toast('„'+d.name+'" ist jetzt fürs Team sichtbar.'); })
+    .catch(function(err){ toast('Teilen ging nicht: '+errMsg(err), true); });
+}
+/* ── Antippen: das Menü an einem Baustein ──
+   Derselbe Weg wie das Ziehen (aufbauVerschieben), nur mit Knöpfen –
+   für den Finger, für Vorlesehilfen und für jeden, dem Ziehen zu
+   fummelig ist. */
+function aufbauMenueZu(){ var m=$('abMenue'); if(m) m.remove(); }
+function aufbauMenue(token, anker){
+  aufbauMenueZu();
+  var e=_abE, t=token.split(':'), art=t[0], wahl=[];
+  var id = art==='neu'||art==='eigen' ? t[1] : art==='leiste' ? e.leiste[+t[1]] : art==='gruppe' ? 'v-'+((aufbauGruppe(t[1])||{seiten:[]}).seiten[+t[2]]) : null;
+  var istSeite = id && /^v-/.test(id);
+  if(art==='neu' || art==='eigen'){
+    if(e.leiste.indexOf(id)<0) wahl.push(['In die Leiste', function(){ return aufbauVerschieben(token, 'leiste', e.leiste.length); }]);
+    else wahl.push(['Aus der Leiste nehmen', function(){ return aufbauVerschieben('leiste:'+e.leiste.indexOf(id), 'weg'); }]);
   }
-  else if((x=b.getAttribute('data-abpref'))){
-    var kv=x.split('|'); PREFS[kv[0]]=kv[1]; savePrefs(); applyPrefs();
-    if(kv[0]==='glas' || kv[0]==='dichte' || kv[0]==='fs') markerNeuMessen();
+  if(art==='leiste' || art==='gruppe' || art==='heute'){
+    var i=+(art==='gruppe' ? t[2] : t[1]);
+    var zone = art==='leiste' ? 'leiste' : art==='heute' ? 'heute' : 'gruppe:'+t[1];
+    var laenge = art==='leiste' ? e.leiste.length : art==='heute' ? e.heute.length : aufbauGruppe(t[1]).seiten.length;
+    if(i>0) wahl.push([art==='heute' ? 'Nach oben' : 'Nach vorn', function(){ return aufbauVerschieben(token, zone, i-1); }]);
+    if(i<laenge-1) wahl.push([art==='heute' ? 'Nach unten' : 'Nach hinten', function(){ return aufbauVerschieben(token, zone, i+2); }]);
+    if(art==='leiste') wahl.push(['Aus der Leiste nehmen', function(){ return aufbauVerschieben(token, 'weg'); }]);
+    if(art==='gruppe') wahl.push(['Aus der Gruppe nehmen', function(){ return aufbauVerschieben(token, 'weg'); }]);
+    if(art==='gruppe' && e.leiste.indexOf(id)<0) wahl.push(['Einzeln in die Leiste', function(){ return aufbauVerschieben(token, 'leiste', e.leiste.length); }]);
+  }
+  if(istSeite && art!=='heute') (e.gruppen||[]).forEach(function(g){
+    if(art==='gruppe' && g.id===t[1]) return;
+    if(g.seiten.indexOf(id.slice(2))>=0) return;
+    wahl.push(['In „'+g.name+'"', function(){ return aufbauVerschieben(token, 'gruppe:'+g.id, g.seiten.length); }]);
+  });
+  if(!wahl.length) return;
+  var m=document.createElement('div'); m.className='ab-menue'; m.id='abMenue'; m.setAttribute('role','menu');
+  m.innerHTML='<p class="ab-menue-kopf">'+esc(art==='heute' ? HEUTE_BLOECKE.filter(function(b){ return b.k===e.heute[+t[1]].k; })[0].n : aufbauName(id))+'</p>'+
+    wahl.map(function(w, n){ return '<button type="button" role="menuitem" data-abwahl="'+n+'">'+esc(w[0])+'</button>'; }).join('')+
+    '<button type="button" role="menuitem" class="ab-menue-zu" data-abwahl="zu">Abbrechen</button>';
+  $('aufbauTafel').appendChild(m);
+  /* Lage: unter dem Baustein, im Bild gehalten. Erst lesen … */
+  var r=anker.getBoundingClientRect(), mh=m.offsetHeight, mw=m.offsetWidth;
+  /* … dann schreiben. */
+  var x=Math.max(8, Math.min(innerWidth-mw-8, r.left)), y=r.bottom+6;
+  if(y+mh>innerHeight-8) y=Math.max(8, r.top-mh-6);
+  m.style.translate=Math.round(x)+'px '+Math.round(y)+'px';
+  m.addEventListener('click', function(ev){
+    var b=ev.target.closest('[data-abwahl]'); if(!b) return;
+    var n=b.getAttribute('data-abwahl'); aufbauMenueZu();
+    if(n!=='zu' && wahl[+n][1]()){ tick(6); aufbauRender(); }
+  });
+  var erster=m.querySelector('button'); if(erster) erster.focus();
+}
+
+/* ── Ziehen ──
+   Maus: ziehen ab 6 px Bewegung. Finger: am Griff (⋮⋮) sofort – sonst
+   scrollt der Finger die Liste, und ein Tipp öffnet das Menü. Während
+   des Ziehens wird bei jeder Bewegung gemessen: das ist die Geste
+   selbst, kein Klick (CLAUDE.md: nicht IM Klick messen). */
+var _abZ=null, _abNachZiehen=0;
+function aufbauZiehStart(ev){
+  var el=ev.target.closest && ev.target.closest('[data-abzieh]');
+  if(!el || (ev.button && ev.button>0)) return;
+  var maus = ev.pointerType==='mouse';
+  if(!maus && !ev.target.closest('.ab-griff')) return;
+  _abZ={ el:el, token:el.getAttribute('data-abzieh'), x0:ev.clientX, y0:ev.clientY, aktiv:false, ziel:null, idx:0 };
+  if(!maus){ ev.preventDefault(); aufbauZiehAktiv(ev); }
+}
+function aufbauZiehAktiv(ev){
+  var z=_abZ; z.aktiv=true; aufbauMenueZu();
+  var r=z.el.getBoundingClientRect();
+  var g=z.el.cloneNode(true); g.classList.add('ab-geist'); g.removeAttribute('data-abzieh');
+  g.style.width=Math.round(r.width)+'px';
+  z.dx=ev.clientX-r.left; z.dy=ev.clientY-r.top;
+  document.body.appendChild(g); z.geist=g;
+  z.el.classList.add('ab-quelle');
+  document.body.classList.add('ab-zieht');
+  aufbauZiehBewegen(ev);
+}
+function aufbauZiehBewegen(ev){
+  var z=_abZ; if(!z) return;
+  if(!z.aktiv){
+    if(Math.abs(ev.clientX-z.x0)+Math.abs(ev.clientY-z.y0) < 6) return;
+    aufbauZiehAktiv(ev); return;
+  }
+  ev.preventDefault();
+  z.geist.style.translate=Math.round(ev.clientX-z.dx)+'px '+Math.round(ev.clientY-z.dy)+'px';
+  var unter=document.elementFromPoint(ev.clientX, ev.clientY);
+  var zone=unter && unter.closest && unter.closest('#aufbauTafel [data-abziel]');
+  [].forEach.call(document.querySelectorAll('.ab-ziel-an, .ab-davor, .ab-ende'), function(x){ x.classList.remove('ab-ziel-an','ab-davor','ab-ende'); });
+  z.ziel=null;
+  if(!zone) return;
+  var ziel=zone.getAttribute('data-abziel');
+  /* Startseiten-Blöcke bleiben unter sich, Bausteine nicht in „Heute". */
+  if((z.token.indexOf('heute:')===0) !== (ziel==='heute')) return;
+  z.ziel=ziel; zone.classList.add('ab-ziel-an');
+  var teile=[].filter.call(zone.querySelectorAll('[data-abzieh]'), function(x){ return x!==z.el && !x.classList.contains('ab-chip-gruppe'); });
+  var idx=teile.length;
+  for(var i=0;i<teile.length;i++){
+    var q=teile[i].getBoundingClientRect();
+    if(ev.clientY < q.top || (ev.clientY <= q.bottom && ev.clientX < q.left+q.width/2) || (ziel==='heute' && ev.clientY < q.top+q.height/2)){ idx=i; break; }
+  }
+  /* Die Stelle in den Daten: die Quelle selbst zählt mit. */
+  var alle=[].filter.call(zone.querySelectorAll('[data-abzieh]'), function(x){ return !x.classList.contains('ab-chip-gruppe'); });
+  z.idx = idx<teile.length ? alle.indexOf(teile[idx]) : alle.length;
+  if(idx<teile.length) teile[idx].classList.add('ab-davor'); else zone.classList.add('ab-ende');
+}
+function aufbauZiehEnde(){
+  var z=_abZ; _abZ=null; if(!z || !z.aktiv) return;
+  _abNachZiehen=Date.now();
+  if(z.geist) z.geist.remove();
+  z.el.classList.remove('ab-quelle');
+  document.body.classList.remove('ab-zieht');
+  [].forEach.call(document.querySelectorAll('.ab-ziel-an, .ab-davor, .ab-ende'), function(x){ x.classList.remove('ab-ziel-an','ab-davor','ab-ende'); });
+  if(z.ziel && aufbauVerschieben(z.token, z.ziel, z.idx)){ tick(6); }
+  aufbauRender();
+}
+function aufbauKlick(ev){
+  if(Date.now()-_abNachZiehen<350) return;
+  var b=ev.target.closest && ev.target.closest('button'); if(!b || !_abE) return;
+  var e=_abE, x;
+  if((x=b.getAttribute('data-abzieh'))){ aufbauMenue(x, b); return; }
+  if((x=b.getAttribute('data-abvor'))){
+    var v=AUFBAU_VORSCHLAEGE.filter(function(y){ return y.id===x; })[0];
+    if(v) aufbauEntwurfLaden({ leiste:v.leiste ? v.leiste.slice() : neuLeisteGruppen(navGruppen()).map(function(g){ return g.id; }), gruppen:[], heute:null, start:v.start, minimal:v.minimal, formi:v.formi, schnell:v.schnell, og:!!v.og }, v.prefs, v.id);
+  }
+  else if(b.hasAttribute('data-abzurueck')){ aufbauZurueck(); aufbauZu(); toast('Der letzte Stand ist wieder da.'); return; }
+  else if((x=b.getAttribute('data-abstart'))){ e.start=x; }
+  else if((x=b.getAttribute('data-abschalter'))){
+    if(x==='minimal') e.minimal=!e.minimal;
+    else if(x==='og') e.og=!e.og;
+    else { e[x]=!(e[x]!==false && !e.minimal); if(e[x]) e.minimal=false; }
+  }
+  else if((x=b.getAttribute('data-abpref'))){ var kv=x.split('|'); e.prefs[kv[0]]=kv[1]; }
+  else if((x=b.getAttribute('data-abheutean'))){ var hb=e.heute[+x]; if(hb) hb.an=!hb.an; }
+  else if(b.hasAttribute('data-abgneu')){
+    var gid='e-'+aufbauNeueId();
+    e.gruppen.push({ id:gid, name:'Gruppe '+(e.gruppen.length+1), ikon:AUFBAU_ZEICHEN[e.gruppen.length % AUFBAU_ZEICHEN.length], seiten:[] });
+    aufbauRender();
+    var nf=document.querySelector('[data-abname="'+gid+'"]'); if(nf){ nf.focus(); nf.select(); }
+    tick(6); return;
+  }
+  else if((x=b.getAttribute('data-abzeichen'))){ var gz=aufbauGruppe(x); if(gz) gz.ikon=AUFBAU_ZEICHEN[(AUFBAU_ZEICHEN.indexOf(gz.ikon)+1) % AUFBAU_ZEICHEN.length]; }
+  else if((x=b.getAttribute('data-abgrein'))){ if(!aufbauVerschieben('eigen:'+x, 'leiste', e.leiste.length)) return; }
+  else if((x=b.getAttribute('data-abgweg'))){
+    e.gruppen=e.gruppen.filter(function(g){ return g.id!==x; });
+    e.leiste=e.leiste.filter(function(id){ return id!==x; });
+    if(!e.leiste.length) e.leiste=neuLeisteGruppen(navGruppen()).map(function(g){ return g.id; });
+  }
+  else if(b.hasAttribute('data-abspeichern')){ aufbauDesignSpeichern(); }
+  else if((x=b.getAttribute('data-abnutzen'))){
+    var d=aufbauDesignFinden(x); if(!d) return;
+    aufbauAnwendenAus(Object.assign({}, d.aufbau, { prefs:d.prefs, vorschlag:d.name }));
+    aufbauZu(); tick(8); toast('„'+d.name+'" ist jetzt aktiv.'); return;
+  }
+  else if((x=b.getAttribute('data-abladen'))){ var dl=aufbauDesignFinden(x); if(dl) aufbauEntwurfLaden(dl.aufbau, dl.prefs, dl.name); }
+  else if((x=b.getAttribute('data-abteilen'))){ aufbauDesignTeilen(x); return; }
+  else if((x=b.getAttribute('data-ablokalweg'))){
+    if(_abLoeschen!=='lokal:'+x){ _abLoeschen='lokal:'+x; aufbauRender(); return; }
+    PREFS.designs=(PREFS.designs||[]).filter(function(d){ return d.id!==x; }); savePrefs(); _abLoeschen=null;
+  }
+  else if((x=b.getAttribute('data-abteamweg'))){
+    if(_abLoeschen!=='team:'+x){ _abLoeschen='team:'+x; aufbauRender(); return; }
+    _abLoeschen=null;
+    S('designs').doc(x).delete().catch(function(err){ toast('Entfernen ging nicht: '+errMsg(err), true); });
   }
   else return;
   tick(6);
   aufbauRender();
+}
+function aufbauEingabe(ev){
+  var f=ev.target, gid=f.getAttribute && f.getAttribute('data-abname'); if(!gid || !_abE) return;
+  var g=aufbauGruppe(gid); if(!g) return;
+  g.name=String(f.value||'').slice(0,24);
+  /* Nur Kopf und Vorschau neu – das Feld selbst bleibt, wie es ist. */
+  var st=$('abStand'); if(st) st.textContent = aufbauGeaendert() ? 'Entwurf – noch nicht übernommen' : 'Noch nichts geändert';
+  var ub=$('abUebernehmen'); if(ub) ub.disabled=!aufbauGeaendert();
+}
+function aufbauEingabeFertig(ev){
+  var f=ev.target; if(!f.getAttribute || !f.getAttribute('data-abname') || !_abE) return;
+  var g=aufbauGruppe(f.getAttribute('data-abname'));
+  if(g && !g.name.trim()) g.name='Gruppe';
+  aufbauRender();
+}
+/* Die eigene Leiste am Handy: mehr als fünf → vier und „Mehr". */
+function aufbauMehrZu(){ var l=$('abMehrLade'); if(l) l.remove(); document.body.classList.remove('ab-mehr-auf'); }
+function aufbauMehrAuf(knopf){
+  if($('abMehrLade')){ aufbauMehrZu(); return; }
+  var g=aufbauGruppen()||[]; var rest=g.slice(AUFBAU_MAX_HANDY-1);
+  var l=document.createElement('div'); l.className='ab-mehr-lade'; l.id='abMehrLade';
+  rest.forEach(function(x){ var b=navKnopf(x,'unten'); b.addEventListener('click', aufbauMehrZu); l.appendChild(b); });
+  document.body.appendChild(l);
+  /* Formi steht unten rechts – genau dort, wo die Liste aufgeht. */
+  document.body.classList.add('ab-mehr-auf');
+  setTimeout(function(){
+    document.addEventListener('click', function weg(ev){ if(!l.contains(ev.target) && !knopf.contains(ev.target)){ aufbauMehrZu(); document.removeEventListener('click', weg, true); } }, true);
+  }, 0);
 }
 /* Formi hört zu (Runde 289): „wenn man irgendwas mit design und der app
    erwähnt". Erkannt wird auf dem Gerät, ohne KI – sofort und auch ohne
@@ -25314,11 +25874,20 @@ function allesLadeUmschalten(){
    Start noch einmal), die Lücke war aber älter: featuresAnwenden()
    ruft buildNav() genauso auf. Deshalb sitzt die Reparatur in
    buildNav und nicht an der Stelle, an der sie aufgefallen ist. */
+function eigenHinterMehr(id){
+  var e=aufbauGruppen(); if(!e || e.length<=AUFBAU_MAX_HANDY || !_mobnavBreite.matches) return false;
+  var i=e.map(function(x){ return x.id; }).indexOf(id);
+  return i>=AUFBAU_MAX_HANDY-1;
+}
 function navAktivSetzen(){
   var g=groupOfView(currentView);
   /* Runde 289: trägt die eigene Leiste die Seite selbst (v-…), ist das
      der aktive Knopf – nicht der Raum, zu dem sie sonst gehört. */
-  var id = document.querySelector('[data-group="v-'+currentView+'"]') ? 'v-'+currentView : g.id;
+  var eg=aufbauGruppeFuer(currentView);
+  var id = document.querySelector('[data-group="v-'+currentView+'"]') ? 'v-'+currentView
+         : (eg && document.querySelector('[data-group="'+eg.id+'"]')) ? eg.id : g.id;
+  /* Liegt der Knopf hinter „Mehr", trägt „Mehr" die Marke. */
+  if(eigenHinterMehr(id)) id='ab-mehr';
   document.querySelectorAll('[data-group]').forEach(function(t){
     t.classList.toggle('active', t.dataset.group===id);
   });
@@ -25419,9 +25988,19 @@ function buildNav(){
      24 Ziele statt dreier Gruppen. */
   var reihe=document.createElement('div');
   reihe.className='mn-reihe';
-  (aufbauGruppen() || neuLeisteGruppen(gruppen)).forEach(function(g){
+  var eigen=aufbauGruppen(), unten=eigen || neuLeisteGruppen(gruppen);
+  /* Runde 291: die eigene Leiste darf bis zu acht tragen; am Handy
+     passen fünf. Ab sechs stehen vier da, der Rest hinter „Mehr". */
+  if(eigen && eigen.length>AUFBAU_MAX_HANDY) unten=eigen.slice(0, AUFBAU_MAX_HANDY-1);
+  unten.forEach(function(g){
     reihe.appendChild(navKnopf(g,'unten'));
   });
+  if(eigen && eigen.length>AUFBAU_MAX_HANDY){
+    var mehr=navKnopf({ id:'ab-mehr', label:'Mehr', views:[], icon:'<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>' }, 'unten');
+    var mk=mehr.cloneNode(true);
+    mk.addEventListener('click', function(){ aufbauMehrAuf(mk); tick(6); });
+    reihe.appendChild(mk);
+  }
   mob.appendChild(reihe);
   buildSubNav();
   navAktivSetzen();
@@ -25934,7 +26513,7 @@ function bereichKopfSetzen(){
   document.body.setAttribute('data-bereich', g.id);
   /* Runde 289: steht die Seite selbst als Knopf in der eigenen Leiste,
      heisst der Kopf wie der Knopf („Putzplan" statt „Studio"). */
-  var ein = document.querySelector('[data-group="v-'+currentView+'"]') && aufbauEinzel(currentView);
+  var ein = (document.querySelector('[data-group="v-'+currentView+'"]') && aufbauEinzel(currentView)) || aufbauGruppeFuer(currentView);
   var ik=$('bkIkon'); if(ik) ik.innerHTML=gruppeSvg(ein || g);
   var ti=$('bkTitel'); if(ti) ti.textContent=ein ? ein.label : gruppeLabel(g);
   var su=$('bkSub');
@@ -26103,7 +26682,8 @@ function buildSubNav(){
   kugelInReiheSetzen();
   subnavPlatzieren();
   var bar=$('subnav'); if(!bar) return;
-  var g=groupOfView(currentView);
+  /* Runde 291: eine eigene Gruppe zeigt IHRE Seiten als Reiter. */
+  var g=aufbauGruppeFuer(currentView) || groupOfView(currentView);
   var views=sichtbareViews(g);
   /* Am Handy bleibt die Reiterzeile auch auf „Heute" (Runde 184). Ein
      Versuch ohne sie sparte 40 px, versteckte aber „Ich" hinter ☰ –
@@ -26464,6 +27044,7 @@ function updateNavMarkers(){
   var map={ chat:unread.chat, ann:unread.ann };
   /* Runde 289: einzelne Seiten in der eigenen Leiste tragen ihren Punkt selbst. */
   map['v-chat']=unread.chat && currentView!=='chat'; map['v-ann']=unread.ann && currentView!=='ann';
+  (aufbauGruppen()||[]).forEach(function(g){ if(g.eigen) map[g.id]=g.views.some(function(v){ return map[v] && currentView!==v; }); });
   // Gruppen erben den Marker ihrer Ansichten
   NAVGROUPS.forEach(function(g){
     map[g.id]=g.views.some(function(v){ return map[v] && currentView!==v; });
@@ -41568,7 +42149,11 @@ function renderHeuteJetzt(){
   /* `zahl` ist die Zahl in der Überschrift. Meist die Zeilenzahl — beim
      Putzplan der Leitung aber nicht: dort ist eine Zeile ein STUDIO, und
      „Putzplan · 3" hiesse drei Studios, obwohl zwölf Punkte offen sind. */
-  function block(titel, art, alle, zeigen, ziel, f, zahl, spalte, zusatz){
+  /* Runde 291: erst sammeln, dann in der eigenen Reihenfolge zeichnen –
+     ausgeblendete Blöcke fallen weg (App gestalten → Startseite). */
+  var _bloecke=[];
+  function block(){ _bloecke.push([].slice.call(arguments)); }
+  function blockZeichnen(titel, art, alle, zeigen, ziel, f, zahl, spalte, zusatz){
     if(!alle.length) return;
     var vorher=html;
     var rest=alle.length-zeigen.length;
@@ -41608,26 +42193,26 @@ function renderHeuteJetzt(){
     ohneFrist.sort(function(a,b){ return a.ts-b.ts; });
     var ms=meineSchichtZeilen(keys, ueber, heute, ohneFrist, fseit);
     var msK=meineSchichtStudio(keys);
-    block('Meine Schicht'+(msK ? ' · '+studioName(msK) : ''), 'heute', ms, ms, 'todos', null, ms.length);
+    block('schicht', 'Meine Schicht'+(msK ? ' · '+studioName(msK) : ''), 'heute', ms, ms, 'todos', null, ms.length);
     fseit=null; ueber=[]; heute=[]; putz=[]; lesen=[]; sonst=[]; ohneFrist=[];
   }
   if(fseit && breit) lesen.unshift(fseit);
   /* Am Handy steht „Seit Mittwoch" in der Überschrift, die Zeile nennt
      nur die Zahlen — sonst schnitt die schmale Zeile den Titel ab. */
-  if(fseit && !breit){ var fz=Object.assign({}, fseit, { titel:fseit.anzahl }); block('Seit '+fseit.wann, 'lesen', [fz], [fz], 'team'); }
-  if(ansichtAn('todos')) block('Überfällig', 'dringend', ueber, ueber.slice(0,zeilen(3,5)), 'todos', 'faellig');
-  block('Heute', 'heute', heute, heute.slice(0,zeilen(3,4)), 'todos');
+  if(fseit && !breit){ var fz=Object.assign({}, fseit, { titel:fseit.anzahl }); block('seit', 'Seit '+fseit.wann, 'lesen', [fz], [fz], 'team'); }
+  if(ansichtAn('todos')) block('ueber', 'Überfällig', 'dringend', ueber, ueber.slice(0,zeilen(3,5)), 'todos', 'faellig');
+  block('heute', 'Heute', 'heute', heute, heute.slice(0,zeilen(3,4)), 'todos');
   /* Direkt unter „Heute": wer eine Schicht abgibt, braucht die Antwort
      vor dem Tag, nicht danach. */
-  block('Zum Übernehmen', 'heute', tausch, tausch.slice(0,zeilen(2,3)), 'team');
+  block('tausch', 'Zum Übernehmen', 'heute', tausch, tausch.slice(0,zeilen(2,3)), 'team');
   /* Direkt unter „Heute": der Putzplan hat einen Tagesbezug — was
      täglich ist, ist heute fällig. Über den Nachrichten, weil ein
      ungeputztes Gerät der Kunde sieht und eine ungelesene Nachricht
      nicht. */
-  block('Putzplan', 'putz', putz, putz.slice(0,zeilen(3,5)), 'putzplan', null, putzGesamt, 'r',
+  block('putz', 'Putzplan', 'putz', putz, putz.slice(0,zeilen(3,5)), 'putzplan', null, putzGesamt, 'r',
     breit ? putzFortschrittHTML(putzStand) : '');
-  block('Neu für dich', 'lesen', lesen, lesen.slice(0,zeilen(2,3)), 'chat', null, null, 'r');
-  block('Zu erledigen', 'tun', sonst, sonst.slice(0,zeilen(2,3)), 'todos', null, null, 'r');
+  block('neu', 'Neu für dich', 'lesen', lesen, lesen.slice(0,zeilen(2,3)), 'chat', null, null, 'r');
+  block('sonst', 'Zu erledigen', 'tun', sonst, sonst.slice(0,zeilen(2,3)), 'todos', null, null, 'r');
   /* ── „Offen" steht GANZ UNTEN, und das ist Absicht ──
      Oben stehen die Sachen mit einem Zeitbezug: ueberfaellig, heute,
      neu. Aufgaben ohne Frist sind genau das nicht — sie sind offen,
@@ -41639,15 +42224,21 @@ function renderHeuteJetzt(){
      laengsten liegt, ist das, was am ehesten vergessen wird. */
   ohneFrist.sort(function(a,b){ return a.ts-b.ts; });
   if(ansichtAn('todos'))
-    block('Offen', 'tun', ohneFrist, ohneFrist.slice(0,zeilen(2,5)), 'todos', 'offen');
+    block('offen', 'Offen', 'tun', ohneFrist, ohneFrist.slice(0,zeilen(2,5)), 'todos', 'offen');
   /* ── Heute im Studio (Runde 123) ── siehe tagesbandHTML(). Nur am PC:
      dort blieb unter der linken Spalte ein halber Bildschirm leer; am
      Handy zählt jede Zeile (ein Bildschirm, kein Scrollen). Als LETZTER
      Block links: passt es nicht, fällt er zuerst — und steht dann unter
      „Ausserdem", wie jede andere Kategorie. */
   var band = breit ? tagesbandDaten(keys) : null;
-  if(band) block('Heute im Studio', 'band', [band], [band], 'team', null, band.personen, 'l');
+  if(band) block('band', 'Heute im Studio', 'band', [band], [band], 'team', null, band.personen, 'l');
 
+  var _reihe=aufbauHeuteListe(aufbau().heute);
+  var _rang=function(k){ for(var i=0;i<_reihe.length;i++){ if(_reihe[i].k===k) return i; } return -1; };
+  _bloecke.map(function(b, i){ return { b:b, r:_rang(b[0]), i:i }; })
+    .filter(function(x){ return x.r<0 || _reihe[x.r].an; })
+    .sort(function(a, b){ return (a.r<0 ? 99 : a.r)-(b.r<0 ? 99 : b.r) || a.i-b.i; })
+    .forEach(function(x){ blockZeichnen.apply(null, x.b.slice(1)); });
   /* Eine Spalte allein bekommt kein leeres Gegenüber: dann bleibt es
      eine Liste über die ganze Breite. */
   if(breit){
@@ -57259,9 +57850,24 @@ function bindActions(){
   var inm=$('installModal'); if(inm) inm.addEventListener('click', function(e){ if(e.target===inm) installSchliessen(); });
   // ── Findetest (Runde 275) ──
   // ── App gestalten (Runde 289) ──
-  var abc=$('abClose'); if(abc) abc.addEventListener('click', aufbauSchliessen);
-  var abi=$('abInhalt'); if(abi) abi.addEventListener('click', aufbauKlick);
-  document.addEventListener('keydown', function(e){ if(e.key==='Escape' && $('aufbauTafel') && !$('aufbauTafel').hidden) aufbauSchliessen(); });
+  var abv=$('abVerwerfen'); if(abv) abv.addEventListener('click', aufbauVerwerfen);
+  var abu=$('abUebernehmen'); if(abu) abu.addEventListener('click', aufbauUebernehmen);
+  var abi=$('abInhalt');
+  if(abi){
+    abi.addEventListener('click', aufbauKlick);
+    abi.addEventListener('pointerdown', aufbauZiehStart);
+    abi.addEventListener('input', aufbauEingabe);
+    abi.addEventListener('change', aufbauEingabeFertig);
+  }
+  document.addEventListener('pointermove', function(ev){ if(_abZ) aufbauZiehBewegen(ev); }, { passive:false });
+  document.addEventListener('pointerup', function(){ if(_abZ) aufbauZiehEnde(); });
+  document.addEventListener('pointercancel', function(){ if(_abZ) aufbauZiehEnde(); });
+  /* Ein Tipp neben das Menü schliesst es. */
+  document.addEventListener('click', function(ev){ var m=$('abMenue'); if(m && !m.contains(ev.target) && !(ev.target.closest && ev.target.closest('[data-abzieh]'))) aufbauMenueZu(); }, true);
+  document.addEventListener('keydown', function(e){
+    if(e.key!=='Escape' || !$('aufbauTafel') || $('aufbauTafel').hidden) return;
+    if($('abMenue')) aufbauMenueZu(); else aufbauSchliessen();
+  });
   var ftc=$('ftClose'); if(ftc) ftc.addEventListener('click', findeSchliessen);
   var ftm=$('findeModal'); if(ftm) ftm.addEventListener('click', function(e){ if(e.target===ftm) findeSchliessen(); });
   var fta=$('ftAufgeben'); if(fta) fta.addEventListener('click', function(){ findeEnde(false); });

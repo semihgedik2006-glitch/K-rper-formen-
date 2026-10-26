@@ -469,6 +469,20 @@ service cloud.firestore {
     }
 
     // ── Benutzerprofile ──
+    // Ein geteiltes Design (Runde 291): genau diese Felder, alles klein.
+    // Was darin steht, prüft die App beim Laden noch einmal
+    // (aufbauBereinigen) – die Regel hält nur Grösse und Form.
+    function designOk() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['uid', 'von', 'name', 'aufbau', 'prefs', 'ts'])
+        && d.keys().hasAll(['uid', 'name', 'aufbau', 'prefs', 'ts'])
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 30
+        && (!('von' in d) || (d.von is string && d.von.size() <= 80))
+        && d.aufbau is map && d.aufbau.size() <= 12
+        && d.prefs is map && d.prefs.size() <= 10
+        && d.ts is number;
+    }
+
     match /users/{uid} {
       /* ── Die Firmengrenze auf users ──
          users ist die einzige Sammlung, die NICHT unter /firmen/{f}/
@@ -1813,6 +1827,25 @@ service cloud.firestore {
         || (istAktiv() && resource.data.uid == request.auth.uid));
     }
 
+    // ── Geteilte Designs (Runde 291) ──
+    // Aus dem Betrieb, 26.10.2026: „seine designs speichern können das man
+    // wechseln kann nach bedarf und das andere das auch sehen und nutzen
+    // können". Lesen darf jeder Aktive der Firma (es ist nur ein Aufbau
+    // der Oberfläche: Leiste, Gruppen, Farben – keine Personendaten ausser
+    // dem Namen dessen, der teilt). Anlegen nur unter der eigenen Kennung,
+    // ändern und entfernen nur der, der es geteilt hat (der Chef darf
+    // entfernen). designOk() hält Felder und Grössen klein.
+    match /designs/{dId} {
+      allow read: if aufFlachenPfaden() && istAktiv();
+      allow create: if aufFlachenPfaden() && istAktiv()
+        && request.resource.data.uid == request.auth.uid && designOk();
+      allow update: if aufFlachenPfaden() && istAktiv()
+        && resource.data.uid == request.auth.uid
+        && request.resource.data.uid == resource.data.uid && designOk();
+      allow delete: if aufFlachenPfaden()
+        && (isChef() || (istAktiv() && resource.data.uid == request.auth.uid));
+    }
+
     // ── Papierkorb ──
     // Gelöschtes liegt hier 30 Tage. Hineinlegen darf jeder Eingeloggte –
     // wer den Eintrag löschen durfte, darf ihn auch sichern. Ansehen,
@@ -2666,6 +2699,18 @@ service cloud.firestore {
           allow update: if schreibtIn(f) && ((istAktiv() && brettFuerMich(resource.data)
             && (nurEigeneReaktion() || nurEigeneStimme()))
             || brettNachziehenOk());
+          allow delete: if schreibtIn(f) && (isChef()
+            || (istAktiv() && resource.data.uid == request.auth.uid));
+        }
+
+        // Geteilte Designs (Runde 291) – wie oben, in der eigenen Firma.
+        match /designs/{dId} {
+          allow read: if inFirma(f) && istAktiv();
+          allow create: if schreibtIn(f) && istAktiv()
+            && request.resource.data.uid == request.auth.uid && designOk();
+          allow update: if schreibtIn(f) && istAktiv()
+            && resource.data.uid == request.auth.uid
+            && request.resource.data.uid == resource.data.uid && designOk();
           allow delete: if schreibtIn(f) && (isChef()
             || (istAktiv() && resource.data.uid == request.auth.uid));
         }
