@@ -297,15 +297,17 @@ Teams. Ein Durchlauf prüft das bei jedem Lauf mit.
 
 | Funktion | Status | Anmerkung |
 |---|---|---|
-| Stempeln am Terminal | **VERIFIZIERT** | Gerätegeheimnis + PIN der Person |
+| Stempeln am Terminal | **VERIFIZIERT** | Gerätegeheimnis + PIN der Person; der eigene Stand erst nach der PIN (`stempelStand`), dann Pause **oder** Feierabend (seit Runde 189) |
 | Stempeln mit dem eigenen Telefon | **VERIFIZIERT** | Freigabe je Konto + sechsstelliger Code, der alle 30 Sekunden wechselt |
 | Erfasst wird | **VERIFIZIERT** | Person, Zeitpunkt, Art, Studio, Gerät, Quelle, „fremdes Studio"-Kennzeichen |
 | Standort / GPS | **NICHT ERFASST** | zusätzlich gesperrt durch `Permissions-Policy: geolocation=()` |
 | IP-Adresse | **NICHT ERFASST** | |
 | Gerätefingerabdruck | **NICHT ERFASST** | nur welches registrierte Terminal |
 | Nachträglich ändern | **NICHT MÖGLICH** | `zeiten` steht auf `allow write: if false` — für **jeden**; überschrieben wird auch bei einer Korrektur nichts |
-| Korrekturweg | **VERIFIZIERT** (24.9.2026) | Verwaltung → Zeiten: die Leitung trägt einen Stempel nach oder markiert einen als ungültig, **nur mit Grund**; beides bleibt sichtbar, auch für die Person selbst |
-| Eigene Zeiten einsehen | **VERIFIZIERT** | vollständig |
+| Korrekturweg | **VERIFIZIERT** (24.9.2026, seit Runde 215 nur die Geschäftsführung) | Zeiten → Team (bis Runde 215 Verwaltung → Zeiten): die Geschäftsführung trägt einen Stempel nach oder markiert einen als ungültig, **nur mit Grund**; beides bleibt sichtbar, auch für die Person selbst. Mitarbeiter beantragen fehlende Stempel selbst (Runde 204) |
+| Erinnerung „Stempel vergessen" | **VERIFIZIERT** (Runde 238; Rechnung und Lauf im Emulator, Formi in der Demo — echter Push- und Mailversand hier nicht prüfbar) | 15 min nach Schichtbeginn ohne Stempel: Handy + Formi; 30 min nach Schichtende (ohne Schicht 10 h) noch eingestempelt: Handy + Mail + Formi. Je Anlass einmal; abschaltbar je Gerät und je Konto. Ein Tipp auf die Meldung öffnet „Zeiten" (seit Runde 243) |
+| Eigene Zeiten einsehen | **VERIFIZIERT** | vollständig; seit Runde 222 unter dem eigenen Knopf „Zeiten" |
+| Eigenes Stundenkonto und Resturlaub | **VERIFIZIERT** (Runde 222; nur Demo und Emulator) | `meinKonto` gibt aus Abschlüssen, Soll und Vertragsstunden **nur die eigene Zeile** heraus; der laufende Monat steht als „vorläufig" da. Mit echtem Firebase-SDK hier nicht prüfbar |
 | Automatische Löschfrist | **NICHT GEFUNDEN** | Stempelzeiten bleiben unbegrenzt liegen — offen, siehe `docs/RECHT.md` |
 | PIN zurücksetzen durch die Leitung | **NICHT MÖGLICH** | der Hash liegt an einem Ort, den die Regeln für **alle** sperren |
 

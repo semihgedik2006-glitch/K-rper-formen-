@@ -51,10 +51,58 @@ Workers AI, **nicht** über GitHub Actions.
   oder nicht: Suchwörter, Volltext-Treffer und die Ähnlichkeit nach
   Bedeutung ohne Schwelle. Danach wird `VEKTOR_MIN` eingestellt.
 - Die neuen Spalten der Tabelle `vorschlag` legt der Worker selbst an.
+- Ab 2.16: **Sammelfreigabe** — alle offenen Vorschläge einer Quelle (z. B. einer Schulung) auf einmal, im Leitstand oben unter „Vorschläge“ und in der App in der Karte. Je Aufruf 20; eigene Vorschläge bleiben für die vier Augen stehen.
+
+## Antworten wie ChatGPT, mit der Lage aus der App (ab 2.19)
+
+- Antworten schreibt `@cf/openai/gpt-oss-120b` (Workers AI, kein neuer
+  Schlüssel); fällt es aus, Llama 3.3 wie bisher.
+- Die App schickt mit jeder Frage die **APP-LAGE**: was die Person in der
+  App ohnehin sieht (Dienst, offene Aufgaben, Putzplan, Material,
+  Schulungsstand, Ankündigungen, Übergaben). Der Worker nutzt sie nur im
+  Gespräch mit der KI und speichert sie nicht. Keine Chats.
+- Formi antwortet immer und sagt, worauf die Antwort beruht (`grundlage`):
+  `wissen`, `app`, `allgemein` (Hinweis „Allgemeines Wissen“) oder
+  `unsicher` („Nicht geprüft“, geht als offene Frage an Semih).
+- `POST /api/probe` (nur Leitstand): Probefrage ohne Speichern — zeigt
+  Modell, Zeit, gefundenes Wissen und die Antwort.
+- Kosten: gpt-oss-120b braucht mehr Neuronen als Llama. Reicht das freie
+  Tageskontingent von Workers AI nicht, kommt „Kontingent aufgebraucht“ —
+  dann hilft der Workers-Paid-Plan (5 $ im Monat).
+
+## Geprüfte Beispiele (ab 2.23)
+
+- Freigegebene Übungen (Leitstand → Übungen, „gut") gehen bei passenden
+  Fragen als Vorbild mit, höchstens drei. Mehr freigeben heißt: Formi
+  antwortet öfter im geprüften Wortlaut.
+- `POST /api/probe {frage}` zeigt unter `beispiele`, welche mitgingen;
+  `ohneBeispiele: true` zum Vergleich.
+
+## Notbremse fürs Tageskontingent (ab 2.24)
+
+- Workers AI gibt gratis 10.000 Neuronen je Tag (Neustart 00:00 UTC).
+  Der Worker zählt mit (geschätzt) und zeigt es im Leitstand unter
+  Übersicht.
+- Ab 6.000 Sparmodus (Gemma, weniger Wissen, kein nächtliches Lernen),
+  ab 9.200 Notbremse (keine KI für Antworten, passender Wissenseintrag
+  oder die Frage wird gespeichert).
+- Mehr Kontingent gibt es nur mit dem Workers-Paid-Plan (5 $/Monat, über
+  10.000 Neuronen 0,011 $ je 1.000). Dann die Grenzen per Variable hoch
+  setzen.
+
+## Systemtext ausprobieren (ab 2.26)
+
+- `POST /api/probe {frage, system}` beantwortet mit einem eigenen
+  Systemtext; `{frage, zusatz}` hängt etwas an den echten an; `verlauf`
+  ([{text, antwort}]) spielt ein Gespräch vor. Nur Leitstand-Schlüssel,
+  nichts wird gespeichert, das Team bekommt immer den echten Text.
+- `POST /api/systemtext` liefert den echten Text zum Abwandeln.
 
 ## Variablen
 
 | Name | Wofür |
 |---|---|
+| `FORMI_DENKEN` | `low` (Standard, schnell), `medium` oder `high`: wie gründlich gpt-oss nachdenkt — gründlicher versteht schwierige Sätze besser, dauert aber länger und kostet mehr Kontingent |
+| `NEURONEN_SPAR`, `NEURONEN_STOPP` | Grenzen für Sparmodus (6000) und Notbremse (9200), geschätzte Neuronen je UTC-Tag |
 | `WA_AKTIV` | `1` = WhatsApp senden. Ohne sie ist WhatsApp seit 2.10 aus (Meta sperrt noch). |
 | `LIMIT_PRO_TAG`, `LIMIT_STUDIOCHAT_TAG`, `AUFBEWAHRUNG_TAGE` | wie im Kopf von `worker.js` |

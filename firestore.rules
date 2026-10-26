@@ -843,7 +843,9 @@ service cloud.firestore {
     // NICHT dabei: title, due, recurring, createdByUid — alles vier
     // ist in der App Sache der Leitung.
     function todoMitarbeiterFelder() {
-      return ['done','doneBy','doneByUid','doneKuerzel','doneAt','steps',
+      // formiAt (Runde 185): die Formi-Spur — „über Formi abgehakt".
+      // Nur ein Zeitstempel neben doneAt, sagt nichts über eine Person.
+      return ['done','doneBy','doneByUid','doneKuerzel','doneAt','formiAt','steps',
               'assignedTo','assignedName','grund','grundVon','grundAm',
               'photo','photoBy','photoAt'];
     }
@@ -851,7 +853,7 @@ service cloud.firestore {
     // Putzplan: anlegen ist Chefsache, abhaken darf jeder.
     //   Pausieren steht in der App hinter chef — deshalb hier auch.
     function putzMitarbeiterFelder() {
-      return ['done','doneBy','doneByUid','doneKuerzel','doneAt'];
+      return ['done','doneBy','doneByUid','doneKuerzel','doneAt','formiAt'];
     }
 
     // ── „Danke" an einer erledigten Aufgabe (Runde 103, Idee D1) ─────
@@ -899,6 +901,23 @@ service cloud.firestore {
         && request.resource.data.ts is number
         && request.resource.data.ts <= request.time.toMillis() + 300000;
       allow delete: if false;
+    }
+    // ── „… schreibt" je Person und Unterhaltung (Runde 277) ──
+    // {ts, uid, name}. Lesen darf, wer die Unterhaltung lesen darf.
+    // Schreiben und Löschen nur das EIGENE Dokument — wer fremde
+    // schreiben könnte, liesse jemanden „schreiben", der nichts tut.
+    // name ist kurz, ts nicht weit in der Zukunft (sonst stünde die
+    // Anzeige, bis die Uhr sie einholt). Dieselbe Regel unter firmen/<k>/.
+    match /channels/{channelId}/tippt/{uid} {
+      allow read: if aufFlachenPfaden() && istAktiv() && kanalErlaubt(channelId);
+      allow create, update: if aufFlachenPfaden() && istAktiv() && kanalErlaubt(channelId)
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['ts','uid','name'])
+        && request.resource.data.uid == uid
+        && request.resource.data.name is string && request.resource.data.name.size() <= 80
+        && request.resource.data.ts is number
+        && request.resource.data.ts <= request.time.toMillis() + 60000;
+      allow delete: if aufFlachenPfaden() && request.auth != null && request.auth.uid == uid;
     }
     match /channels/{channelId}/messages/{msgId} {
       allow read: if aufFlachenPfaden()
@@ -1232,6 +1251,19 @@ service cloud.firestore {
     /* Die Bremse gegen Durchprobieren. Ebenfalls zu: wer den eigenen
        Zaehler zuruecksetzen koennte, haette keine Bremse. */
     match /schulungVersuche/{uid} { allow read, write: if false; }
+    /* Auffrischen (Runde 201): der Lernplan je Teilnehmer — welche Frage
+       auf welcher Stufe steht. Schreibt und liest nur die Cloud Function
+       `schulungAuffrischen`. Im Browser niemand, auch nicht die Leitung:
+       „Wird es als Kontrolle empfunden, schadet es.“ (Runde 134). */
+    match /schulungLernplan/{tId} { allow read, write: if false; }
+    /* Die Summe je Frage, OHNE Namen: wie oft richtig, wie oft daneben.
+       Daran sieht die Leitung, welche Frage im Team nicht sitzt — und
+       welches Modul nachgebessert werden muss. Schreiben nur die
+       Funktion; sonst schriebe sich jeder seine Zahlen zurecht. */
+    match /schulungFragenStat/{modul} {
+      allow read: if aufFlachenPfaden() && (istAktiv() && (isChef() || isLeiter()));
+      allow write: if false;
+    }
     /* Die Durchlaeufe. `create` fehlt hier mit Absicht — siehe oben.
        Schreiben darf nur das GERAET, auf dem der Durchlauf laeuft, und
        nur solange er laeuft: ein abgeschlossener Durchlauf ist ein
@@ -1402,6 +1434,19 @@ service cloud.firestore {
         && request.resource.data.participants.size() == 2
         && request.resource.data.participants.hasOnly(resource.data.participants));
     }
+    match /dms/{dmId}/tippt/{uid} {
+      allow read: if aufFlachenPfaden()
+        && istAktiv() && dmId.split('_').hasAny([request.auth.uid]);
+      allow create, update: if aufFlachenPfaden() && istAktiv()
+        && dmId.split('_').hasAny([request.auth.uid])
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['ts','uid','name'])
+        && request.resource.data.uid == uid
+        && request.resource.data.name is string && request.resource.data.name.size() <= 80
+        && request.resource.data.ts is number
+        && request.resource.data.ts <= request.time.toMillis() + 60000;
+      allow delete: if aufFlachenPfaden() && request.auth != null && request.auth.uid == uid;
+    }
     match /dms/{dmId}/messages/{msgId} {
       allow read: if aufFlachenPfaden()
         && (istAktiv() && dmId.split('_').hasAny([request.auth.uid]));
@@ -1536,6 +1581,55 @@ service cloud.firestore {
         && (istAktiv() && (resource.data.uid == request.auth.uid
                            || manages(resource.data.studioKey)));
       allow write: if false;
+    }
+
+    /* ── Zeiterfassung: Korrekturanträge (Runde 204) ─────────────────
+       Die Person beantragt, NUR die Geschäftsführung entscheidet („nur
+       geschäftsführung", 22.10.2026). Geschrieben wird ausschliesslich
+       über zeitAntragStellen / -Zurueckziehen / -Entscheiden.
+       Lesen: die eigenen Anträge, und die Geschäftsführung alle. Die
+       Studioleitung bewusst NICHT — sie entscheidet sie auch nicht. */
+    match /zeitAntraege/{aid} {
+      allow read: if aufFlachenPfaden()
+        && (istAktiv() && (resource.data.uid == request.auth.uid || isChef()));
+      allow write: if false;
+    }
+
+    /* ── Zeiterfassung: Monatsabschluss (Runde 208) ──────────────────
+       Stunden, Soll und Konto je Person für einen Monat. Lesen nur die
+       Geschäftsführung — darin stehen alle Konten nebeneinander. Schreiben
+       nur über monatAbschliessen / monatOeffnen. */
+    match /zeitAbschluesse/{monat} {
+      allow read: if aufFlachenPfaden() && isChef();
+      allow write: if false;
+    }
+
+    /* ── Lohn-Export: DATEV-Einstellungen (Runde 210) ────────────────
+       Berater-, Mandanten- und Personalnummern. NICHT in config: das
+       liest jeder Aktive. Lesen und schreiben nur die Geschäftsführung,
+       nur das eine Dokument 'datev', nur diese Felder. */
+    function lohnEinstellungOk() {
+      return request.resource.data.keys().hasOnly(['beraterNr', 'mandantenNr', 'lohnartStunden', 'urlaubstage', 'personalNr', 'geaendert', 'geaendertVon'])
+        && request.resource.data.get('beraterNr', '') is string
+        && request.resource.data.get('beraterNr', '').size() <= 7
+        && request.resource.data.get('mandantenNr', '') is string
+        && request.resource.data.get('mandantenNr', '').size() <= 5
+        && request.resource.data.get('lohnartStunden', '') is string
+        && request.resource.data.get('lohnartStunden', '').size() <= 4
+        && request.resource.data.get('personalNr', {}) is map
+        && request.resource.data.get('personalNr', {}).size() <= 500;
+    }
+    /* Runde 215: Soll je Person und Wochentag („ja", 22.10.2026) im
+       Dokument 'zeitregeln' — dieselbe Sammlung, dieselben Leser. */
+    function zeitregelnOk() {
+      return request.resource.data.keys().hasOnly(['regeln', 'geaendert', 'geaendertVon'])
+        && request.resource.data.get('regeln', {}) is map
+        && request.resource.data.get('regeln', {}).size() <= 500;
+    }
+    match /lohnEinstellungen/{doc} {
+      allow read: if aufFlachenPfaden() && isChef();
+      allow write: if aufFlachenPfaden() && isChef()
+        && ((doc == 'datev' && lohnEinstellungOk()) || (doc == 'zeitregeln' && zeitregelnOk()));
     }
 
 
@@ -2000,6 +2094,18 @@ service cloud.firestore {
             && request.resource.data.ts <= request.time.toMillis() + 300000;
           allow delete: if false;
         }
+        // „… schreibt" — dieselbe Regel wie flach (Runde 277).
+        match /channels/{channelId}/tippt/{uid} {
+          allow read: if inFirma(f) && istAktiv() && kanalErlaubt(channelId);
+          allow create, update: if schreibtIn(f) && istAktiv() && kanalErlaubt(channelId)
+            && request.auth.uid == uid
+            && request.resource.data.keys().hasOnly(['ts','uid','name'])
+            && request.resource.data.uid == uid
+            && request.resource.data.name is string && request.resource.data.name.size() <= 80
+            && request.resource.data.ts is number
+            && request.resource.data.ts <= request.time.toMillis() + 60000;
+          allow delete: if inFirma(f) && request.auth.uid == uid;
+        }
         match /channels/{channelId}/messages/{msgId} {
           allow read: if inFirma(f) && (istAktiv() && kanalErlaubt(channelId));
           // Nur als man selbst senden; Bilder/Text/Aufnahme begrenzen
@@ -2208,6 +2314,12 @@ service cloud.firestore {
         }
         match /schulungCodes/{kennung} { allow read, write: if false; }
         match /schulungVersuche/{uid} { allow read, write: if false; }
+        // Auffrischen (Runde 201) — Begründung bei der flachen Fassung.
+        match /schulungLernplan/{tId} { allow read, write: if false; }
+        match /schulungFragenStat/{modul} {
+          allow read: if inFirma(f) && (istAktiv() && (isChef() || isLeiter()));
+          allow write: if false;
+        }
         match /schulungLaeufe/{lId} {
           allow read: if inFirma(f)
             && (istAktiv()
@@ -2349,6 +2461,19 @@ service cloud.firestore {
             && request.resource.data.participants.hasOnly(resource.data.participants));
         }
 
+        match /dms/{dmId}/tippt/{uid} {
+          allow read: if inFirma(f) && istAktiv() && dmId.split('_').hasAny([request.auth.uid]);
+          allow create, update: if schreibtIn(f) && istAktiv()
+            && dmId.split('_').hasAny([request.auth.uid])
+            && request.auth.uid == uid
+            && request.resource.data.keys().hasOnly(['ts','uid','name'])
+            && request.resource.data.uid == uid
+            && request.resource.data.name is string && request.resource.data.name.size() <= 80
+            && request.resource.data.ts is number
+            && request.resource.data.ts <= request.time.toMillis() + 60000;
+          allow delete: if inFirma(f) && request.auth.uid == uid;
+        }
+
         match /dms/{dmId}/messages/{msgId} {
           allow read: if inFirma(f) && (istAktiv() && dmId.split('_').hasAny([request.auth.uid]));
           allow create: if schreibtIn(f) && (istAktiv()
@@ -2426,6 +2551,23 @@ service cloud.firestore {
             && (istAktiv() && (resource.data.uid == request.auth.uid
                                || manages(resource.data.studioKey)));
           allow write: if false;
+        }
+        // Korrekturanträge (Runde 204) — dieselbe Regel wie flach, siehe dort.
+        match /zeitAntraege/{aid} {
+          allow read: if inFirma(f)
+            && (istAktiv() && (resource.data.uid == request.auth.uid || isChef()));
+          allow write: if false;
+        }
+        // Monatsabschluss (Runde 208) — dieselbe Regel wie flach, siehe dort.
+        match /zeitAbschluesse/{monat} {
+          allow read: if inFirma(f) && isChef();
+          allow write: if false;
+        }
+        // DATEV-Einstellungen (Runde 210) — dieselbe Regel wie flach, siehe dort.
+        match /lohnEinstellungen/{doc} {
+          allow read: if inFirma(f) && isChef();
+          allow write: if schreibtIn(f) && isChef()
+            && ((doc == 'datev' && lohnEinstellungOk()) || (doc == 'zeitregeln' && zeitregelnOk()));
         }
 
 

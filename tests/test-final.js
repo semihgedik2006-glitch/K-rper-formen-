@@ -1,3 +1,8 @@
+/* Runde 236: Seit dem 23.10.2026 ist das neue Design für alle der Standard.
+   Dieser Durchlauf prüft eine Funktion, kommt aber über die BISHERIGE
+   Navigation dorthin. Bis er auf die neue umgestellt ist, läuft er im
+   bisherigen Aussehen (kf_neu=0, der Geräteschalter des Übergangs).
+   Offen als P-20 in docs/BEKANNTE-PROBLEME.md. */
 const { chromium } = require('playwright');
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 const SP = process.env.SP || __dirname;
@@ -11,6 +16,7 @@ const SP = process.env.SP || __dirname;
   await page.route('**://www.gstatic.com/**', r => r.abort());
   await page.route('**script.google.com/**', r => r.fulfill({ status: 200, body: 'ok' }));
   await page.addInitScript({ path: SP + '/stub-chef.js' });
+  await page.addInitScript(() => { try { localStorage.setItem('kf_neu', '0'); } catch (e) {} });
   await page.goto(APP, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1500);
   await page.mouse.click(215, 400).catch(() => {});
@@ -25,8 +31,14 @@ const SP = process.env.SP || __dirname;
   async function go(view) {
     await page.evaluate(g => document.querySelector('.mobnav [data-group="' + g + '"]').click(), GROUP[view]);
     await page.waitForTimeout(450);
-    const sub = await page.$('[data-subview="' + view + '"]');
+    /* Runde 187 (aus dem Betrieb: „das problem mit dem zu viel bleibt
+       immer noch bestehen"): Chat und Direkt sind EIN Reiter „Chats".
+       Direktnachrichten öffnet man über „Direkt" vorn in der
+       Kanalzeile (#kanalDirekt), nicht mehr über einen eigenen Reiter. */
+    const ziel = view === 'dm' ? 'chat' : view;
+    const sub = await page.$('#subnav [data-subview="' + ziel + '"]');
     if (sub) { await sub.click(); await page.waitForTimeout(500); }
+    if (view === 'dm') { await page.click('#kanalDirekt'); await page.waitForTimeout(500); }
   }
 
   // Alle Ansichten einmal durchklicken

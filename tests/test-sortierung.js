@@ -54,7 +54,7 @@ async function lauf() {
   }
 
   /* ══ 1. Das Feld steht überall, wo es fehlte ══ */
-  await page.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
+  await page.evaluate(() => (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="todos"]').click(); } }).click());
   await page.waitForTimeout(420);
   const da = await page.evaluate(() => ({
     todo: !!document.querySelector('#todoSort'),
@@ -121,7 +121,7 @@ async function lauf() {
      einer blossen Variablen und war nach jedem Start wieder Standard. */
   await page.reload({ waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(2800);
-  await page.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
+  await page.evaluate(() => (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="todos"]').click(); } }).click());
   await page.waitForTimeout(420);
   await page.evaluate(() => document.querySelector('[data-subview="putzplan"]').click());
   await page.waitForTimeout(620);

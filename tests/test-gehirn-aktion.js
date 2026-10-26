@@ -26,6 +26,45 @@ const NAMEN = { 'studio-1': 'Hürth', 'studio-2': 'Brühl', 'studio-3': 'Köln-P
 const ALLE = Object.keys(NAMEN);
 const HEUTE = '2026-10-18';
 
+console.log('── Etappe 3: Material, Probetraining, Formi meldet sich (23.10.2026) ──');
+{
+  /* Aus dem Betrieb (23.10.2026), Rückfragen zu Etappe 3: Formulare
+     „Gerät defekt melden, Material nachbestellen, Urlaub/Frei beantragen,
+     Probetraining eintragen"; melden bei „Morgens: dein Tag, Fällig &
+     überfällig, Fehlendes Material/Defekt, Schichtende-Check"; „So oft
+     wie nötig". */
+  const NAM = { 'studio-1': 'Hürth', 'studio-2': 'Brühl' };
+  const MB = (r, erlaubt) => B(r, NAM, erlaubt || ['studio-1'], 'mitarbeiter', '2026-10-23');
+  const m1 = MB({ typ: 'material', artikel: 'Westen M', ist: '2', studio: 'Hürth' });
+  pruefe('Material: Artikel, Ist-Zahl, Studio', m1 && m1.typ === 'material' && m1.artikel === 'Westen M' && m1.ist === 2 && m1.fehlt === null && m1.studioKey === 'studio-1', m1);
+  const m2 = MB({ typ: 'material', artikel: 'Gurte', fehlt: 3 });
+  pruefe('Material: „es fehlen 3" ohne Studio → eigenes Studio', m2 && m2.fehlt === 3 && m2.ist === null && m2.studioKey === 'studio-1', m2);
+  pruefe('Material: ohne Zahl, negative oder riesige Zahl → nichts', MB({ typ: 'material', artikel: 'Gurte' }) === null && MB({ typ: 'material', artikel: 'Gurte', ist: -1 }) === null && MB({ typ: 'material', artikel: 'Gurte', fehlt: 0 }) === null && MB({ typ: 'material', artikel: 'Gurte', ist: 100000 }) === null);
+  pruefe('Material: „nur noch 0" ist eine gültige Zahl', MB({ typ: 'material', artikel: 'Gurte', ist: 0 }).ist === 0);
+  pruefe('Material: fremdes Studio fällt aufs eigene zurück', MB({ typ: 'material', artikel: 'Gurte', ist: 1, studio: 'Brühl' }).studioKey === 'studio-1');
+  const p1 = MB({ typ: 'probe', datum: '2026-10-23', abschluss: true, notiz: 'x'.repeat(400) });
+  pruefe('Probetraining: Datum, Abschluss, Notiz gekürzt', p1 && p1.typ === 'probe' && p1.abschluss === true && p1.notiz.length === 200 && p1.studioKey === 'studio-1', p1);
+  pruefe('Probetraining: ohne Datum → heute; „abschluss" nur bei true', MB({ typ: 'probe', abschluss: 'ja' }).datum === '2026-10-23' && MB({ typ: 'probe', abschluss: 'ja' }).abschluss === false);
+  pruefe('Probetraining: Zukunft oder älter als 30 Tage → nichts', MB({ typ: 'probe', datum: '2026-10-24' }) === null && MB({ typ: 'probe', datum: '2026-09-22' }) === null && MB({ typ: 'probe', datum: '2026-09-23' }) !== null);
+  const sysE = __intern.gehirnAktionSystem({ rolle: 'mitarbeiter', namen: NAM, erlaubt: ['studio-1'], name: 'Lea', heute: '2026-10-23' });
+  pruefe('Systemtext kennt „material" und „probe", Probetraining ohne Kundennamen', /"typ":"material"/.test(sysE) && /"typ":"probe"/.test(sysE) && /OHNE Kundennamen/.test(sysE));
+  pruefe('Systemtext: eine Situation mit einem Kunden („Kunde hat Durchfall") ist immer eine Frage, nie „keins" (24.10.2026)', /Kunde hat Durchfall[^']*IMMER "frage" — nie "keins", nie "abwesenheit"/.test(sysE));
+  pruefe('ein ungültiges „material"/„probe" wird „unklar", nicht als Frage beantwortet', W({ typ: 'material' }, null) === 'unklar' && W({ typ: 'probe' }, null) === 'unklar');
+
+  const I = __intern;
+  pruefe('Morgens: Dienst, Überfälliges, heute Fälliges, Putzpunkte in einem Satz',
+    I.formiTagText({ schichten: [{ von: '09:00', bis: '17:00', studio: 'Hürth' }], ueberfaellig: 1, heute: 3, putz: 5 }) === 'Dienst 09:00–17:00 in Hürth · 1 Aufgabe ist überfällig · 3 Aufgaben sind heute fällig · 5 Putzpunkte offen.');
+  pruefe('Morgens: nichts zu sagen → keine Meldung', I.formiTagText({ schichten: [] }) === null);
+  pruefe('Schichtende: fehlende Übergabe und offene Putzpunkte', I.formiSchichtendeText({ studio: 'Hürth', uebergabe: false, putz: 1 }) === 'Deine Schicht in Hürth ist zu Ende: Übergabe noch nicht geschrieben · 1 Putzpunkt offen.');
+  pruefe('Schichtende: alles erledigt → keine Meldung', I.formiSchichtendeText({ studio: 'Hürth', uebergabe: true, putz: 0 }) === null);
+  const mn = I.formiMaterialNeu([{ name: 'Westen M', limit: 5, have: 4 }, { name: 'Gurte', need: 2 }], [{ name: 'Westen M', limit: 5, have: 1 }, { name: 'Gurte', need: 2 }, { name: 'Kabel', limit: 3, have: 3 }, { name: 'Neu', need: 1 }]);
+  pruefe('Material: nur was jetzt mehr fehlt als vorher (Westen 1→4, Neu), nicht Unverändertes oder Volles', JSON.stringify(mn) === JSON.stringify([{ name: 'Westen M', fehlt: 4 }, { name: 'Neu', fehlt: 1 }]), mn);
+  pruefe('Material: aufgefüllt → keine Meldung', I.formiMaterialNeu([{ name: 'Gurte', need: 2 }], [{ name: 'Gurte', need: 0 }]).length === 0);
+  const t0 = Date.parse('2026-10-23T10:00:00Z');
+  const fv = I.formiFristVorbei([{ title: 'A', due: t0 - 10 * 60000 }, { title: 'B', due: t0 - 40 * 60000 }, { title: 'C', due: t0 - 5 * 60000, done: true }, { title: 'D', due: t0 + 60000 }, { title: 'E', due: t0 - 60000, archived: true }], t0 - 30 * 60000, t0);
+  pruefe('Frist vorbei: nur offene, deren Frist im letzten Fenster verstrich — jede genau einmal', fv.map(x => x.title).join() === 'A', fv);
+  pruefe('Schichtende-Fenster: 17:00 Berlin (15:00 UTC im Oktober) liegt in (14:50, 15:05]', I.formiSchichtEndeIn('2026-10-23', '17:00', Date.parse('2026-10-23T14:50:00Z'), Date.parse('2026-10-23T15:05:00Z')) && !I.formiSchichtEndeIn('2026-10-23', '17:00', Date.parse('2026-10-23T15:00:00Z'), Date.parse('2026-10-23T15:15:00Z')) && !I.formiSchichtEndeIn('2026-10-23', 'kaputt', 0, Infinity));
+}
 console.log('── Daumen prüfen (20.10.2026) ──');
 {
   const BP = __intern.gehirnBewertungPruefen;
@@ -81,12 +120,11 @@ console.log('── Rückfrage, mehrere Aufträge, Ton (20.10.2026) ──');
   pruefe('Vorname und Ton gehen an das Gehirn, Ton nur locker/sachlich', A({ text: 'x', ton: 'sachlich' }, { name: 'Lea Meier' }).body.vorname === 'Lea' &&
     A({ text: 'x', ton: 'sachlich' }, { name: 'Lea' }).body.ton === 'sachlich' && A({ text: 'x', ton: 'frech' }, { name: 'Lea' }).body.ton === 'locker');
 }
-console.log('── Stimme (20.10.2026) ──');
+console.log('── Stimme entfernt (Runde 278) ──');
 {
-  const SP = __intern.gehirnStimmePruefen;
-  pruefe('Stimme: Text gekürzt auf 700, Leerraum zusammengezogen', SP({ text: 'a  b\n' + 'x'.repeat(900) }).text.length === 700 && SP({ text: 'a  b' }).text === 'a b');
-  pruefe('Stimme: nur Stimmen aus der Liste, sonst die erste', SP({ text: 'x', stimme: 'en-US-Evil' }).stimme === __intern.GEHIRN_STIMMEN[0] && SP({ text: 'x', stimme: 'de-DE-Chirp3-HD-Puck' }).stimme === 'de-DE-Chirp3-HD-Puck');
-  pruefe('Stimme: ohne Text nichts', SP({ text: '   ' }) === null);
+  /* Aus dem Betrieb (24.10.2026): „das vor lesen ist auch unnötig". */
+  const F = require('fs').readFileSync(require('path').join(__dirname, '..', 'functions', 'index.js'), 'utf8');
+  pruefe('keine Stimm-Function mehr (gehirnStimme)', !/exports\.gehirnStimme\b/.test(F) && !__intern.gehirnStimmePruefen);
 }
 console.log('── Erinnerung, Tausch, Stichpunkte (20.10.2026) ──');
 {
@@ -117,7 +155,19 @@ console.log('── Formi lernt: Leitung gibt frei (Runde 183, 22.10.2026) ─�
   const v = WP({ art: 'vorschlagen', thema: 'Handtücher', inhalt: 'Handtücher liegen im Schrank links.', kategorie: 'Erfunden' });
   pruefe('Vorschlagen: genau ein Eintrag, unbekannte Kategorie → Sonstiges, Quelle fest', v.body.eintraege.length === 1 && v.body.eintraege[0].kategorie === 'Sonstiges' && v.body.quelle === 'Studioleitung (App)');
   pruefe('Vorschlagen ohne Thema oder Text → nichts', WP({ art: 'vorschlagen', thema: 'ab', inhalt: 'lang genug hier' }) === null && WP({ art: 'vorschlagen', thema: 'Thema', inhalt: 'kurz' }) === null);
+  const sm = WP({ art: 'entscheiden', quelle: '  Schulung „Hygiene“ ', gut: true, inhalt: 'wird ignoriert' });
+  pruefe('Sammelfreigabe: Quelle getrimmt, kein Text, „gut" nur bei true', sm.body.quelle === 'Schulung „Hygiene“' && sm.body.gut === true && !('inhalt' in sm.body) && !('id' in sm.body) && WP({ art: 'entscheiden', quelle: 'Schulung X', gut: 1 }).body.gut === false);
+  pruefe('Sammelfreigabe ohne echte Quelle → nichts', WP({ art: 'entscheiden', quelle: ' a ' }) === null && WP({ art: 'entscheiden', quelle: 5 }) === null);
   pruefe('Kennung für vier Augen: stabil, nicht die uid', VI('abc') === VI('abc') && VI('abc') !== VI('abd') && !VI('abc').includes('abc') && VI('abc').length === 24);
+}
+console.log('── Lage aus der App (Runde 217) ──');
+{
+  const GA = __intern.gehirnAuftrag;
+  const f = GA({ art: 'frage', text: 'was ist offen', lage: 'Aufgaben: Briefkasten' }, { name: 'Anna Test', studio: 'Hürth' });
+  pruefe('Frage nimmt die Lage mit', f.body.lage === 'Aufgaben: Briefkasten');
+  pruefe('Lage höchstens 9000 Zeichen', GA({ art: 'frage', text: 'x', lage: 'a'.repeat(20000) }, {}).body.lage.length === 9000);
+  pruefe('ohne Lage kein Feld, Idee nie mit Lage', !('lage' in GA({ art: 'frage', text: 'x' }, {}).body) && !('lage' in GA({ art: 'idee', text: 'x', lage: 'y' }, {}).body));
+  pruefe('Lage nur als Text', !('lage' in GA({ art: 'frage', text: 'x', lage: { boese: 1 } }, {}).body));
 }
 console.log('── Vorschlag prüfen ──');
 pruefe('unbekannter Typ → kein Vorschlag', P({ typ: 'keins', titel: 'x' }, NAMEN, ALLE, 'chef', HEUTE) === null);

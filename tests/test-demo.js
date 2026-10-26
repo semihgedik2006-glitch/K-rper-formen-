@@ -193,7 +193,7 @@ async function seite(b, url, errs, marke) {
   const vorher = daten.summe;
   const geschrieben = await page.evaluate(async () => {
     // Zu den Aufgaben und dort die erste offene abhaken.
-    document.querySelector('.mobnav [data-group="g-arbeit"]').click();
+    (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="todos"]').click(); } }).click();
     await new Promise(r => setTimeout(r, 400));
     const tb = document.querySelector('[data-subview="todos"]');
     if (tb) tb.click();
@@ -292,41 +292,57 @@ async function seite(b, url, errs, marke) {
     if (!/Zurück/.test(term.raus)) {
       errs.push('„Terminal beenden" führt in der Demo in eine Schleife statt zurück zur App');
     }
-    if (!term.imDienst) errs.push('Niemand ist eingestempelt — die Demo zeigt den Normalfall nicht');
+    /* Runde 189: der Stand steht NICHT mehr an den Kacheln („ja" aus dem
+       Betrieb, 22.10.2026). Dass in der Demo Leute im Dienst sind, zeigt
+       sich jetzt nach der PIN — unten. */
+    if (term.imDienst) errs.push('Am Terminal steht der Stand an den Namen (' + term.imDienst + '×) — für jeden am Tresen lesbar');
 
     /* Und jetzt wirklich stempeln. */
     const pin = (/(\d{4,6})/.exec(term.hinweis) || [])[1];
     const gestempelt = await p4.evaluate(async (p) => {
-      const vorher = document.querySelectorAll('#tmListe .tm-person.da').length;
-      // Jemanden nehmen, der noch NICHT da ist — sonst sieht man nichts.
-      const frei = [...document.querySelectorAll('#tmListe [data-tmwer]')]
-        .find(b => !b.classList.contains('da'));
-      if (!frei) return { fehler: 'alle sind schon eingestempelt' };
-      const name = (frei.querySelector('.tm-nam') || {}).textContent;
-      frei.click();
-      await new Promise(r => setTimeout(r, 300));
-      String(p).split('').forEach(z => {
-        const t = document.querySelector('#tmTasten [data-tmt="' + z + '"]');
-        if (t) t.click();
-      });
-      document.querySelector('#tmTasten [data-tmt="ok"]').click();
-      await new Promise(r => setTimeout(r, 900));
-      return {
-        fehler: null, name,
-        meldung: (document.getElementById('toast') || {}).textContent || '',
-        daVorher: vorher,
-        daNachher: document.querySelectorAll('#tmListe .tm-person.da').length
+      const w = (ms) => new Promise(r => setTimeout(r, ms));
+      const pinTippen = async (knopf) => {
+        knopf.click(); await w(300);
+        String(p).split('').forEach(z => {
+          const t = document.querySelector('#tmTasten [data-tmt="' + z + '"]');
+          if (t) t.click();
+        });
+        document.querySelector('#tmTasten [data-tmt="ok"]').click();
+        await w(900);
+        return {
+          stand: (document.getElementById('tmStand') || {}).textContent || '',
+          knoepfe: [...document.querySelectorAll('#tmWahlKnoepfe [data-tmart]')].map(k => k.getAttribute('data-tmart'))
+        };
       };
+      /* Die Demo zeigt den Normalfall: unter den ersten Kacheln ist
+         jemand im Dienst — sichtbar erst nach der PIN. */
+      const kacheln = [...document.querySelectorAll('#tmListe [data-tmwer]')].slice(0, 4);
+      let imDienst = 0;
+      for (const k of kacheln) {
+        const st = await pinTippen(k);
+        if (/Im Dienst|Pause/.test(st.stand)) imDienst++;
+        document.getElementById('tmZurueck').click(); await w(200);
+      }
+      const erste = document.querySelector('#tmListe [data-tmwer]');
+      const name = (erste.querySelector('.tm-nam') || {}).textContent;
+      const vor = await pinTippen(erste);
+      const art = vor.knoepfe[vor.knoepfe.length - 1];
+      document.querySelector('#tmWahlKnoepfe [data-tmart="' + art + '"]').click();
+      await w(900);
+      const meldung = (document.getElementById('toast') || {}).textContent || '';
+      const nach = await pinTippen(document.querySelector('#tmListe [data-tmwer]'));
+      document.getElementById('tmZurueck').click(); await w(200);
+      return { fehler: null, name, imDienst, vor, art, meldung, nach };
     }, pin);
     console.log('DEMO-STEMPEL:', JSON.stringify(gestempelt));
     if (gestempelt.fehler) errs.push('Stempelprobe: ' + gestempelt.fehler);
     else {
+      if (!gestempelt.imDienst) errs.push('Niemand ist eingestempelt — die Demo zeigt den Normalfall nicht');
       if (!/Kommen|Pause|Zurück|Feierabend/.test(gestempelt.meldung)) {
         errs.push('Das Stempeln meldet nichts Brauchbares: „' + gestempelt.meldung + '"');
       }
-      if (!(gestempelt.daNachher > gestempelt.daVorher)) {
-        errs.push('Nach dem Stempeln ist niemand zusätzlich im Dienst (' +
-          gestempelt.daVorher + ' → ' + gestempelt.daNachher + ') — der Knopf tut nichts');
+      if (gestempelt.vor.stand === gestempelt.nach.stand) {
+        errs.push('Nach dem Stempeln ist der Stand derselbe („' + gestempelt.nach.stand + '") — der Knopf tut nichts');
       }
     }
 

@@ -51,7 +51,14 @@ function pruefe(was, bedingung, hinweis) {
 async function offeneLautListe(p) {
   await p.evaluate(() => {
     const g = document.querySelector('.mobnav [data-group="g-arbeit"]');
+    /* Runde 260: Mitarbeiter haben den Raum „Studio" nicht mehr — ohne
+       Raum-Knopf geht der Weg über die Schublade „Alles". */
     if (g) g.click();
+    else {
+      document.getElementById('bereichKopf').click();
+      const a = document.querySelector('#allesLade [data-alles="todos"]');
+      if (a) a.click();
+    }
   });
   await p.waitForTimeout(500);
   await p.evaluate(() => {
@@ -86,10 +93,14 @@ async function startseite(p) {
     const koepfe = [...document.querySelectorAll('.heute-block .hk-wort')]
       .map(x => x.textContent.trim());
     const offenKopf = koepfe.find(t => /^Offen/.test(t)) || '';
-    const m = /·\s*(\d+)/.exec(offenKopf);
-    const abz = document.querySelector('.mn-reihe [data-group="g-arbeit"] .badge');
+    const m = /(?:·\s*|\s)(\d+)$/.exec(offenKopf);
+    /* Runde 260: Mitarbeiter haben keinen Raum „Studio" mehr (aus dem
+       Betrieb, 23.10.2026: „ja" zu „unten nur Heute, Zeiten, Plan,
+       Nachrichten"); bei ihnen trägt „Heute" den Punkt. */
+    const abz = document.querySelector('.mn-reihe [data-group="g-arbeit"] .badge') ||
+                document.querySelector('.mn-reihe [data-group="g-start"] .badge');
     const ueber = koepfe.find(t => /^Überfällig/.test(t)) || '';
-    const mu = /·\s*(\d+)/.exec(ueber);
+    const mu = /(?:·\s*|\s)(\d+)$/.exec(ueber);
     /* Seit dem 23.9.2026 kann „Offen" auch als Knopf unter „Ausserdem"
        stehen — dann, wenn der Bildschirm für den Block nicht mehr
        reicht (der Putzplan ist dazugekommen). */
@@ -115,8 +126,14 @@ async function startseite(p) {
         const l = b && b.querySelector('[data-heute]');
         return l ? { ziel: l.dataset.heute, filter: l.dataset.hf || '' } : null;
       })(),
+      /* Runde 187: am Raum „Studio" steht ein Punkt statt der Zahl; die
+         Zahl steht im Vorlesetext (aria-label „N offen"). Aus dem
+         Betrieb: „das problem mit dem zu viel bleibt immer noch
+         bestehen" – „deine 2 fragen können wir so umsetzten". Geprüft
+         wird weiter dieselbe Zahl, nur an ihrem neuen Ort. */
       abzeichen: abz ? {
-        text: abz.textContent.trim(),
+        text: abz.textContent.trim() || ((/(\d+)/.exec(abz.getAttribute('aria-label') || '') || [])[1] || ''),
+        punkt: abz.classList.contains('punkt') && !abz.textContent.trim(),
         sichtbar: getComputedStyle(abz).display !== 'none'
       } : null,
       ruhe: (document.querySelector('.heute-ruhe') || {}).textContent || ''
@@ -214,6 +231,8 @@ async function startseite(p) {
       st.abzeichen && (st.abzeichen.text === String(liste.offen) ||
         (liste.offen > 99 && st.abzeichen.text === '99+')),
       (st.abzeichen || {}).text + ' vs ' + liste.offen);
+    pruefe(rolle + ': am Raum steht ein Punkt, keine Zahl (Runde 187)',
+      st.abzeichen && st.abzeichen.punkt, JSON.stringify(st.abzeichen));
 
     if (fehler.length) pruefe(rolle + ': keine Skriptfehler', false, fehler[0]);
     await p.close();
@@ -241,7 +260,14 @@ async function startseite(p) {
        ein Mensch es täte. */
     await p.evaluate(() => {
       const g = document.querySelector('.mobnav [data-group="g-arbeit"]');
+      /* Runde 260: Mitarbeiter haben den Raum „Studio" nicht mehr — ohne
+         Raum-Knopf geht der Weg über die Schublade „Alles". */
       if (g) g.click();
+      else {
+        document.getElementById('bereichKopf').click();
+        const a = document.querySelector('#allesLade [data-alles="todos"]');
+        if (a) a.click();
+      }
     });
     await p.waitForTimeout(500);
     await p.evaluate(() => {

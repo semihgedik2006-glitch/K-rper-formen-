@@ -60,17 +60,17 @@
         ]
       },
       {
-        "//": "index.html, sw.js und konfig.js nie zwischenspeichern. konfig.js entscheidet, welche Datenbank die App anfasst; eine alte Fassung im Zwischenspeicher ist schlimmer als eine langsame Ladezeit. Drei getrennte Einträge statt eines Musters — an dieser Stelle ist Wörtlichkeit mehr wert als Kürze.",
+        "//": "index.html: der Browser fragt bei jedem Oeffnen nach (max-age=0, must-revalidate), das Verteilnetz des Hosters darf die Datei zehn Minuten behalten (s-maxage=600). Bis zum 26.10.2026 stand hier no-store: jedes Oeffnen lud die ganze Seite (3,15 MB, 943 KB gzip). Erster Versuch am selben Tag war no-cache — live gemessen brachte das KEIN 304: das Verteilnetz (Fastly) legt bei no-cache nichts ab, jede Anfrage ist dort ein MISS, und der Ursprung antwortet auf If-None-Match immer 200 (fuer Schriften mit max-age und HIT kam sofort 304). Ein 304 gibt es also nur, wenn das Verteilnetz die Datei hat. max-age=0 statt no-cache, weil Fastly no-cache als nicht ablegbar liest; fuer den Browser ist beides dasselbe: immer nachfragen. s-maxage bewusst kurz: der Hoster leert das Verteilnetz bei jeder Auslieferung, und falls das einmal nicht greift, ist der alte Stand nach zehn Minuten weg. sw.js und konfig.js bleiben bei no-store: beide sind klein, und konfig.js entscheidet, welche Datenbank die App anfasst. tests/test-zwischenspeicher.js misst das zweite Oeffnen; was live ankommt, zeigt curl -sI https://formenchat.web.app/ (x-cache HIT, dann 304 auf If-None-Match).",
         "source": "/index.html",
         "headers": [
-          { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+          { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate, s-maxage=600" }
         ]
       },
       {
         "//": "Die Startadresse selbst. Bis zum 23.9.2026 fehlte dieser Eintrag: die Regel oben greift nur, wenn jemand ausdruecklich /index.html aufruft — die App oeffnet aber / (start_url im manifest). Gemessen: / kam mit cache-control max-age=3600, und direkt nach einer Auslieferung lieferte die Adresse noch eine Stunde lang die alte App aus dem Zwischenspeicher. Der Service Worker umgeht das bei installierten Geraeten (no-store beim Abruf); Erstbesucher, Browser ohne Service Worker und der Zwischenspeicher des Hosters nicht.",
         "source": "/",
         "headers": [
-          { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+          { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate, s-maxage=600" }
         ]
       },
       {
@@ -88,7 +88,7 @@
       {
         "source": "**/*.html",
         "headers": [
-          { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+          { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate, s-maxage=600" }
         ]
       },
       {

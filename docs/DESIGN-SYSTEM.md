@@ -210,8 +210,15 @@ Drei Stufen, mehr nicht.
 
 | Marke | Familie | Wofür |
 |---|---|---|
-| `--font-head` | Barlow Condensed, 500–800 | Überschriften, Zahlen, Marken |
-| `--font-body` | Barlow, 300–700 | alles andere |
+| `--font-head` | Systemschrift (SF Pro Display auf Apple, sonst Inter), bis 700 | Überschriften, Zahlen |
+| `--font-body` = `--font-sys` | Systemschrift (SF Pro Text auf Apple, sonst Inter) | alles andere |
+| `--font-marke` | Barlow Condensed | **nur** der Schriftzug STUDIOCHAT |
+
+> Seit Runde 239 (23.10.2026): Systemschrift statt Barlow, damit die App
+> wie eine App von Apple wirkt. Inter steht in der Kette **vor**
+> `system-ui` — sonst sähe die App auf Windows-Rechnern nach Segoe UI
+> aus. Überschriften nicht über 700: Apple geht bei Titeln nicht über
+> Bold. Hintergrund und Plan: `docs/FORTSCHRITT.md`, Runde 239.
 
 **Größen — sieben Stufen, jede mit einer Aufgabe:**
 
@@ -247,10 +254,20 @@ Drei Stufen, mehr nicht.
 | `--ls-eng` | `-.02em` | nur große Überschriften |
 | `--ls-s` | `.02em` | Knöpfe |
 | `--ls-m` | `.05em` | kleine Versalien |
-| `--ls-l` | `.12em` | Abschnittsmarken |
+| `--ls-l` | `.12em` | kleine Versalien in Abzeichen |
 
 Negative Laufweite nur bei großen Überschriften, weite nur bei Versalien —
 dort braucht das Auge die Luft wirklich.
+
+**Abschnitte heissen seit Runde 241 wie bei Apple** (23.10.2026): ein
+normales Wort in `--t-lg`, halbfett, `--ls-eng`, die Zahl leise daneben
+(`.hk-zahl`), „Alle N“ rechts — keine Versalien, kein Punkt, kein Strich
+bis zum Rand. Kleine Marken über Navigationsgruppen (Seitenleiste,
+Kanäle, Verwaltung) bleiben `--t-xs`, aber normal geschrieben. Auf der
+Startseite ist jeder Abschnitt **eine** Gruppe (`.heute-liste`): gerundet,
+Zeilen ohne eigene Fläche, getrennt durch eine Haarlinie, die beim Text
+beginnt. Die Farbe der Art steht im Zeichen, nicht auf der Fläche.
+Prüfung: `tests/test-gruppen-titel.js`.
 
 Die Schriftgröße ist über die Einstellungen in drei Stufen skalierbar –
 neue Größen deshalb **relativ** (`rem`), nie in Pixeln.

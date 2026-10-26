@@ -127,12 +127,22 @@ function willHaben(d, art) {
    niemand als Fehler, sie nervt nur, und genau das war die Rueckmeldung.
 
    Datenfelder muessen Zeichenketten sein; alles andere weist FCM ab. */
-async function sendPush(tokens, title, body) {
+/* Runde 242 (Idee 14): Meldungen, die die App SELBST schickt (Fristen,
+   Erinnerungen, Nachweise, Formi meldet sich), tragen von:'formi' — der
+   Service Worker zeigt sie dann als „Formi · …" mit Formis Bild. Was ein
+   Mensch schreibt (Chat, Ankündigung, neue Aufgabe), bleibt unverändert:
+   „das kommt von Formi" ist etwas anderes als „das kommt von der Chefin".
+   `ziel` (Runde 243): eine Ansicht der App, die ein Tipp auf die Meldung
+   öffnet (sw.js, notificationclick) — z. B. 'zeit'. Ohne Ziel öffnet sie
+   die App wie bisher. Nur Kleinbuchstaben: es landet in einer Adresse. */
+async function sendPush(tokens, title, body, von, ziel) {
   if (!tokens.length) return;
   const message = {
-    data: { title: String(title || 'StudioChat'), body: String(body || '') },
+    data: { title: String(title || 'StudioChat'), body: String(body || ''),
+      ziel: /^[a-z]{2,20}$/.test(String(ziel || '')) ? String(ziel) : '' },
     tokens: tokens.slice(0, 500)
   };
+  if (von === 'formi') message.data.von = 'formi';
   const res = await admin.messaging().sendEachForMulticast(message);
   // Ungültige (abgemeldete) Tokens löschen
   const dead = [];
@@ -221,12 +231,12 @@ const _neueNachricht = async (snap, ctx) => {
     if (mentioned.length) {
       mentionTokens = await collectTokens(
         d => mentioned.indexOf(d.uid) >= 0 && willHaben(d, 'mentions'), m.uid, firma);
-      await sendPush(mentionTokens, (m.name || 'Jemand') + ' hat dich erwähnt', body);
+      await sendPush(mentionTokens, (m.name || 'Jemand') + ' hat dich erwähnt', body, null, 'chat');
     }
     // ... und werden aus der normalen Meldung herausgenommen, damit sie
     // nicht zweimal benachrichtigt werden
     const rest = tokens.filter(t => mentionTokens.indexOf(t) < 0);
-    await sendPush(rest, 'Neue Nachricht von ' + (m.name || 'Team'), body);
+    await sendPush(rest, 'Neue Nachricht von ' + (m.name || 'Team'), body, null, 'chat');
 };
 const _msg = beideWelten('channels/{channelId}/messages/{msgId}', _neueNachricht);
 exports.onNewMessage = _msg.flach;
@@ -240,7 +250,7 @@ const _neueAufgabe = async (snap, ctx) => {
     const tokens = await collectTokens(
       d => inStudio(d, studioKey) && willHaben(d, 'todos'),
       t.createdByUid, firma);
-    await sendPush(tokens, 'Neue Aufgabe', t.title || '');
+    await sendPush(tokens, 'Neue Aufgabe', t.title || '', null, 'todos');
 
     /* Zusaetzlich per Mail. Push erreicht nur, wer die App installiert
        und Meldungen erlaubt hat; die Mail erreicht alle.
@@ -349,7 +359,7 @@ function tagBerlin(d) {
    Glocke in der App.
 
    Und nicht an den, der es getan hat — der weiss es. */
-async function erledigtPush(firma, studioKey, t) {
+async function erledigtPush(firma, studioKey, t, ziel) {
   const wo = await studioName(firma, studioKey);
   const wer = t.doneBy || 'Jemand';
   const tokens = await collectTokens(
@@ -357,7 +367,7 @@ async function erledigtPush(firma, studioKey, t) {
          willHaben(d, 'erledigt'),
     t.doneByUid || null, firma);
   if (!tokens.length) return;
-  await sendPush(tokens, wo, wer + ' hat „' + (t.title || 'einen Punkt') + '" erledigt');
+  await sendPush(tokens, wo, wer + ' hat „' + (t.title || 'einen Punkt') + '" erledigt', null, ziel || 'todos');
 }
 
 /* ── Welche der drei Meldungen ist faellig? ──
@@ -412,7 +422,9 @@ const _fertigPruefen = async (change, ctx) => {
   const vor = change.before.exists ? (change.before.data() || {}) : null;
   const nach = change.after.exists ? (change.after.data() || {}) : null;
   if (nach && nach.done && (nach.doneAt || 0) > ((vor && vor.doneAt) || 0)) {
-    try { await erledigtPush(firma, studioKey, nach); }
+    /* Runde 268: ein Tipp führt dorthin, wo abgehakt wurde. */
+    const ziel = ctx.params.putzId ? 'putzplan' : 'todos';   // derselbe Auslöser hört auf beide Pfade
+    try { await erledigtPush(firma, studioKey, nach, ziel); }
     catch (e) { console.error('erledigtPush:', e.message); }
   }
 
@@ -582,7 +594,7 @@ const _neuerAushang = async (snap, ctx) => {
     }, a.uid, (ctx && ctx.params && ctx.params.firma) || null);
     /* Runde 135/136: eine als wichtig markierte Ankündigung sagt das schon
        in der Push-Nachricht — und was zu tun ist. */
-    await sendPush(tokens, wichtigTitel(a), wichtigText(a));
+    await sendPush(tokens, wichtigTitel(a), wichtigText(a), null, 'ann');
 };
 const _ann = beideWelten('announcements/{annId}', _neuerAushang);
 exports.onNewAnnouncement = _ann.flach;
@@ -644,7 +656,7 @@ async function wichtigErinnernFirma(firma, jetzt) {
     const fehlen = new Set(wichtigFehlende(a, nutzer));
     if (!fehlen.size) continue;
     const tokens = await collectTokens((d) => fehlen.has(d.uid) && willHaben(d, 'ann'), null, firma);
-    await sendPush(tokens, '‼️ Noch nicht bestätigt · ' + (a.from || 'Leitung'), wichtigText(a));
+    await sendPush(tokens, '‼️ Noch nicht bestätigt · ' + (a.from || 'Leitung'), wichtigText(a), null, 'ann');
     gesendet += tokens.length;
   }
   return gesendet;
@@ -672,7 +684,7 @@ const _neueDm = async (snap, ctx) => {
     const tokens = await collectTokens(
       d => d.uid === recipient && willHaben(d, 'dm'), m.uid, ctx.params.firma || null);
     const body = m.type === 'checklist' ? '📋 Checkliste' : (m.text || '');
-    await sendPush(tokens, m.name || 'Neue Nachricht', body);
+    await sendPush(tokens, m.name || 'Neue Nachricht', body, null, 'dm');
 };
 const _dm = beideWelten('dms/{dmId}/messages/{msgId}', _neueDm);
 exports.onNewDm = _dm.flach;
@@ -730,7 +742,7 @@ async function processBirthdays() {
     }, { merge: true });
     // Push
     const tokens = await collectTokens(d => d.uid === uid, 'system', firma);
-    await sendPush(tokens, gruss, 'Alles Gute zum Geburtstag! 🎉');
+    await sendPush(tokens, gruss, 'Alles Gute zum Geburtstag! 🎉', null, 'home');
     await db.collection('users').doc(uid).update({ lastBdayDM: year });
     sent++;
   }
@@ -772,7 +784,7 @@ exports.dueTaskReminder = region.pubsub
       for (const t of zugewiesen) {
         const tk = await collectTokens(
           d => d.uid === t.assignedTo && willHaben(d, 'todos'), null, firma);
-        await sendPush(tk, 'Aufgabe fällig', t.title || '');
+        await sendPush(tk, 'Aufgabe fällig', t.title || '', 'formi', 'todos');
       }
       if (offenFuerAlle.length) {
         const tk = await collectTokens(
@@ -780,7 +792,7 @@ exports.dueTaskReminder = region.pubsub
         const titel = offenFuerAlle.length === 1
           ? offenFuerAlle[0].title
           : offenFuerAlle.length + ' Aufgaben sind heute fällig';
-        await sendPush(tk, 'Erinnerung', titel);
+        await sendPush(tk, 'Erinnerung', titel, 'formi', 'todos');
       }
     }
     }
@@ -837,7 +849,7 @@ exports.certExpiry = region
       if (!c.uid) continue;
       try {
         const tk = await collectTokens(d => d.uid === c.uid, null, firma);
-        await sendPush(tk, 'Nachweis ' + frist(c.tage), bezeichnung(c));
+        await sendPush(tk, 'Nachweis ' + frist(c.tage), bezeichnung(c), 'formi', 'ich');
       } catch (e) { console.error('Nachweis-Push:', e); }
     }
 
@@ -854,7 +866,7 @@ exports.certExpiry = region
         const text = faellig.length === 1
           ? (faellig[0].name + ': ' + bezeichnung(faellig[0]) + ' ' + frist(faellig[0].tage))
           : (faellig.length + ' Nachweise laufen demnaechst ab');
-        await sendPush(tk, 'Nachweise', text);
+        await sendPush(tk, 'Nachweise', text, 'formi', 'chef');
       }
     } catch (e) { console.error('Nachweis-Chefmeldung:', e); }
 
@@ -2364,6 +2376,24 @@ exports.mailStatus = region
                                requireChef allein prueft nur die Rolle.
      3. nicht sich selbst      wer sich selbst entfernt, sperrt sich aus
                                und hinterlaesst eine Firma ohne Chef. */
+/* Runde 243: wer geht, nimmt seine Lohn-Angaben mit — Soll je Wochentag
+   und Urlaubsanspruch (lohnEinstellungen/zeitregeln, regeln.<uid>) und
+   die DATEV-Personalnummer (lohnEinstellungen/datev, personalNr.<uid>).
+   Vorher blieben sie stehen, bis jemand die Felder von Hand leerte
+   (docs/av/LOESCHKONZEPT.md nannte das als offen). Stempelzeiten und
+   Monatsabschlüsse bleiben: für sie gilt die Aufbewahrungsfrist.
+   Ein fehlendes Dokument ist kein Fehler — dann gab es nichts. */
+async function lohnEintraegeWeg(firma, uid) {
+  const F = W(firma).collection('lohnEinstellungen');
+  const weg = admin.firestore.FieldValue.delete();
+  await Promise.all([
+    F.doc('zeitregeln').update(new admin.firestore.FieldPath('regeln', uid), weg),
+    F.doc('datev').update(new admin.firestore.FieldPath('personalNr', uid), weg)
+  ].map((x) => x.catch((e) => {
+    if (!/NOT_FOUND|No document/i.test(String(e.code) + ' ' + e.message)) console.warn('lohnEintraegeWeg:', e.message);
+  })));
+}
+
 exports.zugangEntfernen = region
   .https.onCall(async (data, context) => {
     const ich = await requireChef(context);
@@ -2408,6 +2438,7 @@ exports.zugangEntfernen = region
     }
     const altMail = ((await db.collection('users').doc(uid).get()).data() || {}).email;
     await authMailSpurenWeg(uid, altMail);
+    await lohnEintraegeWeg((snap.data() || {}).firma || null, uid);
     await db.collection('users').doc(uid).delete();
     return { profil: true, konto: konto };
   });
@@ -4183,6 +4214,27 @@ exports.stempelzeitenAblaufen = region
         weg += snap.size;
         if (snap.size < 400) break;
       }
+      /* Runde 208: Monatsabschlüsse auch — gelöscht, wenn der ganze Monat
+         vor der Grenze liegt. */
+      {
+        const snap = await W(firma).collection('zeitAbschluesse').where('monat', '<', grenz.slice(0, 7)).limit(400).get();
+        if (!snap.empty) {
+          const batch = db.batch();
+          snap.docs.forEach((d) => batch.delete(d.ref));
+          await batch.commit();
+          weg += snap.size;
+        }
+      }
+      /* Runde 204: Korrekturanträge laufen mit derselben Frist ab. */
+      for (;;) {
+        const snap = await W(firma).collection('zeitAntraege').where('tag', '<', grenz).limit(400).get();
+        if (snap.empty) break;
+        const batch = db.batch();
+        snap.docs.forEach((d) => batch.delete(d.ref));
+        await batch.commit();
+        weg += snap.size;
+        if (snap.size < 400) break;
+      }
       if (weg) console.log('Stempelzeiten abgelaufen (' + (firma || 'flach') + '): ' + weg + ' vor ' + grenz);
     }
     return null;
@@ -5168,9 +5220,9 @@ exports.handyStempeln = region.https.onCall(async (data, context) => {
   let letzteArt = null, letzteZeit = -1;
   heute.forEach((d) => {
     const z = d.data() || {};
-    if ((z.ts || 0) > letzteZeit) { letzteZeit = z.ts || 0; letzteArt = z.art || null; }
+    if (!z.storno && (z.ts || 0) > letzteZeit) { letzteZeit = z.ts || 0; letzteArt = z.art || null; }
   });
-  const art = naechsterSchritt(letzteArt);
+  const art = schrittWaehlen(letzteArt, data && data.art);
   const studioKey = treffer.daten.studioKey || '';
 
   await W(firma).collection('zeiten').add({
@@ -5238,11 +5290,11 @@ function offlineZeitPruefen(roh, jetzt) {
   return Math.round(o);
 }
 
-exports.stempeln = region.https.onCall(async (data, context) => {
-  const { firma } = await anruferProfil(context);
-  const ohneNetz = !!(data && data.offlineTs !== undefined && data.offlineTs !== null);
-  const wann = ohneNetz ? offlineZeitPruefen(data.offlineTs, Date.now()) : Date.now();
-  const offlineId = ohneNetz ? String((data && data.offlineId) || '').trim().slice(0, 40) : '';
+/* ── Gerät, Person, PIN (Runde 189) ──
+   Dieselben drei Prüfungen für stempeln und stempelStand. Sie standen
+   bis Runde 188 nur in stempeln; eine zweite Abschrift wäre die Stelle,
+   an der eine künftige Verschärfung nur auf einer Seite ankommt. */
+async function terminalUndPinPruefen(firma, data) {
   const terminalId = String((data && data.terminalId) || '').trim();
   const geheim = String((data && data.geheim) || '').trim();
   const uid = String((data && data.uid) || '').trim();
@@ -5322,6 +5374,63 @@ exports.stempeln = region.https.onCall(async (data, context) => {
     await pinRef.update({ fehlversuche: 0, gesperrtBis: 0 });
   }
 
+  return { tSnap, term, person, fremd, terminalId, uid };
+}
+
+/* ── Welcher Schritt darf jetzt kommen? (Runde 189) ──
+   Aus dem Betrieb, 22.10.2026: „so wie crewmeister funktioniert am
+   besten". Dort stehen nach dem Kommen ZWEI Knöpfe: Pause und
+   Feierabend.
+
+   Hier stand bis Runde 188 nur naechsterSchritt(), und der kennt den
+   Feierabend nicht: kommen → pause → zurueck → pause → … Am Terminal und
+   am Handy liess sich „gehen" gar nicht stempeln; jeder Tag endete mit
+   „Feierabend fehlt", bis die Leitung ihn nachtrug.
+
+   Jetzt sagt der Aufruf, was er will (`art`), und der Server prüft, ob
+   das gerade passt. Ohne `art` bleibt es beim alten Verhalten — ein
+   Tablet mit der alten Seite im Speicher stempelt weiter wie bisher. */
+function erlaubteSchritte(letzteArt) {
+  if (!letzteArt || letzteArt === 'gehen') return ['kommen'];
+  if (letzteArt === 'kommen' || letzteArt === 'zurueck') return ['pause', 'gehen'];
+  if (letzteArt === 'pause') return ['zurueck', 'gehen'];
+  return ['kommen'];
+}
+const SCHRITT_WORT = { kommen: 'Kommen', pause: 'Pause', zurueck: 'Zurück', gehen: 'Feierabend' };
+function schrittWaehlen(letzteArt, wunsch) {
+  if (wunsch === undefined || wunsch === null || wunsch === '') return naechsterSchritt(letzteArt);
+  const w = String(wunsch);
+  const erlaubt = erlaubteSchritte(letzteArt);
+  if (!erlaubt.includes(w)) {
+    throw new functions.https.HttpsError('failed-precondition',
+      (SCHRITT_WORT[w] ? '„' + SCHRITT_WORT[w] + '" passt gerade nicht' : 'Diesen Schritt gibt es nicht') +
+      ' — dran ist: ' + erlaubt.map((a) => SCHRITT_WORT[a]).join(' oder ') + '.');
+  }
+  return w;
+}
+
+/* Der Stand eines Tages aus seinen Stempeln: letzter Schritt, seit wann,
+   und die Arbeitszeit bis `bis`. Ungültig markierte zählen nicht. */
+function tagesStand(stempel, bis) {
+  const l = stempel.filter((z) => !z.storno && (z.ts || 0) <= bis)
+    .sort((a, b) => (a.ts || 0) - (b.ts || 0));
+  let arbeit = 0, seit = 0, vorher = null, beginn = 0;
+  for (const z of l) {
+    if (vorher === 'kommen' || vorher === 'zurueck') arbeit += (z.ts || 0) - seit;
+    if (!beginn && z.art === 'kommen') beginn = z.ts || 0;
+    seit = z.ts || 0; vorher = z.art || null;
+  }
+  if (vorher === 'kommen' || vorher === 'zurueck') arbeit += bis - seit;
+  return { letzteArt: vorher, seit: vorher ? seit : 0, beginn, arbeitMs: Math.max(0, arbeit) };
+}
+
+exports.stempeln = region.https.onCall(async (data, context) => {
+  const { firma } = await anruferProfil(context);
+  const ohneNetz = !!(data && data.offlineTs !== undefined && data.offlineTs !== null);
+  const wann = ohneNetz ? offlineZeitPruefen(data.offlineTs, Date.now()) : Date.now();
+  const offlineId = ohneNetz ? String((data && data.offlineId) || '').trim().slice(0, 40) : '';
+  const { tSnap, term, person, fremd, terminalId, uid } = await terminalUndPinPruefen(firma, data);
+
   /* 4. Schreiben.
 
      OHNE orderBy, und das ist keine Stilfrage. Hier stand
@@ -5370,9 +5479,9 @@ exports.stempeln = region.https.onCall(async (data, context) => {
   let letzteArt = null, letzteZeit = -1;
   heute.forEach((d) => {
     const z = d.data() || {};
-    if ((z.ts || 0) <= wann && (z.ts || 0) > letzteZeit) { letzteZeit = z.ts || 0; letzteArt = z.art || null; }
+    if (!z.storno && (z.ts || 0) <= wann && (z.ts || 0) > letzteZeit) { letzteZeit = z.ts || 0; letzteArt = z.art || null; }
   });
-  const art = naechsterSchritt(letzteArt);
+  const art = schrittWaehlen(letzteArt, data && data.art);
 
   const jetzt = Date.now();
   await W(firma).collection('zeiten').add(Object.assign({
@@ -5392,6 +5501,37 @@ exports.stempeln = region.https.onCall(async (data, context) => {
   await tSnap.ref.update({ letzterStempel: jetzt });
 
   return { ok: true, art, ts: wann, name: person.name || '', fremd, ohneNetz };
+});
+
+/* ── Wo stehe ich gerade? (Runde 189) ──
+   Am Terminal: Name antippen, PIN, und DANN erst sieht man den eigenen
+   Stand und die passenden Knöpfe — so wie bei Crewmeister. Vorher stand
+   „im Dienst / noch nicht da" an jeder Kachel, für jeden am Tresen
+   lesbar. Aus dem Betrieb, 22.10.2026, auf die Frage, ob das weg soll:
+   „ja".
+
+   Dazu kam ein zweiter Grund, der beim Nachlesen auffiel: das Tablet
+   ist ein ganz normales Mitarbeiter-Konto, und `zeiten` darf es nur für
+   sich selbst lesen (firestore.rules). Die Kacheln zeigten in der
+   Produktion deshalb vermutlich bei allen „noch nicht da". Nachweisen
+   lässt sich das hier nicht; die Regel ist der Beleg.
+
+   Dieselben drei Schlösser wie beim Stempeln: Gerät, Person, PIN — mit
+   derselben Bremse. Ohne sie wäre das hier ein Weg, PINs durchzuprobieren,
+   ohne je einen Stempel zu hinterlassen. */
+exports.stempelStand = region.https.onCall(async (data, context) => {
+  const { firma } = await anruferProfil(context);
+  const { person, uid } = await terminalUndPinPruefen(firma, data);
+  const jetzt = Date.now();
+  const tag = berlinDatum(new Date(jetzt));
+  const heute = await W(firma).collection('zeiten')
+    .where('uid', '==', uid).where('tag', '==', tag).get();
+  const st = tagesStand(heute.docs.map((d) => d.data() || {}), jetzt);
+  return {
+    ok: true, name: person.name || '',
+    letzteArt: st.letzteArt, seit: st.seit, beginn: st.beginn, arbeitMs: st.arbeitMs,
+    erlaubt: erlaubteSchritte(st.letzteArt), jetzt
+  };
 });
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -5446,12 +5586,15 @@ function berlinZeitpunkt(tag, uhr) {
   return ts;
 }
 
-function leitungFuerStudio(profil, studioKey) {
-  const darf = profil.role === 'chef' ||
-    (profil.role === 'leiter' && (profil.studioKeys || []).includes(studioKey));
-  if (!darf) {
+/* Runde 215: NUR die Geschäftsführung. Aus dem Betrieb, 22.10.2026, auf
+   die Frage, ob die Studioleitung fremde Stempel weiter direkt nachtragen
+   darf: „nur führung". Bis Runde 210 durfte es die Leitung in ihren
+   Studios (P-09). Der Name bleibt, damit die Aufrufer unverändert lesen;
+   `studioKey` wird nicht mehr gebraucht. */
+function leitungFuerStudio(profil, studioKey) { // eslint-disable-line no-unused-vars
+  if (profil.role !== 'chef') {
     throw new functions.https.HttpsError('permission-denied',
-      'Korrigieren darf nur die Leitung dieses Studios.');
+      'Korrigieren darf nur die Geschäftsführung.');
   }
 }
 
@@ -5462,6 +5605,19 @@ function korrekturGrund(data) {
       'Bitte kurz den Grund angeben, z. B. „Ausstempeln vergessen, laut Schichtplan bis 18 Uhr".');
   }
   return grund;
+}
+
+/* ── Ist der Monat abgeschlossen? (Runde 208) ──
+   Nach dem Monatsabschluss durch die Geschäftsführung ändert sich in
+   diesem Monat nichts mehr — weder Nachtrag noch Storno noch Antrag. Das
+   ist der Sinn des Abschlusses: die Zahl, die ans Lohnbüro ging, bleibt
+   die Zahl. Wer doch etwas ändern muss, öffnet den Monat mit Grund. */
+async function monatOffenPruefen(firma, monat) {
+  const snap = await W(firma).collection('zeitAbschluesse').doc(String(monat)).get();
+  if (snap.exists && (snap.data() || {}).abgeschlossen === true) {
+    throw new functions.https.HttpsError('failed-precondition',
+      'Der Monat ' + monat + ' ist abgeschlossen. Die Geschäftsführung kann ihn mit Grund wieder öffnen.');
+  }
 }
 
 exports.zeitNachtragen = region.https.onCall(async (data, context) => {
@@ -5499,6 +5655,7 @@ exports.zeitNachtragen = region.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('invalid-argument',
       'Ein Stempel in der Zukunft lässt sich nicht nachtragen.');
   }
+  await monatOffenPruefen(firma, tag.slice(0, 7));
   if (jetzt - ts > KORREKTUR_TAGE_MAX * 86400000) {
     throw new functions.https.HttpsError('invalid-argument',
       'Nachtragen geht bis ' + KORREKTUR_TAGE_MAX + ' Tage zurück.');
@@ -5532,10 +5689,346 @@ exports.zeitStornieren = region.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('failed-precondition',
       'Dieser Stempel ist schon als ungültig markiert.');
   }
+  await monatOffenPruefen(firma, String(z.tag || '').slice(0, 7));
   /* Nur dieses eine Feld kommt dazu. Zeitpunkt, Art, Gerät und Person
      bleiben, wie sie gestempelt wurden. */
   await ref.update({ storno: { von: uid, vonName: profil.name || '', am: Date.now(), grund } });
   return { ok: true };
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+   KORREKTURANTRAG (Runde 204)
+
+   Aus dem Betrieb, 22.10.2026, auf die Frage, wer einen Antrag der
+   Mitarbeiter bestätigt: „nur geschäftsführung".
+
+   Wie bei Crewmeister trägt die Person selbst ein, was fehlt („Feierabend
+   16:30 vergessen") — aber es wird NICHT sofort zu einem Stempel. Erst
+   wenn die Geschäftsführung annimmt, legt der Server ihn an, und zwar wie
+   zeitNachtragen: neuer Stempel mit quelle 'korrektur', Grund, wer, wann.
+   Der Urbestand bleibt unberührt.
+
+   `zeitAntraege` steht in firestore.rules auf write:false für alle, in
+   beiden Welten. Lesen: die Person ihre eigenen, die Geschäftsführung
+   alle des Betriebs.
+
+   Zurück bis ANTRAG_TAGE_MAX Tage — wie Crewmeister (31). Weiter zurück
+   ist ein Fall für ein Gespräch, nicht für ein Formular. */
+const ANTRAG_TAGE_MAX = 31;
+const ANTRAG_OFFEN_MAX = 20;
+function antragUhrPruefen(data) {
+  const tag = String((data && data.tag) || '').trim();
+  const uhr = String((data && data.uhr) || '').trim();
+  const art = String((data && data.art) || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(tag) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(uhr)) {
+    throw new functions.https.HttpsError('invalid-argument', 'Tag oder Uhrzeit fehlt oder stimmt nicht.');
+  }
+  if (ZEIT_ARTEN.indexOf(art) < 0) {
+    throw new functions.https.HttpsError('invalid-argument', 'Unbekannte Art des Stempels.');
+  }
+  const ts = berlinZeitpunkt(tag, uhr);
+  const jetzt = Date.now();
+  if (ts > jetzt) {
+    throw new functions.https.HttpsError('invalid-argument', 'Ein Stempel in der Zukunft lässt sich nicht beantragen.');
+  }
+  if (jetzt - ts > ANTRAG_TAGE_MAX * 86400000) {
+    throw new functions.https.HttpsError('invalid-argument',
+      'Beantragen geht bis ' + ANTRAG_TAGE_MAX + ' Tage zurück. Für Älteres bitte die Geschäftsführung ansprechen.');
+  }
+  return { tag, uhr, art, ts };
+}
+
+exports.zeitAntragStellen = region.https.onCall(async (data, context) => {
+  const { uid, profil, firma } = await anruferProfil(context);
+  if (profil.aktiv === false) {
+    throw new functions.https.HttpsError('permission-denied', 'Dieser Zugang ist gesperrt.');
+  }
+  const { tag, uhr, art, ts } = antragUhrPruefen(data);
+  const grund = korrekturGrund(data);
+  await monatOffenPruefen(firma, tag.slice(0, 7));
+  const eigene = profil.studioKeys || [];
+  let studioKey = String((data && data.studioKey) || '').trim();
+  /* Das Studio: angegeben und eines der eigenen — sonst das erste
+     eigene. Ein Antrag für ein fremdes Studio wäre ein Weg, Stempel
+     dorthin zu schreiben, wo man nicht arbeitet. */
+  if (!studioKey || eigene.indexOf(studioKey) < 0) studioKey = eigene[0] || '';
+  if (!/^studio-\d+$/.test(studioKey)) {
+    throw new functions.https.HttpsError('failed-precondition', 'Dir ist kein Studio zugeordnet.');
+  }
+  const offen = await W(firma).collection('zeitAntraege')
+    .where('uid', '==', uid).where('status', '==', 'offen').get();
+  if (offen.size >= ANTRAG_OFFEN_MAX) {
+    throw new functions.https.HttpsError('resource-exhausted',
+      'Es sind schon ' + ANTRAG_OFFEN_MAX + ' Anträge offen. Bitte warten, bis die Geschäftsführung sie bearbeitet hat.');
+  }
+  const doppelt = offen.docs.find((d) => {
+    const a = d.data() || {};
+    return a.tag === tag && a.art === art && a.uhr === uhr;
+  });
+  if (doppelt) return { ok: true, id: doppelt.id, schonDa: true };
+  const ref = await W(firma).collection('zeitAntraege').add({
+    uid, name: profil.name || '', studioKey,
+    tag, monat: tag.slice(0, 7), art, uhr, ts, grund,
+    status: 'offen', erstellt: Date.now()
+  });
+  return { ok: true, id: ref.id };
+});
+
+/* Zurückziehen: nur die Person selbst, nur solange offen. Der Antrag
+   bleibt mit Status stehen — wie beim Stempel geht nichts still weg. */
+exports.zeitAntragZurueckziehen = region.https.onCall(async (data, context) => {
+  const { uid, firma } = await anruferProfil(context);
+  const id = String((data && data.id) || '').trim();
+  if (!id) throw new functions.https.HttpsError('invalid-argument', 'Kein Antrag angegeben.');
+  const ref = W(firma).collection('zeitAntraege').doc(id);
+  const snap = await ref.get();
+  if (!snap.exists || (snap.data() || {}).uid !== uid) {
+    throw new functions.https.HttpsError('not-found', 'Diesen Antrag gibt es nicht.');
+  }
+  if ((snap.data() || {}).status !== 'offen') {
+    throw new functions.https.HttpsError('failed-precondition', 'Dieser Antrag ist schon entschieden.');
+  }
+  await ref.update({ status: 'zurueckgezogen', entschiedenAm: Date.now() });
+  return { ok: true };
+});
+
+/* Entscheiden: NUR die Geschäftsführung (role 'chef'). Angenommen →
+   ein neuer Stempel wie bei zeitNachtragen; abgelehnt → mit Antwort. In
+   einer Transaktion, damit ein doppelter Klick nicht zwei Stempel macht. */
+exports.zeitAntragEntscheiden = region.https.onCall(async (data, context) => {
+  const { uid, profil, firma } = await anruferProfil(context);
+  if (profil.role !== 'chef') {
+    throw new functions.https.HttpsError('permission-denied',
+      'Korrekturanträge entscheidet die Geschäftsführung.');
+  }
+  const id = String((data && data.id) || '').trim();
+  if (!id) throw new functions.https.HttpsError('invalid-argument', 'Kein Antrag angegeben.');
+  const annehmen = data && data.annehmen === true;
+  const antwort = String((data && data.antwort) || '').trim().slice(0, 200);
+  if (!annehmen && antwort.length < 5) {
+    throw new functions.https.HttpsError('invalid-argument',
+      'Bitte kurz sagen, warum der Antrag abgelehnt wird.');
+  }
+  const ref = W(firma).collection('zeitAntraege').doc(id);
+  const zeitRef = W(firma).collection('zeiten').doc();
+  const jetzt = Date.now();
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists) throw new functions.https.HttpsError('not-found', 'Diesen Antrag gibt es nicht.');
+    const a = snap.data() || {};
+    /* Angenommen würde ein Stempel in einem abgeschlossenen Monat
+       entstehen; abgelehnt ändert an den Stunden nichts und geht. */
+    if (annehmen) {
+      const ab = await tx.get(W(firma).collection('zeitAbschluesse').doc(String(a.tag || '').slice(0, 7)));
+      if (ab.exists && (ab.data() || {}).abgeschlossen === true) {
+        throw new functions.https.HttpsError('failed-precondition',
+          'Der Monat ' + String(a.tag || '').slice(0, 7) + ' ist abgeschlossen. Erst wieder öffnen, dann annehmen.');
+      }
+    }
+    if (a.status !== 'offen') {
+      throw new functions.https.HttpsError('failed-precondition', 'Dieser Antrag ist schon entschieden.');
+    }
+    if (a.uid === uid) {
+      /* Auch die Geschäftsführung bestätigt den eigenen Antrag nicht
+         selbst — das wäre genau die Änderung ohne zweite Person. Sie
+         trägt ihre eigenen Zeiten wie bisher über „Nachtragen" ein. */
+      throw new functions.https.HttpsError('permission-denied',
+        'Den eigenen Antrag entscheidet jemand anderes aus der Geschäftsführung.');
+    }
+    const entscheid = { entschiedenVon: uid, entschiedenVonName: profil.name || '', entschiedenAm: jetzt };
+    if (!annehmen) {
+      tx.update(ref, Object.assign({ status: 'abgelehnt', antwort }, entscheid));
+      return { ok: true, status: 'abgelehnt' };
+    }
+    const pSnap = await tx.get(db.collection('users').doc(a.uid));
+    const person = pSnap.exists ? (pSnap.data() || {}) : {};
+    tx.set(zeitRef, {
+      uid: a.uid, name: a.name || person.name || '', studioKey: a.studioKey,
+      art: a.art, ts: a.ts, tag: a.tag, monat: a.tag.slice(0, 7),
+      fremd: !(person.studioKeys || []).includes(a.studioKey),
+      quelle: 'korrektur', antragId: id,
+      grund: 'Antrag: ' + (a.grund || ''),
+      korrigiertVon: uid, korrigiertVonName: profil.name || '', korrigiertAm: jetzt
+    });
+    tx.update(ref, Object.assign({ status: 'angenommen', zeitId: zeitRef.id }, antwort ? { antwort } : {}, entscheid));
+    return { ok: true, status: 'angenommen', zeitId: zeitRef.id };
+  });
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+   MONATSABSCHLUSS (Runde 208)
+
+   Aus dem Betrieb, 22.10.2026, auf die Frage nach Export und Abschluss:
+   „mach beides". Die Geschäftsführung schliesst einen VERGANGENEN Monat
+   ab. Gespeichert wird die Übersicht, wie sie in dem Moment dastand —
+   je Person Ist, Soll, Gutschrift, Saldo, Übertrag, Konto. Der nächste
+   Monat liest daraus seinen Übertrag.
+
+   Die Zahlen rechnet die App (dieselbe Rechnung, die sie anzeigt:
+   Pausenregel, Soll aus den Vertragsstunden). Der Server prüft Form und
+   Grenzen und dass der Monat vorbei ist; er rechnet nicht ein zweites
+   Mal nach. Das ist eine bewusste Grenze: die Zahl, die die
+   Geschäftsführung gesehen und bestätigt hat, ist die, die stehen bleibt.
+
+   `zeitAbschluesse` in firestore.rules: lesen nur die Geschäftsführung,
+   schreiben niemand (nur diese Funktionen). */
+const ABSCHLUSS_ZEILEN_MAX = 500;
+function abschlussZahl(x) {
+  const n = Math.round(Number(x));
+  if (!Number.isFinite(n) || Math.abs(n) > 100000 * 60) {
+    throw new functions.https.HttpsError('invalid-argument', 'Eine Zahl im Abschluss stimmt nicht.');
+  }
+  return n;
+}
+function abschlussZeilenPruefen(zeilen) {
+  if (!Array.isArray(zeilen) || !zeilen.length || zeilen.length > ABSCHLUSS_ZEILEN_MAX) {
+    throw new functions.https.HttpsError('invalid-argument', 'Der Abschluss enthält keine Personen.');
+  }
+  return zeilen.map((z) => ({
+    uid: String((z && z.uid) || '').slice(0, 128),
+    name: String((z && z.name) || '').slice(0, 120),
+    /* Alles in Minuten, ganze Zahlen. */
+    ist: abschlussZahl(z.ist), soll: abschlussZahl(z.soll), gutschrift: abschlussZahl(z.gutschrift),
+    saldo: abschlussZahl(z.saldo), uebertrag: abschlussZahl(z.uebertrag), konto: abschlussZahl(z.konto),
+    tage: abschlussZahl(z.tage), offen: abschlussZahl(z.offen)
+  })).filter((z) => z.uid);
+}
+
+exports.monatAbschliessen = region.https.onCall(async (data, context) => {
+  const { uid, profil, firma } = await anruferProfil(context);
+  if (profil.role !== 'chef') {
+    throw new functions.https.HttpsError('permission-denied', 'Den Monat schliesst die Geschäftsführung ab.');
+  }
+  const monat = String((data && data.monat) || '').trim();
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(monat)) {
+    throw new functions.https.HttpsError('invalid-argument', 'Kein gültiger Monat.');
+  }
+  if (monat >= berlinDatum(new Date()).slice(0, 7)) {
+    throw new functions.https.HttpsError('failed-precondition',
+      'Abschliessen geht erst, wenn der Monat vorbei ist.');
+  }
+  const zeilen = abschlussZeilenPruefen(data && data.zeilen);
+  const ref = W(firma).collection('zeitAbschluesse').doc(monat);
+  const jetzt = Date.now();
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const alt = snap.exists ? (snap.data() || {}) : null;
+    if (alt && alt.abgeschlossen === true) {
+      throw new functions.https.HttpsError('failed-precondition', 'Dieser Monat ist schon abgeschlossen.');
+    }
+    const verlauf = ((alt && alt.verlauf) || []).slice(-20);
+    verlauf.push({ art: 'abgeschlossen', von: uid, vonName: profil.name || '', am: jetzt });
+    tx.set(ref, { monat, abgeschlossen: true, zeilen, von: uid, vonName: profil.name || '', am: jetzt, verlauf });
+    return { ok: true, monat, personen: zeilen.length };
+  });
+});
+
+exports.monatOeffnen = region.https.onCall(async (data, context) => {
+  const { uid, profil, firma } = await anruferProfil(context);
+  if (profil.role !== 'chef') {
+    throw new functions.https.HttpsError('permission-denied', 'Den Monat öffnet die Geschäftsführung.');
+  }
+  const monat = String((data && data.monat) || '').trim();
+  const grund = korrekturGrund(data);
+  const ref = W(firma).collection('zeitAbschluesse').doc(monat);
+  const snap = await ref.get();
+  if (!snap.exists || (snap.data() || {}).abgeschlossen !== true) {
+    throw new functions.https.HttpsError('failed-precondition', 'Dieser Monat ist nicht abgeschlossen.');
+  }
+  const alt = snap.data() || {};
+  const verlauf = (alt.verlauf || []).slice(-20);
+  verlauf.push({ art: 'geoeffnet', von: uid, vonName: profil.name || '', am: Date.now(), grund });
+  /* Die alten Zahlen bleiben stehen — wer wieder abschliesst, ersetzt sie;
+     bis dahin sieht man, was zuletzt galt. */
+  await ref.update({ abgeschlossen: false, verlauf });
+  return { ok: true };
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+   MEIN KONTO (Runde 222)
+
+   Aus dem Betrieb, 23.10.2026: „mitarbeiter können sich nur einstempeln
+   und ihre eigenen stunden sehen ob plus oder minus und halt alles was
+   sie sonst bräuchten".
+
+   Was die Person dafür braucht, liegt an drei Stellen, die sie selbst
+   NICHT lesen darf — und das bleibt so:
+     · zeitAbschluesse   alle Konten eines Monats nebeneinander
+     · lohnEinstellungen Soll je Wochentag und Urlaubsanspruch aller
+     · planerTeam        die Vertragsstunden aller
+   Diese Funktion liest sie mit Serverrechten und gibt NUR die eigene
+   Zeile heraus. Eine neue Sammlung, die man in beiden Regel-Welten
+   nachziehen müsste, gibt es dafür nicht — und auch keine Kopie, die
+   neben dem Original veralten kann.
+
+   Den laufenden Monat rechnet die App selbst (eigene Stempel, eigene
+   Abwesenheiten, Feiertage) mit derselben Rechnung wie die
+   Geschäftsführung; er heisst dort „vorläufig", bis abgeschlossen ist.
+   ══════════════════════════════════════════════════════════════════════ */
+const KONTO_MONATE_MAX = 12;
+function monateVor(monat, n) {
+  const j = Number(monat.slice(0, 4)), m = Number(monat.slice(5, 7));
+  const liste = [];
+  for (let i = 1; i <= n; i++) {
+    const d = new Date(Date.UTC(j, m - 1 - i, 1));
+    liste.push(d.toISOString().slice(0, 7));
+  }
+  return liste;
+}
+/* Aus einem gespeicherten Abschluss die eine Zeile — nur Zahlen, kein
+   Name eines anderen. Ein offener (wieder geöffneter) Monat zählt
+   nicht: seine Zahlen gelten gerade nicht. */
+function eigeneAbschlussZeile(abschluss, uid) {
+  if (!abschluss || abschluss.abgeschlossen !== true) return null;
+  const z = (abschluss.zeilen || []).find((x) => x && x.uid === uid);
+  if (!z) return null;
+  const zahl = (x) => (Number.isFinite(Number(x)) ? Math.round(Number(x)) : 0);
+  return { monat: String(abschluss.monat || ''), ist: zahl(z.ist), soll: zahl(z.soll),
+    gutschrift: zahl(z.gutschrift), saldo: zahl(z.saldo), uebertrag: zahl(z.uebertrag),
+    konto: zahl(z.konto), am: zahl(abschluss.am) };
+}
+/* Soll je Wochentag (1 = Montag … 7 = Sonntag, Minuten) und der
+   Urlaubsanspruch im Jahr (Tage, Schlüssel u). */
+function eigeneRegel(regel) {
+  if (!regel || typeof regel !== 'object') return { tage: null, urlaubJahr: null };
+  const tage = {};
+  let hat = false;
+  for (let k = 1; k <= 7; k++) {
+    const v = Math.round(Number(regel[k]) || 0);
+    tage[k] = v > 0 && v <= 14 * 60 ? v : 0;
+    if (tage[k] > 0) hat = true;
+  }
+  const u = Number(regel.u);
+  return { tage: hat ? tage : null, urlaubJahr: Number.isFinite(u) && u > 0 && u <= 60 ? Math.round(u * 2) / 2 : null };
+}
+
+exports.meinKonto = region.https.onCall(async (data, context) => {
+  const { uid, firma } = await anruferProfil(context);
+  const monat = berlinDatum(new Date()).slice(0, 7);
+  const refs = monateVor(monat, KONTO_MONATE_MAX)
+    .map((m) => W(firma).collection('zeitAbschluesse').doc(m));
+  const [abschluesse, regelnSnap, teamSnap] = await Promise.all([
+    db.getAll(...refs),
+    W(firma).collection('lohnEinstellungen').doc('zeitregeln').get(),
+    W(firma).collection('planerTeam').where('uid', '==', uid).get()
+  ]);
+  const monate = abschluesse
+    .map((s) => (s.exists ? eigeneAbschlussZeile(Object.assign({ monat: s.id }, s.data() || {}), uid) : null))
+    .filter(Boolean)
+    .sort((a, b) => (a.monat < b.monat ? -1 : 1));
+  const regeln = (regelnSnap.exists && (regelnSnap.data() || {}).regeln) || {};
+  const regel = eigeneRegel(regeln[uid]);
+  /* Steht jemand in mehreren Studios im Planer, gilt der Eintrag mit
+     Vertragsstunden — wie in kontoRechnen(), wo der letzte gewinnt. */
+  let vertrag = { wocheStd: 0, maxMonatStd: 0, maxTageWoche: 0 };
+  teamSnap.docs.forEach((d) => {
+    const p = d.data() || {};
+    if (Number(p.wocheStd) > 0 || Number(p.maxMonatStd) > 0) {
+      vertrag = { wocheStd: Number(p.wocheStd) || 0, maxMonatStd: Number(p.maxMonatStd) || 0,
+        maxTageWoche: Number(p.maxTageWoche) || 0 };
+    }
+  });
+  return { ok: true, monat, monate, regel: regel.tage, urlaubJahr: regel.urlaubJahr, vertrag };
 });
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -6063,27 +6556,12 @@ async function schulungTestStarten(uid, profil, firma, modulId) {
            ohneVideoSperre: profil.role === 'chef', test: true };
 }
 
-/* ── Anfangen ──
-   Der einzige Weg, auf dem ein Durchlauf entsteht. In firestore.rules
-   ist `create` auf `schulungLaeufe` fuer JEDEN gesperrt — auch fuer die
-   Leitung. Sonst koennte man sich mit der Browser-Konsole einen
-   fertigen, bestandenen Durchlauf auf einen fremden Namen schreiben,
-   und die ganze Liste waere eine Behauptung. */
-exports.schulungStart = region.https.onCall(async (data, context) => {
-  const { uid, profil, firma } = await anruferProfil(context);
-  const roh = schulungCodeNormal(data && data.code);
-  const modulId = String((data && data.modul) || '');
-  if (!modulId) throw new functions.https.HttpsError('invalid-argument', 'Kein Modul angegeben.');
-  if (roh.length !== SCHULUNG_KENNUNG_LAENGE + SCHULUNG_GEHEIM_LAENGE) {
-    throw new functions.https.HttpsError('invalid-argument',
-      'Der Code besteht aus ' + (SCHULUNG_KENNUNG_LAENGE + SCHULUNG_GEHEIM_LAENGE) +
-      ' Zeichen. Bitte noch einmal ansehen.');
-  }
+/* ── Wer steckt hinter diesem Code? ──
+   Seit Runde 201 an ZWEI Stellen gebraucht: beim Anfangen und beim
+   Auffrischen. Eine zweite Abschrift der Prüfung wäre die Stelle, an der
+   eines Tages die Bremse fehlt — deshalb steht sie genau einmal hier. */
+async function schulungTeilnehmerAusCode(firma, uid, roh) {
   const F = W(firma);
-  /* Der Testcode kommt VOR der Bremse: „IMMER" heisst auch nach zehn
-     Fehlversuchen an diesem Gerät. Raten muss ihn niemand — er steht
-     offen im Repository. Die Schranke ist die Rolle, nicht der Code. */
-  if (roh === SCHULUNG_TESTCODE) return schulungTestStarten(uid, profil, firma, modulId);
   const bremse = await schulungVersuchPruefen(firma, uid);
 
   const kennung = roh.slice(0, SCHULUNG_KENNUNG_LAENGE);
@@ -6134,6 +6612,31 @@ exports.schulungStart = region.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('permission-denied',
       'Dieser Code ist stillgelegt. Bitte bei der Leitung melden.');
   }
+  return { tSnap, t };
+}
+
+/* ── Anfangen ──
+   Der einzige Weg, auf dem ein Durchlauf entsteht. In firestore.rules
+   ist `create` auf `schulungLaeufe` fuer JEDEN gesperrt — auch fuer die
+   Leitung. Sonst koennte man sich mit der Browser-Konsole einen
+   fertigen, bestandenen Durchlauf auf einen fremden Namen schreiben,
+   und die ganze Liste waere eine Behauptung. */
+exports.schulungStart = region.https.onCall(async (data, context) => {
+  const { uid, profil, firma } = await anruferProfil(context);
+  const roh = schulungCodeNormal(data && data.code);
+  const modulId = String((data && data.modul) || '');
+  if (!modulId) throw new functions.https.HttpsError('invalid-argument', 'Kein Modul angegeben.');
+  if (roh.length !== SCHULUNG_KENNUNG_LAENGE + SCHULUNG_GEHEIM_LAENGE) {
+    throw new functions.https.HttpsError('invalid-argument',
+      'Der Code besteht aus ' + (SCHULUNG_KENNUNG_LAENGE + SCHULUNG_GEHEIM_LAENGE) +
+      ' Zeichen. Bitte noch einmal ansehen.');
+  }
+  const F = W(firma);
+  /* Der Testcode kommt VOR der Bremse: „IMMER" heisst auch nach zehn
+     Fehlversuchen an diesem Gerät. Raten muss ihn niemand — er steht
+     offen im Repository. Die Schranke ist die Rolle, nicht der Code. */
+  if (roh === SCHULUNG_TESTCODE) return schulungTestStarten(uid, profil, firma, modulId);
+  const { tSnap, t } = await schulungTeilnehmerAusCode(firma, uid, roh);
 
   /* ── Warum das Modul hier NICHT ueberprueft wird ──
      Der Grundstock der Schulungen liegt als Datei (schulungen-basis.js)
@@ -6166,6 +6669,40 @@ exports.schulungStart = region.https.onCall(async (data, context) => {
     .where('teilnehmer', '==', tSnap.id).where('modul', '==', modulId).get();
 
   const jetzt = Date.now();
+  /* Die Geschäftsführung muss ein Video nicht bis zum Ende laufen
+     lassen, bevor „Weiter" geht (30.9.2026, aus dem Betrieb: „weiter zu
+     sperren ist gut aber ich würde die funktion dann bei den chefs
+     aussen vor lassen"). Entscheidend ist, WER die Schulung macht — der
+     Teilnehmer und sein verknüpftes Konto —, nicht, auf wessen Gerät
+     sie läuft: sonst klickte sich jeder am Rechner des Chefs durch. */
+  let ohneVideoSperre = false;
+  if (t.uid) {
+    const tu = await db.collection('users').doc(String(t.uid)).get();
+    const tp = tu.exists ? (tu.data() || {}) : {};
+    ohneVideoSperre = tp.role === 'chef' && (tp.firma || 'koerperformen') === firma;
+  }
+  /* ── Weitermachen statt von vorn (Runde 201) ──
+     „Das Beratungsgespräch" hat 17 Schritte und 67 Fragen, etwa
+     150 Minuten. Zwischen zwei Kunden schafft das niemand am Stück. Ein
+     angefangener Durchlauf derselben Person, der weniger als 30 Tage alt
+     ist und schon etwas enthält, wird deshalb FORTGESETZT: dieselbe
+     Kennung, derselbe Durchgang, die gesehenen Schritte und Antworten
+     bleiben. Das Gerät wird auf das neue umgeschrieben — sonst liessen
+     die Regeln das neue Gerät nicht hineinschreiben (`geraetUid`). */
+  const offen = schulungOffenerLauf(frueher.docs.map((d) => Object.assign({ id: d.id }, d.data() || {})), jetzt);
+  if (offen) {
+    await F.collection('schulungLaeufe').doc(offen.id).update({
+      geraetUid: uid, geraetName: profil.name || ''
+    });
+    return {
+      ok: true, lauf: offen.id, name: t.name || '', durchgang: offen.durchgang || 1, ohneVideoSperre,
+      fortsetzen: {
+        schritteGesehen: Array.isArray(offen.schritteGesehen) ? offen.schritteGesehen : [],
+        fragen: Array.isArray(offen.fragen) ? offen.fragen : [],
+        aktivMs: offen.aktivMs || 0
+      }
+    };
+  }
   const lauf = F.collection('schulungLaeufe').doc();
   await lauf.set({
     modul: modulId, modulTitel: (m && m.titel) || '', kategorie: (m && m.kategorie) || '',
@@ -6183,20 +6720,308 @@ exports.schulungStart = region.https.onCall(async (data, context) => {
     punkte: 0, bestanden: false, status: 'laeuft',
     ts: jetzt
   });
-  /* Die Geschäftsführung muss ein Video nicht bis zum Ende laufen
-     lassen, bevor „Weiter" geht (30.9.2026, aus dem Betrieb: „weiter zu
-     sperren ist gut aber ich würde die funktion dann bei den chefs
-     aussen vor lassen"). Entscheidend ist, WER die Schulung macht — der
-     Teilnehmer und sein verknüpftes Konto —, nicht, auf wessen Gerät
-     sie läuft: sonst klickte sich jeder am Rechner des Chefs durch. */
-  let ohneVideoSperre = false;
-  if (t.uid) {
-    const tu = await db.collection('users').doc(String(t.uid)).get();
-    const tp = tu.exists ? (tu.data() || {}) : {};
-    ohneVideoSperre = tp.role === 'chef' && (tp.firma || 'koerperformen') === firma;
-  }
   return { ok: true, lauf: lauf.id, name: t.name || '', durchgang: frueher.size + 1, ohneVideoSperre };
 });
+
+/* ══════════════════════════════════════════════════════════════════════
+   AUFFRISCHEN: WENIGE FRAGEN, IN WACHSENDEN ABSTÄNDEN (Runde 201)
+
+   Aus dem Betrieb, 22.10.2026, auf den Plan „aus der einen Frage nach
+   14 Tagen wird eine kleine Runde“: „plan klingt gut“ — und auf die
+   Frage, wo die Antworten liegen sollen: „das was leichter ist für
+   leute ohne zugang“.
+
+   Leute ohne Zugang haben kein Konto. Sie haben nur ihren Code — also
+   hängt der Lernplan am TEILNEHMER, nicht am Gerät und nicht am Konto.
+   Am Studio-Tablet tippt man denselben Code wie beim Anfangen; wer ein
+   verknüpftes Konto hat, braucht ihn nicht. Auf dem Gerät allein ginge
+   es nicht: das Tablet weiss nicht, wer davor sitzt, und am nächsten
+   Tag sitzt jemand anderes davor.
+
+   Was die Studien sagen und woraus die Zahlen folgen:
+   - Abfragen hält länger als Wiederlesen (Roediger & Karpicke 2006:
+     nach zwei Tagen und nach einer Woche liegt Abfragen vorn).
+   - Verteilt hält länger als am Stück; der beste Abstand wächst mit der
+     Zeit, über die man es behalten will (Cepeda u. a. 2006, 2008).
+   - Nach jeder Antwort gleich die Lösung zeigen (Butler & Roediger
+     2008) — das macht die App.
+   Die Tage 2 · 7 · 30 · 90 · 180 sind daraus ABGELEITET, nicht
+   gemessen. Wer sie ändert, ändert nur die Liste unten.
+
+   - Je Modul höchstens sechs Fragen im Plan, die beim Durchlauf
+     danebengegangenen zuerst. Sonst brächte „Das Beratungsgespräch“ mit
+     67 Fragen den Plan auf Wochen hinaus allein.
+   - Je Runde höchstens drei, aus verschiedenen Modulen gemischt.
+   - Richtig: eine Stufe weiter. Falsch: zurück auf zwei Tage.
+
+   Was gespeichert wird: je Teilnehmer, welche Frage auf welcher Stufe
+   steht und wann sie wieder dran ist (`schulungLernplan`). Die Antwort
+   selbst nicht. Lesen darf den Plan im Browser niemand, auch nicht die
+   Leitung („Wird es als Kontrolle empfunden, schadet es.“, Runde 134);
+   die Leitung sieht nur die Summe je Frage, ohne Namen
+   (`schulungFragenStat`). Beide schreibt nur diese Funktion.
+   ══════════════════════════════════════════════════════════════════════ */
+const AUFFRISCH_STUFEN_TAGE = [2, 7, 30, 90, 180];
+const AUFFRISCH_JE_MODUL = 6;
+const AUFFRISCH_JE_RUNDE = 3;
+const SCHULUNG_FORTSETZEN_MS = 30 * 86400000;
+const TAG_MS = 86400000;
+
+/* Ein angefangener Durchlauf, der fortgesetzt werden kann: nicht
+   fertig, kein Test, jünger als 30 Tage und nicht leer. Ein leerer wäre
+   nur ein Code, der eingetippt und wieder liegen gelassen wurde. */
+function schulungOffenerLauf(laeufe, jetzt) {
+  return (laeufe || []).filter((l) => l && l.status === 'laeuft' && !l.test &&
+      (jetzt - (l.ts || 0)) < SCHULUNG_FORTSETZEN_MS &&
+      ((l.schritteGesehen || []).length > 0 || (l.fragen || []).some((f) => f && f.versuche > 0)))
+    .sort((a, b) => (b.ts || 0) - (a.ts || 0))[0] || null;
+}
+
+function auffrischHash(text) {
+  let h = 0;
+  for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) >>> 0;
+  return h;
+}
+
+/* Der ganze Plan als Rechnung, ohne Datenbank — deshalb prüfbar.
+   laeufe: die bestandenen Durchläufe der Person. karten: der Plan, wie
+   er gespeichert ist ({ 'm-start#1': { s: Stufe, f: fällig ab } }).
+   sofort: beim Testcode ist alles gleich dran, damit die Leitung es
+   ausprobieren kann, ohne zwei Tage zu warten. */
+function auffrischRunde(laeufe, karten, jetzt, sofort) {
+  const neu = Object.assign({}, karten || {});
+  const juengster = {};
+  (laeufe || []).forEach((l) => {
+    if (!l || !l.modul || l.status !== 'fertig' || !l.bestanden) return;
+    const j = juengster[l.modul];
+    if (!j || (l.ende || 0) > (j.ende || 0)) juengster[l.modul] = l;
+  });
+  const texte = {};
+  Object.keys(juengster).forEach((modul) => {
+    const l = juengster[modul];
+    const fragen = Array.isArray(l.fragen) ? l.fragen : [];
+    fragen.forEach((f, i) => { texte[modul + '#' + i] = String((f && f.frage) || '').slice(0, 200); });
+    const schonDa = Object.keys(neu).filter((k) => k.indexOf(modul + '#') === 0).length;
+    if (schonDa >= AUFFRISCH_JE_MODUL) return;
+    const wahl = fragen.map((f, i) => ({
+      i,
+      daneben: !!f && ((f.versuche || 1) > 1 || f.richtig === false),
+      h: auffrischHash(String(l.id || '') + '#' + i)
+    })).sort((a, b) => (a.daneben === b.daneben ? a.h - b.h : (a.daneben ? -1 : 1)));
+    let platz = AUFFRISCH_JE_MODUL - schonDa;
+    wahl.forEach((w) => {
+      const key = modul + '#' + w.i;
+      if (platz <= 0 || neu[key]) return;
+      neu[key] = { s: 0, f: sofort ? jetzt : (l.ende || jetzt) + AUFFRISCH_STUFEN_TAGE[0] * TAG_MS };
+      /* `d`: beim Durchlauf danebengegangen. Bei gleicher Fälligkeit kommt
+         sie zuerst — sie hat es am nötigsten. */
+      if (w.daneben) neu[key].d = 1;
+      platz--;
+    });
+  });
+  /* Fällig ist nur, was zu einem bestandenen Modul gehört. Wird ein
+     Durchlauf gelöscht, bleiben seine Karten liegen, kommen aber nicht. */
+  const faellig = Object.keys(neu)
+    .filter((k) => neu[k].f <= jetzt && juengster[k.split('#')[0]])
+    .sort((a, b) => (neu[a].f - neu[b].f) || ((neu[b].d || 0) - (neu[a].d || 0)) || (a < b ? -1 : 1));
+  /* Gemischt: reihum aus den Modulen, die älteste zuerst. */
+  const runde = [], genommen = {};
+  while (runde.length < AUFFRISCH_JE_RUNDE) {
+    const vorher = runde.length;
+    const inDieserRunde = {};
+    for (const k of faellig) {
+      if (runde.length >= AUFFRISCH_JE_RUNDE) break;
+      const modul = k.split('#')[0];
+      if (genommen[k] || inDieserRunde[modul]) continue;
+      genommen[k] = true; inDieserRunde[modul] = true; runde.push(k);
+    }
+    if (runde.length === vorher) break;
+  }
+  const spaeter = Object.keys(neu).filter((k) => neu[k].f > jetzt && juengster[k.split('#')[0]])
+    .map((k) => neu[k].f);
+  return {
+    karten: neu,
+    faellig: runde.map((k) => ({ modul: k.split('#')[0], idx: Number(k.split('#')[1]), frage: texte[k] || '' })),
+    offen: faellig.length,
+    naechste: spaeter.length ? Math.min.apply(null, spaeter) : 0
+  };
+}
+
+/* Eine beantwortete Karte: richtig eine Stufe weiter, falsch zurück an
+   den Anfang. Die letzte Stufe bleibt die letzte. */
+function auffrischWeiter(karte, richtig, jetzt) {
+  const s = richtig ? Math.min((karte.s || 0) + 1, AUFFRISCH_STUFEN_TAGE.length - 1) : 0;
+  return richtig ? { s, f: jetzt + AUFFRISCH_STUFEN_TAGE[s] * TAG_MS } : { s, f: jetzt + AUFFRISCH_STUFEN_TAGE[s] * TAG_MS, d: 1 };
+}
+
+exports.schulungAuffrischen = region.https.onCall(async (data, context) => {
+  const { uid, profil, firma } = await anruferProfil(context);
+  const F = W(firma);
+  const roh = schulungCodeNormal(data && data.code);
+  let tId = '', t = {}, test = false;
+  if (roh) {
+    if (roh === SCHULUNG_TESTCODE) {
+      if (!schulungTestErlaubt(profil)) {
+        throw new functions.https.HttpsError('permission-denied',
+          'Der Testcode ist nur für die Leitung. Deinen eigenen Code bekommst du von der Studioleitung.');
+      }
+      tId = 'test:' + uid; t = { name: profil.name || '' }; test = true;
+    } else {
+      if (roh.length !== SCHULUNG_KENNUNG_LAENGE + SCHULUNG_GEHEIM_LAENGE) {
+        throw new functions.https.HttpsError('invalid-argument',
+          'Der Code besteht aus ' + (SCHULUNG_KENNUNG_LAENGE + SCHULUNG_GEHEIM_LAENGE) +
+          ' Zeichen. Bitte noch einmal ansehen.');
+      }
+      const r = await schulungTeilnehmerAusCode(firma, uid, roh);
+      tId = r.tSnap.id; t = r.t;
+    }
+  } else {
+    /* Ohne Code: das eigene, verknüpfte Konto. Wer keins hat, bekommt
+       eine leere Antwort und keinen Fehler — die App fragt dann nach dem
+       Code. */
+    const q = await F.collection('schulungTeilnehmer').where('uid', '==', uid).limit(1).get();
+    if (q.empty) return { ok: true, ohneTeilnehmer: true };
+    tId = q.docs[0].id; t = q.docs[0].data() || {};
+    if (t.gesperrt) return { ok: true, ohneTeilnehmer: true };
+  }
+  const lSnap = await F.collection('schulungLaeufe').where('teilnehmer', '==', tId).get();
+  const laeufe = lSnap.docs.map((d) => Object.assign({ id: d.id }, d.data() || {}))
+    .filter((l) => (test ? l.test === true : !l.test));
+  const planRef = F.collection('schulungLernplan').doc(tId);
+  const planSnap = await planRef.get();
+  const karten = Object.assign({}, ((planSnap.exists && planSnap.data()) || {}).karten || {});
+  const jetzt = Date.now();
+
+  /* Erst die Antworten der letzten Runde eintragen, dann die nächste
+     Runde rechnen. Gezählt wird nur eine Karte, die es gibt und die
+     dran WAR — sonst schriebe ein Aufruf aus der Konsole beliebige
+     Zahlen in die Summe der Leitung. */
+  const antworten = Array.isArray(data && data.antworten) ? data.antworten.slice(0, 10) : [];
+  const summe = {};
+  let gezaehlt = 0;
+  antworten.forEach((a) => {
+    const key = String((a && a.modul) || '').slice(0, 80) + '#' + (Number(a && a.idx) | 0);
+    const k = karten[key];
+    if (!k || k.f > jetzt) return;
+    const richtig = !!(a && a.richtig);
+    karten[key] = auffrischWeiter(k, richtig, jetzt);
+    gezaehlt++;
+    const [modul, idx] = key.split('#');
+    summe[modul] = summe[modul] || {};
+    summe[modul][idx] = summe[modul][idx] || { r: 0, x: 0 };
+    summe[modul][idx][richtig ? 'r' : 'x']++;
+  });
+  const r = auffrischRunde(laeufe, karten, jetzt, test);
+  await planRef.set({ teilnehmer: tId, uid: t.uid || null, test, karten: r.karten, ts: jetzt });
+  /* Die Summe für die Leitung: je Modul und Frage, wie oft richtig und
+     wie oft daneben. Ohne Namen, ohne Zeitpunkt. Testläufe nicht. */
+  if (!test) {
+    const inc = admin.firestore.FieldValue.increment;
+    await Promise.all(Object.keys(summe).map((modul) => {
+      const f = {};
+      Object.keys(summe[modul]).forEach((idx) => {
+        f[idx] = {};
+        if (summe[modul][idx].r) f[idx].r = inc(summe[modul][idx].r);
+        if (summe[modul][idx].x) f[idx].x = inc(summe[modul][idx].x);
+      });
+      return F.collection('schulungFragenStat').doc(modul).set({ modul, f, ts: jetzt }, { merge: true });
+    }));
+  }
+  return {
+    ok: true, name: t.name || '', test, gezaehlt,
+    /* Für die Frist der Pflichtmodule: seit wann die Person dabei ist. */
+    angelegt: t.ts || 0,
+    faellig: r.faellig, offen: r.offen, naechste: r.naechste
+  };
+});
+
+/* ══ AUFFRISCHEN: EINE ERINNERUNG AUFS HANDY (Runde 216) ══════════════
+   Aus dem Betrieb, 23.10.2026: „jo mach weitwr" — auf den Vorschlag
+   „Push-Erinnerungen für Leute mit Zugang".
+
+   Die Startseite sagt es schon (Runde 201) — aber nur, wer die App
+   öffnet, sieht sie. Deshalb um 9:40 eine Push-Nachricht, wenn
+   Fragen warten:
+   - nur an Teilnehmer mit verknüpftem, aktivem Konto (Leute ohne Zugang
+     haben kein Gerät in der App);
+   - höchstens alle DREI Tage (`erinnertAm` am Lernplan). Täglich wäre
+     lästig, und wer lästig findet, schaltet ab;
+   - nur auf Geräte, auf denen „Kurz auffrischen" unter Einstellungen →
+     Meldungen an ist (fehlt die Angabe, gilt sie als an — wie bei allen
+     Meldungen, sonst verstummten bestehende Geräte);
+   - der Text spricht von der Gewohnheit, nicht von einer Pflicht. Laut
+     Duolingo (eigener Blog, Herstellerangabe) brachte ein Text, der den
+     Gewohnheitsaufbau betont, mehr Zustimmung als einer über die Serie.
+   Fällig rechnet dieselbe Funktion wie das Auffrischen selbst
+   (auffrischRunde) — sonst meldete die Nachricht Fragen, die die App beim
+   Öffnen gar nicht zeigt. Gespeichert wird dabei nur `erinnertAm`. */
+const AUFFRISCH_ERINNERN_ABSTAND_MS = 3 * 86400000;
+function auffrischErinnernDarf(plan, jetzt) {
+  return !!plan && !!plan.uid && !plan.test &&
+    (jetzt - (plan.erinnertAm || 0)) >= AUFFRISCH_ERINNERN_ABSTAND_MS;
+}
+function auffrischTeilnehmerGilt(t, plan) {
+  return !!t && !t.gesperrt && !!t.uid && t.uid === (plan || {}).uid;
+}
+function auffrischErinnernText(offen) {
+  return offen === 1
+    ? 'Eine Frage aus deinen Schulungen wartet — dauert keine Minute.'
+    : offen + ' Fragen aus deinen Schulungen warten — etwa eine Minute. Kurz und regelmässig hält am längsten.';
+}
+async function auffrischErinnernFirma(firma, jetzt) {
+  const F = W(firma);
+  const plaene = await F.collection('schulungLernplan').get();
+  let gesendet = 0;
+  for (const doc of plaene.docs) {
+    const plan = doc.data() || {};
+    if (!auffrischErinnernDarf(plan, jetzt)) continue;
+    /* Der Plan merkt sich die uid von damals. Gilt sie noch? Stillgelegt,
+       gelöscht oder mit einem anderen Konto verknüpft heisst: keine
+       Nachricht (Runde 248 — bis dahin ging sie trotzdem raus). */
+    const tn = await F.collection('schulungTeilnehmer').doc(doc.id).get();
+    if (!auffrischTeilnehmerGilt(tn.exists ? tn.data() : null, plan)) continue;
+    const u = await db.collection('users').doc(String(plan.uid)).get();
+    const ud = u.exists ? (u.data() || {}) : null;
+    if (!ud || ud.aktiv === false || !gehoertZu(ud, firma)) continue;
+    const lSnap = await F.collection('schulungLaeufe').where('teilnehmer', '==', doc.id).get();
+    const laeufe = lSnap.docs.map((d) => Object.assign({ id: d.id }, d.data() || {})).filter((l) => !l.test);
+    const r = auffrischRunde(laeufe, plan.karten || {}, jetzt, false);
+    if (!r.offen) continue;
+    const tokens = await collectTokens((d) => d.uid === plan.uid && willHaben(d, 'schulung'), null, firma);
+    if (!tokens.length) continue;
+    await sendPush(tokens, '🔁 Kurz auffrischen', auffrischErinnernText(r.offen), 'formi', 'schulung');
+    await doc.ref.update({ erinnertAm: jetzt });
+    gesendet += tokens.length;
+  }
+  return gesendet;
+}
+exports.schulungAuffrischErinnern = region
+  .runWith({ timeoutSeconds: 300, memory: '256MB' })
+  .pubsub.schedule('40 9 * * *')
+  .timeZone('Europe/Berlin')
+  .onRun(async () => {
+    const jetzt = Date.now();
+    for (const firma of await alleFirmen()) {
+      const n = await auffrischErinnernFirma(firma, jetzt);
+      if (n) console.log('Auffrischen erinnert (' + (firma || 'flach') + '): ' + n + ' Geräte');
+    }
+    return null;
+  });
+
+
+/* ── Teilnehmer gelöscht → Lernplan weg (Runde 248) ──────────────────
+   Bis Runde 247 blieb der Plan liegen (FORTSCHRITT, Runde 201: „Offen").
+   In der App gibt es nur „Stilllegen"; gelöscht wird ein Teilnehmer in
+   der Konsole oder mit der ganzen Firma. Der Plan sagt dann über
+   niemanden mehr etwas — also geht er mit. Die Durchläufe bleiben: sie
+   sind der Nachweis der Unterweisung. */
+const _schTnWeg = beideWelten('schulungTeilnehmer/{tId}', async (snap, ctx) => {
+  const firma = (ctx.params && ctx.params.firma) || null;
+  await W(firma).collection('schulungLernplan').doc(String(ctx.params.tId)).delete()
+    .catch((e) => console.warn('Lernplan aufräumen:', e.message));
+}, 'onDelete');
+exports.onSchulungTeilnehmerWeg = _schTnWeg.flach;
+exports.onSchulungTeilnehmerWegF = _schTnWeg.firma;
 
 /* ══════════════════════════════════════════════════════════════════════
    BEITRITT PER FIRMENCODE (Runde 117)
@@ -6403,7 +7228,7 @@ exports.firmaBeitreten = region.https.onCall(async (data, context) => {
     });
     if (chefs.length) {
       const tk = await collectTokens((d) => chefs.indexOf(d.uid) >= 0, null, f);
-      await sendPush(tk, 'Neue Anmeldung', (p.name || 'Jemand') + ' möchte ins Team — bitte freigeben (Verwaltung → Team).');
+      await sendPush(tk, 'Neue Anmeldung', (p.name || 'Jemand') + ' möchte ins Team — bitte freigeben (Verwaltung → Team).', null, 'chef');
     }
   } catch (e) { console.warn('Beitritt-Meldung:', e.message); }
 
@@ -6505,7 +7330,7 @@ exports.loeschungBeantragen = region.https.onCall(async (data, context) => {
     if (andere.length) {
       const tk = await collectTokens((d) => andere.indexOf(d.uid) >= 0, null, f);
       await sendPush(tk, 'Löschung beantragt',
-        (profil.name || 'Jemand') + ' möchte das Konto löschen lassen — ist gesperrt (Verwaltung → Team).');
+        (profil.name || 'Jemand') + ' möchte das Konto löschen lassen — ist gesperrt (Verwaltung → Team).', null, 'chef');
     }
   } catch (e) { console.warn('Löschantrag-Meldung:', e.message); }
   return { ok: true, am: jetzt };
@@ -6951,7 +7776,7 @@ async function kennzahlenErinnernFirma(firma, jetzt) {
     const tokens = await collectTokens((d) => d.uid === uid && willHaben(d, 'todos'), null, firma);
     await sendPush(tokens, '📊 Kennzahlen ' + name,
       'Bitte Mitglieder und Kündigungen eintragen: ' + liste.join(', ') +
-      '. Verwaltung → Kennzahlen, dauert eine Minute.');
+      '. Verwaltung → Kennzahlen, dauert eine Minute.', null, 'chef');
     gesendet += tokens.length;
   }
   return gesendet;
@@ -7018,7 +7843,12 @@ function gehirnAuftrag(daten, profil) {
      oder „locker". */
   const vorname = name.split(' ')[0].slice(0, 30);
   const ton = (daten || {}).ton === 'sachlich' ? 'sachlich' : 'locker';
-  const body = art === 'idee' ? { text, name, studio } : { frage: text, name, studio, vorname, ton };
+  /* Runde 217 (23.10.2026, „er soll mehr integration haben"): die Lage
+     aus der App — nur, was die Person dort ohnehin sieht; das Gerät baut
+     sie aus seinen eigenen Daten. Geht nur ins Gespräch mit der KI, der
+     Worker speichert sie nicht. Höchstens 9000 Zeichen. */
+  const lage = typeof (daten || {}).lage === 'string' ? daten.lage.slice(0, 9000) : '';
+  const body = art === 'idee' ? { text, name, studio } : Object.assign({ frage: text, name, studio, vorname, ton }, lage ? { lage } : {});
   return { art, text, body };
 }
 
@@ -7077,7 +7907,11 @@ async function gehirnFrageAusfuehren(auftrag, firma) {
         thema: String((q && q.thema) || '').slice(0, 120), auszug: String((q && q.auszug) || '').slice(0, 400), gelernt: !!(q && q.gelernt)
       })).filter(q => q.thema),
       /* Für den Daumen unter der Antwort (20.10.2026). */
-      nachricht: Number(json.nachrichtId) > 0 ? Number(json.nachrichtId) : null
+      nachricht: Number(json.nachrichtId) > 0 ? Number(json.nachrichtId) : null,
+      /* Runde 217: worauf die Antwort beruht (wissen/app/allgemein/unsicher). */
+      grundlage: ['wissen', 'app', 'allgemein', 'unsicher'].indexOf(json.grundlage) >= 0 ? json.grundlage : null,
+      /* Runde 229: wie Formi sich bei der Antwort fühlt — für das Gesicht. */
+      stimmung: ['freut', 'begeistert', 'stolz', 'staunt', 'mitfuehlend', 'verwirrt', 'ernst', 'ruhig'].indexOf(json.stimmung) >= 0 ? json.stimmung : null
     };
 }
 
@@ -7142,7 +7976,7 @@ async function gehirnErinnerungenFirma(firma, jetzt) {
     const e = doc.data() || {};
     try {
       const tokens = await collectTokens((d) => d.uid === e.uid, null, firma);
-      await sendPush(tokens, '⏰ Erinnerung', String(e.text || ''));
+      await sendPush(tokens, '⏰ Erinnerung', String(e.text || ''), 'formi', 'gehirn');
       n++;
     } catch (err) { console.error('Erinnerung ' + doc.id + ':', err.message); }
     await doc.ref.delete().catch(() => {});
@@ -7221,41 +8055,11 @@ exports.gehirnFoto = region
     return { geraet: String(json.geraet || '').slice(0, 80), text: String(json.text || '').slice(0, 400) };
   });
 
-/* ── Menschliche Stimme (20.10.2026) ────────────────────────────────
-   Aus dem Betrieb: „lebendig wirkt von der stimme und wie ein echter
-   mensch als assistent". Der Worker holt die Stimme bei Google (nur wenn
-   dort ein Schlüssel hinterlegt ist, sonst {aus:true} → die App nimmt die
-   Stimme des Geräts). Nur deutsche Stimmen aus dieser Liste. */
-const GEHIRN_STIMMEN = ['de-DE-Chirp3-HD-Aoede', 'de-DE-Chirp3-HD-Charon', 'de-DE-Chirp3-HD-Kore', 'de-DE-Chirp3-HD-Puck'];
-function gehirnStimmePruefen(daten) {
-  const d = daten || {};
-  const text = String(d.text || '').replace(/\s+/g, ' ').trim().slice(0, 700);
-  if (!text) return null;
-  const stimme = GEHIRN_STIMMEN.indexOf(d.stimme) >= 0 ? d.stimme : GEHIRN_STIMMEN[0];
-  return { text, stimme };
-}
-exports.gehirnStimme = region
-  .runWith({ timeoutSeconds: 30, memory: '256MB' })
-  .https.onCall(async (data, context) => {
-    const { profil } = await anruferProfil(context);
-    const firma = await firmaVonProfil(profil);
-    if (!gehirnErlaubt(firma)) throw new functions.https.HttpsError('permission-denied', 'Formi ist für diesen Betrieb nicht eingerichtet.');
-    const a = gehirnStimmePruefen(data);
-    if (!a) throw new functions.https.HttpsError('invalid-argument', 'Kein Text zum Vorlesen.');
-    const schluessel = process.env.STUDIO_GEHIRN_KEY || '';
-    if (!schluessel) return { aus: true, grund: 'nicht verbunden' };
-    await tagesGrenze('gehirnStimme', 600, firma);
-    try {
-      const antwort = await fetch((process.env.GEHIRN_URL || GEHIRN_URL_STANDARD).replace(/\/+$/, '') + '/api/stimme', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'x-studio-key': schluessel }, body: JSON.stringify(a)
-      });
-      const json = await antwort.json().catch(() => ({}));
-      if (!antwort.ok || !json.audio) return { aus: true, grund: String(json.grund || json.fehler || ('HTTP ' + antwort.status)).slice(0, 120) };
-      return { audio: String(json.audio), mime: 'audio/mpeg' };
-    } catch (e) {
-      return { aus: true, grund: 'nicht erreichbar' };
-    }
-  });
+/* Runde 278: Die Stimm-Function (gehirnStimme, 20.10.2026) ist entfernt —
+   aus dem Betrieb (24.10.2026): „das vor lesen ist auch unnötig". Die App
+   ruft sie seit Runde 263 nicht mehr auf; mit --force räumt der Deploy sie
+   ab. Der Pfad /api/stimme im Worker bleibt bis zu dessen nächster
+   Auslieferung stehen, ohne Aufrufer. */
 
 exports.gehirnBewerten = region
   .runWith({ timeoutSeconds: 30, memory: '256MB' })
@@ -7562,6 +8366,30 @@ function gehirnBefehlPruefen(roh, namen, erlaubt, rolle, heute) {
     if (!k) return null;
     return mitStudio({ typ: 'defekt', geraet, text }, k);
   }
+  /* Etappe 3 (23.10.2026), aus dem Betrieb auf die Rückfrage „Welche
+     Formulare soll Formi ausfüllen?": „Gerät defekt melden, Material
+     nachbestellen, Urlaub/Frei beantragen, Probetraining eintragen".
+     Defekt und Urlaub gab es schon; Material und Probetraining sind neu.
+     Wie bei „defekt" nennt die KI nur den Artikel in Worten — welcher
+     Eintrag das ist, sucht das Gerät in seiner eigenen Liste. */
+  if (r.typ === 'material') {
+    const artikel = kurz(r.artikel, 60);
+    const zahl = (x, min) => { const n = Math.round(Number(x)); return (x !== null && x !== '' && x !== undefined && isFinite(n) && n >= min && n <= 9999) ? n : null; };
+    const ist = zahl(r.ist, 0), fehlt = zahl(r.fehlt, 1);
+    if (!artikel || (ist === null && fehlt === null)) return null;
+    const k = studioVon(r.studio || r.studios) || (erlaubt || [])[0] || '';
+    if (!k) return null;
+    return mitStudio({ typ: 'material', artikel, ist, fehlt: ist === null ? fehlt : null }, k);
+  }
+  if (r.typ === 'probe') {
+    const datum = DATUM_RE.test(String(r.datum || '')) ? String(r.datum) : heute;
+    /* Eingetragen wird, was war: heute oder in den letzten 30 Tagen. */
+    const frueh = heute ? new Date(new Date(heute + 'T12:00:00Z').getTime() - 30 * 864e5).toISOString().slice(0, 10) : '';
+    if (!datum || (heute && (datum > heute || datum < frueh))) return null;
+    const k = studioVon(r.studio || r.studios) || (erlaubt || [])[0] || '';
+    if (!k) return null;
+    return mitStudio({ typ: 'probe', datum, abschluss: r.abschluss === true, notiz: kurz(r.notiz, 200) }, k);
+  }
   /* Etappe 4 (20.10.2026): Erinnerung und Schichttausch. */
   if (r.typ === 'erinnerung') {
     const m = /^(\d{4}-\d{2}-\d{2})[T ](\d{2}):(\d{2})$/.exec(String(r.wann || ''));
@@ -7630,6 +8458,10 @@ function gehirnAktionSystem(o) {
     'Enthält der Satz MEHRERE getrennte Aufträge (z. B. "Klo ist sauber und die Handtücher sind leer"), antworte {"befehle":[Aktion, Aktion]} mit höchstens 3 Aktionen. ' +
     'Mögliche Aktionen: ' +
     '{"typ":"frage"} — eine Frage zum Studio, zu EMS, zu Abläufen oder zur Bedienung der App (das Studio-Wissen antwortet). Im Zweifel IMMER "frage". ' +
+    /* 24.10.2026, aus dem Betrieb: „was ich tun soll wenn ein Kunde mitten im Training Durchfall hat und er
+       meinte ich soll keine Kunden Daten weiter geben". Eine Situation mit einem Kunden ist eine Frage —
+       kein Auftrag, jemanden abzumelden, und kein Datenschutzfall. */
+    'Beschreibt jemand eine Situation mit einem Kunden oder Kollegen und will wissen, was zu tun ist ("Kunde hat Durchfall", "Kundin ist schwindelig", "Kollege ist nicht gekommen, was jetzt?"), ist das IMMER "frage" — nie "keins", nie "abwesenheit". ' +
     '{"typ":"idee","text":"..."} — ein Vorschlag, eine Idee oder ein Anliegen an die Leitung (z. B. "wir bräuchten …", "man könnte …"). ' +
     '{"typ":"navigation","ziel":"<Schlüssel>","studio":"Studioname oder leer"} — eine Seite öffnen. Ziele: ' + ziele + '. ' +
     '{"typ":"abfrage","was":"aufgaben"|"dienst"|"abwesend","studio":"Studioname oder leer"} — offene/überfällige Aufgaben, wer heute Dienst hat, wer heute fehlt. ' +
@@ -7637,6 +8469,8 @@ function gehirnAktionSystem(o) {
     '{"typ":"uebergabe","text":"...","studio":"Studioname oder leer"} — Notiz an die nächste Schicht. ' +
     '{"typ":"abhaken","bereich":"putzplan"|"aufgabe","was":"Stichwort, z. B. Westen waschen","studio":"Studioname oder leer"} — etwas als erledigt markieren. ' +
     '{"typ":"defekt","geraet":"Name oder Beschreibung des Geräts","text":"was los ist","studio":"Studioname oder leer"} — ein Gerät als defekt melden. ' +
+    '{"typ":"material","artikel":"Stichwort, z. B. Westen M","ist":Zahl oder null,"fehlt":Zahl oder null,"studio":"Studioname oder leer"} — Bestand melden: "ist" = wie viele noch da sind ("nur noch 2 Westen M"), "fehlt" = wie viele fehlen ("es fehlen 3 Gurte"). ' +
+    '{"typ":"probe","datum":"YYYY-MM-DD","abschluss":true|false,"notiz":"...","studio":"Studioname oder leer"} — ein Probetraining eintragen, das die Person gegeben hat (heute oder in den letzten 30 Tagen); "abschluss" true, wenn der Interessent unterschrieben hat. Notiz OHNE Kundennamen. ' +
     (verwaltet
       ? '{"typ":"aufgabe","titel":"...","text":"...","schritte":["..."],"frist":"YYYY-MM-DD oder leer","studios":["Studioname" oder "alle"]} — etwas, das im Studio erledigt und abgehakt wird. ' +
         '{"typ":"ankuendigung","text":"...","studios":["Studioname" oder "alle"],"wichtig":true|false} — Information an das Team. '
@@ -7676,7 +8510,7 @@ function gehirnVerlaufText(v) {
    besteht (z. B. Urlaub in der Vergangenheit) — sonst bekäme man auf
    „Ich will gestern Urlaub" eine Antwort aus dem Wissen; „hinweis" bei
    „keins" mit Begründung; sonst „aktion". */
-const GEHIRN_BEKANNT = ['navigation', 'abfrage', 'abwesenheit', 'uebergabe', 'abhaken', 'defekt', 'aufgabe', 'ankuendigung', 'idee', 'rueckfrage', 'erinnerung', 'tausch', 'mail'];
+const GEHIRN_BEKANNT = ['navigation', 'abfrage', 'abwesenheit', 'uebergabe', 'abhaken', 'defekt', 'aufgabe', 'ankuendigung', 'idee', 'rueckfrage', 'erinnerung', 'tausch', 'mail', 'material', 'probe'];
 /* Mehrere Aufträge in einem Satz (20.10.2026): „Klo ist sauber und die
    Handtücher sind leer". Höchstens drei; jeder einzeln geprüft wie
    sonst auch. Fragen und Verbotenes fallen heraus — eine Frage mitten
@@ -7737,7 +8571,7 @@ exports.gehirnAktion = region
       /* Mit Bezug („wie lange dauert das?") schickt die KI die Frage
          ausgeschrieben mit — das Studio-Wissen kennt den Verlauf nicht. */
       const voll = roh && typeof roh.frage === 'string' && roh.frage.trim() ? roh.frage.trim().slice(0, 1000) : auftrag;
-      const a = await gehirnFrageAusfuehren(gehirnAuftrag({ art: 'frage', text: voll }, profil), firma);
+      const a = await gehirnFrageAusfuehren(gehirnAuftrag({ art: 'frage', text: voll, ton: (data || {}).ton, lage: (data || {}).lage }, profil), firma);
       return Object.assign({ art: 'frage' }, a);
     }
     return {
@@ -8111,6 +8945,13 @@ function gehirnWissenPruefen(daten) {
   if (!art) return null;
   if (art === 'liste') return { art, body: {} };
   if (art === 'entscheiden') {
+    /* Sammelfreigabe (22.10.2026, „ja sind zu viele klicks"): alle einer
+       Quelle. Ohne Text — die Texte bleiben, wie sie sind. */
+    if (d.id == null && typeof d.quelle === 'string') {
+      const quelle = d.quelle.trim().slice(0, 120);
+      if (quelle.length < 3) return null;
+      return { art, body: { quelle, gut: d.gut === true } };
+    }
     const id = Number(d.id);
     if (!(Number.isInteger(id) && id > 0)) return null;
     const body = { id, gut: d.gut === true };
@@ -8168,7 +9009,301 @@ exports.gehirnWissen = region
     return json;
   });
 
-exports.__intern = { gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnStimmePruefen, GEHIRN_STIMMEN, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
+/* ══ Formi meldet sich selbst (Etappe 3, Runde 235, 23.10.2026) ═══════
+   Aus dem Betrieb auf die Rückfragen: melden bei „Morgens: dein Tag,
+   Fällig & überfällig, Fehlendes Material/Defekt, Schichtende-Check",
+   und wie oft: „So oft wie nötig".
+   Jede Meldung hat einen Anlass, den es genau einmal gibt (der Morgen,
+   eine Frist, die gerade verstrichen ist, ein Schichtende, eine neue
+   Meldung) — „so oft wie nötig" heisst nicht „immer wieder dasselbe".
+   Abschaltbar je Gerät unter der Art „formi" (Profil → Mitteilungen).
+   Inhalt nur, was die Person in der App ohnehin sieht; keine Chats. */
+
+/* Rein rechnerisch (__intern) — alles, was entscheidet, was gesagt wird. */
+function formiTagText(o) {
+  const teile = [];
+  (o.schichten || []).forEach(x => teile.push('Dienst ' + x.von + '–' + x.bis + ' in ' + x.studio));
+  if (o.ueberfaellig) teile.push(o.ueberfaellig + (o.ueberfaellig === 1 ? ' Aufgabe ist überfällig' : ' Aufgaben sind überfällig'));
+  if (o.heute) teile.push(o.heute + (o.heute === 1 ? ' Aufgabe ist heute fällig' : ' Aufgaben sind heute fällig'));
+  if (o.putz) teile.push(o.putz + ' Putzpunkte offen');
+  if (!teile.length) return null;
+  return teile.join(' · ') + '.';
+}
+function formiSchichtendeText(o) {
+  const fehlt = [];
+  if (!o.uebergabe) fehlt.push('Übergabe noch nicht geschrieben');
+  if (o.putz) fehlt.push(o.putz + (o.putz === 1 ? ' Putzpunkt offen' : ' Putzpunkte offen'));
+  if (!fehlt.length) return null;
+  return 'Deine Schicht in ' + o.studio + ' ist zu Ende: ' + fehlt.join(' · ') + '.';
+}
+/* Artikel, bei denen jetzt (mehr) fehlt als vorher. itemNeed wie in der App. */
+function formiMaterialNeu(vorher, nachher) {
+  const fehlt = it => (Number(it.limit) > 0) ? Math.max(0, Number(it.limit) - (Number(it.have) || 0)) : (Number(it.need) || 0);
+  const alt = {};
+  (Array.isArray(vorher) ? vorher : []).forEach(it => { if (it && it.name) alt[it.name] = fehlt(it); });
+  return (Array.isArray(nachher) ? nachher : [])
+    .filter(it => it && it.name && fehlt(it) > 0 && fehlt(it) > (alt[it.name] || 0))
+    .map(it => ({ name: String(it.name).slice(0, 60), fehlt: fehlt(it) }));
+}
+/* Offene Aufgaben, deren Frist zwischen von und bis verstrichen ist. */
+function formiFristVorbei(todos, von, bis) {
+  return (todos || []).filter(t => t && t.due && t.due > von && t.due <= bis && !t.archived && !erledigt(t));
+}
+/* Liegt die Uhrzeit (HH:MM, Berlin) am Tag im Fenster (von, bis]? */
+function formiSchichtEndeIn(datum, zeit, von, bis) {
+  if (!/^\d{1,2}:\d{2}$/.test(String(zeit || ''))) return false;
+  const t = berlinZuUtc(datum, zeit).getTime();
+  return t > von && t <= bis;
+}
+
+async function formiPush(firma, filter, titel, text, ziel) {
+  const tokens = await collectTokens(d => willHaben(d, 'formi') && filter(d), null, firma);
+  await sendPush(tokens, titel, text, 'formi', ziel);
+  return tokens.length;
+}
+async function formiSchichtenHeute(firma, studioKey, heute) {
+  const sn = await W(firma).collection('studios').doc(studioKey).collection('shifts').where('date', '==', heute).get();
+  return sn.docs.map(d => d.data() || {}).filter(x => x.uid);
+}
+
+/* Morgens um 7: dein Tag — an alle, die heute Dienst haben. */
+async function formiMorgenFirma(firma) {
+  const heute = tagBerlin(new Date());
+  const ende = berlinZuUtc(heute, '23:59').getTime(), jetzt = Date.now();
+  const mitAufgaben = await featureAn(firma, 'todos'), mitPutz = await featureAn(firma, 'putzplan');
+  const proPerson = {};
+  for (const ref of await W(firma).collection('studios').listDocuments()) {
+    const schichten = await formiSchichtenHeute(firma, ref.id, heute);
+    if (!schichten.length) continue;
+    const name = await studioName(firma, ref.id);
+    const offen = mitAufgaben ? (await ref.collection('todos').get()).docs.map(d => d.data() || {}).filter(t => !t.archived && !erledigt(t)) : [];
+    const putz = mitPutz ? (await ref.collection('cleaning').get()).docs.map(d => d.data() || {}).filter(t => !t.archived && !erledigt(t)).length : 0;
+    for (const sch of schichten) {
+      const p = proPerson[sch.uid] || (proPerson[sch.uid] = { schichten: [], ueberfaellig: 0, heute: 0, putz: 0 });
+      p.schichten.push({ von: sch.from || '', bis: sch.to || '', studio: name });
+      const fuerMich = offen.filter(t => !t.assignedTo || t.assignedTo === sch.uid);
+      p.ueberfaellig += fuerMich.filter(t => t.due && t.due < jetzt).length;
+      p.heute += fuerMich.filter(t => t.due && t.due >= jetzt && t.due <= ende).length;
+      p.putz += putz;
+    }
+  }
+  let n = 0;
+  for (const uid of Object.keys(proPerson)) {
+    const text = formiTagText(proPerson[uid]);
+    if (text) n += await formiPush(firma, d => d.uid === uid, '☀️ Formi: dein Tag', text, 'home');
+  }
+  return n;
+}
+exports.formiMorgen = region.runWith({ timeoutSeconds: 300, memory: '256MB' })
+  .pubsub.schedule('0 7 * * *').timeZone('Europe/Berlin')
+  .onRun(async () => { for (const f of await alleFirmen()) await formiMorgenFirma(f).catch(e => console.error('formiMorgen', f, e.message)); return null; });
+
+/* Alle 30 Minuten (7–21 Uhr): Fristen, die gerade verstrichen sind —
+   an die zugewiesene Person, sonst an die, die jetzt im Studio Dienst
+   haben. Niemand im Dienst: keine Meldung (die Morgenmeldung reicht). */
+async function formiFaelligFirma(firma, jetzt) {
+  if (!(await featureAn(firma, 'todos'))) return 0;
+  const heute = tagBerlin(new Date(jetzt));
+  let n = 0;
+  for (const ref of await W(firma).collection('studios').listDocuments()) {
+    const todos = (await ref.collection('todos').get()).docs.map(d => d.data() || {});
+    const vorbei = formiFristVorbei(todos, jetzt - 30 * 60000, jetzt);
+    if (!vorbei.length) continue;
+    const imDienst = (await formiSchichtenHeute(firma, ref.id, heute))
+      .filter(x => berlinZuUtc(heute, x.from || '00:00').getTime() <= jetzt && berlinZuUtc(heute, x.to || '23:59').getTime() >= jetzt)
+      .map(x => x.uid);
+    for (const t of vorbei) {
+      const an = t.assignedTo ? [t.assignedTo] : imDienst;
+      if (!an.length) continue;
+      n += await formiPush(firma, d => an.indexOf(d.uid) >= 0, '⏰ Frist vorbei', String(t.title || 'Aufgabe').slice(0, 120) + ' ist noch offen.', 'todos');
+    }
+  }
+  return n;
+}
+exports.formiFaellig = region.runWith({ timeoutSeconds: 300, memory: '256MB' })
+  .pubsub.schedule('*/30 7-21 * * *').timeZone('Europe/Berlin')
+  .onRun(async () => { const jetzt = Date.now(); for (const f of await alleFirmen()) await formiFaelligFirma(f, jetzt).catch(e => console.error('formiFaellig', f, e.message)); return null; });
+
+/* Alle 15 Minuten: wessen Schicht gerade zu Ende ging — Übergabe
+   geschrieben? Putzplan durch? Nur wenn etwas fehlt. */
+async function formiSchichtendeFirma(firma, jetzt) {
+  const heute = tagBerlin(new Date(jetzt));
+  const mitPutz = await featureAn(firma, 'putzplan');
+  const tagStart = berlinZuUtc(heute, '00:00').getTime();
+  let n = 0;
+  for (const ref of await W(firma).collection('studios').listDocuments()) {
+    const enden = (await formiSchichtenHeute(firma, ref.id, heute)).filter(x => formiSchichtEndeIn(heute, x.to, jetzt - 15 * 60000, jetzt));
+    if (!enden.length) continue;
+    const name = await studioName(firma, ref.id);
+    const putz = mitPutz ? (await ref.collection('cleaning').get()).docs.map(d => d.data() || {}).filter(t => !t.archived && !erledigt(t)).length : 0;
+    const uebergaben = (await ref.collection('handovers').where('ts', '>=', tagStart).get()).docs.map(d => (d.data() || {}).uid);
+    for (const sch of enden) {
+      const text = formiSchichtendeText({ studio: name, uebergabe: uebergaben.indexOf(sch.uid) >= 0, putz });
+      /* Fehlt die Übergabe, führt der Tipp dorthin (Plan → Übergabe), sonst zum Putzplan. */
+      if (text) n += await formiPush(firma, d => d.uid === sch.uid, '👋 Formi: Feierabend-Check', text,
+        uebergaben.indexOf(sch.uid) >= 0 ? 'putzplan' : 'team');
+    }
+  }
+  return n;
+}
+exports.formiSchichtende = region.runWith({ timeoutSeconds: 300, memory: '256MB' })
+  .pubsub.schedule('*/15 * * * *').timeZone('Europe/Berlin')
+  .onRun(async () => { const jetzt = Date.now(); for (const f of await alleFirmen()) await formiSchichtendeFirma(f, jetzt).catch(e => console.error('formiSchichtende', f, e.message)); return null; });
+
+/* Sofort: Defekt gemeldet, Material fehlt → die Leitung dieses Studios
+   und der Chef. Wer es selbst gemeldet hat, bekommt nichts. */
+const formiAnLeitung = (studioKey) => (d) => d.role === 'chef' || (d.role === 'leiter' && inStudio(d, studioKey));
+const _formiDefekt = async (snap, ctx) => {
+  const x = snap.data() || {};
+  if (x.art !== 'defekt') return null;
+  const firma = ctx.params.firma || null, sk = ctx.params.studioKey;
+  const tokens = await collectTokens(d => willHaben(d, 'formi') && formiAnLeitung(sk)(d), x.byUid || null, firma);
+  await sendPush(tokens, '🔧 Defekt gemeldet', String(x.devName || 'Gerät').slice(0, 60) + ': ' + String(x.text || 'defekt').slice(0, 140) + (x.by ? ' (' + String(x.by).split(' ')[0] + ')' : ''), 'formi', 'geraete');
+  return null;
+};
+const _formiDefektW = beideWelten('studios/{studioKey}/deviceLog/{logId}', _formiDefekt);
+exports.formiDefekt = _formiDefektW.flach;
+exports.formiDefektF = _formiDefektW.firma;
+const _formiMaterial = async (change, ctx) => {
+  if (!change.after.exists) return null;
+  const neu = formiMaterialNeu((change.before.exists ? change.before.data() : {}).items, (change.after.data() || {}).items);
+  if (!neu.length) return null;
+  const firma = ctx.params.firma || null, sk = ctx.params.studioKey;
+  const tokens = await collectTokens(d => willHaben(d, 'formi') && formiAnLeitung(sk)(d), null, firma);
+  const liste = neu.slice(0, 4).map(x => x.name + ' (' + x.fehlt + ')').join(', ') + (neu.length > 4 ? ' und ' + (neu.length - 4) + ' weitere' : '');
+  await sendPush(tokens, '📦 Material fehlt', liste, 'formi', 'material');
+  return null;
+};
+const _formiMaterialW = beideWelten('inventory/{studioKey}', _formiMaterial, 'onWrite');
+exports.formiMaterial = _formiMaterialW.flach;
+exports.formiMaterialF = _formiMaterialW.firma;
+
+/* ══ STEMPEL-ERINNERUNG (Runde 238) ═══════════════════════════════════
+   Aus dem Betrieb, 23.10.2026: „mach die errinerungen und vlt auch in
+   kobi mit formi und einer mail oder so" — die Erinnerung aus dem Plan
+   (docs/ZEITERFASSUNG-PLAN.md, Schritt 6), wie bei Crewmeister.
+
+   Zwei Anlässe, je Person und Tag höchstens einmal:
+     kommen  15 min nach Schichtbeginn steht heute noch kein Stempel.
+             → Handy (und Formi in der App). Keine Mail: wer gerade
+             ankommt, liest sie ohnehin erst abends.
+     gehen   30 min nach Schichtende ist die Person noch eingestempelt;
+             ohne Schicht 10 h nach dem Kommen (§ 3 ArbZG: mehr als zehn
+             Stunden am Tag gibt es nicht). → Handy UND Mail (und Formi):
+             wer schon zu Hause ist, sieht die Mail, und der fehlende
+             Feierabend ist das, was am Monatsende fehlt.
+   Kein Anlass, wenn heute Urlaub oder Krankheit eingetragen ist.
+
+   „Höchstens einmal" ohne gespeicherten Stand: jeder Anlass hat einen
+   festen Zeitpunkt (Beginn + 15, Ende + 30, Kommen + 10 h), und der Lauf
+   alle 15 Minuten nimmt nur die, die seit dem letzten Lauf erreicht
+   wurden — wie Formis Feierabend-Check (formiSchichtendeFirma). Damit
+   entsteht keine neue Sammlung, die in beide Regel-Welten müsste.
+
+   Abschaltbar: Handy je Gerät (Meldungen → „Stempel-Erinnerung", Art
+   'stempel'), Mail je Konto (Mails → „Feierabend vergessen", mailAus). */
+const STEMPEL_ERINNERN_LAUF_MS = 15 * 60000;
+const STEMPEL_KOMMEN_NACH_MS = 15 * 60000;
+const STEMPEL_GEHEN_NACH_MS = 30 * 60000;
+const STEMPEL_OHNE_SCHICHT_MS = 10 * 3600000;
+/* Rein rechnerisch: wer wird JETZT woran erinnert?
+   schichten [{uid, from, to, studio}], stempel [{uid, art, ts, storno}],
+   abwesend [{uid, from, to, type, status}] — alles von heute. */
+function stempelErinnerungen(o) {
+  const jetzt = o.jetzt, heute = o.heute, von = jetzt - (o.laufMs || STEMPEL_ERINNERN_LAUF_MS);
+  const imFenster = (t) => t > von && t <= jetzt;
+  const zeit = (hhmm) => (/^\d{1,2}:\d{2}$/.test(String(hhmm || '')) ? berlinZuUtc(heute, hhmm).getTime() : null);
+  const uhr = (ts) => new Date(ts).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' });
+  const frei = {};
+  (o.abwesend || []).forEach((a) => {
+    if (!a || !a.uid || (a.type !== 'urlaub' && a.type !== 'krank')) return;
+    if (a.type === 'urlaub' && a.status && a.status !== 'genehmigt') return;
+    if (String(a.from || '') <= heute && String(a.to || a.from || '') >= heute) frei[a.uid] = true;
+  });
+  const proPerson = {};
+  (o.stempel || []).forEach((z) => { if (z && z.uid) (proPerson[z.uid] = proPerson[z.uid] || []).push(z); });
+  const schichtenVon = {};
+  (o.schichten || []).forEach((x) => { if (x && x.uid) (schichtenVon[x.uid] = schichtenVon[x.uid] || []).push(x); });
+  const raus = [];
+  const leute = new Set(Object.keys(schichtenVon).concat(Object.keys(proPerson)));
+  leute.forEach((uid) => {
+    if (frei[uid]) return;
+    const st = tagesStand(proPerson[uid] || [], jetzt);
+    const sch = (schichtenVon[uid] || []).map((x) => ({ x, ab: zeit(x.from), bis: zeit(x.to) }))
+      .filter((s) => s.ab !== null).sort((a, b) => a.ab - b.ab);
+    /* Nichts gestempelt — oder schon Feierabend, und eine ZWEITE Schicht
+       am selben Tag hat danach begonnen (geteilter Dienst). */
+    if (!st.letzteArt || st.letzteArt === 'gehen') {
+      const s = sch.find((v) => (!st.letzteArt || v.ab > st.seit) && imFenster(v.ab + STEMPEL_KOMMEN_NACH_MS));
+      if (s) raus.push({ uid, art: 'kommen', titel: '⏱️ Schon eingestempelt?',
+        text: 'Deine Schicht' + (s.x.studio ? ' in ' + s.x.studio : '') + ' hat um ' + s.x.from +
+          ' begonnen – bisher steht kein Stempel. Stempel am Terminal oder unter „Zeiten".' });
+      return;
+    }
+    const letzte = sch.filter((v) => v.bis !== null).pop();
+    if (letzte) {
+      if (imFenster(letzte.bis + STEMPEL_GEHEN_NACH_MS) && letzte.bis > st.beginn) {
+        raus.push({ uid, art: 'gehen', titel: '⏱️ Feierabend vergessen?',
+          text: 'Deine Schicht' + (letzte.x.studio ? ' in ' + letzte.x.studio : '') + ' endete um ' + letzte.x.to +
+            ' – du bist noch eingestempelt (seit ' + uhr(st.beginn || st.seit) + '). Bist du schon weg, ' +
+            'beantrage unter „Zeiten" eine Korrektur mit der richtigen Uhrzeit.' });
+      }
+      return;
+    }
+    if (st.beginn && imFenster(st.beginn + STEMPEL_OHNE_SCHICHT_MS)) {
+      raus.push({ uid, art: 'gehen', titel: '⏱️ Feierabend vergessen?',
+        text: 'Du bist seit 10 Stunden eingestempelt (seit ' + uhr(st.beginn) + '). Bist du schon weg, ' +
+          'beantrage unter „Zeiten" eine Korrektur mit der richtigen Uhrzeit.' });
+    }
+  });
+  return raus;
+}
+function stempelErinnernMail(e, name) {
+  return { betreff: e.titel.replace(/^⏱️ /, ''),
+    text: 'Hallo' + (name ? ' ' + String(name).split(' ')[0] : '') + ',\n\n' + e.text +
+      '\n\nDiese Erinnerung lässt sich in der App unter Einstellungen → Mails abschalten („Feierabend vergessen").' };
+}
+async function stempelErinnernFirma(firma, jetzt, opt) {
+  opt = opt || {};
+  const push = opt.push || sendPush;
+  const heute = tagBerlin(new Date(jetzt));
+  const F = W(firma);
+  const schichten = [], abwesend = [];
+  for (const ref of await F.collection('studios').listDocuments()) {
+    const name = await studioName(firma, ref.id);
+    (await formiSchichtenHeute(firma, ref.id, heute)).forEach((x) => schichten.push(Object.assign({ studio: name }, x)));
+    (await ref.collection('absences').where('to', '>=', heute).get()).docs.forEach((d) => abwesend.push(d.data() || {}));
+  }
+  const stempel = (await F.collection('zeiten').where('tag', '==', heute).get()).docs.map((d) => d.data() || {});
+  const liste = stempelErinnerungen({ schichten, stempel, abwesend, jetzt, heute });
+  const bericht = [];
+  for (const e of liste) {
+    const u = await db.collection('users').doc(String(e.uid)).get();
+    const ud = u.exists ? (u.data() || {}) : null;
+    if (!ud || ud.aktiv === false || !gehoertZu(ud, firma)) continue;
+    const tokens = await collectTokens((d) => d.uid === e.uid && willHaben(d, 'stempel'), null, firma);
+    if (tokens.length) await push(tokens, e.titel, e.text, 'formi', 'zeit');
+    let mails = 0;
+    if (e.art === 'gehen') {
+      const m = stempelErinnernMail(e, ud.name);
+      mails = await teamMail(firma, [e.uid], m.betreff, m.text, 'stempel');
+    }
+    bericht.push({ uid: e.uid, art: e.art, push: tokens.length, mail: mails });
+  }
+  return bericht;
+}
+exports.stempelErinnern = region.runWith({ timeoutSeconds: 300, memory: '256MB' })
+  .pubsub.schedule('*/15 * * * *').timeZone('Europe/Berlin')
+  .onRun(async () => {
+    const jetzt = Date.now();
+    for (const f of await alleFirmen()) {
+      const b = await stempelErinnernFirma(f, jetzt).catch((e) => { console.error('stempelErinnern', f, e.message); return []; });
+      if (b.length) console.log('Stempel-Erinnerung (' + (f || 'flach') + '): ' + b.length);
+    }
+    return null;
+  });
+
+exports.__intern = { stempelErinnerungen, stempelErinnernMail, stempelErinnernFirma, formiTagText, formiSchichtendeText, formiMaterialNeu, formiFristVorbei, formiSchichtEndeIn, abschlussZeilenPruefen, monateVor, eigeneAbschlussZeile, eigeneRegel, antragUhrPruefen, ANTRAG_TAGE_MAX, erlaubteSchritte, schrittWaehlen, tagesStand, gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
                      gehirnVorschlagPruefen, gehirnBefehlPruefen, gehirnWeg, gehirnKontextText, lageberichtOhneKi,
                      geminiSperreAufheben: () => { _geminiAusBis = 0; }, geminiGesperrt: () => Date.now() < _geminiAusBis, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,
                      authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
@@ -8178,6 +9313,9 @@ exports.__intern = { gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuft
                      pinZuSchwach, pinHashen, pinPruefen,
                      schulungZeichen, schulungCodeNormal, SCHULUNG_ALPHABET,
                      SCHULUNG_TESTCODE, schulungTestErlaubt,
+                     schulungOffenerLauf, auffrischRunde, auffrischWeiter, AUFFRISCH_STUFEN_TAGE,
+                     auffrischErinnernDarf, auffrischTeilnehmerGilt, auffrischErinnernText, AUFFRISCH_ERINNERN_ABSTAND_MS,
+                     AUFFRISCH_JE_MODUL, AUFFRISCH_JE_RUNDE, SCHULUNG_FORTSETZEN_MS,
                      wichtigFehlende, wichtigFaellig, wichtigTitel, wichtigText,
                      WICHTIG_AB_MS, WICHTIG_BIS_MS,
                      SCHULUNG_VERSUCHE_MAX, SCHULUNG_VERSUCHE_FENSTER_MS,

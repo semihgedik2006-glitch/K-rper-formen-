@@ -8,10 +8,10 @@
    streichen, nur neu ordnen. Die Raumnamen „passen".
 
    Geprüft wird:
-    1. Rechner: links genau Heute · Studio · Plan · Nachrichten · Wissen,
+    1. Rechner: links genau Heute · Studio · Zeiten · Plan · Nachrichten · Wissen,
        für die Leitung dazu Verwaltung. Kein Putzplan-Knopf, kein
        „Alles". Die Schnellzugriffe stehen abgesetzt UNTER den Räumen.
-    2. Handy (neues UND bisheriges Design): unten dieselben fünf, in
+    2. Handy (neues UND bisheriges Design): unten dieselben sechs, in
        derselben Reihenfolge.
     3. Jede Ansicht der App liegt in genau einem Raum und ist in höchstens
        zwei Tipps erreichbar (Raum, dann Reiter).
@@ -22,7 +22,7 @@
        auf „Heute" – dort passten nur drei, und die Startseite verlor
        81 px; test-schnell-editor und test-tagesband fanden das.)
     6. Am Handy liegt die Formi-Kugel nicht auf „+ Aufgabe".
-    7. Die fünf Knöpfe unten treffen ≥ 44 × 44 bei 320 / 390 / 430 px,
+    7. Die sechs Knöpfe unten treffen ≥ 44 × 44 bei 320 / 390 / 430 px,
        normal und kompakt; kein Querlauf.
    ══════════════════════════════════════════════════════════════════ */
 const { chromium } = require('playwright');
@@ -30,7 +30,15 @@ const CHROME = process.env.CHROME ||
   '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 const SP = __dirname;
-const RAEUME = ['Heute', 'Studio', 'Plan', 'Nachrichten', 'Wissen'];
+/* Runde 222: ein sechster Raum, „Zeiten". Aus dem Betrieb, 23.10.2026,
+   auf die Rückfrage, ob die Zeiterfassung einen eigenen Knopf unten
+   bekommt oder unter „Alles" liegt: „eigener knopf". Gestempelt wird
+   jeden Tag zweimal — deshalb direkt hinter „Studio". Die Knöpfe treffen
+   weiter ≥ 44 × 44 bei 320 px (Abschnitt 7). */
+const RAEUME = ['Heute', 'Studio', 'Zeiten', 'Plan', 'Nachrichten', 'Wissen'];
+/* Am Handy unten ohne „Wissen“ (Runde 246, aus dem Betrieb 23.10.2026, 08:07:
+   „ja so wie du empfohlen hast klingt super“) – es liegt dort unter ☰ „Alles“. */
+const HANDY = RAEUME.filter(r => r !== 'Wissen');
 
 let gut = 0, schlecht = 0;
 function pruefe(was, bedingung, hinweis) {
@@ -51,7 +59,9 @@ const TREFFER = (el) => {
 };
 async function oeffne(b, w, h, opt) {
   opt = opt || {};
-  const ctx = await b.newContext(Object.assign({ viewport: { width: w, height: h } },
+  /* Service-Worker gesperrt wie in allen Oberflächen-Durchläufen (Runde 183):
+     sonst liefert ein früher registrierter Worker einen alten Stand. */
+  const ctx = await b.newContext(Object.assign({ viewport: { width: w, height: h }, serviceWorkers: 'block' },
     opt.touch ? { hasTouch: true, isMobile: true } : {}));
   const p = await ctx.newPage();
   p._fehler = [];
@@ -78,7 +88,8 @@ const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel
   for (const [stub, leitung] of [['stub-chef.js', true], ['stub-mitarbeiter.js', false]]) {
     const p = await oeffne(b, 1440, 900, { stub });
     const s = await leiste(p, '#side > [data-group]');
-    const soll = leitung ? RAEUME.concat('Verwaltung') : RAEUME;
+    /* Runde 260, aus dem Betrieb 23.10.2026 auf „Mitarbeiter unten nur Heute, Zeiten, Plan, Nachrichten?": „ja" – Studio und Wissen liegen für Mitarbeiter unter „Alles". */
+    const soll = leitung ? RAEUME.concat('Verwaltung') : RAEUME.filter(r => r !== 'Studio' && r !== 'Wissen');
     pruefe((leitung ? 'Leitung' : 'Mitarbeiter') + ': ' + s.join(' · '), JSON.stringify(s) === JSON.stringify(soll), JSON.stringify(s));
     const extra = await p.evaluate(() => ({ schnell: !!document.querySelector('#side .side-schnell'),
       putz: !!document.querySelector('#side [data-group="g-putz"]'), alles: !!document.querySelector('#side [data-group="g-alles"]') }));
@@ -96,7 +107,7 @@ const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel
   for (const neu of [1, 0]) {
     const p = await oeffne(b, 390, 844, { neu, touch: true });
     const u = await leiste(p, '.mobnav [data-group]');
-    pruefe((neu ? 'neues' : 'bisheriges') + ' Design: ' + u.join(' · '), JSON.stringify(u.slice(0, 5)) === JSON.stringify(RAEUME), JSON.stringify(u));
+    pruefe((neu ? 'neues' : 'bisheriges') + ' Design: ' + u.join(' · '), JSON.stringify(u.slice(0, (neu ? HANDY : RAEUME).length)) === JSON.stringify(neu ? HANDY : RAEUME), JSON.stringify(u));
     await zu(p);
   }
 
@@ -108,6 +119,7 @@ const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel
       return raeume;
     });
     const besucht = {};
+    const dreiTipps = [];
     for (const g of plan) {
       await p.evaluate((g) => document.querySelector('#side [data-group="' + g + '"]').click(), g);
       await p.waitForTimeout(500);
@@ -119,11 +131,31 @@ const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel
         await p.waitForTimeout(300);
         const jetzt = await p.evaluate(() => (document.querySelector('.view.show') || {}).id);
         if (jetzt === 'view-' + r) besucht[r] = besucht[r] || g;
+        /* Runde 187: Material und Geräte sind EIN Reiter „Bestand", Chat
+           und Direkt EIN Reiter „Chats". Der zweite Teil steht als
+           Umschalter bzw. als „Direkt" vorn in der Kanalzeile – direkt
+           unter dem Reiter, ohne Suchen. Aus dem Betrieb: „das problem
+           mit dem zu viel bleibt immer noch bestehen" – „deine 2 fragen
+           können wir so umsetzten". Offen gezählt: diese Teile sind
+           EINEN Tipp weiter (Raum, Reiter, Umschalter); unten steht,
+           welche das sind. */
+        const teile = await p.evaluate(() => [...document.querySelectorAll('.view.show .umschalter [data-umschalt], #kanalDirekt, #kanalSpalte [data-dmalle]')]
+          .filter(e => e.getClientRects().length).map(e => (e.id === 'kanalDirekt' || e.dataset.dmalle) ? 'dm' : e.dataset.umschalt));
+        for (const t of teile) {
+          if (besucht[t]) continue;
+          await p.evaluate((t) => { const e = t === 'dm' ? [...document.querySelectorAll('#kanalDirekt, #kanalSpalte [data-dmalle]')].find(x => x.getClientRects().length) : document.querySelector('.view.show .umschalter [data-umschalt="' + t + '"]'); if (e) e.click(); }, t);
+          await p.waitForTimeout(300);
+          const da = await p.evaluate(() => (document.querySelector('.view.show') || {}).id);
+          if (da === 'view-' + t) { besucht[t] = g; dreiTipps.push(t); }
+        }
       }
     }
     const alle = ['home', 'ich', 'persoenlich', 'todos', 'putzplan', 'material', 'geraete', 'probe', 'team', 'chat', 'dm', 'ann', 'docs', 'schulung', 'gehirn', 'chef', 'planer', 'archive'];
     const fehlt = alle.filter(v => !besucht[v]);
     pruefe('alle ' + alle.length + ' Ansichten erreichbar über Raum + Reiter', !fehlt.length, 'fehlt: ' + fehlt.join(', ') + ' — gefunden: ' + JSON.stringify(besucht));
+    console.log('  (über den Umschalter, ein Tipp nach dem Reiter: ' + (dreiTipps.join(', ') || '–') + ')');
+    pruefe('nur Geräte und Direkt liegen hinter einem Umschalter (Runde 187), alles andere in zwei Tipps',
+      dreiTipps.every(v => v === 'geraete' || v === 'dm'), dreiTipps.join(', '));
     pruefe('Putzplan liegt im Raum Studio', besucht.putzplan === 'g-arbeit', besucht.putzplan);
     pruefe('Ich und Persönlich liegen unter Heute', besucht.ich === 'g-start' && besucht.persoenlich === 'g-start');
     pruefe('Schulung, Dokumente und Formi liegen unter Wissen', besucht.schulung === 'g-wissen' && besucht.docs === 'g-wissen' && besucht.gehirn === 'g-wissen', JSON.stringify(besucht));
@@ -186,7 +218,7 @@ const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel
   console.log('\n── 6 Formi-Kugel und „+ Aufgabe" am Handy ──');
   {
     const p = await oeffne(b, 390, 844, { touch: true });
-    await p.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
+    await p.evaluate(() => (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="todos"]').click(); } }).click());
     await p.waitForTimeout(800);
     const r = await p.evaluate(() => {
       const k = document.getElementById('formiKugel'), d = document.querySelector('#daumenDock .kopf-plus');
@@ -211,7 +243,7 @@ const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel
         return { n: k.length, klein: k.map(e => [e.textContent.trim(), f(e)]).filter(x => x[1].w < 44 || x[1].h < 44).map(x => x[0] + ' ' + x[1].w + '×' + x[1].h),
           quer: document.documentElement.scrollWidth - innerWidth };
       }, TREFFER.toString());
-      pruefe(dichte + ' ' + w + ' px: ' + m.n + ' Knöpfe ≥ 44 × 44, kein Querlauf', m.n === 5 && !m.klein.length && m.quer <= 0, JSON.stringify(m));
+      pruefe(dichte + ' ' + w + ' px: ' + m.n + ' Knöpfe ≥ 44 × 44, kein Querlauf', m.n === HANDY.length && !m.klein.length && m.quer <= 0, JSON.stringify(m));
       await zu(p);
     }
   }
@@ -219,6 +251,6 @@ const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel
   await b.close();
   console.log(schlecht
     ? '\n✗ Fünf Räume: ' + schlecht + ' von ' + (gut + schlecht) + ' Zusicherungen falsch'
-    : '\n✓ Fünf Räume: eine Navigation auf allen Geräten, jedes Ziel in zwei Tipps — ' + gut + ' Zusicherungen');
+    : '\n✓ Fünf Räume: eine Navigation auf allen Geräten, jedes Ziel in zwei Tipps (Geräte und Direkt über den Umschalter in drei) — ' + gut + ' Zusicherungen');
   process.exit(schlecht ? 1 : 0);
 })().catch(e => { console.error('Fehler: ' + e.message); process.exit(1); });

@@ -24,6 +24,11 @@
    aber im Emulator gibt es keine Empfänger — belegt ist der Aufruf im
    Code, nicht das Ausbleiben der Meldung auf einem Gerät.
    ───────────────────────────────────────────────────────────────────── */
+/* Runde 236: Seit dem 23.10.2026 ist das neue Design für alle der Standard.
+   Dieser Durchlauf prüft eine Funktion, kommt aber über die BISHERIGE
+   Navigation dorthin. Bis er auf die neue umgestellt ist, läuft er im
+   bisherigen Aussehen (kf_neu=0, der Geräteschalter des Übergangs).
+   Offen als P-20 in docs/BEKANNTE-PROBLEME.md. */
 const { chromium } = require('playwright');
 const path = require('path');
 
@@ -47,6 +52,7 @@ async function start(features) {
     await page.addInitScript('window.__features = ' + JSON.stringify(features) + ';');
   }
   await page.addInitScript({ path: path.join(SP, 'stub-chef.js') });
+  await page.addInitScript(() => { try { localStorage.setItem('kf_neu', '0'); } catch (e) {} });
   await page.goto(APP, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(2600);
   return { b, page };

@@ -74,13 +74,15 @@ function tagZurueck(n) {
 
   // ══ 1. Nachtragen ══
   const r = await fns.zeitNachtragen.run({ uid: 'anna', tag: gestern, uhr: '18:00', art: 'gehen',
-    studioKey: 'studio-1', grund: 'Ausstempeln vergessen, laut Plan bis 18 Uhr' }, als('lisa'));
+    studioKey: 'studio-1', grund: 'Ausstempeln vergessen, laut Plan bis 18 Uhr' }, als('max'));
   const neu = r && r.id ? (await db.doc(F + 'zeiten/' + r.id).get()).data() : null;
-  pruefe('die Studioleitung trägt den vergessenen Feierabend nach', !!neu && neu.art === 'gehen');
+  /* Runde 215: nur noch die Geschäftsführung („nur führung", 22.10.2026).
+     Bis Runde 210 trug hier die Studioleitung nach. */
+  pruefe('die Geschäftsführung trägt den vergessenen Feierabend nach', !!neu && neu.art === 'gehen');
   pruefe('er steht in der Firma, nicht flach', !!neu && !(await db.doc('zeiten/' + r.id).get()).exists);
   pruefe('mit quelle „korrektur", Grund, wer und wann',
     !!neu && neu.quelle === 'korrektur' && /vergessen/.test(neu.grund) &&
-    neu.korrigiertVon === 'lisa' && neu.korrigiertVonName === 'Lisa' && neu.korrigiertAm > 0,
+    neu.korrigiertVon === 'max' && neu.korrigiertVonName === 'Max' && neu.korrigiertAm > 0,
     JSON.stringify(neu));
   pruefe('und mit monat — sonst wäre er in „Meine Zeiten" unsichtbar', !!neu && neu.monat === gestern.slice(0, 7));
   const uhr = neu ? new Date(neu.ts).toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin', hour: '2-digit', minute: '2-digit' }) : '';
@@ -97,18 +99,20 @@ function tagZurueck(n) {
 
   // ══ 3. Wer nicht darf ══
   const gut = { uid: 'anna', tag: gestern, uhr: '17:00', art: 'gehen', studioKey: 'studio-1', grund: 'Ausstempeln vergessen' };
-  await scheitert('ein Mitarbeiter trägt nach', fns.zeitNachtragen.run(gut, als('ben')), /Leitung/);
-  await scheitert('die Leitung eines ANDEREN Studios trägt nach', fns.zeitNachtragen.run(gut, als('otto')), /Leitung/);
+  await scheitert('ein Mitarbeiter trägt nach', fns.zeitNachtragen.run(gut, als('ben')), /Geschäftsführung/);
+  await scheitert('DIE STUDIOLEITUNG IM EIGENEN STUDIO trägt nach (seit Runde 215)', fns.zeitNachtragen.run(gut, als('lisa')), /Geschäftsführung/);
+  await scheitert('die Leitung eines ANDEREN Studios trägt nach', fns.zeitNachtragen.run(gut, als('otto')), /Geschäftsführung/);
+  await scheitert('DIE STUDIOLEITUNG storniert (seit Runde 215)', fns.zeitStornieren.run({ id: r.id, grund: 'will ich so nicht' }, als('lisa')), /Geschäftsführung/);
   await scheitert('die Studioleitung korrigiert sich selbst',
     fns.zeitNachtragen.run(Object.assign({}, gut, { uid: 'lisa' }), als('lisa')), /Geschäftsführung/);
   const selbst = await fns.zeitNachtragen.run(Object.assign({}, gut, { uid: 'lisa' }), als('max'));
   pruefe('(Gegenprobe) die Geschäftsführung korrigiert die Studioleitung', !!(selbst && selbst.ok));
-  await scheitert('ohne Grund', fns.zeitNachtragen.run(Object.assign({}, gut, { grund: '' }), als('lisa')), /Grund/);
-  await scheitert('in der Zukunft', fns.zeitNachtragen.run(Object.assign({}, gut, { tag: tagZurueck(-2) }), als('lisa')), /Zukunft/);
-  await scheitert('zu weit zurück', fns.zeitNachtragen.run(Object.assign({}, gut, { tag: tagZurueck(70) }), als('lisa')), /Tage zurück/);
-  await scheitert('eine unbekannte Art', fns.zeitNachtragen.run(Object.assign({}, gut, { art: 'urlaub' }), als('lisa')), /Art/);
+  await scheitert('ohne Grund', fns.zeitNachtragen.run(Object.assign({}, gut, { grund: '' }), als('max')), /Grund/);
+  await scheitert('in der Zukunft', fns.zeitNachtragen.run(Object.assign({}, gut, { tag: tagZurueck(-2) }), als('max')), /Zukunft/);
+  await scheitert('zu weit zurück', fns.zeitNachtragen.run(Object.assign({}, gut, { tag: tagZurueck(70) }), als('max')), /Tage zurück/);
+  await scheitert('eine unbekannte Art', fns.zeitNachtragen.run(Object.assign({}, gut, { art: 'urlaub' }), als('max')), /Art/);
   await scheitert('eine fremde Firma trägt nach', fns.zeitNachtragen.run(gut, als('zoe')), /nicht/);
-  await scheitert('ein Mitarbeiter storniert', fns.zeitStornieren.run({ id: r.id, grund: 'will ich nicht' }, als('ben')), /Leitung/);
+  await scheitert('ein Mitarbeiter storniert', fns.zeitStornieren.run({ id: r.id, grund: 'will ich nicht' }, als('ben')), /Geschäftsführung/);
   await scheitert('zweimal stornieren', fns.zeitStornieren.run({ id: 'anna-kommen', grund: 'noch einmal' }, als('max')), /schon/);
   await scheitert('eine fremde Firma storniert', fns.zeitStornieren.run({ id: 'anna-kommen', grund: 'fremd hier' }, als('zoe')), /gibt es nicht/);
   const zahl = (await db.collection(F + 'zeiten').where('uid', '==', 'anna').get()).size;
@@ -118,6 +122,6 @@ function tagZurueck(n) {
   protokoll.forEach(z => console.log(z));
   console.log('\n  ' + bestanden + ' bestanden, ' + gefallen + ' gefallen');
   if (gefallen) { console.log('\n✗ Die Korrektur der Stempelzeiten ist nicht dicht.'); process.exit(1); }
-  console.log('\n✓ Korrigieren nur durch die Leitung, nur mit Grund, und nichts wird überschrieben.');
+  console.log('\n✓ Korrigieren nur durch die Geschäftsführung, nur mit Grund, und nichts wird überschrieben.');
   process.exit(0);
 })().catch(e => { console.error(e); process.exit(1); });

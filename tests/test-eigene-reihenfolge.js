@@ -74,10 +74,22 @@ async function oeffnen(b, w, h, stub, vorher) {
   return p;
 }
 async function zu(p, sub) {
-  await p.evaluate(() => { const g = document.querySelector('.mobnav [data-group="g-arbeit"]'); if (g) g.click(); });
+  /* Runde 285: Die Leitung kommt über den Raum „Studio" (Seitenleiste
+     am Rechner) hin. Mitarbeiter haben diesen Raum seit Runde 260 nicht
+     mehr; sie gehen über „Alles". Vorher blieb der Mitarbeiter-Teil
+     still auf der Startseite stehen und zog an Zeilen, die nicht im
+     Bild waren — rot, ohne dass die App etwas falsch machte. */
+  await p.evaluate((s) => {
+    const g = document.querySelector('#side [data-group="g-arbeit"], .mobnav [data-group="g-arbeit"]');
+    if (g && g.getClientRects().length) { g.click(); return; }
+    document.getElementById('bereichKopf').click();
+    document.querySelector('#allesLade [data-alles="' + s + '"]').click();
+  }, sub);
   await p.waitForTimeout(450);
-  await p.evaluate((s) => { const x = document.querySelector('[data-subview="' + s + '"]'); if (x) x.click(); }, sub);
+  await p.evaluate((s) => { const x = document.querySelector('[data-subview="' + s + '"]'); if (x && x.getClientRects().length) x.click(); }, sub);
   await p.waitForTimeout(700);
+  if (!(await p.evaluate((s) => document.getElementById('view-' + s).classList.contains('show'), sub)))
+    throw new Error('Die Seite „' + sub + '" ist nicht offen.');
 }
 const IDS = (sel) => [...document.querySelectorAll(sel)].map(z => z.dataset.id);
 /* Mit der Maus ziehen: Griff der Zeile von bis zur Mitte der Zielzeile. */
@@ -254,7 +266,18 @@ const fremdSchreib = () => (window.__schreib || []).filter(x => /\/(todos|cleani
          Gegenprobe hat gezeigt, dass der erste Zug oben das nicht prüft
          (er ging überwiegend nach unten, das Wischen hielt ihn für
          Rollen). */
-      const c = await p.evaluate((Z) => { const g = document.querySelector(Z + '[data-id="r4"] [data-griff]'); g.scrollIntoView({ block: 'center' });
+      /* Runde 285: erst rollen, dann WARTEN, dann messen. Beim Rollen
+         zieht sich im neuen Design der Bereichskopf zusammen (im
+         nächsten Bild, mit Übergang) — die Liste rückt dabei 58 px
+         hoch. Sofort gemessen lag der Griff bei y = 467, danach bei
+         409–453: der Finger setzte UNTER dem Griff auf, auf der Zeile,
+         und das Wischen hakte zu Recht ab. Das war P-21 („Wisch am
+         Griff hakt ab, Ursache noch nicht gefunden"): ein Messfehler
+         des Tests, kein Fehler der App. Gegenprobe: ohne die Pause
+         wieder rot. */
+      await p.evaluate((Z) => document.querySelector(Z + '[data-id="r4"] [data-griff]').scrollIntoView({ block: 'center' }), Z);
+      await p.waitForTimeout(600);
+      const c = await p.evaluate((Z) => { const g = document.querySelector(Z + '[data-id="r4"] [data-griff]');
         const r = g.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }, Z);
       await p.evaluate(() => { window.__schreib = []; });
       await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: tp(c.x, c.y) });

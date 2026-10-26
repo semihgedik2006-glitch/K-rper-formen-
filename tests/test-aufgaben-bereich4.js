@@ -21,7 +21,7 @@ async function start(stub, errs) {
   await page.waitForTimeout(1600);
   await page.mouse.click(195, 400).catch(() => {});
   await page.waitForTimeout(2700);
-  await page.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
+  await page.evaluate(() => (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="todos"]').click(); } }).click());
   await page.waitForTimeout(1100);
   return { b, page };
 }
@@ -102,7 +102,19 @@ async function start(stub, errs) {
     const leer = await page.evaluate(() => document.getElementById('todoArea').textContent.replace(/\s+/g, ' ').trim());
     console.log('LEER (Filter „Für mich"):', JSON.stringify(leer.slice(0, 90)));
     if (/Erstelle welche im Chef-Bereich/.test(leer)) errs.push('Der Leertext behauptet weiterhin, es gaebe keine Aufgaben');
-    if (!/tippe auf/.test(leer)) errs.push('Der Leertext nennt keinen Ausweg');
+    /* Seit Runde 259 (Plan „Studio Chat wie von Apple": „leere Zustände
+       zeigen den nächsten Schritt") ist der Ausweg ein Knopf statt des
+       Satzes „tippe auf ‚Alle'". Geprüft wird jetzt mehr: der Knopf ist da
+       UND schaltet wirklich auf „Alle". */
+    const ausweg = await page.evaluate(() => {
+      const k = [...document.querySelectorAll('#todoArea .leer-weg')].find(x => x.textContent.trim() === 'Alle zeigen');
+      if (!k) return 'kein Knopf';
+      k.click();
+      return document.querySelector('[data-tfilter="alle"]').classList.contains('on') ? 'ok' : 'schaltet nicht auf Alle';
+    });
+    if (ausweg !== 'ok') errs.push('Der Leerzustand nennt keinen Ausweg (' + ausweg + ')');
+    await page.evaluate(() => document.querySelector('[data-tfilter="meine"]').click());
+    await page.waitForTimeout(300);
 
     // Anlegen ohne Umweg
     await page.evaluate(() => document.querySelector('[data-tfilter="alle"]').click());

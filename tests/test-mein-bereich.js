@@ -177,10 +177,19 @@ async function reiterOeffnen(p, tab) {
     pruefe(ankunft.stelle === 0,
       'STELLE: „Heute" (mit dem Reiter „Ich") steht an Position ' + ankunft.stelle +
       ' statt an erster');
-    // In der Uebersicht liegen jetzt drei Reiter, nicht mehr fuenf
+    /* In der Uebersicht liegen drei Reiter: Woche, Kalender, Ich.
+       „Zeiten" kam in Runde 189 dazu („erstelle bitte noch eine session
+       nur für die stempel seite") und ist seit Runde 222 ein eigener
+       Knopf unten — aus dem Betrieb, 23.10.2026, auf die Rückfrage
+       „eigener Knopf oder unter Alles?": „eigener knopf". Unter „Ich"
+       steht deshalb KEIN Reiter „Zeiten" mehr; zwei Wege an dieselbe
+       Stelle wären einer zu viel. Dass es den Knopf gibt, prüft der
+       Abschnitt zur PIN-Karte unten (er geht genau diesen Weg). */
     ['woche', 'kalender', 'daten'].forEach(t => {
       pruefe(ankunft.reiter.indexOf(t) >= 0, 'FEHLT: der Reiter „' + t + '"');
     });
+    pruefe(ankunft.reiter.indexOf('zeiten') < 0,
+      'DOPPELT: „Zeiten" steht noch als Reiter unter „Ich" — es hat seit Runde 222 einen eigenen Knopf');
     /* Und zwar GENAU diese drei. Ohne die Zahl waere „todo steht noch
        zusaetzlich drin" gruen — also der halbe Umzug. */
     pruefe(ankunft.reiter.length === 3,
@@ -861,20 +870,10 @@ async function reiterOeffnen(p, tab) {
      werden. */
   {
     await p.evaluate(() => {
-      // Runde 184: „Heute" → Reiter „Ich" (siehe Abschnitt 1).
-      document.querySelector('.mobnav [data-group="g-start"]').click();
+      // Runde 222: die PIN-Karte steht unter dem eigenen Knopf „Zeiten".
+      document.querySelector('.mobnav [data-group="g-zeit"]').click();
     });
-    await p.waitForTimeout(400);
-    await p.evaluate(() => {
-      const s = document.querySelector('#subnav [data-subview="ich"]');
-      if (s) s.click();
-    });
-    await p.waitForTimeout(400);
-    await p.evaluate(() => {
-      const t = document.querySelector('[data-ichtab="daten"]');
-      if (t) t.click();
-    });
-    await p.waitForTimeout(900);
+    await p.waitForTimeout(1300);
 
     const karte = await p.evaluate(() => {
       const k = document.getElementById('ichPinKarte');

@@ -167,11 +167,24 @@ pruefe('Ein richtiger Versuch setzt den Zähler zurück',
 
 /* ── Was das Stempeln alles prüft ── */
 console.log('\n── Drei Schlüssel, nicht einer ──');
-const txtStempeln = (() => {
-  const i = quelle.indexOf('exports.stempeln');
-  const j = quelle.indexOf('\n});', i);
-  return i < 0 ? '' : quelle.slice(i, j < 0 ? quelle.length : j + 4);
-})();
+/* Runde 189: Gerät, Person und PIN stehen in terminalUndPinPruefen —
+   dieselbe Prüfung für stempeln UND stempelStand. Der Text von stempeln
+   zählt deshalb nur MIT dieser Hilfe, und nur, wenn stempeln sie auch
+   aufruft. Sonst wären die Zeilen unten grün, obwohl stempeln gar nichts
+   mehr prüft. */
+function abschnitt(start, ende) {
+  const i = quelle.indexOf(start);
+  const j = quelle.indexOf(ende, i);
+  return i < 0 ? '' : quelle.slice(i, j < 0 ? quelle.length : j + ende.length);
+}
+const txtHilfe = abschnitt('async function terminalUndPinPruefen', '\n}\n');
+const txtStempelnSelbst = abschnitt('exports.stempeln ', '\n});');
+const txtStand = abschnitt('exports.stempelStand ', '\n});');
+const txtStempeln = /await terminalUndPinPruefen\(\s*firma\s*,\s*data\s*\)/.test(txtStempelnSelbst)
+  ? txtStempelnSelbst + txtHilfe : txtStempelnSelbst;
+pruefe('stempelStand gibt es und prüft dieselben drei Schlösser',
+  /await terminalUndPinPruefen\(\s*firma\s*,\s*data\s*\)/.test(txtStand) && /anruferProfil\s*\(\s*context\s*\)/.test(txtStand),
+  'sonst verrät stempelStand den Stand jedem, der eine uid kennt');
 pruefe('stempeln gibt es', !!txtStempeln, 'ohne sie ist der Rest gegenstandslos');
 pruefe('1. ein angemeldetes Konto', /anruferProfil\s*\(\s*context\s*\)/.test(txtStempeln),
   'ohne Anmeldung waere es eine offene Adresse im Internet');

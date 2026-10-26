@@ -104,7 +104,9 @@ const homeAufbau = (p) => p.evaluate(() => {
     const g = await homeAufbau(p);
     pruefe(w + ' px: vier Gruppen in der Reihenfolge Jeden Tag · Team & Studios · Zahlen · Einstellungen',
       g.map(x => x.t).join(' · ') === 'Jeden Tag · Team & Studios · Zahlen · Einstellungen', JSON.stringify(g));
-    const erwartet = { 'Jeden Tag': ['ueberblick', 'erstellen', 'anliegen', 'zeiten'], 'Team & Studios': ['team', 'standorte', 'nachweise'],
+    /* Ohne „zeiten" seit Runde 222 (#281, aus dem Betrieb 23.10.2026:
+       „eigener knopf") – die Zeiten des Teams stehen unter Zeiten → Team. */
+    const erwartet = { 'Jeden Tag': ['ueberblick', 'erstellen', 'anliegen'], 'Team & Studios': ['team', 'standorte', 'nachweise'],
       'Zahlen': ['kennzahlen', 'report'], 'Einstellungen': ['system'] };
     pruefe(w + ' px: jede Kachel unter ihrer Gruppe', g.every(x => JSON.stringify(x.k) === JSON.stringify(erwartet[x.t])), JSON.stringify(g));
     const quer = await p.evaluate(() => document.documentElement.scrollWidth - innerWidth);

@@ -28,6 +28,11 @@
         Kacheln sind Knöpfe · „Braucht Aufmerksamkeit" nennt Überfälliges
         und fehlendes Material je EINMAL statt je Studio
    ══════════════════════════════════════════════════════════════════ */
+/* Runde 236: Seit dem 23.10.2026 ist das neue Design für alle der Standard.
+   Dieser Durchlauf prüft eine Funktion, kommt aber über die BISHERIGE
+   Navigation dorthin. Bis er auf die neue umgestellt ist, läuft er im
+   bisherigen Aussehen (kf_neu=0, der Geräteschalter des Übergangs).
+   Offen als P-20 in docs/BEKANNTE-PROBLEME.md. */
 const { chromium } = require('playwright');
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
@@ -101,9 +106,13 @@ async function leiste(p) {
     pruefe('drei Ziele und „Anpassen"', l && l.length === 4 && l[3].wort === 'Anpassen',
       JSON.stringify(l && l.map(x => x.wort)));
     /* Seit Runde 103, P5 steht der Putzplan unten in der Leiste; der
-       Vorschlag nennt an seiner Stelle „Meine Woche". */
-    pruefe('der Vorschlag für Mitarbeiter: Meine Woche, Meine Zeiten, Geräte',
-      l && l.slice(0, 3).map(x => x.wort).join('|') === 'Meine Woche|Meine Zeiten|Geräte');
+       Vorschlag nennt an seiner Stelle „Meine Woche". Seit Runde 222
+       haben auch die Zeiten einen eigenen Knopf unten („eigener knopf",
+       23.10.2026) — als Schnellzugriff wären sie ein zweiter Weg an
+       dieselbe Stelle, an ihren Platz rückt „Mein Kalender". */
+    pruefe('der Vorschlag für Mitarbeiter: Meine Woche, Mein Kalender, Geräte',
+      l && l.slice(0, 3).map(x => x.wort).join('|') === 'Meine Woche|Mein Kalender|Geräte',
+      JSON.stringify(l && l.map(x => x.wort)));
     pruefe('jede Trefferfläche ≥ 44 × 44', l && l.every(x => x.t.w >= 44 && x.t.h >= 44),
       JSON.stringify(l && l.map(x => x.t)));
 
@@ -118,14 +127,14 @@ async function leiste(p) {
 
     /* Ein Tipp führt hin — bis in den Unterreiter. */
     await p.evaluate(() => [...document.querySelectorAll('#schnellLeiste .sz-knopf')]
-      .find(k => /Meine Zeiten/.test(k.textContent)).click());
+      .find(k => /Mein Kalender/.test(k.textContent)).click());
     await p.waitForTimeout(800);
     const da = await p.evaluate(() => ({
       ansicht: (document.querySelector('.view.show') || {}).id,
       reiter: (document.querySelector('[data-ichtab].on, [data-ichtab].active') || {}).getAttribute
         ? document.querySelector('[data-ichtab].on, [data-ichtab].active').getAttribute('data-ichtab') : null
     }));
-    pruefe('„Meine Zeiten" öffnet „Ich" im Reiter Zeiten', da.ansicht === 'view-ich' && da.reiter === 'daten',
+    pruefe('„Mein Kalender" öffnet „Ich" im Reiter Kalender', da.ansicht === 'view-ich' && da.reiter === 'kalender',
       JSON.stringify(da));
 
     /* Zurück zur Startseite, Anpassen öffnen. Der Knopf heisst seit
@@ -174,7 +183,7 @@ async function leiste(p) {
     await p.waitForTimeout(400);
     const neu = await leiste(p);
     pruefe('die Zeile zeigt sofort die neue Wahl',
-      neu && neu.slice(0, 3).map(x => x.wort).join('|') === 'Meine Woche|Meine Zeiten|Material',
+      neu && neu.slice(0, 3).map(x => x.wort).join('|') === 'Meine Woche|Mein Kalender|Material',
       JSON.stringify(neu && neu.map(x => x.wort)));
 
     /* Nach dem Neuladen noch da. */
@@ -184,7 +193,7 @@ async function leiste(p) {
     await p.waitForTimeout(300);
     const nachLaden = await leiste(p);
     pruefe('die Wahl übersteht das Neuladen',
-      nachLaden && nachLaden.slice(0, 3).map(x => x.wort).join('|') === 'Meine Woche|Meine Zeiten|Material',
+      nachLaden && nachLaden.slice(0, 3).map(x => x.wort).join('|') === 'Meine Woche|Mein Kalender|Material',
       JSON.stringify(nachLaden && nachLaden.map(x => x.wort)));
     const ablage = await p.evaluate(() => {
       const pr = JSON.parse(localStorage.getItem('kf_prefs') || '{}');
@@ -202,7 +211,7 @@ async function leiste(p) {
     await p.waitForTimeout(300);
     const zurueck = await leiste(p);
     pruefe('„Zum Vorschlag" stellt den Vorschlag wieder her',
-      zurueck && zurueck.slice(0, 3).map(x => x.wort).join('|') === 'Meine Woche|Meine Zeiten|Geräte');
+      zurueck && zurueck.slice(0, 3).map(x => x.wort).join('|') === 'Meine Woche|Mein Kalender|Geräte');
     pruefe('A1 ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await p.close();
   }
@@ -212,7 +221,7 @@ async function leiste(p) {
     const p = await seite(b, 'mitarbeiter', { prefs: { theme: 'dark', schnell: { 'jemand-anderes': ['material'] } } });
     const l = await leiste(p);
     pruefe('GEGENPROBE die Wahl eines anderen Kontos gilt hier nicht (Vorschlag steht da)',
-      l && l.slice(0, 3).map(x => x.wort).join('|') === 'Meine Woche|Meine Zeiten|Geräte',
+      l && l.slice(0, 3).map(x => x.wort).join('|') === 'Meine Woche|Mein Kalender|Geräte',
       JSON.stringify(l && l.map(x => x.wort)));
     await p.close();
   }
@@ -231,6 +240,7 @@ async function leiste(p) {
     const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 } });
     await p.route('**://www.gstatic.com/**', r => r.abort());
     await p.addInitScript({ path: __dirname + '/stub-mitarbeiter.js' });
+    await p.addInitScript(() => { try { localStorage.setItem('kf_neu', '0'); } catch (e) {} });
     await p.goto(APP, { waitUntil: 'domcontentloaded' });
     await p.waitForTimeout(3200);
     const alt = await p.evaluate(() => {

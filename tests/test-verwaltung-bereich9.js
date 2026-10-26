@@ -4,6 +4,11 @@
    „Braucht Aufmerksamkeit" gehört nach oben, nicht hinter 1.600 Pixel
    Studio-Tabelle. Und „Erstellen" beginnt mit der Aufgabe, nicht mit der
    Ankündigung — deswegen kommt man dorthin. */
+/* Runde 236: Seit dem 23.10.2026 ist das neue Design für alle der Standard.
+   Dieser Durchlauf prüft eine Funktion, kommt aber über die BISHERIGE
+   Navigation dorthin. Bis er auf die neue umgestellt ist, läuft er im
+   bisherigen Aussehen (kf_neu=0, der Geräteschalter des Übergangs).
+   Offen als P-20 in docs/BEKANNTE-PROBLEME.md. */
 const { chromium } = require('playwright');
 const SP = process.env.SP || __dirname;
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
@@ -17,6 +22,7 @@ async function start(stub, errs) {
   await page.route('**://www.gstatic.com/**', r => r.abort());
   await page.route('**script.google.com/**', r => r.fulfill({ status: 200, body: 'ok' }));
   await page.addInitScript({ path: SP + '/' + stub });
+  await page.addInitScript(() => { try { localStorage.setItem('kf_neu', '0'); } catch (e) {} });
   await page.goto(APP, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1600);
   await page.mouse.click(195, 400).catch(() => {});
@@ -123,7 +129,7 @@ const reiter = page => page.evaluate(() => {
     }
 
     // ── „+ Neu" von der Aufgabenseite muss immer noch im Formular landen ──
-    await page.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
+    await page.evaluate(() => (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="todos"]').click(); } }).click());
     await page.waitForTimeout(900);
     await page.evaluate(() => document.getElementById('todoNew').click());
     await page.waitForTimeout(1100);
@@ -165,11 +171,23 @@ const reiter = page => page.evaluate(() => {
     /* Sieben seit „Kennzahlen" (4.10.2026, Runde 138): die Studioleitung
        trägt Mitglieder und Kündigungen IHRER Studios ein — „geht fit".
        Die Grenze steht in firestore.rules (tests/rules/kennzahlen.test.js). */
-    if (l.kacheln.length !== 7) errs.push('Leiter sieht ' + l.kacheln.length + ' statt 7 Kacheln');
+    /* Wieder sechs seit Runde 222: „Zeiten" ist keine Kachel der
+       Verwaltung mehr, sondern ein eigener Knopf mit dem Reiter „Team" —
+       aus dem Betrieb, 23.10.2026: „eigener knopf". Dass die Studioleitung
+       die Zeiten ihrer Studios dort weiter sieht, prüft der Block unten. */
+    if (l.kacheln.length !== 6) errs.push('Leiter sieht ' + l.kacheln.length + ' statt 6 Kacheln');
     if (!l.kacheln.some(k => /Kennzahlen/.test(k)))
       errs.push('Leiter sieht „Kennzahlen" nicht — dann kann sie die Monatszahlen nicht eintragen');
-    if (!l.kacheln.some(k => /Zeiten/.test(k)))
-      errs.push('Leiter sieht „Zeiten" nicht — dann kann sie keinen vergessenen Feierabend nachtragen');
+    if (l.kacheln.some(k => /Zeiten/.test(k)))
+      errs.push('„Zeiten" steht noch als Kachel in der Verwaltung — seit Runde 222 hat es einen eigenen Knopf');
+    const zt = await page.evaluate(async () => {
+      const g = [...document.querySelectorAll('.mobnav [data-group="g-zeit"], #side [data-group="g-zeit"]')].find(x => x.getClientRects().length);
+      if (!g) return { knopf: false };
+      g.click(); await new Promise(r => setTimeout(r, 700));
+      return { knopf: true, team: !!document.querySelector('#subnav [data-subview="zeitteam"]') };
+    });
+    if (!zt.knopf || !zt.team)
+      errs.push('Leiter erreicht „Zeiten → Team" nicht — dann sieht sie nicht, wer gestern nicht ausgestempelt hat: ' + JSON.stringify(zt));
     if (l.kacheln.some(k => /Team|Nachweise/.test(k))) errs.push('Leiter sieht einen Chef-Reiter');
     if (!l.kacheln.some(k => /Anliegen/.test(k)))
       errs.push('Leiter sieht „Anliegen" nicht — dann kommt an ihn Gerichtetes nie an');

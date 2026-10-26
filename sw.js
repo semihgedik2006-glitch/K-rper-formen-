@@ -2,7 +2,7 @@
    - Caching: HTML immer frisch (network-first), statische Dateien offline-fähig
    - Push: Firebase Cloud Messaging im Hintergrund
    Bei Code-Änderungen VERSION hochzählen. */
-const VERSION = 'v31';
+const VERSION = 'v35';
 const CACHE = 'studiochat-' + VERSION;
 /* loesungen-basis.js liegt mit im Vorrat: die 115 Einträge sind genau
    das, was jemand im Studio braucht, wenn das WLAN gerade der Grund
@@ -29,13 +29,32 @@ const messaging = firebase.messaging();
    Der Rueckfall auf payload.notification bleibt: waehrend des Ausrollens
    liegen noch Nachrichten alter Form unterwegs, und eine PWA aktualisiert
    ihren Service Worker nicht in derselben Sekunde. */
+/* Nachts lautlos (Runde 225, Studienlage Folgerung 9: „Push … mit
+   Ruhezeiten"). Die Meldung kommt weiter an – nur ohne Ton und Vibration
+   zwischen 22 und 6 Uhr. Ganz weglassen geht nicht: ein Push ohne
+   sichtbare Meldung beantwortet Chrome mit einer eigenen, nichtssagenden.
+   Die Wahl legt die App in den Vorrat EINST (localStorage gibt es hier
+   nicht); fehlt sie, gilt „an". */
+const EINST = 'kf-einst';
+function nachtLautlos(einst, jetzt) {
+  if (einst && einst.nachtLautlos === false) return false;
+  const h = jetzt.getHours();
+  return h >= 22 || h < 6;
+}
+function einstLesen() {
+  return caches.open(EINST).then(function (c) { return c.match('einst.json'); })
+    .then(function (r) { return r ? r.json() : {}; }).catch(function () { return {}; });
+}
 messaging.onBackgroundMessage(function (payload) {
   const d = (payload && payload.data) || {};
   const n = (payload && payload.notification) || {};
-  const titel = d.title || n.title || 'StudioChat';
+  /* Runde 242 (Idee 14): was die App selbst schickt, spricht Formi —
+     Name vorn, Formis Bild. Nachrichten von Menschen bleiben, wie sie sind. */
+  const formi = d.von === 'formi';
+  const titel = (formi ? 'Formi · ' : '') + (d.title || n.title || 'StudioChat');
   const text = d.body || n.body || '';
-  self.registration.showNotification(titel, {
-    body: text, icon: 'icon.svg', badge: 'icon.svg',
+  return einstLesen().then(function (einst) { return self.registration.showNotification(titel, {
+    body: text, icon: formi ? 'formi-push.svg' : 'icon.svg', badge: 'icon.svg', silent: nachtLautlos(einst, new Date()),
     /* Die Marke haengt am INHALT, nicht an der Uhrzeit.
 
        Vorher stand hier Date.now() — damit war jede Marke einmalig und
@@ -43,8 +62,11 @@ messaging.onBackgroundMessage(function (payload) {
        uebereinander. Mit dem Inhalt als Marke ersetzt eine identische
        Meldung die vorige, egal woher die zweite kam. Verschiedene
        Nachrichten stossen sich dabei nicht: sie haben andere Marken. */
-    tag: 'kf-' + marke(titel + '|' + text)
-  });
+    tag: 'kf-' + marke(titel + '|' + text),
+    /* Runde 243: wohin ein Tipp führt (z. B. 'zeit' bei der
+       Stempel-Erinnerung). Fehlt es, öffnet die App wie bisher. */
+    data: { ziel: zielPruefen(d.ziel) }
+  }); });
 });
 /* Kurze, stabile Zahl aus einer Zeichenkette. Kein Sicherheitszweck —
    sie muss nur fuer denselben Text immer gleich herauskommen. */
@@ -53,11 +75,24 @@ function marke(s) {
   for (let i = 0; i < s.length; i++) { h = ((h << 5) - h + s.charCodeAt(i)) | 0; }
   return Math.abs(h).toString(36);
 }
+/* Nur ein Wort aus Kleinbuchstaben — es wird Teil einer Adresse. */
+function zielPruefen(z) {
+  return /^[a-z]{2,20}$/.test(String(z || '')) ? String(z) : '';
+}
+/* Ist die App schon offen, bekommt sie das Ziel als Nachricht und wechselt
+   selbst (ein neues Fenster hiesse: noch einmal anmelden, noch einmal
+   laden). Sonst öffnet sie mit #ziel — denselben Weg nimmt ein Link. */
 self.addEventListener('notificationclick', function (e) {
   e.notification.close();
+  const ziel = zielPruefen(e.notification.data && e.notification.data.ziel);
   e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (list) {
-    for (const c of list) { if ('focus' in c) return c.focus(); }
-    if (self.clients.openWindow) return self.clients.openWindow('./index.html');
+    for (const c of list) {
+      if ('focus' in c) {
+        if (ziel) c.postMessage({ typ: 'ziel', ziel: ziel });
+        return c.focus();
+      }
+    }
+    if (self.clients.openWindow) return self.clients.openWindow('./index.html' + (ziel ? '#' + ziel : ''));
   }));
 });
 
@@ -77,7 +112,7 @@ self.addEventListener('install', function (e) {
 });
 self.addEventListener('activate', function (e) {
   e.waitUntil(caches.keys().then(function (ks) {
-    return Promise.all(ks.filter(function (k) { return k !== CACHE; }).map(function (k) { return caches.delete(k); }));
+    return Promise.all(ks.filter(function (k) { return k !== CACHE && k !== EINST; }).map(function (k) { return caches.delete(k); }));
   }).then(function () { return self.clients.claim(); }));
 });
 self.addEventListener('message', function (e) { if (e.data === 'SKIP_WAITING') self.skipWaiting(); });
@@ -94,12 +129,18 @@ self.addEventListener('fetch', function (e) {
       h.indexOf('google-analytics') >= 0 || h.indexOf('analytics.google') >= 0) return;
 
   // HTML/Navigation: erst Netz, offline aus dem Cache.
-  // cache:'no-store' ist Pflicht — sonst liefert der Browser trotz „Netz
-  // zuerst" bis zu zehn Minuten lang seine eigene Kopie (max-age aus der
-  // Antwort des Hosters).
+  // cache:'no-cache' statt undefined ist Pflicht — sonst liefert der
+  // Browser trotz „Netz zuerst" bis zu zehn Minuten lang seine eigene
+  // Kopie (max-age aus der Antwort des Hosters). Bis zum 26.10.2026
+  // stand hier 'no-store': dann holt der Browser jedes Mal die ganze
+  // Seite (943 KB gzip) und kann nie ein 304 bekommen. Mit 'no-cache'
+  // fragt er mit dem ETag nach; ist nichts geaendert, antwortet der
+  // Hoster 304 und der Browser nimmt seine Kopie — gleich frisch, aber
+  // ohne den Inhalt zu laden. Eine neue Auslieferung aendert den ETag,
+  // also kommt sie weiterhin sofort an.
   if (e.request.mode === 'navigate') {
     e.respondWith(
-      fetch(e.request, { cache: 'no-store' }).then(function (r) {
+      fetch(e.request, { cache: 'no-cache' }).then(function (r) {
         const cp = r.clone(); caches.open(CACHE).then(function (c) { c.put(e.request, cp); });
         return r;
       }).catch(function () { return caches.match(e.request).then(function (m) { return m || caches.match('./index.html'); }); })

@@ -28,7 +28,13 @@ cd "$(dirname "$0")/.."
 NODE=${NODE:-/opt/node22/bin/node}
 export NODE_PATH=${NODE_PATH:-/opt/node22/lib/node_modules}
 MUSTER=${1:-}
-ZEIT=${ZEIT:-240}
+# Runde 285: 240 → 420 s. Sieben Durchläufe (formi-angedockt,
+# formi-verdeckt, formi-zeigwie, gehirn, glas, pc-durchsicht,
+# schichtplan-raster) brauchen inzwischen 250–350 s und wurden mit
+# Exit-Code 124 als rot gezählt, obwohl ihre Prüfungen grün waren
+# (formi-angedockt einzeln: 32 von 32 grün nach 348 s). Das ist die
+# Zeitgrenze des Läufers, keine Zusicherung eines Tests.
+ZEIT=${ZEIT:-420}
 
 # Server muss laufen, sonst scheitert alles auf dieselbe Art
 if ! curl -s -o /dev/null --max-time 3 http://127.0.0.1:8765/index.html; then

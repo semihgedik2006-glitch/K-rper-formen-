@@ -768,8 +768,14 @@
       }
     }
     /* Eine eigene Schicht heute — sonst steht „Mein Dienst" leer und die
-       wichtigste Karte der Startseite sagt in der Vorführung nichts. */
-    if ((ICH.studioKeys || []).indexOf(k) >= 0) {
+       wichtigste Karte der Startseite sagt in der Vorführung nichts.
+       Runde 283: nur in EINEM eigenen Studio. Vorher stand die Schicht
+       in jedem eigenen Studio — die Geschäftsführung hatte heute
+       vierzehnmal 09:00–14:00 gleichzeitig, „Laut Plan 69:15 h" und unter
+       Zeiten eine Textwand aus vierzehn Schichten. Welches: das, das der
+       Plan zuerst zeigt (nach dem Alphabet, siehe buildTeamSelect) —
+       sonst steht die eigene Schicht im Plan nie im Bild. */
+    if (name === (ICH.studios || []).slice().sort(function (a, b) { return a.localeCompare(b, 'de'); })[0]) {
       schichten.push({ id: 's-' + k + '-ich', date: datum(0), from: '09:00', to: '14:00',
         uid: ICH.id, name: ICH.name });
     }
@@ -1146,6 +1152,13 @@
     { id: 'tn-nora', name: 'Nora Haas', uid: 'u5', kennung: 'M4K7',
       code: 'M4K7-9TQD-B2HX',
       gesperrt: false, angelegtVon: 'Demo-Studioleitung', ts: vorTag(30), codeAm: vorTag(30) },
+    /* Runde 201: das angemeldete Demo-Konto ist selbst Teilnehmer —
+       verknüpft, wie es im Betrieb sein soll. Vorher hingen seine
+       Durchläufe an „Nora Haas", deren Eintrag aber auf ein anderes
+       Konto zeigte; das Auffrischen ohne Code fand deshalb niemanden. */
+    { id: 'tn-ich', name: 'Du (Demo-Konto)', uid: 'demo-ich', kennung: 'D3MQ',
+      code: 'D3MQ-7WKP-H2CX',
+      gesperrt: false, angelegtVon: 'Demo-Studioleitung', ts: vorTag(20), codeAm: vorTag(20) },
     { id: 'tn-neu', name: 'Jamie Kurz', uid: null, kennung: 'RPQ2',
       code: 'RPQ2-K7MV-4NDS',
       gesperrt: false, angelegtVon: 'Demo-Studioleitung', ts: vorTag(4), codeAm: vorTag(4) }
@@ -1171,15 +1184,34 @@
     /* Ein Durchlauf des angemeldeten Demo-Kontos selbst — damit oben
        auf der Seite die Karte „was du schon gemacht hast" steht. */
     { id: 'lauf3', modul: 'm-notfall', modulTitel: 'Wenn einem Kunden schlecht wird',
-      kategorie: 'notfall', teilnehmer: 'tn-nora', teilnehmerName: 'Nora Haas',
+      kategorie: 'notfall', teilnehmer: 'tn-ich', teilnehmerName: 'Du (Demo-Konto)',
       uid: 'demo-ich', geraetUid: 'demo-ich', geraetName: 'Empfang Brühl', studioKey: sk(7),
       start: vorTag(16), ende: vorTag(16) + 580000, aktivMs: 552000, durchgang: 2,
       schritteGesehen: [0, 1, 2, 3],
       fragen: [{ frage: 'Erster Schritt?', versuche: 1, falsch: [], richtig: true },
                { frage: 'Kunde sagt, es sei nichts …', versuche: 1, falsch: [], richtig: true },
                { frage: 'Wer entscheidet?', versuche: 2, falsch: [1], richtig: true }],
-      punkte: 100, bestanden: true, status: 'fertig', ts: vorTag(16) }
+      punkte: 100, bestanden: true, status: 'fertig', ts: vorTag(16) },
+    /* Runde 201: ein angefangenes „Beratungsgespräch" des Demo-Kontos —
+       damit „angefangen · 2/17" und das Weitermachen zu sehen sind. */
+    { id: 'lauf4', modul: 'm-beratung', modulTitel: 'Das Beratungsgespräch — vom Anruf bis zur Empfehlung',
+      kategorie: 'verkauf', teilnehmer: 'tn-ich', teilnehmerName: 'Du (Demo-Konto)',
+      uid: 'demo-ich', geraetUid: 'demo-ich', geraetName: 'Empfang Brühl', studioKey: sk(7),
+      start: vorTag(2), ende: 0, aktivMs: 1500000, durchgang: 1,
+      schritteGesehen: [0, 1], fragen: [],
+      punkte: 0, bestanden: false, status: 'laeuft', ts: vorTag(2) }
   ]);
+  /* Die Summe je Frage aus dem Auffrischen (Runde 201) — ohne Namen,
+     wie im Betrieb. Damit „Fragen, die im Team nicht sitzen" in der
+     Vorführung etwas zeigt. */
+  legen(P('schulungFragenStat'), [
+    { id: 'm-hygiene', modul: 'm-hygiene', f: { '1': { r: 3, x: 4 }, '0': { r: 6, x: 1 } } },
+    { id: 'm-notfall', modul: 'm-notfall', f: { '2': { r: 2, x: 3 } } },
+    /* Nur zwei Antworten: steht in der Liste der Leitung NICHT — zu
+       wenige, um niemanden herauszulesen (tests/test-schulung-lernen.js). */
+    { id: 'm-start', modul: 'm-start', f: { '0': { r: 1, x: 1 } } }
+  ]);
+  legen(P('schulungLernplan'), []);
 
 
   /* ── Zeiterfassung in der Demo ──────────────────────────────────────
@@ -1251,18 +1283,31 @@
        Endzeit fehlt — das ist der Teil, den ein Chef sehen will. */
     var meinStudio = (ICH.studioKeys || [])[0] || sk(6);
     var eigen = 0;
+    /* Runde 285: Der offene Tag stand fest „vor acht Tagen". An einem
+       Montag ist das ein Sonntag (zu), und an jedem vierten Tag würfelte
+       zufall() ihn als frei weg — dann hatte die Vorführung keinen
+       fehlenden Feierabend (test-zeiten-verwaltung, 26.10.2026). Jetzt:
+       der erste Werktag ab acht Tagen zurück, und er wird nie frei. */
+    var offenerTag = 8;
+    while (offenerTag < 11) {
+      var to = new Date(); to.setDate(to.getDate() - offenerTag);
+      if (to.getDay() !== 0) break;
+      offenerTag++;
+    }
     for (var d = 45; d >= 1; d--) {
       var tagD = new Date(); tagD.setDate(tagD.getDate() - d);
       var wt = tagD.getDay();
       if (wt === 0) continue;                       // sonntags zu
-      if (zufall() < 0.25) continue;                // frei, krank, Urlaub
+      /* zufall() wird trotzdem gezogen: sonst verschöbe sich alles, was
+         danach gewürfelt wird. */
+      if (zufall() < 0.25 && d !== offenerTag) continue;   // frei, krank, Urlaub
       var tag = tagD.toLocaleDateString('sv-SE');
       function um(std, min) {
         var x = new Date(tagD); x.setHours(std, min, 0, 0); return x.getTime();
       }
       var an = 8 + zahl(0, 1);
       stempel(ICH, meinStudio, 'kommen', um(an, zahl(0, 50)), tag, 'demo-t6');
-      if (d === 8) continue;                        // der vergessene Feierabend
+      if (d === offenerTag) continue;               // der vergessene Feierabend
       stempel(ICH, meinStudio, 'pause', um(an + 4, zahl(0, 20)), tag, 'demo-t6');
       stempel(ICH, meinStudio, 'zurueck', um(an + 4, 30 + zahl(0, 15)), tag, 'demo-t6');
       stempel(ICH, meinStudio, 'gehen', um(an + 8, zahl(0, 40)), tag, 'demo-t6');
@@ -1297,6 +1342,50 @@
     });
   })();
   legen(P('zeiten'), STEMPEL);
+
+  /* Runde 204: Korrekturanträge. Einer aus dem Team wartet auf die
+     Geschäftsführung; einer der eigenen ist schon entschieden — damit die
+     Vorführung beide Seiten zeigt. */
+  (function () {
+    var gestern = new Date(); gestern.setDate(gestern.getDate() - 1);
+    if (gestern.getDay() === 0) gestern.setDate(gestern.getDate() - 1);
+    var tg = gestern.toLocaleDateString('sv-SE');
+    var andere = leuteIn(sk(6)).filter(function (u) { return u.id !== (ICH && ICH.id); });
+    var liste = [];
+    if (andere[0]) liste.push({ id: 'demo-antrag-1', uid: andere[0].id, name: andere[0].name, studioKey: sk(6),
+      tag: tg, monat: tg.slice(0, 7), art: 'gehen', uhr: '17:30', ts: new Date(tg + 'T17:30:00').getTime(),
+      grund: 'Feierabend vergessen zu stempeln, Schicht ging bis 17:30', status: 'offen', erstellt: Date.now() - 3 * STD });
+    if (ICH && ICH.role !== 'chef') {
+      var vor = new Date(); vor.setDate(vor.getDate() - 6);
+      var tv = vor.toLocaleDateString('sv-SE');
+      liste.push({ id: 'demo-antrag-2', uid: ICH.id, name: ICH.name, studioKey: (ICH.studioKeys || [])[0] || sk(6),
+        tag: tv, monat: tv.slice(0, 7), art: 'kommen', uhr: '08:00', ts: new Date(tv + 'T08:00:00').getTime(),
+        grund: 'Terminal war aus, kam um 8 Uhr', status: 'angenommen', erstellt: Date.now() - 5 * 24 * STD,
+        entschiedenVonName: 'Demo-Geschäftsführung', entschiedenAm: Date.now() - 4 * 24 * STD });
+    }
+    legen(P('zeitAntraege'), liste);
+  })();
+
+  /* Runde 222: ein abgeschlossener Monat (vor zwei Monaten), damit „Mein
+     Konto" in der Vorführung einen Stand zeigt. Bewusst NICHT der
+     Vormonat: den schliesst die Vorführung der Geschäftsführung selbst
+     ab (test-zeiten-verwaltung). Die Zahlen sind erfunden und stehen
+     auch nur in der Demo. */
+  (function () {
+    var vv = new Date(); vv.setDate(1); vv.setMonth(vv.getMonth() - 2);
+    var m2 = vv.toLocaleDateString('sv-SE').slice(0, 7);
+    var zeilen = (DB[P('planerTeam')] || []).map(function (p, n) {
+      var soll = Math.round((p.wocheStd || 0) * 60 * 4.3);
+      var saldo = [135, -45, 270, 0, -90, 60][n % 6];
+      return { uid: p.uid, name: p.name, ist: soll + saldo, soll: soll, gutschrift: 0, saldo: saldo,
+        uebertrag: 0, konto: saldo, tage: 20, offen: 0 };
+    }).filter(function (z) { return z.soll > 0; });
+    legen(P('zeitAbschluesse'), [{ id: m2, monat: m2, abgeschlossen: true, zeilen: zeilen,
+      von: 'demo-chef', vonName: 'Demo-Geschäftsführung', am: Date.now() - 20 * 24 * STD }]);
+    var regeln = {};
+    zeilen.forEach(function (z) { regeln[z.uid] = { u: 28 }; });
+    legen(P('lohnEinstellungen'), [{ id: 'zeitregeln', regeln: regeln, geaendert: Date.now() - 30 * 24 * STD }]);
+  })();
 
   legen('firmen', [{ id: KENNUNG, name: 'Körperformen', aktiv: true, kennung: KENNUNG }]);
   /* ── Das Abo in der Demo ──
@@ -1463,8 +1552,24 @@
       }
       if (!t) throw new Error('Zu diesem Code gibt es keinen Namen mehr.');
       if (t.gesperrt) throw new Error('Dieser Code ist stillgelegt. Bitte bei der Leitung melden.');
-      var frueher = holen(P('schulungLaeufe')).filter(function (l) {
-        return l.teilnehmer === t.id && l.modul === modul; }).length;
+      var frueherListe = holen(P('schulungLaeufe')).filter(function (l) {
+        return l.teilnehmer === t.id && l.modul === modul; });
+      var frueher = frueherListe.length;
+      var konto = t.uid ? holen('users').filter(function (u) { return u.id === t.uid; })[0] : null;
+      /* Weitermachen (Runde 201), wie functions/index.js: ein angefangener,
+         nicht leerer Durchlauf unter 30 Tagen wird fortgesetzt. */
+      var offen = frueherListe.filter(function (l) {
+        return l.status === 'laeuft' && !l.test && (Date.now() - (l.ts || 0)) < 30 * 86400000 &&
+          ((l.schritteGesehen || []).length > 0 || (l.fragen || []).some(function (f) { return f && f.versuche > 0; }));
+      }).sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); })[0];
+      if (offen) {
+        offen.geraetUid = ICH.id; offen.geraetName = ICH.name || '';
+        melden(P('schulungLaeufe'));
+        return { ok: true, lauf: offen.id, name: t.name || '', durchgang: offen.durchgang || 1,
+                 ohneVideoSperre: !!(konto && konto.role === 'chef'),
+                 fortsetzen: { schritteGesehen: (offen.schritteGesehen || []).slice(),
+                               fragen: (offen.fragen || []).slice(), aktivMs: offen.aktivMs || 0 } };
+      }
       var id = neueId();
       holen(P('schulungLaeufe')).push({
         id: id, modul: modul, modulTitel: '', kategorie: '',
@@ -1478,9 +1583,104 @@
       melden(P('schulungLaeufe'));
       /* Wie functions/index.js: ohne Video-Sperre nur, wenn der
          Teilnehmer mit einem Konto der Geschäftsführung verknüpft ist. */
-      var konto = t.uid ? holen('users').filter(function (u) { return u.id === t.uid; })[0] : null;
       return { ok: true, lauf: id, name: t.name || '', durchgang: frueher + 1,
                ohneVideoSperre: !!(konto && konto.role === 'chef') };
+    },
+
+    /* ── Auffrischen (Runde 201) ──
+       Dieselbe Rechnung wie functions/index.js (auffrischRunde,
+       auffrischWeiter): Stufen 2 · 7 · 30 · 90 · 180 Tage, höchstens
+       sechs Fragen je Modul, drei je Runde, gemischt. Der Plan liegt in
+       der Demo unter derselben Sammlung — gelesen wird er auch hier nur
+       von dieser Funktion. */
+    schulungAuffrischen: function (d) {
+      var TAG = 86400000, STUFEN = [2, 7, 30, 90, 180], jetzt = Date.now();
+      var roh = String((d && d.code) || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+      var t = null, tId = '', test = false;
+      if (roh) {
+        if (roh === '000000000000') {
+          if (ICH.role !== 'chef' && ICH.role !== 'leiter') {
+            throw new Error('Der Testcode ist nur für die Leitung. Deinen eigenen Code bekommst du von der Studioleitung.');
+          }
+          tId = 'test:' + ICH.id; t = { name: ICH.name || '' }; test = true;
+        } else {
+          if (roh.length !== 12) throw new Error('Der Code besteht aus 12 Zeichen. Bitte noch einmal ansehen.');
+          t = holen(P('schulungTeilnehmer')).filter(function (x) {
+            return x.code && String(x.code).toUpperCase().replace(/[^A-Z0-9]/g, '') === roh; })[0];
+          if (!t) throw new Error('Dieser Code stimmt nicht.');
+          if (t.gesperrt) throw new Error('Dieser Code ist stillgelegt. Bitte bei der Leitung melden.');
+          tId = t.id;
+        }
+      } else {
+        t = holen(P('schulungTeilnehmer')).filter(function (x) { return x.uid === ICH.id && !x.gesperrt; })[0];
+        if (!t) return { ok: true, ohneTeilnehmer: true };
+        tId = t.id;
+      }
+      var laeufe = holen(P('schulungLaeufe')).filter(function (l) {
+        return l.teilnehmer === tId && (test ? l.test === true : !l.test) &&
+          l.status === 'fertig' && l.bestanden;
+      });
+      var plaene = holen(P('schulungLernplan'));
+      var plan = plaene.filter(function (x) { return x.id === tId; })[0];
+      if (!plan) { plan = { id: tId, teilnehmer: tId, uid: t.uid || null, karten: {} }; plaene.push(plan); }
+      var karten = plan.karten;
+      var gezaehlt = 0, stat = holen(P('schulungFragenStat'));
+      ((d && d.antworten) || []).slice(0, 10).forEach(function (a) {
+        var key = String(a.modul || '') + '#' + (Number(a.idx) | 0);
+        var k = karten[key];
+        if (!k || k.f > jetzt) return;
+        var s2 = a.richtig ? Math.min((k.s || 0) + 1, STUFEN.length - 1) : 0;
+        karten[key] = { s: s2, f: jetzt + STUFEN[s2] * TAG };
+        if (!a.richtig) karten[key].d = 1;
+        gezaehlt++;
+        if (test) return;
+        var m = key.split('#');
+        var e = stat.filter(function (x) { return x.id === m[0]; })[0];
+        if (!e) { e = { id: m[0], modul: m[0], f: {} }; stat.push(e); }
+        e.f[m[1]] = e.f[m[1]] || { r: 0, x: 0 };
+        e.f[m[1]][a.richtig ? 'r' : 'x']++;
+      });
+      var juengster = {}, texte = {};
+      laeufe.forEach(function (l) {
+        var j = juengster[l.modul];
+        if (!j || (l.ende || 0) > (j.ende || 0)) juengster[l.modul] = l;
+      });
+      Object.keys(juengster).forEach(function (modul) {
+        var l = juengster[modul], fragen = l.fragen || [];
+        fragen.forEach(function (f, i) { texte[modul + '#' + i] = String((f && f.frage) || ''); });
+        var platz = 6 - Object.keys(karten).filter(function (k) { return k.indexOf(modul + '#') === 0; }).length;
+        fragen.map(function (f, i) {
+          var h = 0, txt = String(l.id) + '#' + i;
+          for (var j = 0; j < txt.length; j++) h = (h * 31 + txt.charCodeAt(j)) >>> 0;
+          return { i: i, daneben: !!f && ((f.versuche || 1) > 1 || f.richtig === false), h: h };
+        }).sort(function (a, b) { return a.daneben === b.daneben ? a.h - b.h : (a.daneben ? -1 : 1); })
+          .forEach(function (w) {
+            var key = modul + '#' + w.i;
+            if (platz <= 0 || karten[key]) return;
+            karten[key] = { s: 0, f: test ? jetzt : (l.ende || jetzt) + STUFEN[0] * TAG };
+            if (w.daneben) karten[key].d = 1;
+            platz--;
+          });
+      });
+      var faellig = Object.keys(karten).filter(function (k) {
+        return karten[k].f <= jetzt && juengster[k.split('#')[0]]; })
+        .sort(function (a, b) { return (karten[a].f - karten[b].f) || ((karten[b].d || 0) - (karten[a].d || 0)) || (a < b ? -1 : 1); });
+      var runde = [], genommen = {};
+      while (runde.length < 3) {
+        var vorher = runde.length, drin = {};
+        faellig.forEach(function (k) {
+          var m = k.split('#')[0];
+          if (runde.length >= 3 || genommen[k] || drin[m]) return;
+          genommen[k] = drin[m] = true; runde.push(k);
+        });
+        if (runde.length === vorher) break;
+      }
+      var spaeter = Object.keys(karten).filter(function (k) {
+        return karten[k].f > jetzt && juengster[k.split('#')[0]]; }).map(function (k) { return karten[k].f; });
+      melden(P('schulungLernplan'));
+      return { ok: true, name: t.name || '', test: test, gezaehlt: gezaehlt, angelegt: t.ts || 0,
+        faellig: runde.map(function (k) { var m = k.split('#'); return { modul: m[0], idx: Number(m[1]), frage: texte[k] || '' }; }),
+        offen: faellig.length, naechste: spaeter.length ? Math.min.apply(null, spaeter) : 0 };
     },
 
     /* ── Die zwei Wege zur Kasse ──
@@ -1720,14 +1920,16 @@
     },
     zeitNachtragen: function (d) {
       var studioKey = String(d.studioKey || '');
-      var leitung = ICH.role === 'chef' || (ICH.role === 'leiter' && (ICH.studioKeys || []).indexOf(studioKey) >= 0);
-      if (!leitung) throw new Error('Korrigieren darf nur die Leitung dieses Studios.');
+      /* Runde 215: nur die Geschäftsführung, wie der Server. */
+      if (ICH.role !== 'chef') throw new Error('Korrigieren darf nur die Geschäftsführung.');
       if (String(d.grund || '').trim().length < 5) throw new Error('Bitte kurz den Grund angeben.');
       if (d.uid === ICH.id && ICH.role !== 'chef') throw new Error('Die eigenen Zeiten korrigiert die Geschäftsführung.');
       var person = USERS.filter(function (u) { return u.id === d.uid; })[0];
       if (!person) throw new Error('Diese Person gibt es in diesem Betrieb nicht.');
       var ts = new Date(d.tag + 'T' + d.uhr + ':00').getTime();
       if (ts > Date.now()) throw new Error('Ein Stempel in der Zukunft lässt sich nicht nachtragen.');
+      var abg = holen(P('zeitAbschluesse')).filter(function (x) { return x.id === String(d.tag).slice(0, 7) && x.abgeschlossen; })[0];
+      if (abg) throw new Error('Der Monat ' + abg.id + ' ist abgeschlossen. Die Geschäftsführung kann ihn mit Grund wieder öffnen.');
       var id = neueId();
       holen(P('zeiten')).push({
         id: id, uid: person.id, name: person.name || '', studioKey: studioKey,
@@ -1738,11 +1940,97 @@
       melden(P('zeiten'));
       return { ok: true, id: id, ts: ts };
     },
+    /* Runde 204: wie der Server — die Person beantragt, nur die
+       Geschäftsführung entscheidet, nie den eigenen Antrag. */
+    zeitAntragStellen: function (d) {
+      if (String(d.grund || '').trim().length < 5) throw new Error('Bitte kurz den Grund angeben.');
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(String(d.tag || '')) || !/^\d{2}:\d{2}$/.test(String(d.uhr || ''))) throw new Error('Tag oder Uhrzeit fehlt oder stimmt nicht.');
+      var ts = new Date(d.tag + 'T' + d.uhr + ':00').getTime();
+      if (ts > Date.now()) throw new Error('Ein Stempel in der Zukunft lässt sich nicht beantragen.');
+      if (Date.now() - ts > 31 * 24 * STD) throw new Error('Beantragen geht bis 31 Tage zurück. Für Älteres bitte die Geschäftsführung ansprechen.');
+      var eigene = ICH.studioKeys || [];
+      var studioKey = eigene.indexOf(d.studioKey) >= 0 ? d.studioKey : (eigene[0] || sk(6));
+      var id = neueId();
+      holen(P('zeitAntraege')).push({ id: id, uid: ICH.id, name: ICH.name || '', studioKey: studioKey,
+        tag: d.tag, monat: String(d.tag).slice(0, 7), art: d.art, uhr: d.uhr, ts: ts,
+        grund: String(d.grund).trim(), status: 'offen', erstellt: Date.now() });
+      melden(P('zeitAntraege'));
+      return { ok: true, id: id };
+    },
+    zeitAntragZurueckziehen: function (d) {
+      var a = holen(P('zeitAntraege')).filter(function (x) { return x.id === String(d.id || '') && x.uid === ICH.id; })[0];
+      if (!a) throw new Error('Diesen Antrag gibt es nicht.');
+      if (a.status !== 'offen') throw new Error('Dieser Antrag ist schon entschieden.');
+      a.status = 'zurueckgezogen'; a.entschiedenAm = Date.now();
+      melden(P('zeitAntraege'));
+      return { ok: true };
+    },
+    zeitAntragEntscheiden: function (d) {
+      if (ICH.role !== 'chef') throw new Error('Korrekturanträge entscheidet die Geschäftsführung.');
+      var a = holen(P('zeitAntraege')).filter(function (x) { return x.id === String(d.id || ''); })[0];
+      if (!a) throw new Error('Diesen Antrag gibt es nicht.');
+      if (a.status !== 'offen') throw new Error('Dieser Antrag ist schon entschieden.');
+      if (a.uid === ICH.id) throw new Error('Den eigenen Antrag entscheidet jemand anderes aus der Geschäftsführung.');
+      var antwort = String(d.antwort || '').trim();
+      if (d.annehmen !== true && antwort.length < 5) throw new Error('Bitte kurz sagen, warum der Antrag abgelehnt wird.');
+      a.entschiedenVon = ICH.id; a.entschiedenVonName = ICH.name || ''; a.entschiedenAm = Date.now();
+      if (antwort) a.antwort = antwort;
+      if (d.annehmen !== true) { a.status = 'abgelehnt'; melden(P('zeitAntraege')); return { ok: true, status: 'abgelehnt' }; }
+      var id = neueId();
+      holen(P('zeiten')).push({ id: id, uid: a.uid, name: a.name || '', studioKey: a.studioKey,
+        art: a.art, ts: a.ts, tag: a.tag, monat: a.monat, fremd: false, quelle: 'korrektur', antragId: a.id,
+        grund: 'Antrag: ' + a.grund, korrigiertVon: ICH.id, korrigiertVonName: ICH.name || '', korrigiertAm: Date.now() });
+      a.status = 'angenommen'; a.zeitId = id;
+      melden(P('zeitAntraege')); melden(P('zeiten'));
+      return { ok: true, status: 'angenommen', zeitId: id };
+    },
+    /* Runde 208: Monatsabschluss — wie der Server: nur die
+       Geschäftsführung, nur vergangene Monate, danach gesperrt. */
+    monatAbschliessen: function (d) {
+      if (ICH.role !== 'chef') throw new Error('Den Monat schliesst die Geschäftsführung ab.');
+      var m = String(d.monat || '');
+      if (!/^\d{4}-\d{2}$/.test(m)) throw new Error('Kein gültiger Monat.');
+      if (m >= new Date().toLocaleDateString('sv-SE').slice(0, 7)) throw new Error('Abschliessen geht erst, wenn der Monat vorbei ist.');
+      var liste = holen(P('zeitAbschluesse'));
+      var alt = liste.filter(function (x) { return x.id === m; })[0];
+      if (alt && alt.abgeschlossen) throw new Error('Dieser Monat ist schon abgeschlossen.');
+      var neu = { id: m, monat: m, abgeschlossen: true, zeilen: d.zeilen || [], von: ICH.id, vonName: ICH.name || '', am: Date.now() };
+      if (alt) Object.assign(alt, neu); else liste.push(neu);
+      melden(P('zeitAbschluesse'));
+      return { ok: true, monat: m };
+    },
+    /* Runde 222: wie der Server — nur die eigene Zeile, nur
+       abgeschlossene Monate, das eigene Soll und der Urlaubsanspruch. */
+    meinKonto: function () {
+      var uid = ICH.id;
+      var monate = holen(P('zeitAbschluesse')).filter(function (a) { return a.abgeschlossen === true; })
+        .map(function (a) {
+          var z = (a.zeilen || []).filter(function (x) { return x.uid === uid; })[0];
+          return z ? { monat: a.monat, ist: z.ist, soll: z.soll, gutschrift: z.gutschrift, saldo: z.saldo,
+            uebertrag: z.uebertrag, konto: z.konto, am: a.am } : null;
+        }).filter(Boolean).sort(function (a, b) { return a.monat < b.monat ? -1 : 1; });
+      var zr = holen(P('lohnEinstellungen')).filter(function (x) { return x.id === 'zeitregeln'; })[0];
+      var r = ((zr && zr.regeln) || {})[uid] || {};
+      var tage = {}, hat = false;
+      for (var k = 1; k <= 7; k++) { tage[k] = Math.round(+r[k] || 0); if (tage[k] > 0) hat = true; }
+      var p = holen(P('planerTeam')).filter(function (x) { return x.uid === uid; })[0] || {};
+      return { ok: true, monat: new Date().toLocaleDateString('sv-SE').slice(0, 7), monate: monate,
+        regel: hat ? tage : null, urlaubJahr: +r.u > 0 ? +r.u : null,
+        vertrag: { wocheStd: +p.wocheStd || 0, maxMonatStd: +p.maxMonatStd || 0, maxTageWoche: +p.maxTageWoche || 0 } };
+    },
+    monatOeffnen: function (d) {
+      if (ICH.role !== 'chef') throw new Error('Den Monat öffnet die Geschäftsführung.');
+      if (String(d.grund || '').trim().length < 5) throw new Error('Bitte kurz den Grund angeben.');
+      var a = holen(P('zeitAbschluesse')).filter(function (x) { return x.id === String(d.monat || ''); })[0];
+      if (!a || !a.abgeschlossen) throw new Error('Dieser Monat ist nicht abgeschlossen.');
+      a.abgeschlossen = false;
+      melden(P('zeitAbschluesse'));
+      return { ok: true };
+    },
     zeitStornieren: function (d) {
       var z = holen(P('zeiten')).filter(function (x) { return x.id === String(d.id || ''); })[0];
       if (!z) throw new Error('Diesen Stempel gibt es nicht.');
-      var leitung = ICH.role === 'chef' || (ICH.role === 'leiter' && (ICH.studioKeys || []).indexOf(z.studioKey) >= 0);
-      if (!leitung) throw new Error('Korrigieren darf nur die Leitung dieses Studios.');
+      if (ICH.role !== 'chef') throw new Error('Korrigieren darf nur die Geschäftsführung.');
       if (String(d.grund || '').trim().length < 5) throw new Error('Bitte kurz den Grund angeben.');
       if (z.uid === ICH.id && ICH.role !== 'chef') throw new Error('Die eigenen Zeiten korrigiert die Geschäftsführung.');
       if (z.storno) throw new Error('Dieser Stempel ist schon als ungültig markiert.');
@@ -1758,6 +2046,29 @@
         abFenster: Math.floor(Date.now() / 30000), fensterMs: 30000
       };
     },
+    stempelStand: function (d) {
+      var term = holen(P('terminals'))
+        .filter(function (t) { return t.id === String(d.terminalId || ''); })[0];
+      if (!term) throw new Error('Dieses Gerät ist nicht (mehr) als Terminal eingerichtet.');
+      if (String(d.pin || '') !== DEMO_PIN) {
+        throw new Error('Falsche PIN. In dieser Demo ist sie ' + DEMO_PIN + '.');
+      }
+      var person = USERS.filter(function (u) { return u.id === String(d.uid || ''); })[0];
+      if (!person) throw new Error('Diese Person gibt es nicht.');
+      var jetzt = Date.now(), tag = new Date().toLocaleDateString('sv-SE');
+      var meine = holen(P('zeiten'))
+        .filter(function (z) { return z.uid === person.id && z.tag === tag && !z.storno; })
+        .sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); });
+      var arbeit = 0, seit = 0, vorher = null, beginn = 0;
+      meine.forEach(function (z) {
+        if (vorher === 'kommen' || vorher === 'zurueck') arbeit += (z.ts || 0) - seit;
+        if (!beginn && z.art === 'kommen') beginn = z.ts || 0;
+        seit = z.ts || 0; vorher = z.art;
+      });
+      if (vorher === 'kommen' || vorher === 'zurueck') arbeit += jetzt - seit;
+      return { ok: true, name: person.name || '', letzteArt: vorher, seit: vorher ? seit : 0,
+               beginn: beginn, arbeitMs: arbeit, erlaubt: demoErlaubt(vorher), jetzt: jetzt };
+    },
     handyStempeln: function (d) {
       if (ICH.handyStempeln !== true) {
         throw new Error('Für dieses Konto ist das Stempeln mit dem Handy nicht freigeschaltet.');
@@ -1771,10 +2082,8 @@
       var meine = holen(P('zeiten'))
         .filter(function (z) { return z.uid === ICH.id && z.tag === tag; })
         .sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); });
-      var letzte = meine.length ? meine[meine.length - 1].art : null;
-      var art = (!letzte || letzte === 'gehen') ? 'kommen'
-              : (letzte === 'kommen' || letzte === 'zurueck') ? 'pause'
-              : (letzte === 'pause') ? 'zurueck' : 'kommen';
+      var letzte = demoLetzte(meine);
+      var art = demoSchritt(letzte, d.art);
       var jetzt = Date.now();
       holen(P('zeiten')).push({
         id: neueId(), uid: ICH.id, name: ICH.name || '', studioKey: studioKey,
@@ -1812,10 +2121,8 @@
         if (da) return { ok: true, art: da.art, ts: da.ts, name: person.name || '', fremd: !!da.fremd, ohneNetz: true, schonDa: true };
       }
       meine = meine.filter(function (z) { return (z.ts || 0) <= wann; });
-      var letzte = meine.length ? meine[meine.length - 1].art : null;
-      var art = (!letzte || letzte === 'gehen') ? 'kommen'
-              : (letzte === 'kommen' || letzte === 'zurueck') ? 'pause'
-              : (letzte === 'pause') ? 'zurueck' : 'kommen';
+      var letzte = demoLetzte(meine);
+      var art = demoSchritt(letzte, d.art);
 
       var jetzt = Date.now();
       var fremd = (person.studioKeys || []).indexOf(term.studioKey) < 0;
@@ -1835,6 +2142,33 @@
       return { ok: true, art: art, ts: wann, name: person.name || '', fremd: fremd, ohneNetz: ohneNetz };
     }
   };
+
+  /* Runde 189: wie der echte Server — mit `art` sagt der Aufruf, was er
+     will (Pause ODER Feierabend), ohne bleibt es beim alten Ablauf. */
+  function demoLetzte(liste) {
+    var l = liste.filter(function (z) { return !z.storno; });
+    return l.length ? l[l.length - 1].art : null;
+  }
+  function demoErlaubt(letzte) {
+    if (!letzte || letzte === 'gehen') return ['kommen'];
+    if (letzte === 'kommen' || letzte === 'zurueck') return ['pause', 'gehen'];
+    if (letzte === 'pause') return ['zurueck', 'gehen'];
+    return ['kommen'];
+  }
+  var DEMO_WORT = { kommen: 'Kommen', pause: 'Pause', zurueck: 'Zurück', gehen: 'Feierabend' };
+  function demoSchritt(letzte, wunsch) {
+    var erlaubt = demoErlaubt(letzte);
+    if (!wunsch) {
+      return (!letzte || letzte === 'gehen') ? 'kommen'
+           : (letzte === 'kommen' || letzte === 'zurueck') ? 'pause'
+           : (letzte === 'pause') ? 'zurueck' : 'kommen';
+    }
+    if (erlaubt.indexOf(wunsch) < 0) {
+      throw new Error('„' + (DEMO_WORT[wunsch] || wunsch) + '" passt gerade nicht — dran ist: ' +
+        erlaubt.map(function (a) { return DEMO_WORT[a]; }).join(' oder ') + '.');
+    }
+    return wunsch;
+  }
 
   function demoAufruf(name, daten) {
     var f = DEMO_FUNKTIONEN[name];

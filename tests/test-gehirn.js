@@ -67,9 +67,23 @@ async function oeffne(b, w, h, opt) {
   await p.route('**fonts.googleapis.com/**', r => r.abort());
   await p.route('**script.google.com/**', r => r.fulfill({ status: 200, body: 'ok' }));
   /* Seit Runde 177 öffnet Formi standardmäßig KOMPAKT (Kugel, Fenster
-     neben der App; geprüft in test-formi-kugel). Diese Datei prüft das
-     Vollbild mit Mini-Fenstern, das per „Groß" weiter da ist. */
+     neben der App; geprüft in test-formi-kugel). Diese Datei prüft die
+     Bedienung mit Mini-Fenstern — seit Runde 214 („das grosse hud
+     entfernen oder überarbeiten", gewählt „Ruhig neu bauen") mit „Mehr
+     Platz" statt Vollbild. kf_jv_kompakt=0 ist der alte Schlüssel und
+     wird dabei übernommen (Übergang für Geräte, die „Groß" gewählt hatten). */
   if (!opt.kompakt) await p.addInitScript(() => { try { localStorage.setItem('kf_jv_kompakt', '0'); } catch (e) {} });
+  /* Runde 209 (zweite Sitzung): Persönlichkeit, Gespräche und Ton stehen im
+     Fensterkopf hinter „…". Mit dem Vollbild (Runde 214) gilt das überall —
+     ein Mensch tippt erst „…". Genau das tut der Durchlauf hier auch. */
+  const klick = p.click.bind(p);
+  p.click = async (sel, o) => {
+    if (['#jarvisGespraecheBtn', '#jarvisPersonaBtn', '#jarvisTon'].includes(sel)) {
+      const da = await p.evaluate((s) => { const el = document.querySelector(s); return !!el && el.getClientRects().length > 0; }, sel);
+      if (!da && await p.$('#jarvisMehr')) { await klick('#jarvisMehr'); await p.waitForTimeout(150); }
+    }
+    return klick(sel, o);
+  };
   if (opt.vorher) await p.addInitScript(opt.vorher);
   await p.addInitScript({ path: SP + '/' + (opt.stub || 'stub-chef.js') });
   await p.goto(APP, { waitUntil: 'domcontentloaded' });
@@ -600,11 +614,18 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     const knopf = await jvKnopf(p);
     pruefe(w + ' px: die Formi-Kugel steht auf der Startseite (' + knopf + ')', await sichtbar(p, '#view-home.show') && knopf === '#formiKugel');
     await p.click(knopf); await p.waitForTimeout(400);
-    pruefe(w + ' px: ein Tipp öffnet das eigene Fenster', await sichtbar(p, '#jarvis') && await p.evaluate(() => {
-      const r = document.getElementById('jarvis').getBoundingClientRect(); return r.width >= innerWidth - 1 && r.height >= innerHeight - 1; }));
+    /* Runde 214 (22.10.2026, „das grosse hud entfernen oder überarbeiten",
+       gewählt: „Ruhig neu bauen"): kein Vollbild mehr. „Mehr Platz" ist am
+       Handy die ganze Höhe, am Rechner ein grosses Fenster bzw. die breite
+       Spalte — die App bleibt daneben bedienbar, kein Dialog. */
+    pruefe(w + ' px: ein Tipp öffnet das eigene Fenster (gross, kein Dialog)', await sichtbar(p, '#jarvis') && await p.evaluate((w) => {
+      const j = document.getElementById('jarvis'), r = j.getBoundingClientRect();
+      return j.getAttribute('aria-modal') === 'false' && (w <= 820 ? r.height >= innerHeight - 1 : r.height >= innerHeight - 40 && r.width >= 380); }, w));
     if (w === 1440) {
-      const sp = await p.evaluate(() => { const l = document.querySelector('.jv-links').getBoundingClientRect(), r = document.querySelector('.jv-rechts').getBoundingClientRect(); return { neben: r.left >= l.right - 1, rb: Math.round(r.width) }; });
-      pruefe('am Rechner zwei Spalten: Kern links, Gespräch rechts', sp.neben && sp.rb > 500, JSON.stringify(sp));
+      /* Erst wenn das Fenster steht: es springt glitchend herein (Runde 186). */
+      await p.waitForFunction(() => !document.getElementById('jarvis').getAnimations({ subtree: true }).some(a => a.playState === 'running' && isFinite(a.effect.getComputedTiming().endTime)), null, { timeout: 4000 }).catch(() => {});
+      const sp = await p.evaluate(() => { const r = document.getElementById('jarvis').getBoundingClientRect(), a = document.querySelector('.app').getBoundingClientRect(); return { rechts: Math.round(r.right) >= innerWidth - 1, spalte: Math.round(r.width), appFrei: a.right <= r.left + 1 || parseFloat(getComputedStyle(document.querySelector('.app')).paddingRight) >= r.width - 1 }; });
+      pruefe('am Rechner (1440): Formi als breite Spalte rechts, die App rückt daneben', sp.rechts && sp.spalte >= 500 && sp.appFrei, JSON.stringify(sp));
     }
     await antwort(p, { gehirnFrage: { data: { antwort: 'Westen im Schonprogramm waschen.', abgedeckt: true } } });
     await p.fill('#jarvisFeld', 'Wie wasche ich die Westen?');
@@ -770,10 +791,11 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await p.keyboard.press('j'); await p.waitForTimeout(2800);
     const brief = await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf .jv-brief li')].map(l => l.textContent));
     pruefe('Morgen-Briefing im leeren Gespräch: Aufgaben mit überfällig, Putzplan, Material', brief.some(t => /Aufgaben offen, \d+ überfällig/.test(t)) && brief.some(t => /^Putzplan: \d+ offen/.test(t)) && brief.some(t => /Material/.test(t)), JSON.stringify(brief));
+    /* Runde 263 — aus dem Betrieb: „das vor lesen ist auch unnötig".
+       Früher stand hier „einmal am Tag vorgelesen"; jetzt das Gegenteil. */
     const gesagt = await p.evaluate(() => window.__gesprochen);
-    pruefe('… einmal am Tag vorgelesen, mit Gruss und Namen', gesagt.length === 1 && /(Guten|Hallo)/.test(gesagt[0]) && /Test/.test(gesagt[0]) && /Aufgaben offen/.test(gesagt[0]), JSON.stringify(gesagt));
+    pruefe('… und NICHT vorgelesen (Runde 263: „das vor lesen ist auch unnötig")', gesagt.length === 0, JSON.stringify(gesagt));
     await p.click('#jarvisZu'); await p.keyboard.press('j'); await p.waitForTimeout(2000);
-    pruefe('… beim zweiten Öffnen am selben Tag nicht noch einmal', (await p.evaluate(() => window.__gesprochen.length)) === 1);
     const kacheln = await p.evaluate(() => [...document.querySelectorAll('#jarvisKacheln .jv-kl')].map(k => k.getAttribute('data-jvmini') + ':' + k.querySelector('b').textContent));
     pruefe('„Heute im Studio": fünf Kacheln mit Zahlen', kacheln.length === 5 && /^todos:\d+$/.test(kacheln[0]), JSON.stringify(kacheln));
     await p.evaluate(() => { window.__kiGefragt = 0; window.__antwort = window.__antwort || {}; window.__antwort.gehirnAktion = (d) => { window.__kiGefragt++; window.__kiDaten = d; return Promise.resolve({ data: { art: 'frage', antwort: 'KI', abgedeckt: true } }); }; });
@@ -816,10 +838,12 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await zu(p);
   }
 
-  console.log('\n── 12e Stimme, Zuhören, Weckwort, Persönlichkeit (20.10.2026) ──');
-  /* Aus dem Betrieb (20.10.2026): „lebendig wirkt von der stimme und wie
-     ein echter mensch als assistent" — und auf die Ideenliste „mach alles
-     davon" (gedrückt halten, echte Wellenform, Weckwort, Persönlichkeit). */
+  console.log('\n── 12e Zuhören, Persönlichkeit — ohne Vorlesen und ohne „Hey Formi" (Runde 263) ──');
+  /* Aus dem Betrieb (20.10.2026): gedrückt halten, echte Wellenform,
+     Persönlichkeit. Und am 24.10.2026: „das formi doch kein „hey formi“
+     mehr hat aber man kann noch sprach Nachrichten schicken und das vor
+     lesen ist auch unnötig". Geprüft wird beides: Sprechen geht, und
+     weder Weckwort noch Vorlesen gibt es noch. */
   const SR_ATTRAPPE = () => {
     window.__srs = [];
     window.SpeechRecognition = function () { window.__srs.push(this); };
@@ -835,17 +859,17 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
       window.__antwort.gehirnStimme = (d) => { window.__stimme.push(d); return Promise.resolve({ data: { audio: 'SUQz', mime: 'audio/mpeg' } }); };
       localStorage.setItem('kf_jv_brief', new Date().toLocaleDateString('sv-SE')); });
     await p.keyboard.press('j'); await p.waitForTimeout(600);
-    pruefe('Kern ist ein Knopf zum Gedrückthalten (mit Spracherkennung)', await sichtbar(p, '#jarvisHalten'));
+    pruefe('„Sprechen" ist ein Knopf zum Gedrückthalten (mit Spracherkennung)', await sichtbar(p, '#jarvisMic'));
     // Persönlichkeit
     await p.click('#jarvisPersonaBtn'); await p.waitForTimeout(200);
     await p.fill('#jvPName', 'Friday'); await p.click('#jarvisPersona [data-jvw="sachlich"]'); await p.waitForTimeout(150);
-    await p.selectOption('#jvPProfi', 'de-DE-Chirp3-HD-Charon'); await p.click('#jvPProbe'); await p.waitForTimeout(300);
-    const pers = await p.evaluate(() => ({ p: JSON.parse(localStorage.getItem('kf_jv_persona')), titel: document.getElementById('jarvisTitel').textContent, stimme: window.__stimme.slice(-1)[0], audio: window.__audio.slice(-1)[0] }));
-    pruefe('Persönlichkeit: Name, Tonfall und Stimme gemerkt, Titel heisst jetzt „Friday"', pers.p.name === 'Friday' && pers.p.ton === 'sachlich' && pers.p.profiStimme === 'de-DE-Chirp3-HD-Charon' && pers.titel === 'Friday', JSON.stringify(pers));
-    pruefe('Probehören: menschliche Stimme mit der gewählten Stimme, abgespielt als MP3', pers.stimme && pers.stimme.stimme === 'de-DE-Chirp3-HD-Charon' && /Friday/.test(pers.stimme.text) && pers.audio === 'data:audio/mpeg;base64,SUQz', JSON.stringify(pers));
+    const pers = await p.evaluate(() => ({ p: JSON.parse(localStorage.getItem('kf_jv_persona')), titel: document.getElementById('jarvisTitel').textContent,
+      stimmwahl: !!document.querySelector('#jvPProfi, #jvPGeraet, #jvPProbe, #jvPWeck'), text: document.getElementById('jarvisPersona').textContent }));
+    pruefe('Persönlichkeit: Name und Tonfall gemerkt, Titel heisst jetzt „Friday"', pers.p.name === 'Friday' && pers.p.ton === 'sachlich' && pers.titel === 'Friday', JSON.stringify(pers.p));
+    pruefe('… keine Stimmwahl, kein Probehören, kein „Hey …" mehr in den Einstellungen', !pers.stimmwahl && !/Hey |Probehören|Stimme des Geräts|Menschlich/.test(pers.text), pers.text.slice(0, 200));
     await p.click('#jvPZu'); await p.waitForTimeout(150);
     // Gedrückt halten: hören, Untertitel, loslassen → abgeschickt
-    const box = await p.evaluate(() => { const r = document.getElementById('jarvisHalten').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
+    const box = await p.evaluate(() => { const r = document.getElementById('jarvisMic').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
     await p.mouse.move(box.x, box.y); await p.mouse.down(); await p.waitForTimeout(150);
     const hoert = await p.evaluate(() => ({ n: window.__srs.length, an: document.getElementById('jarvis').classList.contains('jv-z-hoert') }));
     await p.evaluate(() => window.__sag(window.__srs[window.__srs.length - 1], 'öffne die aufgaben', false));
@@ -858,26 +882,17 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     const lt = await p.evaluate(() => ({ n: window.__srs.length, feld: document.getElementById('jarvisFeld').value }));
     await p.keyboard.up(' '); await p.waitForTimeout(200);
     pruefe('Leertaste im leeren Feld: halten und sprechen (kein Leerzeichen im Feld)', lt.n === 2 && lt.feld === '' && (await p.evaluate(() => window.__srs[1].beendet)), JSON.stringify(lt));
-    // Antwort mit menschlicher Stimme
-    await p.evaluate(() => { window.__antwort.gehirnAktion = () => Promise.resolve({ data: { art: 'frage', antwort: 'Westen im Schonprogramm.\n\n⚠️ Noch nicht geprüft.', abgedeckt: true } }); window.__audio = []; window.__stimme = []; });
+    // Antwort: nichts wird vorgelesen
+    await p.evaluate(() => { window.__antwort.gehirnAktion = () => Promise.resolve({ data: { art: 'frage', antwort: 'Westen im Schonprogramm.', abgedeckt: true } }); window.__audio = []; window.__stimme = []; });
     await p.fill('#jarvisFeld', 'wie wasche ich westen'); await p.click('#jarvisSenden'); await p.waitForTimeout(1200);
-    const st = await p.evaluate(() => ({ s: window.__stimme, a: window.__audio, g: window.__gesprochen.length }));
-    pruefe('Antwort wird mit menschlicher Stimme vorgelesen (ohne Warnzeile), nicht mit der Gerätestimme', st.s.length === 1 && st.s[0].text === 'Westen im Schonprogramm.' && st.a.length === 1 && st.g === 0, JSON.stringify(st));
-    // Keine menschliche Stimme eingerichtet → Gerät, und nicht jedes Mal neu fragen
-    await p.evaluate(() => { window.__antwort.gehirnStimme = (d) => { window.__stimme.push(d); return Promise.resolve({ data: { aus: true, grund: 'keine Stimme eingerichtet' } }); }; window.__stimme = []; });
-    await p.fill('#jarvisFeld', 'noch eine frage'); await p.click('#jarvisSenden'); await p.waitForTimeout(1000);
-    await p.fill('#jarvisFeld', 'und noch eine'); await p.click('#jarvisSenden'); await p.waitForTimeout(1000);
-    const ers = await p.evaluate(() => ({ s: window.__stimme.length, g: window.__gesprochen.length }));
-    pruefe('Ohne eingerichtete Stimme: Gerätestimme, und nur einmal nachgefragt', ers.s === 1 && ers.g === 2, JSON.stringify(ers));
-    // Weckwort
-    await p.click('#jarvisPersonaBtn'); await p.click('#jvPWeck'); await p.click('#jvPZu'); await p.waitForTimeout(300);
-    const weck = await p.evaluate(() => { const r = window.__srs.filter(x => x.continuous && !x.beendet).pop(); return { da: !!r, zeichen: !document.getElementById('jarvisWeck').hidden, text: document.getElementById('jarvisWeck').textContent }; });
-    pruefe('Weckwort an: hört dauerhaft, Hinweis „hört auf „Hey Friday"" oben', weck.da && weck.zeichen && /Hey Friday/.test(weck.text), JSON.stringify(weck));
-    await p.evaluate(() => { const r = window.__srs.filter(x => x.continuous && !x.beendet).pop(); window.__sag(r, 'Hey Friday öffne den Putzplan', true); });
-    await p.waitForTimeout(900);
-    pruefe('„Hey Friday öffne den Putzplan" → Mini-Fenster Putzplan', (await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf .gm-fenster b')].pop().textContent)) === 'Putzplan');
-    await p.click('#jarvisZu'); await p.waitForTimeout(200);
-    pruefe('Fenster zu: das Mikrofon hört nicht mehr', await p.evaluate(() => window.__srs.filter(x => x.continuous).every(x => x.beendet)));
+    const st = await p.evaluate(() => ({ s: window.__stimme.length, a: window.__audio.length, g: window.__gesprochen.length, antwort: /Schonprogramm/.test(document.getElementById('jarvisVerlauf').textContent) }));
+    pruefe('Antwort steht da, wird aber nicht vorgelesen (weder Server- noch Gerätestimme)', st.antwort && st.s === 0 && st.a === 0 && st.g === 0, JSON.stringify(st));
+    // Kein Weckwort: das Mikrofon hört nie dauerhaft mit
+    await p.waitForTimeout(800);
+    const weck = await p.evaluate(() => ({ dauer: window.__srs.filter(x => x.continuous).length, zeichen: !!document.getElementById('jarvisWeck') }));
+    pruefe('Kein „Hey Formi": keine dauerhaft hörende Erkennung, kein Hinweis oben', weck.dauer === 0 && !weck.zeichen, JSON.stringify(weck));
+    const ton = await p.evaluate(() => document.getElementById('jarvisTon').getAttribute('aria-label'));
+    pruefe(`Der Knopf oben heisst nur noch „${ton}" (keine Stimme mehr)`, /^Töne (aus|ein)schalten$/.test(ton), ton);
     pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await zu(p);
   }
@@ -963,10 +978,13 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     pruefe('beim Öffnen fährt das HUD hoch (jv-boot)', boot);
     await p.waitForTimeout(2400);
     pruefe('… und das Hochfahren endet wieder', !(await p.evaluate(() => document.getElementById('jarvis').classList.contains('jv-boot'))));
-    const feld = await p.evaluate(() => { const c = document.getElementById('jarvisFeldchen'); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i]) n++; return { n, w: c.width }; });
-    pruefe('Partikelfeld zeichnet, solange das Fenster offen ist (in reduzierter Auflösung)', feld.n > 50 && feld.w > 400 && feld.w < 1440, JSON.stringify(feld));
-    const uhr = await p.textContent('#jarvisUhr');
-    pruefe('Uhr läuft (HH:MM:SS)', /^\d\d:\d\d:\d\d$/.test(uhr), uhr);
+    /* Runde 214 („das grosse hud entfernen oder überarbeiten", gewählt
+       „Ruhig neu bauen"): Partikelfeld und Sekunden-Uhr gehörten zum
+       grossen HUD. Geprüft wird jetzt, dass sie NICHT mehr laufen. */
+    const feld = await p.evaluate(() => { const c = document.getElementById('jarvisFeldchen'); if (!c) return { n: 0, sichtbar: false }; const d = c.getContext('2d').getImageData(0, 0, Math.max(1, c.width), Math.max(1, c.height)).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i]) n++; return { n, sichtbar: !!c.getClientRects().length }; });
+    pruefe('kein Partikelfeld mehr (nichts gezeichnet, nicht sichtbar)', feld.n === 0 && !feld.sichtbar, JSON.stringify(feld));
+    const uhr1 = await p.textContent('#jarvisUhr'); await p.waitForTimeout(1200); const uhr2 = await p.textContent('#jarvisUhr');
+    pruefe('keine Sekunden-Uhr mehr', uhr1 === uhr2, uhr1 + ' → ' + uhr2);
     // Ton: Knopf schaltet, wird gemerkt
     pruefe('Ton ist zu Beginn an', await p.getAttribute('#jarvisTon', 'aria-pressed') === 'true');
     await p.click('#jarvisTon');
@@ -1006,7 +1024,10 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     pruefe('… der Cursor verschwindet, wenn alles dasteht', await p.evaluate(() => !document.querySelector('#jarvisVerlauf .ga-text.tippt')));
     pruefe('nach der Antwort denkt es nicht mehr', !(await p.evaluate(() => document.getElementById('jarvis').classList.contains('jv-z-denkt'))));
     const ton = await p.evaluate(() => ({ k: window.__klaenge, g: window.__gesprochen }));
-    pruefe('Klänge beim Senden und Fertig; die Antwort wird vorgelesen — ohne Warnzeile', ton.k >= 2 && ton.g.length === 1 && /Schonprogramm/.test(ton.g[0]) && !/geprüft/.test(ton.g[0]), JSON.stringify(ton));
+    /* Runde 263: „das vor lesen ist auch unnötig" — Klänge ja, Vorlesen nein. */
+    /* Runde 278, Idee 10 („ein Formi-Ton statt vieler Klänge", „mach alles
+       davon"): Senden ist still, „erledigt" ist EIN Ton mit zwei Anschlägen. */
+    pruefe('Ein Formi-Ton beim Fertig (zwei Anschläge), Senden still; nichts vorgelesen', ton.k === 2 && ton.g.length === 0, JSON.stringify(ton));
     // Daumen
     const d = await p.evaluate(() => [...document.querySelectorAll('#jarvisVerlauf [data-gdaumen]')].map(x => x.textContent.trim()));
     pruefe('unter der Antwort: „Passt" und „Stimmt nicht"', d.join('|') === 'Passt|Stimmt nicht', JSON.stringify(d));
@@ -1169,10 +1190,10 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await p.click('#jarvisPersona [data-jvp="studio"][data-jvw="studio-6"]'); await p.waitForTimeout(150);
     const ort = await p.textContent('#jarvisOrt');
     pruefe('… gewählt: Hürth steht oben als Studio', ort === 'Hürth' && (await p.getAttribute('#jarvisPersona [data-jvp="studio"][data-jvw="studio-6"]', 'aria-pressed')) === 'true', ort);
-    // 6: Effekte
-    await p.click('#jarvisPersona [data-jvp="effekte"][data-jvw="sparsam"]'); await p.waitForTimeout(150);
-    pruefe('„Effekte: Sparsam" setzt die niedrige Stufe', (await p.getAttribute('#jarvis', 'data-effekte')) === 'niedrig');
-    await p.click('#jarvisPersona [data-jvp="effekte"][data-jvw="auto"]'); await p.waitForTimeout(150);
+    // 6: Effekte — seit Runde 263 Teil von „Bewegung" (Keine = sparsam)
+    await p.click('#jarvisPersona [data-fbew="keine"]'); await p.waitForTimeout(150);
+    pruefe('„Bewegung: Keine" setzt die niedrige Stufe der Effekte', (await p.getAttribute('#jarvis', 'data-effekte')) === 'niedrig');
+    await p.click('#jarvisPersona [data-fbew="mittel"]'); await p.waitForTimeout(150);
     // Leitungs-Code (nur Chef)
     await p.evaluate(() => { window.__code = []; window.__antwort.formiCodeSetzen = (d) => { window.__code.push(d); return Promise.resolve({ data: { ok: true } }); }; });
     await p.fill('#jvPCode', 'kurz'); await p.click('#jvPCodeSetzen'); await p.waitForTimeout(150);
@@ -1200,13 +1221,14 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     await p.evaluate(() => { window.__antwort.gehirnAktion = () => new Promise(r => setTimeout(() => r({ data: { art: 'frage', antwort: 'Die Westen kommen bei 30 Grad in die Maschine.', abgedeckt: true } }), 2500)); });
     await p.fill('#jarvisFeld', 'Wie wasche ich die Westen?'); await p.click('#jarvisSenden');
     await p.waitForTimeout(700);
+    /* Runde 214 („das grosse hud entfernen oder überarbeiten", gewählt
+       „Ruhig neu bauen"): die wirbelnden Buchstaben sassen im Kern des
+       grossen HUD. Mit ihm sind sie weg — geprüft wird, dass auf der
+       unsichtbaren Leinwand auch nichts mehr rechnet. */
     const z1 = await p.evaluate(() => +document.getElementById('jarvisZeichen').getAttribute('data-zeichen'));
-    pruefe('Buchstaben wirbeln ins Loch, solange Formi denkt', z1 >= 10, z1);
     await p.waitForTimeout(2600);
     const z2 = await p.evaluate(() => +document.getElementById('jarvisZeichen').getAttribute('data-zeichen'));
-    pruefe('… nach der Antwort kommen sie wieder heraus', z2 >= 5, z2);
-    const weg = await p.waitForFunction(() => +document.getElementById('jarvisZeichen').getAttribute('data-zeichen') === 0, null, { timeout: 9000 }).then(() => true, () => false);
-    pruefe('… und sind danach wieder weg (nichts bleibt liegen)', weg);
+    pruefe('keine Buchstaben-Leinwand mehr: beim Denken und danach rechnet nichts', z1 === 0 && z2 === 0, z1 + '/' + z2);
     pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await zu(p);
   }

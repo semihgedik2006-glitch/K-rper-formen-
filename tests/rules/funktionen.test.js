@@ -349,7 +349,25 @@ const TAG = 86400000;
       await db.doc('users/' + konto.uid).set({ name: 'Geht wieder', role: 'mitarbeiter',
         firma: 'alpha', email: mail });
 
+      /* Runde 243: Soll, Urlaubsanspruch und Personalnummer gehen mit. */
+      await db.doc('firmen/alpha/lohnEinstellungen/zeitregeln').set({ regeln: {
+        [konto.uid]: { 1: 480, u: 28 }, bleibt: { 2: 300, u: 20 } } });
+      await db.doc('firmen/alpha/lohnEinstellungen/datev').set({ beraterNr: '1', personalNr: {
+        [konto.uid]: '1001', bleibt: '1002' } });
+
       await fns.zugangEntfernen.run({ uid: konto.uid }, { auth: { uid: 'chefAlpha' } });
+
+      const zr = (await db.doc('firmen/alpha/lohnEinstellungen/zeitregeln').get()).data() || {};
+      const dv = (await db.doc('firmen/alpha/lohnEinstellungen/datev').get()).data() || {};
+      pruefe('Zugang entfernen: Soll je Wochentag und Urlaubsanspruch sind weg',
+        !(zr.regeln || {})[konto.uid], JSON.stringify(zr));
+      pruefe('Zugang entfernen: die DATEV-Personalnummer ist weg',
+        !(dv.personalNr || {})[konto.uid], JSON.stringify(dv));
+      pruefe('GEGENPROBE die Einträge der anderen bleiben (Soll, Urlaub, Nummer, Beraternummer)',
+        (zr.regeln || {}).bleibt && zr.regeln.bleibt.u === 20 && (dv.personalNr || {}).bleibt === '1002' && dv.beraterNr === '1',
+        JSON.stringify({ zr, dv }));
+      await db.doc('firmen/alpha/lohnEinstellungen/zeitregeln').delete();
+      await db.doc('firmen/alpha/lohnEinstellungen/datev').delete();
 
       pruefe('Zugang entfernen: das Profil ist weg',
         !(await db.doc('users/' + konto.uid).get()).exists);
@@ -1331,6 +1349,242 @@ const TAG = 86400000;
       ((await F.collection('schulungVersuche').doc('schulMit').get()).data() || {}).zahl === 1);
   }
 
+  /* ══ Schulung: Auffrischen und Weitermachen (Runde 201) ══
+     Aus dem Betrieb, 22.10.2026: „plan klingt gut", und für die Frage,
+     wo die Antworten liegen: „das was leichter ist für leute ohne
+     zugang". Deshalb hängt der Plan am Teilnehmer und geht mit dem Code
+     — geprüft wird vor allem, dass der Code dieselbe Schranke ist wie
+     beim Anfangen (Bremse!), und dass die Summe für die Leitung nur
+     zählt, was wirklich dran war. */
+  {
+    const I = fns.__intern;
+    const TAG = 86400000, jetzt = Date.now();
+    // ── Die Rechnung, ohne Datenbank ──
+    const l = (id, modul, ende, fragen) => ({ id, modul, ende, status: 'fertig', bestanden: true, fragen });
+    const drei = [{ frage: 'a', versuche: 1, richtig: true }, { frage: 'b', versuche: 3, richtig: true },
+                  { frage: 'c', versuche: 1, richtig: true }];
+    const r1 = I.auffrischRunde([l('x1', 'm-a', jetzt - 16 * TAG, drei)], {}, jetzt, false);
+    pruefe('AUFFRISCHEN · aus drei Fragen werden drei Karten', Object.keys(r1.karten).length === 3,
+      Object.keys(r1.karten).join(','));
+    pruefe('AUFFRISCHEN · fällig zwei Tage nach dem Bestehen',
+      r1.karten['m-a#0'].f === jetzt - 14 * TAG && r1.karten['m-a#0'].s === 0);
+    pruefe('AUFFRISCHEN · die danebengegangene Frage steht vorn', r1.faellig[0].idx === 1,
+      JSON.stringify(r1.faellig));
+    pruefe('AUFFRISCHEN · … und trägt ihren Text mit', r1.faellig[0].frage === 'b');
+    const r2 = I.auffrischRunde([l('x1', 'm-a', jetzt - TAG, drei)], {}, jetzt, false);
+    pruefe('GEGENPROBE einen Tag nach dem Bestehen ist noch nichts dran',
+      r2.faellig.length === 0 && r2.naechste === jetzt + TAG, JSON.stringify(r2));
+    const viele = Array.from({ length: 67 }, (_, i) => ({ frage: 'f' + i, versuche: i === 50 ? 2 : 1, richtig: true }));
+    const r3 = I.auffrischRunde([l('b1', 'm-beratung', jetzt - 30 * TAG, viele), l('x1', 'm-a', jetzt - 20 * TAG, drei)],
+      {}, jetzt, false);
+    const beratung = Object.keys(r3.karten).filter(k => k.indexOf('m-beratung#') === 0);
+    pruefe('AUFFRISCHEN · 67 Fragen → höchstens sechs im Plan', beratung.length === I.AUFFRISCH_JE_MODUL,
+      String(beratung.length));
+    pruefe('AUFFRISCHEN · die eine danebengegangene ist dabei', !!r3.karten['m-beratung#50']);
+    pruefe('AUFFRISCHEN · eine Runde hat höchstens drei', r3.faellig.length === 3 && r3.offen === 9,
+      r3.faellig.length + ' / offen ' + r3.offen);
+    pruefe('AUFFRISCHEN · gemischt: beide Module in derselben Runde',
+      new Set(r3.faellig.map(f => f.modul)).size === 2, JSON.stringify(r3.faellig));
+    const ungueltig = I.auffrischRunde([{ id: 'n', modul: 'm-n', ende: 1, status: 'fertig', bestanden: false, fragen: drei }],
+      {}, jetzt, false);
+    pruefe('GEGENPROBE ein NICHT bestandener Durchlauf bringt keine Karten', Object.keys(ungueltig.karten).length === 0);
+    const w1 = I.auffrischWeiter({ s: 0, f: 0 }, true, jetzt);
+    const w2 = I.auffrischWeiter({ s: 3, f: 0 }, false, jetzt);
+    const w3 = I.auffrischWeiter({ s: 4, f: 0 }, true, jetzt);
+    pruefe('AUFFRISCHEN · richtig: eine Stufe weiter, nach 7 Tagen', w1.s === 1 && w1.f === jetzt + 7 * TAG);
+    pruefe('AUFFRISCHEN · falsch: zurück auf zwei Tage', w2.s === 0 && w2.f === jetzt + 2 * TAG);
+    pruefe('AUFFRISCHEN · die letzte Stufe bleibt die letzte (180 Tage)', w3.s === 4 && w3.f === jetzt + 180 * TAG);
+    pruefe('WEITERMACHEN · ein leerer, angefangener Durchlauf zählt nicht',
+      I.schulungOffenerLauf([{ id: 'e', status: 'laeuft', ts: jetzt, schritteGesehen: [], fragen: [] }], jetzt) === null);
+    pruefe('WEITERMACHEN · einer mit gesehenen Schritten schon',
+      (I.schulungOffenerLauf([{ id: 'g', status: 'laeuft', ts: jetzt, schritteGesehen: [0] }], jetzt) || {}).id === 'g');
+    pruefe('GEGENPROBE … aber nicht nach 31 Tagen, und kein Testlauf',
+      I.schulungOffenerLauf([{ id: 'g', status: 'laeuft', ts: jetzt - 31 * TAG, schritteGesehen: [0] },
+                             { id: 't', status: 'laeuft', test: true, ts: jetzt, schritteGesehen: [0] }], jetzt) === null);
+
+    // ── Die echte Funktion ──
+    const F = db.collection('firmen').doc('alpha');
+    await db.doc('users/aufKonto').set({ name: 'Konto Person', role: 'mitarbeiter', firma: 'alpha', aktiv: true, studioKeys: ['s1'] });
+    await db.doc('users/aufTablet').set({ name: 'Tablet', role: 'mitarbeiter', firma: 'alpha', aktiv: true, studioKeys: ['s1'] });
+    await F.collection('schulungTeilnehmer').doc('t-auf').set({
+      name: 'Ohne Konto', uid: null, kennung: 'Q7WZ', code: 'Q7WZ-3HKM-P2RT', gesperrt: false, ts: 5 });
+    await F.collection('schulungTeilnehmer').doc('t-konto').set({
+      name: 'Mit Konto', uid: 'aufKonto', kennung: 'Z9XY', code: 'Z9XY-AAAA-BBBB', gesperrt: false, ts: 6 });
+    await F.collection('schulungLaeufe').doc('auf-l1').set({
+      modul: 'm-hygiene', teilnehmer: 't-auf', uid: null, status: 'fertig', bestanden: true,
+      ende: jetzt - 10 * TAG, ts: jetzt - 10 * TAG, fragen: drei });
+    await F.collection('schulungLaeufe').doc('auf-l2').set({
+      modul: 'm-start', teilnehmer: 't-konto', uid: 'aufKonto', status: 'fertig', bestanden: true,
+      ende: jetzt - 10 * TAG, ts: jetzt - 10 * TAG, fragen: drei });
+    const auf = (d, wer) => fns.schulungAuffrischen.run(d, { auth: { uid: wer } });
+    const fehler = async (v) => { try { await v; return null; } catch (e) { return e; } };
+
+    const a1 = await auf({ code: 'q7wz 3hkm p2rt' }, 'aufTablet');
+    pruefe('AUFFRISCHEN · mit dem Code am Tablet: Name und drei Fragen',
+      a1.ok && a1.name === 'Ohne Konto' && a1.faellig.length === 3 && a1.angelegt === 5, JSON.stringify(a1));
+    const plan1 = (await F.collection('schulungLernplan').doc('t-auf').get()).data() || {};
+    pruefe('AUFFRISCHEN · der Plan liegt am Teilnehmer, nicht am Gerät',
+      Object.keys(plan1.karten || {}).length === 3 && plan1.uid === null);
+    const a2 = await auf({ code: 'Q7WZ-3HKM-P2RT', antworten: [
+      { modul: 'm-hygiene', idx: a1.faellig[0].idx, richtig: true },
+      { modul: 'm-hygiene', idx: a1.faellig[1].idx, richtig: false },
+      { modul: 'm-hygiene', idx: 2, richtig: true },
+      { modul: 'm-erfunden', idx: 0, richtig: true }] }, 'aufTablet');
+    pruefe('AUFFRISCHEN · gezählt wird nur, was dran war (3 von 4; das erfundene Modul nicht)',
+      a2.gezaehlt === 3, 'gezaehlt ' + a2.gezaehlt);
+    const plan2 = (await F.collection('schulungLernplan').doc('t-auf').get()).data() || {};
+    const k0 = plan2.karten['m-hygiene#' + a1.faellig[0].idx], k1 = plan2.karten['m-hygiene#' + a1.faellig[1].idx];
+    pruefe('AUFFRISCHEN · richtig → in 7 Tagen wieder, falsch → in 2 Tagen',
+      k0.s === 1 && Math.round((k0.f - jetzt) / TAG) === 7 && k1.s === 0 && Math.round((k1.f - jetzt) / TAG) === 2,
+      JSON.stringify(plan2.karten));
+    pruefe('AUFFRISCHEN · danach ist nichts mehr dran', a2.faellig.length === 0 && a2.naechste > jetzt);
+    const stat = (await F.collection('schulungFragenStat').doc('m-hygiene').get()).data() || {};
+    const summe = Object.values(stat.f || {}).reduce((s, x) => ({ r: s.r + (x.r || 0), x: s.x + (x.x || 0) }), { r: 0, x: 0 });
+    pruefe('AUFFRISCHEN · die Summe für die Leitung: 2 richtig, 1 daneben — ohne Namen',
+      summe.r === 2 && summe.x === 1 && !JSON.stringify(stat).includes('Ohne Konto') && !('teilnehmer' in stat),
+      JSON.stringify(stat));
+    pruefe('GEGENPROBE kein Eintrag für das erfundene Modul',
+      !(await F.collection('schulungFragenStat').doc('m-erfunden').get()).exists);
+    const a3 = await auf({ code: 'Q7WZ-3HKM-P2RT', antworten: [{ modul: 'm-hygiene', idx: a1.faellig[0].idx, richtig: true }] }, 'aufTablet');
+    pruefe('GEGENPROBE dieselbe Antwort noch einmal zählt nicht (die Karte ist nicht mehr dran)', a3.gezaehlt === 0);
+
+    const e1 = await fehler(auf({ code: 'Q7WZ-3HKM-P2RA' }, 'aufTablet'));
+    pruefe('AUFFRISCHEN · ein falscher Code wird abgewiesen …', e1 && e1.code === 'permission-denied', e1 ? e1.code : 'ging durch');
+    pruefe('AUFFRISCHEN · … und zählt an der Bremse dieses Geräts',
+      ((await F.collection('schulungVersuche').doc('aufTablet').get()).data() || {}).zahl === 1);
+    await F.collection('schulungVersuche').doc('aufTablet').set({ zahl: 10, seit: Date.now() });
+    const e2 = await fehler(auf({ code: 'Q7WZ-3HKM-P2RT' }, 'aufTablet'));
+    pruefe('AUFFRISCHEN · bei geschlossener Bremse geht auch der richtige Code nicht',
+      e2 && e2.code === 'resource-exhausted', e2 ? e2.code : 'ging durch');
+    await F.collection('schulungVersuche').doc('aufTablet').delete();
+
+    const a4 = await auf({}, 'aufKonto');
+    pruefe('AUFFRISCHEN · mit verknüpftem Konto geht es ohne Code', a4.ok && a4.name === 'Mit Konto' && a4.faellig.length === 3,
+      JSON.stringify(a4));
+    const a5 = await auf({}, 'aufTablet');
+    pruefe('GEGENPROBE ohne Code und ohne Verknüpfung: nichts, und kein Fehler', a5.ok && a5.ohneTeilnehmer === true);
+
+    await F.collection('schulungLaeufe').doc('auf-test').set({
+      modul: 'm-testauf', teilnehmer: 'test:schulChef', uid: null, test: true, status: 'fertig', bestanden: true,
+      ende: jetzt - TAG / 2, ts: jetzt - TAG, fragen: drei });
+    const a6 = await auf({ code: '0000-0000-0000' }, 'schulChef');
+    pruefe('AUFFRISCHEN · Testcode: die Leitung sieht ihre Testläufe sofort',
+      a6.ok && a6.test === true && a6.faellig.length >= 1, JSON.stringify(a6));
+    const a7 = await auf({ code: '0000-0000-0000', antworten: [{ modul: a6.faellig[0].modul, idx: a6.faellig[0].idx, richtig: false }] }, 'schulChef');
+    const statTest = await F.collection('schulungFragenStat').doc(a6.faellig[0].modul).get();
+    pruefe('AUFFRISCHEN · ein Test zählt nicht in der Summe (die Antwort zählt nur im Testplan)',
+      a6.faellig[0].modul === 'm-testauf' && a7.gezaehlt === 1 && !statTest.exists, JSON.stringify(a6.faellig));
+    const e3 = await fehler(auf({ code: '0000-0000-0000' }, 'schulMit'));
+    pruefe('AUFFRISCHEN · Testcode für Mitarbeitende: abgewiesen', e3 && e3.code === 'permission-denied');
+
+    // ── Weitermachen ──
+    const st = (code, wer) => fns.schulungStart.run({ code, modul: 'm-beratung' }, { auth: { uid: wer } });
+    const s1 = await st('Q7WZ-3HKM-P2RT', 'aufTablet');
+    pruefe('WEITERMACHEN · der erste Start legt einen neuen Durchlauf an', s1.ok && !s1.fortsetzen);
+    await F.collection('schulungLaeufe').doc(s1.lauf).update({ schritteGesehen: [0, 1, 2], aktivMs: 600000,
+      fragen: [{ frage: 'x', versuche: 2, falsch: [1], richtig: true }] });
+    const s2 = await st('Q7WZ-3HKM-P2RT', 'aufKonto');
+    const l2 = (await F.collection('schulungLaeufe').doc(s1.lauf).get()).data() || {};
+    pruefe('WEITERMACHEN · der zweite Start setzt denselben Durchlauf fort',
+      s2.lauf === s1.lauf && s2.fortsetzen && s2.fortsetzen.schritteGesehen.length === 3 &&
+      s2.fortsetzen.aktivMs === 600000 && s2.durchgang === s1.durchgang, JSON.stringify(s2));
+    pruefe('WEITERMACHEN · … und schreibt das neue Gerät ein (sonst sperrten die Regeln)',
+      l2.geraetUid === 'aufKonto' && l2.teilnehmer === 't-auf');
+    await F.collection('schulungLaeufe').doc(s1.lauf).update({ status: 'fertig', ende: Date.now(), bestanden: true });
+    const s3 = await st('Q7WZ-3HKM-P2RT', 'aufTablet');
+    pruefe('GEGENPROBE nach dem Abschluss beginnt ein neuer Durchgang',
+      s3.lauf !== s1.lauf && !s3.fortsetzen && s3.durchgang === s1.durchgang + 1, JSON.stringify(s3));
+  }
+
+  /* ══ Auffrischen: eine Erinnerung aufs Handy (Runde 216) ══
+     Aus dem Betrieb, 23.10.2026: „jo mach weitwr" — auf den Vorschlag
+     „Push-Erinnerungen für Leute mit Zugang". Push lässt sich hier nicht
+     zustellen; abgefangen wird, an WELCHE Geräte sie ginge. */
+  {
+    const gesendet = [];
+    Object.defineProperty(admin, 'messaging', { configurable: true, writable: true,
+      value: () => ({ sendEachForMulticast: async (m) => {
+        gesendet.push(m); return { responses: m.tokens.map(() => ({ success: true })) }; } }) });
+    try {
+      const T = Date.now(), TAG = 86400000;
+      await db.doc('firmen/alpha').set({ name: 'Alpha', aktiv: true }, { merge: true });
+      const F = db.collection('firmen').doc('alpha');
+      const fragen = [{ frage: 'a', versuche: 1, richtig: true }, { frage: 'b', versuche: 1, richtig: true }];
+      /* Fünf Leute mit Plan:
+         eFaellig   — Fragen fällig, Gerät mit Meldungen an          → JA
+         eLeise     — Fragen fällig, „Kurz auffrischen" abgeschaltet → nein
+         eNeulich   — Fragen fällig, aber vor 2 Tagen schon erinnert → nein
+         eNichts    — nichts fällig (gerade bestanden)               → nein
+         eAus       — Konto inaktiv                                  → nein
+         eStill     — Teilnehmer stillgelegt (Runde 248)             → nein
+         eUmgehaengt — Teilnehmer inzwischen an einem anderen Konto  → nein
+         und ein Testplan der Leitung                                → nein */
+      const leute = {
+        eFaellig: { plan: {}, ende: T - 10 * TAG, notify: { schulung: true } },
+        eLeise:   { plan: {}, ende: T - 10 * TAG, notify: { schulung: false } },
+        eNeulich: { plan: { erinnertAm: T - 2 * TAG }, ende: T - 10 * TAG, notify: {} },
+        eNichts:  { plan: {}, ende: T - 1 * 3600000, notify: {} },
+        eAus:     { plan: {}, ende: T - 10 * TAG, notify: {}, aktiv: false },
+        eStill:   { plan: {}, ende: T - 10 * TAG, notify: {}, tn: { gesperrt: true } },
+        eUmgehaengt: { plan: {}, ende: T - 10 * TAG, notify: {}, tn: { uid: 'jemandAnders' } }
+      };
+      for (const [uid, d] of Object.entries(leute)) {
+        await db.doc('users/' + uid).set({ name: uid, firma: 'alpha', role: 'mitarbeiter', aktiv: d.aktiv !== false });
+        await db.doc('pushTokens/tok-' + uid).set({ uid, firma: 'alpha', role: 'mitarbeiter', studioKeys: ['s1'], notify: d.notify });
+        await F.collection('schulungLaeufe').doc('el-' + uid).set({ modul: 'm-hygiene', teilnehmer: 'te-' + uid, uid,
+          status: 'fertig', bestanden: true, ende: d.ende, ts: d.ende, fragen });
+        await F.collection('schulungLernplan').doc('te-' + uid).set(Object.assign({ teilnehmer: 'te-' + uid, uid, karten: {} }, d.plan));
+        await F.collection('schulungTeilnehmer').doc('te-' + uid).set(Object.assign({ name: uid, uid, gesperrt: false }, d.tn || {}));
+      }
+      await F.collection('schulungLernplan').doc('test:eFaellig').set({ teilnehmer: 'test:eFaellig', uid: 'eFaellig', test: true,
+        karten: { 'm-x#0': { s: 0, f: T - TAG } } });
+
+      await fns.schulungAuffrischErinnern.run({});
+      const alle = gesendet.flatMap((m) => m.tokens);
+      pruefe('ERINNERN · genau ein Gerät: wer Fragen fällig hat und Meldungen an', alle.length === 1 && alle[0] === 'tok-eFaellig',
+        JSON.stringify(alle));
+      pruefe('ERINNERN · nicht bei „Kurz auffrischen" aus, nicht zweimal in drei Tagen, nicht ohne Fälliges, nicht inaktiv, nie ein Testplan',
+        !alle.some((t) => /eLeise|eNeulich|eNichts|eAus/.test(t)) && gesendet.length === 1);
+      pruefe('ERINNERN · nicht an Stillgelegte, nicht an ein Konto, mit dem der Teilnehmer nicht mehr verknüpft ist (Runde 248)',
+        !alle.some((t) => /eStill|eUmgehaengt/.test(t)), JSON.stringify(alle));
+      const m0 = (gesendet[0] || { data: {} }).data;
+      pruefe('ERINNERN · Überschrift „Kurz auffrischen", Text mit der Zahl der Fragen', /Kurz auffrischen/.test(m0.title || '') &&
+        /^2 Fragen aus deinen Schulungen warten/.test(m0.body || ''), JSON.stringify(m0));
+      const plan = (await F.collection('schulungLernplan').doc('te-eFaellig').get()).data() || {};
+      pruefe('ERINNERN · der Plan merkt sich den Zeitpunkt', plan.erinnertAm >= T);
+      gesendet.length = 0;
+      await fns.schulungAuffrischErinnern.run({});
+      pruefe('GEGENPROBE am nächsten Lauf (gleich danach) kommt keine zweite', gesendet.length === 0, String(gesendet.length));
+      const I = fns.__intern;
+      pruefe('ERINNERN · nach drei Tagen darf es wieder', I.auffrischErinnernDarf({ uid: 'x', erinnertAm: T - 3 * TAG }, T) &&
+        !I.auffrischErinnernDarf({ uid: 'x', erinnertAm: T - 3 * TAG + 60000 }, T) && !I.auffrischErinnernDarf({ erinnertAm: 0 }, T));
+      pruefe('ERINNERN · eine Frage: eigener Satz', I.auffrischErinnernText(1) === 'Eine Frage aus deinen Schulungen wartet — dauert keine Minute.');
+      pruefe('ERINNERN · der Teilnehmer gilt nur, wenn er da, nicht stillgelegt und mit DIESEM Konto verknüpft ist',
+        I.auffrischTeilnehmerGilt({ uid: 'a' }, { uid: 'a' }) && !I.auffrischTeilnehmerGilt(null, { uid: 'a' }) &&
+        !I.auffrischTeilnehmerGilt({ uid: 'a', gesperrt: true }, { uid: 'a' }) && !I.auffrischTeilnehmerGilt({ uid: 'b' }, { uid: 'a' }) &&
+        !I.auffrischTeilnehmerGilt({ uid: null }, { uid: null }));
+
+      /* Teilnehmer gelöscht → sein Lernplan geht mit (Runde 248). Die
+         Durchläufe bleiben: sie sind der Nachweis. */
+      await F.collection('schulungTeilnehmer').doc('te-eFaellig').delete();
+      await fns.onSchulungTeilnehmerWegF.run({ exists: false, data: () => ({ uid: 'eFaellig' }) },
+        { params: { firma: 'alpha', tId: 'te-eFaellig' } });
+      const weg = await F.collection('schulungLernplan').doc('te-eFaellig').get();
+      const bleibt = await F.collection('schulungLernplan').doc('te-eLeise').get();
+      const nachweis = await F.collection('schulungLaeufe').doc('el-eFaellig').get();
+      pruefe('AUFRÄUMEN · Teilnehmer gelöscht → sein Lernplan ist weg', !weg.exists);
+      pruefe('GEGENPROBE der Plan eines anderen bleibt, der Durchlauf (Nachweis) auch', bleibt.exists && nachweis.exists);
+      await db.doc('schulungLernplan/te-flach').set({ uid: 'x', karten: {} });
+      await fns.onSchulungTeilnehmerWeg.run({ exists: false, data: () => ({}) }, { params: { tId: 'te-flach' } });
+      pruefe('AUFRÄUMEN · auch auf dem flachen Pfad', !(await db.doc('schulungLernplan/te-flach').get()).exists);
+      for (const uid of Object.keys(leute)) {
+        await db.doc('users/' + uid).delete(); await db.doc('pushTokens/tok-' + uid).delete();
+      }
+    } finally {
+      delete admin.messaging;
+    }
+  }
+
   /* ══ Wichtig: einmal am Tag erinnern (Runde 136) ══
      Push lässt sich hier nicht zustellen. Der Versand wird deshalb
      abgefangen: geprüft wird, an WELCHE Geräte die Erinnerung ginge. */
@@ -1393,6 +1647,95 @@ const TAG = 86400000;
       }
     } finally {
       delete admin.messaging;
+    }
+  }
+
+  /* ══ Formi meldet sich selbst (Etappe 3, Runde 235) ══
+     Aus dem Betrieb (23.10.2026), Rückfragen zu Etappe 3: melden bei
+     „Morgens: dein Tag, Fällig & überfällig, Fehlendes Material/Defekt,
+     Schichtende-Check" — „So oft wie nötig". Zugestellt wird hier nichts;
+     abgefangen wird, an WELCHE Geräte es ginge und was drinsteht. */
+  {
+    const gesendet = [];
+    Object.defineProperty(admin, 'messaging', { configurable: true, writable: true,
+      value: () => ({ sendEachForMulticast: async (m) => {
+        gesendet.push(m); return { responses: m.tokens.map(() => ({ success: true })) }; } }) });
+    const sk = 's-formi';
+    const F = db.collection('firmen').doc('alpha');
+    const geraete = {
+      fLea:   { uid: 'fLea',   role: 'mitarbeiter', notify: { formi: true } },
+      fLeise: { uid: 'fLeise', role: 'mitarbeiter', notify: { formi: false } },
+      fFrei:  { uid: 'fFrei',  role: 'mitarbeiter', notify: {} },
+      fLeit:  { uid: 'fLeit',  role: 'leiter',      notify: {} },
+      fChef:  { uid: 'fChef',  role: 'chef',        notify: {}, studioKeys: [] },
+      fFremd: { uid: 'fFremd', role: 'leiter',      notify: {}, studioKeys: ['anderes'] },
+    };
+    const an = () => gesendet.flatMap((m) => m.tokens).sort();
+    try {
+      await db.doc('firmen/alpha').set({ name: 'Alpha', aktiv: true }, { merge: true });
+      await F.collection('config').doc('features').set({ todos: true, putzplan: true });
+      await F.collection('studios').doc(sk).set({ name: 'Hürth' });
+      for (const [id, g] of Object.entries(geraete)) {
+        await db.doc('pushTokens/tok-' + id).set({ uid: g.uid, firma: 'alpha', role: g.role, studioKeys: g.studioKeys || [sk], notify: g.notify });
+      }
+      const jetzt = Date.now();
+      const heute = new Date(jetzt).toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' });
+      const uhr = (ms) => new Date(ms).toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin', hour: '2-digit', minute: '2-digit' });
+      const S = F.collection('studios').doc(sk);
+      /* Lea und Leise haben heute Dienst; Lea endet vor 5 Minuten. */
+      await S.collection('shifts').doc('a').set({ date: heute, from: '00:00', to: uhr(jetzt - 5 * 60000), uid: 'fLea', name: 'Lea Test' });
+      await S.collection('shifts').doc('b').set({ date: heute, from: '00:00', to: '23:59', uid: 'fLeise', name: 'Leise Test' });
+      await S.collection('todos').doc('t1').set({ title: 'Briefkasten leeren', done: false, due: jetzt - 10 * 60000 });
+      await S.collection('todos').doc('t2').set({ title: 'Erledigt', done: true, due: jetzt - 10 * 60000 });
+      await S.collection('todos').doc('t3').set({ title: 'Später', done: false, due: jetzt + 60000 });
+      await S.collection('cleaning').doc('p1').set({ title: 'Spiegel', done: false });
+
+      await fns.formiMorgen.run({});
+      const m1 = (gesendet[0] || { data: {} }).data;
+      pruefe('FORMI MORGEN · genau ein Gerät: wer heute Dienst hat und Formi-Meldungen an (nicht abgeschaltet, nicht ohne Dienst)',
+        JSON.stringify(an()) === '["tok-fLea"]', JSON.stringify(an()));
+      pruefe('FORMI MORGEN · „dein Tag" mit Dienst, Überfälligem, heute Fälligem und Putzpunkten',
+        /dein Tag/.test(m1.title || '') && /Dienst 00:00–.* in Hürth/.test(m1.body || '') && /1 Aufgabe ist überfällig/.test(m1.body || '') &&
+        /1 Aufgabe ist heute fällig/.test(m1.body || '') && /1 Putzpunkte offen/.test(m1.body || ''), JSON.stringify(m1));
+      gesendet.length = 0;
+
+      /* Jetzt kommt Frei in den Dienst; Leas Schicht ist schon vorbei. */
+      await S.collection('shifts').doc('c').set({ date: heute, from: '00:00', to: '23:59', uid: 'fFrei', name: 'Frei Test' });
+      await fns.formiFaellig.run({});
+      pruefe('FORMI FRIST · die gerade verstrichene Frist geht an die, die JETZT Dienst haben (Frei) — nicht an Lea (Schicht vorbei), nicht an Leise (aus)',
+        JSON.stringify(an()) === '["tok-fFrei"]' && /Briefkasten leeren ist noch offen/.test((gesendet[0] || { data: {} }).data.body || ''), JSON.stringify(gesendet.map(m => [m.tokens, m.data])));
+      gesendet.length = 0;
+
+      await fns.formiSchichtende.run({});
+      const m3 = (gesendet[0] || { data: {} }).data;
+      pruefe('FORMI SCHICHTENDE · Lea (Schicht vor 5 Min. zu Ende): Übergabe fehlt, 1 Putzpunkt offen',
+        JSON.stringify(an()) === '["tok-fLea"]' && /Übergabe noch nicht geschrieben · 1 Putzpunkt offen/.test(m3.body || ''), JSON.stringify(m3));
+      gesendet.length = 0;
+      await S.collection('handovers').doc('h1').set({ text: 'Alles gut', uid: 'fLea', ts: jetzt });
+      await S.collection('cleaning').doc('p1').set({ title: 'Spiegel', done: true, doneAt: jetzt });
+      await fns.formiSchichtende.run({});
+      pruefe('FORMI SCHICHTENDE · Übergabe geschrieben, Putzplan durch → keine Meldung', gesendet.length === 0, JSON.stringify(gesendet.map(m => m.data)));
+
+      await fns.formiDefektF.run({ data: () => ({ art: 'defekt', devName: 'Gerät 2', text: 'piept dreimal', by: 'Leit Test', byUid: 'fLeit' }) },
+        { params: { firma: 'alpha', studioKey: sk, logId: 'x' } });
+      pruefe('FORMI DEFEKT · an den Chef — nicht an Mitarbeiter, nicht an fremde Leitung, nicht an den, der meldet',
+        JSON.stringify(an()) === '["tok-fChef"]' && /Gerät 2: piept dreimal/.test((gesendet[0] || { data: {} }).data.body || ''), JSON.stringify(an()));
+      gesendet.length = 0;
+      await fns.formiDefektF.run({ data: () => ({ art: 'behoben', devName: 'Gerät 2' }) }, { params: { firma: 'alpha', studioKey: sk, logId: 'y' } });
+      pruefe('FORMI DEFEKT · „behoben" meldet nichts', gesendet.length === 0);
+
+      const doc = (items) => ({ exists: true, data: () => ({ items }) });
+      await fns.formiMaterialF.run({ before: doc([{ name: 'Westen M', limit: 5, have: 5 }]), after: doc([{ name: 'Westen M', limit: 5, have: 2 }]) },
+        { params: { firma: 'alpha', studioKey: sk } });
+      pruefe('FORMI MATERIAL · Westen M fehlen jetzt 3 → Leitung des Studios und Chef',
+        JSON.stringify(an()) === '["tok-fChef","tok-fLeit"]' && /Westen M \(3\)/.test((gesendet[0] || { data: {} }).data.body || ''), JSON.stringify(an()));
+      gesendet.length = 0;
+      await fns.formiMaterialF.run({ before: doc([{ name: 'Westen M', limit: 5, have: 2 }]), after: doc([{ name: 'Westen M', limit: 5, have: 4 }]) },
+        { params: { firma: 'alpha', studioKey: sk } });
+      pruefe('FORMI MATERIAL · aufgefüllt → keine Meldung', gesendet.length === 0);
+    } finally {
+      delete admin.messaging;
+      for (const id of Object.keys(geraete)) await db.doc('pushTokens/tok-' + id).delete();
     }
   }
 

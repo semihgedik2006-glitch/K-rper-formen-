@@ -52,7 +52,14 @@ async function start(rolle) {
   }
   await page.evaluate(() => {
     const g = document.querySelector('.mobnav [data-group="g-arbeit"]');
+    /* Runde 260: Mitarbeiter haben den Raum „Studio" nicht mehr — ohne
+       Raum-Knopf geht der Weg über die Schublade „Alles". */
     if (g) g.click();
+    else {
+      document.getElementById('bereichKopf').click();
+      const a = document.querySelector('#allesLade [data-alles="putzplan"]');
+      if (a) a.click();
+    }
   });
   await page.waitForTimeout(450);
   await page.evaluate(() => {

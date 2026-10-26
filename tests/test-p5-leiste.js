@@ -18,7 +18,8 @@
    24.9.: Studio (Aufgaben und Putzplan) vor Nachrichten.
 
    Was dieser Durchlauf festhält:
-     · unten stehen Heute · Studio · Plan · Nachrichten · Wissen
+     · unten stehen Heute · Studio · Zeiten · Plan · Nachrichten
+       (Runde 246: „Wissen" unter ☰, zwei Tipps)
      · „Studio" öffnet die Aufgaben und trägt die Marke; der Putzplan ist
        der Reiter daneben (kein eigener Knopf mehr), die Marke bleibt
        auf „Studio"
@@ -30,6 +31,11 @@
        normal und kompakt, und im Bild
      · GEGENPROBE: im bisherigen Design dieselben Räume, kein Putzplan-Knopf
    ══════════════════════════════════════════════════════════════════ */
+/* Runde 236: Seit dem 23.10.2026 ist das neue Design für alle der Standard.
+   Dieser Durchlauf prüft eine Funktion, kommt aber über die BISHERIGE
+   Navigation dorthin. Bis er auf die neue umgestellt ist, läuft er im
+   bisherigen Aussehen (kf_neu=0, der Geräteschalter des Übergangs).
+   Offen als P-20 in docs/BEKANNTE-PROBLEME.md. */
 const { chromium } = require('playwright');
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
@@ -78,13 +84,30 @@ async function tippe(p, wort) {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
 
   {
-    console.log('\n── Handy 390 × 844, Mitarbeiter ──');
-    const p = await start(b, 'mitarbeiter', 390, 844);
+    /* Runde 260, aus dem Betrieb 23.10.2026 auf „Mitarbeiter unten nur Heute, Zeiten, Plan, Nachrichten?": „ja". Die Abläufe über „Studio" prüft
+       dieser Durchlauf deshalb mit der Studioleitung, die alle Räume hat;
+       die vier Räume der Mitarbeiter stehen gleich darunter. */
+    {
+      const pm = await start(b, 'mitarbeiter', 390, 844);
+      const m = await pm.evaluate(LAGE);
+      pruefe('Mitarbeiter: unten Heute · Zeiten · Plan · Nachrichten', m.reihe.join('|') === 'Heute|Zeiten|Plan|Nachrichten', m.reihe.join('|'));
+      const szm = await pm.evaluate(() => [...document.querySelectorAll('#schnellLeiste .sz-wort')].map(x => x.textContent));
+      pruefe('der Schnellzugriff-Vorschlag (Mitarbeiter): Meine Woche, Mein Kalender, Geräte',
+        szm.slice(0, 3).join('|') === 'Meine Woche|Mein Kalender|Geräte', szm.join('|'));
+      await pm.close();
+    }
+    console.log('\n── Handy 390 × 844, Studioleitung ──');
+    const p = await start(b, 'leiter', 390, 844);
     const a = await p.evaluate(LAGE);
     console.log('  ' + JSON.stringify(a));
     // Runde 184: „das problem mit dem zu viel bleibt immer noch bestehen" — fünf Räume.
-    pruefe('unten stehen Heute · Studio · Plan · Nachrichten · Wissen',
-      a.reihe.join('|') === 'Heute|Studio|Plan|Nachrichten|Wissen', a.reihe.join('|'));
+    /* Runde 222 (23.10.2026): „Zeiten" bekommt einen eigenen Knopf —
+       aus dem Betrieb auf die Rückfrage: „eigener knopf".
+       Runde 246 (23.10.2026), Plan „Studio Chat wie von Apple": fünf statt
+       sechs, „Wissen" liegt unter ☰ (am Rechner weiter links). Aus dem
+       Betrieb, 08:07: „ja so wie du empfohlen hast klingt super". */
+    pruefe('unten stehen Heute · Studio · Zeiten · Plan · Nachrichten',
+      a.reihe.join('|') === 'Heute|Studio|Zeiten|Plan|Nachrichten', a.reihe.join('|'));
 
     await tippe(p, 'Studio');
     const au = await p.evaluate(LAGE);
@@ -121,8 +144,14 @@ async function tippe(p, wort) {
     /* Schnellzugriffe: der Vorschlag für Mitarbeiter ist unverändert —
        Runde 184 hat die Wahl nicht angefasst, nur die Stelle. */
     const sz = await p.evaluate(() => [...document.querySelectorAll('#schnellLeiste .sz-wort')].map(x => x.textContent));
-    pruefe('der Schnellzugriff-Vorschlag: Meine Woche, Meine Zeiten, Geräte',
-      sz.slice(0, 3).join('|') === 'Meine Woche|Meine Zeiten|Geräte', sz.join('|'));
+    /* Seit Runde 222 liegt „Meine Zeiten" unten als eigener Knopf; als
+       Schnellzugriff wäre es ein zweiter Weg an dieselbe Stelle (wie der
+       Putzplan seit P5). An seinen Platz rückt „Mein Kalender". */
+    /* Seit Runde 260 läuft dieser Teil mit der Studioleitung; deren
+       Vorschlag ist Schichtplan · Anliegen · Meine Woche (SCHNELL_VORSCHLAG).
+       Den der Mitarbeiter prüft der Block „Mitarbeiter" oben. */
+    pruefe('der Schnellzugriff-Vorschlag (Studioleitung): Schichtplan, Anliegen, Meine Woche',
+      sz.slice(0, 3).join('|') === 'Schichtplan|Anliegen|Meine Woche', sz.join('|'));
     pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await p.close();
   }
@@ -140,10 +169,23 @@ async function tippe(p, wort) {
           return { t: x.textContent.trim().slice(0, 12), m: TREFFER(x), imBild: r.left >= 0 && r.right <= innerWidth + .5 };
         });
       }, '(' + TREFFER.toString() + ')');
-      // Runde 184: fünf Räume statt vier Knöpfe (siehe oben).
+      // Runde 184: fünf Räume statt vier Knöpfe; Runde 222 sechs; Runde 246 wieder fünf.
       pruefe(w + ' px, ' + dichte + ': fünf Knöpfe, jeder ≥ 44 × 44 und im Bild',
         k.length === 5 && k.every(x => x.m.w >= 44 && x.m.h >= 44 && x.imBild), JSON.stringify(k));
     }
+    /* Runde 246: „Wissen" hat unten keinen Knopf mehr — es muss in zwei
+       Tipps erreichbar bleiben (CLAUDE.md: „Jedes Ziel in zwei Tipps
+       über ‚Alles'"): ☰ öffnet die Liste, ein Tipp auf „Dokumente". */
+    const wi = await p.evaluate(async () => {
+      document.getElementById('bereichKopf').click();
+      await new Promise(r => setTimeout(r, 500));
+      const z = [...document.querySelectorAll('#allesLadeInhalt .al-zeile')].find(e => /Dokumente/.test(e.textContent) && e.getClientRects().length);
+      if (!z) return { ziel: null };
+      z.click();
+      await new Promise(r => setTimeout(r, 700));
+      return { ziel: z.textContent.trim().slice(0, 30), ansicht: (document.querySelector('.view.show') || {}).id };
+    });
+    pruefe(w + ' px: „Wissen → Dokumente" in zwei Tipps über ☰ (' + wi.ansicht + ')', wi.ziel && wi.ansicht === 'view-docs', JSON.stringify(wi));
     pruefe(w + ' px ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await p.close();
   }
@@ -153,13 +195,14 @@ async function tippe(p, wort) {
     const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 390, height: 844 } });
     await p.route('**://www.gstatic.com/**', r => r.abort());
     await p.addInitScript({ path: __dirname + '/stub-mitarbeiter.js' });
+    await p.addInitScript(() => { try { localStorage.setItem('kf_neu', '0'); } catch (e) {} });
     await p.goto(APP, { waitUntil: 'domcontentloaded' });
     await p.waitForTimeout(3200);
     const a = await p.evaluate(() => ({ neu: document.body.classList.contains('neu'),
       gruppen: [...document.querySelectorAll('.mobnav button')].map(x => x.dataset.group) }));
-    // Runde 184: auch im bisherigen Design dieselben fünf Räume.
-    pruefe('GEGENPROBE bisheriges Design: dieselben fünf Räume, kein Putzplan-Knopf',
-      a.neu === false && a.gruppen.join('|') === 'g-start|g-arbeit|g-team|g-komm|g-wissen' &&
+    // Runde 184: auch im bisherigen Design dieselben Räume — seit Runde 222 sechs („eigener knopf").
+    pruefe('GEGENPROBE bisheriges Design: dieselben sechs Räume, kein Putzplan-Knopf',
+      a.neu === false && a.gruppen.join('|') === 'g-start|g-arbeit|g-zeit|g-team|g-komm|g-wissen' &&
       a.gruppen.indexOf('g-putz') < 0, JSON.stringify(a));
     await p.close();
   }
@@ -167,6 +210,6 @@ async function tippe(p, wort) {
   await b.close();
   console.log(schlecht
     ? '\n✗ Leiste P5: ' + schlecht + ' von ' + (gut + schlecht) + ' Zusicherungen falsch'
-    : '\n✓ Leiste P5: Heute · Studio · Plan · Nachrichten · Wissen, Putzplan unter Studio, Ungelesenes sichtbar — ' + gut + ' Zusicherungen');
+    : '\n✓ Leiste P5: Heute · Studio · Zeiten · Plan · Nachrichten (Wissen unter ☰), Putzplan unter Studio, Ungelesenes sichtbar — ' + gut + ' Zusicherungen');
   process.exit(schlecht ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

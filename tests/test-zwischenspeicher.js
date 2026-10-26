@@ -76,7 +76,14 @@ function kopfzeilen(pfad) {
 const SW_ECHT = fs.readFileSync(path.join(WURZEL, 'sw.js'), 'utf8');
 const ATTRAPPE = "self.firebase={initializeApp:function(){},messaging:function(){return{onBackgroundMessage:function(){}};}};";
 /* Die Lage, die der Server gerade spielt. */
-const lage = { version: 'vA', neu: false, alterSw: false, alteKopf: false };
+const lage = { version: 'vA', neu: false, alterSw: false, alteKopf: false, alteStart: false };
+/* Was der Server je Pfad geantwortet hat: { '/index.html': { 200: n, 304: m } }.
+   Damit wird das zweite Öffnen gemessen, nicht angesehen. */
+const antworten = {};
+function zaehle(pfad, status) {
+  antworten[pfad] = antworten[pfad] || {};
+  antworten[pfad][status] = (antworten[pfad][status] || 0) + 1;
+}
 
 function swText() {
   let s = SW_ECHT
@@ -87,6 +94,10 @@ function swText() {
     /* Der Stand vor dem 24.9.2026, Zeile für Zeile. */
     s = s.replace("PRECACHE.map(function (u) { return new Request(u, { cache: 'reload' }); })", 'PRECACHE')
          .replace("inhalt ? { cache: 'no-cache' } : undefined", 'undefined');
+  }
+  if (lage.alteStart) {
+    /* Der Stand vor dem 26.10.2026: die Seite jedes Mal ganz neu. */
+    s = s.replace("fetch(e.request, { cache: 'no-cache' })", "fetch(e.request, { cache: 'no-store' })");
   }
   return s;
 }
@@ -103,6 +114,8 @@ const server = http.createServer((req, res) => {
     inhalt = Buffer.from(inhalt.toString('utf8').replace(/stand: '[^']*'/, "stand: 'NEU-PROBE'"));
   const kopf = kopfzeilen(pfad);
   if (lage.alteKopf && /-basis\.js$|ems-wissen\.js$/.test(pfad)) kopf['Cache-Control'] = 'public, max-age=604800';
+  if (lage.alteStart && (pfad === '/' || pfad === '/index.html')) kopf['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+  /* Der Browser kennt kein s-maxage, es gilt nur fuer Verteilnetze. */
   const typ = { '.js': 'text/javascript', '.html': 'text/html', '.svg': 'image/svg+xml',
     '.json': 'application/json', '.woff2': 'font/woff2', '.png': 'image/png' }[path.extname(datei)];
   /* Ein ETag wie beim Hoster, damit no-cache ein 304 bekommen kann. */
@@ -110,8 +123,8 @@ const server = http.createServer((req, res) => {
   kopf.ETag = etag;
   if (typ) kopf['Content-Type'] = typ;
   delete kopf['Content-Security-Policy'];
-  if (req.headers['if-none-match'] === etag) { res.writeHead(304, kopf); return res.end(); }
-  res.writeHead(200, kopf); res.end(inhalt);
+  if (req.headers['if-none-match'] === etag) { zaehle(pfad, 304); res.writeHead(304, kopf); return res.end(); }
+  zaehle(pfad, 200); res.writeHead(200, kopf); res.end(inhalt);
 });
 
 /* Eine Lage durchspielen; zurück kommt, welcher `stand` am Ende in der
@@ -152,6 +165,34 @@ async function spiele(b, port, name, einstellen) {
   return { vorher, nachher, vorrat };
 }
 
+/* Das zweite Öffnen der App: einmal laden, Service Worker einrichten
+   lassen, noch einmal laden. Zurück kommt, wie oft der Server die
+   Startseite ganz (200) und wie oft nur „unverändert" (304) geschickt
+   hat, und wie viele Bytes dabei über die Leitung gingen. */
+async function zweitesOeffnen(b, port, name, einstellen) {
+  Object.assign(lage, { version: 'vA', neu: false, alterSw: false, alteKopf: false, alteStart: false });
+  einstellen(lage);
+  for (const k of Object.keys(antworten)) delete antworten[k];
+  const ctx = await b.newContext({ viewport: { width: 390, height: 844 } });
+  const p = await ctx.newPage();
+  await p.route('**://www.gstatic.com/**', r => r.abort());
+  await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
+  const APP = 'http://127.0.0.1:' + port + '/index.html?demo=mitarbeiter';
+  await p.goto(APP, { waitUntil: 'domcontentloaded' });
+  await p.waitForTimeout(2500);
+  await p.evaluate(() => navigator.serviceWorker.ready.then(() => true));
+  const vorher = JSON.stringify(antworten['/index.html'] || {});
+  let bytes = 0;
+  p.on('response', r => { if (/\/index\.html/.test(r.url())) r.body().then(b => { bytes += b.length; }).catch(() => {}); });
+  await p.reload({ waitUntil: 'domcontentloaded' });
+  await p.waitForTimeout(1500);
+  const gefuehrt = await p.evaluate(() => !!navigator.serviceWorker.controller);
+  await ctx.close();
+  const a = antworten['/index.html'] || {};
+  console.log('    ' + name + ': erstes Öffnen ' + vorher + ', danach 200×' + (a[200] || 0) + ' 304×' + (a[304] || 0) + ', Service Worker führt: ' + gefuehrt);
+  return { vorherText: vorher, nach200: a[200] || 0, nach304: a[304] || 0, gefuehrt, bytes };
+}
+
 (async () => {
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   const port = server.address().port;
@@ -165,6 +206,31 @@ async function spiele(b, port, name, einstellen) {
   }
   pruefe('GEGENPROBE Schriften bleiben eine Woche im Zwischenspeicher',
     /max-age=604800/.test(kopfzeilen('/fonts/x.woff2')['Cache-Control'] || ''));
+  /* 26.10.2026: „jeder Start lädt rund 1 MB neu". no-store verbot dem
+     Browser, die Seite überhaupt aufzubewahren — ein 304 war unmöglich.
+     no-cache half live auch nicht: das Verteilnetz des Hosters legt bei
+     no-cache nichts ab, und ohne Kopie dort gibt es kein 304. Jetzt
+     max-age=0 (Browser fragt immer nach) + s-maxage (Verteilnetz darf
+     kurz behalten). */
+  for (const d of ['/', '/index.html']) {
+    const k = kopfzeilen(d)['Cache-Control'] || '';
+    pruefe(d + ' darf ein 304 bekommen (kein no-store/no-cache, max-age=0, s-maxage)',
+      !/no-store|no-cache/.test(k) && /max-age=0\b/.test(k) && /must-revalidate/.test(k) && /s-maxage=[1-9]\d*/.test(k), k);
+  }
+  pruefe('konfig.js bleibt bei no-store (entscheidet über die Datenbank)', /no-store/.test(kopfzeilen('/konfig.js')['Cache-Control'] || ''));
+
+  console.log('\n── Das zweite Öffnen der App ──');
+  const zweit = await zweitesOeffnen(b, port, 'wie im Repo', () => {});
+  pruefe('beim zweiten Öffnen antwortet der Server „unverändert" (304) statt die Seite neu zu schicken',
+    /* Beim ersten Öffnen kommt die Seite zweimal ganz: einmal für das
+       Fenster, einmal legt der Service Worker sie in seinen Vorrat. Beim
+       zweiten Öffnen darf KEIN weiteres 200 dazukommen, nur ein 304. */
+    zweit.gefuehrt && zweit.nach304 >= 1 && zweit.nach200 === (JSON.parse(zweit.vorherText)[200] || 0),
+    'vorher ' + zweit.vorherText + ', danach 200×' + zweit.nach200 + ' 304×' + zweit.nach304);
+  const zweitAlt = await zweitesOeffnen(b, port, 'alter Stand (no-store)', l => { l.alteStart = true; });
+  pruefe('GEGENPROBE mit no-store kommt die ganze Seite jedes Mal neu — der langsame Start ist nachgestellt',
+    zweitAlt.gefuehrt && zweitAlt.nach304 === 0 && zweitAlt.nach200 > (JSON.parse(zweitAlt.vorherText)[200] || 0),
+    'vorher ' + zweitAlt.vorherText + ', danach 200×' + zweitAlt.nach200 + ' 304×' + zweitAlt.nach304);
 
   console.log('\n── Eine Auslieferung, durchgespielt ──');
   const jetzt = await spiele(b, port, 'wie im Repo', () => {});

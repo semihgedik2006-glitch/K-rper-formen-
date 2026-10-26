@@ -67,7 +67,9 @@ async function seite(b, stub, such, breite) {
      Die Gegenprobe zuerst. Wäre sie rot, wäre alles andere egal. */
   console.log('── Ohne Schalter: die App von heute ──');
   {
-    const page = await seite(b, 'stub-chef.js', '');
+    /* Seit Runde 236 ist das neue Design der Standard; das bisherige gibt
+       es im Übergang nur noch über ?neu=0. Diese Gegenprobe prüft es dort. */
+    const page = await seite(b, 'stub-chef.js', '?neu=0');
     const alt = await page.evaluate(() => {
       const zeile = document.getElementById('bereichZeile');
       const lade = document.getElementById('allesLade');
@@ -86,7 +88,8 @@ async function seite(b, stub, such, breite) {
     });
     console.log('BISHER:', JSON.stringify(alt));
     pruefe('body trägt die Klasse „neu" NICHT', alt.klasse === false);
-    pruefe('die Leiste hat weiterhin alle Gruppen direkt', alt.knoepfe === 6, String(alt.knoepfe));
+    /* 7 seit Runde 222 (#281): „Zeiten" ist ein eigener Raum, siehe unten. */
+    pruefe('die Leiste hat weiterhin alle Gruppen direkt', alt.knoepfe === 7, String(alt.knoepfe));
     pruefe('es gibt keinen „Alles"-Knopf', alt.allesKnopf === false);
     pruefe('der Bereichskopf ist nicht zu sehen', alt.kopfDa === false);
     pruefe('die Schublade ist nicht zu sehen', alt.ladeDa === false);
@@ -130,10 +133,18 @@ async function seite(b, stub, such, breite) {
        Reiter unter „Studio". Die Reihenfolge folgt weiter der Nutzung
        (24.9.2026: „der am meisten benutzte Bereich [ist] der Aufgaben-
        und Putzplan-Bereich … aber der Chat eher wenig") — Studio vor
-       Nachrichten. */
+       Nachrichten.
+       Runde 222 (#281), aus dem Betrieb, 23.10.2026, auf „wohin mit den
+       Zeiten?": „eigener knopf". Seitdem sechs: „Zeiten" direkt hinter
+       „Studio" (gestempelt wird jeden Tag). Nachgezogen in Runde 228 –
+       #281 hatte test-navigation und test-p5-leiste angepasst, diesen
+       Durchlauf nicht.
+       Runde 246 (23.10.2026), Plan „Studio Chat wie von Apple": fünf statt
+       sechs, „Wissen" liegt unter ☰ (am Rechner weiter links). Aus dem
+       Betrieb, 08:07: „ja so wie du empfohlen hast klingt super". */
     pruefe('unten stehen fünf Knöpfe', neu.reihe.length === 5, JSON.stringify(neu.reihe));
-    pruefe('und zwar Heute, Studio, Plan, Nachrichten, Wissen',
-      neu.reihe.join('|') === 'Heute|Studio|Plan|Nachrichten|Wissen', JSON.stringify(neu.reihe));
+    pruefe('und zwar Heute, Studio, Zeiten, Plan, Nachrichten',
+      neu.reihe.join('|') === 'Heute|Studio|Zeiten|Plan|Nachrichten', JSON.stringify(neu.reihe));
     pruefe('die Schublade ist beim Start zu', neu.ladeZu === true);
     pruefe('der Bereichskopf trägt einen sichtbaren Griff', neu.griff === true);
   }
@@ -161,7 +172,10 @@ async function seite(b, stub, such, breite) {
            (Runde 113) eine dritte: „Datenschutzvorfall melden" — aus dem
            Betrieb: „es soll einen knopf geben der mir nach ausfüllung
            sofort eine mail schickt". */
-        fenster: !!(z.getAttribute('data-al-hilfe') || z.getAttribute('data-al-neu') || z.getAttribute('data-al-vorfall')),
+        /* Runde 275: „Findetest" ist ebenfalls ein Fenster (nachgezogen
+           in Runde 285). */
+        fenster: !!(z.getAttribute('data-al-hilfe') || z.getAttribute('data-al-neu') || z.getAttribute('data-al-vorfall') ||
+          z.getAttribute('data-al-findetest')),
       })),
       abgeschnitten: zeilen.some(z => {
         const t = z.querySelector('b');
@@ -221,7 +235,19 @@ async function seite(b, stub, such, breite) {
       const it = z.getAttribute('data-al-ichtab');
       const cg = z.getAttribute('data-al-cgo');
       let reiterOk = true;
+      let zielUm = null;
       if (tt) reiterOk = !!document.querySelector('[data-teamtab="' + tt + '"].on');
+      /* Runde 187 (aus dem Betrieb: „das problem mit dem zu viel bleibt
+         immer noch bestehen"): das Schwarze Brett ist vom Team in die
+         Pinnwand gezogen. Der alte Team-Reiter ist ausgeblendet
+         (pin-umgezogen) und leitet um. Richtig ist dann: Seite
+         „Pinnwand" (view-ann), Teil „Aushänge" aktiv, Brett sichtbar. */
+      if (tt === 'brett' && document.querySelector('[data-teamtab="brett"].pin-umgezogen')) {
+        zielUm = 'view-ann';
+        const bb = document.getElementById('bbList');
+        reiterOk = !!document.querySelector('#view-ann .umschalter [data-pinteil="brett"].active') &&
+          !!(bb && bb.closest('#view-ann') && bb.checkVisibility());
+      }
       if (it) reiterOk = !!document.querySelector('[data-ichtab="' + it + '"].on');
       if (cg) {
         const pane = [...document.querySelectorAll('.chef-pane')].find(x => x.offsetParent !== null);
@@ -254,6 +280,18 @@ async function seite(b, stub, such, breite) {
         if (auf) document.getElementById('neuClose').click();
         return raus;
       }
+      /* „Findetest" (Runde 275) ebenso. */
+      if (z.getAttribute('data-al-findetest')) {
+        const auf = document.getElementById('findeModal').classList.contains('show');
+        const raus = {
+          name, tipps, reiterOk,
+          view: auf ? 'FENSTER-AUF' : 'FENSTER-ZU',
+          ziel: 'FENSTER-AUF',
+          ladeZu: document.getElementById('allesLade').hidden,
+        };
+        if (auf) document.getElementById('ftClose').click();
+        return raus;
+      }
       /* „Datenschutzvorfall melden" (seit 25.9., Runde 113) ebenso. */
       if (z.getAttribute('data-al-vorfall')) {
         const auf = document.getElementById('vorfallModal').classList.contains('show');
@@ -269,7 +307,7 @@ async function seite(b, stub, such, breite) {
       return {
         name, tipps, reiterOk,
         view: (document.querySelector('.view.show') || {}).id,
-        ziel: 'view-' + z.getAttribute('data-alles'),
+        ziel: zielUm || ('view-' + z.getAttribute('data-alles')),
         ladeZu: document.getElementById('allesLade').hidden,
       };
     }, i));
@@ -458,7 +496,9 @@ async function seite(b, stub, such, breite) {
           ohneAusgang: [...document.querySelectorAll('#heuteListe .heute-block')]
             .filter(bl => {
               const kopf = bl.querySelector('.heute-kopf');
-              const zahl = /·\s*(\d+)/.exec((kopf.textContent || ''));
+              /* Runde 241: die Zahl steht ohne „·“ leise neben dem Titel, und im
+                 Kopf steht jetzt auch „Alle N“ — gelesen wird nur der Titel. */
+              const zahl = /(?:·\s*|\s)(\d+)$/.exec(((kopf.querySelector('.hk-wort') || {}).textContent || '').trim());
               const gezeigt = bl.querySelectorAll('.heute-zeile').length;
               return zahl && +zahl[1] > gezeigt && !kopf.querySelector('.mini-link');
             }).length,

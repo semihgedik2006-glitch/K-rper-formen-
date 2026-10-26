@@ -56,7 +56,8 @@ function block(p) {
       .find(x => /^Putzplan/.test((x.querySelector('.hk-wort') || {}).textContent || ''));
     if (!bl) return null;
     const kopf = bl.querySelector('.hk-wort').textContent.trim();
-    const m = /·\s*(\d+)/.exec(kopf);
+    /* Runde 241: „Putzplan 26“ statt „Putzplan · 26“. */
+    const m = /(?:·\s*|\s)(\d+)$/.exec(kopf);
     return {
       kopf, zahl: m ? +m[1] : 1,
       zeilen: [...bl.querySelectorAll('.heute-zeile')].map(z => ({
@@ -102,8 +103,11 @@ function block(p) {
           const m = bl && bl.querySelector('.mini-link');
           return m ? { text: m.textContent.trim(), ziel: m.dataset.heute } : null;
         });
-        pruefe('gekürzt: „alle 3 ›" steht in der Überschrift',
-          !!l && /alle 3/.test(l.text), JSON.stringify(l));
+        /* Runde 241: der Verweis heisst wie bei Apple „Alle 3“ (gross,
+           ohne Pfeil). Geprüft bleibt, worum es geht: die Zahl steht im
+           Verweis der Überschrift. */
+        pruefe('gekürzt: „Alle 3" steht in der Überschrift',
+          !!l && /^alle 3$/i.test(l.text.trim()), JSON.stringify(l));
         pruefe('und führt in den Putzplan', !!l && l.ziel === 'putzplan', JSON.stringify(l));
       } else {
         console.log('  (nicht gekürzt — der Ausgang ist hier nicht verlangt)');

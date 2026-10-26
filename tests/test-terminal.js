@@ -41,6 +41,11 @@
    Datenbank. Was die Datenbank zulässt, steht in
    tests/rules/zeitpin.test.js und wird dort am Emulator gemessen.
    ───────────────────────────────────────────────────────────────────── */
+/* Runde 236: Seit dem 23.10.2026 ist das neue Design für alle der Standard.
+   Dieser Durchlauf prüft eine Funktion, kommt aber über die BISHERIGE
+   Navigation dorthin. Bis er auf die neue umgestellt ist, läuft er im
+   bisherigen Aussehen (kf_neu=0, der Geräteschalter des Übergangs).
+   Offen als P-20 in docs/BEKANNTE-PROBLEME.md. */
 const { chromium } = require('playwright');
 const SP = process.env.SP || __dirname;
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
@@ -130,6 +135,7 @@ async function starten(errs, vorbereiten) {
   await page.route('**fonts.googleapis.com/**', r => r.abort());
   await page.route('**script.google.com/**', r => r.fulfill({ status: 200, body: 'ok' }));
   await page.addInitScript({ path: SP + '/stub-chef.js' });
+  await page.addInitScript(() => { try { localStorage.setItem('kf_neu', '0'); } catch (e) {} });
   if (vorbereiten) await page.addInitScript({ content: vorbereiten });
   await page.addInitScript({ content: ZUSATZ });
   await page.goto(APP, { waitUntil: 'domcontentloaded' });
@@ -283,9 +289,15 @@ async function starten(errs, vorbereiten) {
     if (!/\d\d:\d\d/.test(schirm.uhr)) errs.push('Die Uhr zeigt nichts: ' + schirm.uhr);
     if (!schirm.leute) errs.push('Es wird niemand zum Antippen angeboten');
     if (!schirm.pinZu) errs.push('Das Tastenfeld steht offen, bevor jemand gewählt wurde');
-    // Der Stempel von u2 muss sich im Stand zeigen.
-    if (!schirm.stand.some(s => /im Dienst/.test(s))) {
-      errs.push('Niemand wird als „im Dienst" gezeigt, obwohl ein Stempel vorliegt: ' +
+    /* Runde 189 — umgekehrt zu vorher: KEIN Stand an den Kacheln.
+       Aus dem Betrieb, 22.10.2026, auf die Frage, ob „im Dienst / noch
+       nicht da" am Terminal verschwinden soll: „ja". Am Tresen sieht
+       jeder das Tablet; wer da ist, geht dort niemanden etwas an. Den
+       eigenen Stand gibt es nach der PIN (unten). u2 HAT einen Stempel —
+       stünde er irgendwo, wäre das hier rot. */
+    if (schirm.stand.some(s => /im Dienst|noch nicht da|Pause|Feierabend/.test(s)) ||
+        await page.evaluate(() => /im Dienst|noch nicht da/.test(document.getElementById('tmListe').innerText))) {
+      errs.push('Am Terminal steht der Stand an den Namen — lesbar für jeden am Tresen: ' +
         JSON.stringify(schirm.stand));
     }
 
@@ -346,21 +358,57 @@ async function starten(errs, vorbereiten) {
     }
     if (tasten.nachWeg !== 3) errs.push('„Löschen" nimmt nicht genau eine Ziffer weg');
     if (!tasten.wer) errs.push('Es steht nicht da, wer stempelt');
-    if (!/Kommen|Pause|Zurück|Feierabend/.test(tasten.was)) {
-      errs.push('Es steht nicht da, was gestempelt wird: „' + tasten.was + '"');
+    /* Vor der PIN kein Stand und kein Schritt — sonst verrät „Pause"
+       oder „Zurück" schon beim Antippen eines Namens, wer da ist. */
+    if (/Kommen|Pause|Zurück|Feierabend/.test(tasten.was) || !/PIN/.test(tasten.was)) {
+      errs.push('Vor der PIN steht schon, was dran ist: „' + tasten.was + '"');
     }
 
-    /* Stempeln: über die Funktion, mit allen drei Schlüsseln. */
-    const stempel = await page.evaluate(async () => {
-      window.__fnAntwort.stempeln = { ok: true, art: 'kommen', ts: Date.now(), name: 'Anna Meier' };
+    /* Runde 189: erst „Weiter" → stempelStand (dieselben drei
+       Schlüssel), DANN der eigene Stand und die passenden Knöpfe. Nach
+       dem Kommen sind das zwei: Pause und Feierabend — wie bei
+       Crewmeister. Vorher gab es am Terminal gar keinen Feierabend. */
+    const stand = await page.evaluate(async () => {
+      window.__fnAntwort.stempelStand = { ok: true, name: 'Anna Meier', letzteArt: 'kommen',
+        seit: Date.now() - 3600000, beginn: Date.now() - 3600000, arbeitMs: 3600000, erlaubt: ['pause', 'gehen'] };
+      window.__fnAntwort.stempeln = { ok: true, art: 'gehen', ts: Date.now(), name: 'Anna Meier' };
       window.__schreib = [];
-      window.__aufruf = null;
+      window.__aufrufe = [];
       document.querySelector('#tmTasten [data-tmt="5"]').click();
       document.querySelector('#tmTasten [data-tmt="ok"]').click();
+      await new Promise(r => setTimeout(r, 700));
+      const a = (window.__aufrufe || [])[0] || {};
+      const knoepfe = [...document.querySelectorAll('#tmWahlKnoepfe [data-tmart]')].map(k => {
+        const r = k.getBoundingClientRect();
+        return { art: k.getAttribute('data-tmart'), text: k.textContent, w: Math.round(r.width), h: Math.round(r.height) };
+      });
+      return {
+        funktion: a.name, daten: a.data || {},
+        stand: (document.getElementById('tmStand') || {}).textContent || '',
+        tastenWeg: getComputedStyle(document.getElementById('tmTasten')).display === 'none',
+        knoepfe
+      };
+    });
+    console.log('STAND:', JSON.stringify(stand));
+    if (stand.funktion !== 'stempelStand') errs.push('„Weiter" ruft „' + stand.funktion + '" statt stempelStand');
+    if (!stand.daten.terminalId || !(stand.daten.geheim || '').length || !stand.daten.uid || stand.daten.pin !== '1235') {
+      errs.push('stempelStand bekommt nicht alle drei Schlüssel: ' + JSON.stringify(stand.daten));
+    }
+    if (!/Im Dienst seit/.test(stand.stand)) errs.push('Nach der PIN steht der eigene Stand nicht da: „' + stand.stand + '"');
+    if (!stand.tastenWeg) errs.push('Das Tastenfeld steht noch neben den Knöpfen');
+    if (stand.knoepfe.map(k => k.art).join(',') !== 'pause,gehen') {
+      errs.push('Nach dem Kommen fehlen „Pause" UND „Feierabend": ' + JSON.stringify(stand.knoepfe));
+    }
+    stand.knoepfe.forEach(k => { if (k.h < 64 || k.w < 64) errs.push('Knopf „' + k.text + '" ist ' + k.w + '×' + k.h + ' — am Terminal 64 px'); });
+
+    const stempel = await page.evaluate(async () => {
+      window.__aufruf = null;
+      document.querySelector('#tmWahlKnoepfe [data-tmart="gehen"]').click();
       await new Promise(r => setTimeout(r, 900));
       const a = window.__aufruf || {};
       return {
         funktion: a.name,
+        art: (a.data || {}).art,
         hatTerminal: !!(a.data && a.data.terminalId),
         hatGeheim: !!(a.data && a.data.geheim && a.data.geheim.length === 64),
         hatUid: !!(a.data && a.data.uid),
@@ -371,6 +419,7 @@ async function starten(errs, vorbereiten) {
     });
     console.log('STEMPEL:', JSON.stringify(stempel));
     if (stempel.funktion !== 'stempeln') errs.push('Aufgerufen wurde „' + stempel.funktion + '"');
+    if (stempel.art !== 'gehen') errs.push('Feierabend kommt nicht als art „gehen" an: ' + stempel.art);
     if (!stempel.hatTerminal) errs.push('Die Terminal-Kennung fehlt im Aufruf');
     if (!stempel.hatGeheim) errs.push('Das Geräte-Geheimnis fehlt im Aufruf');
     if (!stempel.hatUid) errs.push('Die Person fehlt im Aufruf');
@@ -380,9 +429,16 @@ async function starten(errs, vorbereiten) {
     }
     if (!stempel.pinZu) errs.push('Das Tastenfeld bleibt nach dem Stempeln offen');
 
-    /* Ein Fehlschlag darf die PIN nicht stehen lassen. */
+    /* Ein Fehlschlag darf die PIN nicht stehen lassen — und zeigt
+       keinen Stand. */
     const fehler = await page.evaluate(async () => {
-      window.__fnAntwort.stempeln = { fehler: 'Falsche PIN. Noch 4 Versuche.' };
+      window.__fnAntwort.stempelStand = { fehler: 'Falsche PIN. Noch 4 Versuche.' };
+      /* Alle Meldungen mitschreiben, nicht nur die letzte: die App legt
+         gern eine Aufgaben-Erinnerung darüber (dieselbe Falle wie in
+         test-handy-stempeln, Runde 82). */
+      const toastEl = document.getElementById('toast'), gesehen = [];
+      const mo = new MutationObserver(() => gesehen.push(toastEl.textContent || ''));
+      if (toastEl) mo.observe(toastEl, { childList: true, characterData: true, subtree: true });
       document.querySelector('#tmListe [data-tmwer]').click();
       await new Promise(r => setTimeout(r, 300));
       ['9', '9', '9', '9'].forEach(t => document.querySelector('#tmTasten [data-tmt="' + t + '"]').click());
@@ -390,8 +446,9 @@ async function starten(errs, vorbereiten) {
       await new Promise(r => setTimeout(r, 900));
       return {
         punkte: document.querySelectorAll('#tmPunkte i.voll').length,
-        meldung: (document.getElementById('toast') || {}).textContent || '',
-        nochOffen: getComputedStyle(document.getElementById('tmPin')).display !== 'none'
+        meldung: (mo.disconnect(), gesehen.concat([(toastEl || {}).textContent || '']).join(' | ')),
+        nochOffen: getComputedStyle(document.getElementById('tmPin')).display !== 'none',
+        wahlZu: document.getElementById('tmWahl').hidden
       };
     });
     console.log('FEHLSCHLAG:', JSON.stringify(fehler));
@@ -401,6 +458,7 @@ async function starten(errs, vorbereiten) {
     }
     if (!/PIN/.test(fehler.meldung)) errs.push('Der Fehlschlag wird nicht gemeldet: „' + fehler.meldung + '"');
     if (!fehler.nochOffen) errs.push('Nach einem Fehlversuch schliesst das Tastenfeld');
+    if (!fehler.wahlZu) errs.push('Nach einer falschen PIN stehen Stand und Knöpfe da');
 
     await b.close();
   }
@@ -433,6 +491,7 @@ async function starten(errs, vorbereiten) {
         'window.__beendet=false; window.confirm=function(){ window.__beendet=true; return false; };'
     });
     await page.addInitScript({ path: SP + '/stub-mitarbeiter.js' });
+    await page.addInitScript(() => { try { localStorage.setItem('kf_neu', '0'); } catch (e) {} });
     await page.addInitScript({ content: ZUSATZ });
     await page.goto(APP, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(3200);

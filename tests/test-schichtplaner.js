@@ -142,7 +142,19 @@ async function messen(p, wer, liste) {
   pruefe('Zahlen: verteilt, Lücken, Rückfragen, Studios ohne offene Punkte', erg.z.length === 4 && erg.z[0] > 100, erg.z);
   pruefe('gespeichert, mit gemessener Dauer', /Fertig in \d+,\d s · gespeichert/.test(erg.stand), erg.stand);
   pruefe('„Zu klären" listet Punkte, wenn es Lücken oder Rückfragen gibt', (erg.z[1] + erg.z[2] === 0) || erg.punkte > 0, erg.punkte);
-  pruefe('der Plan zeigt einen ganzen Monat', erg.zeilen >= 28 && erg.zeilen <= 31, erg.zeilen);
+  /* Runde 191: der Plan steht Woche für Woche, „Ganzer Monat" zeigt
+     alles. Aus dem Betrieb, 22.10.2026, über den Planer: „er wirkt für
+     mich noch unfertig … aber das grundgrüst soll stehen erstmal".
+     Vorher hiess es hier „zeigt einen ganzen Monat" (28–31 Zeilen) —
+     jetzt sind es zuerst die Tage EINER Woche, und ein Tipp auf
+     „Ganzer Monat" bringt die 28–31 Zeilen. Geprüft wird beides. */
+  pruefe('der Plan zeigt zuerst eine Woche (1–7 Tage)', erg.zeilen >= 1 && erg.zeilen <= 7, erg.zeilen);
+  const monat = await p.evaluate(async () => {
+    document.querySelector('#spTabelle [data-spkw="alle"]').click();
+    await new Promise((r) => setTimeout(r, 300));
+    return document.querySelectorAll('#spTabelle tbody tr').length;
+  });
+  pruefe('„Ganzer Monat" zeigt den ganzen Monat', monat >= 28 && monat <= 31, monat);
   pruefe('vorn steht das Studio mit den meisten offenen Punkten', !erg.z[1] || /Lücke/.test(erg.studio || ''), erg.studio);
   pruefe('danach heisst der Knopf „Neu erstellen"', erg.los === 'Neu erstellen', erg.los);
   /* Runde 168: „visuell schöner und organisierter". Der Plan steht in
@@ -153,7 +165,8 @@ async function messen(p, wer, liste) {
     const an = kacheln.filter((k) => k.classList.contains('an'));
     const sk = document.getElementById('spStudio').value;
     const punkte = [...document.querySelectorAll('#spKlaeren [data-sppunkt]')].map((b) => b.getAttribute('data-sppunkt').split('|')[1]);
-    const wochen = [...document.querySelectorAll('#spTabelle .spl-woche h4')].map((h) => h.textContent);
+    /* Runde 191: die Wochen stehen als Reiter über dem Plan. */
+    const wochen = [...document.querySelectorAll('#spTabelle .spl-kw:not(.alle) b')].map((h) => h.textContent);
     const zustand = kacheln.map((k) => k.querySelector('small').textContent);
     return { kacheln: kacheln.length, an: an.length, anIst: an[0] && an[0].getAttribute('data-spkachel') === sk,
       punkteNurHier: punkte.every((x) => x === sk), wochen, zustand,
@@ -164,7 +177,7 @@ async function messen(p, wer, liste) {
   pruefe('jede Kachel sagt ihren Zustand (fertig / Lücken / Rückfragen)',
     aufbau.zustand.every((t) => /fertig|Lücke|Rückfr/.test(t)), aufbau.zustand.join(' | '));
   pruefe('„Zu klären" zeigt nur das gewählte Studio', aufbau.punkteNurHier);
-  pruefe('der Plan steht in Kalenderwochen (' + aufbau.wochen.length + ')', aufbau.wochen.length >= 4 && aufbau.wochen.length <= 6 && aufbau.wochen.every((w) => /^KW \d+ · /.test(w)), aufbau.wochen.join(' | '));
+  pruefe('der Plan steht in Kalenderwochen (' + aufbau.wochen.length + ')', aufbau.wochen.length >= 4 && aufbau.wochen.length <= 6 && aufbau.wochen.every((w) => /^KW \d+$/.test(w)), aufbau.wochen.join(' | '));
   pruefe('der Titel nennt das Studio', /^Plan · \S/.test(aufbau.titel), aufbau.titel);
   const wechsel = await p.evaluate(async () => {
     const k = [...document.querySelectorAll('#spKacheln .spl-kachel')].find((x) => !x.classList.contains('an'));
@@ -225,8 +238,11 @@ async function messen(p, wer, liste) {
     if (!team) return -1;
     team.click(); await w(900);
     const vor = document.getElementById('shiftNext');
-    for (let i = 0; i < 6 && !/· (Früh|Spät|Samstag)/.test(document.getElementById('shiftGrid').textContent); i++) { vor.click(); await w(250); }
-    return [...document.querySelectorAll('#shiftGrid .shift-note')].filter((n) => /Früh|Spät|Samstag/.test(n.textContent)).length;
+    /* Runde 191: am Rechner sieht die Leitung das Raster nach Person —
+       dort steht der Schichtname klein in der Pille. Gezählt wird beides. */
+    const notizen = () => [...document.querySelectorAll('#shiftGrid .shift-note, #shiftGrid .wp-schicht small')].filter((n) => /Früh|Spät|Samstag/.test(n.textContent));
+    for (let i = 0; i < 6 && !notizen().length; i++) { vor.click(); await w(250); }
+    return notizen().length;
   });
   pruefe('veröffentlichte Schichten stehen im Team-Schichtplan (mit Schichtname)', imTeam > 0, imTeam);
   pruefe('ohne Skriptfehler (Chef)', !p._fehler.length, p._fehler.join(' | '));
@@ -374,8 +390,19 @@ async function messen(p, wer, liste) {
     const r = l.getBoundingClientRect(); document.elementFromPoint(r.right - 10, r.top + r.height / 2).click();
     const nach = document.getElementById('spFeiertageZu').checked; document.getElementById('spFeiertageZu').checked = vor; return vor !== nach; });
   pruefe('ein Tipp auf den Rand der Schalter-Zeile schaltet um', schalter);
-  await messen(p, 'Chef (Regeln)', ['#spFrist', '.spl-schalter', '#spEinstSpeichern', '#spFestPerson', '[data-spfesttag="1"]', '#spFestDazu',
-    '#spSonderDatum', '#spSonderDazu', '#spNotizSpeichern', '#spFestListe [data-spfestweg]']);
+  /* Runde 197: die Regeln stehen in vier Reitern, je einer sichtbar.
+     Aus dem Betrieb, 22.10.2026: „mach weiter mit dem design und aufbau"
+     (auf ein Foto mit den vier Formularen auf einmal). Gemessen werden
+     dieselben zehn Bedienelemente wie vorher — je Reiter, plus die Reiter
+     selbst. */
+  for (const [reiter, liste] of [
+    ['einst', ['[data-spregeltab="einst"]', '#spFrist', '.spl-schalter', '#spEinstSpeichern']],
+    ['fest', ['[data-spregeltab="fest"]', '#spFestPerson', '[data-spfesttag="1"]', '#spFestDazu', '#spFestListe [data-spfestweg]']],
+    ['sonder', ['[data-spregeltab="sonder"]', '#spSonderDatum', '#spSonderDazu']],
+    ['notiz', ['[data-spregeltab="notiz"]', '#spNotizSpeichern']]]) {
+    await p.evaluate((t) => document.querySelector('[data-spregeltab="' + t + '"]').click(), reiter);
+    await messen(p, 'Chef (Regeln · ' + reiter + ')', liste);
+  }
   await p.context().close();
 
   console.log('\n── Studioleitung ──');

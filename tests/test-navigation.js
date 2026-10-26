@@ -47,8 +47,17 @@ const ansicht = page => page.evaluate(() => {
        ordnen); die Raumnamen „passen". Seitdem fünf Räume, für die
        Leitung die Verwaltung als sechster. „Ich" ist kein eigener Knopf
        mehr, sondern ein Reiter unter „Heute". Die Reihenfolge folgt der
-       Nutzung: Studio (Putzplan und Aufgaben, täglich) vor Nachrichten. */
-    const soll = ['Heute', 'Studio', 'Plan', 'Nachrichten', 'Wissen', 'Verwaltung'];
+       Nutzung: Studio (Putzplan und Aufgaben, täglich) vor Nachrichten.
+       Runde 222 (23.10.2026), auf die Rückfrage „eigener Knopf oder unter
+       Alles?" für die Zeiterfassung: „eigener knopf" — „Zeiten" direkt
+       hinter „Studio". */
+    /* Runde 246 (23.10.2026), Plan „Studio Chat wie von Apple": unten
+       fünf Knöpfe, „Wissen" liegt unter ☰. Aus dem Betrieb, 08:07: „ja
+       so wie du empfohlen hast klingt super". Die Verwaltung steht schon
+       seit Runde 222 nicht mehr unten (sechs Knöpfe waren das Maximum),
+       sondern unter ☰ und am Rechner links — dieser Durchlauf war
+       seitdem rot. */
+    const soll = ['Heute', 'Studio', 'Zeiten', 'Plan', 'Nachrichten'];
     if (JSON.stringify(gruppen) !== JSON.stringify(soll)) {
       errs.push('Gruppen stimmen nicht: ' + JSON.stringify(gruppen) +
         ' — erwartet ' + JSON.stringify(soll));
@@ -82,10 +91,30 @@ const ansicht = page => page.evaluate(() => {
     /* Runde 184: fünf — Aufgaben, Putzplan, Material, Geräte,
        Probetraining. Die Dokumente sind der sechste von früher, jetzt
        unter „Wissen" (siehe oben). */
-    if (unter.length !== 5) errs.push('Studio hat ' + unter.length + ' statt 5 Unterseiten');
-
-    await page.evaluate(() => document.querySelector('.mobnav [data-group="g-wissen"]').click());
+    /* Runde 187 (aus dem Betrieb: „das problem mit dem zu viel bleibt
+       immer noch bestehen" — und „deine 2 fragen können wir so
+       umsetzten"): vier — Aufgaben, Putzplan, Bestand, Probetraining.
+       Material und Geräte sind EIN Reiter „Bestand"; Geräte stehen
+       im Umschalter oben in der Seite. Dass dieser Weg da ist, wird
+       gleich mitgeprüft — sonst wäre „vier" nur eine kleinere Zahl. */
+    if (unter.length !== 4) errs.push('Studio hat ' + unter.length + ' statt 4 Unterseiten');
+    if (!unter.some(u => /Bestand/.test(u))) errs.push('„Bestand" fehlt unter Studio');
+    await page.evaluate(() => { const r = document.querySelector('#subnav [data-paar="bestand"]'); if (r) r.click(); });
     await page.waitForTimeout(600);
+    const bestand = await page.evaluate(() => [...document.querySelectorAll('#view-material .umschalter [data-umschalt]')]
+      .filter(x => x.checkVisibility()).map(x => x.textContent.trim()));
+    console.log('BESTAND:', JSON.stringify(bestand));
+    if (JSON.stringify(bestand) !== JSON.stringify(['Material', 'Geräte'])) {
+      errs.push('Im Bestand fehlt der Umschalter Material | Geräte: ' + JSON.stringify(bestand));
+    }
+
+    /* „Wissen" über ☰: der Griff, dann „Dokumente" — zwei Tipps. */
+    await page.evaluate(async () => {
+      document.getElementById('bereichKopf').click();
+      await new Promise(r => setTimeout(r, 450));
+      document.querySelector('#allesLadeInhalt .al-zeile[data-alles="docs"]').click();
+    });
+    await page.waitForTimeout(800);
     const wissen = await page.evaluate(() => [...document.querySelectorAll('[data-subview]')].map(s => s.textContent.trim()));
     console.log('WISSEN:', JSON.stringify(wissen));
     if (!wissen.some(u => /Dokumente/.test(u))) errs.push('Dokumente liegt nicht unter Wissen');
@@ -137,7 +166,10 @@ const ansicht = page => page.evaluate(() => {
   // ── 3. Verwaltung: Übersicht -> Reiter -> zurück ──
   {
     const { b, page } = await start('stub-chef.js', errs);
-    await page.evaluate(() => document.querySelector('.mobnav [data-group="g-chef"]').click());
+    /* Seit Runde 222 nicht mehr unten. Derselbe Knopf der Seitenleiste
+       (am Handy ausgeblendet, aber im Dokument) öffnet die Übersicht —
+       ☰ → „Überblick" springt gleich in einen Reiter. */
+    await page.evaluate(() => document.querySelector('#side [data-group="g-chef"]').click());
     await page.waitForTimeout(900);
 
     const uebersicht = await page.evaluate(() => ({
@@ -156,8 +188,11 @@ const ansicht = page => page.evaluate(() => {
        die zeiten ändern kann falls jemand sich nicht ausgestempelt hat". */
     /* „Kennzahlen" seit dem 4.10.2026 (Runde 138): „Kennzahlen je
        Studio … geht fit". */
+    /* Seit Runde 222 ist „Zeiten" keine Kachel mehr, sondern ein eigener
+       Knopf mit dem Reiter „Team" — „eigener knopf" (23.10.2026). Dass
+       es dort steht, prüfen test-raeume und test-zeiten-bereich. */
     const ERWARTET = ['Überblick', 'Erstellen', 'Team', 'Studios', 'Nachweise',
-                      'Anliegen', 'Zeiten', 'Kennzahlen', 'Auswertung', 'System'];
+                      'Anliegen', 'Kennzahlen', 'Auswertung', 'System'];
     ERWARTET.forEach(function (w) {
       if (!uebersicht.kacheln.some(function (k) { return k.indexOf(w) >= 0; })) {
         errs.push('Kachel „' + w + '" fehlt in der Verwaltung');

@@ -20,10 +20,16 @@ async function start(stub, errs) {
   await page.waitForTimeout(1600);
   await page.mouse.click(195, 400).catch(() => {});
   await page.waitForTimeout(2700);
-  await page.evaluate(() => document.querySelector('.mobnav [data-group="g-arbeit"]').click());
+  await page.evaluate(() => (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => { document.getElementById('bereichKopf').click(); document.querySelector('#allesLade [data-alles="todos"]').click(); } }).click());
   await page.waitForTimeout(600);
-  const s = await page.$('[data-subview="geraete"]');
-  if (s) { await s.click(); await page.waitForTimeout(1600); }
+  /* Runde 187 (aus dem Betrieb: „das problem mit dem zu viel bleibt
+     immer noch bestehen"): Material und Geräte sind EIN Reiter
+     „Bestand"; Geräte über den Umschalter oben in der Seite. */
+  const s = await page.$('#subnav [data-paar="bestand"]');
+  if (s) { await s.click(); await page.waitForTimeout(600); }
+  const um = await page.$('#view-material .umschalter [data-umschalt="geraete"]');
+  if (um) { await um.click(); await page.waitForTimeout(1600); }
+  else errs.push('Geräte nicht erreichbar: kein Umschalter „Geräte" im Bestand');
   return { b, page };
 }
 

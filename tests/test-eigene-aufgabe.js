@@ -36,8 +36,11 @@ async function start(stub) {
   await page.goto(APP, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(3000);
   await page.evaluate(async () => {
-    const g = document.querySelector('.mobnav [data-group="g-arbeit"]');
-    if (g) g.click();
+    /* Runde 260: Mitarbeiter haben keinen Raum „Studio" mehr — sie gehen
+       über die Schublade „Alles". */
+    (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => {
+      document.getElementById('bereichKopf').click();
+      document.querySelector('#allesLade [data-alles="todos"]').click(); } }).click();
     await new Promise(r => setTimeout(r, 250));
     const t = document.querySelector('[data-subview="todos"]');
     if (t) t.click();

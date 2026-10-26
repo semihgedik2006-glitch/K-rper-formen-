@@ -386,3 +386,59 @@ höchstens fünf Minuten an Codes — nicht mehr, als es ohnehin hergibt.
 Gerechnet wird gegen die **Serverzeit**: ein Rechner am Empfang geht
 gern falsch, und ein Code, den der Server nicht mehr kennt, ist ein
 Fehler, den am Tresen niemand erklären kann.
+
+---
+
+## Nachtrag 22.10. — „so wie crewmeister" · Schritt 1 gebaut
+
+Aus dem Betrieb: „die stempel seite … müssen wir auch sehr viel
+verbessern das sie so wie crewmeister funktioniert am besten". Plan und
+Rückfragen vorgelegt, Antworten:
+
+| Frage | Entscheidung |
+|---|---|
+| Soll | **Schichtplan** fürs Tagessoll, **Vertragsstunden** (`wocheStd`, `maxMonatStd` aus dem Planer) fürs Stundenkonto |
+| Pausen | **wie Crewmeister: auffüllen** — die gestempelte Pause zählt; fehlt etwas zur gesetzlichen (30 min über 6 h, 45 über 9 h), wird nur die Differenz abgezogen, sichtbar markiert |
+| Korrekturanträge | Mitarbeiter stellen sie, **nur die Geschäftsführung** bestätigt |
+| Terminal | **kein Stand an den Kacheln** — erst nach der PIN |
+| Lohnbüro | **Excel/CSV und DATEV** |
+
+### Reihenfolge
+
+1. ✅ **Pause oder Feierabend, Stand jetzt, Plan neben Ist, Jetzt im
+   Studio** (Runde 189). Dabei gefunden: am Terminal und am Handy liess
+   sich gar kein Feierabend stempeln.
+2. ✅ **Pausenregel (auffüllen) und Hinweise nach dem Arbeitszeitgesetz** (Runde 203) —
+   über 10 h am Tag, Ruhezeit unter 11 h, über 6 h ohne Pause. Die
+   Rohdaten bleiben unverändert; abgezogen wird in der Rechnung, und
+   jeder Abzug steht als solcher da.
+3. ✅ **Korrekturantrag** (Runde 204) vom Mitarbeiter („Feierabend 16:30 vergessen",
+   mit Grund), Bestätigung nur durch die Geschäftsführung; bestätigt läuft
+   der vorhandene Weg `zeitNachtragen`. Neue Sammlung → in BEIDE Teile von
+   `firestore.rules`, in den Regeltest und in beide Einstiege der
+   Attrappen.
+4. ✅ **Stundenkonto und Monatsabschluss** (Runde 208): Ist gegen Vertragssoll je Monat,
+   Übertrag, Korrekturbuchung mit Grund; die Geschäftsführung schliesst
+   einen Monat ab, danach ändert sich darin nichts mehr ohne neuen
+   Eintrag.
+5. **Export**: ✅ Excel/CSV je Person und Tag (Runde 208), dazu ✅ DATEV LODAS (Runde 210; nicht gegen LODAS getestet, Lohn und Gehalt nicht gebaut). **Offen und vor
+   dem Bau zu klären:** DATEV hat mehrere Formate (u. a. ASCII für
+   Lohn und Gehalt, LODAS); welches das Lohnbüro einliest, entscheidet
+   das Lohnbüro. Der Export enthält nie `zeitPins` oder `terminalCodes`.
+6. ✅ **Erinnerung** (Runde 238, „mach die errinerungen … in kobi mit
+   formi und einer mail"): 15 min nach Schichtbeginn ohne Stempel (Handy,
+   Formi), 30 min nach Schichtende noch eingestempelt bzw. ohne Schicht
+   nach 10 h (Handy, Mail, Formi). Nicht bei Urlaub oder Krankheit.
+   Abschaltbar: Meldungen → „Stempel-Erinnerung", Mails → „Feierabend
+   vergessen". Statt der hier geplanten Stunde 30 Minuten — wie
+   Crewmeister, und früh genug, dass man noch im Studio ist.
+7. ✅ **Eigener Bereich „Zeiten"** (Runde 222, Wunsch vom 23.10.2026:
+   „eine ganz neue seite … wo man alles managen kann und mitarbeiter
+   können sich nur einstempeln und ihre eigenen stunden sehen ob plus
+   oder minus"). Eigener Knopf unten bzw. links, darunter „Meine Zeiten"
+   (jeder) und „Team" (Leitung). Neu: **Mein Konto** mit Vorzeichen,
+   laufender Monat „vorläufig", **Resturlaub** aus dem Urlaubsanspruch
+   (Feld „Urlaub" im Soll je Wochentag). Das eigene Konto kommt über die
+   Funktion `meinKonto` — nur die eigene Zeile; die Sammlungen dahinter
+   bleiben für Mitarbeiter gesperrt. Kein Sondermodus „nur Stempeln"
+   (Antwort: „nur startknopf").

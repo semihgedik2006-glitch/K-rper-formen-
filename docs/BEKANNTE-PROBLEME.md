@@ -585,6 +585,149 @@ weiterhin die Geschäftsführung mit „Zuordnung reparieren".
   Zeit selbst druckt er nur aus, weil er neben einem zweiten Browser
   läuft.
 
+## P-19 · Formis Streifen kostet die Startseite am Handy eine Zeile
+
+| | |
+|---|---|
+| **Schweregrad** | **NIEDRIG** — nichts geht verloren, es wird nur gescrollt |
+| **Gemessen** | 23.10.2026, 03:40 Uhr, Stand nach Runde 221 |
+| **Tests** | `test-navigation` (alte Startseite) und `test-neu-design` (320 × 568) — beide rot, auf `main` genauso |
+
+Am Handy hält `.main` unter jeder Seite 146 px frei (Leiste 72 px +
+Kugel 58 px + Abstand), damit die Formi-Kugel nichts verdeckt. Auf der
+**neuen** Startseite sitzt Formi seit Runde 218 neben der
+Schnellzugriff-Reihe; dort ist der Streifen weg. Zwei Fälle bleiben:
+
+- **Alte Startseite** (ohne `?neu=1`, 390 × 844, Mitarbeiter): 1.110 px
+  Inhalt in 508 px Platz = 2,19 Bildschirme, erlaubt sind 1,9. Ohne den
+  Streifen wären es 582 px Platz — 1,91, also immer noch knapp darüber.
+  Der Streifen allein ist es nicht; die alte Startseite ist auch selbst
+  gewachsen (Formi-Zeile 102 px, Übergabe 211 px).
+- **Neue Startseite bei 320 × 568** (z. B. iPhone SE, 1. Generation):
+  341 px Inhalt in 265 px Platz. Die Schnellzugriff-Reihe ist bei dieser
+  Höhe ausgeblendet, also gibt es keine Reihe, neben der Formi sitzen
+  könnte. Ohne Streifen wären es 339 px Platz — 2 px zu wenig.
+
+**Warum nicht in der Nacht entschieden:** Beides heisst, etwas
+wegzunehmen oder Formi woanders hinzusetzen. Das ist eine
+Gestaltungsfrage für den Betrieb und keine Messkorrektur. Die
+Testgrenzen bleiben, wie sie sind.
+
+**Vorschlag:** Auf der alten Startseite ersetzt die Formi-Zeile oben die
+Kugel. Formi ist dort schon zu sehen, und ein Tipp auf das Gesicht
+öffnet Formi. Dazu wird die Übergabe auf zwei Zeilen gekürzt. Bei
+320 × 568 kommen die „Ausserdem“-Knöpfe in eine Zeile, die sich
+waagerecht schieben lässt.
+
+## P-20 · 33 Durchläufe prüfen noch das bisherige Aussehen
+
+| | |
+|---|---|
+| **Schweregrad** | **MITTEL**: Die Funktionen sind geprüft, aber in einem Aussehen, das niemand mehr standardmässig sieht |
+| **Seit** | 23.10.2026, Runde 236 (neues Design für alle) |
+
+Diese Durchläufe kommen über die BISHERIGE Navigation an ihr Ziel, etwa
+über `.mobnav [data-group="g-chef"]` oder über Karten der alten
+Startseite. Im Übergang setzen sie `kf_neu=0`, also den Geräteschalter,
+den es noch gibt. Jeder trägt einen Kommentar mit Verweis hierher.
+
+all, beitritt, bericht, block3, chef, final, handy-stempeln,
+leerzustand, leiter, lizenzen, marker, nachladen, oeffnungszeiten,
+sicherung, standorte, terminal, trash, ueberblick, verwaltung-bereich9,
+wuensche, tausch, kopf-bericht, funktionen-schalter, sprachabspieler,
+startlesen, startuebergabe, formi-lebt, einrichtung, scrollkopf,
+recht-firma, block-a, p4-seitenleiste, p5-leiste.
+
+Runde 285: Zwei weitere, die `kf_neu=0` gar nicht setzten und deshalb
+im neuen Design ins Leere griffen (abo-stufe, admin-firmen), gehen jetzt
+über die Seitenleiste am Rechner. Ebenso die Mitarbeiter-Teile von
+eigene-reihenfolge (über „Alles").
+
+In block-a, p4 und p5 betrifft es nur die Gegenprobe „bisheriges Design“.
+Die übrigen Teile laufen über `?neu=1`, und die Adresse gewinnt.
+
+**Bevor das Bisherige entfernt wird**, muss jeder davon auf die neue
+Navigation umgestellt sein: Räume, „Alles“, Seitenleiste. Sonst prüft er
+danach nichts mehr. Einige prüfen Dinge, die es im neuen Design anders
+gibt. Die Einrichtung steht dort zum Beispiel als Zeile „Einrichtungs-
+schritte fehlen“ auf „Heute“ statt als Karte.
+
+## P-21 · Neues Design: zwei offene Messungen
+
+| | |
+|---|---|
+| **Schweregrad** | **NIEDRIG bis MITTEL** |
+| **Seit** | 23.10.2026, gefunden beim Umstellen auf das neue Design für alle |
+
+- **Chatverlauf am Handy nur 52 % der Ansicht** (`test-chat-bereich3`,
+  Grenze 55 %). Der Kopf in „Nachrichten“ ist schon schmal (49 → 52 %).
+  Bereichskopf und Reiter sind je 44 px hoch, kleiner geht es nicht. Was
+  noch helfen könnte: die Reihe „Studios | Gruppen“ und die Kanalreihe
+  zusammenlegen.
+- ~~**Wisch am Verschiebe-Griff hakt eine Aufgabe ab**~~ — **geklärt in
+  Runde 285: ein Messfehler des Tests.** Der Test mass die Lage des
+  Griffs direkt nach `scrollIntoView`. Im neuen Design zieht sich dabei
+  der Bereichskopf im nächsten Bild zusammen, die Liste rückt 58 px hoch
+  (Griff gemessen bei y = 467, danach 409–453). Der Finger setzte unter
+  dem Griff auf der Zeile auf, und das Wischen hakte richtig ab. Mit
+  einer Pause vor dem Messen ist alles grün. Dieselbe Falle steckte in
+  test-aufgaben-wie-putzplan (Trefferfläche „…" unter Last 44 × 30).
+
+## P-22 · Startseite am Handy: „Ausserdem" frisst die Blöcke
+
+| | |
+|---|---|
+| **Schweregrad** | **MITTEL**: nichts ist weg, aber am Handy steht vom Tag kaum noch etwas direkt da |
+| **Seit** | älter als Commit 611b725 („Meine Schicht unter Ausserdem", auf dem Stand davor schon so); gefunden in Runde 285 |
+
+Die Startseite kürzt erst die Blöcke auf eine Zeile und streicht dann
+von unten ganze Kategorien. Jede gestrichene wird ein Knopf unter
+„Ausserdem". Die Knöpfe sind 44 px hoch und brechen um. Bei sieben
+Kategorien wächst „Ausserdem" auf vier Zeilen (200 px) und verdrängt
+weitere Blöcke.
+
+Gemessen (Attrappe Chef, 390 × 844): zwei Blöcke (Überfällig, Heute),
+dazu sieben Knöpfe. Bei 320 × 568 passt selbst der letzte Block nicht
+mehr (343 > 265 px). Demo-Mitarbeiter bei 430 × 932: drei Blöcke,
+„Neu für dich" nur als Knopf, und dieser Knopf führt in den Chat, auch
+wenn darin ein „Danke" zu einer Aufgabe steht.
+
+Rot deswegen, mit Absicht nicht gelockert: test-formi-reihe (390 Chef,
+mindestens drei Blöcke), test-neu-design (320 × 568 passt ohne
+Scrollen), test-gruppen-titel (390: „Alle N" und Zahl, 0 Blöcke mit
+Ausgang).
+
+Vorschlag: „Ausserdem" als eine Zeile, die seitlich schiebt (wie die
+Reiter), oder kleinere Knöpfe mit unsichtbarer 44-px-Trefferfläche. Das
+ist eine Gestaltungsentscheidung, deshalb noch nicht gebaut.
+
+## P-24 · Formi über dem „…", solange eine Meldung steht
+
+| | |
+|---|---|
+| **Schweregrad** | **NIEDRIG**: nur für die drei Sekunden einer Meldung, nur bei kleinen Handys |
+| **Seit** | gefunden in Runde 285 (`test-aufgaben-wie-putzplan` im Gesamtlauf) |
+
+Steht unten eine Meldung, rückt Formi 72 px höher, damit sie nicht auf
+der Meldung liegt (test-ganze-seite). Bei 320 × 640 liegt die Kugel dann
+mit 5–14 px auf dem „…" einer Aufgabe in der Mitte der Liste (gemessen
+44 × 39 statt 44 × 44). Formi wird in einer eigenen Sitzung gestaltet,
+deshalb hier nur festgehalten.
+
+## P-23 · Bestand am Handy: die Liste beginnt im unteren Sechstel
+
+| | |
+|---|---|
+| **Schweregrad** | **NIEDRIG bis MITTEL** |
+| **Seit** | gefunden in Runde 285 (`test-rahmen`) |
+
+Bei 430 × 844 beginnt die erste Materialzeile bei 697 px (Grenze 580,
+früher 607). Darüber: Reiter in zwei Zeilen („Probetraining" bricht um),
+Studio-Auswahl mit Suche, der Hinweis „2 Artikel fehlen" und die beiden
+Karten „Reicht noch" und „Einkaufsliste". Am Rechner stehen die Karten
+rechts daneben, am Handy über der Liste. Die Aufgaben beginnen bei
+388 px (Grenze 380), auch wegen der zweiten Reiterzeile.
+
 ---
 
 ## Behoben

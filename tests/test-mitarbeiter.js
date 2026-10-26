@@ -30,10 +30,21 @@ const SP = process.env.SP || __dirname;
                      den Aufgaben des Tages. */
                   team:'g-team', docs:'g-wissen' };
   async function go(view) {
-    await page.evaluate(g => document.querySelector('.mobnav [data-group="' + g + '"]').click(), GROUP[view]);
+    /* Runde 260 (aus dem Betrieb, 23.10.2026, auf „Mitarbeiter unten nur
+       Heute, Zeiten, Plan, Nachrichten – Studio und Wissen über ‚Alles'?":
+       „ja"): fehlt der Raum-Knopf, geht es über die Schublade „Alles". */
+    await page.evaluate(([g, v]) => (document.querySelector('.mobnav [data-group="' + g + '"]') || { click: () => {
+      document.getElementById('bereichKopf').click();
+      document.querySelector('#allesLade [data-alles="' + v + '"]').click(); } }).click(), [GROUP[view], view]);
     await page.waitForTimeout(420);
-    const sub = await page.$('[data-subview="' + view + '"]');
+    /* Runde 187 (aus dem Betrieb: „das problem mit dem zu viel bleibt
+       immer noch bestehen"): Chat und Direkt sind EIN Reiter „Chats".
+       Direktnachrichten öffnet man über „Direkt" vorn in der
+       Kanalzeile (#kanalDirekt), nicht mehr über einen eigenen Reiter. */
+    const ziel = view === 'dm' ? 'chat' : view;
+    const sub = await page.$('#subnav [data-subview="' + ziel + '"]');
     if (sub) { await sub.click(); await page.waitForTimeout(620); }
+    if (view === 'dm') { await page.click('#kanalDirekt'); await page.waitForTimeout(620); }
   }
 
   // 2) Jede erreichbare Seite öffnen und prüfen, dass sie wirklich Inhalt hat

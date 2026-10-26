@@ -120,7 +120,11 @@ async function zuDenAufgaben(p) {
   /* Wie test-all: über die Gruppe „Arbeit", dann den Reiter. Ein
      Knopf, auf dem nur „Aufgaben" steht, kann auch „Meine Aufgaben"
      sein. */
-  await p.evaluate(() => { const g = document.querySelector('.mobnav [data-group="g-arbeit"]'); if (g) g.click(); });
+  /* Runde 260: Mitarbeiter haben keinen Raum „Studio" mehr — sie gehen
+     über die Schublade „Alles". */
+  await p.evaluate(() => (document.querySelector('.mobnav [data-group="g-arbeit"]') || { click: () => {
+    document.getElementById('bereichKopf').click();
+    document.querySelector('#allesLade [data-alles="todos"]').click(); } }).click());
   await p.waitForTimeout(450);
   await p.evaluate(() => { const s = document.querySelector('[data-subview="todos"]'); if (s) s.click(); });
   await p.waitForTimeout(600);
@@ -402,17 +406,31 @@ const GRUPPEN = () => [...document.querySelectorAll('#todoArea .pp-gruppe')].map
       await zuDenAufgaben(q); await studio(q, 'studio-6');
       for (const dichte of ['normal', 'kompakt']) {
         await q.evaluate((d) => { document.body.dataset.dichte = d; }, dichte);
+        /* Runde 285: erst messen, wenn keine Meldung mehr steht. Solange
+           eine steht, rückt Formi 72 px höher (test-ganze-seite) und lag
+           bei 320 px mit 5 px auf dem „…" der mittleren Zeile — im
+           Gesamtlauf rot, einzeln grün, je nachdem, ob die Meldung vom
+           Studiowechsel schon weg war. Festgehalten in P-24. */
+        await q.waitForFunction(() => !document.querySelector('#toast.show'), null, { timeout: 8000 }).catch(() => {});
+        await q.waitForTimeout(350);
         for (const auf of [false, true]) {
           if (auf) { await q.click('#tdFilterKnopf'); await q.click('#tdWerKnopf'); await q.waitForTimeout(200); }
-          const m = await q.evaluate((SRC) => {
+          const m = await q.evaluate(async (SRC) => {
             const TREFFER = eval(SRC);
             const sa = document.querySelector('#view-todos .scroll-area');
             const els = [...document.querySelectorAll('#tdLeiste button, #tdLeiste select, #tdWerkzeuge button, #tdWerkzeuge select, #tdWerkzeuge input, #tdWerZeile input, ' +
               '#todoArea .todo .check, #todoArea .todo .t-edit, #todoArea .todo .t-del, #todoArea .todo .t-mehr, #todoArea .todo .t-nimm')]
-              .filter(e => e.getClientRects().length);
+              /* Runde 187: Erledigtes steht eingeklappt in <details>. Was dort
+                 drin ist, hat Rechtecke, ist aber nicht zu sehen und nicht zu
+                 treffen – gemessen wird, was im Bild ist (checkVisibility). */
+              .filter(e => e.getClientRects().length && e.checkVisibility());
             const aus = [];
             for (const e of els) {
               e.scrollIntoView({ block: 'center' });
+              /* Runde 285: nach dem Scrollen zwei Bilder abwarten — der
+                 Bereichskopf zieht sich im NÄCHSTEN Bild zusammen. Ein
+                 Finger tippt nach dem Scrollen, nicht währenddessen. */
+              await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
               const r = e.getBoundingClientRect();
               if (r.bottom < 0 || r.top > innerHeight) continue;
               const t = TREFFER(e);

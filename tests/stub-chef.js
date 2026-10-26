@@ -92,6 +92,10 @@ var USERS = [
     'studio-6': [
       { id: 't1', title: 'Geräte desinfizieren', desc: 'Nach jedem Training', done: false, createdBy: 'Chef', ts: Date.now() - 90000000, due: Date.now() - 86400000, steps:[{t:'Geräte abwischen',d:true},{t:'Gurte prüfen',d:false},{t:'Kabel aufrollen',d:false}] },
       { id: 't2', title: 'Handtücher waschen', desc: '', done: true, doneBy: 'Anna', doneAt: Date.now() - 3000, createdBy: 'Chef', ts: Date.now() - 80000000 },
+      /* Nur mit window.__tdAlt (test-zusammengelegt): vor zwei Stunden
+         erledigt, also EINGEKLAPPT unter „… erledigt" (Runde 187). Liegt in
+         TODOS und erreicht damit beide Einstiege, get() und onSnapshot. */
+      ...(window.__tdAlt ? [{ id: 't9', title: 'Spind aufräumen', desc: '', done: true, doneBy: 'Ben', doneAt: Date.now() - 2 * 3600000, createdBy: 'Chef', ts: Date.now() - 60000000 }] : []),
       { id: 't3', title: 'Wasserspender auffüllen', desc: 'Beide Spender', done: false, createdBy: 'Chef', ts: Date.now() - 70000000, recurring: 'daily' },
       // Aus einer Defektmeldung entstanden: traegt die Geraete-Kennung. Eine
       // ZWEITE Meldung zu demselben Geraet darf keine zweite Aufgabe anlegen.
@@ -496,6 +500,12 @@ var USERS = [
             /* Der Lieferant (Runde 137). Ohne __lieferant gibt es das
                Dokument NICHT — so steht jeder Betrieb da, bis die
                Geschäftsführung einen hinterlegt. */
+            /* Material: get() liefert dasselbe wie onSnapshot (Runde 235,
+               Formi liest den Bestand einmalig). */
+            if (path === 'inventory') {
+              var ivg = INVENTORY[id];
+              return Promise.resolve({ exists: !!ivg, id: id, data: function () { return ivg || { items: [] }; } });
+            }
             if (path === 'config' && id === 'lieferant') {
               var lf = window.__lieferant;
               return Promise.resolve({ exists: !!lf, id: id, data: function () { return lf || {}; } });
@@ -611,6 +621,17 @@ var USERS = [
           var pl = ((window.__privat || {})[gp[1]] || []);
           return Promise.resolve(makeSnap(pl.map(function (d) {
             return { id: d.id, data: function () { return d; } };
+          })));
+        }
+        /* „… schreibt" (Runde 277): channels/<k>/tippt und dms/<id>/tippt.
+           Leer, ausser ein Durchlauf legt window.__tippt[<k oder id>] hin.
+           Dieselbe Weiche steht unten in onSnapshot — die App hört mit
+           onSnapshot zu, get() ist die zweite Haelfte (CLAUDE.md). */
+        var gtp = /^(channels|dms)\/(.+)\/tippt$/.exec(path);
+        if (gtp) {
+          var tl = ((window.__tippt || {})[gtp[2]] || []);
+          return Promise.resolve(makeSnap(tl.map(function (d) {
+            return { id: d.uid, data: function () { return d; } };
           })));
         }
         var gm = /^channels\/(.+)\/messages$/.exec(path);
@@ -743,6 +764,14 @@ var USERS = [
           var pl2 = ((window.__privat || {})[mp[1]] || []);
           try { cb(makeSnap(pl2.map(function (d) {
             return { id: d.id, data: function () { return d; } }; }))); }
+          catch (e) { console.error(e); }
+          return unsub();
+        }
+        var mtp = /^(channels|dms)\/(.+)\/tippt$/.exec(path);
+        if (mtp) {
+          var tl2 = ((window.__tippt || {})[mtp[2]] || []);
+          try { cb(makeSnap(tl2.map(function (d) {
+            return { id: d.uid, data: function () { return d; } }; }))); }
           catch (e) { console.error(e); }
           return unsub();
         }

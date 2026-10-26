@@ -233,6 +233,17 @@ function lies(datei) {
   pruefe('Krankmeldung nach dem Erstellen: der Einsatz erscheint als Ausfall „krank"', meiner && meiner.art === 'krank', aus.length);
   pruefe('… mit höchstens drei Ersatzvorschlägen, alle ohne harten Grund', meiner && meiner.vorschlag.length >= 1 && meiner.vorschlag.length <= 3 && meiner.vorschlag.every((v) => !v.grund), meiner && meiner.vorschlag);
   pruefe('… und die kranke Person selbst ist nicht dabei', meiner && !meiner.vorschlag.some((v) => v.id === ziel.id));
+  /* Runde 274 — aus dem Betrieb: „bei der abwesendheit fehlt das man
+     sich für uni oder sonstige weiterbildungen auch melden kann“. Eine
+     Uni-Meldung ist hart wie Urlaub, heisst aber nicht „Urlaub“. */
+  const uniEingabe = Object.assign({}, groß, { abwesend: groß.abwesend.concat([{ id: ziel.id, von: '2026-11-18', bis: '2026-11-18', art: 'schule' }]) });
+  const uniAus = SP.ausfaelle(uniEingabe, plan).find((a) => a.einsatz === ziel);
+  pruefe('Uni/Schule nach dem Erstellen: Ausfall heisst „Uni/Schule“', uniAus && uniAus.art === 'Uni/Schule', uniAus && uniAus.art);
+  const uniPlan = SP.planen(uniEingabe);
+  pruefe('… und beim Neu-Erstellen ist die Person an dem Tag nicht eingeteilt',
+    !uniPlan.einsaetze.some((x) => x.id === ziel.id && x.datum === '2026-11-18'));
+  const wbAus = SP.ausfaelle(Object.assign({}, groß, { abwesend: groß.abwesend.concat([{ id: ziel.id, von: '2026-11-18', bis: '2026-11-18', art: 'weiterbildung' }]) }), plan).find((a) => a.einsatz === ziel);
+  pruefe('Weiterbildung: Ausfall heisst „Weiterbildung“', wbAus && wbAus.art === 'Weiterbildung', wbAus && wbAus.art);
   const liste = SP.ersatz(krankEingabe, plan, { datum: ziel.datum, studio: ziel.studio, schicht: ziel.schicht, ohne: ziel.id });
   const ruheVerletzt = liste.filter((c) => !c.grund).some((c) => {
     const vorher = plan.einsaetze.find((x) => x.id === c.id && x.datum === '2026-11-17');
