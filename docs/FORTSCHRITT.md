@@ -24434,3 +24434,64 @@ Echtes iPhone (Zähler am Symbol, Rand), echtes Firebase, Ladezeit nach
 der Auslieferung. WebKit hier ohne iOS-Rand. `test-rahmen` bleibt bei
 „Aufgaben ab 387 px (Grenze 380)" rot — auf `main` genauso (gemessen),
 Grund ist die zweite Reiterzeile, die so gewollt ist.
+## Verkaufsplan und Roadmap bis zum ersten zahlenden Kunden (22.10.2026) — nur Doku
+
+Aus dem Betrieb: „einen konkreten verkaufsplan bzw roadmap erstellen was
+alles erledigt werden muss und wie wir premium von standard unterscheiden
+und so und das wir die app bald auch mal an kunden bringen können“.
+
+**Gebaut:** `docs/verkauf/verkaufsplan-roadmap.md` — Ist-Stand aus dem
+Code, Standard/Premium mit Begründung, Preisvorschlag mit
+Wettbewerbsvergleich (Quellen mit Datum), Muss/Soll/Kann bis zum ersten
+Kunden, Vertriebsplan für die ersten 90 Tage, offene Fragen. Kein
+App-Code geändert.
+
+**Dabei gefunden:**
+- `tests/rules/kreuz.test.js` prüft die Firmengrenze über eine
+  **Handliste mit 26 Pfaden**; unter `firmen/{f}` stehen inzwischen rund
+  50 Sammlungen. Viele haben eigene Tests, für einige war per Textsuche
+  keiner erkennbar. Keine nachgewiesene Lücke, aber eine fehlende
+  Prüfung — als Muss-Punkt M6 im Plan.
+- `docs/PITCH.md` und `docs/ROADMAP.md` sagen noch „keine
+  Zeiterfassung“; seit den Stempel-Runden stimmt das nicht mehr.
+- Die Demo zeigt laut `docs/VERKAUF.md` echte Körperformen-Standorte —
+  für den Verkauf an andere Studios ungeeignet (M8).
+
+**Warum Premium jetzt mehr ist als im August:** damals blieben nur
+Nachweise und Auswertung übrig, und der Rat war „erst ein Preis“.
+Inzwischen gibt es Zeiterfassung, Schulungen mit Video und den
+Schichtplaner — Funktionen für die Leitung, die sich serverseitig sperren
+lassen und teils echte Kosten verursachen. Damit trägt eine zweite Stufe.
+
+**Nicht geprüft:** Herstellerpreisseiten (aus dieser Umgebung nicht
+erreichbar, Zahlen aus Vergleichsportalen), Stripe-Schlüssel und
+Google-DPA (nicht einsehbar).
+
+## Was zur Veröffentlichung fehlt — Prüfung (26.10.2026) — nur Doku
+
+Aus dem Betrieb: „prüf mal alles was zur veröffentlichung fehlen würde
+und gib mir konkrete fragen und eine liste was noch fehlt und wie wir sie
+am besten angehen schritt für schritt“.
+
+**Gebaut:** `docs/verkauf/veroeffentlichung-checkliste.md` — 13 Muss- und
+9 Soll-Befunde mit Fundstelle, 16 Fragen mit Empfehlung, sieben Schritte
+mit Prüfkriterium.
+
+**Gemessen:** Stripe ist im Betrieb eingerichtet (Webhook antwortet 400
+„Unterschrift stimmt nicht“, nicht 503). 13 verkaufsrelevante Durchläufe
+lokal grün; `test-abo-leiter` und `test-stripe-felder` brauchen vorher
+`npm ci` in `functions/`.
+
+**Die drei wichtigsten Funde:**
+- **AGB § 8 verspricht die Löschung nach 30 Tagen** — der Code archiviert
+  nur, und das Werkzeug zum endgültigen Löschen, auf das der Kommentar in
+  `firmaLoeschen` verweist, gibt es nicht.
+- **`loesungen-basis.js` ist das Körperformen-Mitarbeiterhandbuch im
+  Wortlaut** und wird jeder Firma gezeigt. Wem es gehört, ist eine Frage
+  an den Betrieb, nicht an den Code.
+- **Die Testphase startet als Basic** — ein Interessent erlebt Premium
+  nie. Empfehlung: 30 Tage Premium.
+
+**Warum die Reihenfolge „entscheiden, bauen, prüfen lassen, verkaufen“:**
+der Anwalt ist der längste Weg und braucht nur die Entwürfe, nicht den
+fertigen Code — deshalb wird er in Woche 1 angefragt.
