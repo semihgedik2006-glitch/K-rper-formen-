@@ -26,13 +26,9 @@ async function zuArbeit(page, unterseite) {
   /* Runde 187 (aus dem Betrieb: „das problem mit dem zu viel bleibt
      immer noch bestehen"): Material und Geräte sind EIN Reiter
      „Bestand"; Geräte über den Umschalter oben in der Seite. */
-  const ziel = unterseite === 'geraete' ? 'material' : unterseite;
-  const s = await page.$('#subnav [data-subview="' + ziel + '"]');
+  /* Runde 293, aus dem Betrieb, 26.10.2026, auf die Empfehlung nach dem Findetest: „ja können wir so machen" – „Plan" heisst „Schichtplan", „Wissen" heisst „Dokumente", „Bestand" ist wieder Material und Geräte. */
+  const s = await page.$('#subnav [data-subview="' + unterseite + '"]');
   if (s) { await s.click(); await page.waitForTimeout(1100); }
-  if (unterseite === 'geraete') {
-    const um = await page.$('#view-material .umschalter [data-umschalt="geraete"]');
-    if (um) { await um.click(); await page.waitForTimeout(1100); }
-  }
 }
 
 (async () => {

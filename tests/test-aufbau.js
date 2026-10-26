@@ -90,7 +90,7 @@ const tippe = async (p, sel) => { await p.evaluate((sel) => document.querySelect
   {
     const p = await oeffne(b, 390, 844);
     const u = await leiste(p, '.mobnav .mn-reihe [data-group]');
-    pruefe('Leiste wie ausgeliefert: ' + u.join(' · '), JSON.stringify(u) === JSON.stringify(['Heute', 'Zeiten', 'Plan', 'Nachrichten']), JSON.stringify(u));
+    pruefe('Leiste wie ausgeliefert: ' + u.join(' · '), JSON.stringify(u) === JSON.stringify(['Heute', 'Zeiten', 'Schichtplan', 'Nachrichten']), JSON.stringify(u));
     await p._ctx.close();
   }
 
@@ -122,7 +122,7 @@ const tippe = async (p, sel) => { await p.evaluate((sel) => document.querySelect
     await editor(p);
     await tippe(p, '#aufbauTafel [data-abvor="anfang"]');
     const vorher = await leiste(p, '.mobnav .mn-reihe [data-group]');
-    pruefe('nur im Entwurf: die App behält ihre Leiste, bis „Übernehmen"', JSON.stringify(vorher) === JSON.stringify(['Heute', 'Zeiten', 'Plan', 'Nachrichten']), JSON.stringify(vorher));
+    pruefe('nur im Entwurf: die App behält ihre Leiste, bis „Übernehmen"', JSON.stringify(vorher) === JSON.stringify(['Heute', 'Zeiten', 'Schichtplan', 'Nachrichten']), JSON.stringify(vorher));
     await uebernimm(p);
     const u = await leiste(p, '.mobnav .mn-reihe [data-group]');
     pruefe('nach „Übernehmen" unten: ' + u.join(' · '), JSON.stringify(u) === JSON.stringify(['Chat', 'Aufgaben', 'Infos', 'Material', 'Putzplan']), JSON.stringify(u));
@@ -165,7 +165,7 @@ const tippe = async (p, sel) => { await p.evaluate((sel) => document.querySelect
     await editor(p);
     await tippe(p, '#aufbauTafel [data-abzurueck]');
     let u = await leiste(p, '.mobnav .mn-reihe [data-group]');
-    pruefe('„Zurück zum letzten Stand": die Leiste davor (' + u.join(' · ') + ')', JSON.stringify(u) === JSON.stringify(['Heute', 'Zeiten', 'Plan', 'Nachrichten']), JSON.stringify(u));
+    pruefe('„Zurück zum letzten Stand": die Leiste davor (' + u.join(' · ') + ')', JSON.stringify(u) === JSON.stringify(['Heute', 'Zeiten', 'Schichtplan', 'Nachrichten']), JSON.stringify(u));
     await editor(p);
     await tippe(p, '#aufbauTafel [data-abvor="anfang"]');
     await uebernimm(p);
@@ -173,7 +173,7 @@ const tippe = async (p, sel) => { await p.evaluate((sel) => document.querySelect
     await tippe(p, '#aufbauTafel [data-abvor="standard"]');
     await uebernimm(p);
     u = await leiste(p, '.mobnav .mn-reihe [data-group]');
-    pruefe('„Alles wie ausgeliefert": die ausgelieferte Leiste (' + u.join(' · ') + ')', JSON.stringify(u) === JSON.stringify(['Heute', 'Zeiten', 'Plan', 'Nachrichten']), JSON.stringify(u));
+    pruefe('„Alles wie ausgeliefert": die ausgelieferte Leiste (' + u.join(' · ') + ')', JSON.stringify(u) === JSON.stringify(['Heute', 'Zeiten', 'Schichtplan', 'Nachrichten']), JSON.stringify(u));
 
     console.log('\n── 6 Aussehen ──');
     await editor(p);

@@ -143,8 +143,9 @@ async function seite(b, stub, such, breite) {
        sechs, „Wissen" liegt unter ☰ (am Rechner weiter links). Aus dem
        Betrieb, 08:07: „ja so wie du empfohlen hast klingt super". */
     pruefe('unten stehen fünf Knöpfe', neu.reihe.length === 5, JSON.stringify(neu.reihe));
-    pruefe('und zwar Heute, Studio, Zeiten, Plan, Nachrichten',
-      neu.reihe.join('|') === 'Heute|Studio|Zeiten|Plan|Nachrichten', JSON.stringify(neu.reihe));
+    /* Runde 293, aus dem Betrieb, 26.10.2026, auf die Empfehlung nach dem Findetest: „ja können wir so machen" – „Plan" heisst „Schichtplan", „Wissen" heisst „Dokumente", „Bestand" ist wieder Material und Geräte. */
+    pruefe('und zwar Heute, Studio, Zeiten, Schichtplan, Nachrichten',
+      neu.reihe.join('|') === 'Heute|Studio|Zeiten|Schichtplan|Nachrichten', JSON.stringify(neu.reihe));
     pruefe('die Schublade ist beim Start zu', neu.ladeZu === true);
     pruefe('der Bereichskopf trägt einen sichtbaren Griff', neu.griff === true);
   }

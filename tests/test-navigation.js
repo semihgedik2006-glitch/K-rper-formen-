@@ -57,7 +57,8 @@ const ansicht = page => page.evaluate(() => {
        seit Runde 222 nicht mehr unten (sechs Knöpfe waren das Maximum),
        sondern unter ☰ und am Rechner links — dieser Durchlauf war
        seitdem rot. */
-    const soll = ['Heute', 'Studio', 'Zeiten', 'Plan', 'Nachrichten'];
+    /* Runde 293, aus dem Betrieb, 26.10.2026, auf die Empfehlung nach dem Findetest: „ja können wir so machen" – „Plan" heisst „Schichtplan", „Wissen" heisst „Dokumente", „Bestand" ist wieder Material und Geräte. */
+    const soll = ['Heute', 'Studio', 'Zeiten', 'Schichtplan', 'Nachrichten'];
     if (JSON.stringify(gruppen) !== JSON.stringify(soll)) {
       errs.push('Gruppen stimmen nicht: ' + JSON.stringify(gruppen) +
         ' — erwartet ' + JSON.stringify(soll));
@@ -97,16 +98,14 @@ const ansicht = page => page.evaluate(() => {
        Material und Geräte sind EIN Reiter „Bestand"; Geräte stehen
        im Umschalter oben in der Seite. Dass dieser Weg da ist, wird
        gleich mitgeprüft — sonst wäre „vier" nur eine kleinere Zahl. */
-    if (unter.length !== 4) errs.push('Studio hat ' + unter.length + ' statt 4 Unterseiten');
-    if (!unter.some(u => /Bestand/.test(u))) errs.push('„Bestand" fehlt unter Studio');
-    await page.evaluate(() => { const r = document.querySelector('#subnav [data-paar="bestand"]'); if (r) r.click(); });
+    /* Runde 293, aus dem Betrieb, 26.10.2026, auf die Empfehlung nach dem Findetest: „ja können wir so machen" – „Plan" heisst „Schichtplan", „Wissen" heisst „Dokumente", „Bestand" ist wieder Material und Geräte.
+       Damit wieder fünf: Aufgaben, Putzplan, Material, Geräte, Probetraining. */
+    if (unter.length !== 5) errs.push('Studio hat ' + unter.length + ' statt 5 Unterseiten');
+    if (!unter.some(u => /Geräte/.test(u))) errs.push('„Geräte" fehlt als eigener Reiter unter Studio');
+    await page.evaluate(() => { const r = document.querySelector('#subnav [data-subview="geraete"]'); if (r) r.click(); });
     await page.waitForTimeout(600);
-    const bestand = await page.evaluate(() => [...document.querySelectorAll('#view-material .umschalter [data-umschalt]')]
-      .filter(x => x.checkVisibility()).map(x => x.textContent.trim()));
-    console.log('BESTAND:', JSON.stringify(bestand));
-    if (JSON.stringify(bestand) !== JSON.stringify(['Material', 'Geräte'])) {
-      errs.push('Im Bestand fehlt der Umschalter Material | Geräte: ' + JSON.stringify(bestand));
-    }
+    const geraeteAuf = await page.evaluate(() => (document.querySelector('.view.show') || {}).id);
+    if (geraeteAuf !== 'view-geraete') errs.push('Der Reiter „Geräte" öffnet nicht die Geräte: ' + geraeteAuf);
 
     /* „Wissen" über ☰: der Griff, dann „Dokumente" — zwei Tipps. */
     await page.evaluate(async () => {
@@ -117,8 +116,8 @@ const ansicht = page => page.evaluate(() => {
     await page.waitForTimeout(800);
     const wissen = await page.evaluate(() => [...document.querySelectorAll('[data-subview]')].map(s => s.textContent.trim()));
     console.log('WISSEN:', JSON.stringify(wissen));
-    if (!wissen.some(u => /Dokumente/.test(u))) errs.push('Dokumente liegt nicht unter Wissen');
-    if (!wissen.some(u => /Schulung/.test(u))) errs.push('Schulung liegt nicht unter Wissen');
+    if (!wissen.some(u => /Dokumente/.test(u))) errs.push('Dokumente liegt nicht im Raum „Dokumente"');
+    if (!wissen.some(u => /Schulung/.test(u))) errs.push('Schulung liegt nicht im Raum „Dokumente"');
     await b.close();
   }
 
