@@ -768,8 +768,14 @@
       }
     }
     /* Eine eigene Schicht heute — sonst steht „Mein Dienst" leer und die
-       wichtigste Karte der Startseite sagt in der Vorführung nichts. */
-    if ((ICH.studioKeys || []).indexOf(k) >= 0) {
+       wichtigste Karte der Startseite sagt in der Vorführung nichts.
+       Runde 283: nur in EINEM eigenen Studio. Vorher stand die Schicht
+       in jedem eigenen Studio — die Geschäftsführung hatte heute
+       vierzehnmal 09:00–14:00 gleichzeitig, „Laut Plan 69:15 h" und unter
+       Zeiten eine Textwand aus vierzehn Schichten. Welches: das, das der
+       Plan zuerst zeigt (nach dem Alphabet, siehe buildTeamSelect) —
+       sonst steht die eigene Schicht im Plan nie im Bild. */
+    if (name === (ICH.studios || []).slice().sort(function (a, b) { return a.localeCompare(b, 'de'); })[0]) {
       schichten.push({ id: 's-' + k + '-ich', date: datum(0), from: '09:00', to: '14:00',
         uid: ICH.id, name: ICH.name });
     }

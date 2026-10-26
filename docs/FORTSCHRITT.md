@@ -23943,3 +23943,66 @@ test-quer, test-akzent, test-geraete — Ergebnis im Pull Request.
 
 **Nicht geprüft:** Safari und ein echtes iPhone; die Regeln gegen das
 echte Firebase; die Ladezeit live.
+
+## Runde 283 — Prüfrunde: Minus-Stunden, Demo-Schichten, Beschriftungen (26.10.2026)
+
+**Aus dem Betrieb:** „gibst du mir neue ideen und kontrolierst einmal die
+app nach fehlern und schwächen".
+
+**Wie geprüft:** Gesamtdurchlauf aller Tests; ein eigener Rundgang über
+21 Ansichten × 7 Grössen (320 / 390 / 430 / 820 mit nachgestelltem
+iPhone-Rand, 1280 / 1440 / 1920) × Chef und Mitarbeiter: Seitenfehler,
+waagerechtes Überstehen, Bildschirmfotos angesehen. Dazu axe-core
+(WCAG 2 A/AA, ohne Kontrast) über 20 Ansichten. Sicherheitsregeln
+durchgesehen (Selbstanmeldung, `tippt`, Speicher-Eimer) — dort nichts
+Neues gefunden. Rundgang und axe ergaben **keine Seitenfehler und
+nichts, was waagerecht übersteht**.
+
+**Gefunden und behoben:**
+- **„seit 00:01 · -1:-1 h"** unter Zeiten → Team, „Jetzt im Studio".
+  Liegt der letzte Stempel kurz in der Zukunft (Uhr am Terminal etwas
+  vor, oder wie in der Demo kurz nach Mitternacht), war der laufende
+  Teil negativ, und `stundenText` rechnete `Math.floor(-1/60)` und
+  `-1 % 60`. Jetzt zählt `zeitenTage` den laufenden Teil ab 0, und
+  `stundenText` gibt nie weniger als 0:00 h aus (alle 21 Aufrufe sind
+  Dauern, keiner ein Saldo — nachgesehen).
+- **Demo: vierzehn eigene Schichten gleichzeitig.** Die Vorführung legte
+  die eigene Schicht in jedes eigene Studio. Die Geschäftsführung hatte
+  damit heute 14 × 09:00–14:00, „Laut Plan 69:15 h", unter Zeiten eine
+  Textwand und unter Ich → Woche vierzehn Dienste. Jetzt nur im ersten
+  eigenen Studio, wie der Tausch darunter. Keine zusätzliche
+  Zufallsziehung — die übrigen Demo-Daten bleiben gleich.
+- **Beschriftungen:** `#devStudio` und `#matNewName` ohne Namen für
+  Bildschirmleser. Soll/Ist und die Auswahl im Bestand hatte Runde 282
+  (paralleler Faden) schon benannt; die eigenen Änderungen daran sind
+  beim Übernehmen weggefallen.
+
+**Gefunden, nicht geändert (Gestaltung oder grösser):**
+- Chat am Handy: der Verlauf bekommt 36–45 % des Bildschirms (320–430 px
+  mit Rand). `test-chat-bereich3` verlangt 55 % und ist auf `main` rot.
+  Der Weg dahin ist „erst Liste, dann Unterhaltung" — als Vorschlag an
+  den Betrieb, nicht hier gebaut.
+- Das Datum („Gestern") schwebt im Chat über Namen und Nachricht.
+- Formis Begrüssung liegt am Handy über der letzten Nachricht.
+- Dokumente: die Zeile ist `role=button` und enthält den „…"-Knopf
+  (axe: nested-interactive). Der Chatverlauf ist mit der Tastatur nicht
+  erreichbar (scrollable-region-focusable) — bewusst nicht mit
+  `tabindex` gelöst: am iPhone schlösse ein Tipp in den Verlauf sonst
+  die Tastatur.
+
+**Tests:** `test-pruefung-283` neu (5 Zusicherungen; auf `main` 4 rot,
+hier grün — die Minus-Dauer nachgestellt mit fester Uhr um 00:00:02).
+
+**Gesamtdurchlauf** (255 Tests, drei parallel): 239 grün. Rot waren nur
+Tests, die auf `main` genauso rot sind (einzeln nachgeprüft, gleiche
+Meldungen; deckt sich mit der Liste aus Runde 282) — bis auf einen:
+`test-schichtplan-raster` fand die eigene Schicht der Geschäftsführung
+im Plan nicht mehr. Der Plan zeigt zuerst das Studio, das im Alphabet
+vorn steht (Brühl), die eigene Schicht stand jetzt in Longerich. Darum
+steht sie nun im ersten eigenen Studio *nach dem Alphabet* — dort, wo
+der Plan aufgeht. Danach 53 Durchläufe rund um Schichten und Zeiten
+erneut: grün bis auf `test-gleiten-rahmen`, `test-wischen`,
+`test-zeiten-verwaltung` (auf `main` gleich rot).
+
+**Nicht getestet:** iPhone und Safari selbst, echtes Firebase, die
+Regeln im Emulator (laufen in CI).
