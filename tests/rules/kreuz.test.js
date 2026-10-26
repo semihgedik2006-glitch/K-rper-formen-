@@ -111,7 +111,7 @@ const SAMMLUNGEN = [
      seine Daten") gilt fuer sie nicht mehr — dass NIEMAND herankommt,
      prueft rechte.test.js. */
   ['board/b1',                                { uid: 'chefB', text: 'Aushang', ts: 1 }],
-  /* Geteilte Designs (Runde 291): für jeden Aktiven der eigenen Firma
+  /* Geteilte Designs (Runde 292): für jeden Aktiven der eigenen Firma
      lesbar – für eine fremde nicht. */
   ['designs/de1',                             { uid: 'mitB', von: 'Mia', name: 'Frühschicht', aufbau: { leiste: ['v-todos'] }, prefs: {}, ts: 1 }],
   ['trash/tr1',                               { col: 'todos', deletedByUid: 'chefB' }],

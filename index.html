@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Qzi7rQNfuBislRzQDjPrjP2rD3ndgnT92BW/s+q4odQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-xdWnNMtlJCc5lGNxJQimVhAho+SVu0ZcVOJ3ZmoNNt4='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -9750,7 +9750,7 @@ body.neu .np-punkt{width:8px;height:8px;border-radius:var(--r-rund);background:v
   #ftUhrTipps,.ft-auf-wort{display:inline}
 }
 
-/* ── App gestalten: der Baukasten (Runde 291) ──
+/* ── App gestalten: der Baukasten (Runde 292) ──
    Ein ganzer Bildschirm: was hier passiert, ist ein Entwurf und soll die
    App dahinter nicht verändern, bis „Übernehmen". Am Rechner drei
    Spalten (Bausteine · deine App · Vorschau und Designs), jede scrollt
@@ -22759,7 +22759,9 @@ function showApp(){
   applyRoleVisibility();                    // Chef-eigene Karten für Leiter ausblenden
   bindActions();
   foldAufbauen();
-  verlaufStarten();
+  /* Hat der Start schon ein Ziel geöffnet (Link oder zuletzt offene
+     Seite), darf „Heute" unten es nicht wieder überschreiben. */
+  var startZiel = verlaufStarten();
   startListeners();
   listenAllUsers();
   listenDmThreads();
@@ -22773,8 +22775,12 @@ function showApp(){
   startPresence();            // "ich bin online" melden
   startNutzung();             // anonyme Zählung: welche Funktion wird benutzt
   /* Runde 289: wer sich „Beim Öffnen: Chat" (o. ä.) eingestellt hat,
-     landet dort; sonst wie immer auf „Heute". */
-  showView(aufbauStart() || 'home');
+     landet dort; sonst wie immer auf „Heute".
+     Runde 291: aber nur, wenn verlaufStarten() nicht schon ein Ziel
+     geöffnet hat (Link #… oder zuletzt offene Seite). Vorher stand hier
+     showView ohne Bedingung — seit August hat es jedes dieser Ziele
+     sofort überschrieben (tests/test-start-ziel.js). */
+  if(!startZiel) showView(aufbauStart() || 'home');
   birthdayCheck();
   /* Die Führung, aber erst nach zwei Sekunden und nur beim ersten Mal.
      SOFORT WÄRE FALSCH: die Startseite baut sich noch auf, und ein
@@ -23575,6 +23581,11 @@ var NEUIGKEITEN = [
     'Bausteine in die Leiste oder in eigene, benannte Gruppen ziehen; die Startseite „Heute" frei ordnen und Blöcke ausblenden.',
     'Alles ist erst ein Entwurf mit Vorschau – „Übernehmen" oder „Verwerfen".',
     'Designs speichern, nach Bedarf wechseln und fürs Team teilen; geteilte Designs lassen sich ausprobieren.'
+  ]},
+  { id:'2026-10-26-start-ziel', datum:'26.10.2026', art:'fix', titel:'Links und Meldungen öffnen wieder die richtige Seite', wo:'putzplan', punkte:[
+    'Ein Link wie …/#putzplan oder ein Tipp auf eine Meldung öffnet direkt diese Seite, nicht mehr „Heute".',
+    'Innerhalb von zwei Stunden öffnet die App wieder die zuletzt offene Seite (z. B. Putzplan) — außer eine eigene Startseite ist gewählt.',
+    'Nach längerer Pause und beim Chat startet die App wie gewohnt auf der eigenen Startseite.'
   ]},
   { id:'2026-10-26-alles-scrollen', datum:'26.10.2026', art:'fix', titel:'„Alles" lässt sich am Rechner scrollen', wo:'home', punkte:[
     'Am Rechner öffnet „Alles" (oben links) jetzt als Schublade, die sich bis zur letzten Zeile scrollen lässt.',
@@ -24711,7 +24722,7 @@ function aufbauEinzel(v){
   if(!it || !s) return null;
   return { id:'v-'+v, label:s.name, views:[v], icon:it.icon, einzel:true };
 }
-/* Eigene Gruppen (Runde 291): Name, Zeichen, Seiten. In der App EIN
+/* Eigene Gruppen (Runde 292): Name, Zeichen, Seiten. In der App EIN
    Knopf, die Seiten darunter als Reiter. Nur eine Ebene – eine Gruppe
    enthält Seiten, keine Gruppen. */
 function aufbauEigene(a){
@@ -24802,7 +24813,7 @@ function aufbauHeuteListe(h){
 }
 function aufbauNeueId(){ return (Date.now().toString(36)+Math.random().toString(36).slice(2,6)).slice(-10); }
 
-/* ══ DER ENTWURF (Runde 291) ══════════════════════════════════════════
+/* ══ DER ENTWURF (Runde 292) ══════════════════════════════════════════
    Aus dem Betrieb, 26.10.2026: „es soll so ein menü mässig sein wo man
    drag and drop machen kann und wo man alles da hin packen kann wo man
    möchte und auch eigene gruppen erstellen kann … und erst danach
@@ -25989,7 +26000,7 @@ function buildNav(){
   var reihe=document.createElement('div');
   reihe.className='mn-reihe';
   var eigen=aufbauGruppen(), unten=eigen || neuLeisteGruppen(gruppen);
-  /* Runde 291: die eigene Leiste darf bis zu acht tragen; am Handy
+  /* Runde 292: die eigene Leiste darf bis zu acht tragen; am Handy
      passen fünf. Ab sechs stehen vier da, der Rest hinter „Mehr". */
   if(eigen && eigen.length>AUFBAU_MAX_HANDY) unten=eigen.slice(0, AUFBAU_MAX_HANDY-1);
   unten.forEach(function(g){
@@ -26682,7 +26693,7 @@ function buildSubNav(){
   kugelInReiheSetzen();
   subnavPlatzieren();
   var bar=$('subnav'); if(!bar) return;
-  /* Runde 291: eine eigene Gruppe zeigt IHRE Seiten als Reiter. */
+  /* Runde 292: eine eigene Gruppe zeigt IHRE Seiten als Reiter. */
   var g=aufbauGruppeFuer(currentView) || groupOfView(currentView);
   var views=sichtbareViews(g);
   /* Am Handy bleibt die Reiterzeile auch auf „Heute" (Runde 184). Ein
@@ -42149,7 +42160,7 @@ function renderHeuteJetzt(){
   /* `zahl` ist die Zahl in der Überschrift. Meist die Zeilenzahl — beim
      Putzplan der Leitung aber nicht: dort ist eine Zeile ein STUDIO, und
      „Putzplan · 3" hiesse drei Studios, obwohl zwölf Punkte offen sind. */
-  /* Runde 291: erst sammeln, dann in der eigenen Reihenfolge zeichnen –
+  /* Runde 292: erst sammeln, dann in der eigenen Reihenfolge zeichnen –
      ausgeblendete Blöcke fallen weg (App gestalten → Startseite). */
   var _bloecke=[];
   function block(){ _bloecke.push([].slice.call(arguments)); }
@@ -54021,10 +54032,24 @@ function verlaufStarten(){
   // Eine Adresse in der Zeile schlägt alles – wer einen Link bekommt, soll
   // dort landen. Danach erst die zuletzt offene Ansicht.
   var ausLink=(location.hash||'').replace('#','');
-  var ziel = (ausLink && document.getElementById('view-'+ausLink)) ? ausLink : letzteAnsichtHolen();
-  if(ziel && ziel!==currentView){
+  /* Runde 291: wer sich unter „App gestalten" eine eigene Startseite
+     eingestellt hat, hat das bewusst getan — die gilt dann vor der
+     zuletzt offenen Seite (der Aufrufer öffnet sie). Ein Link geht
+     beidem vor. */
+  var eigenerStart = (typeof aufbauStart==='function') && aufbauStart();
+  var ziel = (ausLink && document.getElementById('view-'+ausLink)) ? ausLink
+           : (eigenerStart ? null : letzteAnsichtHolen());
+  var gezeigt=false;
+  /* Nicht mit currentView vergleichen: das steht vor dem ersten
+     showView noch auf seinem Anfangswert 'chat' — ein Link auf #chat
+     wurde deshalb übersprungen. */
+  if(ziel){
     // Rollen prüfen: der Verwaltungsbereich ist nicht für jeden
-    if((ziel!=='chef' && ziel!=='archive') || canManage()) showView(ziel, true, true);
+    if((ziel!=='chef' && ziel!=='archive') || canManage()){
+      showView(ziel, true, true);
+      // showView lenkt eine abgeschaltete Ansicht auf „Heute" um
+      gezeigt = currentView===ziel;
+    }
   }
 
   try{ history.replaceState({v:currentView||'home'}, '', '#'+(currentView||'home')); }catch(e){}
@@ -54084,6 +54109,8 @@ function verlaufStarten(){
       }
     }).observe(el, { attributes:true, attributeFilter:['class'] });
   });
+  // Runde 291: dem Aufrufer sagen, ob schon ein Ziel offen ist.
+  return gezeigt;
 }
 
 /* ============================================================

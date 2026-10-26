@@ -1,4 +1,4 @@
-/* ══ APP GESTALTEN: DER BAUKASTEN (Runde 291) ═════════════════════════
+/* ══ APP GESTALTEN: DER BAUKASTEN (Runde 292) ═════════════════════════
    Aus dem Betrieb, 26.10.2026: „es soll so ein menü mässig sein wo man
    drag and drop machen kann und wo man alles da hin packen kann wo man
    möchte und auch eigene gruppen erstellen kann … und erst danach

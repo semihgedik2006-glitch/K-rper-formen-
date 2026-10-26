@@ -17,7 +17,7 @@
        öffnet den Putzplan und markiert genau diesen Knopf; am Rechner
        steht links dieselbe Reihe. Nach dem Neuladen gilt alles noch und
        die App startet im Chat.
-    4. (seit Runde 291 in test-baukasten: Ziehen, Antippen, Gruppen)
+    4. (seit Runde 292 in test-baukasten: Ziehen, Antippen, Gruppen)
     5. „Ganz minimal": zwei Knöpfe, keine Formi-Kugel (auch nicht ihre
        Sprechblase), keine Schnellzugriffe. „Zurück zu vorher" stellt den Stand davor her,
        „Alles wie ausgeliefert" die ausgelieferte Leiste.
@@ -77,7 +77,7 @@ const editor = async (p) => {
   await p.waitForTimeout(300);
 };
 const leiste = (p, sel) => p.evaluate((sel) => [...document.querySelectorAll(sel)].filter(e => e.getClientRects().length).map(e => e.textContent.trim()), sel);
-/* Seit Runde 291 ist alles im Editor ein Entwurf; erst „Übernehmen"
+/* Seit Runde 292 ist alles im Editor ein Entwurf; erst „Übernehmen"
    ändert die App (aus dem Betrieb, 26.10.2026: „… und erst danach
    bestäigt man es oder verwirft es wieder"). */
 const uebernimm = async (p) => { await p.click('#abUebernehmen'); await p.waitForTimeout(500); };
@@ -107,7 +107,7 @@ const tippe = async (p, sel) => { await p.evaluate((sel) => document.querySelect
         const k = [...t.querySelectorAll('button')].filter(e => e.getClientRects().length && !e.disabled);
         const klein = [];
         k.forEach(e => { e.scrollIntoView({ block: 'center' }); const r = T(e); if (r.w < 44 || r.h < 44) klein.push(e.textContent.trim().slice(0, 18) + ' ' + r.w + '×' + r.h); });
-        /* Runde 291: ein ganzer Bildschirm (der Entwurf ist nicht die App). */
+        /* Runde 292: ein ganzer Bildschirm (der Entwurf ist nicht die App). */
         const tr = t.getBoundingClientRect();
         return { offen: !t.hidden, n: k.length, klein, voll: tr.top <= 0 && tr.bottom >= innerHeight - 1, quer: document.documentElement.scrollWidth - innerWidth };
       }, TREFFER.toString());
@@ -147,7 +147,7 @@ const tippe = async (p, sel) => { await p.evaluate((sel) => document.querySelect
     await pc._ctx.close();
   }
 
-  /* Abschnitt 4 (Plus/Minus/Pfeile) steht seit Runde 291 in test-baukasten:
+  /* Abschnitt 4 (Plus/Minus/Pfeile) steht seit Runde 292 in test-baukasten:
      dort wird gezogen, angetippt und erst dann übernommen. */
 
   console.log('\n── 5 Ganz minimal, zurück, ausgeliefert ──');

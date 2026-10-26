@@ -24727,3 +24727,170 @@ ein zweiter Ort, an dem dieselbe Liste anders aussieht.
   trifft; Formi liegt nicht darüber. Gegen den alten Stand: 20 rot.
 - **Nicht getestet:** am echten Rechner des Betriebs (Trackpad/Mausrad
   in Chrome am Mac) – nachgestellt mit dem Mausrad in Chromium.
+
+## Runde 291 — Der Start überschreibt sein eigenes Ziel nicht mehr (26.10.2026)
+
+**Befund.** `verlaufStarten()` öffnet beim Start ein Ziel aus der Adresse
+(`#putzplan`, `#chat` …) oder die zuletzt offene Seite (`WIEDER_OEFFNEN`,
+höchstens zwei Stunden alt). Dreizehn Zeilen weiter unten stand in der
+Startroutine ein `showView('home')` ohne Bedingung — es hat jedes dieser
+Ziele sofort wieder überschrieben. Ein Link auf den Putzplan landete auf
+„Heute“, ebenso ein Tipp auf eine Push-Meldung bei geschlossener App
+(`sw.js` öffnet `./index.html#zeit`). Kein Test hat es gesehen, weil
+„Heute“ ja auch eine richtige Seite ist und kein Durchlauf mit einer
+Adresse samt `#…` startete.
+
+Nachgestellt vor der Änderung (neuer Durchlauf `tests/test-start-ziel.js`):
+5 von 10 Prüfungen rot — `#putzplan`, `#chat`, `#chef` als Chef und die
+gemerkte Seite landeten alle auf `#home`.
+
+**Entscheidung (Betrieb, 26.10.2026):** die zuletzt offene Seite wird
+wiederhergestellt, wie ursprünglich gebaut — obwohl man seit Monaten
+immer auf „Heute“ gestartet ist. Links landen in jedem Fall am Ziel.
+
+**Gebaut.**
+- `verlaufStarten()` gibt zurück, ob es ein Ziel geöffnet hat; die
+  Startroutine zeigt „Heute“ nur, wenn nicht.
+- Dabei gefunden: `if(ziel && ziel!==currentView)` hat `#chat` nie
+  geöffnet — `currentView` steht vor dem ersten `showView` auf seinem
+  Anfangswert `'chat'`. Der Vergleich ist weg; ob das Ziel wirklich offen
+  ist, entscheidet `currentView===ziel` *nach* `showView` (das lenkt eine
+  abgeschaltete Ansicht selbst auf „Heute“ um).
+- Unverändert: die Führung beim ersten Start geht weiterhin über „Heute“
+  (`tourSchrittZeigen`). Der Durchlauf setzt deshalb `kf_tour` — ein
+  wiederkehrender Benutzer, wie in den Attrappen.
+
+**Der Durchlauf** (`tests/test-start-ziel.js`, Demo, 1280 × 800): ohne
+Ziel → Heute; `#putzplan` schlägt eine gemerkte Seite; `#chat` → Chat;
+gemerkt vor 10 min → dorthin; vor 3 h → Heute; gemerkter Chat → Heute
+(nicht in `WIEDER_OEFFNEN`); `#chef` ohne Verwaltungsrecht → nicht dorthin,
+als Chef → dorthin. Danach 10 von 10 grün (vor der Zusammenführung).
+
+**Mit Runde 289 zusammengeführt:** dort kam `showView(aufbauStart() || 'home')`
+an genau diese Stelle („Beim Öffnen: Chat“ aus *App gestalten*). Die Zeile
+heisst jetzt `if(!startZiel) showView(aufbauStart() || 'home');`.
+
+**Reihenfolge beim Start:** Link → eigene Startseite → zuletzt offene
+Seite (≤ 2 h) → „Heute“. Zuerst stand die zuletzt offene Seite vor der
+eigenen Startseite; dann fiel `tests/test-aufbau.js` (Runde 289) rot:
+„Beim Öffnen: Chat“ eingestellt, Putzplan geöffnet, neu geladen →
+Putzplan statt Chat. Der Test hat recht: die eigene Startseite ist
+bewusst gewählt, die zuletzt offene Seite nur ein Rest vom letzten Mal.
+`verlaufStarten()` holt die gemerkte Seite deshalb nur, wenn
+`aufbauStart()` nichts liefert. Der Durchlauf prüft alle drei Fälle mit
+`kf_prefs.aufbau.start='chat'`: ohne Link → Chat, mit `#putzplan` →
+Putzplan, mit Putzplan vor 10 min offen → Chat. 13 von 13 grün,
+`test-aufbau` 54 von 54.
+
+**Nicht geprüft:** der echte Anmeldeweg (Firebase lädt hier nicht) — der
+Durchlauf geht über den Demo-Zugang, der dieselbe Startroutine nimmt.
+
+**Gesamtdurchlauf** (hier, 264 Durchläufe, in zwei Teilen — `alle.sh`
+wurde nach 30 min vom Läufer abgebrochen, der Rest lief mit vier
+gleichzeitig): rot waren
+- auf `main` genauso rot: `test-bestellung` (`#bsLiefAendern` 52×40 bei
+  390 px kompakt), `test-pc-spalten`, `test-rahmen`, `test-schrift-geraet`,
+  `test-nebenseiten` (Gegenprobe meldet sich im Text, Exit 0);
+- fehlende Module in dieser Umgebung (`firebase-functions`, `nodemailer`,
+  `acorn`, Regel-Emulator): `test-abo-leiter`, `test-gehirn-aktion`,
+  `test-stripe-felder`, `test-mail-versand`, `test-paywall`,
+  `test-ausliefern-kommentare`, `test-regelumgebung`;
+- Zeitgrenze 420 s unter Last: `test-formi-verdeckt`, `test-formi-zeigwie`,
+  `test-gehirn` — gegen `main` **nicht** verglichen;
+- nur unter Last rot, einzeln grün: `test-navigation`, `test-fuehrung`,
+  `test-leiter-aufgaben`, `test-schichtplan-raster`.
+
+## Runde 292 — App gestalten als Baukasten: Ziehen, eigene Gruppen, Startseite, Entwurf, Designs teilen (26.10.2026)
+
+**Aus dem Betrieb, 26.10.2026:**
+- „das editor menü kein richtiges menü und man kann nicht alles genau so
+  anpassen wie man möchte es soll so ein menü mässig sein wo man drag and
+  drop machen kann und wo man alles da hin packen kann wo man möchte und
+  auch eigene gruppen erstellen kann und wirlich alles in diesem editor
+  einstellen und bearbeiten kann und erst danach bestäigt man es oder
+  verwirft es wieder"
+- Auf die drei Rückfragen (Handy 5 / Rechner 8 Knöpfe, Startseite gleich
+  mit, keine Untergruppen): „ja so, man soll gruppen aber auch bennen
+  können und seine designs speichern können das man wechseln kann nach
+  bedarf und das andere das auch sehen und nutzen können"
+
+**Was gebaut wurde**
+
+- **Ein ganzer Bildschirm statt einer Tafel.** Am Rechner drei Spalten,
+  jede scrollt für sich: Bausteine · deine App · Vorschau, Vorschläge und
+  Designs. Am Handy eine Spalte, Vorschau und Vorschläge zuerst.
+- **Entwurf.** Alles im Editor ändert nur `_abE`. Oben „Verwerfen" und
+  „Übernehmen" (gesperrt, solange nichts geändert ist); die Kopfzeile
+  sagt „Entwurf – noch nicht übernommen". Schliessen mit Änderungen
+  fragt nach. Nach „Übernehmen" geht es gleich zur neuen Startseite,
+  wenn die sich geändert hat. „Zurück zum letzten Stand" bleibt.
+- **Ziehen und Ablegen** mit Maus (ab 6 px Bewegung) und Finger (am
+  Griff ⋮⋮, sofort; sonst scrollt der Finger). Ziele: die Leiste, jede
+  eigene Gruppe, die Startseite, zurück in die Bausteine (= heraus).
+  Eine Marke zeigt die Einfügestelle.
+- **Antippen statt Ziehen**: jeder Baustein öffnet ein Menü – „In die
+  Leiste", „Nach vorn/hinten", „Aus der Leiste nehmen", „In ‚Mein Tag'"
+  usw. Derselbe Weg in den Daten (`aufbauVerschieben`) wie beim Ziehen.
+- **Eigene Gruppen** (höchstens 6, je bis 8 Seiten, eine Ebene): Name,
+  Zeichen (antippen wechselt), Seiten hineinziehen. In der App ein
+  Knopf; der Kopf heisst wie die Gruppe, die Reiter sind genau ihre
+  Seiten, der Knopf trägt den Ungelesen-Punkt seiner Seiten.
+- **Leiste bis 8**: am Rechner alle links; am Handy ab sechs Einträgen
+  vier und „Mehr" (eine kleine Liste über der Leiste; steht man auf
+  einer Seite dahinter, trägt „Mehr" die Marke).
+- **Startseite „Heute"**: die Blöcke (Seit du weg warst, Überfällig,
+  Heute, Zum Übernehmen, Putzplan, Neu für dich, Zu erledigen, Offen,
+  Heute im Studio) ordnen und einzeln ausblenden. `renderHeute` sammelt
+  die Blöcke jetzt erst und zeichnet sie dann in dieser Reihenfolge –
+  `heutePasst()` danach unverändert.
+- **Meine Designs** (auf dem Gerät, höchstens 12): Entwurf unter einem
+  Namen speichern; „Nutzen" wechselt sofort, „Bearbeiten" lädt in den
+  Entwurf, „Löschen" fragt per zweitem Tipp nach.
+- **Vom Team**: „Teilen" legt das Design in die neue Sammlung `designs`
+  (Name, Name der Person, Aufbau, Aussehen). Alle Aktiven der Firma
+  sehen die Liste, „Ausprobieren" lädt in den Entwurf, „Nutzen" sofort.
+  Entfernen darf, wer geteilt hat, und der Chef.
+
+**Warum so**
+
+- **Entwurf statt sofort**: so gewünscht – und eine App, die sich bei
+  jedem Tipp im Editor umbaut, lässt einen beim Ausprobieren den Faden
+  verlieren. Die Vorschau zeigt Leiste, Startseite und Farben aus dem
+  Entwurf.
+- **Ziehen UND Antippen**: Ziehen ist am Rechner schnell; am Handy ist
+  ein Ziehweg über eine lange Liste fummelig, und für Vorlesehilfen geht
+  er gar nicht. Beide Wege enden in derselben Funktion.
+- **Fremde Designs sind Eingaben von aussen.** `aufbauBereinigen` lässt
+  nur bekannte Seiten, Räume und gültige Gruppen-Kennungen durch, kürzt
+  Namen, verwirft unbekannte Farben und Felder (test-baukasten 7 lädt
+  ein absichtlich kaputtes). Die Regel hält zusätzlich Form und Grösse.
+- **`designs` steht in BEIDEN Regelpfaden** (flach und
+  `firmen/<kennung>/`), mit `designOk()`; der Kreuztest kennt die
+  Sammlung, die drei Attrappen bedienen sie in `get()` UND
+  `onSnapshot`. Die nächtliche Sicherung nimmt sie ohne Zutun mit
+  (`listCollections`); in die Auskunft nach Art. 15 gehört sie nicht
+  (ein Name und ein Oberflächen-Aufbau).
+
+**Gefunden**
+
+- Am Handy lagen Formis Kugel und Blase über der „Mehr"-Liste – sie
+  treten jetzt beiseite, solange sie offen ist (im Test).
+- test-neu-design schloss die Tafel über „×" – das heisst jetzt
+  „Verwerfen" (nachgezogen, nicht gelockert).
+
+**Tests**
+
+- Neu: `test-baukasten` (30 Zusicherungen): Ziehen mit der Maus, App
+  unverändert bis „Übernehmen", „Verwerfen"; eigene Gruppe benennen,
+  füllen, in die Leiste, Kopf/Reiter/aktiv; Antippen-Menü (≥ 44 × 44);
+  Ziehen mit dem Finger (echte Touch-Ereignisse); Startseite ordnen und
+  ausblenden; mehr als fünf → „Mehr"; Designs speichern/nutzen/teilen
+  (nur erlaubte Felder), vom Team ausprobieren/nutzen; kaputtes Design.
+- Neu: `tests/rules/designs.test.js` (34, beide Welten); Kreuztest um
+  `designs` ergänzt (457 grün). Der ganze Regelsatz lief hier im
+  Emulator: alle Dateien grün.
+- `test-aufbau` auf den Entwurf umgestellt (Zitat im Test): Vorschläge
+  wirken erst nach „Übernehmen"; Abschnitt 4 (Plus/Minus) ist in
+  test-baukasten aufgegangen. 51 grün.
+- **Nicht getestet:** am echten iPhone (Ziehen mit dem Finger ist mit
+  CDP-Touch-Ereignissen in Chromium nachgestellt).

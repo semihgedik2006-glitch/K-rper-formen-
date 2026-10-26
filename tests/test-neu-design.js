@@ -303,7 +303,7 @@ async function seite(b, stub, such, breite) {
           ziel: 'FENSTER-AUF',
           ladeZu: document.getElementById('allesLade').hidden,
         };
-        if (auf) document.getElementById('abVerwerfen').click();  /* Runde 291: der Editor hat „Verwerfen" statt ×. */
+        if (auf) document.getElementById('abVerwerfen').click();  /* Runde 292: der Editor hat „Verwerfen" statt ×. */
         return raus;
       }
       /* „Als App installieren" (Runde 288) ebenso. */

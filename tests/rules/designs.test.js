@@ -1,4 +1,4 @@
-/* ── GETEILTE DESIGNS (Runde 291) ─────────────────────────────────────
+/* ── GETEILTE DESIGNS (Runde 292) ─────────────────────────────────────
    Aus dem Betrieb, 26.10.2026: „seine designs speichern können das man
    wechseln kann nach bedarf und das andere das auch sehen und nutzen
    können".
@@ -74,7 +74,7 @@ const D = (uid, extra) => Object.assign({ uid, von: 'Mara', name: 'Frühschicht'
     await darf('der Chef entfernt jedes', als(chef).doc(p + 'designs/d8').delete());
   }
   await env.cleanup();
-  console.log('\nGeteilte Designs (Runde 291)\n' + protokoll.join('\n'));
+  console.log('\nGeteilte Designs (Runde 292)\n' + protokoll.join('\n'));
   console.log('\n' + bestanden + ' bestanden, ' + gefallen + ' gefallen');
   process.exit(gefallen ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(1); });

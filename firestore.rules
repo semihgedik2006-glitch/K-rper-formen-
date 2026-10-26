@@ -469,7 +469,7 @@ service cloud.firestore {
     }
 
     // ── Benutzerprofile ──
-    // Ein geteiltes Design (Runde 291): genau diese Felder, alles klein.
+    // Ein geteiltes Design (Runde 292): genau diese Felder, alles klein.
     // Was darin steht, prüft die App beim Laden noch einmal
     // (aufbauBereinigen) – die Regel hält nur Grösse und Form.
     function designOk() {
@@ -1827,7 +1827,7 @@ service cloud.firestore {
         || (istAktiv() && resource.data.uid == request.auth.uid));
     }
 
-    // ── Geteilte Designs (Runde 291) ──
+    // ── Geteilte Designs (Runde 292) ──
     // Aus dem Betrieb, 26.10.2026: „seine designs speichern können das man
     // wechseln kann nach bedarf und das andere das auch sehen und nutzen
     // können". Lesen darf jeder Aktive der Firma (es ist nur ein Aufbau
@@ -2703,7 +2703,7 @@ service cloud.firestore {
             || (istAktiv() && resource.data.uid == request.auth.uid));
         }
 
-        // Geteilte Designs (Runde 291) – wie oben, in der eigenen Firma.
+        // Geteilte Designs (Runde 292) – wie oben, in der eigenen Firma.
         match /designs/{dId} {
           allow read: if inFirma(f) && istAktiv();
           allow create: if schreibtIn(f) && istAktiv()
