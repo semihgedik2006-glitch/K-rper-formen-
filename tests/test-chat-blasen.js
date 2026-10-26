@@ -74,6 +74,11 @@ async function oeffne(b, w, h, theme, extra) {
     if (k) k.click();
   }, w <= 820);
   await p.waitForTimeout(1200);
+  /* Runde 286: am Handy beginnt der Chat mit der Liste („erst die Liste,
+     dann die Unterhaltung", freigegeben 26.10.2026). Für diesen Durchlauf
+     gleich die erste Unterhaltung öffnen. */
+  await p.evaluate(() => { const z = document.querySelector('#view-chat.liste #kanalSpalte [data-kanalwahl]'); if (z) z.click(); });
+  await p.waitForTimeout(600);
   p._ctx = ctx;
   return p;
 }

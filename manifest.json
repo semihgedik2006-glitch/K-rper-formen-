@@ -10,7 +10,58 @@
   "theme_color": "#0B0A1C",
   "lang": "de",
   "icons": [
-    { "src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Stempeln",
+      "short_name": "Stempeln",
+      "description": "Meine Zeiten: kommen und gehen",
+      "url": "./#zeit",
+      "icons": [
+        {
+          "src": "icon.png",
+          "sizes": "512x512",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Nachrichten",
+      "short_name": "Chats",
+      "description": "Chats und Direktnachrichten",
+      "url": "./#chat",
+      "icons": [
+        {
+          "src": "icon.png",
+          "sizes": "512x512",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Heute",
+      "short_name": "Heute",
+      "description": "Mein Tag: Dienst, Aufgaben, Putzplan",
+      "url": "./#home",
+      "icons": [
+        {
+          "src": "icon.png",
+          "sizes": "512x512",
+          "type": "image/png"
+        }
+      ]
+    }
   ]
 }

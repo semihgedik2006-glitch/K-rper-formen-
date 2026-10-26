@@ -22,6 +22,11 @@ const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linu
   await page.waitForTimeout(450);
   const sub = await page.$('[data-subview="chat"]');
   if (sub) { await sub.click(); await page.waitForTimeout(900); }
+  /* Runde 286: am Handy beginnt der Chat mit der Liste („erst die Liste,
+     dann die Unterhaltung", freigegeben 26.10.2026) — erst die
+     Unterhaltung öffnen. */
+  await page.evaluate(() => { const z = document.querySelector('#view-chat.liste #kanalSpalte [data-kanalwahl]'); if (z) z.click(); });
+  await page.waitForTimeout(600);
 
   console.log('UMFRAGE IM CHAT:', JSON.stringify(await page.evaluate(() => ({
     frage: (document.querySelector('.poll-q') || {}).textContent,

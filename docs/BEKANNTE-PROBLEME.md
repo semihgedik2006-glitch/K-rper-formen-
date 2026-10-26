@@ -659,11 +659,10 @@ schritte fehlen“ auf „Heute“ statt als Karte.
 | **Schweregrad** | **NIEDRIG bis MITTEL** |
 | **Seit** | 23.10.2026, gefunden beim Umstellen auf das neue Design für alle |
 
-- **Chatverlauf am Handy nur 52 % der Ansicht** (`test-chat-bereich3`,
-  Grenze 55 %). Der Kopf in „Nachrichten“ ist schon schmal (49 → 52 %).
-  Bereichskopf und Reiter sind je 44 px hoch, kleiner geht es nicht. Was
-  noch helfen könnte: die Reihe „Studios | Gruppen“ und die Kanalreihe
-  zusammenlegen.
+- ~~**Chatverlauf am Handy nur 52 % der Ansicht**~~ — **behoben in
+  Runde 286** (26.10.2026): am Handy erst die Chatliste, dann die
+  Unterhaltung mit eigenem Kopf „‹ Chats“. Der Verlauf hat jetzt 77 %
+  der Ansicht (`test-chat-bereich3`, Grenze 55 % unverändert).
 - ~~**Wisch am Verschiebe-Griff hakt eine Aufgabe ab**~~ — **geklärt in
   Runde 285: ein Messfehler des Tests.** Der Test mass die Lage des
   Griffs direkt nach `scrollIntoView`. Im neuen Design zieht sich dabei
@@ -679,6 +678,7 @@ schritte fehlen“ auf „Heute“ statt als Karte.
 |---|---|
 | **Schweregrad** | **MITTEL**: nichts ist weg, aber am Handy steht vom Tag kaum noch etwas direkt da |
 | **Seit** | älter als Commit 611b725 („Meine Schicht unter Ausserdem", auf dem Stand davor schon so); gefunden in Runde 285 |
+| **Status** | **BEHOBEN am 26.10.2026** (Runde 287): „Ausserdem" ist am Handy eine Zeile, die seitlich schiebt. Gemessen 390 × 844 Chef: drei Blöcke statt zwei; 430 × 932: vier; 320 × 568: ein Block und die Zeile, nichts mehr unter dem Rand. Jeder Knopf 44 px hoch, die sichtbaren treffen sich selbst (normal und kompakt). |
 
 Die Startseite kürzt erst die Blöcke auf eine Zeile und streicht dann
 von unten ganze Kategorien. Jede gestrichene wird ein Knopf unter
@@ -720,6 +720,7 @@ deshalb hier nur festgehalten.
 |---|---|
 | **Schweregrad** | **NIEDRIG bis MITTEL** |
 | **Seit** | gefunden in Runde 285 (`test-rahmen`) |
+| **Status** | **BEHOBEN am 26.10.2026** (Runde 287): „Reicht noch" und die Einkaufsliste stehen am Handy unter der Tabelle. Erste Materialzeile bei 430 × 844 jetzt bei 548 px (vorher 697), bei 390 × 844 bei 574. Die zweite Reiterzeile bleibt — das Umbrechen der Reiter ist gewollt. |
 
 Bei 430 × 844 beginnt die erste Materialzeile bei 697 px (Grenze 580,
 früher 607). Darüber: Reiter in zwei Zeilen („Probetraining" bricht um),

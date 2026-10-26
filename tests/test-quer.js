@@ -25,6 +25,11 @@
      .chip-row     Filter in einer Zeile; umbrechend nahm die Leiste
                    150px ueber einer Liste mit drei Eintraegen.
      .sort-row     dasselbe fuer die Sortierung.
+     .heute-rest   „Ausserdem" auf der Startseite (Runde 287, P-22):
+                   umbrechend wuchs die Zeile bei sieben Knoepfen auf
+                   vier Zeilen und verdraengte die Bloecke, fuer die sie
+                   Platz machen sollte. Am Handy eine schiebbare Zeile.
+     .schnell-antworten  drei Saetze ueber dem Schreibfeld (Runde 287).
 
    NICHT erlaubt und deshalb nicht in der Liste: .mobnav. Die untere
    Leiste ist die Hauptnavigation — was man dort wegwischen muss, gibt
@@ -36,7 +41,7 @@ const SP = process.env.SP || __dirname;
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 
-const ERLAUBT = ['subnav', 'chat-channels', 'chip-row', 'sort-row', 'pm-tabs'];
+const ERLAUBT = ['subnav', 'chat-channels', 'chip-row', 'sort-row', 'pm-tabs', 'heute-rest', 'schnell-antworten'];
 
 const ANSICHTEN = {
   'g-start': ['home'], 'g-ich': ['ich'], 'g-komm': ['chat', 'dm', 'ann'],

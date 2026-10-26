@@ -5,9 +5,13 @@
    Genommen wurde, was in docs/DESIGN-IDEEN.md und
    docs/DESIGN-RECHERCHE.md offen stand, klein ist und sofort wirkt:
 
-   1. CHAT (Ideen Nr. 10): Der Tag-Trenner klebt oben, solange man in
-      seinem Tag liest. Alle Trenner gleich breit und deckend — sonst
-      ragt der vorige unter dem nächsten heraus.
+   1. CHAT (Ideen Nr. 10): Der Tag-Trenner klebte oben, solange man in
+      seinem Tag las. Seit Runde 286 nicht mehr: in der Prüfung vom
+      26.10.2026 lag „Gestern" dadurch über Namen und Nachricht. Der Plan
+      „Datum im Chat wie bei iMessage: als kleine graue Zeile zwischen den
+      Nachrichten, nicht schwebend" wurde freigegeben („ja dann lass uns
+      das so machen wie da steht", 26.10.2026). Geprüft wird jetzt: der
+      Trenner rollt mit und verdeckt keine Nachricht.
    2. SCHULUNG (Recherche E1): „1 von 8 geschafft — 7 fehlen noch" mit
       Balken; folgt der gewählten Kategorie. Gegenprobe: die Zahl
       stimmt mit den Modulen überein, die unten als erledigt markiert
@@ -55,32 +59,31 @@ const nav = (p, g) => p.evaluate((g) => document.querySelector('.mobnav [data-gr
 (async () => {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
 
-  console.log('\n── 1. Chat: der Tag-Trenner klebt ──');
+  console.log('\n── 1. Chat: der Tag-Trenner ist eine Zeile, kein Schild ──');
   {
     const p = await oeffne(b, 390, 844);
-    await nav(p, 'g-komm'); await p.waitForTimeout(1500);
+    await nav(p, 'g-komm'); await p.waitForTimeout(1200);
+    /* Am Handy beginnt der Chat mit der Liste (Runde 286). */
+    await p.evaluate(() => { const z = document.querySelector('#kanalSpalte [data-kanalwahl]'); if (z) z.click(); });
+    await p.waitForTimeout(900);
     const r = await p.evaluate(async () => {
       const s = document.getElementById('chatScroll');
       const seps = [...s.querySelectorAll('.day-sep')];
-      const breiten = seps.map(x => Math.round(x.getBoundingClientRect().width));
-      /* In die Mitte des ersten Tages rollen, der nicht der letzte ist. */
       const erster = seps[0], zweiter = seps[1];
       if (!erster || !zweiter) return { seps: seps.length };
       s.scrollTop = erster.offsetTop + (zweiter.offsetTop - erster.offsetTop) / 2;
       await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
       const kS = s.getBoundingClientRect(), kE = erster.getBoundingClientRect();
-      const stil = getComputedStyle(erster);
-      /* Wo er kleben SOLL: Innenabstand des Chats plus sein eigenes `top`. */
-      const soll = parseFloat(getComputedStyle(s).paddingTop) + parseFloat(stil.top);
-      return { seps: seps.length, breiten, oben: Math.round(kE.top - kS.top), soll: Math.round(soll), klebt: stil.position,
-               deckend: stil.backgroundColor, text: erster.textContent };
+      /* Liegt irgendein Trenner über einer Nachricht? */
+      const msgs = [...s.querySelectorAll('.msg')].map(m => m.getBoundingClientRect());
+      const deckt = seps.some(t => { const a = t.getBoundingClientRect();
+        return msgs.some(m => a.left < m.right && a.right > m.left && a.top < m.bottom - 1 && a.bottom > m.top + 1); });
+      return { seps: seps.length, klebt: getComputedStyle(erster).position, mitgerollt: kE.bottom < kS.top, deckt, text: erster.textContent };
     });
     pruefe('der Chat hat mehrere Tage (sonst prüft die nächste Zeile nichts)', r.seps >= 2, String(r.seps));
-    pruefe('beim Lesen mitten im Tag steht sein Trenner oben am Rand („' + r.text + '")',
-      r.klebt === 'sticky' && Math.abs(r.oben - r.soll) <= 2, JSON.stringify(r));
-    pruefe('alle Trenner gleich breit — der nächste deckt den vorigen ganz', new Set(r.breiten || []).size === 1,
-      (r.breiten || []).join(','));
-    pruefe('und deckend, nicht durchscheinend', !/rgba\(.*, 0(\.\d+)?\)$/.test(r.deckend || '') && !/transparent/.test(r.deckend || ''), r.deckend);
+    pruefe('beim Lesen mitten im Tag rollt sein Trenner mit nach oben weg („' + r.text + '")',
+      r.klebt !== 'sticky' && r.mitgerollt, JSON.stringify(r));
+    pruefe('kein Trenner liegt über einer Nachricht', r.deckt === false, JSON.stringify(r));
     pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await p.close();
   }
