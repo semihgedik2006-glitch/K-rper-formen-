@@ -24056,3 +24056,36 @@ Was der Hoster live schickt, lässt sich nach der Auslieferung mit
 **Teil b (Kommentare beim Ausliefern entfernen, ≈ 40 % kleiner) ist
 bewusst nicht hier:** er braucht einen Bauschritt mit neuer
 CSP-Prüfsumme und steht in der Liste unter „Später".
+
+### Nachtrag Runde 284 — live gemessen: no-cache allein gab kein 304
+
+Nach der Auslieferung von PR #337 mit `curl` gegen
+`https://formenchat.web.app/` gemessen: die Kopfzeile kam richtig
+(`cache-control: no-cache, must-revalidate`, ein `etag`), aber die
+Anfrage mit `If-None-Match` bekam **200 mit der ganzen Seite** (3,19 MB
+roh, 713 KB br). Gegenproben am selben Hoster: `schulungen-basis.js`
+(`no-cache` seit 24.9.) ebenfalls nie 304 — die Behauptung „304 bei
+den Inhaltsdateien schon bewiesen" aus Runde 283 war also nur aus der
+Theorie, nicht live. Eine Schrift (`public, max-age=604800`) dagegen:
+erster Abruf `x-cache: MISS`, zweiter `HIT`, und mit `If-None-Match`
+sofort **304**.
+
+**Ursache:** Das Verteilnetz des Hosters (Fastly) legt bei `no-cache`
+nichts ab — jede Anfrage ist dort ein MISS und geht an den Ursprung,
+und der Ursprung beantwortet bedingte Anfragen nicht mit 304. Ein 304
+gibt es nur aus der Kopie im Verteilnetz.
+
+**Geändert:** `/`, `/index.html`, `**/*.html` auf
+`public, max-age=0, must-revalidate, s-maxage=600`. Für den Browser ist
+`max-age=0, must-revalidate` dasselbe wie `no-cache` (immer
+nachfragen); `s-maxage` gilt nur für Verteilnetze und erlaubt ihnen,
+die Datei zehn Minuten zu halten. Der Hoster leert sein Verteilnetz bei
+jeder Auslieferung; falls das einmal nicht greift, ist ein alter Stand
+nach höchstens zehn Minuten weg — deshalb kurz und nicht eine Woche.
+`sw.js` bleibt bei `cache:'no-cache'` im Navigations-Abruf.
+
+**Prüfung live nach dieser Auslieferung** (steht unten, sobald gemessen):
+`curl -sI https://formenchat.web.app/` zweimal → zweites Mal
+`x-cache: HIT`; dann mit `If-None-Match: <etag>` → 304. Und der ETag
+muss sich gegenüber dem Stand vor der Auslieferung geändert haben —
+das zeigt, dass das Verteilnetz geleert wurde.

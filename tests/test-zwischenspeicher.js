@@ -115,6 +115,7 @@ const server = http.createServer((req, res) => {
   const kopf = kopfzeilen(pfad);
   if (lage.alteKopf && /-basis\.js$|ems-wissen\.js$/.test(pfad)) kopf['Cache-Control'] = 'public, max-age=604800';
   if (lage.alteStart && (pfad === '/' || pfad === '/index.html')) kopf['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+  /* Der Browser kennt kein s-maxage, es gilt nur fuer Verteilnetze. */
   const typ = { '.js': 'text/javascript', '.html': 'text/html', '.svg': 'image/svg+xml',
     '.json': 'application/json', '.woff2': 'font/woff2', '.png': 'image/png' }[path.extname(datei)];
   /* Ein ETag wie beim Hoster, damit no-cache ein 304 bekommen kann. */
@@ -207,10 +208,14 @@ async function zweitesOeffnen(b, port, name, einstellen) {
     /max-age=604800/.test(kopfzeilen('/fonts/x.woff2')['Cache-Control'] || ''));
   /* 26.10.2026: „jeder Start lädt rund 1 MB neu". no-store verbot dem
      Browser, die Seite überhaupt aufzubewahren — ein 304 war unmöglich.
-     Jetzt no-cache: nachfragen ja, neu laden nur bei Änderung. */
+     no-cache half live auch nicht: das Verteilnetz des Hosters legt bei
+     no-cache nichts ab, und ohne Kopie dort gibt es kein 304. Jetzt
+     max-age=0 (Browser fragt immer nach) + s-maxage (Verteilnetz darf
+     kurz behalten). */
   for (const d of ['/', '/index.html']) {
     const k = kopfzeilen(d)['Cache-Control'] || '';
-    pruefe(d + ' darf ein 304 bekommen (no-cache ohne no-store)', /no-cache/.test(k) && !/no-store/.test(k) && !/max-age=[1-9]/.test(k), k);
+    pruefe(d + ' darf ein 304 bekommen (kein no-store/no-cache, max-age=0, s-maxage)',
+      !/no-store|no-cache/.test(k) && /max-age=0\b/.test(k) && /must-revalidate/.test(k) && /s-maxage=[1-9]\d*/.test(k), k);
   }
   pruefe('konfig.js bleibt bei no-store (entscheidet über die Datenbank)', /no-store/.test(kopfzeilen('/konfig.js')['Cache-Control'] || ''));
 
