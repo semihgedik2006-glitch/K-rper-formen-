@@ -24691,3 +24691,39 @@ es soll so simpel und leicht wie möglich gestaltet sein dafür".
   war schwächer als `body.neu .side-schnell`), und der Kopf hiess
   „Studio" – beides behoben und jetzt im Test.
 - **Nicht getestet:** am echten iPhone.
+
+## Runde 290 — „Alles" scrollt am Rechner (26.10.2026)
+
+**Gemeldet**, mit Bildschirmfoto vom Rechner (Chef, Fenster etwa
+1000 × 630): „der alles bereich lässt sich auf dem pc nicht srollen und
+hängt bei diesem bild fest".
+
+**Ursache:** Die Regeln der Schublade (`body.neu .alles-lade`: fest,
+volle Höhe, eigener Scrollbereich `.al-inhalt`) standen im Handy-Block
+`@media(max-width:820px)`. Am Rechner war die Schublade deshalb ein
+gewöhnliches Stück in der Seite: 2.856 px hoch, ohne eigenen
+Scrollbereich, und die Seite darum scrollt nicht. Nachgemessen vorher
+bei 1000 × 628: `scrollTop` blieb nach 15 Mausrad-Schritten 0, die
+letzte Zeile lag bei 3.021 px.
+
+**Was geändert wurde**
+- Der Block der Schublade steht jetzt ausserhalb der Media-Abfrage und
+  gilt auf jeder Breite; am Rechner 420 px breit (am Handy wie bisher
+  höchstens 380 px).
+- Beim Nachsehen am Bild: am Rechner lag Formi (Kugel, Blase, Linse)
+  unten links genau über der letzten Zeile („Archiv"). Solange die
+  Schublade offen ist (`body.alles-auf`), ist er unsichtbar.
+
+**Warum so:** Eine Schublade über der Seite statt einer Liste in der
+Seite – so ist es am Handy seit Runde 184, und „Alles" ist von jeder
+Seite aus derselbe Griff. Eine zweite Bauform nur für den Rechner wäre
+ein zweiter Ort, an dem dieselbe Liste anders aussieht.
+
+**Tests**
+- Neu: `test-alles-scrollen` (56 Zusicherungen): Chef und Mitarbeiter
+  bei 320 / 390 / 820 / 1000 × 628 / 1280 / 1440 / 1920 px – Schublade
+  fest und nicht höher als das Fenster; mit dem Mausrad (am Handy
+  gescrollt) bis zur letzten Zeile, die im Bild steht und per Hit-Test
+  trifft; Formi liegt nicht darüber. Gegen den alten Stand: 20 rot.
+- **Nicht getestet:** am echten Rechner des Betriebs (Trackpad/Mausrad
+  in Chrome am Mac) – nachgestellt mit dem Mausrad in Chromium.

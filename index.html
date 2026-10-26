@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-N4uzCNZkmRBTHmNniBRA8s/peh3qoKSOA4NQaIVBmE8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-FiyLBUeZrvL2bwazx/ZEXn3fhjIq1O3RGs0LDuCIyjw='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -9155,41 +9155,54 @@ body.neu .view-head .vh-line{justify-content:flex-end}
   body.neu .mobnav::before{background:var(--ber-f);box-shadow:inset 0 0 0 1px var(--ber)}
   body.neu .mobnav button.active{color:var(--ber)}
 
-  /* ── Die Schublade „Alles" ──
-     Fährt vom linken Rand über die Seite, auf der man gerade steht.
-     Links, weil der Griff links sitzt (der Bereichskopf) und weil eine
-     Bewegung, die dort beginnt, wo man getippt hat, erklärt, was
-     passiert ist.
+}
+/* Runde 290: Die Schublade gilt auf JEDER Breite. Bis hierher stand sie
+   im Handy-Block (max-width:820px) – am Rechner lag die Liste deshalb
+   als 2.900 px hohes Stück mitten in der Seite und liess sich nicht
+   scrollen (gemeldet am 26.10.2026 mit Bildschirmfoto: „der alles
+   bereich lässt sich auf dem pc nicht scrollen"). */
+/* ── Die Schublade „Alles" ──
+   Fährt vom linken Rand über die Seite, auf der man gerade steht.
+   Links, weil der Griff links sitzt (der Bereichskopf) und weil eine
+   Bewegung, die dort beginnt, wo man getippt hat, erklärt, was
+   passiert ist.
 
-     Hier stand vorher die „Mehr"-Lade mit drei Gruppen darin. Sie ist
-     weg: eine eigene Bedienart für drei Ziele, die die Tiefe nicht
-     verringert, sondern nur verschoben hat. */
-  body.neu .alles-lade{position:fixed;z-index:60;
-    top:0;bottom:0;left:0;width:min(88vw,380px);
-    display:flex;flex-direction:column;
-    background:var(--bg-2);border-right:1px solid var(--line);
-    box-shadow:var(--e3);
-    padding-top:var(--sat);padding-bottom:var(--sab);
-    animation:ladeRein .28s var(--ease-ios) both}
-  /* MUSS hier stehen. `[hidden]` ist eine Eigenschaft mit dem Gewicht
-     (0,1,0) und verliert gegen `body.neu .alles-lade` (0,2,1) — die
-     Schublade stand dadurch dauerhaft offen, vom ersten Bild an. Im
-     Quelltext sah nichts falsch aus; gesehen hat es erst der
-     Bildschirmabzug. */
-  body.neu .alles-lade[hidden]{display:none}
-  @keyframes ladeRein{from{transform:translateX(-100%)}to{transform:none}}
-  @media (prefers-reduced-motion:reduce){
-    body.neu .alles-lade{animation:none}
-  }
-  /* Die Seite dahinter tritt zurück, sonst sieht man zwei gleich helle
-     Ebenen übereinander. Ein Tipp darauf schliesst — das erledigt der
-     Klick-Zuhörer auf alles ausserhalb von #allesLade. */
-  body.alles-auf.neu .shell::after{content:'';position:fixed;inset:0;z-index:59;
-    background:var(--scrim);animation:einblenden .28s var(--ease-ios) both}
-  @keyframes einblenden{from{opacity:0}to{opacity:1}}
-  @media (prefers-reduced-motion:reduce){
-    body.alles-auf.neu .shell::after{animation:none}
-  }
+   Hier stand vorher die „Mehr"-Lade mit drei Gruppen darin. Sie ist
+   weg: eine eigene Bedienart für drei Ziele, die die Tiefe nicht
+   verringert, sondern nur verschoben hat. */
+body.neu .alles-lade{position:fixed;z-index:60;
+  top:0;bottom:0;left:0;width:min(88vw,380px);
+  display:flex;flex-direction:column;
+  background:var(--bg-2);border-right:1px solid var(--line);
+  box-shadow:var(--e3);
+  padding-top:var(--sat);padding-bottom:var(--sab);
+  animation:ladeRein .28s var(--ease-ios) both}
+/* MUSS hier stehen. `[hidden]` ist eine Eigenschaft mit dem Gewicht
+   (0,1,0) und verliert gegen `body.neu .alles-lade` (0,2,1) — die
+   Schublade stand dadurch dauerhaft offen, vom ersten Bild an. Im
+   Quelltext sah nichts falsch aus; gesehen hat es erst der
+   Bildschirmabzug. */
+body.neu .alles-lade[hidden]{display:none}
+/* Am Rechner etwas breiter: Platz ist da, und die Erklärzeilen brechen sonst. */
+@media(min-width:821px){ body.neu .alles-lade{width:420px} }
+/* Formi (Kugel, Blase, Linse) liegt am Rechner unten links – genau über
+   den letzten Zeilen der Schublade. Solange sie offen ist, tritt er
+   beiseite. */
+body.alles-auf .formi-kugel,
+body.alles-auf .formi-blase,
+body.alles-auf #formiLinseKreis{visibility:hidden}
+@keyframes ladeRein{from{transform:translateX(-100%)}to{transform:none}}
+@media (prefers-reduced-motion:reduce){
+  body.neu .alles-lade{animation:none}
+}
+/* Die Seite dahinter tritt zurück, sonst sieht man zwei gleich helle
+   Ebenen übereinander. Ein Tipp darauf schliesst — das erledigt der
+   Klick-Zuhörer auf alles ausserhalb von #allesLade. */
+body.alles-auf.neu .shell::after{content:'';position:fixed;inset:0;z-index:59;
+  background:var(--scrim);animation:einblenden .28s var(--ease-ios) both}
+@keyframes einblenden{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){
+  body.alles-auf.neu .shell::after{animation:none}
 }
 
 /* ══ 5b. „ALLES" — DAS INHALTSVERZEICHNIS ═══════════════════════════
@@ -23473,6 +23486,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-26-alles-scrollen', datum:'26.10.2026', art:'fix', titel:'„Alles" lässt sich am Rechner scrollen', wo:'home', punkte:[
+    'Am Rechner öffnet „Alles" (oben links) jetzt als Schublade, die sich bis zur letzten Zeile scrollen lässt.',
+    'Formi tritt beiseite, solange die Schublade offen ist, und verdeckt die unteren Zeilen nicht mehr.'
+  ]},
   { id:'2026-10-26-app-gestalten', datum:'26.10.2026', art:'neu', titel:'App gestalten: Leiste, Start und Aussehen selbst wählen', wo:'home', punkte:[
     'Alles → Meine Sachen → App gestalten: acht Vorschläge, z. B. „OG-Modus" (ganz einfach) oder „Wie am Anfang".',
     'Eigene Leiste mit bis zu 5 Knöpfen, Startseite, Farben, Hintergrund, Schrift – nur auf diesem Gerät.',
