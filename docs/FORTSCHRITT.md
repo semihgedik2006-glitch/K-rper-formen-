@@ -24495,3 +24495,104 @@ lokal grün; `test-abo-leiter` und `test-stripe-felder` brauchen vorher
 **Warum die Reihenfolge „entscheiden, bauen, prüfen lassen, verkaufen“:**
 der Anwalt ist der längste Weg und braucht nur die Entwürfe, nicht den
 fertigen Code — deshalb wird er in Woche 1 angefragt.
+
+## Runde 288 — App gestalten: eigene Leiste, Start, minimal, Aussehen; Formi schlägt vor (26.10.2026)
+
+**Aus dem Betrieb, 26.10.2026:**
+- „thomas fand die app ganz am anfang viel viel übersichtlicher und
+  praktischer, können wir irgendwie dafür sorgen das es ein interface
+  gibt was man sich selber einstellen kann"
+- Auf die Möglichkeiten (mit Entwürfen): „formi soll mehrere
+  möglichkeiten vorschlagen und man soll über einen editor den man bei
+  formi anfragt alles ändern, verschieben und anpassen können und formi
+  schlägt das direkt vor wenn man irgendwas mit design und der app
+  erwähnt"
+- „je mehr design optionen es gibt desto besser und je simpler es gehen
+  kann desto besser auch, also man soll es komplett minimalisieren
+  können"
+- „es soll jeder nur für sein eigenes gerät anpassen können und
+  leitungen können es für mitarbeiter einstellen wenn sie es wollen aber
+  nicht sofort automatisch"
+
+Zum Vergleich wurde der Stand vom 5.8.2026 (ff6ac35) mit der heutigen
+Attrappe geladen: damals waren die Funktionen selbst die Knöpfe unten
+(Chat · Aufgaben · Infos · Material · Putzplan), Start im Chat, keine
+Startseite und kein „Alles" dazwischen. Das ist der Vorschlag „Wie am
+Anfang".
+
+**Was gebaut wurde (Grundgerüst)**
+
+- **„Alles → Meine Sachen → App gestalten"**: eine Tafel, keine
+  Abdunklung. Am Handy endet sie über der unteren Leiste, am Rechner
+  liegt sie rechts (480 px). So ist die echte App die Vorschau.
+- **Sieben Vorschläge**: Wie am Anfang, Schlicht, Ganz minimal, Putzen
+  zuerst, Hell und ruhig, Lebendig, Wie ausgeliefert. Jeder zeigt seine
+  Leiste als kleine Zeichenreihe. Ein Tipp probiert aus; „Zurück zu
+  vorher" nimmt den letzten Vorschlag zurück.
+- **Eigene Leiste**: bis zu 5 Knöpfe, aus Räumen (Heute, Studio, …) UND
+  einzelnen Seiten (Chat, Aufgaben, Putzplan, Infos, Material, Geräte,
+  Stempeln, Direkt, Dokumente, Schulung, Formi, Probetraining). Plus,
+  Minus, Pfeile – keine Ziehgeste: Pfeile treffen sicher 44 px und
+  funktionieren auch mit Vorlesehilfe. Links am Rechner steht dieselbe
+  Reihe.
+- **Beim Öffnen**: Heute oder eine Seite.
+- **Weniger**: „Ganz minimal" (ohne Formi-Kugel samt Sprechblase, ohne
+  Schnellzugriffe), dazu beide einzeln.
+- **Aussehen**: Farben (Formi/Dunkel/Hell/Gerät), Akzentfarbe (je
+  Bereich + 8), Hintergrund (6), Chat-Hintergrund (9), Schrift (4),
+  Abstände, untere Leiste (Glas/Deckend) – dieselben Einstellungen wie
+  unter Profil → Aussehen, hier an einer Stelle.
+- **Formi schlägt vor**: Ein Satz über Design oder Aufbau der App
+  („zu unübersichtlich", „wie am Anfang", „Leiste", „Dunkelmodus", …)
+  bringt sofort drei Vorschläge und „Im Editor anpassen ›". Erkannt
+  wird auf dem Gerät, ohne KI. „Doch normal fragen" schickt den Satz
+  wie bisher an die KI.
+
+**Warum so**
+
+- **Nur auf dem Gerät (PREFS), nicht in der Datenbank** – so gewünscht.
+  Keine neue Sammlung, keine Regel. Ohne Eintrag bleibt die App genau
+  wie bisher (test-aufbau, Abschnitt 1).
+- **Einzelne Seiten werden zu Gruppen mit einer Ansicht** (`v-chat`
+  usw.). NAVGROUPS bleibt unverändert, also auch Reiter, Farbe je
+  Bereich und Richtung der Übergänge. Nur `navAktivSetzen` markiert den
+  `v-`-Knopf, wenn es ihn gibt, und `updateNavMarkers` gibt Chat und
+  Infos ihren Ungelesen-Punkt.
+- **Erkennen ohne KI**: sofort, ohne Netz, ohne Kosten. Bewusst nicht
+  erkannt: „verschieben" allein (Fristen, Schichten) und „Farbe" allein.
+  Wer doch eine echte Frage hatte, hat „Doch normal fragen".
+- **Pfeile statt Ziehen**: Ziehen in einer Liste, die selbst scrollt,
+  ist am Handy fehleranfällig; die Aufgaben-Reihenfolge zeigt das (P-21).
+
+**Gefunden**
+
+- „Beim Öffnen" griff zuerst nicht: `verlaufStarten()` stellt die
+  zuletzt offene Seite (und einen Link mit `#…`) wieder her, aber eine
+  Zeile später ruft der Start `showView('home')` auf – seit dem 6.8.
+  (21d5bd1). Die Wiederherstellung der letzten Seite wirkt also seit
+  Monaten nicht. Hier nicht geändert (das träfe alle), nur der eigene
+  Start geht jetzt an dieser Stelle: `showView(aufbauStart() || 'home')`.
+
+**Noch nicht gebaut (nächste Schritte)**
+
+- Die Leitung stellt einen Aufbau für Mitarbeiter bereit – angeboten,
+  nicht automatisch („nicht sofort automatisch"). Braucht eine Sammlung
+  (in beiden Regelpfaden) und einen Hinweis „Deine Leitung schlägt vor …
+  Übernehmen?".
+- Formi stellt aus einem freien Satz einen eigenen Vorschlag zusammen
+  („wir nutzen fast nur Chat und Putzplan").
+
+**Tests**
+
+- Neu: `test-aufbau` (36 Zusicherungen, als Mitarbeiter): ausgelieferte
+  Leiste unverändert; Tafel bei 320 / 390 / 430 / 820 / 1280 / 1440 /
+  1920 px in normal und kompakt – jeder Knopf ≥ 44 × 44 per Hit-Test,
+  untere Leiste frei, kein Querlauf; „Wie am Anfang" (5 Knöpfe ≥ 44 bei
+  320 px, Putzplan aktiv markiert, links am Rechner dieselbe Reihe,
+  nach dem Neuladen Start im Chat); Plus/Minus/Pfeil/Start; „Ganz
+  minimal", „Zurück zu vorher", „Wie ausgeliefert"; Hell und Kompakt;
+  Formi: Vorschläge ohne KI, normale Frage unberührt, Editor-Knopf,
+  „Doch normal fragen" geht an die KI.
+- Bildschirmfotos bei 390 und 1440 px angesehen. Dabei gefunden: im
+  Minimal-Modus sprach Formis Blase ohne Kugel – jetzt mit weg.
+- **Nicht getestet:** am echten iPhone.
