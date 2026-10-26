@@ -24877,6 +24877,10 @@ gleichzeitig): rot waren
   treten jetzt beiseite, solange sie offen ist (im Test).
 - test-neu-design schloss die Tafel über „×" – das heisst jetzt
   „Verwerfen" (nachgezogen, nicht gelockert).
+- Im Gesamtlauf: im Modus „Meine Schicht" rutschte der Block „Meine
+  Schicht" durch die neue Sortierung ans Ende (test-schicht-detail,
+  4 rot). Blöcke, die nicht in der Liste stehen, bleiben jetzt vorn –
+  wie vorher. Danach 42 grün.
 
 **Tests**
 

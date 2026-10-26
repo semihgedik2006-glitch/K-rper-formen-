@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-xdWnNMtlJCc5lGNxJQimVhAho+SVu0ZcVOJ3ZmoNNt4='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-8hIT3IPHCz0zfWUmbLMAkUQeAVdwVLLDyBjz4KGdCXc='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -42248,7 +42248,9 @@ function renderHeuteJetzt(){
   var _rang=function(k){ for(var i=0;i<_reihe.length;i++){ if(_reihe[i].k===k) return i; } return -1; };
   _bloecke.map(function(b, i){ return { b:b, r:_rang(b[0]), i:i }; })
     .filter(function(x){ return x.r<0 || _reihe[x.r].an; })
-    .sort(function(a, b){ return (a.r<0 ? 99 : a.r)-(b.r<0 ? 99 : b.r) || a.i-b.i; })
+    /* Was nicht in der Liste steht (z. B. „Meine Schicht"), bleibt vorn –
+       so stand es vorher, und dort gehört es hin. */
+    .sort(function(a, b){ return (a.r<0 ? -1 : a.r)-(b.r<0 ? -1 : b.r) || a.i-b.i; })
     .forEach(function(x){ blockZeichnen.apply(null, x.b.slice(1)); });
   /* Eine Spalte allein bekommt kein leeres Gegenüber: dann bleibt es
      eine Liste über die ganze Breite. */
