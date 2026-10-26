@@ -174,8 +174,9 @@ async function seite(b, stub, such, breite) {
            sofort eine mail schickt". */
         /* Runde 275: „Findetest" ist ebenfalls ein Fenster (nachgezogen
            in Runde 285). */
+        /* Runde 288: „App gestalten" ist eine Tafel über der App, auch ein Fenster. */
         fenster: !!(z.getAttribute('data-al-hilfe') || z.getAttribute('data-al-neu') || z.getAttribute('data-al-vorfall') ||
-          z.getAttribute('data-al-findetest')),
+          z.getAttribute('data-al-findetest') || z.getAttribute('data-al-aufbau')),
       })),
       abgeschnitten: zeilen.some(z => {
         const t = z.querySelector('b');
@@ -290,6 +291,18 @@ async function seite(b, stub, such, breite) {
           ladeZu: document.getElementById('allesLade').hidden,
         };
         if (auf) document.getElementById('ftClose').click();
+        return raus;
+      }
+      /* „App gestalten" (Runde 288): eine Tafel, ebenfalls ohne eigene Adresse. */
+      if (z.getAttribute('data-al-aufbau')) {
+        const auf = !document.getElementById('aufbauTafel').hidden;
+        const raus = {
+          name, tipps, reiterOk,
+          view: auf ? 'FENSTER-AUF' : 'FENSTER-ZU',
+          ziel: 'FENSTER-AUF',
+          ladeZu: document.getElementById('allesLade').hidden,
+        };
+        if (auf) document.getElementById('abClose').click();
         return raus;
       }
       /* „Datenschutzvorfall melden" (seit 25.9., Runde 113) ebenso. */
