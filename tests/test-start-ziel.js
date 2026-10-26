@@ -18,9 +18,10 @@
      4. gemerkte Seite älter als zwei Stunden → „Heute"
      5. Chat ist bewusst nicht wiederherstellbar → „Heute"
      6. Link auf den Verwaltungsbereich ohne Recht → nicht dorthin
-
-   Nicht geprüft: die eigene Startseite aus kf_prefs.aufbau.start — die
-   gibt es auf diesem Stand noch nicht (Runde 288, eigener Zweig).
+     7. eigene Startseite (kf_prefs.aufbau.start='chat', Runde 289), kein
+        Link → Chat; mit Link #putzplan → Putzplan (der Link geht vor);
+        mit gemerkter Seite → trotzdem Chat (die eigene Einstellung ist
+        bewusst gewählt und geht der zuletzt offenen Seite vor)
    ══════════════════════════════════════════════════════════════════ */
 const { chromium } = require('playwright');
 const CHROME = process.env.CHROME ||
@@ -35,7 +36,7 @@ function pruefe(was, bedingung, hinweis) {
 
 /* Öffnet die App frisch (eigener Kontext = leerer Speicher) und meldet,
    welche Ansicht nach dem Aufbau aktiv ist. */
-async function startAnsicht(b, rolle, hash, gemerkt) {
+async function startAnsicht(b, rolle, hash, gemerkt, start) {
   const ctx = await b.newContext({ serviceWorkers: 'block', viewport: { width: 1280, height: 800 } });
   const p = await ctx.newPage();
   const fehler = [];
@@ -46,6 +47,11 @@ async function startAnsicht(b, rolle, hash, gemerkt) {
      „Heute" (tourSchrittZeigen) — das ist richtig und nicht Gegenstand
      dieses Durchlaufs. */
   await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
+  if (start) {
+    await p.addInitScript(st => {
+      try { localStorage.setItem('kf_prefs', JSON.stringify({ aufbau: { start: st } })); } catch (e) {}
+    }, start);
+  }
   if (gemerkt) {
     await p.addInitScript(g => {
       try { localStorage.setItem('kf_letzte_ansicht', g.id + '|' + (Date.now() - g.alter)); } catch (e) {}
@@ -90,6 +96,15 @@ async function startAnsicht(b, rolle, hash, gemerkt) {
 
   r = await startAnsicht(b, 'mitarbeiter', 'chef');
   pruefe('Link #chef ohne Verwaltungsrecht → nicht im Verwaltungsbereich', r.view !== 'chef', JSON.stringify(r));
+
+  r = await startAnsicht(b, 'mitarbeiter', null, null, 'chat');
+  pruefe('eigene Startseite „Chat", kein Link → Chat', r.view === 'chat', JSON.stringify(r));
+
+  r = await startAnsicht(b, 'mitarbeiter', 'putzplan', null, 'chat');
+  pruefe('eigene Startseite „Chat", Link #putzplan → Putzplan', r.view === 'putzplan', JSON.stringify(r));
+
+  r = await startAnsicht(b, 'mitarbeiter', null, { id: 'putzplan', alter: 10 * MIN }, 'chat');
+  pruefe('eigene Startseite „Chat", Putzplan vor 10 min offen → Chat', r.view === 'chat', JSON.stringify(r));
 
   r = await startAnsicht(b, 'chef', 'chef');
   pruefe('Link #chef als Chef → Verwaltungsbereich', r.view === 'chef', JSON.stringify(r));

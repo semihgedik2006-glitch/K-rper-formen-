@@ -24532,8 +24532,203 @@ passt“); danach die Regeln unverändert zurückgesetzt.
 war nicht falsch, sie war nur nie vollständig — 22 Sammlungen kamen dazu,
 ohne dass jemand die Liste anfasste. Eine Prüfung, die man vergessen
 kann, wird vergessen.
+## Runde 288 — App-Store-Recherche und „Als App installieren“ (26.10.2026)
 
-## Runde 289 — Der Start überschreibt sein eigenes Ziel nicht mehr (26.10.2026)
+Aus dem Betrieb: „kannst du schauen was nötig ist um die app auch im
+appstore zu kriegen und ob es da eventuell umwege gibt das wir das
+kostenlos hinkriegen“ — und auf die Empfehlung „Anleitung in die App“:
+„ja mach das“.
+
+**Recherche (Übersichtsseite, ausserhalb des Repos):** In den App Store
+geht es auf keinem Weg kostenlos. TestFlight, nicht gelistete Apps und
+der EU-Webvertrieb brauchen alle das Entwicklerkonto (99 $/Jahr); einen
+Erlass gibt es nur für Gemeinnützige, Bildung und Behörden. Kostenlos
+ist der Startbildschirm: in Chromium 0 Installierbarkeitsfehler,
+Offline-Start mit Antwort 200. Ab iOS 26 legt Safari jede Seite als
+Web-App ab. Die Probe einer iOS-Hülle (Capacitor 8, Bau auf einem
+GitHub-Mac, unsigniert für den Simulator) war grün in ~1,5 min und
+steht im geschlossenen Entwurf #343 — ein eigener Mac ist also nicht nötig.
+
+**Gebaut:** „Alles → Als App installieren“ öffnet ein Fenster mit den
+Schritten für iPhone, Android und Rechner; das eigene Gerät steht offen
+oben. Meldet der Browser `beforeinstallprompt`, gibt es „Jetzt
+installieren“. Läuft die App schon installiert, sagt das Fenster es.
+
+**Gefunden:** Am iPhone ohne installierte App stand unter Einstellungen
+→ Meldungen „Dieses Gerät unterstützt keine Meldungen“ und der Knopf
+fehlte. Das stimmte nicht: Safari kann Meldungen, nur eben erst in der
+installierten App. Dort steht jetzt der Weg, und der Knopf öffnet die
+Anleitung (über dem Profilfenster — die Gegenprobe ohne den eigenen
+z-index macht `test-installieren` rot).
+
+**Warum ein Fenster und kein Hinweisstreifen:** Die Startseite muss auf
+einen Bildschirm passen; ein weiterer Streifen hätte einen Block
+verdrängt. Der Weg über „Alles“ und über die Meldungen ist dort, wo man
+ihn sucht.
+
+**Nicht geprüft:** Safari am echten iPhone und `beforeinstallprompt` aus
+einem echten Browser (im Test künstlich ausgelöst).
+
+Tests: `tests/test-installieren.js` (neu, 10 Prüfungen, Hit-Test bei
+320–1920 px normal/kompakt), `test-neu-design` kennt das neue Fenster.
+
+## Runde 289 — App gestalten: eigene Leiste, Start, minimal, Aussehen; Formi schlägt vor (26.10.2026)
+
+**Aus dem Betrieb, 26.10.2026:**
+- „thomas fand die app ganz am anfang viel viel übersichtlicher und
+  praktischer, können wir irgendwie dafür sorgen das es ein interface
+  gibt was man sich selber einstellen kann"
+- Auf die Möglichkeiten (mit Entwürfen): „formi soll mehrere
+  möglichkeiten vorschlagen und man soll über einen editor den man bei
+  formi anfragt alles ändern, verschieben und anpassen können und formi
+  schlägt das direkt vor wenn man irgendwas mit design und der app
+  erwähnt"
+- „je mehr design optionen es gibt desto besser und je simpler es gehen
+  kann desto besser auch, also man soll es komplett minimalisieren
+  können"
+- „es soll jeder nur für sein eigenes gerät anpassen können und
+  leitungen können es für mitarbeiter einstellen wenn sie es wollen aber
+  nicht sofort automatisch"
+
+Zum Vergleich wurde der Stand vom 5.8.2026 (ff6ac35) mit der heutigen
+Attrappe geladen: damals waren die Funktionen selbst die Knöpfe unten
+(Chat · Aufgaben · Infos · Material · Putzplan), Start im Chat, keine
+Startseite und kein „Alles" dazwischen. Das ist der Vorschlag „Wie am
+Anfang".
+
+Danach, mitten in der Runde: „Es soll wirklich am Ende so eine Art
+‚OG' Modus geben für Leute die null Verständnis für irgendwas haben und
+es soll so simpel und leicht wie möglich gestaltet sein dafür".
+
+**Was gebaut wurde (Grundgerüst)**
+
+- **„Alles → Meine Sachen → App gestalten"**: eine Tafel, keine
+  Abdunklung. Am Handy endet sie über der unteren Leiste, am Rechner
+  liegt sie rechts (480 px). So ist die echte App die Vorschau.
+- **Acht Vorschläge**: OG-Modus, Wie am Anfang, Schlicht, Ganz minimal, Putzen
+  zuerst, Hell und ruhig, Lebendig, Wie ausgeliefert. Jeder zeigt seine
+  Leiste als kleine Zeichenreihe. Ein Tipp probiert aus; „Zurück zu
+  vorher" nimmt den letzten Vorschlag zurück.
+- **Eigene Leiste**: bis zu 5 Knöpfe, aus Räumen (Heute, Studio, …) UND
+  einzelnen Seiten (Chat, Aufgaben, Putzplan, Infos, Material, Geräte,
+  Stempeln, Direkt, Dokumente, Schulung, Formi, Probetraining). Plus,
+  Minus, Pfeile – keine Ziehgeste: Pfeile treffen sicher 44 px und
+  funktionieren auch mit Vorlesehilfe. Links am Rechner steht dieselbe
+  Reihe.
+- **Beim Öffnen**: Heute oder eine Seite.
+- **OG-Modus** (erster Vorschlag, auch als Schalter): drei grosse
+  Knöpfe mit Wort (Aufgaben · Putzplan · Chat), Start in den Aufgaben,
+  Schrift 125 %, hell mit einer festen Farbe. Auf den Seiten bleibt nur
+  das Abhaken: keine Reiter, kein „Wer hakt ab?", kein Filter, kein
+  Drucken, keine Ziehgriffe, kein „Ich übernehme das", kein „…", keine
+  Suche, kein „+ Neu", kein Formi, keine Schnellzugriffe, keine
+  Tastenkürzel. Der Kopf heisst wie der Knopf („Aufgaben" statt
+  „Studio"). Alles andere bleibt über ☰ → „Alles" erreichbar – auch
+  „App gestalten", um wieder herauszukommen. Wer „zu kompliziert" oder
+  „versteh das nicht" zu Formi sagt, bekommt ihn als ersten Vorschlag.
+- **Weniger**: „Ganz minimal" (ohne Formi-Kugel samt Sprechblase, ohne
+  Schnellzugriffe), dazu beide einzeln.
+- **Aussehen**: Farben (Formi/Dunkel/Hell/Gerät), Akzentfarbe (je
+  Bereich + 8), Hintergrund (6), Chat-Hintergrund (9), Schrift (4),
+  Abstände, untere Leiste (Glas/Deckend) – dieselben Einstellungen wie
+  unter Profil → Aussehen, hier an einer Stelle.
+- **Formi schlägt vor**: Ein Satz über Design oder Aufbau der App
+  („zu unübersichtlich", „wie am Anfang", „Leiste", „Dunkelmodus", …)
+  bringt sofort drei Vorschläge und „Im Editor anpassen ›". Erkannt
+  wird auf dem Gerät, ohne KI. „Doch normal fragen" schickt den Satz
+  wie bisher an die KI.
+
+**Warum so**
+
+- **Nur auf dem Gerät (PREFS), nicht in der Datenbank** – so gewünscht.
+  Keine neue Sammlung, keine Regel. Ohne Eintrag bleibt die App genau
+  wie bisher (test-aufbau, Abschnitt 1).
+- **Einzelne Seiten werden zu Gruppen mit einer Ansicht** (`v-chat`
+  usw.). NAVGROUPS bleibt unverändert, also auch Reiter, Farbe je
+  Bereich und Richtung der Übergänge. Nur `navAktivSetzen` markiert den
+  `v-`-Knopf, wenn es ihn gibt, und `updateNavMarkers` gibt Chat und
+  Infos ihren Ungelesen-Punkt.
+- **Erkennen ohne KI**: sofort, ohne Netz, ohne Kosten. Bewusst nicht
+  erkannt: „verschieben" allein (Fristen, Schichten) und „Farbe" allein.
+  Wer doch eine echte Frage hatte, hat „Doch normal fragen".
+- **Pfeile statt Ziehen**: Ziehen in einer Liste, die selbst scrollt,
+  ist am Handy fehleranfällig; die Aufgaben-Reihenfolge zeigt das (P-21).
+
+**Gefunden**
+
+- „Beim Öffnen" griff zuerst nicht: `verlaufStarten()` stellt die
+  zuletzt offene Seite (und einen Link mit `#…`) wieder her, aber eine
+  Zeile später ruft der Start `showView('home')` auf – seit dem 6.8.
+  (21d5bd1). Die Wiederherstellung der letzten Seite wirkt also seit
+  Monaten nicht. Hier nicht geändert (das träfe alle), nur der eigene
+  Start geht jetzt an dieser Stelle: `showView(aufbauStart() || 'home')`.
+
+**Noch nicht gebaut (nächste Schritte)**
+
+- Die Leitung stellt einen Aufbau für Mitarbeiter bereit – angeboten,
+  nicht automatisch („nicht sofort automatisch"). Braucht eine Sammlung
+  (in beiden Regelpfaden) und einen Hinweis „Deine Leitung schlägt vor …
+  Übernehmen?".
+- Formi stellt aus einem freien Satz einen eigenen Vorschlag zusammen
+  („wir nutzen fast nur Chat und Putzplan").
+
+**Tests**
+
+- Neu: `test-aufbau` (54 Zusicherungen, als Mitarbeiter): ausgelieferte
+  Leiste unverändert; Tafel bei 320 / 390 / 430 / 820 / 1280 / 1440 /
+  1920 px in normal und kompakt – jeder Knopf ≥ 44 × 44 per Hit-Test,
+  untere Leiste frei, kein Querlauf; „Wie am Anfang" (5 Knöpfe ≥ 44 bei
+  320 px, Putzplan aktiv markiert, links am Rechner dieselbe Reihe,
+  nach dem Neuladen Start im Chat); Plus/Minus/Pfeil/Start; „Ganz
+  minimal", „Zurück zu vorher", „Wie ausgeliefert"; Hell und Kompakt;
+  Formi: Vorschläge ohne KI, normale Frage unberührt, Editor-Knopf,
+  „Doch normal fragen" geht an die KI; OG-Modus bei 320 / 390 / 1440 px
+  (drei Knöpfe ≥ 44, Schrift 125 %, Kopf „Aufgaben", alles Genannte weg,
+  jeder Haken ≥ 44 × 44, Abhaken geht, „App gestalten" über ☰).
+- Bildschirmfotos bei 390 und 1440 px angesehen. Dabei gefunden: im
+  Minimal-Modus sprach Formis Blase ohne Kugel – jetzt mit weg. Im
+  OG-Modus standen am Rechner die Schnellzugriffe noch links (die Regel
+  war schwächer als `body.neu .side-schnell`), und der Kopf hiess
+  „Studio" – beides behoben und jetzt im Test.
+- **Nicht getestet:** am echten iPhone.
+
+## Runde 290 — „Alles" scrollt am Rechner (26.10.2026)
+
+**Gemeldet**, mit Bildschirmfoto vom Rechner (Chef, Fenster etwa
+1000 × 630): „der alles bereich lässt sich auf dem pc nicht srollen und
+hängt bei diesem bild fest".
+
+**Ursache:** Die Regeln der Schublade (`body.neu .alles-lade`: fest,
+volle Höhe, eigener Scrollbereich `.al-inhalt`) standen im Handy-Block
+`@media(max-width:820px)`. Am Rechner war die Schublade deshalb ein
+gewöhnliches Stück in der Seite: 2.856 px hoch, ohne eigenen
+Scrollbereich, und die Seite darum scrollt nicht. Nachgemessen vorher
+bei 1000 × 628: `scrollTop` blieb nach 15 Mausrad-Schritten 0, die
+letzte Zeile lag bei 3.021 px.
+
+**Was geändert wurde**
+- Der Block der Schublade steht jetzt ausserhalb der Media-Abfrage und
+  gilt auf jeder Breite; am Rechner 420 px breit (am Handy wie bisher
+  höchstens 380 px).
+- Beim Nachsehen am Bild: am Rechner lag Formi (Kugel, Blase, Linse)
+  unten links genau über der letzten Zeile („Archiv"). Solange die
+  Schublade offen ist (`body.alles-auf`), ist er unsichtbar.
+
+**Warum so:** Eine Schublade über der Seite statt einer Liste in der
+Seite – so ist es am Handy seit Runde 184, und „Alles" ist von jeder
+Seite aus derselbe Griff. Eine zweite Bauform nur für den Rechner wäre
+ein zweiter Ort, an dem dieselbe Liste anders aussieht.
+
+**Tests**
+- Neu: `test-alles-scrollen` (56 Zusicherungen): Chef und Mitarbeiter
+  bei 320 / 390 / 820 / 1000 × 628 / 1280 / 1440 / 1920 px – Schublade
+  fest und nicht höher als das Fenster; mit dem Mausrad (am Handy
+  gescrollt) bis zur letzten Zeile, die im Bild steht und per Hit-Test
+  trifft; Formi liegt nicht darüber. Gegen den alten Stand: 20 rot.
+- **Nicht getestet:** am echten Rechner des Betriebs (Trackpad/Mausrad
+  in Chrome am Mac) – nachgestellt mit dem Mausrad in Chromium.
+
+## Runde 291 — Der Start überschreibt sein eigenes Ziel nicht mehr (26.10.2026)
 
 **Befund.** `verlaufStarten()` öffnet beim Start ein Ziel aus der Adresse
 (`#putzplan`, `#chat` …) oder die zuletzt offene Seite (`WIEDER_OEFFNEN`,
@@ -24569,17 +24764,26 @@ immer auf „Heute“ gestartet ist. Links landen in jedem Fall am Ziel.
 Ziel → Heute; `#putzplan` schlägt eine gemerkte Seite; `#chat` → Chat;
 gemerkt vor 10 min → dorthin; vor 3 h → Heute; gemerkter Chat → Heute
 (nicht in `WIEDER_OEFFNEN`); `#chef` ohne Verwaltungsrecht → nicht dorthin,
-als Chef → dorthin. Danach 10 von 10 grün.
+als Chef → dorthin. Danach 10 von 10 grün (vor der Zusammenführung).
 
-**Nicht geprüft:** die eigene Startseite aus `kf_prefs.aufbau.start`
-(`aufbauStart()`). Die gibt es auf `main` noch nicht — nur auf dem Zweig
-`claude/happy-albattani-645msn` (Runde 288, ohne PR). Dort steht
-`showView(aufbauStart() || 'home')` an genau dieser Stelle; beim
-Zusammenführen muss die Zeile `if(!startZiel) showView(aufbauStart() || 'home');`
-heissen, und der Durchlauf bekommt die Prüfung „`aufbau.start='chat'`,
-kein Link → Chat“ dazu. Ebenfalls nicht geprüft: der echte Anmeldeweg
-(Firebase lädt hier nicht) — der Durchlauf geht über den Demo-Zugang, der
-dieselbe Startroutine nimmt.
+**Mit Runde 289 zusammengeführt:** dort kam `showView(aufbauStart() || 'home')`
+an genau diese Stelle („Beim Öffnen: Chat“ aus *App gestalten*). Die Zeile
+heisst jetzt `if(!startZiel) showView(aufbauStart() || 'home');`.
+
+**Reihenfolge beim Start:** Link → eigene Startseite → zuletzt offene
+Seite (≤ 2 h) → „Heute“. Zuerst stand die zuletzt offene Seite vor der
+eigenen Startseite; dann fiel `tests/test-aufbau.js` (Runde 289) rot:
+„Beim Öffnen: Chat“ eingestellt, Putzplan geöffnet, neu geladen →
+Putzplan statt Chat. Der Test hat recht: die eigene Startseite ist
+bewusst gewählt, die zuletzt offene Seite nur ein Rest vom letzten Mal.
+`verlaufStarten()` holt die gemerkte Seite deshalb nur, wenn
+`aufbauStart()` nichts liefert. Der Durchlauf prüft alle drei Fälle mit
+`kf_prefs.aufbau.start='chat'`: ohne Link → Chat, mit `#putzplan` →
+Putzplan, mit Putzplan vor 10 min offen → Chat. 13 von 13 grün,
+`test-aufbau` 54 von 54.
+
+**Nicht geprüft:** der echte Anmeldeweg (Firebase lädt hier nicht) — der
+Durchlauf geht über den Demo-Zugang, der dieselbe Startroutine nimmt.
 
 **Gesamtdurchlauf** (hier, 264 Durchläufe, in zwei Teilen — `alle.sh`
 wurde nach 30 min vom Läufer abgebrochen, der Rest lief mit vier

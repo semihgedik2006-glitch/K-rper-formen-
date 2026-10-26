@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-pvFDjiHUanDFvoRpjjVJNvtqFWjwTQOr6qV/4FlUMbY='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-5K7mmO7c/2lboyzI80mSK/IhgxSIvc7TYcMQ0OxCeGk='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2148,11 +2148,11 @@ body.neu #view-docs #docCatRow{margin-top:var(--s8)}
    sichtbar nichts. Mein Test hat das nicht gefunden, weil er die
    Klasse .show geprueft hat statt der Sichtbarkeit: die Klasse sass
    richtig, sie hatte nur keine Wirkung. */
-#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#schnellModal,#neuModal,#findeModal,#vorfallModal,#zfModal,#bestellModal,#aktionModal{
+#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#schnellModal,#neuModal,#findeModal,#installModal,#vorfallModal,#zfModal,#bestellModal,#aktionModal{
   position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
   padding:var(--s20);background:var(--scrim);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#schnellModal.show,#neuModal.show,#findeModal.show,#vorfallModal.show,#zfModal.show,#bestellModal.show,#aktionModal.show{display:flex}
+#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#schnellModal.show,#neuModal.show,#findeModal.show,#installModal.show,#vorfallModal.show,#zfModal.show,#bestellModal.show,#aktionModal.show{display:flex}
 /* Runde 146: der Link aus der Bestätigungs- oder Passwort-Mail. Er muss
    VOR der Anmeldung und über dem Startbild stehen (#splash 1000,
    #loadingWrap 999). */
@@ -9155,41 +9155,54 @@ body.neu .view-head .vh-line{justify-content:flex-end}
   body.neu .mobnav::before{background:var(--ber-f);box-shadow:inset 0 0 0 1px var(--ber)}
   body.neu .mobnav button.active{color:var(--ber)}
 
-  /* ── Die Schublade „Alles" ──
-     Fährt vom linken Rand über die Seite, auf der man gerade steht.
-     Links, weil der Griff links sitzt (der Bereichskopf) und weil eine
-     Bewegung, die dort beginnt, wo man getippt hat, erklärt, was
-     passiert ist.
+}
+/* Runde 290: Die Schublade gilt auf JEDER Breite. Bis hierher stand sie
+   im Handy-Block (max-width:820px) – am Rechner lag die Liste deshalb
+   als 2.900 px hohes Stück mitten in der Seite und liess sich nicht
+   scrollen (gemeldet am 26.10.2026 mit Bildschirmfoto: „der alles
+   bereich lässt sich auf dem pc nicht scrollen"). */
+/* ── Die Schublade „Alles" ──
+   Fährt vom linken Rand über die Seite, auf der man gerade steht.
+   Links, weil der Griff links sitzt (der Bereichskopf) und weil eine
+   Bewegung, die dort beginnt, wo man getippt hat, erklärt, was
+   passiert ist.
 
-     Hier stand vorher die „Mehr"-Lade mit drei Gruppen darin. Sie ist
-     weg: eine eigene Bedienart für drei Ziele, die die Tiefe nicht
-     verringert, sondern nur verschoben hat. */
-  body.neu .alles-lade{position:fixed;z-index:60;
-    top:0;bottom:0;left:0;width:min(88vw,380px);
-    display:flex;flex-direction:column;
-    background:var(--bg-2);border-right:1px solid var(--line);
-    box-shadow:var(--e3);
-    padding-top:var(--sat);padding-bottom:var(--sab);
-    animation:ladeRein .28s var(--ease-ios) both}
-  /* MUSS hier stehen. `[hidden]` ist eine Eigenschaft mit dem Gewicht
-     (0,1,0) und verliert gegen `body.neu .alles-lade` (0,2,1) — die
-     Schublade stand dadurch dauerhaft offen, vom ersten Bild an. Im
-     Quelltext sah nichts falsch aus; gesehen hat es erst der
-     Bildschirmabzug. */
-  body.neu .alles-lade[hidden]{display:none}
-  @keyframes ladeRein{from{transform:translateX(-100%)}to{transform:none}}
-  @media (prefers-reduced-motion:reduce){
-    body.neu .alles-lade{animation:none}
-  }
-  /* Die Seite dahinter tritt zurück, sonst sieht man zwei gleich helle
-     Ebenen übereinander. Ein Tipp darauf schliesst — das erledigt der
-     Klick-Zuhörer auf alles ausserhalb von #allesLade. */
-  body.alles-auf.neu .shell::after{content:'';position:fixed;inset:0;z-index:59;
-    background:var(--scrim);animation:einblenden .28s var(--ease-ios) both}
-  @keyframes einblenden{from{opacity:0}to{opacity:1}}
-  @media (prefers-reduced-motion:reduce){
-    body.alles-auf.neu .shell::after{animation:none}
-  }
+   Hier stand vorher die „Mehr"-Lade mit drei Gruppen darin. Sie ist
+   weg: eine eigene Bedienart für drei Ziele, die die Tiefe nicht
+   verringert, sondern nur verschoben hat. */
+body.neu .alles-lade{position:fixed;z-index:60;
+  top:0;bottom:0;left:0;width:min(88vw,380px);
+  display:flex;flex-direction:column;
+  background:var(--bg-2);border-right:1px solid var(--line);
+  box-shadow:var(--e3);
+  padding-top:var(--sat);padding-bottom:var(--sab);
+  animation:ladeRein .28s var(--ease-ios) both}
+/* MUSS hier stehen. `[hidden]` ist eine Eigenschaft mit dem Gewicht
+   (0,1,0) und verliert gegen `body.neu .alles-lade` (0,2,1) — die
+   Schublade stand dadurch dauerhaft offen, vom ersten Bild an. Im
+   Quelltext sah nichts falsch aus; gesehen hat es erst der
+   Bildschirmabzug. */
+body.neu .alles-lade[hidden]{display:none}
+/* Am Rechner etwas breiter: Platz ist da, und die Erklärzeilen brechen sonst. */
+@media(min-width:821px){ body.neu .alles-lade{width:420px} }
+/* Formi (Kugel, Blase, Linse) liegt am Rechner unten links – genau über
+   den letzten Zeilen der Schublade. Solange sie offen ist, tritt er
+   beiseite. */
+body.alles-auf .formi-kugel,
+body.alles-auf .formi-blase,
+body.alles-auf #formiLinseKreis{visibility:hidden}
+@keyframes ladeRein{from{transform:translateX(-100%)}to{transform:none}}
+@media (prefers-reduced-motion:reduce){
+  body.neu .alles-lade{animation:none}
+}
+/* Die Seite dahinter tritt zurück, sonst sieht man zwei gleich helle
+   Ebenen übereinander. Ein Tipp darauf schliesst — das erledigt der
+   Klick-Zuhörer auf alles ausserhalb von #allesLade. */
+body.alles-auf.neu .shell::after{content:'';position:fixed;inset:0;z-index:59;
+  background:var(--scrim);animation:einblenden .28s var(--ease-ios) both}
+@keyframes einblenden{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){
+  body.alles-auf.neu .shell::after{animation:none}
 }
 
 /* ══ 5b. „ALLES" — DAS INHALTSVERZEICHNIS ═══════════════════════════
@@ -9701,6 +9714,22 @@ body.neu .np-punkt{width:8px;height:8px;border-radius:var(--r-rund);background:v
   background:var(--bg-3);font-weight:700}
 .ft-fuss{display:flex;flex-wrap:wrap;gap:var(--s8);margin-top:var(--s12)}
 .ft-fuss .btn{min-height:44px}
+/* Als App installieren (Runde 288). Das eigene Gerät steht offen oben,
+   die anderen zugeklappt darunter – für die, die es jemandem im Team
+   zeigen wollen. */
+#installModal .pm-box{max-width:560px}
+#installModal.show{z-index:220}
+.in-ok{margin:0 0 var(--s12);padding:var(--s8) var(--s12);border-radius:var(--r-md);
+  background:var(--bg-3);font-weight:700}
+.in-jetzt{margin:0 0 var(--s12)}
+.in-jetzt .btn{min-height:44px}
+.in-weg{border-top:1px solid var(--line)}
+.in-weg summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:700;list-style:none}
+.in-weg summary::-webkit-details-marker{display:none}
+.in-weg summary::after{content:'›';margin-left:auto;padding-left:var(--s8);color:var(--text-2);transition:transform .2s}
+.in-weg[open] summary::after{transform:rotate(90deg)}
+.in-weg ol{margin:0 0 var(--s12);padding-left:1.4em;display:flex;flex-direction:column;gap:var(--s6)}
+.in-weg li{line-height:var(--lh)}
 .ft-uhr{flex:0 1 auto;min-width:0;margin:0 auto;
   display:flex;align-items:center;gap:var(--s4);
   padding:0 0 0 var(--s12);border-radius:var(--r-rund);
@@ -9717,6 +9746,76 @@ body.neu .np-punkt{width:8px;height:8px;border-radius:var(--r-rund);background:v
   .ft-uhr-txt > span{font-size:var(--t-xs);color:var(--text-2)}
   #ftUhrTipps,.ft-auf-wort{display:inline}
 }
+
+/* ── App gestalten (Runde 289) ──
+   Eine Tafel statt eines Fensters: keine Abdunklung, damit man die
+   Änderung an der echten App sieht. Am Handy endet sie über der
+   unteren Leiste (die ist die Vorschau), am Rechner liegt sie rechts. */
+.aufbau-tafel{position:fixed;z-index:205;left:0;right:0;top:0;
+  bottom:var(--mobnav-h, calc(72px + var(--sab)));
+  display:flex;flex-direction:column;background:var(--bg-2);
+  border-bottom:1px solid var(--line-2);box-shadow:var(--e3)}
+.aufbau-tafel[hidden]{display:none}
+@media(min-width:821px){
+  .aufbau-tafel{left:auto;width:min(480px, 100%);bottom:0;border-bottom:none;border-left:1px solid var(--line-2)}
+}
+.ab-kopf{display:flex;align-items:center;gap:var(--s8);
+  padding:calc(var(--sat) + var(--s8)) var(--s16) var(--s8);border-bottom:1px solid var(--line)}
+.ab-kopf h3{flex:1;margin:0}
+.ab-kopf .lb-close{min-width:44px;min-height:44px}
+.ab-inhalt{flex:1;overflow-y:auto;padding:var(--s12) var(--s16) var(--s24);overscroll-behavior:contain}
+.ab-inhalt h4{margin:var(--s20) 0 var(--s8);font-size:var(--t-md)}
+.ab-inhalt h4:first-child{margin-top:var(--s4)}
+.ab-inhalt .hint{margin:0 0 var(--s8)}
+.ab-vorschlaege{display:grid;grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));gap:var(--s8)}
+.ab-vor{display:flex;flex-direction:column;align-items:stretch;gap:var(--s6);min-height:44px;text-align:left;
+  padding:var(--s8);border-radius:var(--r-md);border:1.5px solid var(--line-2);background:var(--bg-soft);
+  color:var(--text);font:inherit;cursor:pointer}
+.ab-vor.on{border-color:var(--accent);background:rgba(var(--akz-rgb),.10)}
+.ab-vor b{font-size:var(--t-sm)}
+.ab-vor i{font-style:normal;font-size:var(--t-xs);color:var(--text-2);line-height:var(--lh-eng)}
+.ab-mini{display:flex;justify-content:space-around;align-items:center;gap:var(--s2);
+  padding:var(--s6) var(--s4);border-radius:var(--r-sm);background:var(--bg-3)}
+.ab-mini svg{width:16px;height:16px}
+.ab-mini svg:first-child{color:var(--accent)}
+.ab-ziel{display:flex;align-items:center;gap:var(--s8);min-height:52px;border-top:1px solid var(--line)}
+.ab-ziel:first-child{border-top:none}
+.ab-ziel > svg{width:20px;height:20px;flex:none;color:var(--text-2)}
+.ab-ziel.unten > svg{color:var(--accent)}
+.ab-ziel .ab-name{flex:1;min-width:0}
+.ab-ziel .ab-name b{display:block;font-size:var(--t-sm)}
+.ab-ziel .ab-name i{display:block;font-style:normal;font-size:var(--t-xs);color:var(--text-2)}
+.ab-ziel .ab-knopf{min-width:44px;min-height:44px;display:grid;place-items:center;border:none;background:none;
+  color:var(--text-2);cursor:pointer;border-radius:var(--r-sm)}
+.ab-ziel .ab-knopf:disabled{opacity:.3;cursor:default}
+.ab-ziel .ab-knopf svg{width:18px;height:18px}
+.ab-schalter{display:flex;align-items:center;gap:var(--s12);min-height:52px;width:100%;
+  border:none;background:none;color:var(--text);font:inherit;text-align:left;cursor:pointer;padding:0}
+.ab-schalter .ab-name{flex:1}
+.ab-schalter .ab-name i{display:block;font-style:normal;font-size:var(--t-xs);color:var(--text-2)}
+.ab-chips{display:flex;flex-wrap:wrap;gap:var(--s8)}
+.ab-fuss{display:flex;flex-wrap:wrap;gap:var(--s8);margin-top:var(--s20)}
+.ab-fuss .btn{min-height:44px}
+/* Schlank: nur, wer es so eingestellt hat (Runde 289). */
+body.neu.ohne-schnell .schnell,
+body.neu.ohne-schnell .side-schnell{display:none}
+/* OG-Modus (Runde 289): nur noch, was man zum Abhaken braucht. Alles,
+   was hier wegfällt, bleibt über ☰ → „Alles" erreichbar. */
+body.og .pp-wer-knopf,
+body.og .pp-filter-knopf,
+body.og #tdPrint,
+body.og #ppPrint,
+body.og .swipe-body .griff,
+body.og .t-nimm,
+body.og .t-mehr,
+body.og #searchBtn,
+body.og .daumen-dock,
+body.neu.og .kopf-plus,
+body.og .side-fuss{display:none}
+body.neu.og .mn-reihe button span:not(.badge):not(.ndot){font-size:var(--t-sm);font-weight:700}
+body.neu.og .mobnav button svg{width:28px;height:28px}
+/* Ohne Kugel auch ohne ihre Sprechblase – sonst spräche sie aus dem Nichts. */
+body.ohne-formi .formi-blase{display:none}
 
 /* ── Schnellzugriffe (Runde 103) ──
    Vier gleich breite Felder: drei Ziele und „Anpassen". Zeichen über
@@ -13759,10 +13858,30 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
     </div>
   </div>
 </div>
+<!-- Als App installieren (Runde 288). Inhalt aus installRender(). -->
+<div id="installModal" role="dialog" aria-modal="true" aria-labelledby="inTitel">
+  <div class="pm-box">
+    <button class="lb-close" id="inClose" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <h3 id="inTitel" style="margin-bottom:4px">Als App installieren</h3>
+    <p class="hint" style="margin:0 0 12px">Mit eigenem Symbol auf dem Startbildschirm öffnet StudioChat ohne Adressleiste, startet auch bei schlechtem Netz und kann am iPhone Meldungen schicken.</p>
+    <div id="inListe"></div>
+  </div>
+</div>
 <div class="ft-uhr" id="ftUhr" hidden role="status">
   <span class="ft-uhr-txt"><b id="ftUhrZiel"></b><span><span id="ftUhrZeit">0 s</span><span id="ftUhrTipps"></span></span></span>
   <button type="button" class="btn btn-ghost btn-sm" id="ftAufgeben" aria-label="Aufgeben"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg><span class="ft-auf-wort">Aufgeben</span></button>
 </div>
+
+<!-- App gestalten (Runde 289): der eigene Aufbau, nur für dieses Gerät.
+     Keine Abdunklung dahinter: die App bleibt sichtbar und zeigt jede
+     Änderung sofort – am Handy bleibt die untere Leiste frei. -->
+<section class="aufbau-tafel" id="aufbauTafel" hidden role="dialog" aria-labelledby="abTitel">
+  <div class="ab-kopf">
+    <h3 id="abTitel">App gestalten</h3>
+    <button class="lb-close" id="abClose" aria-label="Schließen"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+  <div class="ab-inhalt" id="abInhalt"></div>
+</section>
 
 <!-- DATENSCHUTZVORFALL MELDEN (P-02, Runde 113). Aus dem Betrieb:
      „es soll einen knopf geben der mir nach ausfüllung sofort eine mail
@@ -15476,6 +15595,12 @@ function applyPrefs(){
 }
 (function initTheme(){
   loadPrefs(); applyPrefs();
+  /* Runde 289: der eigene Aufbau, bevor irgendetwas gezeichnet wird. */
+  var _ab=PREFS.aufbau||{};
+  document.body.classList.toggle('ab-minimal', !!_ab.minimal);
+  document.body.classList.toggle('og', !!_ab.og);
+  document.body.classList.toggle('ohne-schnell', _ab.schnell===false || !!_ab.minimal);
+  document.body.classList.toggle('ohne-formi', _ab.formi===false || !!_ab.minimal);
   /* Vor allem anderen: Adresse, Gerät und Demo kennen die Antwort ohne
      Datenbank. */
   designAnwenden();
@@ -19874,7 +19999,7 @@ var DIALOGE = ['profileModal','personModal','devModal','pollModal','todoEditModa
                'aboModal','zugangModal','ownTodoModal','probeModal',
                'fwdModal','keysModal','rechtModal','searchOverlay',
                'msgSheet','todoSheet','docSheet','werkbankModal','glockeModal',
-               'putzModal','schnellModal','neuModal','findeModal','vorfallModal','zfModal',
+               'putzModal','schnellModal','neuModal','findeModal','installModal','vorfallModal','zfModal',
                'bestellModal','shiftSheet'];
 
 function closeAllModals(){
@@ -22564,10 +22689,13 @@ function showApp(){
   stErinnerungStarten();      // Runde 238: Stempel vergessen? Formi sagt es
   startPresence();            // "ich bin online" melden
   startNutzung();             // anonyme Zählung: welche Funktion wird benutzt
-  /* Runde 289: vorher stand hier showView('home') ohne Bedingung — seit
-     August hat es jedes Ziel aus verlaufStarten() sofort überschrieben.
-     Ein Link auf #putzplan landete auf „Heute" (tests/test-start-ziel.js). */
-  if(!startZiel) showView('home');
+  /* Runde 289: wer sich „Beim Öffnen: Chat" (o. ä.) eingestellt hat,
+     landet dort; sonst wie immer auf „Heute".
+     Runde 291: aber nur, wenn verlaufStarten() nicht schon ein Ziel
+     geöffnet hat (Link #… oder zuletzt offene Seite). Vorher stand hier
+     showView ohne Bedingung — seit August hat es jedes dieser Ziele
+     sofort überschrieben (tests/test-start-ziel.js). */
+  if(!startZiel) showView(aufbauStart() || 'home');
   birthdayCheck();
   /* Die Führung, aber erst nach zwei Sekunden und nur beim ersten Mal.
      SOFORT WÄRE FALSCH: die Startseite baut sich noch auf, und ein
@@ -22768,7 +22896,12 @@ function _localNotify(title, body){
 
 /* Berechtigung anfragen + FCM-Token holen und speichern (für Hintergrund-Push) */
 function enablePush(){
-  if(!('Notification' in window)){ toast('Dein Browser kann keine Benachrichtigungen.',true); return; }
+  if(!('Notification' in window)){
+    /* Runde 288: Safari am iPhone kennt Meldungen nur in der installierten
+       App. „Kann keine" stimmte dort nicht – es fehlt ein Schritt. */
+    if(installGeraet()==='ios'){ installOeffnen(); toast('Am iPhone gibt es Meldungen, sobald StudioChat als App installiert ist.'); return; }
+    toast('Dein Browser kann keine Benachrichtigungen.',true); return;
+  }
   Notification.requestPermission().then(function(perm){
     if(perm!=='granted'){ toast('Benachrichtigungen nicht erlaubt.',true); return; }
     $('notifBanner').classList.remove('show');
@@ -23203,6 +23336,10 @@ function allesGruppen(){
     /* Runde 275: die Stoppuhr zum Selbsttesten. */
     {label:'Findetest', findetest:true, roh:ikon('uhr'),
      was:'Stoppen, wie lange man zu einem Ziel braucht'},
+    /* Runde 288: der kostenlose Weg aufs Handy (Recherche App Store,
+       26.10.2026). Ein Fenster, keine Seite – wie „Was ist neu". */
+    {label:'Als App installieren', installieren:true, roh:ikon('laden'),
+     was: installGeraet()==='app' ? 'Läuft schon als App ✓' : 'Mit eigenem Symbol auf den Startbildschirm'},
     /* Runde 113 (P-02). Für jeden, nicht nur die Leitung: eine Datenpanne
        bemerkt oft, wer am Empfang sitzt. */
     /* Seit Runde 126 „Problem melden" — jedes Problem, nicht nur der
@@ -23245,6 +23382,9 @@ function allesGruppen(){
      was:'Nachweise, Stammdaten, alles über mich als Datei'},
     {label:'Persönlich',    view:'persoenlich', ikon:'persoenlich',
      was:'Nur für dich, niemand sonst sieht es'},
+    /* Runde 289. */
+    {label:'App gestalten', aufbau:true, roh:ikon('regler'),
+     was:'Leiste, Start und Aussehen – nur auf diesem Gerät'},
   ]);
   if(canManage()){
     /* Aus chefTabsFuerMich(): Rolle, Admin-Rechte und neue Reiter
@@ -23272,6 +23412,8 @@ function allesZielAttr(e){
     (e.hilfe   ?' data-al-hilfe="1"':'')+
     (e.neu     ?' data-al-neu="1"':'')+
     (e.findetest?' data-al-findetest="1"':'')+
+    (e.aufbau  ?' data-al-aufbau="1"':'')+
+    (e.installieren?' data-al-installieren="1"':'')+
     (e.vorfall ?' data-al-vorfall="1"':'')+
     (e.teamtab?' data-al-teamtab="'+esc(e.teamtab)+'"':'')+
     (e.ichtab ?' data-al-ichtab="'+esc(e.ichtab)+'"':'')+
@@ -23305,6 +23447,8 @@ function allesZiel(el){
   if(el.getAttribute('data-al-hilfe')){ hilfeOeffnen(); return; }
   if(el.getAttribute('data-al-neu')){ neuOeffnen(); return; }
   if(el.getAttribute('data-al-findetest')){ findeOeffnen(); return; }
+  if(el.getAttribute('data-al-aufbau')){ aufbauOeffnen(); return; }
+  if(el.getAttribute('data-al-installieren')){ installOeffnen(); return; }
   if(el.getAttribute('data-al-vorfall')){ vorfallOeffnen(); return; }
   showView(view);
   var t=el.getAttribute('data-al-teamtab');
@@ -23350,8 +23494,22 @@ function renderAlles(){
 var NEUIGKEITEN = [
   { id:'2026-10-26-start-ziel', datum:'26.10.2026', art:'fix', titel:'Links und Meldungen öffnen wieder die richtige Seite', wo:'putzplan', punkte:[
     'Ein Link wie …/#putzplan oder ein Tipp auf eine Meldung öffnet direkt diese Seite, nicht mehr „Heute".',
-    'Wer die App innerhalb von zwei Stunden wieder öffnet, landet auf der zuletzt offenen Seite (z. B. Putzplan, Aufgaben, Bestand).',
-    'Nach längerer Pause und beim Chat startet die App wie gewohnt auf „Heute".'
+    'Innerhalb von zwei Stunden öffnet die App wieder die zuletzt offene Seite (z. B. Putzplan) — außer eine eigene Startseite ist gewählt.',
+    'Nach längerer Pause und beim Chat startet die App wie gewohnt auf der eigenen Startseite.'
+  ]},
+  { id:'2026-10-26-alles-scrollen', datum:'26.10.2026', art:'fix', titel:'„Alles" lässt sich am Rechner scrollen', wo:'home', punkte:[
+    'Am Rechner öffnet „Alles" (oben links) jetzt als Schublade, die sich bis zur letzten Zeile scrollen lässt.',
+    'Formi tritt beiseite, solange die Schublade offen ist, und verdeckt die unteren Zeilen nicht mehr.'
+  ]},
+  { id:'2026-10-26-app-gestalten', datum:'26.10.2026', art:'neu', titel:'App gestalten: Leiste, Start und Aussehen selbst wählen', wo:'home', punkte:[
+    'Alles → Meine Sachen → App gestalten: acht Vorschläge, z. B. „OG-Modus" (ganz einfach) oder „Wie am Anfang".',
+    'Eigene Leiste mit bis zu 5 Knöpfen, Startseite, Farben, Hintergrund, Schrift – nur auf diesem Gerät.',
+    'Wer Formi nach Design oder Aufbau der App fragt, bekommt die Vorschläge direkt angeboten.'
+  ]},
+  { id:'2026-10-26-als-app-installieren', datum:'26.10.2026', art:'neu', titel:'Anleitung: StudioChat als App installieren', wo:'installieren', punkte:[
+    'Alles → Als App installieren: Schritt für Schritt für iPhone, Android und Rechner, das eigene Gerät steht oben.',
+    'Wo der Browser es kann, installiert „Jetzt installieren“ die App mit einem Klick.',
+    'Am iPhone zeigt Einstellungen → Meldungen den Weg, solange die App noch nicht installiert ist.'
   ]},
   { id:'2026-10-26-schnellantworten', datum:'26.10.2026', art:'neu', titel:'Schnellantworten im Chat', wo:'chat', punkte:[
     'Über dem Schreibfeld stehen „Bin dabei", „Erledigt ✓" und „Komme 10 Min später". Ein Tipp setzt den Satz ins Feld.',
@@ -24257,6 +24415,82 @@ function findeOeffnen(ergebnis){
   m.classList.add('show');
 }
 function findeSchliessen(){ var m=$('findeModal'); if(m) m.classList.remove('show'); }
+
+/* ══ ALS APP INSTALLIEREN (Runde 288) ════════════════════════════════
+   Aus der App-Store-Recherche vom 26.10.2026: in den App Store geht es
+   nur mit dem Entwicklerkonto (99 $ im Jahr). Kostenlos geht der
+   Startbildschirm – die App ist dafür schon gebaut (Manifest, Service
+   Worker, Offline-Start). Gefehlt hat nur, dass man weiss, wie.
+
+   Auf Chrome, Edge und Android meldet der Browser per
+   beforeinstallprompt, dass er installieren kann; dann gibt es den
+   Knopf „Jetzt installieren". Safari kennt das nicht – dort bleiben die
+   Schritte. Am iPhone gibt es Meldungen NUR in der installierten App,
+   deshalb führt „Meldungen aktivieren" dort hierher (enablePush). */
+var _installEreignis = null;
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault(); _installEreignis = e; installRender();
+});
+window.addEventListener('appinstalled', function(){
+  _installEreignis = null; installRender(); toast('StudioChat ist installiert ✓');
+});
+function installGeraet(){
+  var ua = navigator.userAgent || '';
+  if((window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true) return 'app';
+  /* iPadOS gibt sich als Mac aus; der Unterschied ist der Touchscreen. */
+  if(/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return 'ios';
+  if(/Android/.test(ua)) return 'android';
+  return 'rechner';
+}
+/* Feste Texte, keine Eingaben – deshalb dürfen sie <b> tragen. */
+var INSTALL_WEGE = {
+  ios: { titel:'iPhone und iPad', schritte:[
+    'Die App in <b>Safari</b> öffnen.',
+    'Auf <b>Teilen</b> tippen: das Quadrat mit dem Pfeil nach oben, am iPhone unten, am iPad oben.',
+    '<b>Zum Home-Bildschirm</b> wählen. Steht es nicht da, in der Liste nach unten wischen.',
+    'Erscheint der Schalter „Als Web-App öffnen“, eingeschaltet lassen. Dann <b>Hinzufügen</b>.'
+  ]},
+  android: { titel:'Android', schritte:[
+    'In <b>Chrome</b> oben rechts auf <b>⋮</b> tippen.',
+    '<b>App installieren</b> oder <b>Zum Startbildschirm hinzufügen</b> wählen.',
+    'Mit <b>Installieren</b> bestätigen.'
+  ]},
+  rechner: { titel:'Rechner', schritte:[
+    '<b>Chrome oder Edge:</b> rechts in der Adressleiste auf das Symbol mit Bildschirm und Pfeil, dann <b>Installieren</b>.',
+    '<b>Safari am Mac:</b> im Menü <b>Ablage → Zum Dock hinzufügen</b>.',
+    '<b>Firefox</b> kann keine Web-Apps installieren. Dafür Chrome, Edge oder Safari nehmen.'
+  ]}
+};
+function installRender(){
+  var box=$('inListe'); if(!box) return;
+  var g=installGeraet(), html='';
+  if(g==='app') html='<p class="in-ok">Du nutzt StudioChat schon als App.</p>';
+  else if(_installEreignis) html='<div class="in-jetzt"><button type="button" class="btn btn-primary" id="inJetzt">Jetzt installieren</button></div>';
+  var reihe=['ios','android','rechner'];
+  if(g!=='app') reihe=[g].concat(reihe.filter(function(k){ return k!==g; }));
+  html+=reihe.map(function(k, i){
+    var w=INSTALL_WEGE[k], hier=(g!=='app' && i===0);
+    return '<details class="in-weg" data-in-weg="'+k+'"'+(hier?' open':'')+'><summary>'+
+      (hier?'So geht es hier · ':'')+w.titel+'</summary><ol>'+
+      w.schritte.map(function(t){ return '<li>'+t+'</li>'; }).join('')+'</ol></details>';
+  }).join('');
+  box.innerHTML=html;
+  var j=$('inJetzt'); if(j) j.addEventListener('click', installJetzt);
+}
+function installJetzt(){
+  var e=_installEreignis; if(!e) return;
+  _installEreignis=null;
+  e.prompt();
+  /* Den Dank sagt appinstalled; hier nur neu zeichnen, damit der Knopf
+     nach „Abbrechen" nicht ins Leere zeigt. */
+  Promise.resolve(e.userChoice).then(installRender, installRender);
+}
+function installOeffnen(){
+  var m=$('installModal'); if(!m) return;
+  installRender();
+  m.classList.add('show');
+}
+function installSchliessen(){ var m=$('installModal'); if(m) m.classList.remove('show'); }
 /* Gezählt wird der Klick, nicht das Berühren: Wischen zum Scrollen ist
    kein Tipp. isTrusted lässt die Klicks aus, die die App selbst auslöst
    (allesZiel klickt danach den Unterreiter an). */
@@ -24310,6 +24544,246 @@ function findeText(){
     return z.was+': '+(l.length ? l.join(', ') : '–');
   }).join('\n');
 }
+
+/* ══ APP GESTALTEN (Runde 289) ═══════════════════════════════════════
+   Aus dem Betrieb, 26.10.2026: „thomas fand die app ganz am anfang viel
+   viel übersichtlicher" – dann: „formi soll mehrere möglichkeiten
+   vorschlagen und man soll über einen editor … alles ändern, verschieben
+   und anpassen können", „je mehr design optionen es gibt desto besser
+   und je simpler es gehen kann desto besser auch, also man soll es
+   komplett minimalisieren können", und: „es soll jeder nur für sein
+   eigenes gerät anpassen können".
+
+   Deshalb liegt alles in PREFS (auf dem Gerät), nichts in der Datenbank.
+   PREFS.aufbau = { leiste:[…]|null, start:'home'|Ansicht, minimal, formi,
+   schnell, vorschlag }. Ohne Eintrag bleibt die App genau wie bisher.
+
+   Die Leiste kann Räume (g-…) und einzelne Seiten (v-…) tragen. Eine
+   einzelne Seite wird zu einer Gruppe mit nur dieser Ansicht; Reiter,
+   Farbe und Richtung fragen weiter NAVGROUPS – an denen ändert sich
+   nichts. */
+var AUFBAU_MAX = 5;
+var AUFBAU_SEITEN = [
+  { v:'chat', name:'Chat' }, { v:'todos', name:'Aufgaben' }, { v:'putzplan', name:'Putzplan' },
+  { v:'ann', name:'Infos' }, { v:'material', name:'Material' }, { v:'geraete', name:'Geräte' },
+  { v:'zeit', name:'Stempeln' }, { v:'dm', name:'Direkt' }, { v:'docs', name:'Dokumente' },
+  { v:'schulung', name:'Schulung' }, { v:'gehirn', name:'Formi' }, { v:'probe', name:'Probetraining' }
+];
+var AUFBAU_STANDARD = { leiste:null, start:'home', minimal:false, formi:true, schnell:true, og:false, vorschlag:'standard' };
+/* Die Vorschläge. `prefs` sind die Aussehen-Einstellungen, die es schon
+   gibt (Profil → Aussehen) – ein Vorschlag setzt sie nur gemeinsam. */
+var AUFBAU_VORSCHLAEGE = [
+  /* Aus dem Betrieb, 26.10.2026: „Es soll wirklich am Ende so eine Art
+     ‚OG' Modus geben für Leute die null Verständnis für irgendwas haben
+     und es soll so simpel und leicht wie möglich gestaltet sein dafür".
+     Drei grosse Knöpfe mit Wort, sehr grosse Schrift, hell, und auf den
+     Seiten nur noch Abhaken: keine Reiter, kein Filter, kein Drucken,
+     kein Ziehen, keine Suche, kein Formi. Alles andere bleibt über ☰. */
+  { id:'og', name:'OG-Modus', was:'So einfach wie möglich: drei grosse Knöpfe, nur abhaken',
+    leiste:['v-todos','v-putzplan','v-chat'], start:'todos', minimal:true, formi:false, schnell:false, og:true,
+    prefs:{ fs:'125', theme:'light', accent:'blau', appbg:'keiner', glas:'deckend', dichte:'normal' } },
+  { id:'anfang', name:'Wie am Anfang', was:'Jede Funktion ein Knopf, Start im Chat',
+    leiste:['v-chat','v-todos','v-ann','v-material','v-putzplan'], start:'chat', minimal:false, formi:true, schnell:true,
+    prefs:{ theme:'dark', appbg:'keiner', accent:'cyan' } },
+  { id:'schlicht', name:'Schlicht', was:'Vier Knöpfe, ruhiger Hintergrund',
+    leiste:['g-start','v-todos','v-putzplan','v-chat'], start:'home', minimal:false, formi:true, schnell:false,
+    prefs:{ appbg:'keiner', glas:'deckend' } },
+  { id:'minimal', name:'Ganz minimal', was:'Nur Aufgaben und Chat, sonst nichts',
+    leiste:['v-todos','v-chat'], start:'todos', minimal:true, formi:false, schnell:false,
+    prefs:{ appbg:'keiner', glas:'deckend', dichte:'kompakt' } },
+  { id:'putzen', name:'Putzen zuerst', was:'Start im Putzplan, Plan und Chat daneben',
+    leiste:['v-putzplan','v-todos','g-team','v-chat'], start:'putzplan', minimal:false, formi:true, schnell:true,
+    prefs:{} },
+  { id:'hell', name:'Hell und ruhig', was:'Helle Seiten, eine feste Farbe',
+    leiste:null, start:'home', minimal:false, formi:true, schnell:true,
+    prefs:{ theme:'light', appbg:'keiner', accent:'blau' } },
+  { id:'lebendig', name:'Lebendig', was:'Farbe je Bereich, Formi und Sterne',
+    leiste:null, start:'home', minimal:false, formi:true, schnell:true,
+    prefs:{ theme:'formi', appbg:'raum', accent:'bunt', glas:'glas' } },
+  { id:'standard', name:'Wie ausgeliefert', was:'Alles wieder wie vorher eingestellt',
+    leiste:null, start:'home', minimal:false, formi:true, schnell:true,
+    prefs:{ theme:'formi', appbg:'raum', accent:'bunt', glas:'glas', dichte:'normal', chatbg:'verlauf' } }
+];
+function aufbau(){
+  var a=PREFS.aufbau || {}, r={};
+  Object.keys(AUFBAU_STANDARD).forEach(function(k){ r[k] = (k in a) ? a[k] : AUFBAU_STANDARD[k]; });
+  return r;
+}
+function aufbauSetzen(teil){
+  var a=aufbau();
+  Object.keys(teil).forEach(function(k){ a[k]=teil[k]; });
+  PREFS.aufbau=a; savePrefs();
+  aufbauAnwenden();
+}
+function aufbauSeite(v){ for(var i=0;i<AUFBAU_SEITEN.length;i++){ if(AUFBAU_SEITEN[i].v===v) return AUFBAU_SEITEN[i]; } return null; }
+/* Eine Seite als Gruppe mit genau einer Ansicht. */
+function aufbauEinzel(v){
+  var it=navItem(v), s=aufbauSeite(v);
+  if(!it || !s) return null;
+  return { id:'v-'+v, label:s.name, views:[v], icon:it.icon, einzel:true };
+}
+/* Alles, was in die Leiste kann – für diese Person, in fester Reihenfolge. */
+function aufbauKandidaten(){
+  var raeume=navGruppen().filter(function(g){ return g.id!=='g-alles'; });
+  var seiten=AUFBAU_SEITEN.filter(function(s){ return ansichtAn(s.v); }).map(function(s){ return aufbauEinzel(s.v); }).filter(Boolean);
+  return raeume.concat(seiten);
+}
+/* Die eigene Leiste oder null (dann gilt die ausgelieferte). */
+function aufbauGruppen(){
+  var a=aufbau();
+  if(!layoutNeu() || !Array.isArray(a.leiste) || !a.leiste.length) return null;
+  var nach={};
+  aufbauKandidaten().forEach(function(g){ nach[g.id]=g; });
+  var r=a.leiste.map(function(id){ return nach[id]; }).filter(Boolean).slice(0, AUFBAU_MAX);
+  return r.length ? r : null;
+}
+function aufbauStart(){
+  var s=aufbau().start;
+  return (s && s!=='home' && document.getElementById('view-'+s) && ansichtAn(s)) ? s : null;
+}
+/* Körperklassen und Leiste neu – nach jeder Änderung. */
+function aufbauAnwenden(){
+  var a=aufbau();
+  document.body.classList.toggle('ab-minimal', !!a.minimal);
+  document.body.classList.toggle('og', !!a.og);
+  document.body.classList.toggle('ohne-schnell', a.schnell===false || !!a.minimal);
+  document.body.classList.toggle('ohne-formi', a.formi===false || !!a.minimal);
+  if(typeof session!=='undefined' && session && $('side')){ buildNav(); }
+  if(typeof formiKugelZeigen==='function') formiKugelZeigen();
+}
+function aufbauFormiUnten(){ var a=aufbau(); return a.formi!==false && !a.minimal; }
+/* Der Stand vor dem letzten Vorschlag – für „Zurück zu vorher". */
+var AUFBAU_PREFS = ['theme','appbg','accent','glas','dichte','chatbg','fs'];
+function aufbauSchnappschuss(){
+  var x={ aufbau:JSON.parse(JSON.stringify(PREFS.aufbau||null)) };
+  AUFBAU_PREFS.forEach(function(k){ x[k]=PREFS[k]; });
+  return x;
+}
+function aufbauVorschlag(id){
+  var v=AUFBAU_VORSCHLAEGE.filter(function(x){ return x.id===id; })[0]; if(!v) return;
+  PREFS.aufbauVorher=aufbauSchnappschuss();
+  Object.keys(v.prefs||{}).forEach(function(k){ PREFS[k]=v.prefs[k]; });
+  PREFS.aufbau={ leiste:v.leiste ? v.leiste.slice() : null, start:v.start, minimal:v.minimal, formi:v.formi, schnell:v.schnell, og:!!v.og, vorschlag:v.id };
+  savePrefs(); applyPrefs(); aufbauAnwenden();
+  if(v.start) showView(aufbauStart() || 'home');
+}
+function aufbauZurueck(){
+  var x=PREFS.aufbauVorher; if(!x) return;
+  PREFS.aufbauVorher=aufbauSchnappschuss();
+  PREFS.aufbau=x.aufbau || null;
+  AUFBAU_PREFS.forEach(function(k){ if(x[k]!==undefined) PREFS[k]=x[k]; });
+  savePrefs(); applyPrefs(); aufbauAnwenden();
+}
+/* Die aktuelle Leiste als Liste von ids – auch wenn noch die ausgelieferte gilt. */
+function aufbauLeisteJetzt(){
+  var g=aufbauGruppen();
+  if(g) return g.map(function(x){ return x.id; });
+  return neuLeisteGruppen(navGruppen()).map(function(x){ return x.id; });
+}
+function aufbauLeisteAendern(liste){
+  aufbauSetzen({ leiste:liste.slice(0, AUFBAU_MAX), vorschlag:'eigen' });
+}
+function aufbauMiniHTML(leiste){
+  var nach={};
+  aufbauKandidaten().forEach(function(g){ nach[g.id]=g; });
+  var gr = leiste ? leiste.map(function(id){ return nach[id]; }).filter(Boolean)
+                  : neuLeisteGruppen(navGruppen());
+  return '<span class="ab-mini" aria-hidden="true">'+gr.slice(0, AUFBAU_MAX).map(gruppeSvg).join('')+'</span>';
+}
+function aufbauRender(){
+  var box=$('abInhalt'); if(!box) return;
+  var a=aufbau(), leiste=aufbauLeisteJetzt(), kand=aufbauKandidaten();
+  var pfeil=function(d){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="'+d+'"/></svg>'; };
+  var h='';
+  h+='<h4>Vorschläge</h4><p class="hint">Tippen probiert aus – nur auf diesem Gerät.</p><div class="ab-vorschlaege">'+
+    AUFBAU_VORSCHLAEGE.map(function(v){
+      return '<button type="button" class="ab-vor'+(a.vorschlag===v.id?' on':'')+'" data-abvor="'+v.id+'" aria-pressed="'+(a.vorschlag===v.id)+'">'+
+        aufbauMiniHTML(v.leiste)+'<b>'+esc(v.name)+'</b><i>'+esc(v.was)+'</i></button>';
+    }).join('')+'</div>';
+  h+='<h4>Unten in der Leiste <span class="hint">('+leiste.length+' von '+AUFBAU_MAX+')</span></h4>'+
+    '<p class="hint">Plus nimmt auf, Minus nimmt heraus, die Pfeile verschieben. Alles andere bleibt über „Alles" erreichbar.</p><div>';
+  var reihe=leiste.map(function(id){ return kand.filter(function(g){ return g.id===id; })[0]; }).filter(Boolean)
+    .concat(kand.filter(function(g){ return leiste.indexOf(g.id)<0; }));
+  h+=reihe.map(function(g){
+    var pos=leiste.indexOf(g.id), unten=pos>=0;
+    return '<div class="ab-ziel'+(unten?' unten':'')+'">'+gruppeSvg(g)+
+      '<span class="ab-name"><b>'+esc(g.einzel ? g.label : gruppeLabel(g))+'</b><i>'+(g.einzel ? 'eine Seite' : 'Raum: '+esc(sichtbareViews(g).map(function(v){ var it=navItem(v); return it ? it.label : v; }).join(', ')))+'</i></span>'+
+      (unten
+        ? '<button type="button" class="ab-knopf" data-abhoch="'+g.id+'" aria-label="'+esc(g.label)+' nach vorn"'+(pos===0?' disabled':'')+'>'+pfeil('M12 19V5M5 12l7-7 7 7')+'</button>'+
+          '<button type="button" class="ab-knopf" data-abrunter="'+g.id+'" aria-label="'+esc(g.label)+' nach hinten"'+(pos===leiste.length-1?' disabled':'')+'>'+pfeil('M12 5v14M19 12l-7 7-7-7')+'</button>'+
+          '<button type="button" class="ab-knopf" data-abraus="'+g.id+'" aria-label="'+esc(g.label)+' aus der Leiste nehmen"'+(leiste.length<=1?' disabled':'')+'>'+pfeil('M5 12h14')+'</button>'
+        : '<button type="button" class="ab-knopf" data-abrein="'+g.id+'" aria-label="'+esc(g.label)+' in die Leiste"'+(leiste.length>=AUFBAU_MAX?' disabled':'')+'>'+pfeil('M12 5v14M5 12h14')+'</button>')+
+      '</div>';
+  }).join('')+'</div>';
+  var starts=[['home','Heute']].concat(AUFBAU_SEITEN.filter(function(s){ return ansichtAn(s.v); }).map(function(s){ return [s.v, s.name]; }));
+  h+='<h4>Beim Öffnen</h4><div class="ab-chips">'+starts.map(function(x){
+    return '<button type="button" class="chip'+(a.start===x[0]?' on':'')+'" data-abstart="'+x[0]+'" aria-pressed="'+(a.start===x[0])+'">'+esc(x[1])+'</button>';
+  }).join('')+'</div>';
+  var schalter=function(key, name, was, an){
+    return '<button type="button" class="ab-schalter" data-abschalter="'+key+'" aria-pressed="'+an+'"><span class="ab-name"><b>'+esc(name)+'</b><i>'+esc(was)+'</i></span><span class="sw'+(an?' on':'')+'"><i></i></span></button>';
+  };
+  h+='<h4>Weniger</h4>'+
+    schalter('og', 'OG-Modus', 'Grosse Knöpfe, nur abhaken – ohne Reiter, Filter, Suche', !!a.og)+
+    schalter('minimal', 'Ganz minimal', 'Ohne Formi-Kugel und Schnellzugriffe', !!a.minimal)+
+    schalter('formi', 'Formi unten zeigen', 'Die Kugel unten in der Ecke', a.formi!==false && !a.minimal)+
+    schalter('schnell', 'Schnellzugriffe zeigen', 'Die Reihe auf „Heute" und am Rechner links', a.schnell!==false && !a.minimal);
+  var chips=function(key, liste){
+    return '<div class="ab-chips">'+liste.map(function(x){
+      var on=String(PREFS[key])===String(x[0]);
+      return '<button type="button" class="chip'+(on?' on':'')+'" data-abpref="'+key+'|'+x[0]+'" aria-pressed="'+on+'">'+esc(x[1])+'</button>';
+    }).join('')+'</div>';
+  };
+  h+='<h4>Aussehen</h4><p class="hint">Farben</p>'+chips('theme', [['formi','Formi'],['dark','Dunkel'],['light','Hell'],['auto','Wie das Gerät']]);
+  h+='<p class="hint">Akzentfarbe</p>'+chips('accent', [['bunt','Je Bereich']].concat(Object.keys(ACCENTS).map(function(k){ return [k, ACCENTS[k].name || (k.charAt(0).toUpperCase()+k.slice(1))]; })));
+  h+='<p class="hint">Hintergrund</p>'+chips('appbg', APP_BGS.map(function(b){ return [b.id, b.name]; }));
+  h+='<p class="hint">Chat-Hintergrund</p>'+chips('chatbg', CHAT_BGS.filter(function(b){ return !b.eigen; }).map(function(b){ return [b.id, b.name]; }));
+  h+='<p class="hint">Schrift</p>'+chips('fs', [['90','Klein'],['100','Normal'],['112','Groß'],['125','Sehr groß']]);
+  h+='<p class="hint">Abstände</p>'+chips('dichte', [['normal','Normal'],['kompakt','Kompakt']]);
+  h+='<p class="hint">Untere Leiste</p>'+chips('glas', [['glas','Glas'],['deckend','Deckend']]);
+  h+='<div class="ab-fuss">'+
+    (PREFS.aufbauVorher ? '<button type="button" class="btn btn-ghost btn-sm" data-abzurueck="1">Zurück zu vorher</button>' : '')+
+    '<button type="button" class="btn btn-ghost btn-sm" data-abvor="standard">Alles wie ausgeliefert</button></div>';
+  box.innerHTML=h;
+}
+function aufbauOeffnen(){
+  var t=$('aufbauTafel'); if(!t) return;
+  aufbauRender();
+  t.hidden=false;
+  /* Die Tafel liegt rechts bzw. oben – die Formi-Fenster dürfen nicht darüber stehen. */
+  if(typeof jarvisOffen==='function' && jarvisOffen() && typeof jarvisZu==='function') jarvisZu();
+}
+function aufbauSchliessen(){ var t=$('aufbauTafel'); if(t) t.hidden=true; }
+function aufbauKlick(e){
+  var b=e.target.closest && e.target.closest('button'); if(!b) return;
+  var leiste=aufbauLeisteJetzt(), x;
+  if((x=b.getAttribute('data-abvor'))){ aufbauVorschlag(x); }
+  else if((x=b.getAttribute('data-abzurueck'))){ aufbauZurueck(); }
+  else if((x=b.getAttribute('data-abrein'))){ if(leiste.length<AUFBAU_MAX){ leiste.push(x); aufbauLeisteAendern(leiste); } }
+  else if((x=b.getAttribute('data-abraus'))){ if(leiste.length>1){ leiste.splice(leiste.indexOf(x),1); aufbauLeisteAendern(leiste); } }
+  else if((x=b.getAttribute('data-abhoch'))){ var i=leiste.indexOf(x); if(i>0){ leiste.splice(i,1); leiste.splice(i-1,0,x); aufbauLeisteAendern(leiste); } }
+  else if((x=b.getAttribute('data-abrunter'))){ var j=leiste.indexOf(x); if(j>=0 && j<leiste.length-1){ leiste.splice(j,1); leiste.splice(j+1,0,x); aufbauLeisteAendern(leiste); } }
+  else if((x=b.getAttribute('data-abstart'))){ aufbauSetzen({ start:x, vorschlag:'eigen' }); }
+  else if((x=b.getAttribute('data-abschalter'))){
+    var a=aufbau(), t={ vorschlag:'eigen' };
+    if(x==='minimal') t.minimal=!a.minimal;
+    else if(x==='og') t.og=!a.og;
+    else { t[x]=!(a[x]!==false && !a.minimal); if(t[x]) t.minimal=false; }
+    aufbauSetzen(t);
+  }
+  else if((x=b.getAttribute('data-abpref'))){
+    var kv=x.split('|'); PREFS[kv[0]]=kv[1]; savePrefs(); applyPrefs();
+    if(kv[0]==='glas' || kv[0]==='dichte' || kv[0]==='fs') markerNeuMessen();
+  }
+  else return;
+  tick(6);
+  aufbauRender();
+}
+/* Formi hört zu (Runde 289): „wenn man irgendwas mit design und der app
+   erwähnt". Erkannt wird auf dem Gerät, ohne KI – sofort und auch ohne
+   Netz. Absichtlich NICHT: „verschieben" allein (Fristen, Schichten),
+   „Farbe" allein (das Studio-Logo). */
+var AUFBAU_WUNSCH = /\b(design|layout|aussehen|optik|übersichtlich\w*|unübersichtlich\w*|minimal\w*|schlichter|aufgeräumt\w*|überladen|zu voll|zu kompliziert|kompliziert|einfacher|ganz einfach|og[- ]?modus|versteh\w* (die app|das|hier) nicht|zu viele? (knöpfe|sachen|kram|zeug|funktionen)|dunkelmodus|hellmodus|dark ?mode|wie (am anfang|früher)|leiste|startseite|app (gestalten|anpassen|umbauen|einrichten)|knöpfe? (verschieben|anordnen|umstellen))\b/i;
+function aufbauWunsch(text){ return AUFBAU_WUNSCH.test(String(text||'')); }
 
 /* ══ AUSKUNFT NACH ART. 15 (P-10, Runde 114) ══════════════════════════
    Der Server (auskunftErstellen) sammelt, die App macht daraus EINE
@@ -24581,7 +25055,7 @@ var SCHNELL_VORSCHLAG = {
 };
 var SCHNELL_UMZUG = { 'ich:daten':'zeit', 'ich:zeiten':'zeit', 'chef:zeiten':'zeitteam' };
 function schnellSchluessel(e){
-  var basis = e.hilfe ? 'hilfe' : (e.neu ? 'neu' : (e.vorfall ? 'vorfall' : (e.view||'')));
+  var basis = e.hilfe ? 'hilfe' : (e.neu ? 'neu' : (e.vorfall ? 'vorfall' : (e.installieren ? 'installieren' : (e.view||''))));
   var unter = e.teamtab || e.ichtab || e.cgo || '';
   return unter ? basis+':'+unter : basis;
 }
@@ -24853,14 +25327,17 @@ function allesLadeUmschalten(){
    buildNav und nicht an der Stelle, an der sie aufgefallen ist. */
 function navAktivSetzen(){
   var g=groupOfView(currentView);
+  /* Runde 289: trägt die eigene Leiste die Seite selbst (v-…), ist das
+     der aktive Knopf – nicht der Raum, zu dem sie sonst gehört. */
+  var id = document.querySelector('[data-group="v-'+currentView+'"]') ? 'v-'+currentView : g.id;
   document.querySelectorAll('[data-group]').forEach(function(t){
-    t.classList.toggle('active', t.dataset.group===g.id);
+    t.classList.toggle('active', t.dataset.group===id);
   });
   /* Steht man in einem Bereich, der unten keinen eigenen Knopf hat
      (Ich, Team, Verwaltung), trägt „Alles" die Marke. Sonst zeigt die
      Leiste auf nichts, und man weiss beim Blick nach unten nicht, wo
      man ist — genau das, was die vier Knöpfe besser machen sollen. */
-  if(layoutNeu() && !document.querySelector('.mn-reihe [data-group="'+g.id+'"]')){
+  if(layoutNeu() && !document.querySelector('.mn-reihe [data-group="'+id+'"]')){
     var al=document.querySelector('.mn-reihe [data-group="g-alles"]');
     if(al) al.classList.add('active');
   }
@@ -24907,7 +25384,8 @@ function seitenGruppen(gruppen){
 function buildNav(){
   var side=$('side'), mob=$('mobnav'); side.innerHTML=''; mob.innerHTML='';
   var gruppen=navGruppen();
-  seitenGruppen(gruppen).forEach(function(g){ side.appendChild(navKnopf(g,'seite')); });
+  /* Runde 289: die eigene Leiste gilt links genauso wie unten. */
+  (aufbauGruppen() || seitenGruppen(gruppen)).forEach(function(g){ side.appendChild(navKnopf(g,'seite')); });
   /* Die Schnellzugriffe bleiben am Rechner hier, unter den Räumen
      (Runde 116). Runde 184 hatte sie auf „Heute“ verlegt und damit zwei
      Dinge kaputt gemacht, gefunden von test-schnell-editor und
@@ -24952,7 +25430,7 @@ function buildNav(){
      24 Ziele statt dreier Gruppen. */
   var reihe=document.createElement('div');
   reihe.className='mn-reihe';
-  neuLeisteGruppen(gruppen).forEach(function(g){
+  (aufbauGruppen() || neuLeisteGruppen(gruppen)).forEach(function(g){
     reihe.appendChild(navKnopf(g,'unten'));
   });
   mob.appendChild(reihe);
@@ -25465,8 +25943,11 @@ function bereichKopfSetzen(){
      nichts gescrollt war. Gesehen im Bild, nicht gedacht. */
   kopf.classList.remove('eng');
   document.body.setAttribute('data-bereich', g.id);
-  var ik=$('bkIkon'); if(ik) ik.innerHTML=gruppeSvg(g);
-  var ti=$('bkTitel'); if(ti) ti.textContent=gruppeLabel(g);
+  /* Runde 289: steht die Seite selbst als Knopf in der eigenen Leiste,
+     heisst der Kopf wie der Knopf („Putzplan" statt „Studio"). */
+  var ein = document.querySelector('[data-group="v-'+currentView+'"]') && aufbauEinzel(currentView);
+  var ik=$('bkIkon'); if(ik) ik.innerHTML=gruppeSvg(ein || g);
+  var ti=$('bkTitel'); if(ti) ti.textContent=ein ? ein.label : gruppeLabel(g);
   var su=$('bkSub');
   if(su){
     var t=bereichUnterzeile(g);
@@ -25640,7 +26121,9 @@ function buildSubNav(){
      und genau dort stempelt man, sieht seine Zeiten und Notizen. Sechs
      Durchläufe (test-handy-stempeln, test-kalender, test-notizen …)
      fielen darüber. Ein Tipp für das tägliche Ziel geht vor 40 px. */
-  if(views.length<2){
+  /* Runde 289: im OG-Modus gar keine Reiter – die drei Knöpfe unten
+     sind die ganze Navigation (der Rest über ☰). */
+  if(views.length<2 || document.body.classList.contains('og')){
     umschalterZeichnen(views);
     bar.innerHTML=''; bar.style.display='none';
     /* Die ganze Zeile weg, nicht nur die Leiste — sonst bliebe „Alle"
@@ -25990,6 +26473,8 @@ function hudBewegung(id){
 /* Auffällige Marker (Punkte) auf der Navigation aktualisieren */
 function updateNavMarkers(){
   var map={ chat:unread.chat, ann:unread.ann };
+  /* Runde 289: einzelne Seiten in der eigenen Leiste tragen ihren Punkt selbst. */
+  map['v-chat']=unread.chat && currentView!=='chat'; map['v-ann']=unread.ann && currentView!=='ann';
   // Gruppen erben den Marker ihrer Ansichten
   NAVGROUPS.forEach(function(g){
     map[g.id]=g.views.some(function(v){ return map[v] && currentView!==v; });
@@ -29274,6 +29759,15 @@ function gehirnZeichnenInRoh(box, tippen){
         '<p class="ga-text"><b>Hat nicht geklappt.</b> '+gehirnText(v.fehler)+'</p></div>';
     } else if(v.art==='idee'){
       antwort='<div class="gehirn-antwort">'+kopf+'<p class="ga-text">Danke! Deine Idee ist bei der Leitung gelandet.</p></div>';
+    } else if(v.art==='design'){
+      /* Runde 289: drei Vorschläge zum Ausprobieren, dazu der Editor. */
+      antwort='<div class="gehirn-antwort">'+kopf+'<p class="ga-text">Das kannst du dir selbst einstellen – nur auf diesem Gerät. Drei Möglichkeiten zum Ausprobieren:</p>'+
+        '<div class="ab-vorschlaege">'+(v.vorschlaege||[]).map(function(id){
+          var x=AUFBAU_VORSCHLAEGE.filter(function(y){ return y.id===id; })[0]; if(!x) return '';
+          return '<button type="button" class="ab-vor" data-gdesign="'+esc(id)+'">'+aufbauMiniHTML(x.leiste)+'<b>'+esc(x.name)+'</b><i>'+esc(x.was)+'</i></button>';
+        }).join('')+'</div>'+
+        '<div class="gehirn-ziele"><button type="button" class="btn btn-sm btn-primary" data-geditor="1">Im Editor anpassen ›</button>'+
+        '<button type="button" class="btn btn-ghost btn-sm" data-gnormal="'+i+'">Doch normal fragen</button></div></div>';
     } else if(v.art==='aktion'){
       antwort='<div class="gehirn-antwort">'+kopf+(v.spruch && !v.mini ? '<p class="ga-spruch">'+gehirnText(v.spruch)+'</p>' : '')+gehirnVorschlagHTML(v, i)+'</div>';
     } else {
@@ -29314,6 +29808,20 @@ function gehirnZeichnenInRoh(box, tippen){
   });
   box.querySelectorAll('[data-gwie]').forEach(function(b){
     b.addEventListener('click', function(){ formiWieStarten(b.getAttribute('data-gwie')); tick(8); });
+  });
+  box.querySelectorAll('[data-gdesign]').forEach(function(b){
+    b.addEventListener('click', function(){ aufbauVorschlag(b.getAttribute('data-gdesign')); tick(8); toast('Ausprobiert – „App gestalten" nimmt es zurück.'); });
+  });
+  box.querySelectorAll('[data-geditor]').forEach(function(b){
+    b.addEventListener('click', function(){ if(typeof jarvisZu==='function' && jarvisOffen()) jarvisZu(); aufbauOeffnen(); tick(8); });
+  });
+  box.querySelectorAll('[data-gnormal]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var alt=_gVerlauf[+b.getAttribute('data-gnormal')]; if(!alt || _gLaeuft) return;
+      var f=$(box.id==='jarvisVerlauf' ? 'jarvisFeld' : 'gehirnFeld'); if(!f) return;
+      f.value=alt.text; _gNormal=true;
+      gehirnSenden('auto', f.id);
+    });
   });
   box.querySelectorAll('[data-gvorschlag]').forEach(function(b){
     b.addEventListener('click', function(){ gehirnVorschlagUebernehmen(_gVerlauf[+b.getAttribute('data-gvorschlag')]); });
@@ -29439,6 +29947,9 @@ function gehirnTippen(el, text){
   }
   requestAnimationFrame(schritt);
 }
+/* „Doch normal fragen" (Runde 289): der nächste Satz geht an die KI,
+   auch wenn er nach dem Aussehen der App klingt. */
+var _gNormal=false;
 function gehirnSenden(art, feldId){
   if(_gLaeuft) return;
   var f=$(feldId||'gehirnFeld');
@@ -29449,7 +29960,8 @@ function gehirnSenden(art, feldId){
   if(/\b(danke|dankesch[oö]n|merci|thx|thanks)\b/i.test(text) && typeof formiFuehlt==='function') setTimeout(function(){ formiFuehlt('verliebt'); }, 300);
   jvThema(jvThemaAusText(text));
   if(art==='auto') formiAuftragMerken(text);
-  var v={ text:text, art:art, laeuft:true, schritte:[], _z:Date.now() };
+  var v={ text:text, art:art, laeuft:true, schritte:[], _z:Date.now(), normal:_gNormal };
+  _gNormal=false;
   _gVerlauf.push(v); _gLaeuft=true; if(f) f.value='';
   gehirnSchritt(v, art==='auto' ? 'Lese deinen Satz …' : 'Suche im Studio-Wissen …');
   if(art==='auto'){
@@ -29458,6 +29970,18 @@ function gehirnSenden(art, feldId){
   }
   gehirnZeichnen();
   gehirnNachUnten();
+  /* Runde 289: geht es um das Aussehen der App, schlägt Formi sofort
+     Möglichkeiten vor – ohne KI. „Doch normal fragen" schickt den Satz
+     danach wie bisher los. */
+  if(art==='auto' && !v.normal && aufbauWunsch(text)){
+    v.art='design'; v.laeuft=false; _gLaeuft=false;
+    /* „zu kompliziert" u. ä.: zuerst der OG-Modus. */
+    v.vorschlaege = /komplizi|einfach|versteh|og[- ]?modus/i.test(text) ? ['og','anfang','minimal'] : ['anfang','schlicht','og'];
+    gehirnSchritt(v, 'Erkannt: Aussehen der App', true);
+    if(gehirnSichtbar()){ gehirnZeichnen(); gehirnNachUnten(); }
+    gehirnVerlaufSichern();
+    return;
+  }
   /* Schnellweg (19.10.2026, „die ki braucht echt lang"): was die App
      selbst sicher erkennt, passiert ohne KI — unter einer Sekunde. */
   if(art==='auto'){
@@ -30038,7 +30562,7 @@ function formiKugelZeigen(){
     /* Runde 279: nach dem Lange-Drücken öffnet der Klick nicht auch noch das Fenster. */
     k.addEventListener('click', function(){ if(Date.now()-_frm.schluck<700) return; jarvisAuf(); });
     formiKugelRingBinden(k); formiKugelZielBinden(k); formiLebtStart(); }
-  k.hidden=!(gehirnVerfuegbar() && !jarvisOffen() && currentView!=='gehirn' && currentView!=='chat');
+  k.hidden=!(gehirnVerfuegbar() && !jarvisOffen() && currentView!=='gehirn' && currentView!=='chat' && aufbauFormiUnten());
   document.body.classList.toggle('formi-kugel-an', !k.hidden);
 }
 
@@ -52917,7 +53441,13 @@ function verlaufStarten(){
   // Eine Adresse in der Zeile schlägt alles – wer einen Link bekommt, soll
   // dort landen. Danach erst die zuletzt offene Ansicht.
   var ausLink=(location.hash||'').replace('#','');
-  var ziel = (ausLink && document.getElementById('view-'+ausLink)) ? ausLink : letzteAnsichtHolen();
+  /* Runde 291: wer sich unter „App gestalten" eine eigene Startseite
+     eingestellt hat, hat das bewusst getan — die gilt dann vor der
+     zuletzt offenen Seite (der Aufrufer öffnet sie). Ein Link geht
+     beidem vor. */
+  var eigenerStart = (typeof aufbauStart==='function') && aufbauStart();
+  var ziel = (ausLink && document.getElementById('view-'+ausLink)) ? ausLink
+           : (eigenerStart ? null : letzteAnsichtHolen());
   var gezeigt=false;
   /* Nicht mit currentView vergleichen: das steht vor dem ersten
      showView noch auf seinem Anfangswert 'chat' — ein Link auf #chat
@@ -52988,7 +53518,7 @@ function verlaufStarten(){
       }
     }).observe(el, { attributes:true, attributeFilter:['class'] });
   });
-  // Runde 289: dem Aufrufer sagen, ob schon ein Ziel offen ist.
+  // Runde 291: dem Aufrufer sagen, ob schon ein Ziel offen ist.
   return gezeigt;
 }
 
@@ -55206,10 +55736,19 @@ function buildNotifyOptions(){
      ohnehin der richtigere Ort: Einstellungen sind der Ort, an dem man
      etwas einstellt. */
   var st=$('notifyState'), erl=$('notifyAsk');
-  if(erl) erl.style.display =
-    (('Notification' in window) && Notification.permission==='default') ? '' : 'none';
+  /* Runde 288: Safari am iPhone hat Meldungen nur in der installierten
+     App. „Unterstützt keine" stimmte dort nicht, und der Knopf fehlte
+     genau dort, wo man nachsieht. */
+  var iosOhneApp = !('Notification' in window) && installGeraet()==='ios';
+  if(erl){
+    erl.style.display =
+      ((('Notification' in window) && Notification.permission==='default') || iosOhneApp) ? '' : 'none';
+    erl.textContent = iosOhneApp ? 'Als App installieren' : 'Meldungen erlauben';
+  }
   if(st){
-    if(!('Notification' in window)){
+    if(iosOhneApp){
+      st.textContent='Am iPhone gibt es Meldungen, sobald StudioChat als App auf dem Home-Bildschirm liegt.';
+    } else if(!('Notification' in window)){
       st.textContent='Dieses Gerät unterstützt keine Meldungen.';
     } else if(Notification.permission==='denied'){
       st.textContent='Meldungen sind für StudioChat gesperrt. Das lässt sich nur in den Einstellungen des Geräts wieder erlauben.';
@@ -56742,7 +57281,14 @@ function bindActions(){
   var vs=$('vfSenden'); if(vs) vs.addEventListener('click', vorfallSenden);
   var vm=$('vorfallModal'); if(vm) vm.addEventListener('click', function(e){ if(e.target===vm) vorfallSchliessen(); });
   var nm=$('neuModal'); if(nm) nm.addEventListener('click', function(e){ if(e.target===nm) neuSchliessen(); });
+  // ── Als App installieren (Runde 288) ──
+  var inc=$('inClose'); if(inc) inc.addEventListener('click', installSchliessen);
+  var inm=$('installModal'); if(inm) inm.addEventListener('click', function(e){ if(e.target===inm) installSchliessen(); });
   // ── Findetest (Runde 275) ──
+  // ── App gestalten (Runde 289) ──
+  var abc=$('abClose'); if(abc) abc.addEventListener('click', aufbauSchliessen);
+  var abi=$('abInhalt'); if(abi) abi.addEventListener('click', aufbauKlick);
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape' && $('aufbauTafel') && !$('aufbauTafel').hidden) aufbauSchliessen(); });
   var ftc=$('ftClose'); if(ftc) ftc.addEventListener('click', findeSchliessen);
   var ftm=$('findeModal'); if(ftm) ftm.addEventListener('click', function(e){ if(e.target===ftm) findeSchliessen(); });
   var fta=$('ftAufgeben'); if(fta) fta.addEventListener('click', function(){ findeEnde(false); });
