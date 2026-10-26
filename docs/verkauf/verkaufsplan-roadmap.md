@@ -3,6 +3,11 @@
 Stand: 22. Oktober 2026 · erstellt aus dem Code und den Unterlagen in
 `docs/`, nicht aus dem Gedächtnis.
 
+> **Nachtrag 26.10.2026:** Die Einzelprüfung „was zur Veröffentlichung
+> fehlt“ mit 22 Befunden, 16 Fragen und dem Schritt-für-Schritt-Weg steht
+> in `veroeffentlichung-checkliste.md`. Dort ist auch gemessen, dass
+> Stripe im Betrieb eingerichtet ist.
+
 > **Auftrag aus dem Betrieb:** „einen konkreten verkaufsplan bzw roadmap
 > erstellen was alles erledigt werden muss und wie wir premium von
 > standard unterscheiden und so und das wir die app bald auch mal an
@@ -104,7 +109,7 @@ ungeschickt und markenrechtlich nicht unsere Entscheidung. → Roadmap M8.
 | Stripe-Felder der aktuellen API-Version | ✅ | `tests/test-stripe-felder.js` |
 | Zustimmung zu AGB + AV an der Kasse, nur Unternehmer | ✅ | `docs/RECHT.md` Stand 25.9. |
 | Bestandsschutz für Körperformen (dauerhaft gratis) | ✅ | `bestandsschutz` |
-| **Stripe-Schlüssel hinterlegt?** | **nicht prüfbar** | GitHub Secrets sind von hier nicht einsehbar; ohne sie antwortet die Kasse „noch nicht eingerichtet“ (`docs/FUNKTIONEN.md` §9) |
+| **Stripe-Schlüssel hinterlegt?** | ✅ **ja**, gemessen 26.10.2026: der Webhook antwortet 400 statt 503. Test- oder Livemodus nicht feststellbar | `veroeffentlichung-checkliste.md` §1 |
 | Preise in Stripe | **offen** | `preiseFuer()` liest `STRIPE_PREIS_*`; ohne Preisentscheidung gibt es nichts einzutragen |
 
 ### 1.4 Rechtliches und Datenschutz
@@ -361,7 +366,7 @@ Betreiber (nur ihr könnt es), **C** = Claude im Repo.
 |---|---|---|
 | K1 | Selbstregistrierung einer Firma mit Testphase | ab ~10 Kunden oder wenn Werbung läuft |
 | K2 | Formi als Premium-Zusatz für fremde Firmen (Cloudflare in AV aufnehmen, Kosten je Aufruf begrenzen) | wenn Piloten danach fragen |
-| K3 | Lohnexport (DATEV-Format) aus der Zeiterfassung | wenn ein Kunde mit Steuerbüro danach fragt |
+| ~~K3~~ | ~~Lohnexport (DATEV-Format)~~ | **gebaut** (Runde 271), aber noch nie in einem echten LODAS eingespielt — `docs/datev/LIES-MICH.md` |
 | K4 | Anbindung an Studiosoftware (Termine/Mitglieder) | bewusst nicht (`ROADMAP.md`); nur auf Kundenwunsch |
 | K5 | Englische Oberfläche | nicht vor dem DACH-Markt |
 

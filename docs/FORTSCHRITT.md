@@ -24220,3 +24220,32 @@ lassen und teils echte Kosten verursachen. Damit trägt eine zweite Stufe.
 **Nicht geprüft:** Herstellerpreisseiten (aus dieser Umgebung nicht
 erreichbar, Zahlen aus Vergleichsportalen), Stripe-Schlüssel und
 Google-DPA (nicht einsehbar).
+
+## Was zur Veröffentlichung fehlt — Prüfung (26.10.2026) — nur Doku
+
+Aus dem Betrieb: „prüf mal alles was zur veröffentlichung fehlen würde
+und gib mir konkrete fragen und eine liste was noch fehlt und wie wir sie
+am besten angehen schritt für schritt“.
+
+**Gebaut:** `docs/verkauf/veroeffentlichung-checkliste.md` — 13 Muss- und
+9 Soll-Befunde mit Fundstelle, 16 Fragen mit Empfehlung, sieben Schritte
+mit Prüfkriterium.
+
+**Gemessen:** Stripe ist im Betrieb eingerichtet (Webhook antwortet 400
+„Unterschrift stimmt nicht“, nicht 503). 13 verkaufsrelevante Durchläufe
+lokal grün; `test-abo-leiter` und `test-stripe-felder` brauchen vorher
+`npm ci` in `functions/`.
+
+**Die drei wichtigsten Funde:**
+- **AGB § 8 verspricht die Löschung nach 30 Tagen** — der Code archiviert
+  nur, und das Werkzeug zum endgültigen Löschen, auf das der Kommentar in
+  `firmaLoeschen` verweist, gibt es nicht.
+- **`loesungen-basis.js` ist das Körperformen-Mitarbeiterhandbuch im
+  Wortlaut** und wird jeder Firma gezeigt. Wem es gehört, ist eine Frage
+  an den Betrieb, nicht an den Code.
+- **Die Testphase startet als Basic** — ein Interessent erlebt Premium
+  nie. Empfehlung: 30 Tage Premium.
+
+**Warum die Reihenfolge „entscheiden, bauen, prüfen lassen, verkaufen“:**
+der Anwalt ist der längste Weg und braucht nur die Entwürfe, nicht den
+fertigen Code — deshalb wird er in Woche 1 angefragt.
