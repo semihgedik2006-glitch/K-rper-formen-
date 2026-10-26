@@ -24495,3 +24495,40 @@ lokal grün; `test-abo-leiter` und `test-stripe-felder` brauchen vorher
 **Warum die Reihenfolge „entscheiden, bauen, prüfen lassen, verkaufen“:**
 der Anwalt ist der längste Weg und braucht nur die Entwürfe, nicht den
 fertigen Code — deshalb wird er in Woche 1 angefragt.
+
+## Antworten zur Veröffentlichung, Namensrecherche, Kreuztest vollständig (26.10.2026)
+
+Aus dem Betrieb: die 18 Fragen aus `docs/verkauf/StudioChat-Startklar.pdf`
+handschriftlich beantwortet, „nur f13 bleibt offen“.
+
+**Festgehalten** in `docs/verkauf/entscheidungen.md`, je Antwort mit dem,
+was daraus folgt. Zwei Antworten haben Folgen, die man leicht übersieht:
+- **F1 „Handbuch für alle mit Premium“** ist nur dann ein Schloss, wenn
+  `loesungen-basis.js` nicht mehr öffentlich ausgeliefert wird — sonst ist
+  es wie die Auswertung (P-14) nur ausgeblendet.
+- **F8 „Formi auch zu Premium“** heisst: Formi für fremde Firmen bauen —
+  eigener Bereich je Firma im Worker, Cloudflare als Unterauftragnehmer,
+  eine Kostengrenze je Firma. Das ist ein eigener, grosser Baustein.
+
+**Namensrecherche** (`docs/verkauf/name-recherche.md`): Empfehlung
+„Studiotakt“. **Dabei gelernt:** die Websuche fand „Studiolotse“ nicht —
+erst der Aufruf von `studiolotse.de` zeigte eine Software für
+Fitnessstudios unter genau diesem Namen. Deshalb wurde jeder Kandidat
+zusätzlich über seine Adresse geprüft. Die Markenregister sind von hier
+nicht erreichbar; die Registersuche ist als Schritt 2 für den Betreiber
+oder den Anwalt beschrieben.
+
+**Gebaut: Kreuztest vollständig** (`tests/rules/kreuz.test.js`, Befund V8).
+Der Durchlauf liest jeden `match` unter `firmen/{f}` aus `firestore.rules`
+(Klammern gezählt, Kommentare entfernt, Platzhalter wie `{f}` und
+`{rest=**}` keine Blöcke) und verlangt zu jedem einen Eintrag. 37 Pfade
+sind dazugekommen; die 18, die niemand lesen darf, stehen in
+`NIEMAND_LIEST`. Ergebnis lokal im Emulator: **71 Pfade, 451 bestanden,
+0 gefallen**. Gegenprobe: eine erfundene Sammlung `probeNeu` in einer
+Kopie der Regeln macht den Durchlauf rot („kein Eintrag in SAMMLUNGEN
+passt“); danach die Regeln unverändert zurückgesetzt.
+
+**Warum aus den Regeln lesen und nicht die Liste pflegen:** die Handliste
+war nicht falsch, sie war nur nie vollständig — 22 Sammlungen kamen dazu,
+ohne dass jemand die Liste anfasste. Eine Prüfung, die man vergessen
+kann, wird vergessen.
