@@ -19,6 +19,15 @@
 
    Ausnahmen, die ausdruecklich oeffentlich sind, stehen unten in OFFEN —
    mit Begruendung. Wer eine hinzufuegt, muss sie begruenden koennen.
+
+   VOLLSTAENDIG (26.10.2026). Die Liste unten war von Hand gepflegt und
+   nannte 34 Pfade; im Firmen-Zweig standen da schon 56 Sammlungen.
+   Keine Luecke nachgewiesen — aber 22 Sammlungen waren nie geprueft.
+   Aus dem Betrieb: „Mandantentrennung in firestore.rules“ als Risiko
+   vor dem ersten fremden Kunden (docs/verkauf/, Befund V8). Deshalb
+   liest der Durchlauf jetzt jeden `match` unter firmen/{f} selbst aus
+   den Regeln. Eine Sammlung, zu der hier kein Pfad passt, ist ein
+   Fehler — auch wenn alle anderen Pruefungen gruen sind.
    ───────────────────────────────────────────────────────────────────── */
 const fs = require('fs');
 const path = require('path');
@@ -106,6 +115,59 @@ const SAMMLUNGEN = [
   ['archives/2026-08-12',                     { tag: '2026-08-12' }],
   ['fehler/abc_1',                            { text: 'kaputt', uid: 'mitB' }],
   ['pushTokens/tok-b',                        { uid: 'mitB' }],
+
+  /* ── Seit 26.10.2026: alles, was die Handliste nicht kannte ── */
+  ['abo/aktuell',                             { stufe: 'basic', status: 'test' }],
+  ['config/zugriff',                          { stufe: 'voll' }],
+  ['config/lagebericht',                      { text: 'Lage von B' }],
+  ['channels/allgemein/gelesen/chefB',        { ts: 1 }],
+  ['channels/allgemein/tippt/chefB',          { ts: 1 }],
+  ['dms/dm_chefB_mitB/tippt/chefB',           { ts: 1 }],
+  ['bestellungen/be1',                        { studioKeys: ['studio-0'], ts: 1 }],
+  ['kennzahlen/studio-0_2026-09',             { studioKey: 'studio-0', mitglieder: 120 }],
+  ['planerTeam/mitB',                         { name: 'Mit B' }],
+  ['planerWuensche/w1',                       { uid: 'mitB', tag: '2026-11-03' }],
+  ['planerPlaene/2026-11',                    { monat: '2026-11' }],
+  ['schulungen/s1',                           { titel: 'Einweisung' }],
+  ['schulungTeilnehmer/t1',                   { uid: 'mitB', name: 'Mit B' }],
+  ['schulungFragenStat/m1',                   { richtig: 3, falsch: 1 }],
+  ['schulungLaeufe/l1',                       { uid: 'mitB', modul: 'm1' }],
+  ['loesungen/lo1',                           { titel: 'Geraet piept' }],
+  ['loesungBilder/lb1',                       { data: 'BILD-VON-B' }],
+  ['terminals/term1',                         { studioKey: 'studio-0', name: 'Tresen' }],
+  ['zeiten/z1',                               { uid: 'mitB', studioKey: 'studio-0', art: 'kommen' }],
+  ['zeitAntraege/za1',                        { uid: 'mitB', grund: 'vergessen' }],
+  ['zeitAbschluesse/2026-09',                 { monat: '2026-09' }],
+  ['lohnEinstellungen/aktuell',               { beraterNr: '0' }],
+  ['probetrainings/pt1',                      { studioKey: 'studio-0', ts: 1 }],
+  ['anliegen/an1',                            { uid: 'mitB', an: 'chef', titel: 'Frage' }],
+  ['zfProtokoll/zp1',                         { uid: 'mitB', was: 'zurueckgesetzt' }],
+  ['statistik/2026-10-01',                    { starts: 3 }],
+  /* Privat ist nur fuer die Person selbst lesbar — also legt hier der
+     Chef von B sein EIGENES an, sonst prueft die Gegenprobe einen Fall,
+     den die Regel zu Recht verbietet. */
+  ['privat/chefB',                            { notiz: 'privat von B' }],
+  ['privat/chefB/kalender/k1',                { text: 'Termin von B' }],
+  /* Fuer niemanden lesbar (allow read, write: if false). Hier zaehlt
+     nur Punkt 1–3; siehe NIEMAND_LIEST. */
+  ['vorfaelle/v1',                            { text: 'x' }],
+  ['firmencodes/CODE1',                       { firma: B }],
+  ['beitrittVersuche/mitB',                   { n: 1 }],
+  ['mailVersand/mv1',                         { an: 'x@example.org' }],
+  ['schulungCodes/k1',                        { code: '123' }],
+  ['schulungVersuche/mitB',                   { n: 1 }],
+  ['schulungLernplan/t1',                     { modul: 'm1' }],
+  ['mkProjects/p1',                           { name: 'alt' }],
+  ['mkProjects/p1/versions/v1',               { name: 'alt' }],
+  ['zeitPins/mitB',                           { hash: 'x' }],
+  ['terminalCodes/term1',                     { geheim: 'x' }],
+  ['appointments/ap1',                        { name: 'alt' }],
+  ['emailTemplates/et1',                      { name: 'alt' }],
+  ['studioMetrics/studio-0',                  { n: 1 }],
+  ['competitors/co1',                         { name: 'alt' }],
+  ['expansionLeads/el1',                      { name: 'alt' }],
+  ['gehirnErinnerungen/ge1',                  { text: 'x' }],
+  ['gehirnGeheim/gg1',                        { text: 'x' }],
 ];
 
 /* Ausdrueckliche Ausnahmen. Jede braucht einen Grund, der auch in einem
@@ -119,7 +181,52 @@ const OFFEN = {
 /* pushTokens ist der Sonderfall in die andere Richtung: read ist fuer
    ALLE verboten, auch fuer den Eigentuemer. Die Gegenrichtung (Punkt 4)
    kann dort deshalb nicht gelten. */
-const NIEMAND_LIEST = ['pushTokens/tok-b'];
+const NIEMAND_LIEST = ['pushTokens/tok-b',
+  'vorfaelle/v1', 'firmencodes/CODE1', 'beitrittVersuche/mitB', 'mailVersand/mv1',
+  'schulungCodes/k1', 'schulungVersuche/mitB', 'schulungLernplan/t1',
+  'mkProjects/p1', 'mkProjects/p1/versions/v1', 'zeitPins/mitB', 'terminalCodes/term1',
+  'appointments/ap1', 'emailTemplates/et1', 'studioMetrics/studio-0', 'competitors/co1',
+  'expansionLeads/el1', 'gehirnErinnerungen/ge1', 'gehirnGeheim/gg1'];
+
+/* Jeder `match` unter firmen/{f}, aus den Regeln gelesen — nicht aus
+   dieser Datei. Klammern werden gezaehlt, damit verschachtelte Pfade
+   (mkProjects/{p}/versions/{v}, privat/{uid}/{rest=**}) als ganzer Pfad
+   herauskommen. Kommentare fallen vorher weg: in ihnen steht manches
+   „match /…“, das keine Regel ist. */
+function firmenPfade(text) {
+  const ohne = text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+  const zeilen = ohne.split('\n');
+  const stapel = [];
+  const pfade = [];
+  let tiefe = 0, firmaTiefe = -1;
+  for (const z of zeilen) {
+    const m = z.match(/match\s+(\/\S+)\s*\{/);
+    if (m) {
+      if (firmaTiefe < 0 && m[1] === '/firmen/{f}') {
+        firmaTiefe = tiefe;
+      } else if (firmaTiefe >= 0) {
+        stapel.push({ teil: m[1].replace(/^\//, ''), tiefe: tiefe });
+        pfade.push(stapel.map((x) => x.teil).join('/'));
+      }
+    }
+    /* Platzhalter wie {f} oder {rest=**} sind keine Bloecke. */
+    for (const c of z.replace(/\{[^{}\s]*\}/g, '')) {
+      if (c === '{') tiefe++;
+      if (c === '}') {
+        tiefe--;
+        while (stapel.length && stapel[stapel.length - 1].tiefe >= tiefe) stapel.pop();
+        if (firmaTiefe >= 0 && tiefe <= firmaTiefe) return pfade;
+      }
+    }
+  }
+  return pfade;
+}
+function passt(muster, pfad) {
+  const re = '^' + muster.split('/').map((t) =>
+    /^\{[^}]*=\*\*\}$/.test(t) ? '.+' : (/^\{[^}]*\}$/.test(t) ? '[^/]+'
+      : t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))).join('/') + '$';
+  return new RegExp(re).test(pfad);
+}
 
 (async () => {
   env = await initializeTestEnvironment({
@@ -284,6 +391,31 @@ const NIEMAND_LIEST = ['pushTokens/tok-b'];
        Kundenverwaltung nicht mehr heran. */
     await pruefe('users · der Betreiber darf ueber Firmen hinweg lesen', () =>
       assertSucceeds(betreiber().doc('users/chefB').get()));
+  }
+
+  /* ══ VOLLSTAENDIG ═══════════════════════════════════════════════════
+     Zu jedem `match` im Firmen-Zweig muss oben ein Pfad stehen. Eine
+     neue Sammlung, die nur in firestore.rules dazukommt, wird hier rot
+     — bevor sie bei einem Kunden ungeprueft Daten haelt. */
+  {
+    const muster = firmenPfade(fs.readFileSync(REGELN, 'utf8'));
+    const pfade = SAMMLUNGEN.map((x) => x[0]);
+    await pruefe('VOLLSTAENDIG · die Regeln nennen ' + muster.length + ' Pfade im Firmen-Zweig (mehr als 50 erwartet)', () => {
+      if (muster.length < 50) throw new Error('nur ' + muster.length + ' gefunden — liest der Zerleger die Regeln noch?');
+    });
+    for (const m of muster) {
+      await pruefe('VOLLSTAENDIG · ' + m + ' hat einen Kreuztest', () => {
+        if (!pfade.some((p) => passt(m, p))) {
+          throw new Error('kein Eintrag in SAMMLUNGEN passt zu firmen/{f}/' + m);
+        }
+      });
+    }
+    /* Gegenprobe: ein erfundener Pfad darf NICHT passen. Sonst waere
+       passt() zu grosszuegig und alles oben gruen, ohne etwas zu sagen. */
+    await pruefe('GEGENPROBE · VOLLSTAENDIG · eine Sammlung ohne Eintrag faellt auf', () => {
+      if (pfade.some((p) => passt('erfundeneSammlung/{x}', p))) throw new Error('passt() passt zu viel');
+      if (!passt('privat/{uid}/{rest=**}', 'privat/chefB/kalender/k1')) throw new Error('{rest=**} wird nicht erkannt');
+    });
   }
 
   console.log('\n── Firmengrenze, alle Sammlungen ──');
