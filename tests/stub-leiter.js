@@ -255,7 +255,12 @@ var USERS = [
       orderBy: function () { return this; },
       limit: function () { return this; },
       limitToLast: function () { return this; },
-      add: function () { return Promise.resolve({ id: 'neu' }); },
+      /* Runde 294: wie in stub-mitarbeiter.js mitschreiben – sonst prüft
+         ein Test des Vorschlagens („angebot") nur, dass geklickt wurde. */
+      add: function (d) {
+        (window.__schreib = window.__schreib || []).push({ pfad: path + '/(neu)', daten: d });
+        return Promise.resolve({ id: 'neu' });
+      },
       get: function () {
         // Dieselben Sammlungen wie bei onSnapshot bedienen. Sonst sieht ein
         // Test, der einmalig liest (z. B. der Tabellen-Abgleich), nichts.

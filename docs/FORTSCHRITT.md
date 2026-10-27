@@ -24956,3 +24956,66 @@ nächste Findetest.
   untereinander").
 - **Nicht gemessen:** ob es jetzt schneller geht. Das zeigt nur ein
   neuer Findetest – am besten mit jemandem, der ihn noch nicht kennt.
+
+## Runde 294 — Die Leitung schlägt ein Layout vor, eingestellt wird nichts von allein (27.10.2026)
+
+Aus dem Betrieb, 26.10.2026: „es soll jeder nur für sein eigenes gerät
+anpassen können und leitungen können es für mitarbeiter einstellen wenn
+sie es wollen aber nicht sofort automatisch". Der erste Teil steht seit
+Runde 289, der zweite war offen.
+
+**Was gebaut wurde**
+
+- **Leitung und Chef** sehen in „App gestalten → Meine Designs" an jedem
+  eigenen Design einen Knopf **„Mitarbeitern vorschlagen"**. Er teilt das
+  Design wie „Teilen", nur mit `angebot:true`.
+- **Mitarbeiter** sehen auf „Heute" den Block **„Vorschlag der Leitung"**
+  mit einer Zeile „„Name" ansehen". Die App ändert sich dabei nicht.
+- Ein Tipp öffnet „App gestalten" mit dem Vorschlag **im Entwurf**: die
+  Vorschau zeigt ihn, darüber steht „Vorschlag von …". „Übernehmen"
+  stellt ihn ein, „Nein danke" blendet ihn aus, „Verwerfen" schliesst
+  ohne Entscheidung (der Vorschlag bleibt auf „Heute") – und ohne
+  Rückfrage, solange nichts am Vorschlag geändert wurde.
+- Unter „Vom Team" trägt ein Vorschlag die leise Marke „Vorschlag der
+  Leitung" – wer „Nein danke" gesagt hat, findet ihn dort wieder.
+
+**Warum so**
+
+- **Je Gerät, nicht je Konto.** Die Entscheidung liegt in
+  `PREFS.angebote` (localStorage), genau wie der Aufbau selbst. Wer am
+  Empfangsrechner „Nein" sagt, wird am Handy noch einmal gefragt – das
+  passt zu „jeder nur für sein eigenes Gerät".
+- **Ein eigener Block, nicht eine Zeile in „Neu für dich".** Zuerst stand
+  der Vorschlag dort. Am Handy fiel der Block beim Einpassen unter
+  „Ausserdem", und dessen Verweis führt in den Chat – der Vorschlag wäre
+  zwar nicht stumm verschwunden, aber nicht mehr erreichbar gewesen. Ein
+  Schlüssel, der nicht in `HEUTE_BLOECKE` steht, bleibt vorn (wie „Meine
+  Schicht"); er ist eine Zeile hoch und verschwindet nach der Antwort.
+- **Kein Index nötig.** Mitarbeiter hören auf
+  `designs where angebot == true` ohne `orderBy` und sortieren selbst –
+  gleich + sortiert bräuchte einen zusammengesetzten Index, und die
+  Auslieferung legt keine an.
+- **Die Regel**, in `designOk()` – also auf beiden Pfaden (flach und
+  `firmen/<k>/`): `angebot` ist optional, muss ja/nein sein, und `true`
+  dürfen nur `isChef()` oder `isLeiter()` schreiben. Ein Mitarbeiter
+  kann sein geteiltes Design auch nachträglich nicht zum Vorschlag
+  machen. Eine Leitung schlägt firmenweit vor, nicht je Studio: die
+  Designs-Sammlung hat keine Studiogrenze, und ein Vorschlag stellt
+  nichts ein. Wenn das stört, ist das Feld `studios` wie bei den
+  Dokumenten der nächste Schritt.
+
+**Tests**
+
+- Neu: `tests/test-vorschlag.js` (57 Zusicherungen): sehen, ansehen,
+  verwerfen, übernehmen, „Nein danke", Marke unter „Vom Team", die
+  Leitung schreibt genau ein Design mit `angebot:true`, „Teilen" bleibt
+  ohne. Trefferflächen per Hit-Test für die Vorschlags-Zeile, „Nein
+  danke" und „Übernehmen" bei 320 / 390 / 430 / 820 / 1280 / 1440 /
+  1920 px, normal und kompakt – alle ≥ 44 × 44, im Bild, kein
+  Querscrollen. Gegenprobe gegen `main`: rot.
+- `tests/rules/designs.test.js`: 54 statt 34 – Leitung und Chef dürfen
+  vorschlagen, ein Mitarbeiter nicht (auch nicht per Änderung),
+  `angebot:'ja'` geht nicht, das Lesen mit `where` geht für Aktive.
+- `tests/stub-leiter.js` schreibt `add()` jetzt in `window.__schreib`
+  mit, wie stub-mitarbeiter – sonst prüfte der Leitungs-Teil nur, dass
+  geklickt wurde.
