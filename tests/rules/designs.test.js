@@ -10,6 +10,9 @@
        Name 1–30 Zeichen, aufbau und prefs als Karte
      · ändern: nur wer es geteilt hat, und die Kennung bleibt
      · entfernen: wer es geteilt hat, oder der Chef – sonst niemand
+     · vorschlagen (Runde 294, `angebot:true`): nur Chef und Leitung.
+       Aus dem Betrieb: „leitungen können es für mitarbeiter einstellen
+       wenn sie es wollen aber nicht sofort automatisch"
    ───────────────────────────────────────────────────────────────────── */
 const fs = require('fs');
 const path = require('path');
@@ -45,6 +48,8 @@ const D = (uid, extra) => Object.assign({ uid, von: 'Mara', name: 'Frühschicht'
     await db.doc('users/ma').set({ name: 'Mara', role: 'mitarbeiter', firma: 'eins', aktiv: true, studioKeys: ['studio-1'] });
     await db.doc('users/ma2').set({ name: 'Mo', role: 'mitarbeiter', firma: 'eins', aktiv: true, studioKeys: ['studio-1'] });
     await db.doc('users/chef').set({ name: 'Max', role: 'chef', firma: 'eins', aktiv: true, studioKeys: [] });
+    await db.doc('users/le').set({ name: 'Lea', role: 'leiter', firma: 'eins', aktiv: true, studioKeys: ['studio-1'] });
+    await db.doc('users/altle').set({ name: 'Altlea', role: 'leiter', aktiv: true, studioKeys: ['studio-1'] });
     await db.doc('users/neu').set({ name: 'Neu', role: 'mitarbeiter', firma: 'eins', aktiv: false, studioKeys: [] });
     await db.doc('users/alt').set({ name: 'Alt', role: 'mitarbeiter', aktiv: true, studioKeys: ['studio-1'] });
     await db.doc('users/alt2').set({ name: 'Alt2', role: 'mitarbeiter', aktiv: true, studioKeys: ['studio-1'] });
@@ -53,7 +58,7 @@ const D = (uid, extra) => Object.assign({ uid, von: 'Mara', name: 'Frühschicht'
   });
   const als = (uid) => env.authenticatedContext(uid).firestore();
 
-  for (const [welt, ma, ma2, chef, neu, p] of [['firmen/eins', 'ma', 'ma2', 'chef', 'neu', 'firmen/eins/'], ['flach', 'alt', 'alt2', 'altchef', 'altneu', '']]) {
+  for (const [welt, ma, ma2, chef, neu, p, le] of [['firmen/eins', 'ma', 'ma2', 'chef', 'neu', 'firmen/eins/', 'le'], ['flach', 'alt', 'alt2', 'altchef', 'altneu', '', 'altle']]) {
     protokoll.push('\n  ── ' + welt + ' ──');
     await darf('Mitarbeiter teilt ein Design unter der eigenen Kennung', als(ma).doc(p + 'designs/d1').set(D(ma)));
     await darfNicht('… unter einer FREMDEN Kennung', als(ma).doc(p + 'designs/d2').set(D(ma2)));
@@ -72,9 +77,20 @@ const D = (uid, extra) => Object.assign({ uid, von: 'Mara', name: 'Frühschicht'
     await darf('wer es geteilt hat, entfernt es', als(ma).doc(p + 'designs/d1').delete());
     await darf('(neu geteilt)', als(ma).doc(p + 'designs/d8').set(D(ma)));
     await darf('der Chef entfernt jedes', als(chef).doc(p + 'designs/d8').delete());
+    /* Runde 294: Vorschläge der Leitung */
+    await darf('die Leitung schlägt ein Design vor', als(le).doc(p + 'designs/a1').set(D(le, { angebot: true })));
+    await darf('der Chef schlägt ein Design vor', als(chef).doc(p + 'designs/a2').set(D(chef, { angebot: true })));
+    await darfNicht('ein Mitarbeiter schlägt NICHT vor', als(ma).doc(p + 'designs/a3').set(D(ma, { angebot: true })));
+    await darf('… teilt aber mit angebot:false', als(ma).doc(p + 'designs/a4').set(D(ma, { angebot: false })));
+    await darfNicht('… und macht sein Design nicht nachträglich zum Vorschlag', als(ma).doc(p + 'designs/a4').update({ angebot: true }));
+    await darfNicht('angebot muss ja/nein sein', als(le).doc(p + 'designs/a5').set(D(le, { angebot: 'ja' })));
+    await darf('Mitarbeiter lesen Vorschläge (where angebot == true)', als(ma2).collection(p + 'designs').where('angebot', '==', true).limit(20).get());
+    await darfNicht('ein Inaktiver liest Vorschläge nicht', als(neu).collection(p + 'designs').where('angebot', '==', true).limit(20).get());
+    await darf('die Leitung zieht den eigenen Vorschlag zurück', als(le).doc(p + 'designs/a1').delete());
+    await darfNicht('ein Mitarbeiter entfernt den Vorschlag des Chefs nicht', als(ma).doc(p + 'designs/a2').delete());
   }
   await env.cleanup();
-  console.log('\nGeteilte Designs (Runde 292)\n' + protokoll.join('\n'));
+  console.log('\nGeteilte Designs (Runde 292, Vorschläge Runde 294)\n' + protokoll.join('\n'));
   console.log('\n' + bestanden + ' bestanden, ' + gefallen + ' gefallen');
   process.exit(gefallen ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(1); });

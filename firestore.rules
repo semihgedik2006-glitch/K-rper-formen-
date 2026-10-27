@@ -474,13 +474,17 @@ service cloud.firestore {
     // (aufbauBereinigen) – die Regel hält nur Grösse und Form.
     function designOk() {
       let d = request.resource.data;
-      return d.keys().hasOnly(['uid', 'von', 'name', 'aufbau', 'prefs', 'ts'])
+      return d.keys().hasOnly(['uid', 'von', 'name', 'aufbau', 'prefs', 'ts', 'angebot'])
         && d.keys().hasAll(['uid', 'name', 'aufbau', 'prefs', 'ts'])
         && d.name is string && d.name.size() > 0 && d.name.size() <= 30
         && (!('von' in d) || (d.von is string && d.von.size() <= 80))
         && d.aufbau is map && d.aufbau.size() <= 12
         && d.prefs is map && d.prefs.size() <= 10
-        && d.ts is number;
+        && d.ts is number
+        // Runde 294: „Mitarbeitern vorschlagen" – nur Chef und Leitung.
+        // Eingestellt wird damit nichts; die App zeigt es nur als Vorschlag.
+        && (!('angebot' in d) || (d.angebot is bool
+              && (d.angebot == false || isChef() || isLeiter())));
     }
 
     match /users/{uid} {
