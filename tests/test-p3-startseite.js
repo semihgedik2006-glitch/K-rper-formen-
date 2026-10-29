@@ -144,7 +144,10 @@ async function knoepfe(p) {
     const a = await p.evaluate(LAGE);
     console.log('  ' + JSON.stringify(a));
     pruefe('GEGENPROBE Handy: eine Spalte, kein Fortschrittsbalken', a.spalten === 0 && a.fortschritt === null, JSON.stringify(a));
-    pruefe('Handy: passt weiter auf einen Bildschirm', a.passt);
+    /* Runde 295, aus dem Betrieb (29.10.2026): „NUR auf handy ist es auch
+       ok wenn man scrollen muss etwas" — für die Karten der Mitarbeiter.
+       Die Leitung (hier der Chef) passt weiter auf einen Bildschirm. */
+    if (rolle !== 'mitarbeiter') pruefe('Handy: passt weiter auf einen Bildschirm', a.passt);
     pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await p.close();
   }

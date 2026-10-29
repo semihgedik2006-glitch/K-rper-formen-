@@ -90,9 +90,15 @@ async function startseite(p) {
   });
   await p.waitForTimeout(900);
   return await p.evaluate(() => {
+    /* Runde 295: bei Mitarbeitern stehen die offenen Aufgaben (mit
+       Überfälligem und Heutigem) in EINER Karte „Aufgaben". Aus dem
+       Betrieb, 29.10.2026: „es soll schon jeder bereich ein eigenen
+       bereich haben alles aber halt kleiner". Geprüft wird dort
+       dasselbe: Zahl, Zeilen beim Namen, Weg in die gefilterte Liste. */
+    const OFFEN = document.querySelector('#heuteListe.bereichskarten') ? /^Aufgaben/ : /^Offen/;
     const koepfe = [...document.querySelectorAll('.heute-block .hk-wort')]
       .map(x => x.textContent.trim());
-    const offenKopf = koepfe.find(t => /^Offen/.test(t)) || '';
+    const offenKopf = koepfe.find(t => OFFEN.test(t)) || '';
     const m = /(?:·\s*|\s)(\d+)$/.exec(offenKopf);
     /* Runde 260: Mitarbeiter haben keinen Raum „Studio" mehr (aus dem
        Betrieb, 23.10.2026: „ja" zu „unten nur Heute, Zeiten, Plan,
@@ -105,7 +111,7 @@ async function startseite(p) {
        stehen — dann, wenn der Bildschirm für den Block nicht mehr
        reicht (der Putzplan ist dazugekommen). */
     const knopf = [...document.querySelectorAll('.heute-rest-knopf')]
-      .find(x => /^Offen/.test(x.textContent.trim()));
+      .find(x => OFFEN.test(x.textContent.trim()));
     const mk = knopf ? /·\s*(\d+)/.exec(knopf.textContent) : null;
     return {
       bloecke: koepfe,
@@ -118,11 +124,11 @@ async function startseite(p) {
       offenZahl: m ? +m[1] : (offenKopf ? 1 : 0),
       ueberZahl: mu ? +mu[1] : (ueber ? 1 : 0),
       zeilen: [...document.querySelectorAll('.heute-block')]
-        .filter(b => /^Offen/.test((b.querySelector('.hk-wort') || {}).textContent || ''))
+        .filter(b => OFFEN.test((b.querySelector('.hk-wort') || {}).textContent || ''))
         .map(b => [...b.querySelectorAll('.heute-zeile b')].map(x => x.textContent.trim()))[0] || [],
       linkZiel: (function () {
         const b = [...document.querySelectorAll('.heute-block')]
-          .find(x => /^Offen/.test((x.querySelector('.hk-wort') || {}).textContent || ''));
+          .find(x => OFFEN.test((x.querySelector('.hk-wort') || {}).textContent || ''));
         const l = b && b.querySelector('[data-heute]');
         return l ? { ziel: l.dataset.heute, filter: l.dataset.hf || '' } : null;
       })(),

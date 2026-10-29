@@ -283,6 +283,8 @@ var USERS = [
           : path === 'board' ? (typeof BOARD !== 'undefined' ? BOARD : [])
           /* Geteilte Designs (Runde 292): get() UND onSnapshot */
           : path === 'designs' ? (window.__designs || [])
+          /* Kundenpost (Runde 295): get() UND onSnapshot */
+          : path === 'kundenpost' ? (window.__kundenpost || [])
           : ga ? (ABSENCES[ga[1]] || [])
           : ms ? (SHIFTS[ms[1]] || [])
           : gc ? (CLEAN[gc[1]] || [])
@@ -336,7 +338,8 @@ var USERS = [
                    (path==='planerTeam' ? (window.__planerTeam || []) :
                    (path==='planerWuensche' ? (window.__planerWuensche || []) :
                    (path==='planerPlaene' ? (window.__planerPlaene || []) :
-                   (path==='designs' ? (window.__designs || []) : (path==='documents' ? DOCS : []))))))))))));
+                   (path==='kundenpost' ? (window.__kundenpost || []) :
+                   (path==='designs' ? (window.__designs || []) : (path==='documents' ? DOCS : [])))))))))))));
         var docs = list.map(function (d) { return { id: d.id, data: function () { return d; } }; });
         try { cb(makeSnap(docs)); } catch (e) { console.error('SNAP', e); }
         return unsub();

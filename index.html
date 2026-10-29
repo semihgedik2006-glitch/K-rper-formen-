@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-638xoJdUyh1xXaN4NrI6d/u3JOS58XAouwEojwswAL8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-PQvAPWGCr+XsybHVFemNjbab7Di4Nt8hZ7Jn5GtIHrI='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2148,11 +2148,11 @@ body.neu #view-docs #docCatRow{margin-top:var(--s8)}
    sichtbar nichts. Mein Test hat das nicht gefunden, weil er die
    Klasse .show geprueft hat statt der Sichtbarkeit: die Klasse sass
    richtig, sie hatte nur keine Wirkung. */
-#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#schnellModal,#neuModal,#findeModal,#installModal,#vorfallModal,#zfModal,#bestellModal,#aktionModal{
+#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#schnellModal,#neuModal,#findeModal,#installModal,#vorfallModal,#zfModal,#bestellModal,#aktionModal,#kpModal,#hsModal{
   position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
   padding:var(--s20);background:var(--scrim);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#schnellModal.show,#neuModal.show,#findeModal.show,#installModal.show,#vorfallModal.show,#zfModal.show,#bestellModal.show,#aktionModal.show{display:flex}
+#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#schnellModal.show,#neuModal.show,#findeModal.show,#installModal.show,#vorfallModal.show,#zfModal.show,#bestellModal.show,#aktionModal.show,#kpModal.show,#hsModal.show{display:flex}
 /* Runde 146: der Link aus der Bestätigungs- oder Passwort-Mail. Er muss
    VOR der Anmeldung und über dem Startbild stehen (#splash 1000,
    #loadingWrap 999). */
@@ -9613,6 +9613,49 @@ body.neu .hz-txt b{font-size:var(--t-md);font-weight:700;line-height:var(--lh-en
 body.neu .hz-txt i{font-style:normal;font-size:var(--t-sm);color:var(--text-2);
   line-height:var(--lh-eng);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 body.neu .heute-zeile.dringend .hz-txt i{color:var(--danger-tx);font-weight:600}
+/* ── Runde 295: jeder Bereich eine eigene kleine Karte (Mitarbeiter) ──
+   Aus dem Betrieb, 29.10.2026: „es soll schon jeder bereich ein eigenen
+   bereich haben alles aber halt kleiner und auf der startseite nur".
+   Die Zeilen verlieren ihre eigene Fläche und den Farbbalken: die Karte
+   ist die Fläche, die Farbe steht im Zeichen. Zwischen den Zeilen eine
+   Haarlinie. Gilt nur, wo #heuteListe die Klasse trägt (Mitarbeiter);
+   die Leitung bleibt vorerst, wie sie war. */
+body.neu #heuteListe.bereichskarten .heute-block{margin-bottom:var(--s12);
+  padding:var(--s12) var(--s8) var(--s4) var(--s12);border-radius:var(--r-lg);background:var(--bg-2);
+  box-shadow:inset 0 1px 0 var(--kante),0 0 0 1px var(--line),var(--e1)}
+/* Unter der Überschrift mindestens 14 px: die Trefferfläche von „Alle N" ragt
+   22 px unter die Mitte des Wortes, und die erste Zeile darunter liegt
+   im Bild ÜBER ihr. Mit 4 px traf „Alle" nur 39 px hoch (gemessen,
+   test-startseite-karten). Unabhängig von der Dichte. */
+body.neu #heuteListe.bereichskarten .heute-kopf{font-size:var(--t-md);margin:0 0 max(var(--s16),14px);padding:0 var(--s4)}
+/* Die Karte ist die Gruppe: die innere Fläche (und am Stil „Formi"
+   ihre schillernde Kante) fällt weg, sonst steht eine Karte in der
+   Karte. Die Trennlinien zwischen den Zeilen bleiben (::before). */
+body.neu #heuteListe.bereichskarten .heute-liste{background:none;border:0;box-shadow:none;border-radius:0}
+body.neu #heuteListe.bereichskarten .heute-zeile{background:none;box-shadow:none;border-left:0;
+  border-radius:var(--r-sm);min-height:48px;padding:var(--s6) var(--s8)}
+body.neu #heuteListe.bereichskarten .hz-mit-haken{gap:0}
+/* Eine Zeile mit eigenem Knopf rechts („Erledigt", „Gelesen"). Wie
+   beim Haken: ein EIGENER Knopf neben der Zeile, nicht in ihr — ein
+   Knopf im Knopf ist ungültig. */
+body.neu .hz-mit-aktion{display:flex;align-items:center;gap:var(--s6)}
+body.neu .hz-mit-aktion > .heute-zeile{flex:1;min-width:0}
+body.neu .hz-mit-aktion .hz-pfeil{display:none}
+body.neu .hz-aktion{flex:0 0 auto;min-height:44px;min-width:44px;margin-right:var(--s4);
+  font-size:var(--t-sm);font-weight:600}
+/* Kommen/Gehen oben auf „Heute" (Runde 295). */
+.heute-stempel{display:flex;align-items:center;gap:var(--s12);margin:0 0 var(--s12);
+  padding:var(--s10) var(--s10) var(--s10) var(--s16);border-radius:var(--r-lg);background:var(--bg-2);
+  box-shadow:inset 0 1px 0 var(--kante),0 0 0 1px var(--line),var(--e1)}
+.heute-stempel .hs-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:var(--s2)}
+.heute-stempel .hs-txt b{font-size:var(--t-md);font-weight:700;line-height:var(--lh-eng)}
+.heute-stempel .hs-txt i{font-style:normal;font-size:var(--t-sm);color:var(--text-2);line-height:var(--lh-eng)}
+.heute-stempel .hs-knopf{flex:0 0 auto;min-height:48px;min-width:104px}
+.kp-box,.hs-box{max-width:440px;width:100%}
+.kp-box .kp-hinweis,.hs-box .hs-hinweis{margin:0 0 var(--s12)}
+.kp-box .vf-art label > span{font-weight:600}
+.hs-box .st-knoepfe{display:flex;flex-wrap:wrap;gap:var(--s8)}
+.hs-box .st-knoepfe .btn{min-height:48px;flex:1 1 120px}
 /* Der Pfeil nimmt die Farbe leise mit — er ist das Versprechen, dass
    die Zeile irgendwohin führt. */
 body.neu .heute-zeile .hz-pfeil{color:var(--kat);opacity:.55}
@@ -14022,6 +14065,44 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
       <button class="btn btn-primary vf-senden" id="vfSenden" type="button">Jetzt melden</button>
     </div>
     <div id="vfErgebnis" hidden aria-live="polite"></div>
+  </div>
+</div>
+
+<!-- Kundenpost erledigen (Runde 295). Aus dem Betrieb, 28.10.2026:
+     „gehe nie davon aus das etwas erledigt wurde nur weils unter erledigt
+     ist". Deshalb fragt das Fenster, WIE es erledigt wurde, und die Leitung
+     bestätigt danach. „Per Mail" zählt erst, wenn die Antwort im
+     Postausgang steht. -->
+<div id="kpModal" role="dialog" aria-modal="true" aria-labelledby="kpTitel">
+  <div class="pm-box kp-box">
+    <button class="lb-close" id="kpZu" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <h3 id="kpTitel" style="margin-bottom:6px;padding-right:44px">Kundenpost</h3>
+    <p class="hint" id="kpText" style="margin:0 0 12px"></p>
+    <fieldset class="vf-art" id="kpWie">
+      <legend>Wie wurde es erledigt?</legend>
+      <label><input type="radio" name="kpWie" value="mail" /><span>Per Mail beantwortet</span></label>
+      <label><input type="radio" name="kpWie" value="telefon" /><span>Telefonisch geklärt</span></label>
+      <label><input type="radio" name="kpWie" value="vorort" /><span>Vor Ort geklärt</span></label>
+    </fieldset>
+    <p class="hint kp-hinweis" id="kpHinweis"></p>
+    <p class="em-saved" id="kpFehler" role="alert"></p>
+    <button class="btn btn-primary" id="kpOk" type="button" disabled>Erledigt</button>
+  </div>
+</div>
+
+<!-- Stempeln von der Startseite (Runde 295): dieselben zwei Schlösser wie
+     unter „Zeiten" — Freigabe am Konto und der Code vom Bildschirm im
+     Studio. -->
+<div id="hsModal" role="dialog" aria-modal="true" aria-labelledby="hsTitel">
+  <div class="pm-box hs-box">
+    <button class="lb-close" id="hsZu" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <h3 id="hsTitel" style="margin-bottom:6px">Stempeln</h3>
+    <p class="hint hs-hinweis" id="hsStand"></p>
+    <div class="field"><label for="hsCode">Code vom Bildschirm im Studio</label>
+      <input class="inp" id="hsCode" type="text" inputmode="numeric" autocomplete="off" maxlength="7" placeholder="000 000" /></div>
+    <p class="em-saved" id="hsFehler" role="alert"></p>
+    <div class="st-knoepfe" id="hsKnoepfe"></div>
+    <p class="hint mz-neben">Der Code wechselt alle 30 Sekunden.</p>
   </div>
 </div>
 
@@ -23594,6 +23675,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-29-startseite-karten', datum:'29.10.2026', art:'besser', titel:'Startseite: jeder Bereich als eigene Karte', wo:'home', punkte:[
+    'Oben „Kommen" bzw. „Gehen" mit der Schicht von heute.',
+    'Karten für Kundenpost, Leitung, Aufgaben und Putzplan – je höchstens drei Einträge.',
+    'Abhaken, „Gelesen" und „Erledigt" direkt in der Karte.'
+  ]},
   { id:'2026-10-27-layout-vorschlag', datum:'27.10.2026', art:'neu', titel:'Leitung kann ein Layout vorschlagen', wo:'home', punkte:[
     'Leitung: in „App gestalten" bei einem eigenen Design auf „Mitarbeitern vorschlagen" tippen.',
     'Mitarbeiter sehen auf „Heute" den Block „Vorschlag der Leitung" – die App ändert sich dabei nicht.',
@@ -24693,6 +24779,10 @@ var AUFBAU_ZEICHEN = ['home','todos','putzplan','chat','team','zeit','material',
 /* Die Blöcke der Startseite „Heute" (renderHeute), in der ausgelieferten
    Reihenfolge. */
 var HEUTE_BLOECKE = [
+  /* Runde 295: Kundenpost, Leitung und Aufgaben als eigene Bereiche.
+     Vorerst nur auf der Startseite der Mitarbeiter gefüllt; die der
+     Leitung folgt. */
+  { k:'kunde', n:'Kundenpost' }, { k:'leitung', n:'Von der Leitung' }, { k:'aufgaben', n:'Aufgaben (Mitarbeiter)' },
   { k:'seit', n:'Seit du weg warst' }, { k:'ueber', n:'Überfällig' }, { k:'heute', n:'Heute' },
   { k:'tausch', n:'Zum Übernehmen' }, { k:'putz', n:'Putzplan' }, { k:'neu', n:'Neu für dich' },
   { k:'sonst', n:'Zu erledigen' }, { k:'offen', n:'Offen' }, { k:'band', n:'Heute im Studio (Rechner)' }
@@ -39192,6 +39282,7 @@ function startListeners(){
   listenDocs();
   listenBoard();
   aufbauAngeboteHoeren();
+  listenKundenpost();
 }
 
 /* ── Schwarzes Brett ──
@@ -39283,6 +39374,7 @@ function stopListeners(){
   _todosUnsubs.forEach(function(u){ u(); }); _todosUnsubs=[];
   _cleanUnsubs.forEach(function(u){ try{ u(); }catch(e){} }); _cleanUnsubs=[];
   if(_annUnsub){ _annUnsub(); _annUnsub=null; }
+  kundenpostAus();
   if(_matUnsub){ _matUnsub(); _matUnsub=null; }
   bestellAufraeumen();
   _kzDaten={}; _kzProbe=[]; _kzGeladen=false; _kzLaedt=false;
@@ -41956,6 +42048,11 @@ function heuteHakenBinden(b){
 function heuteZeile(k){
   if(k.band) return k.band;
   var zeile = heuteZeileKnopf(k);
+  /* Runde 295: ein Knopf rechts neben der Zeile — „Erledigt" bei der
+     Kundenpost, „Gelesen" bei der Leitung. */
+  if(k.aktion) zeile = '<div class="hz-mit-aktion">'+zeile+
+    '<button type="button" class="chip hz-aktion" '+k.aktion.attr+'="'+esc(k.aktion.id)+'"'+
+    ' aria-label="'+esc(k.aktion.label||k.aktion.text)+'">'+esc(k.aktion.text)+'</button></div>';
   if(!k.hak) return zeile;
   return '<div class="hz-mit-haken">'+
     '<button type="button" class="hz-haken" data-hhak="'+esc(k.hak.b)+'" data-hhak-sk="'+esc(k.hak.sk)+'" data-hhak-id="'+esc(k.hak.id)+'"'+
@@ -41963,7 +42060,8 @@ function heuteZeile(k){
     zeile+'</div>';
 }
 function heuteZeileKnopf(k){
-  return '<button type="button" class="heute-zeile '+k.art+'" data-heute="'+esc(k.ziel)+'"'+
+  return '<button type="button" class="heute-zeile '+k.art+'"'+(k.ziel?' data-heute="'+esc(k.ziel)+'"':'')+
+    (k.kp?' data-hkp="'+esc(k.kp)+'"':'')+
     (k.f?' data-hf="'+esc(k.f)+'"':'')+(k.sk?' data-hsk="'+esc(k.sk)+'"':'')+
     (k.ichtab?' data-hichtab="'+esc(k.ichtab)+'"':'')+
     (k.teamtab?' data-hteamtab="'+esc(k.teamtab)+'"':'')+
@@ -42005,6 +42103,11 @@ function renderHeuteJetzt(){
   var jetzt=Date.now();
   var endeHeute=new Date(); endeHeute.setHours(23,59,59,999); endeHeute=endeHeute.getTime();
   var mehrereStudios = keys.length>1;
+  /* Runde 295: die Startseite der Mitarbeiter in Karten je Bereich —
+     Kommen/Gehen oben, darunter Kundenpost, Leitung, Aufgaben, Putzplan.
+     Die Leitung behält vorerst die bisherige Liste. */
+  var karten = !canManage();
+  if(karten) heuteStempelLaden(false);
 
   /* ── Was gibt es überhaupt ── */
   /* ── `ohneFrist` ist am 21.9.2026 dazugekommen ──
@@ -42057,7 +42160,8 @@ function renderHeuteJetzt(){
      soll, ist das der ganze Bildschirm. */
   var heuteYmd=ymd(new Date());
   var dienst=(_myShifts||[]).filter(function(x){ return x.date===heuteYmd; });
-  if(dienst.length){
+  /* In den Karten steht die Schicht oben bei Kommen/Gehen. */
+  if(dienst.length && !karten){
     heute.unshift({ due:0, art:'heute', ziel:'ich', ichtab:'woche', ikon:ikon('kalender'),
       titel: dienst.length===1 ? 'Dein Dienst heute' : dienst.length+' Schichten heute',
       unter: dienst.length===1
@@ -42101,7 +42205,8 @@ function renderHeuteJetzt(){
 
   /* Ungelesenes. */
   var lesen=[];
-  if(ansichtAn('ann')){
+  /* In den Karten hat die Leitung ihren eigenen Bereich (leitungZeilen). */
+  if(ansichtAn('ann') && !karten){
     var meine=_allAnns.filter(function(a){
       return isChef()||!a.target||a.target==='all'||(session.studioKeys||[]).indexOf(a.target)>=0;
     });
@@ -42323,6 +42428,21 @@ function renderHeuteJetzt(){
   /* Am Handy steht „Seit Mittwoch" in der Überschrift, die Zeile nennt
      nur die Zahlen — sonst schnitt die schmale Zeile den Titel ab. */
   if(fseit && !breit){ var fz=Object.assign({}, fseit, { titel:fseit.anzahl }); block('seit', 'Seit '+fseit.wann, 'lesen', [fz], [fz], 'team'); }
+  /* ── Runde 295: Karten je Bereich (Mitarbeiter) ──
+     Höchstens drei Zeilen je Karte; die Überschrift nennt die volle
+     Zahl und führt zur ganzen Liste. Aufgaben in EINER Karte:
+     überfällig, heute, ohne Frist — in dieser Reihenfolge. */
+  if(karten){
+    var kunde=kundenpostZeilen(keys);
+    block('kunde', 'Kundenpost', 'heute', kunde, _kpAlle ? kunde : kunde.slice(0,3), 'kundenpost', null, null, 'l');
+    var leitung=ansichtAn('ann') ? leitungZeilen() : [];
+    block('leitung', 'Von der Leitung', 'lesen', leitung, leitung.slice(0,3), 'ann', null, null, 'r');
+    if(ansichtAn('todos')){
+      var aufg=ueber.concat(heute, ohneFrist.slice().sort(function(a,b){ return a.ts-b.ts; }));
+      block('aufgaben', 'Aufgaben', ueber.length ? 'dringend' : 'tun', aufg, aufg.slice(0,3), 'todos', 'offen', null, 'l');
+    }
+    ueber=[]; heute=[]; ohneFrist=[];
+  }
   if(ansichtAn('todos')) block('ueber', 'Überfällig', 'dringend', ueber, ueber.slice(0,zeilen(3,5)), 'todos', 'faellig');
   block('heute', 'Heute', 'heute', heute, heute.slice(0,zeilen(3,4)), 'todos');
   /* Direkt unter „Heute": wer eine Schicht abgibt, braucht die Antwort
@@ -42332,7 +42452,7 @@ function renderHeuteJetzt(){
      täglich ist, ist heute fällig. Über den Nachrichten, weil ein
      ungeputztes Gerät der Kunde sieht und eine ungelesene Nachricht
      nicht. */
-  block('putz', 'Putzplan', 'putz', putz, putz.slice(0,zeilen(3,5)), 'putzplan', null, putzGesamt, 'r',
+  block('putz', 'Putzplan', 'putz', putz, putz.slice(0,karten?3:zeilen(3,5)), 'putzplan', null, putzGesamt, 'r',
     breit ? putzFortschrittHTML(putzStand) : '');
   block('neu', 'Neu für dich', 'lesen', lesen, lesen.slice(0,zeilen(2,3)), 'chat', null, null, 'r');
   block('sonst', 'Zu erledigen', 'tun', sonst, sonst.slice(0,zeilen(2,3)), 'todos', null, null, 'r');
@@ -42372,6 +42492,7 @@ function renderHeuteJetzt(){
     else html=links+rechts;
   }
   box.classList.toggle('zweispaltig', breit && !!links && !!rechts);
+  box.classList.toggle('bereichskarten', karten);
 
   /* Fehlen Aufgaben, Putzplan oder Ankündigungen, steht das OBEN —
      auch wenn anderes da ist. Sonst liest man „Dein Dienst heute" und
@@ -42390,17 +42511,307 @@ function renderHeuteJetzt(){
       '<div><b>Alles erledigt</b>'+
       '<span>Keine offene Aufgabe, nichts über der Frist, nichts Ungelesenes.</span></div></div>';
   }
-  html=formiWocheHTML()+heuteModusHTML()+html;
+  html=formiWocheHTML()+heuteModusHTML()+(karten ? heuteStempelHTML(dienst) : '')+html;
   box.innerHTML=html;
   heuteModusBinden(box);
 
   box.querySelectorAll('[data-heute]').forEach(heuteTippBinden);
   box.querySelectorAll('[data-hhak]').forEach(heuteHakenBinden);
+  box.querySelectorAll('[data-hkp]').forEach(function(b){
+    b.addEventListener('click', function(e){ e.stopPropagation(); tick(6); kpOeffnen(b.getAttribute('data-hkp')); });
+  });
+  box.querySelectorAll('[data-hgel]').forEach(function(b){
+    b.addEventListener('click', function(e){ e.stopPropagation(); heuteGelesen(b); });
+  });
+  var hsb=box.querySelector('[data-hstempel]');
+  if(hsb) hsb.addEventListener('click', function(){ tick(6); hsOeffnen(); });
   formiWocheBinden(box);
 
-  heutePasst(box);
+  /* Runde 295, aus dem Betrieb (29.10.2026): „NUR auf handy ist es auch
+     ok wenn man scrollen muss etwas". In den Karten wird am Handy nicht
+     mehr eingepasst — jede Karte hat ohnehin höchstens drei Zeilen. Am
+     Rechner passt die Seite weiter auf einen Bildschirm. */
+  if(karten && !breit) heuteRestZeichnen(box, []);
+  else heutePasst(box);
   formiMorgen(box);
 }
+
+/* ══ STARTSEITE IN KARTEN (Runde 295) ═══════════════════════════════
+   Aus dem Betrieb, 28./29.10.2026: „kannst du eventuell die ganze
+   startseite überarbeiten … dass mitarbeiter theoretisch nicht mal was
+   anderes nutzen müssten als die start seite", dazu: „es soll schon
+   jeder bereich ein eigenen bereich haben alles aber halt kleiner".
+
+   Was dazukommt — alles auf „Heute", ohne die Seite zu wechseln:
+     · Kommen/Gehen oben (heuteStempelHTML) — mit Freigabe direkt, sonst
+       der Weg zu „Zeiten";
+     · Kundenpost: Anliegen aus dem Studio-Postfach, mit „Erledigt"
+       und der Frage, WIE es erledigt wurde (kundenpostZeilen);
+     · Von der Leitung: ungelesene Infos mit „Gelesen" (leitungZeilen).
+
+   ── Woher die Kundenpost kommt ──
+   Sammlung `kundenpost`, je Anliegen ein Dokument. ANLEGEN darf sie
+   nur der Server (firestore.rules: create: false). Der Abruf aus dem
+   Studio-Postfach ist NOCH NICHT gebaut: er braucht die Zugangsdaten
+   als Geheimnis (nie ins Repository) und die Zustimmung der
+   Geschäftsführung. Bis dahin bleibt die Karte leer und unsichtbar.
+
+     studioKey   'studio-6' …
+     name        Kurzname, z. B. „S. Brandt" — nie die Mailadresse
+     betreff     ein paar Wörter, z. B. „Kündigung"
+     art         kuendigung | pause | termin | krank | vertrag | sonst
+     kurz        ein Satz zum Anliegen (ohne Bank-, Geburts- oder
+                 Gesundheitsangaben über ein Stichwort hinaus)
+     eingang     Zeit des Eingangs (ms)
+     status      offen → wartet → bestaetigt
+     grund       mail | telefon | vorort   (beim Erledigen)
+     erledigtUid, erledigtName, erledigtTs
+     bestaetigtUid, bestaetigtTs           (die Leitung)
+
+   Aus dem Betrieb, 28.10.2026: „gehe nie davon aus das etwas erledigt
+   wurde nur weils unter erledigt ist". Deshalb ist „Erledigt" hier nie
+   das Ende: es heisst „wartet", bis die Leitung bestätigt — oder, bei
+   „Per Mail", bis der Server die Antwort im Postausgang findet. */
+var KP_ART = { kuendigung:'Kündigung', pause:'Vertragspause', termin:'Termin', krank:'Krankmeldung', vertrag:'Vertrag', sonst:'Anliegen' };
+var KP_WIE = { mail:'per Mail', telefon:'telefonisch', vorort:'vor Ort' };
+var _kpListe = {}, _kpUnsubs = [], _kpAlle = false, _kpAktiv = null;
+
+function listenKundenpost(){
+  kundenpostAus();
+  if(!session) return;
+  var keys = canManage() ? managedKeys() : (session.studioKeys||[]);
+  /* Je Studio eine Abfrage mit studioKey == … — so kann die Regel sie
+     beweisen (meinStudio). Ohne Sortierung: kein zusammengesetzter
+     Index (siehe stempeln in functions/index.js). */
+  keys.forEach(function(sk){
+    try{
+      _kpUnsubs.push(S('kundenpost').where('studioKey','==',sk).onSnapshot(function(snap){
+        _kpListe[sk]=snap.docs.map(function(d){ return Object.assign({ id:d.id }, d.data()); })
+          .filter(function(x){ return x.studioKey===sk; });
+        renderHeute();
+      }, function(e){ console.warn('Kundenpost:', e && e.message); }));
+    }catch(e){ console.warn('Kundenpost:', e && e.message); }
+  });
+}
+function kundenpostAus(){
+  _kpUnsubs.forEach(function(u){ try{ u(); }catch(e){} });
+  _kpUnsubs=[]; _kpListe={}; _kpAlle=false;
+}
+function kpFinden(id){
+  var k=null;
+  Object.keys(_kpListe).forEach(function(sk){ (_kpListe[sk]||[]).forEach(function(x){ if(x.id===id) k=x; }); });
+  return k;
+}
+/* Offenes zuerst, darin Kündigungen, dann das Älteste. Was schon als
+   erledigt gemeldet ist, steht darunter — sichtbar, bis die Leitung
+   bestätigt. */
+function kundenpostZeilen(keys){
+  var l=[];
+  keys.forEach(function(sk){
+    (_kpListe[sk]||[]).forEach(function(k){ if(k.status==='offen' || k.status==='wartet') l.push(k); });
+  });
+  l.sort(function(a,b){
+    var wa=a.status==='wartet'?1:0, wb=b.status==='wartet'?1:0;
+    if(wa!==wb) return wa-wb;
+    var ka=a.art==='kuendigung'?0:1, kb=b.art==='kuendigung'?0:1;
+    return ka-kb || (a.eingang||0)-(b.eingang||0);
+  });
+  var mehrere=keys.length>1;
+  return l.map(function(k){
+    var wartet=k.status==='wartet';
+    var d=tageSeit(k.eingang||Date.now());
+    var alter=d<=0 ? 'heute' : (d===1 ? 'seit 1 Tag' : 'seit '+d+' Tagen');
+    var wer=String(k.name||'Kunde').slice(0,40);
+    return {
+      /* Rot nur, wenn es ein Status ist: Kündigung oder seit einer Woche
+         liegen geblieben. */
+      art: wartet ? 'lesen' : ((k.art==='kuendigung' || d>=7) ? 'dringend' : 'heute'),
+      ziel:'', kp:k.id, ikon:ikon(wartet ? 'uhr' : 'mail'),
+      /* Name oben, Anliegen darunter: am Handy schnitt „Erledigt"
+         rechts sonst genau das Wort ab, das sagt, worum es geht. */
+      titel: wer,
+      unter: String(k.betreff || KP_ART[k.art] || 'Anliegen').slice(0,40)+' · '+
+             (wartet ? 'wartet auf Bestätigung · '+(KP_WIE[k.grund]||'erledigt')
+                     : (mehrere ? studioName(k.studioKey)+' · ' : '')+alter),
+      aktion: wartet ? null : { attr:'data-hkp', id:k.id, text:'Erledigt', label:'Erledigt: '+wer }
+    };
+  });
+}
+function kpOeffnen(id){
+  var k=kpFinden(id), m=$('kpModal'); if(!k || !m) return;
+  _kpAktiv=k;
+  var wartet=k.status==='wartet';
+  $('kpTitel').textContent=String(k.name||'Kunde')+' – '+String(k.betreff || KP_ART[k.art] || 'Anliegen');
+  $('kpText').textContent=k.kurz||'';
+  $('kpWie').hidden=wartet; $('kpOk').hidden=wartet;
+  $('kpHinweis').textContent = wartet
+    ? 'Als erledigt gemeldet'+(k.grund ? ' – '+KP_WIE[k.grund] : '')+(k.erledigtName ? ' von '+k.erledigtName : '')+'. Die Leitung bestätigt noch.'
+    : 'Die Leitung bestätigt danach. „Per Mail" zählt erst, wenn die Antwort im Postausgang steht.';
+  m.querySelectorAll('input[name="kpWie"]').forEach(function(r){ r.checked=false; });
+  $('kpOk').disabled=true; $('kpFehler').textContent='';
+  m.classList.add('show');
+  /* Der Fokus auf „Schliessen", nicht auf die erste Wahl — deren Ring
+     sah aus, als sei „Per Mail" schon gewählt. */
+  var erst=$('kpZu'); if(erst) erst.focus();
+}
+function kpSchliessen(){ var m=$('kpModal'); if(m) m.classList.remove('show'); _kpAktiv=null; }
+function kpErledigen(){
+  var k=_kpAktiv, r=document.querySelector('input[name="kpWie"]:checked'), btn=$('kpOk');
+  if(!k || !r || !session) return;
+  var neu={ status:'wartet', grund:r.value, erledigtUid:session.uid,
+            erledigtName:String(session.name||'').slice(0,60), erledigtTs:Date.now() };
+  withBusy(btn, function(){
+    return S('kundenpost').doc(k.id).update(neu).then(function(){
+      Object.assign(k, neu);
+      kpSchliessen(); tick();
+      toast(neu.grund==='mail' ? 'Erledigt – wird mit dem Postausgang abgeglichen' : 'Erledigt – die Leitung bestätigt noch');
+      renderHeute();
+    }).catch(function(e){ $('kpFehler').textContent=errMsg(e); });
+  });
+}
+
+/* Ungelesene Infos der Leitung, je mit „Gelesen". Angeheftetes steht
+   auch gelesen da — genau dafür heftet man etwas an. (Schreiben dürfen
+   Infos nur Chef und Leitung; diese Karte gibt es nur bei Mitarbeitern.) */
+function leitungFuerMich(){
+  var sks=session.studioKeys||[];
+  return (_allAnns||[]).filter(function(a){
+    return !a.target || a.target==='all' || sks.indexOf(a.target)>=0;
+  });
+}
+function leitungZeilen(){
+  var uid=session.uid, meine=leitungFuerMich();
+  var neu=meine.filter(function(a){ return (a.readBy||[]).indexOf(uid)<0; });
+  var pin=meine.filter(function(a){ return a.pinned && (a.readBy||[]).indexOf(uid)>=0; });
+  return neu.concat(pin).map(function(a){
+    var gelesen=(a.readBy||[]).indexOf(uid)>=0;
+    return { art:'lesen', ziel:'ann', ikon:ikon(a.pinned ? 'anheften' : 'megafon'),
+      titel:String(a.text||'').replace(/\s+/g,' ').slice(0,80) || 'Info',
+      unter:(a.from||'Leitung')+(a.ts ? ' · '+fmtDateTime(a.ts) : '')+(gelesen ? ' · angeheftet' : ''),
+      aktion: gelesen ? null : { attr:'data-hgel', id:a.id, text:'Gelesen', label:'Gelesen: '+(a.from||'Leitung') } };
+  });
+}
+function heuteGelesen(b){
+  var id=b.getAttribute('data-hgel');
+  var a=(_allAnns||[]).filter(function(x){ return x.id===id; })[0];
+  if(!a || b.disabled || !session) return;
+  b.disabled=true; tick(6);
+  S('announcements').doc(id).update({ readBy: firebase.firestore.FieldValue.arrayUnion(session.uid) })
+    .then(function(){
+      a.readBy=(a.readBy||[]).concat([session.uid]);
+      var rest=leitungFuerMich().some(function(x){ return (x.readBy||[]).indexOf(session.uid)<0; });
+      if(!rest && unread.ann){ unread.ann=false; updateNavMarkers(); }
+      renderHeute();
+    })
+    .catch(function(e){ b.disabled=false; toast(errMsg(e), true); });
+}
+
+/* ── Kommen/Gehen oben (Runde 295) ──
+   Gelesen werden nur die eigenen Stempel von heute — dieselbe Abfrage
+   wie „Meine Zeiten" (uid und monat, zwei Gleichheitsfilter, kein
+   Index). Höchstens alle fünf Minuten neu; nach dem eigenen Stempeln
+   sofort. */
+var _hsStand={ tag:'', stempel:null, geladen:0 };
+function heuteStempelLaden(neu){
+  if(!session || canManage()) return;
+  var heute=ymd(new Date());
+  if(!neu && _hsStand.tag===heute && Date.now()-_hsStand.geladen<5*60000) return;
+  _hsStand.geladen=Date.now();
+  if(_hsStand.tag!==heute){ _hsStand.tag=heute; _hsStand.stempel=null; }
+  S('zeiten').where('uid','==',session.uid).where('monat','==',heute.slice(0,7)).get()
+    .then(function(sn){
+      _hsStand.stempel=sn.docs.map(function(d){ return d.data()||{}; })
+        .filter(function(z){ return z.tag===heute && z.uid===session.uid; });
+      renderHeute();
+    })
+    .catch(function(){ /* ohne Stand steht „Arbeitszeit" da, kein falscher Satz */ });
+}
+function heuteStempelLetzter(){
+  var l=(_hsStand.stempel||[]).filter(function(z){ return !z.storno; })
+    .sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
+  return l.length ? l[l.length-1] : null;
+}
+function heuteStempelHTML(dienst){
+  if(!ansichtAn('zeit')) return '';
+  var l=heuteStempelLetzter(), art=l ? l.art : null;
+  var geladen=_hsStand.stempel!==null && _hsStand.tag===ymd(new Date());
+  var uhr=function(t){ return new Date(t).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}); };
+  var schicht=(dienst||[]).map(function(x){ return (x.from||'')+'–'+(x.to||''); }).join(', ');
+  var titel, unter;
+  if(!geladen){ titel='Arbeitszeit'; unter=schicht ? 'Schicht heute '+schicht : ''; }
+  else if(!art){ titel='Noch nicht eingestempelt'; unter=schicht ? 'Schicht heute '+schicht : (featureAn('schicht') ? 'Heute ist keine Schicht geplant' : ''); }
+  else if(art==='gehen'){ titel='Feierabend'; unter='ausgestempelt um '+uhr(l.ts); }
+  else if(art==='pause'){ titel='In der Pause'; unter='seit '+uhr(l.ts); }
+  else { titel='Du bist da'; unter='seit '+uhr(l.ts)+(schicht ? ' · Schicht '+schicht : ''); }
+  var knopf;
+  if(session.handyStempeln===true){
+    var frei=!art || art==='gehen';
+    knopf='<button type="button" class="btn '+(frei ? 'btn-primary' : 'btn-ghost')+' hs-knopf" data-hstempel aria-haspopup="dialog">'+
+      (frei ? 'Kommen' : (art==='pause' ? 'Zurück' : 'Gehen'))+'</button>';
+  } else {
+    /* Ohne Freigabe wird am Terminal gestempelt. Der Knopf führt zu
+       „Zeiten" — ein Knopf, der bei jedem Tipp „nicht freigeschaltet"
+       sagt, wäre schlimmer als keiner. */
+    knopf='<button type="button" class="btn btn-ghost hs-knopf" data-heute="zeit">Zeiten</button>';
+    if(!art) unter=(unter ? unter+' · ' : '')+'Stempeln am Terminal';
+  }
+  return '<section class="heute-stempel" aria-label="Arbeitszeit"><div class="hs-txt"><b>'+esc(titel)+'</b>'+
+    (unter ? '<i>'+esc(unter)+'</i>' : '')+'</div>'+knopf+'</section>';
+}
+function hsOeffnen(){
+  var m=$('hsModal'); if(!m) return;
+  var l=heuteStempelLetzter(), art=l ? l.art : null;
+  $('hsStand').textContent = !art ? 'Noch nicht eingestempelt.'
+    : (TM_WORT[art]||art)+' um '+new Date(l.ts).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+'.';
+  $('hsKnoepfe').innerHTML=tmErlaubt(art).map(function(a){
+    return '<button type="button" class="btn '+(a==='kommen' || a==='zurueck' || a==='gehen' ? 'btn-primary' : 'btn-ghost')+'" data-hsart="'+a+'">'+esc(TM_WORT[a]||a)+'</button>';
+  }).join('');
+  $('hsCode').value=''; $('hsFehler').textContent='';
+  m.classList.add('show');
+  $('hsCode').focus();
+}
+function hsSchliessen(){ var m=$('hsModal'); if(m) m.classList.remove('show'); }
+function hsStempeln(btn){
+  var code=String($('hsCode').value||'').replace(/\D/g,'');
+  if(code.length!==6){ $('hsFehler').textContent='Bitte die sechs Ziffern vom Bildschirm im Studio eingeben.'; return; }
+  var art=btn.getAttribute('data-hsart');
+  withBusy(btn, function(){
+    return pinFunktion('handyStempeln')({ code:code, art:art }).then(function(r){
+      var d=(r&&r.data)||{};
+      hsSchliessen();
+      toast((TM_WORT[d.art]||d.art||'Stempel')+' um '+new Date(d.ts||Date.now())
+        .toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' ✓');
+      tick(12);
+      if(typeof formiStempelt==='function') formiStempelt(d.art);
+      if(d.art){ (_hsStand.stempel=_hsStand.stempel||[]).push({ art:d.art, ts:d.ts||Date.now(), tag:_hsStand.tag, uid:session.uid }); }
+      renderHeute();
+      heuteStempelLaden(true);
+      if(typeof stLaden==='function') stLaden(true);
+    }).catch(function(e){ $('hsFehler').textContent=fnFehler(e); });
+  });
+}
+(function heuteFensterBinden(){
+  function bind(){
+    var kz=$('kpZu'), km=$('kpModal'), ko=$('kpOk');
+    if(kz) kz.addEventListener('click', kpSchliessen);
+    if(km){
+      km.addEventListener('click', function(e){ if(e.target===km) kpSchliessen(); });
+      km.addEventListener('change', function(e){ if(e.target && e.target.name==='kpWie' && ko) ko.disabled=false; });
+    }
+    if(ko) ko.addEventListener('click', kpErledigen);
+    var hz=$('hsZu'), hm=$('hsModal'), hk=$('hsKnoepfe');
+    if(hz) hz.addEventListener('click', hsSchliessen);
+    if(hm) hm.addEventListener('click', function(e){ if(e.target===hm) hsSchliessen(); });
+    if(hk) hk.addEventListener('click', function(e){ var b=e.target.closest('[data-hsart]'); if(b) hsStempeln(b); });
+    document.addEventListener('keydown', function(e){
+      if(e.key!=='Escape') return;
+      if(km && km.classList.contains('show')) kpSchliessen();
+      if(hm && hm.classList.contains('show')) hsSchliessen();
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
+})();
 
 function heuteYmdT(){ return ymd(new Date()); }
 
@@ -42436,6 +42847,9 @@ function putzFortschrittHTML(st){
 function heuteTippBinden(el){
     el.addEventListener('click',function(e){
       e.stopPropagation();
+      /* Runde 295: die Kundenpost hat (noch) keine eigene Seite — „Alle"
+         klappt die Karte auf. */
+      if(el.getAttribute('data-heute')==='kundenpost'){ tick(6); _kpAlle=true; renderHeute(); return; }
       var ang=el.getAttribute('data-hangebot');
       if(ang){ tick(8); aufbauAngebotAnsehen(ang); return; }
       var f=el.getAttribute('data-hf');
@@ -42580,7 +42994,7 @@ function heutePasst(box){
     }
     /* Mit Haken (Runde 240) steckt die Zeile in einer Hülle – die muss
        mit, sonst bleibt der Haken allein stehen und nimmt weiter Platz. */
-    weg.forEach(function(z){ (z.closest('.hz-mit-haken') || z).remove(); });
+    weg.forEach(function(z){ (z.closest('.hz-mit-haken') || z.closest('.hz-mit-aktion') || z).remove(); });
     betroffen.forEach(heuteKopfAusgang);
   }
   function kandidaten(){
@@ -42609,7 +43023,7 @@ function heutePasst(box){
     });
     if(laengster){
       var z = zeilenVon(laengster);
-      (z[z.length-1].closest('.hz-mit-haken') || z[z.length-1]).remove();
+      (z[z.length-1].closest('.hz-mit-haken') || z[z.length-1].closest('.hz-mit-aktion') || z[z.length-1]).remove();
       heuteKopfAusgang(laengster);
       continue;
     }
