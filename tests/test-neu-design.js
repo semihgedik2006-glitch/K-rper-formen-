@@ -534,8 +534,21 @@ async function seite(b, stub, such, breite) {
       const wer = stub.replace('stub-', '').replace('.js', '');
       console.log('  ' + wer + '@' + breite + '×' + hoehe + ': ' + m.inhalt + 'px in ' +
         m.platz + 'px · ' + m.bloecke + ' Blöcke, ' + m.zeilen + ' Zeilen');
-      pruefe(wer + '@' + breite + '×' + hoehe + ': passt ohne Scrollen',
-        m.inhalt <= m.platz + 2, m.inhalt + ' > ' + m.platz);
+      /* Runde 295, aus dem Betrieb (29.10.2026): „es soll schon jeder
+         bereich ein eigenen bereich haben alles aber halt kleiner …
+         NUR auf handy ist es auch ok wenn man scrollen muss etwas".
+         Für Mitarbeiter (Karten je Bereich) gilt am Handy deshalb:
+         höchstens drei Zeilen je Karte statt „passt ohne Scrollen".
+         Am Rechner prüft test-startseite-karten weiter das Einpassen. */
+      if (wer === 'mitarbeiter') {
+        const zuViel = await pn.evaluate(() => [...document.querySelectorAll('#heuteListe.bereichskarten .heute-block')]
+          .filter(bl => bl.querySelectorAll('.heute-zeile').length > 3).map(bl => bl.getAttribute('data-btitel')));
+        pruefe(wer + '@' + breite + '×' + hoehe + ': Karten je Bereich, höchstens drei Zeilen (Scrollen erlaubt)',
+          !zuViel.length, JSON.stringify(zuViel));
+      } else {
+        pruefe(wer + '@' + breite + '×' + hoehe + ': passt ohne Scrollen',
+          m.inhalt <= m.platz + 2, m.inhalt + ' > ' + m.platz);
+      }
       pruefe(wer + '@' + breite + '×' + hoehe + ': es steht auch etwas drin',
         m.zeilen >= 1 || m.bloecke === 0, String(m.zeilen));
       pruefe(wer + '@' + breite + '×' + hoehe + ': gekürzte Blöcke nennen den Weg zum Rest',

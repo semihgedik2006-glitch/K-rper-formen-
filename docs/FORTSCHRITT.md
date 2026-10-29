@@ -25019,3 +25019,95 @@ Runde 289, der zweite war offen.
 - `tests/stub-leiter.js` schreibt `add()` jetzt in `window.__schreib`
   mit, wie stub-mitarbeiter – sonst prüfte der Leitungs-Teil nur, dass
   geklickt wurde.
+
+## Runde 295 — Startseite der Mitarbeiter in Karten: Kommen/Gehen, Kundenpost, Leitung, Aufgaben, Putzplan (29.10.2026)
+
+**Aus dem Betrieb**
+
+- 28.10.2026: „kannst du eventuell die ganze startseite überarbeiten
+  direkt auch dass Studio Chat dahingehend praktischer wird und
+  mitarbeiter theoretisch nicht mal was anderes nutzen müssten als die
+  start seite?" Auf die Rückfragen: direkt auf der Startseite Aufgaben
+  und Putzplan abhaken, Kommen/Gehen stempeln, Kundenpost und Nachrichten
+  der Leitung; erst die Mitarbeiter, die Leitung danach; erst ein
+  Entwurf, dann ein Zweig.
+- 28.10.2026: „achte darauf das es minimalistisch bleibt und studiochat
+  nicht zu sehr überfüllt wieder".
+- 28.10.2026 zur Kundenpost: „gehe nie davon aus das etwas erledigt
+  wurde nur weils unter erledigt ist" — abhaken darf der Mitarbeiter mit
+  Grund, die Leitung bestätigt; sichtbar für alle des Studios.
+- 29.10.2026 zum ersten Entwurf (eine einzige Liste): „es soll schon
+  jeder bereich ein eigenen bereich haben alles aber halt kleiner und auf
+  der startseite nur, NUR auf handy ist es auch ok wenn man scrollen muss
+  etwas". Zum zweiten Entwurf: „ja genau so".
+
+**Was gebaut wurde (nur Mitarbeiter; `#heuteListe.bereichskarten`)**
+
+- Oben **Kommen/Gehen** (`heuteStempelHTML`): Stand von heute und die
+  Schicht. Mit Freigabe fürs Handy-Stempeln öffnet der Knopf ein Fenster
+  mit Code-Feld (dieselbe Funktion `handyStempeln` wie unter „Zeiten",
+  dieselben zwei Schlösser). Ohne Freigabe führt „Zeiten" zur eigenen
+  Übersicht — ein Knopf, der bei jedem Tipp „nicht freigeschaltet" sagt,
+  wäre schlimmer als keiner.
+- Darunter **Karten je Bereich**, je höchstens drei Zeilen, die
+  Überschrift nennt die volle Zahl: **Kundenpost**, **Von der Leitung**,
+  **Aufgaben** (überfällig, heute, ohne Frist in EINER Karte), **Putzplan**,
+  dann wie bisher „Zum Übernehmen", „Neu für dich", „Zu erledigen".
+  Leere Karten erscheinen nicht.
+- **Kundenpost**: „Erledigt" öffnet ein Fenster mit „Wie wurde es
+  erledigt?" (per Mail / telefonisch / vor Ort). Geschrieben wird
+  `status:'wartet'` mit Grund und eigener Kennung — nie „bestaetigt".
+  Bis die Leitung bestätigt, steht die Zeile als „wartet auf
+  Bestätigung" da. „Alle N" klappt die Karte auf (es gibt noch keine
+  eigene Seite).
+- **Von der Leitung**: ungelesene Infos mit „Gelesen" (schreibt nur den
+  eigenen Haken, `nurEigenerHaken`), angeheftete auch gelesen. Die Zeile
+  „Neu von der Leitung" in „Neu für dich" entfällt dafür in den Karten.
+- Am **Handy** wird nicht mehr eingepasst (`heutePasst` läuft dort in
+  den Karten nicht) — jede Karte hat ohnehin höchstens drei Zeilen. Am
+  **Rechner** zwei Spalten, die Seite passt weiter auf einen Bildschirm.
+- Die Leitung behält ihre Startseite unverändert; ihre Fassung (mit
+  „Bestätigen" in der Kundenpost) ist der nächste Schritt.
+
+**Die Sammlung `kundenpost`**
+
+- Je Anliegen ein Dokument: `studioKey, name, betreff, art, kurz,
+  eingang, status (offen|wartet|bestaetigt), grund, erledigt*, bestaetigt*`.
+- **Anlegen nur der Server.** Der Abruf aus dem Studio-Postfach ist NOCH
+  NICHT gebaut: er braucht die Zugangsdaten als Geheimnis (nie ins
+  öffentliche Repository) und die Zustimmung der Geschäftsführung. Bis
+  dahin ist die Sammlung leer und die Karte unsichtbar.
+- Regeln in **beiden** Pfaden: lesen `meinStudio(studioKey)`; ändern
+  genau zwei Wege — Mitarbeiter offen → wartet (nur diese fünf Felder,
+  Grund aus der Liste, eigene Kennung), Leitung des Studios wartet →
+  bestaetigt oder zurück auf offen. Anlegen und löschen: niemand.
+
+**Warum so**
+
+- **Karten statt einer Liste.** Der erste Entwurf war eine einzige Liste
+  — ruhig, aber man sah nicht, wohin eine Zeile gehört. Eine Karte je
+  Bereich ist dasselbe Prinzip wie die bisherigen Blöcke, nur sichtbar
+  getrennt. Die Zeilen in der Karte verlieren ihre eigene Fläche und den
+  Farbbalken (sonst Karte in Karte); die Farbe steht im Zeichen.
+- **Name oben, Anliegen darunter** bei der Kundenpost: mit „Erledigt"
+  rechts schnitt die schmale Zeile sonst genau das Wort ab, das sagt,
+  worum es geht.
+- **14 px unter der Kartenüberschrift**: die Trefferfläche von „Alle N"
+  ragt 22 px unter die Wortmitte; mit 4 px traf sie nur 39 px hoch,
+  weil die erste Zeile im Bild darüber liegt (gemessen).
+- **Kein Index**: Kundenpost je Studio mit `studioKey ==` ohne
+  Sortierung, die Stempel von heute über `uid` und `monat` wie „Meine
+  Zeiten".
+
+**Tests**
+
+- Neu: `tests/test-startseite-karten.js` (40 Zusicherungen): Reihenfolge
+  der Karten, höchstens drei Zeilen, Kündigung zuerst, Bestätigtes weg,
+  „Erledigt" schreibt genau `wartet` + Grund + eigene Kennung, „Gelesen",
+  „Alle 4", Handy scrollt ohne „Ausserdem", Rechner 1280 × 800 und
+  1440 × 900 passt, alle neuen Knöpfe ≥ 44 × 44 per Hit-Test (320 / 390 /
+  1440, normal und kompakt), Stempel-Fenster mit Freigabe, Gegenproben
+  ohne Freigabe, ohne Kundenpost und für Chef und Leitung.
+- Neu: `tests/rules/kundenpost.test.js` (42 Zusicherungen, beide Welten).
+- Attrappen (Mitarbeiter, Leitung, Chef): `kundenpost` in `get()` UND
+  `onSnapshot`; `window.__handyFrei` setzt die Freigabe am Profil.

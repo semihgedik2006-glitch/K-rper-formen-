@@ -193,6 +193,43 @@ service cloud.firestore {
                        || myProfile().get('studioKeys', []).size() == 0));
     }
 
+    /* ── Kundenpost (Runde 295) ──
+       Anliegen aus dem Studio-Postfach, je eins ein Dokument. ANLEGEN
+       und LÖSCHEN nur der Server (Admin-SDK, an den Regeln vorbei).
+
+       Lesen: wer zum Studio gehört (meinStudio). Darin stehen Name und
+       Anliegen von Kunden — das Team des Studios bearbeitet sie, ein
+       anderes Studio nicht.
+
+       Ändern geht genau zwei Wege:
+         1. Erledigt melden (jeder aus dem Studio): offen → wartet, mit
+            WIE (mail/telefon/vorort) und der eigenen Kennung.
+         2. Bestätigen oder zurückgeben (die Leitung des Studios):
+            wartet → bestaetigt oder wartet → offen.
+       Aus dem Betrieb, 28.10.2026: „gehe nie davon aus das etwas
+       erledigt wurde nur weils unter erledigt ist" — deshalb kann kein
+       Mitarbeiter selbst auf „bestaetigt" setzen. */
+    function kundenpostErledigtOk() {
+      let d = request.resource.data;
+      return d.diff(resource.data).affectedKeys()
+               .hasOnly(['status', 'grund', 'erledigtUid', 'erledigtName', 'erledigtTs'])
+        && resource.data.status == 'offen'
+        && d.status == 'wartet'
+        && d.grund in ['mail', 'telefon', 'vorort']
+        && d.erledigtUid == request.auth.uid
+        && d.erledigtName is string && d.erledigtName.size() <= 60
+        && d.erledigtTs is number;
+    }
+    function kundenpostBestaetigenOk() {
+      let d = request.resource.data;
+      return d.diff(resource.data).affectedKeys()
+               .hasOnly(['status', 'bestaetigtUid', 'bestaetigtTs'])
+        && resource.data.status == 'wartet'
+        && d.status in ['bestaetigt', 'offen']
+        && d.bestaetigtUid == request.auth.uid
+        && d.bestaetigtTs is number;
+    }
+
     // ─────────────────────────────────────────────────────────────────
     // BEITRITT: Firmencode + Freigabe durch den Chef
     //
@@ -1139,6 +1176,14 @@ service cloud.firestore {
        Betriebs, nicht des Teams. Ändern: dieselben, nur mit passender
        Kennung; Studio und Monat bleiben, was sie waren. Löschen: der
        Chef. */
+    match /kundenpost/{kId} {
+      allow read: if aufFlachenPfaden() && istAktiv() && meinStudio(resource.data.studioKey);
+      allow create, delete: if false;
+      allow update: if aufFlachenPfaden() && istAktiv()
+        && ((meinStudio(resource.data.studioKey) && kundenpostErledigtOk())
+            || (manages(resource.data.studioKey) && kundenpostBestaetigenOk()));
+    }
+
     match /kennzahlen/{kId} {
       allow read: if aufFlachenPfaden() && manages(resource.data.studioKey);
       allow create: if aufFlachenPfaden() && kennzahlOk(kId);
@@ -2271,6 +2316,15 @@ service cloud.firestore {
           allow read: if inFirma(f)
             && (isChef() || (isLeiter() && resource.data.studioKeys.hasAny(myKeys())));
           allow write: if false;
+        }
+
+        // Kundenpost: wie oben (Runde 295)
+        match /kundenpost/{kId} {
+          allow read: if inFirma(f) && istAktiv() && meinStudio(resource.data.studioKey);
+          allow create, delete: if false;
+          allow update: if schreibtIn(f) && istAktiv()
+            && ((meinStudio(resource.data.studioKey) && kundenpostErledigtOk())
+                || (manages(resource.data.studioKey) && kundenpostBestaetigenOk()));
         }
 
         // Kennzahlen je Studio: wie oben (Runde 138)

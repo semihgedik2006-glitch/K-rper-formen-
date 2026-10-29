@@ -46,6 +46,9 @@
     studio: 'Hürth', avatar: '🙂', color: '#38BDF8',
     email: 'lisa@example.com'
   };
+  /* Freigabe fürs Stempeln mit dem Handy (Runde 295): der Durchlauf setzt
+     window.__handyFrei VOR dem Start — die App liest das Profil nur einmal. */
+  if (window.__handyFrei) PROFILE.handyStempeln = true;
     /* firma an JEDEM Konto — so sieht es nach tools/firma-nachtragen.js
      aus. Ohne das Feld findet die gefilterte Abfrage in
      listenAllUsers() nichts und die Personenliste bleibt leer; deshalb
@@ -366,6 +369,8 @@ var USERS = [
           : path === 'board' ? (typeof BOARD !== 'undefined' ? BOARD : [])
           /* Geteilte Designs (Runde 292): get() UND onSnapshot */
           : path === 'designs' ? (window.__designs || [])
+          /* Kundenpost (Runde 295): get() UND onSnapshot */
+          : path === 'kundenpost' ? (window.__kundenpost || [])
           : ga ? (ABSENCES[ga[1]] || [])
           : ms ? (SHIFTS[ms[1]] || [])
           : gc ? (CLEAN[gc[1]] || [])
@@ -440,7 +445,8 @@ var USERS = [
                       haette nichts geprueft. Dieselbe Luecke wie bei den
                       Uebergaben, gefunden beim Bau der Erwaehnungen. */
                    (path==='board' ? (window.__board || []) :
-                   (path==='designs' ? (window.__designs || []) : (path==='documents' ? DOCS : [])))))))));
+                   (path==='kundenpost' ? (window.__kundenpost || []) :
+                   (path==='designs' ? (window.__designs || []) : (path==='documents' ? DOCS : []))))))))));
         var docs = list.map(function (d) { return { id: d.id, data: function () { return d; } }; });
         // Siehe stub-chef.js: ein zweiter Schnappschuss auf Zuruf.
         (HORCHER[path] = HORCHER[path] || []).push(cb);
