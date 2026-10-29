@@ -123,7 +123,10 @@ const KONTRAST = (el) => {
   console.log('\n── 3./4. Treffer, Einpassen, Lesbarkeit ──');
   for (const [w, h] of [[1280, 800], [1440, 900], [1920, 1080]]) {
     for (const theme of ['dark', 'light']) {
-      const p = await oeffne(b, w, h, 'leiter', [11, 20], theme);
+      /* Seit Runde 296 hat die Leitung eine eigene Startseite: wer da
+         ist, steht dort im Studio unter den Kacheln („Jetzt da"). Das
+         Band prüfen wir hier bei den Mitarbeitern, die es weiter haben. */
+      const p = await oeffne(b, w, h, 'mitarbeiter', [11, 20], theme);
       for (const dichte of ['normal', 'kompakt']) {
         await p.evaluate((d) => { document.body.dataset.dichte = d; }, dichte);
         await p.waitForTimeout(150);

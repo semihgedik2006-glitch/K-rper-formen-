@@ -242,7 +242,11 @@ const STAND = () => {
     for (const rolle of ['chef', 'leiter']) {
       const q = await oeffne(b, 390, 844, rolle);
       const t = await q.evaluate(STAND);
-      pruefe(rolle + ': bisherige Startseite — keine Karten, kein Kommen/Gehen, keine Kundenpost', !t.karten && !t.stempel && t.titel.indexOf('Kundenpost') < 0, JSON.stringify(t.titel));
+      /* Seit Runde 296 hat die Leitung eine EIGENE Startseite
+         (test-startseite-leitung.js) — die Karten der Mitarbeiter
+         (Kundenpost, Aufgaben … als Blöcke) sieht sie nicht. */
+      const ls = await q.evaluate(() => !!document.querySelector('#heuteListe .ls'));
+      pruefe(rolle + ': nicht die Karten der Mitarbeiter, sondern die Startseite der Leitung', ls && t.titel.indexOf('Kundenpost') < 0 && t.titel.indexOf('Aufgaben') < 0, JSON.stringify({ ls, titel: t.titel }));
       pruefe(rolle + ': keine Skriptfehler', !q._fehler.length, q._fehler.join(' | '));
       await q._ctx.close();
     }

@@ -62,7 +62,13 @@ async function oeffne(b, w, h, theme) {
   await p.addInitScript((pr) => {
     try { localStorage.setItem('kf_tour', '1:testuid'); localStorage.setItem('kf_prefs', pr); } catch (e) {}
   }, JSON.stringify({ theme, stil2: true }));
-  await p.addInitScript({ path: SP + '/stub-chef.js' });
+  /* Seit Runde 296 hat die Leitung eine eigene Startseite (Kacheln je
+     Studio, test-startseite-leitung.js). Abschnitte mit Titel, Zahl und
+     „Alle N“ gibt es auf „Heute“ bei den Mitarbeitern — dort wird
+     geprüft. */
+  /* Vier Kundenpost-Anliegen: die Karte zeigt drei, „Alle 4“ steht im Kopf. */
+  await p.addInitScript("window.__kundenpost=[1,2,3,4].map(function(i){ return { id:'kp'+i, studioKey:'studio-6', name:'Kunde '+i, betreff:'Termin', art:'termin', eingang:Date.now()-i*864e5, status:'offen' }; });");
+  await p.addInitScript({ path: SP + '/stub-mitarbeiter.js' });
   await p.goto(APP + '?neu=1', { waitUntil: 'domcontentloaded' });
   await p.waitForFunction(() => !!document.querySelector('#app.show'), null, { timeout: 15000 });
   await p.waitForTimeout(1200);
@@ -127,8 +133,12 @@ async function bildKontrast(p, sel) {
             const s = getComputedStyle(z[1], '::before');
             return { da: s.content !== 'none' && s.height === '1px', links: parseFloat(s.left) };
           })() : null;
+          /* Runde 295: bei den Karten der Mitarbeiter ist die KARTE die
+             Gruppe (aus dem Betrieb, 29.10.2026: „es soll schon jeder
+             bereich ein eigenen bereich haben“) — gerundet ist sie. */
+          const karte = g.closest('#heuteListe.bereichskarten .heute-block');
           return { zeilen: z.length, luecken, schatten: schatten.filter(x => x !== 'none').length,
-                   rund: parseFloat(getComputedStyle(g).borderTopLeftRadius), linie };
+                   rund: parseFloat(getComputedStyle(karte || g).borderTopLeftRadius), linie };
         });
         const dr = document.querySelector('#heuteListe .heute-zeile.dringend');
         const gew = [...document.querySelectorAll('#heuteListe .heute-zeile')].find(x => !x.classList.contains('dringend') && !x.classList.contains('tagesband'));
@@ -147,7 +157,11 @@ async function bildKontrast(p, sel) {
         return { koepfe: koepfe.length, gross, zahlen, gruppen, status, versal };
       });
       pruefe('Titel ohne Versalien (' + m.koepfe + ' Titel auf der Startseite)', m.koepfe >= 2 && !m.versal.length, m.versal.join(', '));
-      pruefe('Titel gross: jeder ≥ 18 px (' + m.gross.join(' / ') + ')', m.gross.length && m.gross.every(x => x >= 18));
+      /* Runde 295, aus dem Betrieb (29.10.2026): „jeder bereich ein
+         eigenen bereich … alles aber halt kleiner“ — die Titel der Karten
+         sind eine Stufe kleiner (≥ 16 px statt ≥ 18 px), bleiben aber
+         die grösste Schrift der Karte. */
+      pruefe('Titel gross: jeder ≥ 16 px (' + m.gross.join(' / ') + ')', m.gross.length && m.gross.every(x => x >= 16));
       const mitZahl = m.zahlen.filter(z => z.soll > 1);
       pruefe('Zahl leise neben dem Titel und gleich der Blockzahl (' + mitZahl.length + ' Blöcke)',
         mitZahl.length && mitZahl.every(z => z.ist === z.soll && z.leiser), JSON.stringify(m.zahlen));

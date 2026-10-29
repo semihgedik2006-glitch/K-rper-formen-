@@ -35,7 +35,11 @@ async function oeffne(b, w, h, vorher) {
   await p.route('**://www.gstatic.com/**', r => r.abort());
   await p.route('**script.google.com/**', r => r.fulfill({ status: 200, body: 'ok' }));
   if (vorher) await p.addInitScript(vorher);
-  await p.addInitScript({ path: path.join(__dirname, 'stub-chef.js') });
+  /* Seit Runde 296 hat die Leitung eigene Reiter (Überblick, Meine
+     Schicht, Zusammenfassung, test-startseite-leitung.js). Der Schalter
+     „Überblick / Meine Schicht" und die Gruppen werden bei den
+     Mitarbeitern geprüft. */
+  await p.addInitScript({ path: path.join(__dirname, 'stub-mitarbeiter.js') });
   await p.goto(APP, { waitUntil: 'domcontentloaded' });
   await p.waitForFunction(() => !!document.querySelector('#app.show'), null, { timeout: 15000 });
   await p.waitForTimeout(900);
@@ -62,9 +66,13 @@ const TREFFER = (el) => {
       for (const dichte of ['normal', 'kompakt']) {
         if (dichte === 'kompakt') { await p.evaluate(() => document.body.setAttribute('data-dichte', 'kompakt')); await p.waitForTimeout(200); }
         const k = await p.evaluate((TR) => [...document.querySelectorAll('#heuteListe [data-hmodus]')].map(x => Object.assign({ t: x.textContent, an: x.getAttribute('aria-pressed') }, (eval(TR))(x))), TREFFER.toString());
-        /* Am Handy (< 700) steht im Überblick nur „Meine Schicht ›" unter
-           „Ausserdem" — oben kostete der Schalter eine ganze Kategorie. */
-        if (w < 700) pruefe(`${w} px ${dichte}: „Meine Schicht" unter „Ausserdem" ${k.map(x => x.w + '×' + x.h).join(', ')}`, k.length === 1 && /Meine Schicht/.test(k[0].t) && k.every(x => x.w >= 44 && x.h >= 44 && x.imBild) && await p.evaluate(() => !!document.querySelector('#heuteListe .heute-rest [data-hmodus="schicht"]')), JSON.stringify(k));
+        /* Bis Runde 294 stand am Handy (< 700) im Überblick nur „Meine
+           Schicht ›" unter „Ausserdem" — oben kostete der Schalter eine
+           ganze Kategorie. Seit Runde 295 darf „Heute" am Handy scrollen
+           (aus dem Betrieb, 29.10.2026: „NUR auf handy ist es auch ok wenn
+           man scrollen muss etwas"); der Schalter steht deshalb überall
+           oben. Der alte Zweig bleibt für ein Gerät ohne Karten stehen. */
+        if (w < 700 && !(await p.evaluate(() => !!document.querySelector('#heuteListe.bereichskarten')))) pruefe(`${w} px ${dichte}: „Meine Schicht" unter „Ausserdem" ${k.map(x => x.w + '×' + x.h).join(', ')}`, k.length === 1 && /Meine Schicht/.test(k[0].t) && k.every(x => x.w >= 44 && x.h >= 44 && x.imBild) && await p.evaluate(() => !!document.querySelector('#heuteListe .heute-rest [data-hmodus="schicht"]')), JSON.stringify(k));
         else pruefe(`${w} px ${dichte}: Schalter ${k.map(x => x.t + ' ' + x.w + '×' + x.h).join(', ')}`, k.length === 2 && k.every(x => x.w >= 44 && x.h >= 44 && x.imBild) && k[0].an === 'true', JSON.stringify(k));
       }
       if (w === 390 || w === 1440) {
@@ -107,7 +115,8 @@ const TREFFER = (el) => {
     console.log('\n── 19 Eine Karte mit Kante ──');
     for (const [w, h] of [[1440, 900], [390, 844]]) {
       const p = await oeffne(b, w, h);
-      const k = await p.evaluate(() => [...document.querySelectorAll('#heuteListe .heute-liste')].filter(x => x.getClientRects().length).map(x => (getComputedStyle(x).backgroundImage.match(/gradient/g) || []).length));
+      /* Runde 295: in den Karten der Mitarbeiter trägt die KARTE die Kante. */
+      const k = await p.evaluate(() => [...document.querySelectorAll('#heuteListe.bereichskarten .heute-block, #heuteListe:not(.bereichskarten) .heute-liste')].filter(x => x.getClientRects().length).map(x => (getComputedStyle(x).backgroundImage.match(/gradient/g) || []).length));
       pruefe(`${w} px: nur die erste Gruppe schillert (${k.join(', ')} Verläufe)`, k.length >= 2 && k[0] >= 2 && k.slice(1).every(n => n < 2), JSON.stringify(k));
       await p._ctx.close();
     }

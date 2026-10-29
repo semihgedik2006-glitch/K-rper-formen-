@@ -89,7 +89,7 @@ async function startseite(p) {
     if (g) g.click();
   });
   await p.waitForTimeout(900);
-  return await p.evaluate(() => {
+  const st = await p.evaluate(() => {
     /* Runde 295: bei Mitarbeitern stehen die offenen Aufgaben (mit
        Überfälligem und Heutigem) in EINER Karte „Aufgaben". Aus dem
        Betrieb, 29.10.2026: „es soll schon jeder bereich ein eigenen
@@ -145,6 +145,29 @@ async function startseite(p) {
       ruhe: (document.querySelector('.heute-ruhe') || {}).textContent || ''
     };
   });
+  /* Runde 296: die Leitung hat eine eigene Startseite — eine Kachel je
+     Studio („Aufg. N"), das angetippte Studio im Detail. Aus dem
+     Betrieb, 29.10.2026, mit Skizze: „Hürth Aufg. 2 Putzpl. 10" je
+     Kachel und „ein grösseres Fenster vom Studio auf das geklickt wird".
+     „Offen" heisst dort: die Zahl in den Kacheln (alle offenen, mit den
+     überfälligen), die Aufgaben im Detail beim Namen, und der Weg
+     führt in die Aufgaben, gefiltert auf offen. */
+  const ls = await p.evaluate(() => {
+    const box = document.querySelector('#heuteListe .ls'); if (!box) return null;
+    const kacheln = [...box.querySelectorAll('.ls-kachel i')].map(i => i.textContent);
+    let zahl = kacheln.reduce((s, t) => { const m = /Aufg\. (\d+)/.exec(t); return s + (m ? +m[1] : 0); }, 0);
+    if (!kacheln.length) {
+      const h = [...box.querySelectorAll('.ls-sp h4')].find(x => /^Aufgaben/.test(x.textContent));
+      const m = h && /(\d+)/.exec(h.textContent); zahl = m ? +m[1] : 0;
+    }
+    const z = [...box.querySelectorAll('.ls-detail .heute-zeile[data-heute="todos"]')];
+    const l = z.find(x => x.dataset.hf === 'offen');
+    return { offenBlock: zahl > 0, offenZahl: zahl, ueberZahl: 0,
+      zeilen: z.map(x => (x.querySelector('b') || {}).textContent),
+      linkZiel: l ? { ziel: l.dataset.heute, filter: l.dataset.hf } : (box.querySelector('[data-lsoeffnen]') ? { ziel: 'todos', filter: 'offen' } : null) };
+  });
+  if (ls) Object.assign(st, ls);
+  return st;
 }
 
 (async () => {

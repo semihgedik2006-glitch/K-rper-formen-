@@ -230,9 +230,12 @@ var USERS = [
             if (path === 'archives') { var a=ARCHIVES.filter(function(x){return x.id===id;})[0]; return Promise.resolve({ exists: !!a, id:id, data: function(){ return a||{}; } }); }
             return Promise.resolve({ exists: true, id: id, data: function () { return data; } });
           },
-          set: function () { return Promise.resolve(); },
-          update: function () { return Promise.resolve(); },
-          delete: function () { return Promise.resolve(); },
+          /* Runde 296: Geschriebenes festhalten wie in stub-mitarbeiter —
+             sonst prüft ein Durchlauf der Leitung nur, DASS geklickt wurde,
+             nicht WAS geschrieben wird (Zu bestätigen). */
+          set: function (d) { (window.__schreib = window.__schreib || []).push({ pfad: docPath, daten: d }); return Promise.resolve(); },
+          update: function (d) { (window.__schreib = window.__schreib || []).push({ pfad: docPath, art: 'update', daten: d }); return Promise.resolve(); },
+          delete: function () { (window.__schreib = window.__schreib || []).push({ pfad: docPath, art: 'delete' }); return Promise.resolve(); },
           onSnapshot: function (cb) {
             if (path === 'inventory') {
               var inv = INVENTORY[id];
@@ -384,6 +387,8 @@ var USERS = [
   firebase.firestore.FieldValue = {
     arrayUnion: function () { return {}; }, arrayRemove: function () { return {}; },
     serverTimestamp: function () { return Date.now(); },
+    /* delete fehlte: „Tausch bestätigen" räumt damit die Tausch-Felder ab. */
+    delete: function () { return { __delete: true }; },
     /* increment fehlte hier, und das kostete eine halbe Stunde: die
        Fehlermeldung der App rief fv.increment(1), bekam "is not a
        function" und wurde vom eigenen try/catch still geschluckt. Der

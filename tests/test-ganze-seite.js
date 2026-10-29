@@ -176,8 +176,15 @@ async function zaehle(ctx, p, tat, ms, arg) {
       if (w === 1440) {
         const hl = await p.evaluate(() => [...document.querySelectorAll('#view-home .heute-liste')].map(l => [...l.children].map(c => getComputedStyle(c, '::before').content)));
         const mehr = hl.filter(l => l.length > 1).length;
+        /* Seit Runde 296 sieht die Geschäftsführung Studio-Kacheln; unter
+           ihnen steht das angetippte Studio mit kurzen Listen, die bei
+           wenig Platz nur EINE Zeile zeigen. Gibt es dann keine Liste mit
+           mehreren Zeilen, wird nur geprüft, dass vor der ersten Zeile
+           keine Linie steht — die Linien zwischen Zeilen prüft
+           test-gruppen-titel bei den Mitarbeitern. */
+        const leitung = await p.evaluate(() => !!document.querySelector('#view-home .ls'));
         pruefe('1440 px Startseite: Trennlinie in den Listen vor jeder Zeile ausser der ersten (' + hl.length + ' Listen, ' + mehr + ' mit mehreren Zeilen)',
-          mehr > 0 && hl.every(l => l[0] === 'none' && l.slice(1).every(x => x === '""')), JSON.stringify(hl));
+          (mehr > 0 || leitung) && hl.every(l => l[0] === 'none' && l.slice(1).every(x => x === '""')), JSON.stringify(hl));
       }
       const z = await p.evaluate(() => { const zp = document.getElementById('zfPflicht'), zm = document.getElementById('zfModal');
         const a = getComputedStyle(zm).zIndex; zp.hidden = false; const b2 = getComputedStyle(zm).zIndex; zp.hidden = true; return [a, b2]; });

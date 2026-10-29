@@ -42,7 +42,10 @@ async function oeffne(b, w, h, opt) {
   await p.addInitScript((pr) => {
     try { localStorage.setItem('kf_tour', '1:testuid'); if (pr) localStorage.setItem('kf_prefs', pr); } catch (e) {}
   }, opt.prefs || null);
-  await p.addInitScript({ path: SP + '/stub-chef.js' });
+  /* Seit Runde 296 trägt „Heute“ der Leitung Kacheln statt Gruppen —
+     die Kante der Startseite wird bei den Mitarbeitern geprüft
+     (opt.rolle), alles andere wie bisher beim Chef. */
+  await p.addInitScript({ path: SP + '/stub-' + (opt.rolle || 'chef') + '.js' });
   await p.goto(APP + '?neu=1', { waitUntil: 'domcontentloaded' });
   await p.waitForFunction(() => !!document.querySelector('#app.show'), null, { timeout: 15000 });
   await p.waitForTimeout(900);
@@ -62,7 +65,7 @@ function kontrast(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) +
 
   console.log('\n── 1–3 Flächen, wo man ist, der Ring bleibt Formi ──');
   for (const [w, h] of [[1440, 900], [390, 844]]) {
-    const p = await oeffne(b, w, h);
+    const p = await oeffne(b, w, h, { rolle: 'mitarbeiter' });
     const m = await p.evaluate(() => {
       /* Runde 241 („Apple-Grundgerüst, Formi als Akzent“; zu den
          Probebildern: „genau so hab ichs mir vorgestellt“): die Zeilen
@@ -71,7 +74,8 @@ function kontrast(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) +
          dieselbe Kante — an der Fläche, die sie jetzt trägt. Die Farbe
          der Art steht im Zeichen der Zeile (test-gruppen-titel). */
       const z = document.querySelector('#heuteListe .heute-zeile');
-      const g = z ? z.closest('.heute-liste') : null;
+      /* Runde 295: in den Karten der Mitarbeiter trägt die KARTE die Kante. */
+      const g = z ? (z.closest('#heuteListe.bereichskarten .heute-block') || z.closest('.heute-liste')) : null;
       const cs = g ? getComputedStyle(g) : null;
       const kopf = document.querySelector('.bk-ikon'), kr = kopf.getBoundingClientRect();
       const titel = getComputedStyle(document.getElementById('bkTitel'));

@@ -181,7 +181,10 @@ const FEDERN = () => document.getAnimations().filter(a => a.animationName === 'c
          stehen in EINER Gruppe je Abschnitt, die Rundung trägt die
          Gruppe. Gemessen wird deshalb die Inhaltsfläche, die man sieht —
          dieselben 14 px wie vorher an der einzelnen Zeile. */
-      const z = document.querySelector('#heuteListe .heute-liste');
+      /* Seit Runde 295/296 trägt die KARTE die Rundung (Mitarbeiter:
+         eine Karte je Bereich; Leitung: Karten und Kacheln). Gemessen
+         wird die Fläche, die man sieht. */
+      const z = document.querySelector('#heuteListe.bereichskarten .heute-block, #heuteListe .ls-karte, #heuteListe .heute-liste');
       const k = document.querySelector('#heuteListe .heute-rest-knopf');
       return { zeile: parseFloat(getComputedStyle(z).borderTopLeftRadius),
                knopf: k ? parseFloat(getComputedStyle(k).borderTopLeftRadius) : null,

@@ -150,8 +150,12 @@ const GLEITEN = async () => {
       return { n: window.__heute, ueber: sa ? sa.scrollHeight - sa.clientHeight : -1,
         zeilen: document.querySelectorAll('#heuteListe .heute-zeile').length };
     });
-    pruefe(w + ' px, ' + rolle + ': ' + r.n + '-mal gezeichnet (höchstens 5), passt, zeigt ' + r.zeilen + ' Zeilen',
-      r.n >= 1 && r.n <= 5 && r.ueber <= 2 && r.zeilen >= 1, JSON.stringify(r));
+    /* Runde 295/296, aus dem Betrieb (29.10.2026): „NUR auf handy ist es
+       auch ok wenn man scrollen muss etwas" und „scrollen am handy ist
+       für leitung auch ok". „Passt" gilt deshalb nur noch am Rechner. */
+    const mussPassen = w >= 1100;
+    pruefe(w + ' px, ' + rolle + ': ' + r.n + '-mal gezeichnet (höchstens 5)' + (mussPassen ? ', passt' : '') + ', zeigt ' + r.zeilen + ' Zeilen',
+      r.n >= 1 && r.n <= 5 && (!mussPassen || r.ueber <= 2) && r.zeilen >= 1, JSON.stringify(r));
     await p.close();
   }
 

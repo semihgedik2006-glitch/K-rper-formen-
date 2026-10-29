@@ -528,6 +528,7 @@ var USERS = [
   firebase.firestore.FieldValue = {
     arrayUnion: function () { return {}; }, arrayRemove: function () { return {}; },
     serverTimestamp: function () { return Date.now(); },
+    delete: function () { return { __delete: true }; },
     /* increment fehlte hier, und das kostete eine halbe Stunde: die
        Fehlermeldung der App rief fv.increment(1), bekam "is not a
        function" und wurde vom eigenen try/catch still geschluckt. Der

@@ -25111,3 +25111,128 @@ Runde 289, der zweite war offen.
 - Neu: `tests/rules/kundenpost.test.js` (42 Zusicherungen, beide Welten).
 - Attrappen (Mitarbeiter, Leitung, Chef): `kundenpost` in `get()` UND
   `onSnapshot`; `window.__handyFrei` setzt die Freigabe am Profil.
+
+## Runde 296 — Startseite der Leitung: Studio-Kacheln mit Ampel, Studio im Detail, „Zu bestätigen", Zusammenfassung (29.10.2026)
+
+**Aus dem Betrieb**
+
+- 29.10.2026: „glaubst du wir können auch für die leitung die
+  startseite übersichtlicher machen und minimalistischer aber dennoch
+  praktisch?" Dazu eine Skizze (Rechner): links die Leiste, oben
+  „Überblick | Meine Schicht | Zusammenfassung", darunter eine Kachel je
+  Studio mit Ampel („Hürth Aufg. 2 Putzpl. 10" rot, „Brühl" grün),
+  darunter „irgendwas noch vlt grösseres Fenster vom Studio auf das
+  geklickt wird?", rechts „Zusammenfassung" in Sätzen („Hürth hat 2
+  Aufgaben offen und 10 Putzplan! Brühl hat alles erledigt 👍") und
+  „5 Artikel fehlen in 2 Studios!". Dazu: „deine punkte kannst du auch
+  einbauen", „scrollen am handy ist für leitung auch ok". Zur Vorlage:
+  „ja so passt das".
+
+**Was gebaut wurde (`leitungZeichnen`, nur `canManage()`)**
+
+- **Reiter** Überblick · Meine Schicht · Zusammenfassung (am Handy
+  gleich breit in einer Zeile). „Meine Schicht" ist die bisherige
+  Liste; „Zusammenfassung" gibt es nur für die Leitung.
+- **Kommen/Gehen** wie bei den Mitarbeitern — aber nur, wenn heute eine
+  eigene Schicht ansteht oder schon gestempelt wurde.
+- **Eine Kachel je verwaltetem Studio** mit Ampel und Kurzangaben
+  („niemand da · Aufg. 3 · Putz 3 · Post 1"). Rot: überfällig, eine
+  Kündigung unbeantwortet, oder eine Schicht läuft seit 15 Minuten und
+  niemand ist eingestempelt. Gelb: etwas offen. Grün: nichts offen.
+  Feste Reihenfolge (wie `managedKeys()`), damit man sein Studio blind
+  findet; die Zusammenfassung sortiert dagegen nach Dringlichkeit.
+- **Das Studio im Detail**: am Rechner unter den Kacheln (Klick wechselt
+  an Ort und Stelle), am Handy als Fenster nach einem Tipp. „Jetzt da"
+  mit Uhrzeit, Aufgaben, Putzplan mit Balken, Kundenpost mit „Erledigt",
+  „Studio öffnen ›" (Aufgaben dieses Studios). Die Zeilen sind dieselben
+  wie auf „Heute" — mit Haken.
+- **Zu bestätigen**: erledigt gemeldete Kundenpost, zugesagte
+  Schichttausche, offene Urlaubsanträge, bei der Geschäftsführung auch
+  Zeitanträge — je ✓ und ✕. Dieselben Schreibwege wie auf den
+  Fachseiten. Einen Zeitantrag lehnt man weiter unter „Zeiten" ab (er
+  braucht eine Begründung); ✕ führt dorthin.
+- **Zusammenfassung** in Sätzen, rote zuerst, alle Fertigen in einem
+  Satz („Longerich, Ebertplatz und 9 weitere haben alles erledigt").
+- **Material** als eigene Karte; der Rest (Nachrichten, Angeheftetes,
+  Zum Übernehmen, Einrichtung) leise unter „Ausserdem".
+
+**Gelesen wird** je Studio höchstens alle fünf Minuten: die Stempel von
+heute (`studioKey` + `tag`, wie „Jetzt im Studio"), die Schichten von
+heute und die offenen Abwesenheiten — alles, was `manages()` ohnehin
+erlaubt. Zeitanträge nur bei der Geschäftsführung. Beim Chef mit 14
+Studios sind das bis zu 43 Abfragen je fünf Minuten, solange „Heute"
+offen ist; gemessen ist die Last nicht (kein Zugang zum Betrieb).
+
+**Warum so**
+
+- **Am Rechner passt die Seite auf einen Bildschirm**, auch bei
+  1280 × 800 mit 14 Studios: je Liste zwei Zeilen statt drei, und die
+  rechte Spalte reicht höchstens bis zum unteren Rand
+  (`leitungEinpassen`, gemessen beim Zeichnen, nicht im Klick). Reicht
+  der Platz nicht, wird die Zusammenfassung kürzer und blendet aus —
+  vollständig steht sie im Reiter „Zusammenfassung".
+- **Am Handy** steht „Zu bestätigen" über den Kacheln (`display:contents`
+  + `order`): das ist das, was nur die Leitung erledigen kann.
+- **Die alten Blöcke** (Überfällig, Heute, Offen, Putzplan je Studio,
+  Heute im Studio, Wo etwas los ist) fallen bei der Leitung weg: alles
+  davon steckt in der Kachel und im Detail, ein Klick entfernt.
+
+**Tests**
+
+- Neu: `tests/test-startseite-leitung.js` (43 Zusicherungen): Reiter,
+  Kachel je Studio, Ampel nur mit Grund, Detail wechselt am Rechner,
+  Fenster am Handy, ✓ schreibt bei Kundenpost, Urlaub und Schichttausch
+  das Richtige, Zusammenfassung, passt bei 1280/1440/1920, Treffer ≥ 44
+  bei 390/1280/1440 normal und kompakt, kein Querscrollen, Gegenproben
+  für Mitarbeiter und „Meine Schicht".
+- `tests/stub-leiter.js` hält `set/update/delete` jetzt in
+  `window.__schreib` fest; alle drei Attrappen kennen `FieldValue.delete`.
+
+**Nachgezogen beim Durchlauf aller Tests**
+
+- **Drei Stufen am Rechner** (`leitungZeichnen`, `o.stufe`): zuerst je
+  Liste zwei Zeilen; passt es nicht, eine; reicht auch das nicht (kleines
+  Fenster, 14 Studios, Demo-Leiste), steht das Studio nicht mehr unter
+  den Kacheln und öffnet sich als Fenster wie am Handy. Gemessen mit den
+  Demo-Daten: 1100 × 800 Stufe 3, 1280 × 800 bis 1920 × 1080 mit Studio
+  darunter. Kacheln am Rechner `auto-fill, minmax(112px, 1fr)`, rechte
+  Spalte unter 1400 px 300 statt 340 px, „Ausserdem" links unter den
+  Kacheln (rechts reichte der Platz nicht).
+- **Das Studio unter den Kacheln wird nur gezeichnet, wo es zu sehen
+  ist.** Vorher lag am Handy ein verstecktes zweites Exemplar mit Haken
+  im Dokument — `test-formi-loch` klickte genau diesen Haken.
+- **„Überblick | Meine Schicht" steht auch am Handy oben** (Mitarbeiter
+  und Leitung). Bisher stand „Meine Schicht ›" unter „Ausserdem", damit
+  keine Kategorie weichen musste; seit am Handy gescrollt werden darf,
+  gilt der Grund nicht mehr.
+- **„Seit du weg warst"**: bei den Mitarbeitern als erste Karte, auch am
+  Rechner (fiel bei 1280 × 800 sonst nach „Ausserdem"); bei der Leitung
+  als erster Knopf unter „Ausserdem".
+- **Formi-Kante**: im Stil „Formi" schillert wieder die erste Karte je
+  Spalte (Runde 281, Idee 19) — in den Karten trägt die Karte die Kante.
+- **Formen-Kontrast** (Runde 103, C2): Karten, Kacheln und Kommen/Gehen
+  mit 14 px Rundung (`--r-md`), Knöpfe bleiben Pille.
+- **Kein Emoji als Zeichen** (`test-gestaltung`): der Daumen aus der
+  Skizze steht nicht im Satz „… haben alles erledigt".
+
+**Angepasste Durchläufe (jeweils mit dem Zitat aus dem Betrieb)**
+
+`test-startseite-offen`, `test-neu-design`, `test-p3-startseite`,
+`test-gruppen-titel` (jetzt Mitarbeiter, Titel ≥ 16 px: „alles aber halt
+kleiner"), `test-schicht-detail` und `test-formi-welt` (Kante an der
+Karte, Mitarbeiter), `test-tagesband` (Band bei Mitarbeitern),
+`test-block-b` („Zu bestätigen" statt „Zum Übernehmen"-Block),
+`test-block-c` (Rundung an der Karte), `test-formi-seit`,
+`test-formi-reihe`, `test-gleiten-rahmen` („passt" nur am Rechner — war
+seit Runde 295 rot), `test-ganze-seite`, `test-startseite-karten`.
+`test-leiter-aufgaben`: die Aufgaben-Erinnerung (6 s nach dem Start)
+überschrieb je nach Tempo die geprüfte Meldung; sie gilt im Durchlauf
+jetzt als heute schon gezeigt.
+
+**Nicht von dieser Runde, aber gesehen** (auf `main` ebenso rot oder
+wechselnd): `test-abgeschnitten` (#app wechselnd 3–7 px breiter, auf
+`main` einer von zwei Läufen rot), `test-schrift-geraet`,
+`test-pc-durchsicht` (Archiv), `test-p4-seitenleiste`,
+`test-lizenzen`, `test-abo-leiter` (bricht beim Laden ab). Mehrere
+Messläufe (`test-formi-physik`, `test-federn`, `test-schichtplaner-rechnung`)
+fallen unter Last aus; einzeln wiederholt waren die hier betroffenen grün.
