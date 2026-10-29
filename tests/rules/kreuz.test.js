@@ -128,6 +128,7 @@ const SAMMLUNGEN = [
   ['dms/dm_chefB_mitB/tippt/chefB',           { ts: 1 }],
   ['bestellungen/be1',                        { studioKeys: ['studio-0'], ts: 1 }],
   ['kennzahlen/studio-0_2026-09',             { studioKey: 'studio-0', mitglieder: 120 }],
+  ['kundenpost/kp1',                          { studioKey: 'studio-0', name: 'S. Brandt', status: 'offen' }],
   ['planerTeam/mitB',                         { name: 'Mit B' }],
   ['planerWuensche/w1',                       { uid: 'mitB', tag: '2026-11-03' }],
   ['planerPlaene/2026-11',                    { monat: '2026-11' }],
