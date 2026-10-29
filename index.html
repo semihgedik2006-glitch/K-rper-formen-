@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-FjDiJNqteO+Q9X8Wz4CcnSHPe1ZJ9+lBgBRt3VRxAug='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-nFoxaCcw+Erj5OGVetVcOMOj5I/XLNCHRbKO0UoWxls='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -23810,6 +23810,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-29-studio-ueberall', datum:'29.10.2026', art:'besser', titel:'Ein Studio für alle Seiten', wo:'todos', punkte:[
+    'Wer bei Aufgaben ein Studio wählt, hat es auch im Putzplan, bei Material, Geräten und im Team.',
+    'Das gilt in jede Richtung – und auch für die Studio-Kachel auf der Startseite.',
+    '„Alle Studios" bei den Aufgaben lässt die anderen Seiten bei ihrem Studio.'
+  ]},
   { id:'2026-10-29-startseite-leitung', datum:'29.10.2026', art:'besser', titel:'Leitung: neue Startseite mit Studio-Kacheln', wo:'home', punkte:[
     'Eine Kachel je Studio mit Ampel: rot, gelb oder grün – antippen zeigt das Studio im Detail.',
     '„Zu bestätigen": Kundenpost, Schichttausch, Urlaub und Zeitanträge direkt bestätigen.',
@@ -27330,7 +27335,16 @@ function showView(id, fromKey, ausVerlauf){
     /* Wer die Seite öffnet, sieht die vorausgewählte Liste — ab jetzt
        springt sie nicht mehr von selbst (todoStudioPruefen). */
     if(_todoStudioAuto && _todoStudio && cachedTodos[_todoStudio]) _todoStudioAuto=false;
-    if(_tdStand!==todoStand()) renderTodos(); else tdNotizenLaden();
+    /* Runde 297: anderswo ein Studio gewählt → hier dasselbe. */
+    var tdG=studioGemeinsam(), tdL=todoStudioListe();
+    var tdNeu = !_tdSprung && tdG!==null && tdG!==_todoStudio &&
+      (tdG==='' ? tdL.length>1 : tdL.some(function(x){ return x.key===tdG; }));
+    if(tdNeu){
+      _todoStudio=tdG; _todoStudioAuto=false; _todoWahl=null;
+      try{ localStorage.setItem(TD_STUDIO_MERK, _todoStudio); }catch(e){}
+      renderTodos();
+    } else if(_tdStand!==todoStand()) renderTodos(); else tdNotizenLaden();
+    _tdSprung=false;
   }
   if(id==='geraete') ensureDevicesLoaded();
   if(id==='schulung') schOeffnen();
@@ -27961,7 +27975,7 @@ function buildMaterialSelect(){
   sel.innerHTML='';
   var list = managedStudios().length ? managedStudios() : session.studios.slice().sort(function(a,b){ return a.localeCompare(b,'de'); });
   list.forEach(function(s){ var o=document.createElement('option'); o.value=studioKey(s); o.textContent=s; sel.appendChild(o); });
-  sel.onchange=function(){ loadMaterial(sel.value); };
+  sel.onchange=function(){ studioGemeinsamSetzen(sel.value); loadMaterial(sel.value); };
   if(isChef()){ var ex=$('matExport'); if(ex){ ex.style.display='inline-flex'; ex.onclick=exportMaterialExcel; } }
 }
 
@@ -40954,7 +40968,7 @@ function buildTeamSelect(){
   var list = canManage() ? managedStudios()
     : (session.studios||[]).slice().sort(function(a,b){ return a.localeCompare(b,'de'); });
   sel.innerHTML=list.map(function(s){ return '<option value="'+esc(studioKey(s))+'">'+esc(s)+'</option>'; }).join('');
-  sel.onchange=function(){ loadTeam(sel.value); };
+  sel.onchange=function(){ studioGemeinsamSetzen(sel.value); loadTeam(sel.value); };
   // Schichten darf nur die Verwaltung eintragen (Knopf „＋ Schicht")
   var nb=$('shiftNeu'); if(nb) nb.hidden=!canManage();
 }
@@ -40972,7 +40986,9 @@ function ensureTeamLoaded(){
   var sel=$('teamStudio'); if(!sel) return;
   if(!sel.options.length) buildTeamSelect();
   if(!_shiftWeek) _shiftWeek=mondayOf(new Date());
-  if(!_teamStudioKey && sel.value) loadTeam(sel.value);
+  var g=studioGemeinsamIn(sel);
+  if(g && g!==_teamStudioKey){ sel.value=g; loadTeam(g); }
+  else if(!_teamStudioKey && sel.value) loadTeam(sel.value);
   antraegeSuchen();
   // Der heutige Tag soll im Bild sein, ohne dass man ihn sucht — seit
   // P-12 ohne Rollen, siehe renderShifts(). heuteInsBild() greift nur
@@ -43252,6 +43268,7 @@ function lsBinden(wurzel){
       lsFensterZu(); tick(8);
       _todoFilter=''; _todoMode='offen';
       document.querySelectorAll('[data-tfilter]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-tfilter')==='offen'); });
+      studioGemeinsamSetzen(sk);
       todoStudioFuerSprung(sk); showView('todos'); renderTodos();
     });
   });
@@ -43270,6 +43287,8 @@ function leitungZeichnen(box, o){
   leitungDatenLaden(keys, false);
   var modus=heuteModus();
   var studios=keys.map(lsStudio);
+  var lsG=studioGemeinsam();
+  if(lsG && lsG!==_lsWahl && keys.indexOf(lsG)>=0) _lsWahl=lsG;
   if(!_lsWahl || keys.indexOf(_lsWahl)<0){
     var erster=studios.filter(function(x){ return x.status==='rot'; })[0] || studios[0];
     _lsWahl=erster ? erster.sk : '';
@@ -43342,7 +43361,7 @@ function leitungZeichnen(box, o){
   box.querySelectorAll('[data-lswahl]').forEach(function(b){
     b.addEventListener('click', function(){
       var sk=b.getAttribute('data-lswahl'); tick(6);
-      _lsWahl=sk;
+      _lsWahl=sk; studioGemeinsamSetzen(sk);
       /* Am Handy steht das Fenster nicht unter den Kacheln: dort öffnet
          es sich. Am Rechner wechselt es an Ort und Stelle. */
       if(!heuteBreit() || stufe>1) lsFensterAuf(sk); else renderHeute();
@@ -48650,6 +48669,36 @@ function studiosNachDringlichkeit(){
    Ein Sprung von woanders her (Startseite „2 überfällig", Kachel in der
    Übersicht) setzt die Auswahl selbst — siehe todoStudioFuerSprung() —
    und merkt sie sich NICHT: das war ein Weg, keine Einstellung. */
+/* ── Runde 297: EIN Studio für alle Seiten ──
+   Aus dem Betrieb (29.10.2026): „wenn ich in aufgaben ein studio
+   ausgewählt habe das dass studio dann auch für alle anderen sachen
+   ausgewählt wird, weil ich … aufgaben aus hürth abgehakt habe und dann
+   dachte das auch hürth beim putzplan drin ist und ich hab dann aber für
+   andere studios was abgehakt".
+   Wer an einer Stelle selbst ein Studio wählt (Aufgaben, Putzplan,
+   Material, Geräte, Team, Kachel auf der Startseite), wählt es damit
+   überall: jede dieser Seiten stellt sich beim Öffnen darauf um.
+   „Alle Studios" (nur bei den Aufgaben) wird ebenfalls gemerkt; die
+   Seiten, die nur ein einzelnes Studio kennen, behalten dann ihres.
+   Gemerkt im Gerät; geht das nicht (privates Fenster), in der Sitzung. */
+var STUDIO_GEMEINSAM='kf_studio_gemeinsam', _studioGemeinsam;
+function studioGemeinsam(){
+  if(_studioGemeinsam===undefined){
+    _studioGemeinsam=null;
+    try{ _studioGemeinsam=localStorage.getItem(STUDIO_GEMEINSAM); }catch(e){}
+  }
+  return _studioGemeinsam;
+}
+function studioGemeinsamSetzen(sk){
+  _studioGemeinsam = sk==null ? '' : String(sk);
+  try{ localStorage.setItem(STUDIO_GEMEINSAM, _studioGemeinsam); }catch(e){}
+}
+/* Das gemeinsame Studio, wenn das Auswahlfeld es anbietet — sonst null. */
+function studioGemeinsamIn(sel){
+  var g=studioGemeinsam(); if(!g || !sel) return null;
+  for(var i=0;i<sel.options.length;i++) if(sel.options[i].value===g) return g;
+  return null;
+}
 var TD_STUDIO_MERK='kf_todo_studio';
 function todoStudioListe(){
   if(!session) return [];
@@ -48700,9 +48749,13 @@ function todoStudioPruefen(liste){
 /* Für Sprünge, die über ALLE eigenen Studios zählen (Startseite,
    Hinweise): dann zeigt die Liste auch alle — sonst stünde unter
    „3 überfällig" eine Liste mit einer. */
+var _tdSprung=false;
 function todoStudioFuerSprung(sk){
   _todoStudio = sk || (todoStudioListe().length>1 ? '' : null);
   _todoStudioAuto=false;
+  /* Ein Sprung bestimmt das Studio selbst — das gemeinsame Studio
+     (Runde 297) stellt es beim Öffnen nicht wieder um. */
+  _tdSprung=true;
 }
 function todoStudioWahlBauen(liste){
   var sel=$('todoStudioWahl'); if(!sel) return;
@@ -48729,6 +48782,7 @@ function todoStudioWahlBauen(liste){
     sel.addEventListener('change', function(){
       _todoStudio=sel.value; _todoStudioAuto=false;
       try{ localStorage.setItem(TD_STUDIO_MERK, _todoStudio); }catch(e){}
+      studioGemeinsamSetzen(_todoStudio);
       _todoWahl=null;
       tick(6); renderTodos();
       var sa=document.querySelector('#view-todos .scroll-area');
@@ -52833,7 +52887,11 @@ function updateBadges(){
    ============================================================ */
 function ensureMaterialLoaded(){
   var sel=$('matStudio'); if(!sel||!sel.options.length) return;
-  if(!_matStudioKey) _matStudioKey=sel.value;
+  var g=studioGemeinsamIn(sel);
+  /* Wechsel über loadMaterial: das schreibt Ungespeichertes noch zum
+     alten Studio weg. */
+  if(g && _matStudioKey && g!==_matStudioKey){ sel.value=g; loadMaterial(g); return; }
+  if(!_matStudioKey) _matStudioKey=g||sel.value;
   sel.value=_matStudioKey;
   loadMaterial(_matStudioKey);
 }
@@ -53524,13 +53582,15 @@ function buildPutzplanSelect(){
       });
     }
   }
-  sel.onchange=function(){ loadPutzplan(sel.value); };
+  sel.onchange=function(){ studioGemeinsamSetzen(sel.value); loadPutzplan(sel.value); };
 }
 
 /* Beim Öffnen der Seite: erstes Studio laden (nur einmal aufbauen) */
 function ensurePutzplanLoaded(){
   var sel=$('ppStudio'); if(!sel) return;
   if(!sel.options.length) buildPutzplanSelect();
+  var g=studioGemeinsamIn(sel);
+  if(g && g!==_ppStudioKey){ sel.value=g; loadPutzplan(g); return; }
   if(!_ppStudioKey && sel.value) loadPutzplan(sel.value);
 }
 
@@ -54760,14 +54820,16 @@ function buildDeviceSelect(){
   var list = canManage() ? managedStudios()
     : (session.studios||[]).slice().sort(function(a,b){ return a.localeCompare(b,'de'); });
   sel.innerHTML=list.map(function(s){ return '<option value="'+esc(studioKey(s))+'">'+esc(s)+'</option>'; }).join('');
-  sel.onchange=function(){ loadDevices(sel.value); };
+  sel.onchange=function(){ studioGemeinsamSetzen(sel.value); loadDevices(sel.value); };
   var add=$('devAddCard'); if(add) add.style.display = canManage() ? 'block' : 'none';
 }
 
 function ensureDevicesLoaded(){
   var sel=$('devStudio'); if(!sel) return;
   if(!sel.options.length) buildDeviceSelect();
-  if(!_devStudioKey && sel.value) loadDevices(sel.value);
+  var g=studioGemeinsamIn(sel);
+  if(g && g!==_devStudioKey){ sel.value=g; loadDevices(g); }
+  else if(!_devStudioKey && sel.value) loadDevices(sel.value);
   devDefekteSuchen();
 }
 
@@ -54816,6 +54878,7 @@ function renderDevDefekte(){
     b.addEventListener('click',function(){
       var sk=b.getAttribute('data-wo');
       var sel=$('devStudio'); if(sel) sel.value=sk;
+      studioGemeinsamSetzen(sk);
       tick(8); loadDevices(sk);
     });
   });

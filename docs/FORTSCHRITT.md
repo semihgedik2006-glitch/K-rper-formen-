@@ -25236,3 +25236,33 @@ wechselnd): `test-abgeschnitten` (#app wechselnd 3–7 px breiter, auf
 `test-lizenzen`, `test-abo-leiter` (bricht beim Laden ab). Mehrere
 Messläufe (`test-formi-physik`, `test-federn`, `test-schichtplaner-rechnung`)
 fallen unter Last aus; einzeln wiederholt waren die hier betroffenen grün.
+
+## Runde 297 — Ein Studio für alle Seiten (29.10.2026)
+
+Aus dem Betrieb: „kannst du noch dafür sorgen das wenn ich in aufgaben ein
+studio ausgewählt habe das dass studo dann acuh für alle anderen sachen
+ausgewählt wird, weil ich echt sehr oft jetzt aufgaben aus hürth abgehakt
+habe und dann dachte das auch hürth beim putzplan drin ist und ich hab dann
+aber für andere studios was abgehakt".
+
+- Jede Seite hatte ihre eigene Studio-Auswahl (`_todoStudio`,
+  `_ppStudioKey`, `_matStudioKey`, `_devStudioKey`, `_teamStudioKey`,
+  `_lsWahl`). Neu: `studioGemeinsam()` / `studioGemeinsamSetzen()` —
+  eine eigene Wahl an einer dieser Stellen (auch „Wo etwas defekt ist"
+  bei den Geräten und die Kachel auf der Startseite der Leitung) wird
+  gemerkt (`kf_studio_gemeinsam`, sonst in der Sitzung), und jede Seite
+  stellt sich beim Öffnen darauf um, wenn ihr Auswahlfeld das Studio
+  anbietet.
+- „Alle Studios" (nur Aufgaben) wird auch gemerkt; Putzplan & Co. kennen
+  kein „alle" und behalten dann ihr Studio.
+- Sprünge (Startseite „3 überfällig" usw.) setzen die Aufgaben weiter
+  selbst (`_tdSprung`) und werden vom gemeinsamen Studio nicht
+  überschrieben. „Studio öffnen ›" in der Leitung ist eine eigene Wahl
+  und setzt es.
+- Material wechselt über `loadMaterial()`, damit Ungespeichertes noch zum
+  alten Studio geschrieben wird.
+- Nicht dabei: Schichtplaner (wählt das Studio mit den meisten Lücken)
+  und Zeitkonten.
+- Test: `tests/test-studio-gemeinsam.js` (16 Zusicherungen, echte Klicks:
+  Aufgaben → Putzplan/Material/Geräte/Team, zurück, „Alle Studios",
+  Neuladen, Kachel). Gegenprobe mit dem alten `index.html`: 9 von 16 rot.
