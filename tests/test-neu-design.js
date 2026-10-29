@@ -461,7 +461,12 @@ async function seite(b, stub, such, breite) {
     console.log('  ' + wer + ': bisher ' + mass.bisher.bildschirme + ' Bildschirme (' +
       mass.bisher.ueberschriften + ' Überschriften) → neu ' + mass.neu.bildschirme +
       ' (' + mass.neu.ueberschriften + ')');
-    pruefe(wer + ': die Startseite ist kürzer als vorher',
+    /* Runde 296, aus dem Betrieb (29.10.2026): „scrollen am handy ist
+       für leitung auch ok" — die Leitung hat am Handy eine Kachel je
+       Studio und darf dafür länger sein. Dass sie am Rechner auf einen
+       Bildschirm passt, prüft test-startseite-leitung.js. */
+    if (wer === 'chef') console.log('  (Leitung: am Handy darf die Seite länger sein – ' + mass.bisher.hoehe + ' → ' + mass.neu.hoehe + ')');
+    else pruefe(wer + ': die Startseite ist kürzer als vorher',
       mass.neu.hoehe < mass.bisher.hoehe,
       mass.bisher.hoehe + ' → ' + mass.neu.hoehe);
     /* „Nicht mehr", nicht „weniger". Der neue Schnitt NIMMT „Überblick"
@@ -540,7 +545,12 @@ async function seite(b, stub, such, breite) {
          Für Mitarbeiter (Karten je Bereich) gilt am Handy deshalb:
          höchstens drei Zeilen je Karte statt „passt ohne Scrollen".
          Am Rechner prüft test-startseite-karten weiter das Einpassen. */
-      if (wer === 'mitarbeiter') {
+      if (wer === 'chef') {
+        /* Runde 296: „scrollen am handy ist für leitung auch ok" (29.10.2026).
+           Statt „passt": die Leitung sieht ihre Startseite mit Kacheln. */
+        const ls = await pn.evaluate(() => document.querySelectorAll('#heuteListe .ls-kachel').length);
+        pruefe(wer + '@' + breite + '×' + hoehe + ': Startseite der Leitung mit Kacheln (Scrollen erlaubt)', ls >= 2, String(ls));
+      } else if (wer === 'mitarbeiter') {
         const zuViel = await pn.evaluate(() => [...document.querySelectorAll('#heuteListe.bereichskarten .heute-block')]
           .filter(bl => bl.querySelectorAll('.heute-zeile').length > 3).map(bl => bl.getAttribute('data-btitel')));
         pruefe(wer + '@' + breite + '×' + hoehe + ': Karten je Bereich, höchstens drei Zeilen (Scrollen erlaubt)',

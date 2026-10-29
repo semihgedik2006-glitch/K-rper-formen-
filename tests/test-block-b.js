@@ -176,14 +176,19 @@ const TREFFER = (el) => {
   }
   {
     const p = await seite(b, 'leiter');
-    const z = await p.evaluate(() => {
-      const bl = [...document.querySelectorAll('#heuteListe .heute-block')].find(x => /^Zum Übernehmen/.test(x.getAttribute('data-btitel') || ''));
-      return bl ? { zahl: bl.getAttribute('data-bzahl'), zeilen: [...bl.querySelectorAll('.heute-zeile')].map(z => z.textContent) } : null;
-    });
+    /* Seit Runde 296 hat die Leitung eine eigene Startseite (aus dem
+       Betrieb, 29.10.2026, mit Skizze). Was auf ihre Bestätigung
+       wartet, steht in „Zu bestätigen" (mit ✓ und ✕); Schichten, die
+       jemand abgibt, stehen als „Zum Übernehmen · N" unter „Ausserdem".
+       Geprüft wird dasselbe: beides ist da, die Zusage mit „statt". */
+    const z = await p.evaluate(() => ({
+      best: [...document.querySelectorAll('#heuteListe .ls-best-zeile')].map(x => x.textContent),
+      angebot: [...document.querySelectorAll('#heuteListe .ls-ausserdem button')].map(x => x.textContent.trim()).find(t => /^Zum Übernehmen/.test(t)) || ''
+    }));
     console.log('  Leitung: ' + JSON.stringify(z));
-    pruefe('die Leitung sieht, was auf ihre Bestätigung wartet — zuerst',
-      z && /Tausch bestätigen/.test(z.zeilen[0]) && / statt /.test(z.zeilen[0]), JSON.stringify(z));
-    pruefe('die Überschrift zählt beides (Angebot und Zusage)', z && +z.zahl >= 2, JSON.stringify(z));
+    pruefe('die Leitung sieht, was auf ihre Bestätigung wartet („Zu bestätigen", Schichttausch mit „statt")',
+      z.best.some(t => /^Schichttausch/.test(t) && / statt /.test(t)), JSON.stringify(z));
+    pruefe('und das Angebot steht als „Zum Übernehmen · N" daneben', /Zum Übernehmen · \d+/.test(z.angebot), JSON.stringify(z));
     pruefe('B2 Leitung ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await p.close();
   }

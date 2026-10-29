@@ -90,6 +90,11 @@ async function oeffne(b, datei, keys, w, h) {
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
   await p.route('**script.google.com/**', r => r.fulfill({ status: 200, body: 'ok' }));
+  /* Die Aufgaben-Erinnerung (6 s nach dem Start) überschrieb sonst die
+     Meldung, die hier geprüft wird — je nachdem, wie schnell die
+     Startseite fertig war (seit Runde 296 zeichnet die Leitung ihre
+     eigene). Sie ist heute schon „gezeigt". */
+  await p.addInitScript(() => { try { localStorage.setItem('kf_due_' + new Date().toDateString(), '1'); } catch (e) {} });
   await p.addInitScript({ content: stub(datei, keys) });
   await p.goto(APP, { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(3200);

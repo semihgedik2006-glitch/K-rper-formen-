@@ -39,7 +39,11 @@ async function oeffne(b, w, h) {
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
   await p.route('**script.google.com/**', r => r.fulfill({ status: 200, body: 'ok' }));
-  await p.addInitScript({ path: SP + '/stub-chef.js' });
+  /* Seit Runde 296 steht „Seit …" bei der Leitung als Knopf unter
+     „Ausserdem" (eigene Startseite, test-startseite-leitung). Die Zeile
+     mit Formi prüfen wir bei den Mitarbeitern, für die sie gedacht ist:
+     „Seit deiner letzten Schicht". */
+  await p.addInitScript({ path: SP + '/stub-mitarbeiter.js' });
   await p.goto(APP, { waitUntil: 'domcontentloaded' });
   await p.waitForFunction(() => !!document.querySelector('#app.show'), null, { timeout: 15000 });
   await p.waitForTimeout(1500);
@@ -114,7 +118,11 @@ const TREFFER = (sel) => {
       const zitat = (/„([^"“]+?)…?"/.exec(z.unter) || [])[1] || '';
       pruefe(`${w}: „${z.titel}" mit Formi`, !!m && z.figur, JSON.stringify(z));
       pruefe(`${w}: Zitat wörtlich aus den Daten (Attrappe), mit Quelle und Uhrzeit`, zitat.length > 10 && STUB.includes(zitat) && /— (Übergabe|Ankündigung) von \S+, \d\d:\d\d$/.test(z.unter), z.unter);
-      const breit = w >= 1100;
+      /* Seit Runde 296 steht „Seit …" in den Karten der Mitarbeiter auch
+         am Rechner als eigene Karte ganz oben (bei 1280 × 800 fiel „Neu
+         für dich" sonst nach „Ausserdem"). „Neu für dich" gilt nur noch
+         ohne Karten. */
+      const breit = w >= 1100 && !(await p.evaluate(() => !!document.querySelector('#heuteListe.bereichskarten')));
       pruefe(`${w}: ${breit ? 'am PC in „Neu für dich"' : 'am Handy als eigener Block „Seit …" ganz oben'}`, breit ? z.block === 'Neu für dich' : (/^Seit \S+$/.test(z.block) && z.erster), JSON.stringify(z));
       const t = await p.evaluate(TREFFER, '.heute-zeile.formi-seit');
       pruefe(`${w}: Trefferfläche ${t.w}×${t.h} (≥ 44 × 44)`, t.w >= 44 && t.h >= 44, JSON.stringify(t));

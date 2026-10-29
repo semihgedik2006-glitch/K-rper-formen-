@@ -154,6 +154,7 @@ Wer das Aussehen ändert, prüft gegen diese Liste.
 |---|---|
 | „am besten steht alles auf einer Seite ohne dass man scrollen muss" | Die Startseite passt auf einen Bildschirm. Was nicht passt, verschwindet **nie** stumm — es bleibt als Knopf unter „Ausserdem" |
 | „es soll schon jeder bereich ein eigenen bereich haben alles aber halt kleiner … NUR auf handy ist es auch ok wenn man scrollen muss etwas" (29.10.2026) | Startseite der Mitarbeiter: eine Karte je Bereich, höchstens drei Zeilen. Am Handy darf sie scrollen, am Rechner passt sie weiter auf einen Bildschirm |
+| „scrollen am handy ist für leitung auch ok" (29.10.2026, mit Skizze) | Startseite der Leitung: Kachel je Studio mit Ampel, das Studio im Detail, „Zu bestätigen", Zusammenfassung in Sätzen. Am Handy darf sie scrollen, am Rechner passt sie auf einen Bildschirm |
 | „es wirkt mit den grossen Symbolen immer noch voll überwältigend" | Wenige, grosse Dinge. In Listen das Zeichen ohne getönte Kachel |
 | „die Grundstruktur … um Welten leichter zu navigieren, unabhängig von Suchfeldern" | Jedes Ziel in zwei Tipps über „Alles" |
 | „die Farben mit den Übergängen gefallen mir … ein wenig mehr Farbe und Leben" | Farbe, die von einer Kante ausgeht und ausläuft; die Farbe folgt dem Bereich |

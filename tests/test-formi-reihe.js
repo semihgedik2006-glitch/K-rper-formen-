@@ -99,7 +99,13 @@ const LAGE = (SRC) => {
       pruefe(wo + ': Formi trifft ' + m.kugel.w + '×' + m.kugel.h, m.kugel.w >= 44 && m.kugel.h >= 44);
       if (dichte === 'normal') {
         pruefe(wo + ': der Kopf ist schmal (kein Datum)', !m.datum);
-        if (w === 390 && rolle === 'chef') pruefe(wo + ': mindestens drei Blöcke (vorher zwei): ' + m.bloecke.join(', '), m.bloecke.length >= 3, m.bloecke.join('|'));
+        /* Seit Runde 296 hat die Leitung statt Blöcken eine Kachel je
+           Studio (aus dem Betrieb, 29.10.2026, mit Skizze). „Mehr vom
+           Tag" heisst dort: mindestens drei Kacheln oberhalb der Leiste. */
+        if (w === 390 && rolle === 'chef') {
+          const k = await p.evaluate(() => [...document.querySelectorAll('#heuteListe .ls-kachel')].length);
+          pruefe(wo + ': Startseite der Leitung mit mindestens drei Studio-Kacheln (' + k + ')', k >= 3, String(k));
+        }
         if (w === 430) pruefe(wo + ': der Putzplan steht auf der Startseite', m.bloecke.indexOf('Putzplan') >= 0, m.bloecke.join('|'));
       }
     }

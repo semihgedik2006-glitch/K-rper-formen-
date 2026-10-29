@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-PQvAPWGCr+XsybHVFemNjbab7Di4Nt8hZ7Jn5GtIHrI='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-FjDiJNqteO+Q9X8Wz4CcnSHPe1ZJ9+lBgBRt3VRxAug='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -2148,11 +2148,11 @@ body.neu #view-docs #docCatRow{margin-top:var(--s8)}
    sichtbar nichts. Mein Test hat das nicht gefunden, weil er die
    Klasse .show geprueft hat statt der Sichtbarkeit: die Klasse sass
    richtig, sie hatte nur keine Wirkung. */
-#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#schnellModal,#neuModal,#findeModal,#installModal,#vorfallModal,#zfModal,#bestellModal,#aktionModal,#kpModal,#hsModal{
+#profileModal,#personModal,#devModal,#pollModal,#todoEditModal,#aboModal,#ownTodoModal,#probeModal,#zugangModal,#putzModal,#kanalModal,#bereichModal,#schnellModal,#neuModal,#findeModal,#installModal,#vorfallModal,#zfModal,#bestellModal,#aktionModal,#kpModal,#hsModal,#lsModal{
   position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;
   padding:var(--s20);background:var(--scrim);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#schnellModal.show,#neuModal.show,#findeModal.show,#installModal.show,#vorfallModal.show,#zfModal.show,#bestellModal.show,#aktionModal.show,#kpModal.show,#hsModal.show{display:flex}
+#profileModal.show,#personModal.show,#devModal.show,#pollModal.show,#todoEditModal.show,#aboModal.show,#ownTodoModal.show,#probeModal.show,#zugangModal.show,#putzModal.show,#kanalModal.show,#bereichModal.show,#schnellModal.show,#neuModal.show,#findeModal.show,#installModal.show,#vorfallModal.show,#zfModal.show,#bestellModal.show,#aktionModal.show,#kpModal.show,#hsModal.show,#lsModal.show{display:flex}
 /* Runde 146: der Link aus der Bestätigungs- oder Passwort-Mail. Er muss
    VOR der Anmeldung und über dem Startbild stehen (#splash 1000,
    #loadingWrap 999). */
@@ -9621,7 +9621,7 @@ body.neu .heute-zeile.dringend .hz-txt i{color:var(--danger-tx);font-weight:600}
    Haarlinie. Gilt nur, wo #heuteListe die Klasse trägt (Mitarbeiter);
    die Leitung bleibt vorerst, wie sie war. */
 body.neu #heuteListe.bereichskarten .heute-block{margin-bottom:var(--s12);
-  padding:var(--s12) var(--s8) var(--s4) var(--s12);border-radius:var(--r-lg);background:var(--bg-2);
+  padding:var(--s12) var(--s8) var(--s4) var(--s12);border-radius:var(--r-md);background:var(--bg-2);
   box-shadow:inset 0 1px 0 var(--kante),0 0 0 1px var(--line),var(--e1)}
 /* Unter der Überschrift mindestens 14 px: die Trefferfläche von „Alle N" ragt
    22 px unter die Mitte des Wortes, und die erste Zeile darunter liegt
@@ -9632,6 +9632,12 @@ body.neu #heuteListe.bereichskarten .heute-kopf{font-size:var(--t-md);margin:0 0
    ihre schillernde Kante) fällt weg, sonst steht eine Karte in der
    Karte. Die Trennlinien zwischen den Zeilen bleiben (::before). */
 body.neu #heuteListe.bereichskarten .heute-liste{background:none;border:0;box-shadow:none;border-radius:0}
+/* Stil „Formi": wie bisher schillert nur die ERSTE Gruppe (Runde 281,
+   Idee 19) — in den Karten trägt die Karte selbst die Kante. */
+body.formi:not(.light).neu #heuteListe.bereichskarten .heute-block{border:1px solid transparent;
+  background:linear-gradient(var(--formi-kern),var(--formi-kern)) padding-box,var(--formi-lin) border-box}
+body.formi:not(.light).neu #heuteListe.bereichskarten .heute-block ~ .heute-block,
+body.formi:not(.light).neu #heuteListe.bereichskarten .heute-spalte + .heute-spalte .heute-block{border-color:var(--line-2);background:var(--formi-kern)}
 body.neu #heuteListe.bereichskarten .heute-zeile{background:none;box-shadow:none;border-left:0;
   border-radius:var(--r-sm);min-height:48px;padding:var(--s6) var(--s8)}
 body.neu #heuteListe.bereichskarten .hz-mit-haken{gap:0}
@@ -9645,7 +9651,7 @@ body.neu .hz-aktion{flex:0 0 auto;min-height:44px;min-width:44px;margin-right:va
   font-size:var(--t-sm);font-weight:600}
 /* Kommen/Gehen oben auf „Heute" (Runde 295). */
 .heute-stempel{display:flex;align-items:center;gap:var(--s12);margin:0 0 var(--s12);
-  padding:var(--s10) var(--s10) var(--s10) var(--s16);border-radius:var(--r-lg);background:var(--bg-2);
+  padding:var(--s10) var(--s10) var(--s10) var(--s16);border-radius:var(--r-md);background:var(--bg-2);
   box-shadow:inset 0 1px 0 var(--kante),0 0 0 1px var(--line),var(--e1)}
 .heute-stempel .hs-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:var(--s2)}
 .heute-stempel .hs-txt b{font-size:var(--t-md);font-weight:700;line-height:var(--lh-eng)}
@@ -9656,6 +9662,126 @@ body.neu .hz-aktion{flex:0 0 auto;min-height:44px;min-width:44px;margin-right:va
 .kp-box .vf-art label > span{font-weight:600}
 .hs-box .st-knoepfe{display:flex;flex-wrap:wrap;gap:var(--s8)}
 .hs-box .st-knoepfe .btn{min-height:48px;flex:1 1 120px}
+/* ── Runde 296: Startseite der Leitung (nach der Skizze vom 29.10.2026) ──
+   Kacheln je Studio mit Ampel, darunter (am Rechner) das angetippte
+   Studio gross, rechts „Zu bestätigen", die Zusammenfassung in Sätzen
+   und das Material. Am Handy eine Spalte, das Studio öffnet sich als
+   Fenster. Rot, Bernstein und Grün sind hier Status — sonst nichts. */
+#heuteListe .ls{display:flex;flex-direction:column;gap:var(--s12)}
+.ls-haupt,.ls-seite{display:flex;flex-direction:column;gap:var(--s12);min-width:0}
+.ls-reiter{margin-bottom:var(--s12)}
+.ls-reiter button{white-space:nowrap}
+/* Drei Reiter in einer Zeile, auch bei 320 px: gleich breit, kleiner. */
+@media(max-width:699px){
+  .heute-modus.ls-reiter{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;box-sizing:border-box}
+  .heute-modus.ls-reiter button{padding:0 var(--s4);font-size:var(--t-xs);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* Am Handy steht „Zu bestätigen" über den Kacheln. */
+  #heuteListe .ls-seite,#heuteListe .ls-haupt{display:contents}
+  #heuteListe .ls-best{order:-1}
+  #heuteListe .ls-ausserdem{order:5}
+}
+/* Am Rechner: Reiter und Kommen/Gehen in einer Zeile. */
+.ls-oben{display:flex;flex-direction:column}
+@media(min-width:1100px){
+  .ls-oben{flex-direction:row;align-items:center;gap:var(--s16);margin-bottom:var(--s12)}
+  .ls-oben .ls-reiter{margin:0}
+  .ls-oben .heute-stempel{margin:0 0 0 auto;padding:var(--s6) var(--s6) var(--s6) var(--s16)}
+  .ls-oben .heute-stempel .hs-knopf{min-height:44px}
+  .ls-oben .heute-stempel{min-width:0;flex:0 1 auto}
+  .ls-oben .heute-stempel .hs-txt i{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
+.ls-karte{border-radius:var(--r-md);background:var(--bg-2);
+  box-shadow:inset 0 1px 0 var(--kante),0 0 0 1px var(--line),var(--e1);padding:var(--s12) var(--s12) var(--s8) var(--s16)}
+.ls-kopf{display:flex;align-items:center;justify-content:space-between;gap:var(--s8);min-height:44px}
+.ls-kopf h2{margin:0;font-size:var(--t-md);font-weight:700}
+.ls-zahl{font-size:var(--t-sm);font-weight:600;color:var(--text-2)}
+.ls-zahl.warm{color:var(--warm-tx)}
+.ls-kacheln{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s8)}
+.ls-kachel{display:flex;flex-direction:column;align-items:flex-start;gap:var(--s4);min-height:64px;min-width:0;
+  padding:var(--s10) var(--s12);border:0;border-radius:var(--r-md);background:var(--bg-2);color:var(--text);
+  text-align:left;cursor:pointer;font:inherit;
+  box-shadow:inset 0 1px 0 var(--kante),0 0 0 1px var(--line),var(--e1);transition:transform .14s var(--ease-ios)}
+.ls-kachel b{display:flex;align-items:center;gap:var(--s8);max-width:100%;font-size:var(--t-md);font-weight:700;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ls-kachel i{font-style:normal;font-size:var(--t-sm);color:var(--text-2);max-width:100%;line-height:var(--lh-eng);
+  overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.ls-kachel.rot{box-shadow:inset 0 1px 0 var(--kante),0 0 0 1px var(--k-bad),var(--e1)}
+.ls-kachel.rot i{color:var(--danger-tx)}
+.ls-kachel.gruen i{color:var(--ok-tx)}
+.ls-kachel:active{transform:scale(.98)}
+.ls-kachel[aria-pressed="true"]{box-shadow:inset 0 1px 0 var(--kante),0 0 0 2px var(--accent),var(--e1)}
+.ls-punkt{display:inline-block;width:9px;height:9px;border-radius:var(--r-rund);flex:0 0 auto;background:var(--warm)}
+.ls-punkt.rot{background:var(--danger)}
+.ls-punkt.gruen{background:var(--ok)}
+.ls-mehrere .ls-detail{display:none}
+.ls-d-kopf{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s10);margin-bottom:var(--s8)}
+#lsModal .ls-d-kopf{padding-right:var(--s48)}
+.ls-d-txt{flex:1 1 220px;min-width:0}
+.ls-d-txt h3{margin:0;font-size:var(--t-lg)}
+.ls-d-txt p{margin:var(--s2) 0 0;font-size:var(--t-sm);color:var(--text-2)}
+.ls-d-txt p.rot,.ls-leise.rot{color:var(--danger-tx)}
+.ls-d-txt h3{display:flex;align-items:center;gap:var(--s8)}
+.ls-d-da b{color:var(--text);font-weight:600}
+.ls-oeffnen{flex:0 0 auto;min-height:44px}
+.ls-d-spalten{display:flex;flex-direction:column;gap:var(--s12)}
+.ls-sp{min-width:0}
+.ls-sp h4{margin:0 0 var(--s4);font-size:var(--t-sm);font-weight:700;color:var(--text)}
+.ls-sp h4 span{font-weight:600;color:var(--text-2)}
+.ls-da{display:flex;justify-content:space-between;gap:var(--s8);padding:var(--s6) 0;border-top:1px solid var(--line);font-size:var(--t-sm)}
+.ls-da span{color:var(--text-2)}
+.ls-leise{margin:var(--s4) 0;font-size:var(--t-sm);color:var(--text-2)}
+.ls-leise.gruen{color:var(--ok-tx)}
+.ls-balken{display:block;max-width:none;margin:var(--s4) 0 var(--s6)}
+.ls-balken i{background:#2DD4BF}
+body.neu .ls-detail .hz-ikon,body.neu .ls-detail .hz-pfeil{display:none}
+.ls-best-zeile{display:flex;align-items:center;gap:var(--s6);min-height:56px;border-top:1px solid var(--line)}
+.ls-best-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:var(--s1);padding:var(--s6) 0}
+.ls-best-txt b{font-size:var(--t-sm);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ls-best-txt span{font-size:var(--t-xs);color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ls-art{font-style:normal;font-size:var(--t-2xs);font-weight:700;color:var(--text-2)}
+.ls-art.kp{color:var(--warm-tx)}
+.ls-art.ta{color:var(--ber)}
+.ls-art.abw{color:#4EE6D2}
+.ls-art.za{color:#BBA4FF}
+body.light .ls-art.abw{color:#0B6A62}
+body.light .ls-art.za{color:#5F1FC7}
+.ls-ja,.ls-nein{flex:0 0 44px;width:44px;height:44px;display:grid;place-items:center;padding:0;border-radius:var(--r-md);cursor:pointer}
+.ls-ja{border:0;background:var(--accent);color:var(--on-accent)}
+.ls-nein{border:1px solid var(--line-2);background:transparent;color:var(--text-2)}
+.ls-ja .sym,.ls-nein .sym{width:18px;height:18px}
+.ls-ja:active,.ls-nein:active{transform:scale(.94)}
+.ls-mehr-knopf{width:100%;min-height:44px;padding:0;border:0;border-top:1px solid var(--line);background:none;
+  color:var(--accent);font:inherit;font-size:var(--t-sm);font-weight:600;text-align:left;cursor:pointer}
+.ls-satz{display:flex;gap:var(--s8);align-items:flex-start;margin:var(--s6) 0;font-size:var(--t-sm);line-height:var(--lh-weit)}
+.ls-satz .ls-punkt{margin-top:var(--s6)}
+.ls-satz.gruen{color:var(--text-2)}
+.ls-material{display:flex;align-items:center;gap:var(--s12);width:100%;min-height:56px;text-align:left;cursor:pointer;
+  color:var(--text);border:0;font:inherit;padding:var(--s10) var(--s16);--kat:#BBA4FF}
+body.light .ls-material{--kat:#5F1FC7}
+.ls-ausserdem{margin-top:0}
+.ls-box{max-width:520px;width:100%;max-height:86dvh;overflow:auto;position:relative}
+.ls-box .ls-detail{box-shadow:none;background:none;padding:0}
+@media(min-width:1100px){
+  #heuteListe .ls{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:var(--s16);align-items:start}
+  /* Die rechte Spalte reicht höchstens bis zum unteren Rand (leitungEinpassen
+     setzt max-height). Reicht der Platz nicht, wird die Zusammenfassung
+     kürzer und blendet unten aus — vollständig steht sie unter „Alle"
+     (Reiter Zusammenfassung). So passt die Seite am Rechner auf einen
+     Bildschirm, auch bei 1280 × 800. */
+  #heuteListe .ls-kurz{flex:1 1 auto;min-height:88px;overflow:hidden}
+  #heuteListe .ls-kurz.gekappt{-webkit-mask-image:linear-gradient(#000 calc(100% - 28px),transparent);
+    mask-image:linear-gradient(#000 calc(100% - 28px),transparent)}
+  /* So viele Kacheln nebeneinander, wie ein Name lesbar hineinpasst. */
+  .ls-kacheln{grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:var(--s6)}
+  .ls-kachel{min-height:56px;padding:var(--s8) var(--s12);gap:var(--s2)}
+  .ls-mehrere .ls-detail{display:block}
+  #heuteListe .ls-eng .ls-detail{display:none}
+  .ls-d-da{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ls-d-spalten{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s16)}
+}
+@media(min-width:1100px) and (max-width:1399px){
+  #heuteListe .ls{grid-template-columns:minmax(0,1fr) 300px}
+}
 /* Der Pfeil nimmt die Farbe leise mit — er ist das Versprechen, dass
    die Zeile irgendwohin führt. */
 body.neu .heute-zeile .hz-pfeil{color:var(--kat);opacity:.55}
@@ -14103,6 +14229,15 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
     <p class="em-saved" id="hsFehler" role="alert"></p>
     <div class="st-knoepfe" id="hsKnoepfe"></div>
     <p class="hint mz-neben">Der Code wechselt alle 30 Sekunden.</p>
+  </div>
+</div>
+
+<!-- Ein Studio, angetippt auf der Startseite der Leitung (Runde 296). Am
+     Rechner steht dasselbe unter den Kacheln; am Handy öffnet es sich hier. -->
+<div id="lsModal" role="dialog" aria-modal="true" aria-label="Studio">
+  <div class="pm-box ls-box">
+    <button class="lb-close" id="lsZu" aria-label="Schließen" style="position:absolute;top:12px;right:14px"><svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <div id="lsInhalt"></div>
   </div>
 </div>
 
@@ -23675,6 +23810,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-10-29-startseite-leitung', datum:'29.10.2026', art:'besser', titel:'Leitung: neue Startseite mit Studio-Kacheln', wo:'home', punkte:[
+    'Eine Kachel je Studio mit Ampel: rot, gelb oder grün – antippen zeigt das Studio im Detail.',
+    '„Zu bestätigen": Kundenpost, Schichttausch, Urlaub und Zeitanträge direkt bestätigen.',
+    'Oben „Überblick", „Meine Schicht" und „Zusammenfassung" in ganzen Sätzen.'
+  ]},
   { id:'2026-10-29-startseite-karten', datum:'29.10.2026', art:'besser', titel:'Startseite: jeder Bereich als eigene Karte', wo:'home', punkte:[
     'Oben „Kommen" bzw. „Gehen" mit der Schicht von heute.',
     'Karten für Kundenpost, Leitung, Aufgaben und Putzplan – je höchstens drei Einträge.',
@@ -24782,8 +24922,9 @@ var HEUTE_BLOECKE = [
   /* Runde 295: Kundenpost, Leitung und Aufgaben als eigene Bereiche.
      Vorerst nur auf der Startseite der Mitarbeiter gefüllt; die der
      Leitung folgt. */
+  { k:'seit', n:'Seit du weg warst' },
   { k:'kunde', n:'Kundenpost' }, { k:'leitung', n:'Von der Leitung' }, { k:'aufgaben', n:'Aufgaben (Mitarbeiter)' },
-  { k:'seit', n:'Seit du weg warst' }, { k:'ueber', n:'Überfällig' }, { k:'heute', n:'Heute' },
+  { k:'ueber', n:'Überfällig' }, { k:'heute', n:'Heute' },
   { k:'tausch', n:'Zum Übernehmen' }, { k:'putz', n:'Putzplan' }, { k:'neu', n:'Neu für dich' },
   { k:'sonst', n:'Zu erledigen' }, { k:'offen', n:'Offen' }, { k:'band', n:'Heute im Studio (Rechner)' }
 ];
@@ -41969,18 +42110,28 @@ function formiSeitZeile(){
    zuerst Lesen (Übergaben seit gestern), dann Überfälliges, Heutiges,
    jeder offene Putzpunkt einzeln, dann der Rest mit Frist. Je Gerät
    gemerkt. */
-function heuteModus(){ try{ return localStorage.getItem('kf_heute_modus')==='schicht' ? 'schicht' : 'ueberblick'; }catch(e){ return 'ueberblick'; } }
+function heuteModus(){
+  var m='ueberblick';
+  try{ m=localStorage.getItem('kf_heute_modus')||'ueberblick'; }catch(e){}
+  /* Runde 296: „Zusammenfassung" gibt es nur für die Leitung. */
+  if(m==='zusammen' && session && canManage()) return 'zusammen';
+  return m==='schicht' ? 'schicht' : 'ueberblick';
+}
 /* Am Handy kostete der Schalter oben eine ganze Kategorie (sie rutschte
    nach „Ausserdem", gefunden von test-gruppen-titel/-startseite-putz).
    Dort steht er im Überblick deshalb selbst als Knopf unter „Ausserdem";
    in „Meine Schicht" oben — dort ist ohnehin nur eine Liste. */
 function heuteModusSchmal(){ return !!(window.matchMedia && matchMedia('(max-width:699px)').matches); }
 function heuteModusHTML(){
-  var m=heuteModus();
-  if(m==='ueberblick' && heuteModusSchmal()) return '';
-  return '<div class="heute-modus" role="group" aria-label="Ansicht">'+
+  var m=heuteModus(), leitung=!!(session && canManage());
+  /* Runde 295/296: am Handy darf „Heute" scrollen (aus dem Betrieb,
+     29.10.2026: „NUR auf handy ist es auch ok wenn man scrollen muss
+     etwas"). Der Schalter kostet damit keine Kategorie mehr und steht
+     auch dort oben — vorher stand er unter „Ausserdem". */
+  return '<div class="heute-modus'+(leitung?' ls-reiter':'')+'" role="group" aria-label="Ansicht">'+
     '<button type="button" data-hmodus="ueberblick" aria-pressed="'+(m==='ueberblick')+'">Überblick</button>'+
-    '<button type="button" data-hmodus="schicht" aria-pressed="'+(m==='schicht')+'">Meine Schicht</button></div>';
+    '<button type="button" data-hmodus="schicht" aria-pressed="'+(m==='schicht')+'">Meine Schicht</button>'+
+    (leitung ? '<button type="button" data-hmodus="zusammen" aria-pressed="'+(m==='zusammen')+'">Zusammenfassung</button>' : '')+'</div>';
 }
 function heuteModusBinden(box){
   box.querySelectorAll('[data-hmodus]').forEach(function(b){
@@ -42107,7 +42258,7 @@ function renderHeuteJetzt(){
      Kommen/Gehen oben, darunter Kundenpost, Leitung, Aufgaben, Putzplan.
      Die Leitung behält vorerst die bisherige Liste. */
   var karten = !canManage();
-  if(karten) heuteStempelLaden(false);
+  heuteStempelLaden(false);
 
   /* ── Was gibt es überhaupt ── */
   /* ── `ohneFrist` ist am 21.9.2026 dazugekommen ──
@@ -42339,6 +42490,20 @@ function renderHeuteJetzt(){
     }
   }
 
+  /* Runde 296: die Leitung hat ihre eigene Startseite (leitungZeichnen).
+     „Meine Schicht" bleibt für sie die bisherige Liste. */
+  if(!karten && heuteModus()!=='schicht'){
+    var angebote=(_tauschAngebote||[]).filter(function(x){ return x.date>=heuteYmdT(); }).length;
+    var restL=lesen.slice();
+    if(angebote) restL.push({ ziel:'team', titel:'Zum Übernehmen · '+angebote });
+    /* „Seit du weg warst" (Runde 242) steht bei der Leitung als erster
+       Knopf unter „Ausserdem". */
+    if(fseit) restL.unshift({ ziel:fseit.ziel, teamtab:fseit.teamtab, titel:'Seit '+fseit.wann+' · '+fseit.anzahl });
+    var lsAng=aufbauAngebotOffen();
+    if(lsAng) restL.unshift({ ziel:'home', angebot:lsAng.id, titel:'Vorschlag der Leitung' });
+    leitungZeichnen(box, { keys:keys, lesen:restL, sonst:sonst, matArtikel:matArtikel, matStudios:matStudios, dienst:dienst });
+    return;
+  }
   /* ── Zeichnen ──
      Die Überschrift nennt die VOLLE Zahl und führt zur ganzen Liste;
      darunter stehen nur die obersten. So ist nichts verschwiegen,
@@ -42424,10 +42589,14 @@ function renderHeuteJetzt(){
       unter:'App-Aufbau von '+(abAng.von||'der Leitung')+' · nur wenn du willst' };
     block('vorschlag', 'Vorschlag der Leitung', 'lesen', [abZ], [abZ], 'home');
   }
-  if(fseit && breit) lesen.unshift(fseit);
+  /* In den Karten (Mitarbeiter) steht „Seit …" auch am Rechner als
+     eigene Karte ganz oben: sie ist das Erste, was man zum
+     Schichtbeginn braucht, und fiel bei 1280 × 800 sonst nach
+     „Ausserdem". */
+  if(fseit && breit && !karten) lesen.unshift(fseit);
   /* Am Handy steht „Seit Mittwoch" in der Überschrift, die Zeile nennt
      nur die Zahlen — sonst schnitt die schmale Zeile den Titel ab. */
-  if(fseit && !breit){ var fz=Object.assign({}, fseit, { titel:fseit.anzahl }); block('seit', 'Seit '+fseit.wann, 'lesen', [fz], [fz], 'team'); }
+  if(fseit && (!breit || karten)){ var fz=Object.assign({}, fseit, { titel:fseit.anzahl }); block('seit', 'Seit '+fseit.wann, 'lesen', [fz], [fz], 'team'); }
   /* ── Runde 295: Karten je Bereich (Mitarbeiter) ──
      Höchstens drei Zeilen je Karte; die Überschrift nennt die volle
      Zahl und führt zur ganzen Liste. Aufgaben in EINER Karte:
@@ -42713,7 +42882,7 @@ function heuteGelesen(b){
    sofort. */
 var _hsStand={ tag:'', stempel:null, geladen:0 };
 function heuteStempelLaden(neu){
-  if(!session || canManage()) return;
+  if(!session) return;
   var heute=ymd(new Date());
   if(!neu && _hsStand.tag===heute && Date.now()-_hsStand.geladen<5*60000) return;
   _hsStand.geladen=Date.now();
@@ -42808,6 +42977,411 @@ function hsStempeln(btn){
       if(km && km.classList.contains('show')) kpSchliessen();
       if(hm && hm.classList.contains('show')) hsSchliessen();
     });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
+})();
+
+/* ══ STARTSEITE DER LEITUNG (Runde 296) ═════════════════════════════
+   Aus dem Betrieb, 29.10.2026: „glaubst du wir können auch für die
+   leitung die startseite übersichtlicher machen und minimalistischer
+   aber dennoch praktisch?" — dazu eine Skizze: oben „Überblick | Meine
+   Schicht | Zusammenfassung", darunter eine Kachel je Studio mit Ampel
+   („Hürth Aufg. 2 Putzpl. 10", rot / „Brühl" grün), darunter „ein
+   grösseres Fenster vom Studio auf das geklickt wird", rechts eine
+   Zusammenfassung in Sätzen („Hürth hat 2 Aufgaben offen und 10
+   Putzplan! Brühl hat alles erledigt 👍") und „5 Artikel fehlen in 2
+   Studios". Dazu der Vorschlag „Zu bestätigen", und: „scrollen am handy
+   ist für leitung auch ok". Zum Entwurf: „ja so passt das".
+
+   Was die Ampel heisst (Statusfarben nur für Status):
+     rot    etwas ist überfällig, eine Kündigung ist unbeantwortet, oder
+            eine Schicht läuft seit 15 Minuten und niemand ist da
+     gelb   etwas ist offen (Aufgabe, Putzpunkt, Kundenpost)
+     grün   nichts offen
+
+   „Zu bestätigen" sammelt, was auf die Leitung wartet: erledigt
+   gemeldete Kundenpost, zugesagte Schichttausche, Urlaubsanträge und —
+   nur die Geschäftsführung — Zeitanträge. Es sind dieselben Schreibwege
+   wie auf den jeweiligen Seiten; die Regeln sind dieselben.
+
+   Gelesen wird je Studio, was die Leitung ohnehin lesen darf: die
+   Stempel von heute (studioKey + tag, wie „Jetzt im Studio"), die
+   Schichten von heute und die offenen Abwesenheiten. Höchstens alle
+   fünf Minuten. */
+var _lsWahl='', _lsJetzt={}, _lsAbw={}, _lsAntraege=[], _lsAt=0, _lsLaedt=false, _lsErledigt={};
+function leitungDatenLaden(keys, neu){
+  if(_lsLaedt || !session) return;
+  if(!neu && Date.now()-_lsAt < 5*60000) return;
+  _lsLaedt=true; _lsAt=Date.now();
+  var heute=ymd(new Date());
+  function liste(q){ return q.get().then(function(sn){ return sn.docs.map(function(d){ return Object.assign({ id:d.id }, d.data()||{}); }); }); }
+  var jobs=keys.map(function(sk){
+    return Promise.all([
+      liste(S('zeiten').where('studioKey','==',sk).where('tag','==',heute)).catch(function(){ return null; }),
+      featureAn('schicht') ? liste(S('studios').doc(sk).collection('shifts').where('date','==',heute)).catch(function(){ return null; }) : Promise.resolve(null),
+      featureAn('abwesend') ? liste(S('studios').doc(sk).collection('absences').where('status','==','offen')).catch(function(){ return []; }) : Promise.resolve([])
+    ]).then(function(r){
+      _lsJetzt[sk]={ stempel:r[0], schichten:r[1] };
+      _lsAbw[sk]=(r[2]||[]).filter(function(a){ return a.type!=='krank' && a.status==='offen'; })
+        .map(function(a){ a.sk=sk; return a; });
+    });
+  });
+  if(isChef()){
+    jobs.push(liste(S('zeitAntraege').where('status','==','offen'))
+      .then(function(l){ _lsAntraege=l; }).catch(function(){ _lsAntraege=[]; }));
+  }
+  Promise.all(jobs).then(function(){ _lsLaedt=false; renderHeute(); }, function(){ _lsLaedt=false; });
+}
+/* Wer ist gerade da: der letzte gültige Stempel je Person von heute. */
+function lsDa(sk){
+  var j=_lsJetzt[sk]; if(!j || !j.stempel) return null;
+  var pro={};
+  j.stempel.forEach(function(z){
+    if(z.storno) return;
+    var p=pro[z.uid]||(pro[z.uid]={ name:z.name||'', art:null, ts:-1 });
+    if((z.ts||0)>p.ts){ p.ts=z.ts||0; p.art=z.art; }
+  });
+  return Object.keys(pro).map(function(u){ return pro[u]; })
+    .filter(function(p){ return p.art==='kommen' || p.art==='zurueck' || p.art==='pause'; })
+    .sort(function(a,b){ return a.ts-b.ts; });
+}
+/* Läuft gerade eine Schicht, und zwar seit mindestens 15 Minuten? Erst
+   dann ist „niemand da" eine Meldung — vorher kann jemand im Stau
+   stehen, und nachts ist ein leeres Studio der Normalfall. */
+function lsSchichtLaeuft(sk){
+  var j=_lsJetzt[sk]; if(!j || !j.schichten) return false;
+  var n=new Date(), m=n.getHours()*60+n.getMinutes();
+  return j.schichten.some(function(x){
+    var a=stMin(x.from), b=stMin(x.to);
+    return a!==null && b!==null && m>=a+15 && m<b;
+  });
+}
+function lsStudio(sk){
+  var jetzt=Date.now();
+  var x={ sk:sk, name:studioName(sk), aufg:0, ueber:0, putz:0, putzG:0, kp:[], kuend:0, da:lsDa(sk), aufgL:[], putzL:[] };
+  if(ansichtAn('todos')) (cachedTodos[sk]||[]).forEach(function(t){
+    if(isDone(t) || isArchived(t)) return;
+    var ue=!!(t.due && jetzt>t.due);
+    x.aufg++; if(ue) x.ueber++;
+    x.aufgL.push({ t:t, ue:ue });
+  });
+  x.aufgL.sort(function(a,b){
+    return (b.ue?1:0)-(a.ue?1:0) || ((a.t.due||9e15)-(b.t.due||9e15)) || ((a.t.ts||0)-(b.t.ts||0));
+  });
+  if(ansichtAn('putzplan')) (cachedClean[sk]||[]).forEach(function(t){
+    if(ppPausiert(t)) return;
+    x.putzG++;
+    if(!isDone(t)){ x.putz++; x.putzL.push(t); }
+  });
+  var rang={ daily:0, weekly:1 };
+  x.putzL.sort(function(a,b){
+    var ra=(a.recurring in rang)?rang[a.recurring]:2, rb=(b.recurring in rang)?rang[b.recurring]:2;
+    return ra-rb || (a.ts||0)-(b.ts||0);
+  });
+  (_kpListe[sk]||[]).forEach(function(k){
+    if(k.status!=='offen') return;
+    x.kp.push(k); if(k.art==='kuendigung') x.kuend++;
+  });
+  x.niemand = x.da!==null && !x.da.length && lsSchichtLaeuft(sk);
+  x.status = (x.ueber || x.kuend || x.niemand) ? 'rot' : ((x.aufg || x.putz || x.kp.length) ? 'gelb' : 'gruen');
+  return x;
+}
+/* Ein Satz je Studio, wie in der Skizze. */
+function lsSatz(x){
+  var t=[];
+  if(x.niemand) t.push('gerade niemand eingestempelt');
+  if(x.aufg) t.push(x.aufg+(x.aufg===1?' Aufgabe':' Aufgaben')+' offen'+(x.ueber?' ('+x.ueber+' überfällig)':''));
+  if(x.putz) t.push(x.putz+(x.putz===1?' Putzpunkt':' Putzpunkte')+' offen');
+  if(x.kp.length) t.push(x.kp.length+' Kundenpost'+(x.kuend ? (x.kuend===1?', davon eine Kündigung':', davon '+x.kuend+' Kündigungen') : ''));
+  if(!t.length) return 'hat alles erledigt';
+  var s=t.length>1 ? t.slice(0,-1).join(', ')+' und '+t[t.length-1] : t[0];
+  return 'hat '+s+(x.status==='rot' ? '!' : '.');
+}
+function lsKachelZeile(x){
+  var t=[];
+  /* Geschützte Leerzeichen: „Putz 2" bricht in der Kachel nicht mehr
+     zwischen Wort und Zahl um, nur zwischen den Teilen. */
+  if(x.niemand) t.push('niemand\u00a0da');
+  if(x.aufg) t.push('Aufg.\u00a0'+x.aufg);
+  if(x.putz) t.push('Putz\u00a0'+x.putz);
+  if(x.kp.length) t.push('Post\u00a0'+x.kp.length);
+  return t.length ? t.join(' · ') : 'alles erledigt';
+}
+function lsGruenSatz(gruen){
+  if(!gruen.length) return '';
+  if(gruen.length===1) return gruen[0]+' hat alles erledigt';
+  if(gruen.length>3) return gruen.slice(0,2).join(', ')+' und '+(gruen.length-2)+' weitere haben alles erledigt';
+  return gruen.slice(0,-1).join(', ')+' und '+gruen[gruen.length-1]+' haben alles erledigt';
+}
+var LS_ART={ kp:'Kundenpost', ta:'Schichttausch', abw:'Urlaub', za:'Zeitantrag' };
+function lsBestaetigenListe(keys){
+  var l=[], mehrere=keys.length>1;
+  keys.forEach(function(sk){
+    (_kpListe[sk]||[]).forEach(function(k){
+      if(k.status!=='wartet') return;
+      l.push({ id:'kp:'+k.id, art:'kp', ts:k.erledigtTs||0,
+        titel:String(k.name||'Kunde')+' – '+String(k.betreff || KP_ART[k.art] || 'Anliegen'),
+        zeile:(k.erledigtName||'Jemand')+': '+(KP_WIE[k.grund]||'erledigt')+(mehrere?' · '+studioName(sk):'') });
+    });
+    (_lsAbw[sk]||[]).forEach(function(a){
+      var f=String(a.from||'').split('-').reverse().slice(0,2).join('.'), b=String(a.to||'').split('-').reverse().slice(0,2).join('.');
+      l.push({ id:'abw:'+sk+':'+a.id, art:'abw', ts:a.ts||0,
+        titel:(a.name||'?')+' · '+f+(b && b!==f ? '–'+b : ''),
+        zeile:(ABW_ART[a.type]||'abwesend')+(mehrere?' · '+studioName(sk):'') });
+    });
+  });
+  (_tauschWartet||[]).forEach(function(x){
+    if(keys.indexOf(x.sk)<0) return;
+    l.push({ id:'ta:'+x.sk+':'+x.id, art:'ta', ts:x.tauschTs||0,
+      titel:ichTagName(x.date)+' · '+(x.from||'')+'–'+(x.to||''),
+      zeile:((x.tauschNeu&&x.tauschNeu.name)||'Jemand')+' statt '+(x.name||'?')+(mehrere?' · '+studioName(x.sk):'') });
+  });
+  (_lsAntraege||[]).forEach(function(a){
+    l.push({ id:'za:'+a.id, art:'za', ts:a.ts||0,
+      titel:(a.name||'?')+': '+(TM_WORT[a.art]||a.art||'Stempel')+' '+(a.uhr||''),
+      zeile:String(a.grund||'Korrektur').slice(0,60)+(a.tag?' · '+String(a.tag).split('-').reverse().slice(0,2).join('.'):'') });
+  });
+  return l.filter(function(x){ return !_lsErledigt[x.id]; })
+    .sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
+}
+function lsEntscheiden(btn, id, ja){
+  if(!session || btn.disabled) return;
+  var teile=id.split(':'), art=teile[0], fv=firebase.firestore.FieldValue, p;
+  if(art==='kp'){
+    var k=kpFinden(teile[1]); if(!k) return;
+    p=S('kundenpost').doc(k.id).update({ status: ja ? 'bestaetigt' : 'offen', bestaetigtUid:session.uid, bestaetigtTs:Date.now() })
+      .then(function(){ k.status = ja ? 'bestaetigt' : 'offen'; return ja ? 'Kundenpost bestätigt' : 'Zurück an das Team – die Kundenpost ist wieder offen'; });
+  } else if(art==='abw'){
+    p=S('studios').doc(teile[1]).collection('absences').doc(teile[2])
+      .update({ status: ja ? 'genehmigt' : 'abgelehnt', decidedBy:session.name, decidedByUid:session.uid, decidedAt:Date.now() })
+      .then(function(){ return ja ? 'Urlaub genehmigt ✓' : 'Urlaub abgelehnt'; });
+  } else if(art==='ta'){
+    var x=(_tauschWartet||[]).filter(function(s){ return s.sk===teile[1] && s.id===teile[2]; })[0];
+    if(!x || !x.tauschNeu) return;
+    var ref=S('studios').doc(x.sk).collection('shifts').doc(x.id);
+    p=(ja ? ref.update({ uid:x.tauschNeu.uid, name:x.tauschNeu.name,
+              getauschtVon:x.name||'', getauschtAm:Date.now(), getauschtDurch:session.name,
+              tausch:fv.delete(), tauschVon:fv.delete(), tauschNeu:fv.delete() })
+          : ref.update({ tausch:fv.delete(), tauschVon:fv.delete(), tauschNeu:fv.delete() }))
+      .then(function(){ return ja ? 'Tausch bestätigt – der Plan ist geändert ✓' : 'Abgelehnt – die Schicht bleibt wie sie war'; });
+  } else if(art==='za'){
+    /* Ablehnen braucht eine Begründung (zeitAntragEntscheiden) — dafür
+       ist die Seite „Zeiten" da. */
+    if(!ja){ tick(6); showView('zeitteam'); return; }
+    p=pinFunktion('zeitAntragEntscheiden')({ id:teile[1], annehmen:true })
+      .then(function(){ return 'Zeitantrag angenommen ✓'; });
+  }
+  if(!p) return;
+  btn.disabled=true; tick(ja ? 10 : 6);
+  p.then(function(text){ _lsErledigt[id]=true; toast(text); renderHeute(); })
+   .catch(function(e){ btn.disabled=false; toast(art==='za' ? fnFehler(e) : errMsg(e), true); });
+}
+var LS_JA='<svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+var LS_NEIN='<svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>';
+function lsBestaetigenHTML(l, alle, n){
+  n=n||3;
+  if(!l.length) return '';
+  var zeig=alle ? l : l.slice(0,n);
+  return '<section class="ls-karte ls-best" aria-label="Zu bestätigen"><div class="ls-kopf"><h2>Zu bestätigen</h2>'+
+    '<span class="ls-zahl warm">'+l.length+(l.length===1?' wartet':' warten')+'</span></div>'+
+    zeig.map(function(x){
+      return '<div class="ls-best-zeile"><div class="ls-best-txt"><i class="ls-art '+x.art+'">'+esc(LS_ART[x.art])+'</i>'+
+        '<b>'+esc(x.titel)+'</b><span>'+esc(x.zeile)+'</span></div>'+
+        '<button type="button" class="ls-nein" data-lsnein="'+esc(x.id)+'" aria-label="'+(x.art==='za'?'Ablehnen (in Zeiten): ':'Zurückgeben: ')+esc(x.titel)+'" title="'+(x.art==='za'?'Ablehnen – mit Grund unter Zeiten':'Zurückgeben')+'">'+LS_NEIN+'</button>'+
+        '<button type="button" class="ls-ja" data-lsja="'+esc(x.id)+'" aria-label="Bestätigen: '+esc(x.titel)+'" title="Bestätigen">'+LS_JA+'</button></div>';
+    }).join('')+
+    (!alle && l.length>n ? '<button type="button" class="ls-mehr-knopf" data-lsalle>+'+(l.length-n)+' weitere</button>' : '')+
+    '</section>';
+}
+var _lsBestAlle=false;
+/* Das „grössere Fenster" eines Studios: am Rechner unter den Kacheln,
+   am Handy als Fenster nach einem Tipp. Die Zeilen sind dieselben wie
+   auf „Heute" (heuteZeile) — mit Haken, und ein Tipp öffnet weiter. */
+function lsDetailHTML(x, n){
+  n=n||3;
+  /* Wer da ist, steht in einer Zeile im Kopf: Name und seit wann. */
+  var da = x.da===null ? 'wird geladen …'
+    : (x.da.length ? x.da.map(function(p){
+        return esc(p.name||'?')+' ('+(p.art==='pause'?'Pause seit ':'seit ')+
+          new Date(p.ts).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+')';
+      }).join(', ') : (x.niemand ? 'niemand – die Schicht läuft' : 'niemand eingestempelt'));
+  var aufg=x.aufgL.slice(0,n).map(function(a){
+    return { art:a.ue?'dringend':'tun', ziel:'todos', f:a.ue?'faellig':'offen', sk:x.sk, ikon:ikon(a.ue?'warnung':'hakenKreis'),
+      hak:{ b:'aufgabe', sk:x.sk, id:a.t.id }, titel:a.t.title||'(ohne Titel)',
+      unter:a.ue ? (function(d){ return d<=0?'seit heute':(d===1?'seit 1 Tag':'seit '+d+' Tagen'); })(tageSeit(a.t.due))
+                 : (a.t.due ? 'bis '+new Date(a.t.due).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}) : 'ohne Frist') };
+  });
+  var putz=x.putzL.slice(0,n).map(function(t){
+    return { art:'putz', ziel:'putzplan', sk:x.sk, ikon:allesIkon('putzplan'), hak:{ b:'putz', sk:x.sk, id:t.id },
+      titel:t.title||t.text||'Putzpunkt', unter:repLabelFor(t) || 'einmalig' };
+  });
+  var kp=x.kp.slice(0,n).map(function(k){
+    var d=tageSeit(k.eingang||Date.now());
+    return { art:k.art==='kuendigung'||d>=7?'dringend':'heute', ziel:'', kp:k.id, ikon:ikon('mail'),
+      titel:String(k.name||'Kunde'), unter:String(k.betreff||KP_ART[k.art]||'Anliegen')+' · '+(d<=0?'heute':(d===1?'seit 1 Tag':'seit '+d+' Tagen')),
+      aktion:{ attr:'data-hkp', id:k.id, text:'Erledigt', label:'Erledigt: '+(k.name||'Kunde') } };
+  });
+  function spalte(titel, zahl, inhalt, leer){
+    return '<div class="ls-sp"><h4>'+esc(titel)+(zahl!==''?' <span>'+esc(String(zahl))+'</span>':'')+'</h4>'+(inhalt || '<p class="ls-leise gruen">'+esc(leer)+'</p>')+'</div>';
+  }
+  var pct=x.putzG ? Math.round((x.putzG-x.putz)*100/x.putzG) : 100;
+  return '<section class="ls-karte ls-detail" aria-label="'+esc(x.name)+'">'+
+    '<div class="ls-d-kopf">'+
+    '<div class="ls-d-txt"><h3><span class="ls-punkt '+x.status+'" aria-hidden="true"></span> '+esc(x.name)+'</h3>'+
+    (n>2 ? '<p class="'+(x.status==='rot'?'rot':'')+'">'+esc(x.status==='gruen' ? 'Alles erledigt – nichts zu tun.' : x.name+' '+lsSatz(x))+'</p>' : '')+
+    '<p class="ls-d-da'+(x.niemand?' rot':'')+'"><b>Jetzt da:</b> '+da+'</p></div>'+
+    '<button type="button" class="btn btn-ghost ls-oeffnen" data-lsoeffnen="'+esc(x.sk)+'">Studio öffnen ›</button></div>'+
+    '<div class="ls-d-spalten">'+
+      (ansichtAn('todos') ? spalte('Aufgaben', x.aufg, aufg.length ? '<div class="heute-liste">'+aufg.map(heuteZeile).join('')+'</div>' : '', 'Alles erledigt') : '')+
+      (ansichtAn('putzplan') ? spalte('Putzplan', (x.putzG-x.putz)+' von '+x.putzG,
+        (x.putzG ? '<i class="pg-balken ls-balken" aria-hidden="true"><i style="width:'+pct+'%"></i></i>' : '')+
+        (putz.length ? '<div class="heute-liste">'+putz.map(heuteZeile).join('')+'</div>' : ''), 'Alles geputzt') : '')+
+      spalte('Kundenpost', x.kp.length, kp.length ? '<div class="heute-liste">'+kp.map(heuteZeile).join('')+'</div>' : '', 'Nichts offen')+
+    '</div></section>';
+}
+function lsBinden(wurzel){
+  wurzel.querySelectorAll('[data-heute]').forEach(heuteTippBinden);
+  wurzel.querySelectorAll('[data-hhak]').forEach(heuteHakenBinden);
+  wurzel.querySelectorAll('[data-hkp]').forEach(function(b){
+    b.addEventListener('click', function(e){ e.stopPropagation(); tick(6); lsFensterZu(); kpOeffnen(b.getAttribute('data-hkp')); });
+  });
+  wurzel.querySelectorAll('[data-lsoeffnen]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var sk=b.getAttribute('data-lsoeffnen');
+      lsFensterZu(); tick(8);
+      _todoFilter=''; _todoMode='offen';
+      document.querySelectorAll('[data-tfilter]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-tfilter')==='offen'); });
+      todoStudioFuerSprung(sk); showView('todos'); renderTodos();
+    });
+  });
+}
+function lsFensterAuf(sk){
+  var m=$('lsModal'), box=$('lsInhalt'); if(!m || !box) return;
+  box.innerHTML=lsDetailHTML(lsStudio(sk), 3);
+  lsBinden(box);
+  m.classList.add('show');
+  var z=$('lsZu'); if(z) z.focus();
+}
+function lsFensterZu(){ var m=$('lsModal'); if(m) m.classList.remove('show'); }
+
+function leitungZeichnen(box, o){
+  var keys=o.keys;
+  leitungDatenLaden(keys, false);
+  var modus=heuteModus();
+  var studios=keys.map(lsStudio);
+  if(!_lsWahl || keys.indexOf(_lsWahl)<0){
+    var erster=studios.filter(function(x){ return x.status==='rot'; })[0] || studios[0];
+    _lsWahl=erster ? erster.sk : '';
+  }
+  var gewaehlt=studios.filter(function(x){ return x.sk===_lsWahl; })[0];
+  var auffaellig=studios.filter(function(x){ return x.status!=='gruen'; })
+    .sort(function(a,b){ return (a.status==='rot'?0:1)-(b.status==='rot'?0:1); });
+  var gruen=studios.filter(function(x){ return x.status==='gruen'; }).map(function(x){ return x.name; });
+  var best=lsBestaetigenListe(keys);
+  var mehrere=keys.length>1;
+  /* Am Rechner passt die Seite auf einen Bildschirm (CLAUDE.md): je
+     Liste zwei Zeilen, die Überschrift nennt die volle Zahl. Am Handy
+     drei — dort darf die Leitung scrollen (29.10.2026). */
+  var breit=heuteBreit(), stufe=o.stufe||0, nZ=breit ? (stufe ? 1 : 2) : 3;
+
+  var stempel = (o.dienst.length || heuteStempelLetzter()) ? heuteStempelHTML(o.dienst) : '';
+  var reiter='<div class="heute-modus ls-reiter" role="group" aria-label="Ansicht">'+
+    [['ueberblick','Überblick'],['schicht','Meine Schicht'],['zusammen','Zusammenfassung']].map(function(r){
+      return '<button type="button" data-hmodus="'+r[0]+'" aria-pressed="'+(modus===r[0])+'">'+r[1]+'</button>';
+    }).join('')+'</div>';
+
+  var saetze=function(n){
+    var l=n ? auffaellig.slice(0,n) : auffaellig;
+    return l.map(function(x){
+      return '<p class="ls-satz"><span class="ls-punkt '+x.status+'" aria-hidden="true"></span><span><b>'+esc(x.name)+'</b> '+esc(lsSatz(x))+'</span></p>';
+    }).join('')+(gruen.length ? '<p class="ls-satz gruen"><span class="ls-punkt gruen" aria-hidden="true"></span><span>'+esc(lsGruenSatz(gruen))+'.</span></p>' : '');
+  };
+  var material = o.matArtikel && ansichtAn('material')
+    ? '<button type="button" class="ls-karte ls-material" data-heute="material"><span class="hz-ikon">'+ikon('paket')+'</span>'+
+      '<span class="hz-txt"><b>'+o.matArtikel+(o.matArtikel===1?' Artikel fehlt':' Artikel fehlen')+'</b>'+
+      '<i>'+(o.matStudios===1?'in einem Studio':'in '+o.matStudios+' Studios')+'</i></span><span class="hz-pfeil">›</span></button>' : '';
+  /* Was sonst neu ist (Nachrichten, Danke, Einrichtung …): leise Knöpfe
+     unten, wie „Ausserdem". Verschwiegen wird nichts. */
+  var rest=o.lesen.concat(o.sonst.filter(function(x){ return x.ziel!=='material'; }));
+  var ausserdem = rest.length ? '<div class="heute-rest ls-ausserdem"><span class="hr-wort">Ausserdem</span>'+rest.map(function(x){
+      return '<button type="button" class="chip heute-rest-knopf" data-heute="'+esc(x.ziel)+'"'+
+        (x.danke?' data-hdanke="1"':'')+(x.cgo?' data-hcgo="'+esc(x.cgo)+'"':'')+(x.angebot?' data-hangebot="'+esc(x.angebot)+'"':'')+
+        (x.teamtab?' data-hteamtab="'+esc(x.teamtab)+'"':'')+(x.ichtab?' data-hichtab="'+esc(x.ichtab)+'"':'')+'>'+esc(x.titel)+' ›</button>';
+    }).join('')+'</div>' : '';
+
+  var html;
+  if(modus==='zusammen'){
+    html='<div class="ls ls-zusammen"><div class="ls-haupt"><section class="ls-karte" aria-label="Zusammenfassung"><div class="ls-kopf"><h2>Was heute los ist</h2>'+
+      '<span class="ls-zahl">Stand '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+'</span></div>'+
+      (studios.length ? saetze(0) : '<p class="ls-leise">Keine Studios.</p>')+'</section></div>'+
+      '<div class="ls-seite">'+lsBestaetigenHTML(best, _lsBestAlle, nZ)+material+'</div></div>';
+  } else {
+    var kacheln = mehrere ? '<div class="ls-kacheln" role="group" aria-label="Studios">'+studios.map(function(x){
+        return '<button type="button" class="ls-kachel '+x.status+'" data-lswahl="'+esc(x.sk)+'" aria-pressed="'+(x.sk===_lsWahl)+'">'+
+          '<b><span class="ls-punkt '+x.status+'" aria-hidden="true"></span>'+esc(x.name)+'</b><i>'+esc(lsKachelZeile(x))+'</i></button>';
+      }).join('')+'</div>' : '';
+    /* „Ausserdem" steht links unter den Kacheln: rechts ist am Rechner
+       der Platz knapp, links bleibt meist Luft. */
+    html='<div class="ls'+(mehrere?' ls-mehrere':'')+(stufe>1 && mehrere?' ls-eng':'')+'"><div class="ls-haupt">'+kacheln+
+      /* Das Studio unter den Kacheln nur, wo es auch zu sehen ist (am
+         Rechner, solange Platz ist) — ein verstecktes zweites Exemplar
+         mit Haken würde nur Klicks und Messungen auf sich ziehen. */
+      (gewaehlt && (!mehrere || (breit && stufe<2)) ? lsDetailHTML(gewaehlt, nZ) : '')+ausserdem+'</div>'+
+      '<div class="ls-seite">'+lsBestaetigenHTML(best, _lsBestAlle, nZ)+
+      (studios.length ? '<section class="ls-karte ls-kurz" aria-label="Zusammenfassung"><div class="ls-kopf"><h2>Zusammenfassung</h2>'+
+        '<button type="button" class="mini-link" data-hmodus="zusammen">Alle</button></div>'+saetze(nZ)+'</section>' : '')+
+      material+'</div></div>';
+  }
+  box.innerHTML=formiWocheHTML()+'<div class="ls-oben">'+reiter+stempel+'</div>'+html;
+  box.classList.add('bereichskarten');
+  box.classList.remove('zweispaltig');
+  heuteModusBinden(box);
+  formiWocheBinden(box);
+  lsBinden(box);
+  box.querySelectorAll('[data-lswahl]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var sk=b.getAttribute('data-lswahl'); tick(6);
+      _lsWahl=sk;
+      /* Am Handy steht das Fenster nicht unter den Kacheln: dort öffnet
+         es sich. Am Rechner wechselt es an Ort und Stelle. */
+      if(!heuteBreit() || stufe>1) lsFensterAuf(sk); else renderHeute();
+    });
+  });
+  box.querySelectorAll('[data-lsja]').forEach(function(b){ b.addEventListener('click', function(){ lsEntscheiden(b, b.getAttribute('data-lsja'), true); }); });
+  box.querySelectorAll('[data-lsnein]').forEach(function(b){ b.addEventListener('click', function(){ lsEntscheiden(b, b.getAttribute('data-lsnein'), false); }); });
+  var alle=box.querySelector('[data-lsalle]'); if(alle) alle.addEventListener('click', function(){ tick(6); _lsBestAlle=true; renderHeute(); });
+  var hsb=box.querySelector('[data-hstempel]'); if(hsb) hsb.addEventListener('click', function(){ tick(6); hsOeffnen(); });
+  if(breit){
+    leitungEinpassen(box);
+    /* Passt es am Rechner trotzdem nicht (kleines Fenster, viele
+       Studios): zuerst je Liste EINE Zeile, wie heutePasst() kürzt; reicht
+       auch das nicht, steht das Studio nicht mehr unter den Kacheln, und
+       ein Klick öffnet es als Fenster, wie am Handy. Gestrichen wird
+       nichts — die Überschriften nennen die volle Zahl. */
+    var sa=box.closest('.scroll-area');
+    if(stufe<2 && sa && sa.clientHeight>200 && sa.scrollHeight>sa.clientHeight+2){
+      o.stufe=stufe+1; leitungZeichnen(box, o); return;
+    }
+  }
+  formiMorgen(box);
+}
+/* Beim Zeichnen messen (nicht im Klick): wie viel Höhe hat die rechte
+   Spalte bis zum unteren Rand des Bildschirms? */
+function leitungEinpassen(box){
+  var sa=box.closest('.scroll-area'), seite=box.querySelector('.ls-seite');
+  if(!sa || !seite || sa.clientHeight<200) return;
+  var unten=sa.getBoundingClientRect().top+sa.clientHeight-(parseFloat(getComputedStyle(sa).paddingBottom)||0);
+  seite.style.maxHeight=Math.max(240, Math.floor(unten-seite.getBoundingClientRect().top))+'px';
+  var kurz=seite.querySelector('.ls-kurz');
+  if(kurz) kurz.classList.toggle('gekappt', kurz.scrollHeight>kurz.clientHeight+1);
+}
+(function lsFensterBinden(){
+  function bind(){
+    var m=$('lsModal'), z=$('lsZu');
+    if(z) z.addEventListener('click', lsFensterZu);
+    if(m) m.addEventListener('click', function(e){ if(e.target===m) lsFensterZu(); });
+    document.addEventListener('keydown', function(e){ if(e.key==='Escape' && m && m.classList.contains('show')) lsFensterZu(); });
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', bind);
   else bind();
@@ -43057,7 +43631,7 @@ function heutePasst(box){
    für gekürzte Blöcke, nicht für gestrichene. */
 function heuteRestZeichnen(box, liste){
   var alt=box.querySelector('.heute-rest'); if(alt) alt.remove();
-  var schicht = heuteModus()==='ueberblick' && heuteModusSchmal();
+  var schicht = false;   // Runde 295/296: der Schalter steht immer oben (heuteModusHTML)
   if(!liste.length && !schicht) return;
   box.insertAdjacentHTML('beforeend',
     '<div class="heute-rest"><span class="hr-wort">Ausserdem</span>'+

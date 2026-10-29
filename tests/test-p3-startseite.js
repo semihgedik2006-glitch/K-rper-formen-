@@ -56,6 +56,21 @@ async function start(b, rolle, w, h) {
 const LAGE = () => {
   const box = document.getElementById('heuteListe');
   const sa = box.closest('.scroll-area');
+  /* Runde 296: die Leitung hat eine eigene Startseite (Kacheln links,
+     „Zu bestätigen" und Zusammenfassung rechts). Zwei Spalten heisst
+     dort: beide Seiten oben bündig nebeneinander. */
+  const ls = box.querySelector('.ls');
+  if (ls) {
+    const h = ls.querySelector('.ls-haupt'), se = ls.querySelector('.ls-seite');
+    const neben = getComputedStyle(ls).display === 'grid' && h && se &&
+      Math.round(h.getBoundingClientRect().top) === Math.round(se.getBoundingClientRect().top) &&
+      se.getBoundingClientRect().left > h.getBoundingClientRect().right;
+    const pz = [...ls.querySelectorAll('.ls-detail .ls-sp h4')].find(x => /^Putzplan/.test(x.textContent));
+    return { ls: true, spalten: neben ? 2 : 0, kacheln: ls.querySelectorAll('.ls-kachel').length,
+      rechts: se ? [...se.children].map(x => x.getAttribute('aria-label') || x.className.split(' ')[1]) : [],
+      putz: pz && pz.getClientRects().length ? pz.textContent.trim() : null, balken: !!ls.querySelector('.ls-detail .ls-balken'),
+      fortschritt: null, passt: sa.scrollHeight <= sa.clientHeight + 2 };
+  }
   const sp = [...box.querySelectorAll('.heute-spalte')];
   const titel = (el) => [...el.querySelectorAll('.heute-block')].map(x => x.getAttribute('data-btitel'));
   const rest = box.querySelector('.heute-rest');
@@ -90,6 +105,17 @@ async function knoepfe(p) {
     const p = await start(b, 'chef', 1440, 900);
     const a = await p.evaluate(LAGE);
     console.log('  ' + JSON.stringify(a));
+    if (a.ls) {
+      /* Runde 296, aus dem Betrieb (29.10.2026, mit Skizze): „ein
+         grösseres Fenster vom Studio auf das geklickt wird", rechts
+         „Zusammenfassung" und „5 Artikel fehlen". Statt der Blöcke
+         Überfällig/Heute/Offen links und Putzplan rechts: Kacheln je
+         Studio links, Zu bestätigen/Zusammenfassung/Material rechts. */
+      pruefe('Leitung: zwei Spalten, oben bündig (Kacheln | Zu bestätigen, Zusammenfassung)', a.spalten === 2 && a.kacheln >= 2, JSON.stringify(a));
+      pruefe('rechts Zu bestätigen, Zusammenfassung, Material', a.rechts.indexOf('Zusammenfassung') >= 0, JSON.stringify(a.rechts));
+      pruefe('das Studio darunter zeigt den Putzplan mit „x von y" und Balken', /^Putzplan \d+ von \d+$/.test(a.putz || '') && a.balken, JSON.stringify(a));
+      pruefe('die Seite passt auf einen Bildschirm', a.passt);
+    } else {
     pruefe('zwei Spalten, oben bündig', a.spalten === 2 && a.oben[0] === a.oben[1], JSON.stringify(a.oben));
     pruefe('links steht, was getan werden muss (Überfällig zuerst)', a.links[0] === 'Überfällig' &&
       a.links.every(t => ['Überfällig', 'Heute', 'Zum Übernehmen', 'Offen'].includes(t)), JSON.stringify(a.links));
@@ -100,6 +126,7 @@ async function knoepfe(p) {
     pruefe('die Seite passt auf einen Bildschirm', a.passt);
     pruefe('bei Gleichstand bleibt „Überfällig" mindestens so lang wie „Offen"',
       a.ueber !== null && a.offen !== null && a.ueber >= a.offen, JSON.stringify({ ueber: a.ueber, offen: a.offen }));
+    }
     for (const dichte of ['normal', 'kompakt']) {
       await p.evaluate((d) => { document.body.dataset.dichte = d; }, dichte);
       await p.waitForTimeout(200);
@@ -144,10 +171,10 @@ async function knoepfe(p) {
     const a = await p.evaluate(LAGE);
     console.log('  ' + JSON.stringify(a));
     pruefe('GEGENPROBE Handy: eine Spalte, kein Fortschrittsbalken', a.spalten === 0 && a.fortschritt === null, JSON.stringify(a));
-    /* Runde 295, aus dem Betrieb (29.10.2026): „NUR auf handy ist es auch
-       ok wenn man scrollen muss etwas" — für die Karten der Mitarbeiter.
-       Die Leitung (hier der Chef) passt weiter auf einen Bildschirm. */
-    if (rolle !== 'mitarbeiter') pruefe('Handy: passt weiter auf einen Bildschirm', a.passt);
+    /* Runde 295/296, aus dem Betrieb (29.10.2026): „NUR auf handy ist es
+       auch ok wenn man scrollen muss etwas" (Mitarbeiter) und „scrollen
+       am handy ist für leitung auch ok". Am Handy wird deshalb nicht
+       mehr auf „passt" geprüft. */
     pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await p.close();
   }
