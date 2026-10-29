@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-CVWeK6TQczAxNTaScu9ZHf8q8oXbEs5OLSdtMGhbq2Y='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-FjDiJNqteO+Q9X8Wz4CcnSHPe1ZJ9+lBgBRt3VRxAug='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -9714,9 +9714,9 @@ body.neu .hz-aktion{flex:0 0 auto;min-height:44px;min-width:44px;margin-right:va
 .ls-punkt.rot{background:var(--danger)}
 .ls-punkt.gruen{background:var(--ok)}
 .ls-mehrere .ls-detail{display:none}
-.ls-d-kopf{display:flex;align-items:center;gap:var(--s10);margin-bottom:var(--s8)}
+.ls-d-kopf{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s10);margin-bottom:var(--s8)}
 #lsModal .ls-d-kopf{padding-right:var(--s48)}
-.ls-d-txt{flex:1;min-width:0}
+.ls-d-txt{flex:1 1 220px;min-width:0}
 .ls-d-txt h3{margin:0;font-size:var(--t-lg)}
 .ls-d-txt p{margin:var(--s2) 0 0;font-size:var(--t-sm);color:var(--text-2)}
 .ls-d-txt p.rot,.ls-leise.rot{color:var(--danger-tx)}
@@ -43100,10 +43100,12 @@ function lsSatz(x){
 }
 function lsKachelZeile(x){
   var t=[];
-  if(x.niemand) t.push('niemand da');
-  if(x.aufg) t.push('Aufg. '+x.aufg);
-  if(x.putz) t.push('Putz '+x.putz);
-  if(x.kp.length) t.push('Post '+x.kp.length);
+  /* Geschützte Leerzeichen: „Putz 2" bricht in der Kachel nicht mehr
+     zwischen Wort und Zahl um, nur zwischen den Teilen. */
+  if(x.niemand) t.push('niemand\u00a0da');
+  if(x.aufg) t.push('Aufg.\u00a0'+x.aufg);
+  if(x.putz) t.push('Putz\u00a0'+x.putz);
+  if(x.kp.length) t.push('Post\u00a0'+x.kp.length);
   return t.length ? t.join(' · ') : 'alles erledigt';
 }
 function lsGruenSatz(gruen){

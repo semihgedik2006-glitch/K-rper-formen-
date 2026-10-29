@@ -155,7 +155,7 @@ async function startseite(p) {
   const ls = await p.evaluate(() => {
     const box = document.querySelector('#heuteListe .ls'); if (!box) return null;
     const kacheln = [...box.querySelectorAll('.ls-kachel i')].map(i => i.textContent);
-    let zahl = kacheln.reduce((s, t) => { const m = /Aufg\. (\d+)/.exec(t); return s + (m ? +m[1] : 0); }, 0);
+    let zahl = kacheln.reduce((s, t) => { const m = /Aufg\.\s(\d+)/.exec(t); return s + (m ? +m[1] : 0); }, 0);
     if (!kacheln.length) {
       const h = [...box.querySelectorAll('.ls-sp h4')].find(x => /^Aufgaben/.test(x.textContent));
       const m = h && /(\d+)/.exec(h.textContent); zahl = m ? +m[1] : 0;
@@ -175,7 +175,7 @@ async function startseite(p) {
     const k = await p.$$('#heuteListe .ls-kachel');
     for (const el of k) {
       const t = await el.evaluate(e => e.textContent);
-      if (!/Aufg\. [1-9]/.test(t)) continue;
+      if (!/Aufg\.\s[1-9]/.test(t)) continue;
       await el.evaluate(e => e.click()); await p.waitForTimeout(500);
       const f = await p.evaluate(() => {
         const m = document.querySelector('#lsModal'); if (!m) return null;

@@ -96,7 +96,7 @@ const STAND = () => {
     pruefe(rolle + ': die Startseite der Leitung mit drei Reitern', s.ls && JSON.stringify(s.reiter) === '["Überblick","Meine Schicht","Zusammenfassung"]', JSON.stringify(s.reiter));
     pruefe(rolle + ': eine Kachel je Studio (' + s.kacheln.length + ')', s.kacheln.length >= 2, JSON.stringify(s.kacheln.map(k => k.name)));
     const h = s.kacheln.find(k => k.sk === 'studio-6') || {};
-    pruefe(rolle + ': Hürth (Kündigung offen, Überfälliges) ist rot', h.rot && /Post 1/.test(h.text), JSON.stringify(h));
+    pruefe(rolle + ': Hürth (Kündigung offen, Überfälliges) ist rot', h.rot && /Post\s1/.test(h.text), JSON.stringify(h));
     pruefe(rolle + ': kein Studio ist ohne Grund rot', s.kacheln.filter(k => k.rot).every(k => /niemand|Aufg|Post/.test(k.text)), JSON.stringify(s.kacheln.filter(k => k.rot)));
     pruefe(rolle + ': das erste rote Studio steht gross darunter', s.detail === (s.kacheln.find(k => k.rot) || s.kacheln[0]).name, s.detail);
     const andere = s.kacheln.find(k => k.sk !== 'studio-6' && k.sk !== (s.kacheln.find(x => x.rot) || {}).sk) || s.kacheln[1];
