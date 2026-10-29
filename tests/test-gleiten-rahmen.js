@@ -148,7 +148,10 @@ const GLEITEN = async () => {
     const r = await p.evaluate(() => {
       const sa = document.querySelector('#view-home .scroll-area');
       return { n: window.__heute, ueber: sa ? sa.scrollHeight - sa.clientHeight : -1,
-        zeilen: document.querySelectorAll('#heuteListe .heute-zeile').length };
+        /* Die Leitung zeigt am Handy Kacheln je Studio, das Studio selbst
+           öffnet sich als Fenster (Skizze 29.10.2026: „größeres Fenster vom
+           Studio auf das geklickt wird") — dort zählen Kacheln und Sätze. */
+        zeilen: document.querySelectorAll('#heuteListe .heute-zeile, #heuteListe .ls-kachel, #heuteListe .ls-satz').length };
     });
     /* Runde 295/296, aus dem Betrieb (29.10.2026): „NUR auf handy ist es
        auch ok wenn man scrollen muss etwas" und „scrollen am handy ist
