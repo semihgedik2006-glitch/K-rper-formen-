@@ -167,6 +167,29 @@ async function startseite(p) {
       linkZiel: l ? { ziel: l.dataset.heute, filter: l.dataset.hf } : (box.querySelector('[data-lsoeffnen]') ? { ziel: 'todos', filter: 'offen' } : null) };
   });
   if (ls) Object.assign(st, ls);
+  /* Am Handy steht das Studio nicht unter den Kacheln, sondern öffnet
+     sich als Fenster („ein grösseres Fenster vom Studio auf das geklickt
+     wird", Skizze 29.10.2026). Dann wird die Kachel mit offenen Aufgaben
+     angetippt und im Fenster gelesen. */
+  if (ls && !ls.zeilen.length) {
+    const k = await p.$$('#heuteListe .ls-kachel');
+    for (const el of k) {
+      const t = await el.evaluate(e => e.textContent);
+      if (!/Aufg\. [1-9]/.test(t)) continue;
+      await el.evaluate(e => e.click()); await p.waitForTimeout(500);
+      const f = await p.evaluate(() => {
+        const m = document.querySelector('#lsModal'); if (!m) return null;
+        const z = [...m.querySelectorAll('.heute-zeile[data-heute="todos"]')];
+        const l = z.find(x => x.dataset.hf === 'offen');
+        return { zeilen: z.map(x => (x.querySelector('b') || {}).textContent),
+          linkZiel: l ? { ziel: l.dataset.heute, filter: l.dataset.hf } : null };
+      });
+      if (f && f.zeilen.length) { st.zeilen = f.zeilen; if (f.linkZiel) st.linkZiel = f.linkZiel; }
+      await p.evaluate(() => { const z = document.getElementById('lsZu'); if (z) z.click(); });
+      await p.waitForTimeout(300);
+      break;
+    }
+  }
   return st;
 }
 
