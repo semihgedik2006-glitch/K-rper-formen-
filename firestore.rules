@@ -915,7 +915,9 @@ service cloud.firestore {
     // Putzplan: anlegen ist Chefsache, abhaken darf jeder.
     //   Pausieren steht in der App hinter chef — deshalb hier auch.
     function putzMitarbeiterFelder() {
-      return ['done','doneBy','doneByUid','doneKuerzel','doneAt','formiAt'];
+      // tage (Runde 302): die letzten 15 Tage, an denen der Punkt abgehakt
+      // wurde – für Formis Serie (heller Ring nach einer Woche komplett).
+      return ['done','doneBy','doneByUid','doneKuerzel','doneAt','formiAt','tage'];
     }
 
     // ── „Danke" an einer erledigten Aufgabe (Runde 103, Idee D1) ─────

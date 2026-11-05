@@ -77,8 +77,13 @@ const STAND = () => {
   return {
     ls: !!box.querySelector('.ls'),
     reiter: [...box.querySelectorAll('.ls-reiter [data-hmodus]')].map(x => x.textContent.trim()),
-    kacheln: [...box.querySelectorAll('.ls-kachel')].map(k => ({ sk: k.getAttribute('data-lswahl'), name: k.querySelector('b').textContent.trim(),
-      rot: k.classList.contains('rot'), gruen: k.classList.contains('gruen'), text: k.querySelector('i').textContent.trim() })),
+    /* Runde 302 (5.11.2026, auf die Formi-Idee „Studios als Monde (für
+       die Leitung am Rechner)": „alles davon ist super"): am Rechner steht
+       jedes Studio als Mond um Formi, mit derselben Ampel und demselben
+       Klick – geprüft wird darum „Kachel ODER Mond". Die Zeile „Aufg. … ·
+       Post …" steht am Mond im Schild (title). */
+    kacheln: [...box.querySelectorAll('.ls-kachel[data-lswahl], .lm-mond')].map(k => ({ sk: k.getAttribute('data-lswahl'), name: k.querySelector('b').textContent.trim(),
+      rot: k.classList.contains('rot'), gruen: k.classList.contains('gruen'), text: k.querySelector('i') && k.querySelector('i').textContent.trim() || (k.title || '') })),
     detail: (() => { const d = box.querySelector('.ls-detail'); return d && d.getClientRects().length ? d.querySelector('h3').textContent.trim() : ''; })(),
     best: [...box.querySelectorAll('.ls-best-zeile')].filter(z => z.getClientRects().length).map(z => z.querySelector('.ls-art').textContent + ': ' + z.querySelector('b').textContent),
     bestOben: (() => { const b = box.querySelector('.ls-best'), k = box.querySelector('.ls-kacheln'); return !!(b && k) && b.getBoundingClientRect().top < k.getBoundingClientRect().top; })(),
@@ -100,7 +105,7 @@ const STAND = () => {
     pruefe(rolle + ': kein Studio ist ohne Grund rot', s.kacheln.filter(k => k.rot).every(k => /niemand|Aufg|Post/.test(k.text)), JSON.stringify(s.kacheln.filter(k => k.rot)));
     pruefe(rolle + ': das erste rote Studio steht gross darunter', s.detail === (s.kacheln.find(k => k.rot) || s.kacheln[0]).name, s.detail);
     const andere = s.kacheln.find(k => k.sk !== 'studio-6' && k.sk !== (s.kacheln.find(x => x.rot) || {}).sk) || s.kacheln[1];
-    await p.evaluate((sk) => document.querySelector('.ls-kachel[data-lswahl="' + sk + '"]').click(), andere.sk);
+    await p.evaluate((sk) => document.querySelector('[data-lswahl="' + sk + '"]').click(), andere.sk);
     await p.waitForTimeout(400);
     const s2 = await p.evaluate(STAND);
     pruefe(rolle + ': Klick auf „' + andere.name + '" zeigt dieses Studio unter den Kacheln', s2.detail === andere.name && !(await p.evaluate(() => document.getElementById('lsModal').classList.contains('show'))), s2.detail);
@@ -183,7 +188,7 @@ const STAND = () => {
       await p.waitForTimeout(200);
       const m = await p.evaluate((SRC) => {
         const T = eval('(' + SRC + ')');
-        const k = [...document.querySelectorAll('#heuteListe .ls-kachel, #heuteListe .ls-ja, #heuteListe .ls-nein, #heuteListe .ls-oeffnen, #heuteListe .ls-reiter button, #heuteListe .ls-mehr-knopf, #heuteListe .ls-material, #heuteListe .ls .mini-link, #heuteListe .ls .hz-haken, #heuteListe .ls .hz-aktion')]
+        const k = [...document.querySelectorAll('#heuteListe .ls-kachel, #heuteListe .lm-mond, #heuteListe .ls-ja, #heuteListe .ls-nein, #heuteListe .ls-oeffnen, #heuteListe .ls-reiter button, #heuteListe .ls-mehr-knopf, #heuteListe .ls-material, #heuteListe .ls .mini-link, #heuteListe .ls .hz-haken, #heuteListe .ls .hz-aktion')]
           .filter(e => e.getClientRects().length);
         return k.map(e => { e.scrollIntoView({ block: 'center' }); const t = T(e); return { k: e.className.split(' ')[0] || e.tagName, t: e.textContent.trim().slice(0, 14), w: t.w, h: t.h }; });
       }, TREFFER.toString());
