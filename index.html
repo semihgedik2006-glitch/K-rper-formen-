@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-+6dwvZQ5c+VXFxPGXy4IwbpO6nZggH9xCQEqWzMAz9M='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-cmnTyYrIl5xVaC2qciN+TOmAmfHHk6kRT8Tex1Ghp6g='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -25850,7 +25850,7 @@ function neuTagText(datum){
   var d=String(datum).split('.'), m=NEU_MONATE[(+d[1])-1];
   return m ? +d[0]+'. '+m+(+d[2]!==new Date().getFullYear() ? ' '+d[2] : '') : datum;
 }
-/* Runde 298: „05.11.2026" und „5.11.2026" sind derselbe Tag — zwei
+/* Runde 299: „05.11.2026" und „5.11.2026" sind derselbe Tag — zwei
    parallele Sitzungen schrieben beides, und „Was ist neu" zeigte das
    Update dreimal. Gruppiert wird nach dem Tag, nicht nach der Schreibweise. */
 function neuTagSchluessel(datum){
@@ -43101,7 +43101,7 @@ function leitungDatenLaden(keys, neu){
       liste(S('zeiten').where('studioKey','==',sk).where('tag','==',heute)).catch(function(){ return null; }),
       featureAn('schicht') ? liste(S('studios').doc(sk).collection('shifts').where('date','==',heute)).catch(function(){ return null; }) : Promise.resolve(null),
       featureAn('abwesend') ? liste(S('studios').doc(sk).collection('absences').where('status','==','offen')).catch(function(){ return []; }) : Promise.resolve([]),
-      /* Runde 298: Krankmeldungen mit Vertretungs-Vorschlag von Formi
+      /* Runde 299: Krankmeldungen mit Vertretungs-Vorschlag von Formi
          (formiKrank) — alles, was heute noch läuft. */
       featureAn('abwesend') && featureAn('schicht') ? liste(S('studios').doc(sk).collection('absences').where('to','>=',heute)).catch(function(){ return []; }) : Promise.resolve([])
     ]).then(function(r){
@@ -43216,7 +43216,7 @@ function lsBestaetigenListe(keys){
         zeile:(ABW_ART[a.type]||'abwesend')+(mehrere?' · '+studioName(sk):'') });
     });
   });
-  /* Runde 298 — aus dem Betrieb: bei Krankmeldung „er soll nur vorschläge
+  /* Runde 299 — aus dem Betrieb: bei Krankmeldung „er soll nur vorschläge
      machen für die leitung". Eine Zeile je betroffener Schicht, solange
      sie noch bei der kranken Person liegt und nicht ausgeschrieben ist.
      ✓ schreibt sie aus (wie „Schicht abgeben"), ✕ heisst „regle ich
@@ -44294,7 +44294,7 @@ function loadMyShifts(force){
       return x.tausch==='offen' && x.uid!==session.uid;
     }).sort(nachZeit);
     _tauschWartet=canManage() ? alle.filter(function(x){ return x.tausch==='zugesagt'; }).sort(nachZeit) : [];
-    /* Runde 298: der Stand je Schicht für „Krank – Vertretung" unter „Zu bestätigen". */
+    /* Runde 299: der Stand je Schicht für „Krank – Vertretung" unter „Zu bestätigen". */
     _shifts7=alle;
     renderMyShifts();
     /* Die Startseite wurde vorher gezeichnet, als die Schichten noch

@@ -99,7 +99,7 @@ function pruefe(was, bedingung, hinweis) {
     marken: document.querySelectorAll('#neuListe .neu-eintrag > summary .ne-art').length,
     offen: [...document.querySelectorAll('#neuListe .neu-eintrag')].map(x => x.open)
   }));
-  /* Derselbe Tag in zwei Schreibweisen („05.11.2026"/„5.11.2026") ist EIN Update (Runde 298). */
+  /* Derselbe Tag in zwei Schreibweisen („05.11.2026"/„5.11.2026") ist EIN Update (Runde 299). */
   const tagSchluessel = d => String(d).split('.').map(Number).join('.');
   const tageSoll = [...new Set(N.map(e => tagSchluessel(e.datum)))].length;
   pruefe('nach Tagen gruppiert: ' + tageSoll + ' Updates, jede Zeile mit Art-Marke',

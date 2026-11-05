@@ -1734,7 +1734,7 @@ const TAG = 86400000;
         { params: { firma: 'alpha', studioKey: sk } });
       pruefe('FORMI MATERIAL · aufgefüllt → keine Meldung', gesendet.length === 0);
 
-      /* Runde 298 — aus dem Betrieb (5.11.2026): bei Krankmeldung „er soll
+      /* Runde 299 — aus dem Betrieb (5.11.2026): bei Krankmeldung „er soll
          nur vorschläge machen für die leitung". Lea ist morgen krank und hat
          Dienst 09–14. Leise arbeitet morgen 10–12 (überschneidet sich), Frei
          und die Leitung sind frei, der Chef springt nicht ein. */
