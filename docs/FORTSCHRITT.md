@@ -25236,3 +25236,140 @@ wechselnd): `test-abgeschnitten` (#app wechselnd 3–7 px breiter, auf
 `test-lizenzen`, `test-abo-leiter` (bricht beim Laden ab). Mehrere
 Messläufe (`test-formi-physik`, `test-federn`, `test-schichtplaner-rechnung`)
 fallen unter Last aus; einzeln wiederholt waren die hier betroffenen grün.
+
+## Runde 297 — Formi schneller: Schnellweg, klare Fragen direkt, Tempo im Leitstand (Worker 2.28, 5.11.2026)
+
+Aus dem Betrieb: „was können wir an formi noch alles optimieren das es
+bis nächstes jahr wirklich flüssig läuft und wirklich sachen uns abnehmen
+kann". Auf den Plan (1. flüssig, 2. Sachen abnehmen, 3. Lernen, das man
+merkt) und die Rückfragen: Krankmeldung „nur vorschläge … für die
+leitung", Mustertexte für Kundenpost „noch nicht", Kontingent „lieber
+kürzer, aber wenns nicht reicht … können wir auch später um
+struckturieren und auch etwas geld ins spiel mit aufnehmen".
+
+**Was gefunden wurde.**
+- Eine Frage lief durch **zwei KI-Aufrufe hintereinander**: erst Gemini
+  in `gehirnAktion` (Aufgabe? Material? Frage?), dann im Worker Suche nach
+  Bedeutung und gpt-oss-120b. Im Oktober live gemessen: 5 bis 38 Sekunden.
+- Rund 470 freigegebene Paare (Übungsstapel, „gut") gingen bisher nur als
+  Vorbild an die KI — auch wenn jemand genau diese Frage stellte.
+- Es gab keine Messung, wie lange eine Antwort dauert. „Wird Formi
+  schneller?" war nicht zu beantworten.
+
+**Was gebaut wurde.**
+- **Schnellweg im Worker** (`schnellPaar`): ist die Frage praktisch gleich
+  einem freigegebenen Paar, kommt dessen Antwort sofort — vor der Suche,
+  ohne KI, ohne Kontingent, auch bei der Notbremse. Nachricht, Daumen und
+  „Woher weiß ich das?" funktionieren wie sonst.
+- **Klare Fragen ohne Einordnen** (`gehirnKlareFrage` in den Functions):
+  eine eindeutige Frage ohne Auftragswort geht direkt ans Gehirn, Gemini
+  entfällt.
+- **Tempo** (Tabelle `tempo`, Karte „Tempo (7 Tage)" im Leitstand): je
+  Antwort Weg und Zeit im Gehirn, Hälfte / 9 von 10, Anteil Schnellweg.
+
+**Warum so.**
+- **Streng statt viel.** Der Schnellweg zeigt eine fertige Antwort ohne
+  dass eine KI prüft, ob sie passt. Deshalb nur bei denselben Suchwörtern
+  (Wortanfang, 5 Buchstaben), demselben Fragewort, denselben Modalwörtern
+  („darf" ≠ „muss"), gleicher Verneinung und gleichen Zahlen; erst ab vier
+  Wörtern darf eines abweichen. Lieber geht eine Frage zu oft an die KI als
+  dass eine falsche Antwort sofort und überzeugt dasteht.
+- **Nur freigegebene Paare.** Daumen hoch aus dem Team zählt hier nicht —
+  den Schnellweg bestimmt, was die Leitung geprüft hat.
+- **Kein Zwischenspeicher, der veraltet:** der Worker merkt sich die Paare,
+  fragt aber bei jeder Frage mit einer kleinen Abfrage, ob sich Anzahl oder
+  letzte Freigabe geändert hat. Ein eben freigegebenes Paar gilt sofort.
+- **Gemini entfällt nur, wenn es nichts zu entscheiden gibt.** Alles, was
+  nach Auftrag klingt (anlegen, erinnern, fehlt, kaputt, krank, Schicht,
+  Aufgabe …), nach Abfrage oder Weg in der App („wer hat Dienst", „was ist
+  offen", „wo finde ich …") oder sich auf das Gespräch bezieht („dauert
+  das?", „und wenn er …"), geht weiter über Gemini. Gemini löst Bezüge auf
+  und kennt Navigation und Abfragen — das soll nicht verloren gehen.
+- **Gemessen wird nur, was gemessen werden kann:** die Zeit im Gehirn.
+  Der Weg durch die App (Anmeldung, Functions, Gemini) kommt dazu und ist
+  nicht in der Zahl. Keine Texte, keine Absender in `tempo`.
+- **Wort für Wort anzeigen** (Streaming) ist bewusst noch nicht dabei: die
+  App spricht über eine Firebase-Funktion (`onCall`) mit dem Gehirn, und
+  die liefert nur am Stück. Dafür müsste die App direkt mit dem Worker
+  sprechen und der Worker die Anmeldung selbst prüfen — eigener Schritt.
+
+**Nicht geprüft.**
+- Wie viel schneller es live wird: hier läuft keine echte KI. Die Zahl
+  steht nach dem Einspielen von 2.28 in der Karte „Tempo (7 Tage)".
+- Wie oft der Schnellweg live greift: hängt davon ab, wie nah die echten
+  Fragen an den freigegebenen sind. Ebenfalls in der Karte.
+- Die Zeitersparnis durch das Weglassen von Gemini ist geschätzt (ein
+  Gemini-Aufruf, erfahrungsgemäß ein bis wenige Sekunden), nicht gemessen.
+
+**Geprüft:** `test-formi-worker` 189 (neu: Schnellweg rechnerisch und im
+echten Weg, Gegenproben „darf/muss", ungeprüftes Paar, eben freigegebenes
+Paar, Tempo-Tabelle ohne Text, Leitstand-Karte im Browser),
+`test-gehirn-aktion` 162 (neu: klare Frage direkt, Aufträge, Abfragen,
+Wege in der App und Bezüge weiter über Gemini).
+
+## Runde 298 — Formi sieht Bilder (05.11.2026)
+
+**Aus dem Betrieb, 05.11.2026** (Thread „Neue Ideen für Formi sammeln“):
+- Auf acht neue Formi-Ideen: „alles davon ist super, am aller wichtigsten
+  finde ich auch die bild erkennung das man ihm jegliche bilder schicken
+  könnte und er antwortet drauf und sagt was er sieht und so"
+- Auf die Rückfragen: Personen und Atteste auf Fotos — „ne er kann das
+  schon annehmen"; wer darf — „alle mit grenze klingt gut"; anlegen —
+  „anlegen mit bestätigung".
+
+**Was gebaut wurde**
+- Der Foto-Knopf im Formi-Fenster („Defekt mit Foto melden“, nur Geräte)
+  heisst jetzt **„Bild zeigen“** und nimmt jedes Bild. Am Rechner geht
+  zusätzlich **Hineinziehen** ins Fenster und **Strg+V** im Feld. Was im
+  Feld steht, geht als Frage zum Bild mit.
+- Das Bild wird im Gerät auf höchstens 1024 px verkleinert (JPEG; vorher
+  768 px — Text auf Zetteln und Displays war bei 768 px knapp), steht als
+  Vorschau in der eigenen Blase und geht an die neue Function
+  **`gehirnBild`**. Gespeichert wird es nirgends: der Gesprächsverlauf
+  hält nur Texte, die Function reicht es nur weiter.
+- `gehirnBild` fragt zuerst Gemini (dasselbe Muster wie `gehirnAktion`,
+  mit derselben 30-Minuten-Sperre nach 401/402/403), dann den Worker.
+  Zurück kommen die Antwort, eine Stimmung fürs Gesicht und höchstens
+  **ein** Vorschlag.
+- Der Vorschlag läuft durch `gehirnBefehlPruefen` wie jeder Satz und nur
+  aus einer kurzen Liste: Defekt, Material, Aufgabe (nur Leitung),
+  Übergabe, Erinnerung, Idee. Krankmeldung, Mail, Abwesenheit kommen aus
+  einem Bild bewusst nicht — ein Attest ansehen darf Formi, eine
+  Krankmeldung daraus anlegen nicht, denn die betrifft womöglich jemand
+  anderen. In der App erscheint der Vorschlag als eigene Karte unter der
+  Antwort und wird erst mit dem Knopf gespeichert (`gehirnWeitere`, wie
+  ein zweiter Auftrag aus demselben Satz).
+- **Grenzen:** 25 Bilder je Person und Tag, 150 je Betrieb und Tag
+  (`tagesGrenze`, der Personenzähler heisst nach der Nutzerkennung).
+- **Worker 2.29:** `/api/bild` mit `art:"frei"` beschreibt das ganze Bild
+  (erst Llama 4 Scout mit `image_url`, dann Llama 3.2 Vision). Ohne das
+  Einspielen antwortet der alte Worker weiter mit „Gerät + Schaden“ —
+  `gehirnBild` macht daraus trotzdem eine Antwort.
+
+**Warum so**
+- Ein Knopf statt eines zweiten: der Foto-Knopf war schon da und gemessen;
+  ein weiterer runder Knopf in der Eingabezeile hätte die Zeile am Handy
+  bei 320 px enger gemacht.
+- Gemini zuerst, weil es Bilder deutlich besser liest als die kostenlosen
+  Bildmodelle bei Cloudflare, und der Schlüssel schon da ist. Fällt Gemini
+  aus (402 am 18.10.2026), bleibt der Worker — kostenlos, aber schwächer.
+
+**Geprüft:** `tests/test-formi-bild.js` (neu): Systemtext, Prüfung des
+Vorschlags, Gemini bekommt `inlineData` vor dem Text, Worker `art:"frei"`
+mit beiden Modellen. `test-gehirn`: das Bild geht verkleinert als JPEG an
+`gehirnBild`, steht in der Blase, der Defekt-Vorschlag läuft in den
+Defekt-Weg.
+**Nicht geprüft:** wie gut die echten Modelle Bilder erkennen und wie
+lange eine Antwort dauert — das geht nur live. Der Worker muss für den
+kostenlosen Ersatzweg einmal eingespielt werden (tools/studio-gehirn/README.md).
+Rot, aber auch auf `main` gleich rot (nebeneinander gelaufen):
+`test-gehirn` „320 px kompakt“ und „390 px normal“ — „Jetzt anlegen“ auf
+der Gehirn-Seite 0 × 0 bzw. 304 × 42 px. Nicht Teil dieser Runde.
+Grün: `test-formi-bild` 22, `test-gehirn` 325 von 327, `test-formi-worker`
+169, `test-gehirn-aktion` 138, `test-formi-app` 34, `test-knoepfe`,
+`test-gestaltung`, `test-abgeschnitten`, `test-csp`, `test-neuigkeiten`.
+Der Bild-Knopf (`#jarvisFoto`) ist in `test-gehirn` bei 320 / 390 / 430 /
+820 / 1280 / 1440 / 1920 px, normal und kompakt, per Trefferprüfung
+≥ 44 × 44 px. Angesehen bei 320, 390 und 1440 px: Bild in der Blase
+223 × 167 / 282 × 212 / 274 × 206 px, kein waagerechtes Scrollen,
+„Jetzt eintragen“ 44 px hoch.

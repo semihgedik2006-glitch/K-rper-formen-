@@ -8118,7 +8118,7 @@ function gehirnBildErgebnis(roh, namen, erlaubt, rolle, heute) {
   return { antwort, vorschlag, stimmung };
 }
 
-/* Der Worker als Ersatz. Ab Worker 2.28 beschreibt /api/bild mit
+/* Der Worker als Ersatz. Ab Worker 2.29 beschreibt /api/bild mit
    art:"frei" das ganze Bild; ein älterer Worker kennt nur Geräte und
    liefert {geraet, text} — auch das ist eine Antwort. */
 async function gehirnBildWorker(bild, frage, geraete) {
@@ -8660,6 +8660,47 @@ function gehirnMehrfach(roh, pruefe) {
   const liste = roh.befehle.slice(0, 3).map(pruefe).filter(x => x && x.typ !== 'frage' && x.typ !== 'verboten' && x.typ !== 'rueckfrage');
   return liste.length >= 2 ? liste : null;
 }
+/* ── Klare Frage ohne Einordnen (Runde 297, 5.11.2026) ─────────────────
+   Aus dem Betrieb: „was können wir an formi noch alles optimieren das es
+   bis nächstes jahr wirklich flüssig läuft". Bisher ging JEDER Satz zuerst
+   an Gemini (Aufgabe? Material? Frage?) und eine Frage danach an das
+   Studio-Gehirn — zwei KI-Aufrufe hintereinander. Ein Satz, der eindeutig
+   eine Frage ist und nach nichts Ausführbarem klingt, geht jetzt direkt
+   an das Gehirn. Streng, lieber einmal zu viel einordnen:
+   - eine Frage: Fragezeichen am Ende, Fragewort/Modalwort am Anfang oder
+     „was soll/kann/mache ich";
+   - kein Wort, das nach Auftrag klingt (anlegen, eintragen, erinnern,
+     melden, fehlt, kaputt, Aufgabe, Übergabe, krank, Urlaub, tauschen,
+     öffnen, zeigen …) — das entscheidet weiter Gemini;
+   - kein Bezug auf das bisherige Gespräch („und wenn er …", „dafür",
+     „dort", „dauert das?", sehr kurze Nachfragen) — den löst Gemini auf;
+   - nicht „wo …" / „wer …" und nichts zu Aufgaben, Diensten oder Seiten
+     der App — das kann ein Weg in der App oder eine Abfrage sein;
+   - höchstens 300 Zeichen. Rein rechnerisch (__intern). */
+const KLAR_FRAGEWORT = /^(wie|was|wo|wann|warum|wieso|weshalb|wer|wem|wen|welche[rsmn]?|wieviele?|woran|womit|wofuer|wozu|worauf|wohin|woher|darf|darfst|duerfen|kann|kannst|koennen|muss|musst|muessen|soll|sollte|sollen|gibt|ist|sind|hat|haben|brauche|braucht|stimmt)\b/;
+const KLAR_AUFTRAG = /\b(leg|lege|legt|anleg\w*|erstell\w*|eintrag\w*|trag|trage|tragt|notier\w*|merk|merke|erinner\w*|meld\w*|ankuendig\w*|aufgabe\w*|uebergabe\w*|probetraining\w*|probe|defekt\w*|kaputt\w*|fehlt|fehlen|leer|alle|aufgebraucht|bestell\w*|nachbestell\w*|abhak\w*|hak|erledigt|sauber|geputzt|tausch\w*|uebernehm\w*|krank\w*|urlaub\w*|frei|schreib\w*|schick\w*|send\w*|poste|veroeffentlich\w*|loesch\w*|entfern\w*|aender\w*|verschieb\w*|absag\w*|zeig\w*|oeffne\w*|geh|bring|stempel\w*|einstempel\w*|ausstempel\w*|schicht\w*|dienst\w*|\w*plan|abgeb\w*|offen|ueberfaellig\w*|faellig\w*|arbeite\w*|arbeitet|find\w*|komm\w*|seite\w*|bereich\w*|app)\b/;
+const KLAR_BEZUG = /^(und|aber|oder|also|dann|auch|noch)\b|\b(er|ihn|ihm|dies|diese[rsmn]?|dafuer|dazu|davon|damit|daran|darauf|dabei|darueber|dort|dahin|dasselbe|genauso|ebenfalls)\b|\b(das|es|den|die)\s*\?*\s*$/;
+const KLAR_KURZ = /^(wie|was|wann|warum|wieso|welche[rsmn]?|kann|muss|soll|darf|eigentlich|genau|bitte|lange|viel|viele|mache|machen|dauert|heute|morgen)$/;
+function gehirnKlareFrage(text, verlauf) {
+  const roh = String(text || '').trim();
+  if (!roh || roh.length > 300) return false;
+  const t = roh.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss');
+  const worte = t.split(/[^a-z0-9]+/).filter(Boolean);
+  if (worte.length < 3) return false;
+  const frage = /\?\s*$/.test(roh) || KLAR_FRAGEWORT.test(t) || /\bwas (soll|kann|mache|mach|tue|tu) ich\b/.test(t);
+  if (!frage) return false;
+  if (KLAR_AUFTRAG.test(t)) return false;
+  /* „wo ist / wo finde …" kann ein Weg in der App sein, „wer …" eine
+     Abfrage (wer hat Dienst, wer fehlt) — das entscheidet weiter Gemini. */
+  if (/^(wo|wer)\b/.test(t)) return false;
+  if (Array.isArray(verlauf) && verlauf.length) {
+    if (KLAR_BEZUG.test(t)) return false;
+    /* Kurze Nachfragen („wie lange dauert es?") brauchen das Gespräch. */
+    if (worte.filter(w => w.length > 3 && !KLAR_KURZ.test(w)).length < 2) return false;
+  }
+  return true;
+}
+
 function gehirnWeg(roh, geprueft) {
   if (geprueft) return geprueft.typ === 'frage' ? 'frage' : 'aktion';
   const t = roh && roh.typ;
@@ -8681,6 +8722,11 @@ exports.gehirnAktion = region
     if (!auftrag) throw new functions.https.HttpsError('invalid-argument', 'Bitte zuerst schreiben, was passieren soll.');
     const apiKey = process.env.GEMINI_API_KEY || '';
     await tagesGrenze('gehirnAktion', GEHIRN_AKTION_GRENZE, firma);
+    /* Runde 297: eine klare Frage geht ohne Einordnen direkt ans Gehirn. */
+    if (gehirnKlareFrage(auftrag, (data || {}).verlauf)) {
+      const a = await gehirnFrageAusfuehren(gehirnAuftrag({ art: 'frage', text: auftrag, ton: (data || {}).ton, lage: (data || {}).lage }, profil), firma);
+      return Object.assign({ art: 'frage', direkt: true }, a);
+    }
 
     const namen = await alleStudios(firma);
     const erlaubt = rolle === 'chef'
@@ -9442,7 +9488,7 @@ exports.stempelErinnern = region.runWith({ timeoutSeconds: 300, memory: '256MB' 
     return null;
   });
 
-exports.__intern = { gehirnBildSystem, gehirnBildErgebnis, GEHIRN_BILD_AKTIONEN, GEHIRN_BILD_PERSON, stempelErinnerungen, stempelErinnernMail, stempelErinnernFirma, formiTagText, formiSchichtendeText, formiMaterialNeu, formiFristVorbei, formiSchichtEndeIn, abschlussZeilenPruefen, monateVor, eigeneAbschlussZeile, eigeneRegel, antragUhrPruefen, ANTRAG_TAGE_MAX, erlaubteSchritte, schrittWaehlen, tagesStand, gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
+exports.__intern = { gehirnBildSystem, gehirnBildErgebnis, GEHIRN_BILD_AKTIONEN, GEHIRN_BILD_PERSON, gehirnKlareFrage, stempelErinnerungen, stempelErinnernMail, stempelErinnernFirma, formiTagText, formiSchichtendeText, formiMaterialNeu, formiFristVorbei, formiSchichtEndeIn, abschlussZeilenPruefen, monateVor, eigeneAbschlussZeile, eigeneRegel, antragUhrPruefen, ANTRAG_TAGE_MAX, erlaubteSchritte, schrittWaehlen, tagesStand, gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
                      gehirnVorschlagPruefen, gehirnBefehlPruefen, gehirnWeg, gehirnKontextText, lageberichtOhneKi,
                      geminiSperreAufheben: () => { _geminiAusBis = 0; }, geminiGesperrt: () => Date.now() < _geminiAusBis, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,
                      authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,
