@@ -98,6 +98,17 @@ Workers AI, **nicht** über GitHub Actions.
   nichts wird gespeichert, das Team bekommt immer den echten Text.
 - `POST /api/systemtext` liefert den echten Text zum Abwandeln.
 
+## Schnellweg und Tempo (ab 2.28)
+
+- Ist eine Frage praktisch gleich einer freigegebenen Übung (Status
+  „gut"), kommt deren Antwort sofort: keine Suche nach Bedeutung, keine
+  KI, kein Kontingent — auch bei der Notbremse. Streng: dieselben
+  Suchwörter, dasselbe Fragewort, dieselben Modalwörter, gleiche
+  Verneinung und Zahlen. Je mehr Übungen freigegeben sind, desto öfter.
+- Tabelle `tempo` (legt der Worker selbst an): je Antwort nur Weg
+  (`schnell`, `ki`, `spar`, `stopp`, `fehler`) und Zeit im Gehirn, 30 Tage.
+  Im Leitstand die Karte „Tempo (7 Tage)".
+
 ## Variablen
 
 | Name | Wofür |

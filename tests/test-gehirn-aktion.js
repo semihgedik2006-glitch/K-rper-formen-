@@ -26,6 +26,29 @@ const NAMEN = { 'studio-1': 'Hürth', 'studio-2': 'Brühl', 'studio-3': 'Köln-P
 const ALLE = Object.keys(NAMEN);
 const HEUTE = '2026-10-18';
 
+console.log('── Runde 297: klare Frage ohne Einordnen (5.11.2026) ──');
+/* Aus dem Betrieb: „was können wir an formi noch alles optimieren das es
+   bis nächstes jahr wirklich flüssig läuft". Eine eindeutige Frage spart
+   den ersten KI-Aufruf (Gemini). Was nach Auftrag, Abfrage, Weg in der App
+   oder Bezug auf das Gespräch klingt, geht weiter über Gemini. */
+{
+  const { gehirnKlareFrage: K } = __intern;
+  const V = [{ f: 'Wie wasche ich die Westen?', a: 'Schonprogramm …' }];
+  for (const t of ['Wie oft muss ich die Westen waschen?', 'kunde hat mitten im training durchfall was soll ich machen',
+    'Darf eine Schwangere EMS trainieren?', 'Wie reagiere ich, wenn eine Kundin weint?', 'Was mache ich wenn das Gerät piept?'])
+    pruefe('direkt ans Gehirn: „' + t + '"', K(t, []) === true);
+  pruefe('direkt auch mit Verlauf, wenn die Frage für sich steht', K('Wie oft sollte ein Kunde pro Woche trainieren?', V) === true);
+  for (const t of ['Handschuhe sind alle', 'Leg eine Aufgabe an: Briefkasten leeren', 'Kannst du mich um 18 Uhr erinnern?',
+    'Wie lege ich eine Aufgabe an?', 'Die Weste geht nicht', 'Kann ich meine Schicht abgeben?', 'Ich bin morgen krank, was muss ich tun?',
+    'Kannst du mir einen Text für Instagram schreiben?'])
+    pruefe('Auftrag oder Meldung → weiter über Gemini: „' + t + '"', K(t, []) === false);
+  for (const t of ['Wer hat heute Dienst in Hürth?', 'Was ist heute offen?', 'Welche Aufgaben sind überfällig?', 'Wo finde ich den Putzplan?', 'Wie funktioniert die App?'])
+    pruefe('Abfrage oder Weg in der App → weiter über Gemini: „' + t + '"', K(t, []) === false);
+  for (const t of ['wie lange dauert das?', 'wie lange dauert es', 'und wenn er schwanger ist?', 'Gilt das auch dafür?'])
+    pruefe('Bezug aufs Gespräch → weiter über Gemini: „' + t + '"', K(t, V) === false);
+  pruefe('keine Frage, zu kurz oder zu lang → weiter über Gemini', K('ok', []) === false && K('Danke dir', []) === false && K('Wie ' + 'x '.repeat(200) + '?', []) === false);
+}
+
 console.log('── Etappe 3: Material, Probetraining, Formi meldet sich (23.10.2026) ──');
 {
   /* Aus dem Betrieb (23.10.2026), Rückfragen zu Etappe 3: Formulare

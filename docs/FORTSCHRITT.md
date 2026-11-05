@@ -25236,3 +25236,73 @@ wechselnd): `test-abgeschnitten` (#app wechselnd 3–7 px breiter, auf
 `test-lizenzen`, `test-abo-leiter` (bricht beim Laden ab). Mehrere
 Messläufe (`test-formi-physik`, `test-federn`, `test-schichtplaner-rechnung`)
 fallen unter Last aus; einzeln wiederholt waren die hier betroffenen grün.
+
+## Runde 297 — Formi schneller: Schnellweg, klare Fragen direkt, Tempo im Leitstand (Worker 2.28, 5.11.2026)
+
+Aus dem Betrieb: „was können wir an formi noch alles optimieren das es
+bis nächstes jahr wirklich flüssig läuft und wirklich sachen uns abnehmen
+kann". Auf den Plan (1. flüssig, 2. Sachen abnehmen, 3. Lernen, das man
+merkt) und die Rückfragen: Krankmeldung „nur vorschläge … für die
+leitung", Mustertexte für Kundenpost „noch nicht", Kontingent „lieber
+kürzer, aber wenns nicht reicht … können wir auch später um
+struckturieren und auch etwas geld ins spiel mit aufnehmen".
+
+**Was gefunden wurde.**
+- Eine Frage lief durch **zwei KI-Aufrufe hintereinander**: erst Gemini
+  in `gehirnAktion` (Aufgabe? Material? Frage?), dann im Worker Suche nach
+  Bedeutung und gpt-oss-120b. Im Oktober live gemessen: 5 bis 38 Sekunden.
+- Rund 470 freigegebene Paare (Übungsstapel, „gut") gingen bisher nur als
+  Vorbild an die KI — auch wenn jemand genau diese Frage stellte.
+- Es gab keine Messung, wie lange eine Antwort dauert. „Wird Formi
+  schneller?" war nicht zu beantworten.
+
+**Was gebaut wurde.**
+- **Schnellweg im Worker** (`schnellPaar`): ist die Frage praktisch gleich
+  einem freigegebenen Paar, kommt dessen Antwort sofort — vor der Suche,
+  ohne KI, ohne Kontingent, auch bei der Notbremse. Nachricht, Daumen und
+  „Woher weiß ich das?" funktionieren wie sonst.
+- **Klare Fragen ohne Einordnen** (`gehirnKlareFrage` in den Functions):
+  eine eindeutige Frage ohne Auftragswort geht direkt ans Gehirn, Gemini
+  entfällt.
+- **Tempo** (Tabelle `tempo`, Karte „Tempo (7 Tage)" im Leitstand): je
+  Antwort Weg und Zeit im Gehirn, Hälfte / 9 von 10, Anteil Schnellweg.
+
+**Warum so.**
+- **Streng statt viel.** Der Schnellweg zeigt eine fertige Antwort ohne
+  dass eine KI prüft, ob sie passt. Deshalb nur bei denselben Suchwörtern
+  (Wortanfang, 5 Buchstaben), demselben Fragewort, denselben Modalwörtern
+  („darf" ≠ „muss"), gleicher Verneinung und gleichen Zahlen; erst ab vier
+  Wörtern darf eines abweichen. Lieber geht eine Frage zu oft an die KI als
+  dass eine falsche Antwort sofort und überzeugt dasteht.
+- **Nur freigegebene Paare.** Daumen hoch aus dem Team zählt hier nicht —
+  den Schnellweg bestimmt, was die Leitung geprüft hat.
+- **Kein Zwischenspeicher, der veraltet:** der Worker merkt sich die Paare,
+  fragt aber bei jeder Frage mit einer kleinen Abfrage, ob sich Anzahl oder
+  letzte Freigabe geändert hat. Ein eben freigegebenes Paar gilt sofort.
+- **Gemini entfällt nur, wenn es nichts zu entscheiden gibt.** Alles, was
+  nach Auftrag klingt (anlegen, erinnern, fehlt, kaputt, krank, Schicht,
+  Aufgabe …), nach Abfrage oder Weg in der App („wer hat Dienst", „was ist
+  offen", „wo finde ich …") oder sich auf das Gespräch bezieht („dauert
+  das?", „und wenn er …"), geht weiter über Gemini. Gemini löst Bezüge auf
+  und kennt Navigation und Abfragen — das soll nicht verloren gehen.
+- **Gemessen wird nur, was gemessen werden kann:** die Zeit im Gehirn.
+  Der Weg durch die App (Anmeldung, Functions, Gemini) kommt dazu und ist
+  nicht in der Zahl. Keine Texte, keine Absender in `tempo`.
+- **Wort für Wort anzeigen** (Streaming) ist bewusst noch nicht dabei: die
+  App spricht über eine Firebase-Funktion (`onCall`) mit dem Gehirn, und
+  die liefert nur am Stück. Dafür müsste die App direkt mit dem Worker
+  sprechen und der Worker die Anmeldung selbst prüfen — eigener Schritt.
+
+**Nicht geprüft.**
+- Wie viel schneller es live wird: hier läuft keine echte KI. Die Zahl
+  steht nach dem Einspielen von 2.28 in der Karte „Tempo (7 Tage)".
+- Wie oft der Schnellweg live greift: hängt davon ab, wie nah die echten
+  Fragen an den freigegebenen sind. Ebenfalls in der Karte.
+- Die Zeitersparnis durch das Weglassen von Gemini ist geschätzt (ein
+  Gemini-Aufruf, erfahrungsgemäß ein bis wenige Sekunden), nicht gemessen.
+
+**Geprüft:** `test-formi-worker` 189 (neu: Schnellweg rechnerisch und im
+echten Weg, Gegenproben „darf/muss", ungeprüftes Paar, eben freigegebenes
+Paar, Tempo-Tabelle ohne Text, Leitstand-Karte im Browser),
+`test-gehirn-aktion` 162 (neu: klare Frage direkt, Aufträge, Abfragen,
+Wege in der App und Bezüge weiter über Gemini).
