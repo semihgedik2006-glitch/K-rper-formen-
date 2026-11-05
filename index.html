@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-cmnTyYrIl5xVaC2qciN+TOmAmfHHk6kRT8Tex1Ghp6g='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-7cilDV4aKqCQxoSsTQ0KinCd1FxGYW7V2ZLyWzlcDCA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -4864,6 +4864,28 @@ body.formi:not(.light).hud-impuls .topbar::after{animation:hudImpuls .9s var(--e
 .react:active{transform:scale(.9)}
 .react.mine{background:rgba(var(--akz-rgb),.16);border-color:var(--accent);color:var(--accent)}
 .react b{font-weight:700;font-size:var(--t-2xs)}
+/* Formi-Sticker (05.11.2026): die stille Figur, oben rechts das Zeichen
+   des Gefühls. Keine Animation in der Figur — ein Chat voller Sticker
+   rechnet sonst jedes Bild neu. */
+.r-formi{position:relative;display:inline-flex;align-items:center;line-height:var(--lh-1)}
+.r-formi .formi-figur{--fg:18px}
+.r-formi .formi-figur *{animation:none}
+.r-formi > i{position:absolute;right:-5px;top:-6px;display:flex;color:#ffd166;
+  filter:drop-shadow(0 0 1.5px rgba(0,0,0,.7))}
+.r-formi > i .sym{width:11px;height:11px;fill:currentColor;stroke-width:1.5}
+.r-formi-verliebt > i{color:#ff8fc4}
+.ms-sticker .r-formi .formi-figur{--fg:32px}
+.ms-sticker .r-formi > i{right:-6px;top:-7px}
+.ms-sticker .r-formi > i .sym{width:15px;height:15px}
+/* Jeder Sticker trägt sein Gesicht fest, ohne Bewegung: froh = Bögen
+   statt Augen, verliebt = Backen, staunt = grosse Augen und runder Mund,
+   stolz = Bögen und Backen. */
+.r-formi .fk-backe{opacity:0}
+.r-formi-freut .fk-auge,.r-formi-stolz .fk-auge{opacity:0}
+.r-formi-freut .fk-froh,.r-formi-stolz .fk-froh{opacity:1}
+.r-formi-verliebt .fk-backe,.r-formi-stolz .fk-backe{opacity:1}
+.r-formi-staunt .fk-auge{transform:scale(1.15)}
+.r-formi-staunt .fk-mund{left:42%;width:16%;height:16%;top:62%;border:max(1px, calc(var(--fg) * .034)) solid #8FF2FF;border-radius:var(--r-rund)}
 /* Der Zeichenwaehler ausserhalb des Chats. Im Chat kommt er ueber das
    Nachrichtenblatt; Brett und Aushang haben kein Blatt, dort steht das
    „+" in der Zeile. Es ist bewusst gedaempft: der Weg zur ersten
@@ -15059,6 +15081,8 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
       <p id="msSheetPrev"></p>
     </div>
     <div class="ms-react" id="msSheetReact"></div>
+    <!-- Formi-Sticker (05.11.2026): eine eigene Reihe unter den Zeichen. -->
+    <div class="ms-react ms-formi" id="msSheetFormi" role="group" aria-label="Formi-Sticker"></div>
     <div class="ms-acts" id="msSheetActs"></div>
     <!-- „Gelesen von …" (Runde 126): ersetzt Reaktionen und Einträge,
          solange es offen ist. -->
@@ -23815,6 +23839,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-11-05-formi-sticker', datum:'05.11.2026', art:'neu', titel:'Formi-Sticker im Chat', wo:'chat', punkte:[
+    'Nachricht antippen: unter den Zeichen stehen vier Formi-Sticker – freut sich, verliebt, staunt, stolz.',
+    'Der Sticker steht als kleiner Formi unter der Nachricht, mit Zähler wie die anderen Zeichen.',
+    'Am Brett und am Aushang gibt es dieselben Sticker im „+“-Wähler.'
+  ]},
   { id:'2026-11-05-krank-vertretung', datum:'5.11.2026', art:'neu', titel:'Krankmeldung: Vorschlag für die Vertretung', wo:'home', punkte:[
     'Meldet sich jemand krank, schlägt Formi der Leitung je Schicht passende Kollegen vor.',
     'Leitung: unter „Zu bestätigen" die Schicht ausschreiben oder „selbst geregelt".',
@@ -40292,7 +40321,7 @@ function leseInfoZeigen(m){
       liste(ja, 'Noch niemand.')+
     '<h4>'+LESE_HAKEN_SVG.eins.replace('<svg','<svg style="width:17px;height:12px"')+'Noch nicht gelesen ('+nein.length+')</h4>'+
       liste(nein, 'Alle haben es gelesen.');
-  $('msSheetReact').hidden=true; $('msSheetActs').hidden=true;
+  $('msSheetReact').hidden=true; $('msSheetFormi').hidden=true; $('msSheetActs').hidden=true;
   info.hidden=false;
   tick(6);
 }
@@ -40467,6 +40496,24 @@ function cancelCompose(){
 /* Wie lange darf man eine eigene Nachricht noch bearbeiten? */
 var EDIT_WINDOW_MS = 15*60*1000;
 var REACT_EMOJIS = ['👍','❤️','😂','🎉','👏','😮'];
+/* Formi-Sticker (05.11.2026) — aus dem Betrieb auf die Ideenliste
+   („alles davon ist super"): Formis Gefühle als Reaktionen. Die Namen
+   stehen genauso in firestore.rules (reaktionsZeichen); ein neuer Name
+   braucht beide Stellen. Die Figur ist still (keine Daueranimation), das
+   Zeichen daneben (ein Symbol aus ikon(), kein Emoji) sagt, welches
+   Gefühl gemeint ist. */
+var REACT_FORMI = [
+  { k:'formi-freut',    name:'Formi freut sich', z:'sonne' },
+  { k:'formi-verliebt', name:'Formi ist verliebt', z:'herz' },
+  { k:'formi-staunt',   name:'Formi staunt', z:'blitz' },
+  { k:'formi-stolz',    name:'Formi ist stolz', z:'stern' }
+];
+function reaktionZeichenHTML(k){
+  var f=REACT_FORMI.filter(function(x){ return x.k===k; })[0];
+  if(!f) return esc(k);
+  return '<span class="r-formi r-'+esc(k)+'" aria-hidden="true"><span class="formi-figur mini">'+formiFigurInnen()+'</span><i>'+ikon(f.z)+'</i></span>';
+}
+function reaktionName(k){ var f=REACT_FORMI.filter(function(x){ return x.k===k; })[0]; return f ? f.name : k; }
 
 /* Reaktionen darstellen.
    m.reactions sieht so aus: { '👍': ['uid1','uid2'], '❤️': ['uid3'] }
@@ -40488,7 +40535,7 @@ function reactionsHTML(m, art){
   var zeichen=keys.map(function(k){
     var list=r[k]||[], mine=list.indexOf(session.uid)>=0;
     return '<button class="react'+(mine?' mine':'')+'" data-toggle="'+esc(k)+
-      '" data-mid="'+id+'" data-rtyp="'+sorte+'">'+k+'<b>'+list.length+'</b></button>';
+      '" data-mid="'+id+'" data-rtyp="'+sorte+'" aria-label="'+esc(reaktionName(k))+' · '+list.length+'">'+reaktionZeichenHTML(k)+'<b>'+list.length+'</b></button>';
   }).join('');
   if(sorte==='chat') return keys.length ? '<div class="reacts">'+zeichen+'</div>' : '';
   /* Der Waehler steht IMMER da, auch ohne eine einzige Reaktion —
@@ -40497,10 +40544,10 @@ function reactionsHTML(m, art){
     '<button class="react react-plus" data-rauf="'+id+'" data-rtyp="'+sorte+
     '" aria-label="reagieren">+</button>'+
     '<span class="react-wahl" data-rwahl="'+id+'" hidden>'+
-      REACT_EMOJIS.map(function(e){
+      REACT_EMOJIS.concat(REACT_FORMI.map(function(f){ return f.k; })).map(function(e){
         var meins=((r[e]||[]).indexOf(session.uid)>=0);
         return '<button class="react'+(meins?' mine':'')+'" data-toggle="'+esc(e)+
-          '" data-mid="'+id+'" data-rtyp="'+sorte+'">'+e+'</button>';
+          '" data-mid="'+id+'" data-rtyp="'+sorte+'" aria-label="'+esc(reaktionName(e))+'">'+reaktionZeichenHTML(e)+'</button>';
       }).join('')+
     '</span></div>';
 }
@@ -40685,6 +40732,10 @@ function msgBlattOeffnen(m, anker){
     var meins=((m.reactions||{})[e]||[]).indexOf(session.uid)>=0;
     return '<button class="ms-emoji'+(meins?' on':'')+'" data-e="'+esc(e)+'">'+e+'</button>';
   }).join('');
+  $('msSheetFormi').innerHTML=REACT_FORMI.map(function(f){
+    var meins=((m.reactions||{})[f.k]||[]).indexOf(session.uid)>=0;
+    return '<button class="ms-emoji ms-sticker'+(meins?' on':'')+'" data-e="'+esc(f.k)+'" aria-label="'+esc(f.name)+'" title="'+esc(f.name)+'">'+reaktionZeichenHTML(f.k)+'</button>';
+  }).join('');
 
   var eintraege=[
     {id:'reply', ico:ikon('antworten'), txt:'Antworten'},
@@ -40697,7 +40748,7 @@ function msgBlattOeffnen(m, anker){
   if(mine)        eintraege.splice(0, 0, {id:'info', ico:ikon('auge'), txt:'Gelesen von …'});
 
   $('msSheetInfo').hidden=true; $('msSheetInfo').innerHTML='';
-  $('msSheetReact').hidden=false; $('msSheetActs').hidden=false;
+  $('msSheetReact').hidden=false; $('msSheetFormi').hidden=false; $('msSheetActs').hidden=false;
   $('msSheetActs').innerHTML=eintraege.filter(function(e){ return !e.aus; }).map(function(e){
     return '<button class="ms-act'+(e.warn?' warn':'')+'" data-ma="'+e.id+'">'+
       '<span class="ms-ico">'+e.ico+'</span><span>'+esc(e.txt)+'</span></button>';
@@ -40726,6 +40777,9 @@ function msgBlattPlatzieren(blatt, anker, mine){
     var karte=blatt.querySelector('.ms-card'), reakt=$('msSheetReact');
     var k=karte.getBoundingClientRect();
     var rh=reakt && !reakt.hidden ? reakt.getBoundingClientRect().height : 0;
+    /* Die Formi-Reihe steht mit über der Nachricht. */
+    var rf=$('msSheetFormi');
+    if(rh && rf && !rf.hidden) rh += rf.getBoundingClientRect().height + 8;
     var r=anker.el ? anker.el.getBoundingClientRect() : null;
     var B=window.innerWidth, H=window.innerHeight, rand=12, abstand=8;
     var x, y;
@@ -58474,12 +58528,12 @@ function bindActions(){
       var b=e.target.closest && e.target.closest('[data-ma]');
       if(b) msgBlattAktion(b.getAttribute('data-ma'));
     });
-    $('msSheetReact').addEventListener('click',function(e){
+    ['msSheetReact','msSheetFormi'].forEach(function(id){ $(id).addEventListener('click',function(e){
       var b=e.target.closest && e.target.closest('[data-e]');
       if(!b || !_blattMsg) return;
       toggleReaction(_blattMsg.id, b.getAttribute('data-e'));
       msgBlattSchliessen();
-    });
+    }); });
   }
 
   // „Nach unten"-Knopf im Chat (mit Zähler für ungelesene Nachrichten)

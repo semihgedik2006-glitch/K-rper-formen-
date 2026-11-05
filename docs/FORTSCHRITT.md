@@ -25436,3 +25436,54 @@ kompakt, Startseite passt am Rechner).
 dreimal. Eine parallele Sitzung schrieb `05.11.2026`, diese `5.11.2026`;
 gruppiert wurde nach der Schreibweise. Jetzt nach dem Tag
 (`neuTagSchluessel`), und `test-neuigkeiten` zählt die Tage genauso.
+
+## Runde 300 — Formi-Sticker im Chat (05.11.2026)
+
+Aus dem Betrieb, auf die Ideenliste („Formi-Sticker im Chat: Formis
+Gefühle als Reaktionen"): „alles davon ist super".
+
+**Was gebaut ist.** Im Nachrichtenblatt steht unter den sechs Zeichen
+eine zweite Reihe mit vier Formi-Stickern: freut sich, verliebt, staunt,
+stolz. Antippen setzt den Sticker wie jede andere Reaktion; unter der
+Nachricht steht er als kleiner Formi mit Zähler. Am Brett und am Aushang
+hängt derselbe „+"-Wähler die Sticker an die Zeichen an.
+
+**Warum so.**
+- *Reaktion, keine Nachricht.* Ein Sticker als eigene Nachricht hätte
+  ein neues Feld in jeder Nachricht, eine neue Darstellung und eine neue
+  Leseregel gebraucht. Als Reaktion läuft er über `reactions`, die schon
+  Zähler, „wer hat reagiert" und die Regel „nur die eigene Kennung"
+  haben.
+- *Die Namen stehen in `firestore.rules`.* `reaktionsZeichen()` lässt
+  nur bekannte Zeichen zu; die vier Namen `formi-freut`, `formi-verliebt`,
+  `formi-staunt`, `formi-stolz` sind dort ergänzt, je mit eigener
+  `gleichOhneMich`-Zeile — flach und unter `firmen/<k>/` (dieselbe
+  Funktion). Ohne diese Zeilen hätte jeder fremde Sticker-Listen
+  umschreiben können: die Gegenprobe ohne sie ergab 7 Fehlschläge.
+- *Die Figur steht still.* Unter einer langen Unterhaltung wären viele
+  atmende Formis Dauerbewegung ohne Grund (Hausregel „keine
+  Endlos-Animationen"). Das Gefühl zeigt das feste Gesicht (froh,
+  Wangen, grosse Augen) und ein Symbol aus `ikon()` daneben — kein
+  Emoji, weil `test-gestaltung` Emoji als Symbol zu Recht ablehnt.
+- *Die Figur selbst ist nicht angefasst.* Die Sticker benutzen
+  `formiFigurInnen()` und stellen nur per CSS innerhalb `.r-formi` das
+  Gesicht ein; am Aussehen von Formi arbeitet ein anderer Strang.
+
+**Beim Bau gefunden.** Ein zu weiter Selektor (`.r-formi i`) traf auch
+die Teile des Gesichts und schob sie aus der Figur — die Sticker waren
+nur schwarze Ringe. Jetzt `.r-formi > i`, und `test-formi-sticker`
+prüft, dass der Mund im Loch liegt.
+
+**Gemessen** (`tests/test-formi-sticker.js`, 36/0): die vier Sticker im
+Blatt bei 320 / 390 / 430 / 820 / 1280 / 1440 / 1920 px, normal und
+kompakt, per Trefferprüfung je ≥ 44 × 44 px und ganz im Bild; Antippen
+schreibt genau `formi-stolz` mit der eigenen Kennung; unter der
+Nachricht Symbol, Vorlesename und keine Animation. Regeltest
+`reaktionen.test.js` 60/0 im Emulator. Grün außerdem: `test-chat`,
+`test-chat-antworten`, `test-chat-blasen`, `test-chat-imessage`,
+`test-chat-klein`, `test-gelesen-haken`, `test-knoepfe`,
+`test-gestaltung`, `test-csp`, `test-abgeschnitten`,
+`test-neuigkeiten`. Angesehen bei 390 und 1440 px.
+
+**Nicht geprüft:** echte Konten mit dem echten Firebase (lädt in dieser
+Umgebung nicht) — die neue Regel ist nur im Emulator gelaufen.
