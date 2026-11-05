@@ -117,3 +117,15 @@ Workers AI, **nicht** über GitHub Actions.
 | `NEURONEN_SPAR`, `NEURONEN_STOPP` | Grenzen für Sparmodus (6000) und Notbremse (9200), geschätzte Neuronen je UTC-Tag |
 | `WA_AKTIV` | `1` = WhatsApp senden. Ohne sie ist WhatsApp seit 2.10 aus (Meta sperrt noch). |
 | `LIMIT_PRO_TAG`, `LIMIT_STUDIOCHAT_TAG`, `AUFBEWAHRUNG_TAGE` | wie im Kopf von `worker.js` |
+
+## Bilder ansehen (ab 2.29, 05.11.2026)
+
+- `POST /api/bild` mit `art:"frei"` beschreibt das ganze Bild und
+  beantwortet die Frage dazu (`frage`). Zurück: `{antwort, aktion}`;
+  `aktion` ist höchstens ein Defekt-Vorschlag. Erst
+  `@cf/meta/llama-4-scout-17b-16e-instruct`, dann Llama 3.2 Vision.
+- Aufgerufen von der Function `gehirnBild` nur, wenn Gemini nicht
+  antwortet. Ohne 2.29 bekommt sie die alte Geräte-Antwort und macht
+  daraus trotzdem einen Satz — einspielen lohnt sich für den kostenlosen
+  Ersatzweg.
+- Das Bild wird nicht gespeichert.

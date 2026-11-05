@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-78cPpI8Y2z+VC1fKA7CWnRenpOykOqTGz/wY9DCSydw='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-cXqAchCw1NK66WVzSFFHbsX3+f5w1eGfhnBi35ijCCI='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -7408,6 +7408,10 @@ body.jv-offen{overflow:hidden}
 /* Die Frage wird „gesendet": sie kommt von rechts, ein Funkstrahl läuft
    nach links Richtung Kern. */
 .jarvis .gehirn-frage{position:relative}
+/* Formi sieht Bilder (05.11.2026): das Bild steht in der eigenen Blase,
+   höchstens 220 px hoch. Beim Hineinziehen leuchtet der Fensterrand. */
+.gehirn-frage .gehirn-bild{display:block;max-width:100%;max-height:220px;width:auto;height:auto;border-radius:var(--r-md);margin:0 0 var(--s6);object-fit:contain}
+.jarvis.jv-bild-ziel .jv-rechts{outline:2px dashed var(--accent,#7aa8ff);outline-offset:-6px}
 .jarvis .gehirn-frage.rein{animation-name:jvSenden;animation-duration:.45s}
 @keyframes jvSenden{0%{opacity:0;transform:translate3d(36px,0,0) scale(.92)}60%{opacity:1}100%{transform:none}}
 .jarvis .gehirn-frage::after{content:"";position:absolute;right:100%;top:50%;width:140px;height:1px;opacity:0;pointer-events:none;
@@ -15326,7 +15330,7 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
              rechts, alle drei als runde Zeichen-Knöpfe (Namen über aria-label). -->
         <div class="gehirn-knoepfe jv-ein-knoepfe">
           <button type="button" class="icon-btn gehirn-mic jv-ein" id="jarvisMic" data-ikon="mikrofon" style="display:none" aria-pressed="false" aria-label="Sprechen" title="Sprechen — gedrückt halten oder einmal tippen"></button>
-          <button type="button" class="icon-btn jv-ein" id="jarvisFoto" data-ikon="foto" aria-label="Foto" title="Defekt mit Foto melden — bitte nur das Gerät fotografieren"></button>
+          <button type="button" class="icon-btn jv-ein" id="jarvisFoto" data-ikon="foto" aria-label="Bild zeigen" title="Bild zeigen — Formi sagt, was er sieht (am Rechner auch reinziehen oder Strg+V)"></button>
           <input type="file" id="jarvisFotoDatei" accept="image/*" capture="environment" hidden>
           <button type="button" class="btn btn-primary jv-ein jv-senden" id="jarvisSenden" title="Senden"><span class="jv-senden-wort">Senden</span></button>
         </div>
@@ -23810,6 +23814,12 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-11-05-formi-bilder', datum:'05.11.2026', art:'neu', titel:'Formi sieht Bilder', wo:'gehirn', punkte:[
+    'Im Formi-Fenster auf das Bild-Symbol tippen: Formi sagt, was er sieht, und liest Text auf dem Bild ab.',
+    'Was im Feld steht, geht als Frage mit, z. B. „Was steht auf dem Zettel?".',
+    'Am Rechner ein Bild ins Formi-Fenster ziehen oder mit Strg+V einfügen.',
+    'Vorschläge wie „Gerät defekt" werden erst gespeichert, wenn du sie bestätigst.'
+  ]},
   { id:'2026-11-05-formi-schneller', datum:'5.11.2026', art:'besser', titel:'Formi antwortet schneller', wo:'gehirn', punkte:[
     'Fragen mit geprüfter Antwort beantwortet Formi sofort.',
     'Klare Fragen gehen ohne Umweg an Formi und sind so schneller beantwortet.'
@@ -30659,6 +30669,7 @@ function gehirnZeichnenInRoh(box, tippen){
   box.innerHTML=_gVerlauf.map(function(v, i){
     var rf=gehirnRein(v, '_abF');
     var frage='<div class="gehirn-frage'+rf.k+'"'+rf.s+'>'+
+      (v.bild ? '<img class="gehirn-bild" src="'+esc(v.bild)+'" alt="Dein Bild" decoding="async">' : '')+
       (v.art==='idee' ? '<b>Idee:</b> ' : '')+gehirnText(v.text)+'</div>';
     /* Runde 209: vor jeder Antwort dasselbe Gesicht wie die Kugel. */
     var kopf='<div class="ga-kopf"><span class="ga-loch formi-figur mini" aria-hidden="true">'+formiFigurInnen()+'</span><span>'+esc(jvPersona().name)+'</span></div>';
@@ -34271,45 +34282,79 @@ function gehirnStichpunkte(i, btn){
     }).catch(function(e){ toast(errMsg(e), true); });
   });
 }
-/* Defekt mit Foto: das Bild wird im Gerät verkleinert (höchstens 768 px,
-   JPEG) und geht über die Function an den Worker; zurück kommen Gerät und
-   Beschreibung, gemeldet wird im normalen Defekt-Weg mit Vorschau. */
+/* Formi sieht Bilder (05.11.2026) — aus dem Betrieb: „das man ihm jegliche
+   bilder schicken könnte und er antwortet drauf und sagt was er sieht".
+   Jedes Bild (Kamera, Datei, am Rechner auch reinziehen oder Strg+V) wird
+   im Gerät verkleinert (höchstens 1024 px, JPEG) und geht an gehirnBild.
+   Was im Feld steht, geht als Frage dazu mit. Zurück kommt, was Formi
+   sieht, und höchstens EIN Vorschlag — der läuft durch den normalen Weg
+   und wird erst mit dem Knopf darunter gespeichert. Das Bild steht nur in
+   diesem Gespräch (nicht im gespeicherten Verlauf, nirgends hochgeladen). */
+var GEHIRN_BILD_PX=1024;
 function gehirnFotoVerkleinern(datei){
   return new Promise(function(fertig, fehler){
     var url=URL.createObjectURL(datei), img=new Image();
     img.onload=function(){
-      var g=Math.min(1, 768/Math.max(img.width, img.height)), c=document.createElement('canvas');
+      var g=Math.min(1, GEHIRN_BILD_PX/Math.max(img.width, img.height)), c=document.createElement('canvas');
       c.width=Math.max(1, Math.round(img.width*g)); c.height=Math.max(1, Math.round(img.height*g));
-      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      var x=c.getContext('2d');
+      /* Durchsichtiges (PNG) auf Weiss — JPEG kennt keine Durchsicht. */
+      x.fillStyle='#fff'; x.fillRect(0, 0, c.width, c.height);
+      x.drawImage(img, 0, 0, c.width, c.height);
       URL.revokeObjectURL(url);
-      fertig(c.toDataURL('image/jpeg', 0.72));
+      var d=c.toDataURL('image/jpeg', 0.75);
+      if(d.length>880000) d=c.toDataURL('image/jpeg', 0.55);
+      fertig(d);
     };
-    img.onerror=function(){ URL.revokeObjectURL(url); fehler(new Error('Das Foto konnte ich nicht öffnen.')); };
+    img.onerror=function(){ URL.revokeObjectURL(url); fehler(new Error('Das Bild konnte ich nicht öffnen.')); };
     img.src=url;
   });
 }
-function gehirnFotoSenden(datei){
+function gehirnBildDatei(datei){ return !!(datei && /^image\//.test(datei.type||'')); }
+function gehirnFotoSenden(datei, feldId){
   if(!datei || _gLaeuft) return;
-  var k=gehirnMeineKeys()[0]; if(!k){ toast('Dir ist noch kein Studio zugeordnet.', true); return; }
-  var v={ text:'Foto vom Gerät', art:'aktion', laeuft:true, schritte:[], _z:Date.now() };
+  if(!gehirnBildDatei(datei)){ toast('Das ist kein Bild.', true); return; }
+  if(navigator.onLine===false){ toast('Ohne Netz kann ich mir kein Bild ansehen.', true); return; }
+  var f=$(feldId||'jarvisFeld');
+  var frage=String((f && f.value)||'').trim();
+  if(f) f.value='';
+  var v={ text:frage || 'Was siehst du hier?', art:'frage', laeuft:true, schritte:[], _z:Date.now() };
   _gVerlauf.push(v); _gLaeuft=true;
-  gehirnSchritt(v, 'Verkleinere das Foto …');
+  gehirnSchritt(v, 'Verkleinere das Bild …');
   gehirnZeichnen(); gehirnNachUnten();
-  var geraete=[];
+  var geraete=[], k=gehirnMeineKeys()[0];
   Promise.all([
     gehirnFotoVerkleinern(datei),
-    S('studios').doc(k).collection('devices').get().then(function(sn){ geraete=sn.docs.map(function(d){ return d.data().name||''; }).filter(Boolean); }).catch(function(){})
+    k ? S('studios').doc(k).collection('devices').get().then(function(sn){ geraete=sn.docs.map(function(d){ return d.data().name||''; }).filter(Boolean); }).catch(function(){}) : null
   ]).then(function(r){
-    gehirnSchritt(v, 'Schaue mir das Foto an …');
-    return firebase.app().functions(KONFIG.region).httpsCallable('gehirnFoto')({ bild:r[0], geraete:geraete.slice(0,40) });
+    v.bild=r[0];
+    gehirnSchritt(v, 'Schaue mir das Bild an …');
+    if(gehirnSichtbar()){ gehirnZeichnen(); gehirnNachUnten(); }
+    var kontext=gehirnKontext(); kontext.geraete=geraete.slice(0,30);
+    return firebase.app().functions(KONFIG.region).httpsCallable('gehirnBild')({ bild:r[0], text:frage, kontext:kontext,
+      ton:gehirnTonfall(), verlauf:gehirnVerlaufKurz(), formiName:jvPersona().name });
   }).then(function(r){
     var d=(r && r.data) || {};
-    if(!d.text) throw new Error('Auf dem Foto konnte ich nichts erkennen.');
-    v.vorschlag={ typ:'defekt', geraet:d.geraet||'Gerät', text:d.text, studioKey:k, studioName:studioName(k) };
-    gehirnSchritt(v, 'Erkannt: '+(d.geraet||'ein Gerät'), true);
-    return gehirnSofort(v);
+    if(!d.antwort) throw new Error('Auf dem Bild konnte ich nichts erkennen.');
+    v.antwort=d.antwort; v.getippt=true; v.bildAntwort=true;
+    gehirnSchritt(v, 'Bild angesehen', true);
+    var GL_GEF={ freut:'freut', staunt:'staunt', mitfuehlend:'traurig', verwirrt:'verwirrt' };
+    if(d.stimmung && GL_GEF[d.stimmung] && typeof formiFuehlt==='function') setTimeout(function(){ formiFuehlt(GL_GEF[d.stimmung]); }, 900);
+    /* Ein Vorschlag aus dem Bild: eigene Karte darunter, wie ein zweiter
+       Auftrag aus demselben Satz — gespeichert wird erst mit dem Knopf. */
+    if(d.vorschlag && d.vorschlag.typ) return gehirnWeitere([{ s:d.vorschlag, text:'Vorschlag aus dem Bild' }]);
   }).catch(function(e){ v.fehler=e && e.message ? e.message : errMsg(e); })
     .then(function(){ v.laeuft=false; _gLaeuft=false; if(gehirnSichtbar()){ gehirnZeichnen(); gehirnNachUnten(); } gehirnVerlaufSichern(); });
+}
+/* Das erste Bild aus einer Zwischenablage oder einem Ziehen. */
+function gehirnBildAus(liste){
+  var l=liste ? [].slice.call(liste) : [];
+  for(var i=0;i<l.length;i++){
+    var x=l[i];
+    if(x && x.kind==='file'){ var fd=x.getAsFile(); if(gehirnBildDatei(fd)) return fd; }
+    else if(gehirnBildDatei(x)) return x;
+  }
+  return null;
 }
 /* Ohne Netz: ein Hinweis oben, und die KI wird gar nicht erst gefragt. */
 function jvOfflineZeigen(){
@@ -35005,7 +35050,7 @@ function gehirnSichtbar(){ return currentView==='gehirn' || jarvisOffen(); }
    das Fenster zu, damit man sieht, wie die App sich bewegt. */
 var _jvGebunden=false, _jvVorher=null;
 function jarvisOffen(){ var j=$('jarvis'); return !!(j && !j.hidden); }
-var _jvBootUhr=0, _jvBereitSatz='', _jvFotoHinweis=false;
+var _jvBootUhr=0, _jvBereitSatz='';
 function jarvisAuf(){
   if(!gehirnVerfuegbar()) return;
   var j=$('jarvis'); if(!j) return;
@@ -35090,11 +35135,28 @@ function jarvisBinden(){
   });
   var fb=$('jarvisFoto'), fd=$('jarvisFotoDatei');
   if(fb && fd){
-    fb.addEventListener('click', function(){
-      if(!_jvFotoHinweis){ _jvFotoHinweis=true; toast('Bitte nur das Gerät fotografieren — keine Personen.'); }
-      fd.value=''; fd.click();
+    fb.addEventListener('click', function(){ fd.value=''; fd.click(); });
+    fd.addEventListener('change', function(){ if(fd.files && fd.files[0]) gehirnFotoSenden(fd.files[0], 'jarvisFeld'); });
+  }
+  /* Am Rechner: ein Bild ins Formi-Fenster ziehen oder mit Strg+V ins Feld
+     einfügen (05.11.2026). Text in der Zwischenablage bleibt normales
+     Einfügen. */
+  var jf=$('jarvisFeld');
+  if(jf) jf.addEventListener('paste', function(e){
+    var b=gehirnBildAus(e.clipboardData && (e.clipboardData.items || e.clipboardData.files));
+    if(b){ e.preventDefault(); gehirnFotoSenden(b, 'jarvisFeld'); }
+  });
+  var jx=$('jarvis');
+  if(jx){
+    jx.addEventListener('dragover', function(e){
+      if(e.dataTransfer && [].slice.call(e.dataTransfer.types||[]).indexOf('Files')>=0){ e.preventDefault(); jx.classList.add('jv-bild-ziel'); }
     });
-    fd.addEventListener('change', function(){ if(fd.files && fd.files[0]) gehirnFotoSenden(fd.files[0]); });
+    jx.addEventListener('dragleave', function(e){ if(!e.relatedTarget || !jx.contains(e.relatedTarget)) jx.classList.remove('jv-bild-ziel'); });
+    jx.addEventListener('drop', function(e){
+      jx.classList.remove('jv-bild-ziel');
+      var b=gehirnBildAus(e.dataTransfer && e.dataTransfer.files);
+      if(b){ e.preventDefault(); gehirnFotoSenden(b, 'jarvisFeld'); }
+    });
   }
   jvHaltenBinden();
   var ton=$('jarvisTon'); if(ton){ jvTonKnopf(); ton.addEventListener('click', function(){

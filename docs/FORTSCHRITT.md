@@ -25306,3 +25306,70 @@ echten Weg, Gegenproben „darf/muss", ungeprüftes Paar, eben freigegebenes
 Paar, Tempo-Tabelle ohne Text, Leitstand-Karte im Browser),
 `test-gehirn-aktion` 162 (neu: klare Frage direkt, Aufträge, Abfragen,
 Wege in der App und Bezüge weiter über Gemini).
+
+## Runde 298 — Formi sieht Bilder (05.11.2026)
+
+**Aus dem Betrieb, 05.11.2026** (Thread „Neue Ideen für Formi sammeln“):
+- Auf acht neue Formi-Ideen: „alles davon ist super, am aller wichtigsten
+  finde ich auch die bild erkennung das man ihm jegliche bilder schicken
+  könnte und er antwortet drauf und sagt was er sieht und so"
+- Auf die Rückfragen: Personen und Atteste auf Fotos — „ne er kann das
+  schon annehmen"; wer darf — „alle mit grenze klingt gut"; anlegen —
+  „anlegen mit bestätigung".
+
+**Was gebaut wurde**
+- Der Foto-Knopf im Formi-Fenster („Defekt mit Foto melden“, nur Geräte)
+  heisst jetzt **„Bild zeigen“** und nimmt jedes Bild. Am Rechner geht
+  zusätzlich **Hineinziehen** ins Fenster und **Strg+V** im Feld. Was im
+  Feld steht, geht als Frage zum Bild mit.
+- Das Bild wird im Gerät auf höchstens 1024 px verkleinert (JPEG; vorher
+  768 px — Text auf Zetteln und Displays war bei 768 px knapp), steht als
+  Vorschau in der eigenen Blase und geht an die neue Function
+  **`gehirnBild`**. Gespeichert wird es nirgends: der Gesprächsverlauf
+  hält nur Texte, die Function reicht es nur weiter.
+- `gehirnBild` fragt zuerst Gemini (dasselbe Muster wie `gehirnAktion`,
+  mit derselben 30-Minuten-Sperre nach 401/402/403), dann den Worker.
+  Zurück kommen die Antwort, eine Stimmung fürs Gesicht und höchstens
+  **ein** Vorschlag.
+- Der Vorschlag läuft durch `gehirnBefehlPruefen` wie jeder Satz und nur
+  aus einer kurzen Liste: Defekt, Material, Aufgabe (nur Leitung),
+  Übergabe, Erinnerung, Idee. Krankmeldung, Mail, Abwesenheit kommen aus
+  einem Bild bewusst nicht — ein Attest ansehen darf Formi, eine
+  Krankmeldung daraus anlegen nicht, denn die betrifft womöglich jemand
+  anderen. In der App erscheint der Vorschlag als eigene Karte unter der
+  Antwort und wird erst mit dem Knopf gespeichert (`gehirnWeitere`, wie
+  ein zweiter Auftrag aus demselben Satz).
+- **Grenzen:** 25 Bilder je Person und Tag, 150 je Betrieb und Tag
+  (`tagesGrenze`, der Personenzähler heisst nach der Nutzerkennung).
+- **Worker 2.29:** `/api/bild` mit `art:"frei"` beschreibt das ganze Bild
+  (erst Llama 4 Scout mit `image_url`, dann Llama 3.2 Vision). Ohne das
+  Einspielen antwortet der alte Worker weiter mit „Gerät + Schaden“ —
+  `gehirnBild` macht daraus trotzdem eine Antwort.
+
+**Warum so**
+- Ein Knopf statt eines zweiten: der Foto-Knopf war schon da und gemessen;
+  ein weiterer runder Knopf in der Eingabezeile hätte die Zeile am Handy
+  bei 320 px enger gemacht.
+- Gemini zuerst, weil es Bilder deutlich besser liest als die kostenlosen
+  Bildmodelle bei Cloudflare, und der Schlüssel schon da ist. Fällt Gemini
+  aus (402 am 18.10.2026), bleibt der Worker — kostenlos, aber schwächer.
+
+**Geprüft:** `tests/test-formi-bild.js` (neu): Systemtext, Prüfung des
+Vorschlags, Gemini bekommt `inlineData` vor dem Text, Worker `art:"frei"`
+mit beiden Modellen. `test-gehirn`: das Bild geht verkleinert als JPEG an
+`gehirnBild`, steht in der Blase, der Defekt-Vorschlag läuft in den
+Defekt-Weg.
+**Nicht geprüft:** wie gut die echten Modelle Bilder erkennen und wie
+lange eine Antwort dauert — das geht nur live. Der Worker muss für den
+kostenlosen Ersatzweg einmal eingespielt werden (tools/studio-gehirn/README.md).
+Rot, aber auch auf `main` gleich rot (nebeneinander gelaufen):
+`test-gehirn` „320 px kompakt“ und „390 px normal“ — „Jetzt anlegen“ auf
+der Gehirn-Seite 0 × 0 bzw. 304 × 42 px. Nicht Teil dieser Runde.
+Grün: `test-formi-bild` 22, `test-gehirn` 325 von 327, `test-formi-worker`
+169, `test-gehirn-aktion` 138, `test-formi-app` 34, `test-knoepfe`,
+`test-gestaltung`, `test-abgeschnitten`, `test-csp`, `test-neuigkeiten`.
+Der Bild-Knopf (`#jarvisFoto`) ist in `test-gehirn` bei 320 / 390 / 430 /
+820 / 1280 / 1440 / 1920 px, normal und kompakt, per Trefferprüfung
+≥ 44 × 44 px. Angesehen bei 320, 390 und 1440 px: Bild in der Blase
+223 × 167 / 282 × 212 / 274 × 206 px, kein waagerechtes Scrollen,
+„Jetzt eintragen“ 44 px hoch.
