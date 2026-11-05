@@ -25374,7 +25374,7 @@ Der Bild-Knopf (`#jarvisFoto`) ist in `test-gehirn` bei 320 / 390 / 430 /
 223 × 167 / 282 × 212 / 274 × 206 px, kein waagerechtes Scrollen,
 „Jetzt eintragen“ 44 px hoch.
 
-## Runde 298 — Krank gemeldet: Formi schlägt der Leitung eine Vertretung vor (5.11.2026)
+## Runde 299 — Krank gemeldet: Formi schlägt der Leitung eine Vertretung vor (5.11.2026)
 
 Aus dem Betrieb, auf den Plan „‚Ich bin morgen krank': Formi trägt ein
 und fragt passende Kollegen": „er soll nur vorschläge machen für die

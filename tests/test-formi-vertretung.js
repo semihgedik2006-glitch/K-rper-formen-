@@ -1,4 +1,4 @@
-/* ══ KRANK: VERTRETUNGS-VORSCHLAG UNTER „ZU BESTÄTIGEN" (Runde 298) ════
+/* ══ KRANK: VERTRETUNGS-VORSCHLAG UNTER „ZU BESTÄTIGEN" (Runde 299) ════
    Aus dem Betrieb, 5.11.2026: bei Krankmeldung „er soll nur vorschläge
    machen für die leitung". Den Vorschlag rechnet der Server (formiKrank,
    geprüft in tests/rules/funktionen.test.js) und legt ihn an die

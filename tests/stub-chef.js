@@ -285,7 +285,7 @@ var USERS = [
       loesung:'Direkt nach dem Programm ausräumen.',
       bilder:[], uid:'u3', vonName:'Ben Kraus', ts:Date.now()-20*86400000 }
   ];
-  /* window.__absences / __shifts: ein Durchlauf kann eigene hinlegen (Runde 298). */
+  /* window.__absences / __shifts: ein Durchlauf kann eigene hinlegen (Runde 299). */
   var ABSENCES = window.__absences || {
     'studio-6': [
       { id:'a1', from:tag(13), to:tag(21), type:'urlaub', uid:'u2', name:'Anna Meier',

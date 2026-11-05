@@ -9363,7 +9363,7 @@ const _formiMaterialW = beideWelten('inventory/{studioKey}', _formiMaterial, 'on
 exports.formiMaterial = _formiMaterialW.flach;
 exports.formiMaterialF = _formiMaterialW.firma;
 
-/* ══ KRANK GEMELDET: VORSCHLAG FÜR DIE VERTRETUNG (Runde 298) ═════════
+/* ══ KRANK GEMELDET: VORSCHLAG FÜR DIE VERTRETUNG (Runde 299) ═════════
    Aus dem Betrieb, 5.11.2026, auf den Plan „‚Ich bin morgen krank': Formi
    trägt ein und fragt passende Kollegen": „er soll nur vorschläge machen
    für die leitung".
