@@ -511,7 +511,7 @@ service cloud.firestore {
     // (aufbauBereinigen) – die Regel hält nur Grösse und Form.
     function designOk() {
       let d = request.resource.data;
-      return d.keys().hasOnly(['uid', 'von', 'name', 'aufbau', 'prefs', 'ts', 'angebot', 'art', 'studios'])
+      return d.keys().hasOnly(['uid', 'von', 'name', 'aufbau', 'prefs', 'ts', 'angebot', 'art', 'studios', 'sperre'])
         && d.keys().hasAll(['uid', 'name', 'aufbau', 'prefs', 'ts'])
         && d.name is string && d.name.size() > 0 && d.name.size() <= 30
         && (!('von' in d) || (d.von is string && d.von.size() <= 80))
@@ -534,7 +534,26 @@ service cloud.firestore {
                   || (d.studios is list && d.studios.size() > 0 && d.studios.size() <= 50
                       && (isChef() || d.studios.hasOnly(myKeys()))))))
         // Ein neues Angebot einer Studioleitung nennt immer Studios.
-        && (d.get('angebot', false) != true || isChef() || ('studios' in d));
+        && (d.get('angebot', false) != true || isChef() || ('studios' in d))
+        // Runde 304: gesperrt gibt es nur an einer Festlegung.
+        && (!('sperre' in d) || (d.sperre is bool
+              && (d.sperre == false || d.get('art', '') == 'fest')));
+    }
+
+    // Runde 304: Rückmeldung eines Mitarbeiters zu einem Angebot –
+    // genau ein Dokument je Person (Kennung = eigene uid), nur zu einem
+    // Angebot, das für das eigene Studio gilt.
+    function antwortOk(design) {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['uid', 'name', 'wie', 'ts'])
+        && d.keys().hasAll(['uid', 'name', 'wie', 'ts'])
+        && d.uid == request.auth.uid
+        && d.name is string && d.name.size() <= 80
+        && d.wie in ['ja', 'nein', 'fest', 'eigen']
+        && d.ts is number
+        && design.get('angebot', false) == true
+        && (!('studios' in design) || design.studios == 'all'
+            || (design.studios is list && design.studios.hasAny(myKeys())));
     }
 
     match /users/{uid} {
@@ -1916,6 +1935,17 @@ service cloud.firestore {
       allow delete: if aufFlachenPfaden()
         && (isChef() || (istAktiv() && resource.data.uid == request.auth.uid));
     }
+    // Runde 304: Rückmeldungen. Lesen nur, wer das Design geteilt hat,
+    // und der Chef – nicht die Kollegen.
+    match /designs/{dId}/antworten/{aUid} {
+      allow read: if aufFlachenPfaden() && istAktiv() && (isChef()
+        || get(/databases/$(database)/documents/designs/$(dId)).data.uid == request.auth.uid);
+      allow create, update: if aufFlachenPfaden() && istAktiv()
+        && aUid == request.auth.uid
+        && antwortOk(get(/databases/$(database)/documents/designs/$(dId)).data);
+      allow delete: if aufFlachenPfaden() && (isChef()
+        || (istAktiv() && get(/databases/$(database)/documents/designs/$(dId)).data.uid == request.auth.uid));
+    }
 
     // ── Papierkorb ──
     // Gelöschtes liegt hier 30 Tage. Hineinlegen darf jeder Eingeloggte –
@@ -2793,6 +2823,16 @@ service cloud.firestore {
             && request.resource.data.uid == resource.data.uid && designOk();
           allow delete: if schreibtIn(f) && (isChef()
             || (istAktiv() && resource.data.uid == request.auth.uid));
+        }
+        // Rückmeldungen (Runde 304) – wie oben, in der eigenen Firma.
+        match /designs/{dId}/antworten/{aUid} {
+          allow read: if inFirma(f) && istAktiv() && (isChef()
+            || get(/databases/$(database)/documents/firmen/$(f)/designs/$(dId)).data.uid == request.auth.uid);
+          allow create, update: if schreibtIn(f) && istAktiv()
+            && aUid == request.auth.uid
+            && antwortOk(get(/databases/$(database)/documents/firmen/$(f)/designs/$(dId)).data);
+          allow delete: if schreibtIn(f) && (isChef()
+            || (istAktiv() && get(/databases/$(database)/documents/firmen/$(f)/designs/$(dId)).data.uid == request.auth.uid));
         }
 
         match /trash/{trashId} {

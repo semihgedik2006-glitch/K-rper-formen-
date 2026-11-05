@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-UOo5Y1d+LBbrjw6jMyC1AY4x/rf61kRLb+ocIDRg/yE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-NXP4Tl0VnFpOIW2Kdp37T8LuuenKZYbVrhrYK/ETVGw='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -10167,6 +10167,13 @@ body.ab-zieht, body.ab-zieht *{cursor:grabbing}
 .ab-fuer .hint{margin:var(--s4) 0}
 .ab-fuer-knoepfe{display:flex;gap:var(--s8);flex-wrap:wrap;margin-top:var(--s8)}
 .ab-fuer-knoepfe .btn{min-height:44px}
+/* Runde 304: Rückmeldung unter dem eigenen Angebot, Hinweis bei Sperre. */
+.ab-antw{display:flex;align-items:center;gap:var(--s8);flex-wrap:wrap;margin:calc(-1 * var(--s4)) 0 var(--s8);font-size:var(--t-xs);color:var(--text-2)}
+.ab-antw .btn{min-height:44px}
+.ab-antw-liste{flex:1 0 100%;margin:0;padding:0;list-style:none;display:grid;gap:var(--s4)}
+.ab-antw-liste li{display:flex;justify-content:space-between;gap:var(--s8);font-size:var(--t-sm);color:var(--text)}
+.ab-antw-liste li i{font-style:normal;color:var(--text-2)}
+.ab-gesperrt p{font-size:var(--t-sm)}
 .ab-dname i{display:block;font-style:normal;font-size:var(--t-xs);color:var(--text-2)}
 /* Die Vorschau: ein kleines Handy, gezeichnet aus dem Entwurf. */
 .ab-telefon{--abt-akz:var(--accent);width:220px;max-width:100%;margin:0 auto;border-radius:var(--r-lg);overflow:hidden;
@@ -24049,6 +24056,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-11-05-layout-sperre', datum:'05.11.2026', art:'neu', titel:'Festgelegtes Layout sperren, Rückmeldung sehen', wo:'home', punkte:[
+    'Beim Festlegen in „App gestalten": „Gesperrt" – Leiste und Startseite ändert dann nur die Leitung, Aussehen und Schrift bleiben frei.',
+    'Unter „Vom Team" steht beim eigenen Vorschlag, wie viele übernommen, abgelehnt oder selbst geändert haben; „Wer?" zeigt die Namen.',
+    'Mitarbeiter sehen beim Vorschlag, dass die Leitung ihre Antwort sieht.'
+  ]},
   { id:'2026-11-05-layout-festlegen', datum:'05.11.2026', art:'neu', titel:'Leitung legt ein Layout fürs eigene Studio fest', wo:'home', punkte:[
     'In „App gestalten" bei einem eigenen Design: „An Mitarbeiter geben" – vorschlagen oder sofort festlegen.',
     'Studioleitungen wählen nur ihre eigenen Studios, der Chef auch „Alle Studios".',
@@ -25313,6 +25325,7 @@ function aufbauSchnappschuss(){
    Vorschlag stattdessen in den Entwurf. */
 function aufbauVorschlag(id){
   var v=AUFBAU_VORSCHLAEGE.filter(function(x){ return x.id===id; })[0]; if(!v) return;
+  if(aufbauSperre()){ toast(aufbauSperreText(), true); return false; }
   PREFS.aufbauVorher=aufbauSchnappschuss();
   Object.keys(v.prefs||{}).forEach(function(k){ PREFS[k]=v.prefs[k]; });
   PREFS.aufbau={ leiste:v.leiste ? v.leiste.slice() : null, gruppen:[], heute:null, start:v.start, minimal:v.minimal, formi:v.formi, schnell:v.schnell, og:!!v.og, vorschlag:v.id };
@@ -25322,9 +25335,10 @@ function aufbauVorschlag(id){
 function aufbauZurueck(){
   var x=PREFS.aufbauVorher; if(!x) return;
   PREFS.aufbauVorher=aufbauSchnappschuss();
-  PREFS.aufbau=x.aufbau || null;
+  if(!aufbauSperre()) PREFS.aufbau=x.aufbau || null;
   AUFBAU_PREFS.forEach(function(k){ if(x[k]!==undefined) PREFS[k]=x[k]; });
   savePrefs(); applyPrefs(); aufbauAnwenden();
+  aufbauEigenPruefen();
   if(currentView==='home' && typeof renderHome==='function') renderHome();
 }
 function aufbauMiniHTML(leiste){
@@ -25505,18 +25519,22 @@ function aufbauRender(){
   if(ang){
     ang.hidden=!_abAngebot;
     ang.innerHTML = _abAngebot ? '<span class="ab-ang-txt"><b>Vorschlag von '+esc(_abAngebot.von||'der Leitung')+': „'+esc(_abAngebot.name)+'"</b>'+
-      '<i>So sähe deine App aus. Erst „Übernehmen" stellt es ein – nur auf diesem Gerät.</i></span>'+
+      '<i>So sähe deine App aus. Erst „Übernehmen" stellt es ein – nur auf diesem Gerät. Deine Leitung sieht, ob du es übernimmst.</i></span>'+
       '<button type="button" class="btn btn-ghost btn-sm" id="abAngebotNein">Nein danke</button>' : '';
   }
   var kand=aufbauKandidaten(e).filter(function(g){ return !g.eigen; });
+  /* Runde 304: gesperrt – Leiste, Gruppen, „Heute" und „Beim Öffnen"
+     stellt nur die Leitung. Aussehen und Schrift bleiben frei. */
+  var sp=aufbauSperre();
   /* Spalte 1: Bausteine */
-  h+='<div class="ab-spalte ab-teile"><h4>Bausteine</h4>'+
+  h+= sp ? aufbauSperreHTML(sp) : '<div class="ab-spalte ab-teile"><h4>Bausteine</h4>'+
     '<p class="hint">Ziehen – in die Leiste, in eine Gruppe oder zurück hierher. Oder antippen.</p>'+
     '<div class="ab-zone ab-vorrat" data-abziel="weg">'+
     kand.map(function(g){ return aufbauChip('neu:'+g.id, g.id, e.leiste.indexOf(g.id)>=0 ? '<span class="ab-drin">unten</span>' : ''); }).join('')+
     '</div></div>';
   /* Spalte 2: deine App */
   h+='<div class="ab-spalte ab-mitte">';
+  var hVorAufbau=h;
   h+='<h4>Unten in der Leiste <span class="hint">'+e.leiste.length+' von '+AUFBAU_MAX_PC+' · am Handy die ersten '+(e.leiste.length>AUFBAU_MAX_HANDY ? (AUFBAU_MAX_HANDY-1)+', der Rest unter „Mehr"' : AUFBAU_MAX_HANDY)+'</span></h4>'+
     '<div class="ab-zone ab-leiste" data-abziel="leiste">'+e.leiste.map(function(id, i){ return aufbauChip('leiste:'+i, id); }).join('')+'</div>';
   h+='<h4>Eigene Gruppen</h4><p class="hint">Eine Gruppe ist ein Knopf; ihre Seiten stehen darin als Reiter.</p>';
@@ -25555,6 +25573,7 @@ function aufbauRender(){
     schalter('minimal', 'Ganz minimal', 'Ohne Formi-Kugel und Schnellzugriffe', !!e.minimal)+
     schalter('formi', 'Formi unten zeigen', 'Die Kugel unten in der Ecke', e.formi!==false && !e.minimal)+
     schalter('schnell', 'Schnellzugriffe zeigen', 'Die Reihe auf „Heute" und am Rechner links', e.schnell!==false && !e.minimal);
+  if(sp) h=hVorAufbau;
   var chips=function(key, liste){
     return '<div class="ab-chips">'+liste.map(function(x){
       var on=String(e.prefs[key])===String(x[0]);
@@ -25592,10 +25611,11 @@ function aufbauRender(){
   h+='<h4>Vom Team</h4><p class="hint">Was andere geteilt haben. Ausprobieren lädt es in den Entwurf.</p>'+
     (_abTeam.length ? _abTeam.map(function(d){
       var meins = session && d.uid===session.uid;
-      return '<div class="ab-design"><span class="ab-dname"><b>'+esc(d.name)+(d.angebot===true ? '<i class="ab-marke">'+(d.art==='fest' ? 'Festgelegt von der Leitung' : 'Vorschlag der Leitung')+'</i>' : '')+'</b><i>von '+esc(d.von||'?')+(d.angebot===true ? ' · '+esc(aufbauStudiosText(d.studios)) : '')+'</i></span>'+
+      return '<div class="ab-design"><span class="ab-dname"><b>'+esc(d.name)+(d.angebot===true ? '<i class="ab-marke">'+(d.art==='fest' ? (d.sperre===true ? 'Festgelegt und gesperrt' : 'Festgelegt von der Leitung') : 'Vorschlag der Leitung')+'</i>' : '')+'</b><i>von '+esc(d.von||'?')+(d.angebot===true ? ' · '+esc(aufbauStudiosText(d.studios)) : '')+'</i></span>'+
         '<button type="button" class="btn btn-sm btn-primary" data-abnutzen="team:'+esc(d.id)+'">Nutzen</button>'+
         '<button type="button" class="btn btn-ghost btn-sm" data-abladen="team:'+esc(d.id)+'">Ausprobieren</button>'+
-        (meins || isChef() ? '<button type="button" class="btn btn-ghost btn-sm" data-abteamweg="'+esc(d.id)+'">'+(_abLoeschen==='team:'+d.id ? 'Wirklich entfernen?' : 'Nicht mehr teilen')+'</button>' : '')+'</div>';
+        (meins || isChef() ? '<button type="button" class="btn btn-ghost btn-sm" data-abteamweg="'+esc(d.id)+'">'+(_abLoeschen==='team:'+d.id ? 'Wirklich entfernen?' : 'Nicht mehr teilen')+'</button>' : '')+'</div>'+
+        (d.angebot===true && (meins || isChef()) ? aufbauAntwortHTML(d) : '');
     }).join('') : '<p class="hint">Noch nichts geteilt.</p>');
   h+='<div class="ab-fuss">'+(PREFS.aufbauVorher ? '<button type="button" class="btn btn-ghost btn-sm" data-abzurueck="1">Zurück zum letzten Stand</button>' : '')+'</div>';
   h+='</div>';
@@ -25624,6 +25644,7 @@ function aufbauTeamHoeren(){
 function aufbauOeffnen(){
   var t=$('aufbauTafel'); if(!t) return;
   _abE=aufbauEntwurfAusJetzt(); _abAnfang=JSON.stringify(_abE); _abLoeschen=null;
+  _abAntw={}; _abAntwOffen=null;
   aufbauTeamHoeren();
   t.hidden=false;
   document.body.classList.add('ab-offen');
@@ -25647,14 +25668,18 @@ function aufbauSchliessen(){
 }
 function aufbauVerwerfen(){ aufbauSchliessen(); }
 /* Den Entwurf (oder ein Design) in die App schreiben. */
-function aufbauAnwendenAus(e, ohneSprung){
+function aufbauAnwendenAus(e, ohneSprung, ausFest){
   var startVorher=aufbau().start;
   PREFS.aufbauVorher=aufbauSchnappschuss();
   var p=aufbauPrefsBereinigen(e.prefs);
   Object.keys(p).forEach(function(k){ PREFS[k]=p[k]; });
-  var a=aufbauBereinigen(e);
+  /* Runde 304: gesperrt – der Aufbau bleibt der der Leitung, nur das
+     Aussehen kommt aus dem Entwurf. */
+  var sp = ausFest ? null : aufbauSperre();
+  var a=aufbauBereinigen(sp ? Object.assign({}, sp.aufbau, { vorschlag:sp.name }) : e);
   PREFS.aufbau={ leiste:a.leiste, gruppen:a.gruppen, heute:a.heute, start:a.start, minimal:a.minimal, formi:a.formi, schnell:a.schnell, og:a.og, vorschlag:a.vorschlag };
   savePrefs(); applyPrefs(); aufbauAnwenden();
+  if(!ausFest) aufbauEigenPruefen();
   /* Ist „Beim Öffnen" neu, geht es gleich dorthin – so sieht man, was
      man eingestellt hat. */
   if(a.start!==startVorher && !ohneSprung) showView(aufbauStart() || 'home');
@@ -25689,13 +25714,14 @@ function aufbauDesignTeilen(id, fuer){
   var d=(PREFS.designs||[]).filter(function(x){ return x.id===id; })[0]; if(!d || !session) return;
   var doc={ uid:session.uid, von:String(session.name||'').slice(0,80), name:d.name,
     aufbau:aufbauBereinigen(d.aufbau), prefs:aufbauPrefsBereinigen(d.prefs), ts:Date.now() };
-  if(fuer){ doc.angebot=true; doc.art=fuer.art==='fest' ? 'fest' : 'vorschlag'; doc.studios=fuer.studios; }
+  if(fuer){ doc.angebot=true; doc.art=fuer.art==='fest' ? 'fest' : 'vorschlag'; doc.studios=fuer.studios;
+    if(doc.art==='fest' && fuer.sperre===true) doc.sperre=true; }
   var fest = fuer && doc.art==='fest';
   S('designs').add(doc)
     .then(function(){
       _abFuer=null; aufbauRender();
       toast(!fuer ? '„'+d.name+'" ist jetzt fürs Team sichtbar.'
-        : fest ? '„'+d.name+'" ist für '+aufbauStudiosText(doc.studios)+' festgelegt – es gilt beim nächsten Öffnen der App.'
+        : fest ? '„'+d.name+'" ist für '+aufbauStudiosText(doc.studios)+(doc.sperre ? ' festgelegt und gesperrt' : ' festgelegt')+' – es gilt beim nächsten Öffnen der App.'
         : '„'+d.name+'" wird '+aufbauStudiosText(doc.studios)+' auf „Heute" vorgeschlagen. Eingestellt wird nichts von allein.');
     })
     .catch(function(err){ toast((fest ? 'Festlegen' : fuer ? 'Vorschlagen' : 'Teilen')+' ging nicht: '+errMsg(err), true); });
@@ -25724,8 +25750,12 @@ function aufbauFuerHTML(){
     '<p class="hint">Wie?</p><div class="ab-chips">'+
       chip('data-abfuerart', 'vorschlag', f.art!=='fest', 'Vorschlagen')+
       chip('data-abfuerart', 'fest', f.art==='fest', 'Sofort festlegen')+'</div>'+
-    '<p class="hint">'+(f.art==='fest' ? 'Gilt beim nächsten Öffnen der App – ohne Rückfrage. Ändern kann man es danach selbst.'
-                                      : 'Mitarbeiter sehen es auf „Heute" und entscheiden selbst.')+'</p>'+
+    '<p class="hint">'+(f.art!=='fest' ? 'Mitarbeiter sehen es auf „Heute" und entscheiden selbst.'
+      : f.sperre ? 'Gilt beim nächsten Öffnen der App – ohne Rückfrage. Leiste und Startseite ändert dann nur die Leitung; Aussehen und Schrift bleiben frei.'
+      : 'Gilt beim nächsten Öffnen der App – ohne Rückfrage. Ändern kann man es danach selbst.')+'</p>'+
+    (f.art==='fest' ? '<p class="hint">Danach ändern?</p><div class="ab-chips">'+
+      chip('data-abfuersperre', 'nein', !f.sperre, 'Darf geändert werden')+
+      chip('data-abfuersperre', 'ja', !!f.sperre, 'Gesperrt')+'</div>' : '')+
     '<p class="hint">Für welche Studios?</p><div class="ab-chips">'+studios+'</div>'+
     '<div class="ab-fuer-knoepfe">'+
       '<button type="button" class="btn btn-sm btn-primary" data-abfuersenden="1"'+(leer?' disabled':'')+'>'+(f.art==='fest' ? 'Festlegen' : 'Vorschlagen')+'</button>'+
@@ -25752,13 +25782,104 @@ function aufbauFuerMich(x){
    als erledigt. Ist „App gestalten" gerade offen, wartet es bis danach. */
 function aufbauFestPruefen(){
   var d=_abFest[0], ent=PREFS.angebote||{};
-  if(!d || ent[d.id]) return;
   var t=$('aufbauTafel'); if(t && !t.hidden) return;
-  aufbauAnwendenAus(Object.assign({}, d.aufbau, { prefs:d.prefs, vorschlag:d.name }), true);
+  /* Runde 304: eine Sperre gilt, solange es sie gibt – auch wenn der
+     Aufbau auf diesem Gerät inzwischen anders aussieht. */
+  var sp=aufbauSperre();
+  if(sp && ent[sp.id] && aufbauKern(aufbau())!==aufbauKern(sp.aufbau)){
+    aufbauAnwendenAus(Object.assign({}, sp.aufbau, { prefs:{}, vorschlag:sp.name }), true, true);
+    PREFS.festAktiv=sp.id; savePrefs();
+    return;
+  }
+  if(!d || ent[d.id]) return;
+  aufbauAnwendenAus(Object.assign({}, d.aufbau, { prefs:d.prefs, vorschlag:d.name }), true, true);
   var neu=Object.assign({}, ent); _abFest.forEach(function(x){ neu[x.id]='fest'; });
   var ks=Object.keys(neu); while(ks.length>30){ delete neu[ks.shift()]; }
-  PREFS.angebote=neu; savePrefs();
-  toast('Deine Leitung hat den Aufbau „'+d.name+'" eingestellt. Ändern kannst du ihn unter „App gestalten".');
+  PREFS.angebote=neu; PREFS.festAktiv=d.id; savePrefs();
+  aufbauAntwort(d, 'fest');
+  toast(d.sperre===true
+    ? 'Deine Leitung hat den Aufbau „'+d.name+'" eingestellt und gesperrt. Aussehen und Schrift stellst du weiter selbst ein.'
+    : 'Deine Leitung hat den Aufbau „'+d.name+'" eingestellt. Ändern kannst du ihn unter „App gestalten" – deine Leitung sieht, ob du ihn behältst.');
+}
+/* ── Sperre und Rückmeldung (Runde 304) ──
+   Aus dem Betrieb, 5.11.2026, auf „Sperre für festgelegte Layouts" und
+   „Rückmeldung für die Leitung, wer übernommen oder abgelehnt hat":
+   „okay mach das alles".
+   Sperre: eine Festlegung mit `sperre:true` hält Leiste, Gruppen,
+   „Heute", „Beim Öffnen" und „Weniger" fest. Aussehen und Schrift
+   bleiben frei – Schriftgrösse sperrt niemand. Die Sperre lebt so lange
+   wie das Design: „Nicht mehr teilen" hebt sie auf. Sie ist eine Sache
+   der Oberfläche; auf dem eigenen Gerät liesse sie sich umgehen.
+   Rückmeldung: je Mitarbeiter ein Dokument designs/<id>/antworten/<uid>
+   mit ja | nein | fest | eigen. Lesen darf es nur, wer das Design
+   geteilt hat, und der Chef. */
+var _abAntw={}, _abAntwOffen=null;
+function aufbauSperre(){
+  if(aufbauDarfAnbieten()) return null;
+  return _abFest.filter(function(x){ return x.sperre===true; })[0] || null;
+}
+function aufbauSperreText(){
+  var sp=aufbauSperre();
+  return 'Deine Leitung hat den Aufbau'+(sp ? ' „'+sp.name+'"' : '')+' festgelegt und gesperrt. Aussehen und Schrift stellst du unter „App gestalten" selbst ein.';
+}
+function aufbauSperreHTML(sp){
+  return '<div class="ab-spalte ab-teile ab-gesperrt"><h4>Festgelegt</h4>'+
+    '<p><b>„'+esc(sp.name)+'"</b> von '+esc(sp.von||'deiner Leitung')+'.</p>'+
+    '<p class="hint">Leiste, Gruppen, „Heute" und „Beim Öffnen" stellt deine Leitung ein. Aussehen und Schrift kannst du hier selbst ändern.</p></div>';
+}
+/* Der Aufbau ohne Namen – zum Vergleichen. */
+function aufbauKern(x){ var b=aufbauBereinigen(x); delete b.vorschlag; return JSON.stringify(b); }
+function aufbauAntwort(d, wie){
+  if(!d || !d.id || !session || typeof S!=='function') return;
+  try{
+    S('designs').doc(d.id).collection('antworten').doc(session.uid).set({
+      uid:session.uid, name:String(session.name||'').slice(0,80), wie:wie, ts:Date.now() })
+      .catch(function(err){ console.warn('Rückmeldung:', err && err.code); });
+  }catch(e){}
+}
+/* Wer nach einer Festlegung selbst etwas am Aufbau ändert: „eigen". */
+function aufbauEigenPruefen(){
+  var id=PREFS.festAktiv; if(!id) return;
+  var d=_abFest.filter(function(x){ return x.id===id; })[0];
+  if(!d){ return; }
+  if(d.sperre===true || aufbauKern(aufbau())===aufbauKern(d.aufbau)) return;
+  PREFS.festAktiv=null; savePrefs();
+  aufbauAntwort(d, 'eigen');
+}
+var AUFBAU_ANTWORT_WORT = { ja:'übernommen', nein:'abgelehnt', fest:'eingestellt', eigen:'selbst geändert' };
+function aufbauAntwortHTML(d){
+  var l=_abAntw[d.id];
+  if(l===undefined){
+    _abAntw[d.id]=null;
+    try{
+      S('designs').doc(d.id).collection('antworten').get().then(function(snap){
+        var r=[]; snap.forEach(function(x){ var y=x.data()||{}; if(AUFBAU_ANTWORT_WORT[y.wie]) r.push(y); });
+        r.sort(function(a, b){ return (b.ts||0)-(a.ts||0); });
+        _abAntw[d.id]=r;
+        if($('aufbauTafel') && !$('aufbauTafel').hidden) aufbauRender();
+      }).catch(function(err){ _abAntw[d.id]=[]; console.warn('Rückmeldungen:', err && err.code); });
+    }catch(e){ _abAntw[d.id]=[]; }
+    l=null;
+  }
+  if(l===null) return '<div class="ab-antw">Rückmeldungen werden geladen …</div>';
+  if(!l.length) return '<div class="ab-antw">Noch keine Rückmeldung.</div>';
+  var n={}; l.forEach(function(y){ n[y.wie]=(n[y.wie]||0)+1; });
+  var satz=['fest','ja','eigen','nein'].filter(function(k){ return n[k]; })
+    .map(function(k){ return n[k]+' '+AUFBAU_ANTWORT_WORT[k]; }).join(' · ');
+  var offen=_abAntwOffen===d.id;
+  return '<div class="ab-antw"><span>'+esc(satz)+'</span>'+
+    '<button type="button" class="btn btn-ghost btn-sm" data-abantw="'+esc(d.id)+'" aria-expanded="'+offen+'">'+(offen ? 'Weniger' : 'Wer?')+'</button>'+
+    (offen ? '<ul class="ab-antw-liste">'+l.map(function(y){
+      return '<li><span>'+esc(y.name||'?')+'</span><i>'+esc(AUFBAU_ANTWORT_WORT[y.wie])+'</i></li>';
+    }).join('')+'</ul>' : '')+'</div>';
+}
+function aufbauAntwortenWeg(id){
+  try{
+    return S('designs').doc(id).collection('antworten').get().then(function(snap){
+      var p=[]; snap.forEach(function(x){ p.push(x.ref ? x.ref.delete() : S('designs').doc(id).collection('antworten').doc(x.id).delete()); });
+      return Promise.all(p);
+    }).catch(function(){ /* ohne Leserecht (Chef liest mit) – das Design geht trotzdem */ });
+  }catch(e){ return Promise.resolve(); }
 }
 function aufbauDarfAnbieten(){ return isChef() || isLeiter(); }
 function aufbauAngeboteHoeren(){
@@ -25786,6 +25907,8 @@ function aufbauAngebotOffen(){
   return _abAngebote.filter(function(d){ return !ent[d.id]; })[0] || null;
 }
 function aufbauAngebotEntscheiden(id, wie){
+  var dd=_abAngebote.filter(function(x){ return x.id===id; })[0];
+  if(dd && (wie==='ja' || wie==='nein')) aufbauAntwort(dd, wie);
   var ent=Object.assign({}, PREFS.angebote||{}); ent[id]=wie;
   var ks=Object.keys(ent); while(ks.length>30){ delete ent[ks.shift()]; }
   PREFS.angebote=ent; savePrefs();
@@ -25960,9 +26083,11 @@ function aufbauKlick(ev){
   else if((x=b.getAttribute('data-abteilen'))){ aufbauDesignTeilen(x); return; }
   else if((x=b.getAttribute('data-abanbieten'))){
     if(!aufbauDarfAnbieten()) return;
-    _abFuer = _abFuer && _abFuer.id===x ? null : { id:x, art:'vorschlag', studios: isChef() ? 'all' : managedKeys() };
+    _abFuer = _abFuer && _abFuer.id===x ? null : { id:x, art:'vorschlag', sperre:false, studios: isChef() ? 'all' : managedKeys() };
   }
-  else if((x=b.getAttribute('data-abfuerart'))){ if(_abFuer) _abFuer.art = x==='fest' ? 'fest' : 'vorschlag'; }
+  else if((x=b.getAttribute('data-abfuerart'))){ if(_abFuer){ _abFuer.art = x==='fest' ? 'fest' : 'vorschlag'; if(_abFuer.art!=='fest') _abFuer.sperre=false; } }
+  else if((x=b.getAttribute('data-abfuersperre'))){ if(_abFuer) _abFuer.sperre = x==='ja'; }
+  else if((x=b.getAttribute('data-abantw'))){ _abAntwOffen = _abAntwOffen===x ? null : x; }
   else if((x=b.getAttribute('data-abfuerstudio'))){
     if(!_abFuer) return;
     if(x==='all') _abFuer.studios = _abFuer.studios==='all' ? [] : 'all';
@@ -25977,7 +26102,7 @@ function aufbauKlick(ev){
     if(!_abFuer || !aufbauDarfAnbieten()) return;
     if(_abFuer.studios!=='all' && !_abFuer.studios.length){ toast('Bitte mindestens ein Studio wählen.', true); return; }
     if(_abFuer.studios==='all' && !isChef()) return;
-    aufbauDesignTeilen(_abFuer.id, { art:_abFuer.art, studios:_abFuer.studios });
+    aufbauDesignTeilen(_abFuer.id, { art:_abFuer.art, studios:_abFuer.studios, sperre:_abFuer.art==='fest' && _abFuer.sperre===true });
     return;
   }
   else if((x=b.getAttribute('data-ablokalweg'))){
@@ -25987,7 +26112,8 @@ function aufbauKlick(ev){
   else if((x=b.getAttribute('data-abteamweg'))){
     if(_abLoeschen!=='team:'+x){ _abLoeschen='team:'+x; aufbauRender(); return; }
     _abLoeschen=null;
-    S('designs').doc(x).delete().catch(function(err){ toast('Entfernen ging nicht: '+errMsg(err), true); });
+    aufbauAntwortenWeg(x).then(function(){ return S('designs').doc(x).delete(); })
+      .catch(function(err){ toast('Entfernen ging nicht: '+errMsg(err), true); });
   }
   else return;
   tick(6);
@@ -31086,7 +31212,7 @@ function gehirnZeichnenInRoh(box, tippen){
     b.addEventListener('click', function(){ formiWieStarten(b.getAttribute('data-gwie')); tick(8); });
   });
   box.querySelectorAll('[data-gdesign]').forEach(function(b){
-    b.addEventListener('click', function(){ aufbauVorschlag(b.getAttribute('data-gdesign')); tick(8); toast('Ausprobiert – „App gestalten" nimmt es zurück.'); });
+    b.addEventListener('click', function(){ if(aufbauVorschlag(b.getAttribute('data-gdesign'))===false) return; tick(8); toast('Ausprobiert – „App gestalten" nimmt es zurück.'); });
   });
   box.querySelectorAll('[data-geditor]').forEach(function(b){
     b.addEventListener('click', function(){ if(typeof jarvisZu==='function' && jarvisOffen()) jarvisZu(); aufbauOeffnen(); tick(8); });

@@ -287,6 +287,8 @@ var USERS = [
           : path === 'board' ? (typeof BOARD !== 'undefined' ? BOARD : [])
           /* Geteilte Designs (Runde 292): get() UND onSnapshot */
           : path === 'designs' ? (window.__designs || [])
+          /* Rückmeldungen (Runde 304): get() UND onSnapshot */
+          : /^designs\/[^/]+\/antworten$/.test(path) ? ((window.__antworten || {})[path.split('/')[1]] || [])
           /* Kundenpost (Runde 295): get() UND onSnapshot */
           : path === 'kundenpost' ? (window.__kundenpost || [])
           : ga ? (ABSENCES[ga[1]] || [])
@@ -343,7 +345,8 @@ var USERS = [
                    (path==='planerWuensche' ? (window.__planerWuensche || []) :
                    (path==='planerPlaene' ? (window.__planerPlaene || []) :
                    (path==='kundenpost' ? (window.__kundenpost || []) :
-                   (path==='designs' ? (window.__designs || []) : (path==='documents' ? DOCS : [])))))))))))));
+                   (/^designs\/[^/]+\/antworten$/.test(path) ? ((window.__antworten || {})[path.split('/')[1]] || []) :
+                   (path==='designs' ? (window.__designs || []) : (path==='documents' ? DOCS : []))))))))))))));
         var docs = list.map(function (d) { return { id: d.id, data: function () { return d; } }; });
         try { cb(makeSnap(docs)); } catch (e) { console.error('SNAP', e); }
         return unsub();
