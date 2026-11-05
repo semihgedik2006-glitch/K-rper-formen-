@@ -31,6 +31,17 @@
        Rückfrage), einmal; kommt sie mitten in der Arbeit, bleibt die
        Seite, wo man ist – wer danach selbst ändert, behält
        es beim nächsten Öffnen. Eine Festlegung für Studio 7 gilt nicht.
+    8. Runde 304, aus dem Betrieb, 5.11.2026, auf „Sperre für festgelegte
+       Layouts" und „Rückmeldung für die Leitung": „okay mach das alles".
+       Gesperrt: Leiste und Startseite bleiben die der Leitung – auch nach
+       „Nutzen", nach „Übernehmen" und nach dem Neuladen mit verstelltem
+       Gerät; Aussehen bleibt frei. „Nicht mehr teilen" hebt die Sperre auf.
+       Leitung: „Gesperrt" gibt es nur bei „Sofort festlegen".
+    9. Rückmeldung: übernommen / abgelehnt / eingestellt / selbst geändert
+       wird je Person unter designs/<id>/antworten/<uid> geschrieben. Die
+       Leitung sieht beim eigenen Angebot „1 übernommen · …" und mit „Wer?"
+       die Namen (Hit-Test bei allen Breiten); fremde Angebote zeigen
+       nichts. Entfernen nimmt die Rückmeldungen mit.
    ══════════════════════════════════════════════════════════════════ */
 const { chromium } = require('playwright');
 const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
@@ -60,7 +71,7 @@ const TEAM = [
   { id: 't1', uid: 'u2', von: 'Anna Meier', name: 'Nur geteilt', ts: 4,
     aufbau: { leiste: ['v-chat', 'v-todos'], start: 'home' }, prefs: {} }
 ];
-async function oeffne(b, w, h, stub, extra, team) {
+async function oeffne(b, w, h, stub, extra, team, glob) {
   const ctx = await b.newContext(Object.assign({ viewport: { width: w, height: h }, serviceWorkers: 'block' },
     w <= 820 ? { hasTouch: true, isMobile: true } : {}));
   const p = await ctx.newPage();
@@ -69,13 +80,14 @@ async function oeffne(b, w, h, stub, extra, team) {
   p.on('dialog', d => { p._dialoge++; d.accept(); });
   await p.route('**://www.gstatic.com/**', r => r.abort());
   await p.route('**fonts.googleapis.com/**', r => r.abort());
-  await ctx.addInitScript(([T, X]) => {
+  await ctx.addInitScript(([T, X, G]) => {
     try {
       localStorage.setItem('kf_tour', '1:testuid'); localStorage.setItem('kf_formi_gruss', new Date().toDateString());
       if (X) localStorage.setItem('kf_prefs', JSON.stringify(X));
     } catch (e) {}
     window.__designs = T;
-  }, [team || TEAM, extra || null]);
+    if (G) Object.assign(window, G);
+  }, [team || TEAM, extra || null, glob || null]);
   await ctx.addInitScript({ path: SP + '/' + stub });
   await p.goto(APP, { waitUntil: 'domcontentloaded' });
   await p.waitForFunction(() => !!document.querySelector('#app.show'), null, { timeout: 15000 });
@@ -89,6 +101,12 @@ const zeile = (p) => p.evaluate(() => {
 });
 const appLeiste = (p) => p.evaluate(() => [...document.querySelectorAll('#side > [data-group]')].filter(e => e.getClientRects().length).map(e => e.textContent.trim()));
 const tafelOffen = (p) => p.evaluate(() => !document.getElementById('aufbauTafel').hidden);
+const antworten = (p) => p.evaluate(() => (window.__schreib || []).filter(x => /^designs\/[^/]+\/antworten\//.test(x.pfad)).map(x => ({ pfad: x.pfad, art: x.art, daten: x.daten })));
+const oeffneTafel = async (p) => {
+  await p.click('#bereichKopf'); await p.waitForTimeout(350);
+  await p.evaluate(() => [...document.querySelectorAll('#allesLade [data-al-aufbau]')].find(e => e.getClientRects().length).click());
+  await p.waitForTimeout(500);
+};
 const tippeZeile = (p) => p.evaluate(() => [...document.querySelectorAll('#heuteListe [data-hangebot]')].find(e => e.getClientRects().length).click());
 
 (async () => {
@@ -114,6 +132,7 @@ const tippeZeile = (p) => p.evaluate(() => [...document.querySelectorAll('#heute
     });
     pruefe('ein Tipp öffnet „App gestalten"', t.offen);
     pruefe('… mit „Vorschlag von Ben Kraus: „Empfang einfach""', t.sichtbar && /Vorschlag von Ben Kraus: „Empfang einfach"/.test(t.text), t.text);
+    pruefe('… und sagt vorher: „Deine Leitung sieht, ob du es übernimmst."', /Deine Leitung sieht, ob du es übernimmst/.test(t.text), t.text);
     pruefe('… der Entwurf ist der Vorschlag (Putzplan zuerst)', /Putzplan/.test(t.entwurf[0] || ''), t.entwurf.join('|'));
     pruefe('… „Übernehmen" ist bereit', t.ueb);
     pruefe('… die App bleibt bis dahin, wie sie war', JSON.stringify(await appLeiste(p)) === JSON.stringify(vorher));
@@ -128,6 +147,10 @@ const tippeZeile = (p) => p.evaluate(() => [...document.querySelectorAll('#heute
     pruefe('… die Zeile ist von „Heute" weg', !(await zeile(p)));
     const ent = await p.evaluate(() => (JSON.parse(localStorage.getItem('kf_prefs')).angebote || {}));
     pruefe('… gemerkt als „ja" (nur auf diesem Gerät)', ent.v1 === 'ja', JSON.stringify(ent));
+    const aw3 = await antworten(p);
+    pruefe('… und als Rückmeldung „ja" unter designs/v1/antworten/<eigene uid> – genau uid, name, wie, ts',
+      aw3.length === 1 && /^designs\/v1\/antworten\/[^/]+$/.test(aw3[0].pfad) && aw3[0].daten.wie === 'ja' &&
+      Object.keys(aw3[0].daten).sort().join(',') === 'name,ts,uid,wie' && aw3[0].pfad.endsWith('/' + aw3[0].daten.uid), JSON.stringify(aw3));
     pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await p._ctx.close();
 
@@ -141,6 +164,8 @@ const tippeZeile = (p) => p.evaluate(() => [...document.querySelectorAll('#heute
     pruefe('… der Vorschlag ist von „Heute" weg', !(await zeile(p)));
     const ent2 = await p.evaluate(() => (JSON.parse(localStorage.getItem('kf_prefs')).angebote || {}));
     pruefe('… gemerkt als „nein"', ent2.v1 === 'nein', JSON.stringify(ent2));
+    const aw4 = await antworten(p);
+    pruefe('… und als Rückmeldung „nein"', aw4.length === 1 && aw4[0].daten.wie === 'nein', JSON.stringify(aw4));
     await p.click('#bereichKopf'); await p.waitForTimeout(350);
     await p.evaluate(() => [...document.querySelectorAll('#allesLade [data-al-aufbau]')].find(e => e.getClientRects().length).click());
     await p.waitForTimeout(500);
@@ -217,6 +242,22 @@ const tippeZeile = (p) => p.evaluate(() => [...document.querySelectorAll('#heute
     pruefe('genau ein Design: angebot:true, art:fest, studios:[studio-7]', geschrieben.length === 1 && d && d.angebot === true && d.art === 'fest' && JSON.stringify(d.studios) === '["studio-7"]', JSON.stringify(d).slice(0, 220));
     pruefe('… nur die erlaubten Felder', !!d && Object.keys(d).sort().join(',') === 'angebot,art,aufbau,name,prefs,studios,ts,uid,von', d && Object.keys(d).join(','));
     pruefe('… die Auswahl ist danach zu', !(await p.evaluate(() => !!document.querySelector('#abInhalt .ab-fuer'))));
+    // Runde 304: „Gesperrt" nur bei „Sofort festlegen"
+    await p.evaluate(() => { window.__schreib = []; document.querySelector('[data-abanbieten="dL"]').click(); }); await p.waitForTimeout(200);
+    const sperrVorschlag = await p.evaluate(() => !!document.querySelector('#abInhalt .ab-fuer [data-abfuersperre]'));
+    await p.evaluate(() => document.querySelector('#abInhalt .ab-fuer [data-abfuerart="fest"]').click()); await p.waitForTimeout(150);
+    const sperrWahl = await p.evaluate(() => [...document.querySelectorAll('#abInhalt .ab-fuer [data-abfuersperre]')].map(e => e.textContent.trim() + (e.classList.contains('on') ? '*' : '')));
+    pruefe('„Gesperrt" gibt es nur bei „Sofort festlegen"; vorgewählt ist „Darf geändert werden"',
+      !sperrVorschlag && sperrWahl.join('|') === 'Darf geändert werden*|Gesperrt', sperrVorschlag + ' ' + sperrWahl.join('|'));
+    await p.evaluate(() => document.querySelector('#abInhalt .ab-fuer [data-abfuersperre="ja"]').click()); await p.waitForTimeout(150);
+    await p.evaluate(() => document.querySelector('#abInhalt .ab-fuer [data-abfuerart="vorschlag"]').click()); await p.waitForTimeout(150);
+    await p.evaluate(() => document.querySelector('#abInhalt .ab-fuer [data-abfuerart="fest"]').click()); await p.waitForTimeout(150);
+    const nachWechsel = await p.evaluate(() => (document.querySelector('#abInhalt .ab-fuer [data-abfuersperre="ja"]') || {}).className || '');
+    pruefe('… zurück zu „Vorschlagen" nimmt „Gesperrt" wieder weg', !/\bon\b/.test(nachWechsel), nachWechsel);
+    await p.evaluate(() => document.querySelector('#abInhalt .ab-fuer [data-abfuersperre="ja"]').click()); await p.waitForTimeout(150);
+    await p.evaluate(() => document.querySelector('#abInhalt .ab-fuer [data-abfuersenden]').click()); await p.waitForTimeout(400);
+    const gs = await p.evaluate(() => ((window.__schreib || []).filter(x => /designs\/\(neu\)$/.test(x.pfad))[0] || {}).daten);
+    pruefe('„Gesperrt" schreibt sperre:true an die Festlegung', !!gs && gs.art === 'fest' && gs.sperre === true, JSON.stringify(gs).slice(0, 200));
     // Ohne Studio lässt es sich nicht senden
     await p.evaluate(() => document.querySelector('[data-abanbieten="dL"]').click()); await p.waitForTimeout(200);
     await p.evaluate(() => { document.querySelector('#abInhalt .ab-fuer [data-abfuerstudio="studio-6"]').click(); });
@@ -241,6 +282,9 @@ const tippeZeile = (p) => p.evaluate(() => [...document.querySelectorAll('#heute
         await p.waitForTimeout(450);
         await p.evaluate(() => { const k = document.querySelector('[data-abanbieten="dL"]'); k.scrollIntoView({ block: 'center' }); k.click(); });
         await p.waitForTimeout(350);
+        /* Runde 304: im Zustand „Sofort festlegen" stehen alle Knöpfe da, auch „Gesperrt". */
+        await p.evaluate(() => document.querySelector('#abInhalt .ab-fuer [data-abfuerart="fest"]').click());
+        await p.waitForTimeout(200);
         const m = await p.evaluate((T) => {
           const f = new Function('return ' + T)();
           const box = document.querySelector('#abInhalt .ab-fuer'); if (!box) return null;
@@ -255,7 +299,7 @@ const tippeZeile = (p) => p.evaluate(() => [...document.querySelectorAll('#heute
         }, TREFFER.toString());
         const schlecht = m ? m.r.filter(x => x.m.w < 44 || x.m.h < 44 || !x.drin) : null;
         pruefe(w + ' ' + dichte + ': alle ' + (m ? m.r.length : 0) + ' Knöpfe der Auswahl ≥ 44 × 44, im Bild, kein Querscrollen',
-          !!m && m.r.length >= 6 && !schlecht.length && !m.quer, JSON.stringify(schlecht || m));
+          !!m && m.r.length >= 8 && m.r.some(x => x.t === 'Gesperrt') && !schlecht.length && !m.quer, JSON.stringify(schlecht || m));
         await p._ctx.close();
       }
     }
@@ -337,8 +381,105 @@ const tippeZeile = (p) => p.evaluate(() => [...document.querySelectorAll('#heute
     pruefe('… und die Seite bleibt, wo man ist (' + vorher7 + ')', !!vorher7 && mitten === vorher7, mitten);
     pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await p._ctx.close();
+
+    console.log('\n── 8 Gesperrt ──');
+    const S8 = [
+      { id: 's8', uid: 'u3', von: 'Ben Kraus', name: 'Hürth gesperrt', ts: 9, angebot: true, art: 'fest', sperre: true, studios: ['studio-6'],
+        aufbau: { leiste: ['v-putzplan', 'v-todos', 'v-chat'], start: 'home' }, prefs: {} },
+      { id: 't8', uid: 'u2', von: 'Anna Meier', name: 'Chat zuerst', ts: 4,
+        aufbau: { leiste: ['v-chat', 'v-todos'], start: 'home' }, prefs: { theme: 'light' } }
+    ];
+    p = await oeffne(b, 1440, 900, 'stub-mitarbeiter.js', null, S8);
+    pruefe('die gesperrte Festlegung gilt sofort: Putzplan zuerst', (await appLeiste(p))[0] === 'Putzplan', (await appLeiste(p)).join('|'));
+    const aw8 = await antworten(p);
+    pruefe('… Rückmeldung „eingestellt" (wie:fest)', aw8.length === 1 && /designs\/s8\/antworten\//.test(aw8[0].pfad) && aw8[0].daten.wie === 'fest', JSON.stringify(aw8));
+    await oeffneTafel(p);
+    const t8 = await p.evaluate(() => ({
+      hinweis: (document.querySelector('#abInhalt .ab-gesperrt') || {}).textContent || '',
+      bausteine: document.querySelectorAll('#abInhalt .ab-vorrat, #abInhalt .ab-leiste, #abInhalt .ab-heute, #abInhalt [data-abstart]').length,
+      aussehen: document.querySelectorAll('#abInhalt [data-abpref]').length }));
+    pruefe('„App gestalten": statt der Bausteine steht „Festgelegt" mit dem Namen', /Hürth gesperrt/.test(t8.hinweis) && t8.bausteine === 0, JSON.stringify(t8));
+    pruefe('… Aussehen und Schrift bleiben einstellbar', t8.aussehen > 10, t8.aussehen);
+    await p.evaluate(() => document.querySelector('#abInhalt [data-abpref="theme|dark"]').click()); await p.waitForTimeout(200);
+    await p.click('#abUebernehmen'); await p.waitForTimeout(600);
+    const th = await p.evaluate(() => JSON.parse(localStorage.getItem('kf_prefs')).theme);
+    pruefe('„Übernehmen" stellt das Aussehen ein (Dunkel), die Leiste bleibt', th === 'dark' && (await appLeiste(p))[0] === 'Putzplan', th + ' · ' + (await appLeiste(p)).join('|'));
+    await oeffneTafel(p);
+    await p.evaluate(() => document.querySelector('[data-abnutzen="team:t8"]').click()); await p.waitForTimeout(600);
+    pruefe('„Nutzen" eines anderen Designs ändert die Leiste nicht', (await appLeiste(p))[0] === 'Putzplan', (await appLeiste(p)).join('|'));
+    pruefe('… und meldet kein „selbst geändert"', (await antworten(p)).every(x => x.daten.wie !== 'eigen'));
+    await p.evaluate(() => { const a = JSON.parse(localStorage.getItem('kf_prefs')); a.aufbau.leiste = ['v-chat']; localStorage.setItem('kf_prefs', JSON.stringify(a)); });
+    const p8 = await p._ctx.newPage();
+    p8._fehler = []; p8.on('pageerror', e => p8._fehler.push(e.message.slice(0, 160)));
+    await p8.route('**://www.gstatic.com/**', r => r.abort()); await p8.route('**fonts.googleapis.com/**', r => r.abort());
+    await p8.goto(APP, { waitUntil: 'domcontentloaded' });
+    await p8.waitForFunction(() => !!document.querySelector('#app.show'), null, { timeout: 15000 });
+    await p8.waitForTimeout(1100);
+    pruefe('am Gerät verstellt und neu geladen: die Sperre stellt die Leiste wieder her', (await appLeiste(p8))[0] === 'Putzplan', (await appLeiste(p8)).join('|'));
+    await p8.evaluate(() => window.__nachschub('designs', []));
+    await p8.waitForTimeout(500);
+    await oeffneTafel(p8);
+    const frei = await p8.evaluate(() => ({ g: !!document.querySelector('#abInhalt .ab-gesperrt'), v: !!document.querySelector('#abInhalt .ab-vorrat') }));
+    pruefe('„Nicht mehr teilen" hebt die Sperre auf: die Bausteine sind wieder da', !frei.g && frei.v, JSON.stringify(frei));
+    pruefe('ohne Skriptfehler', !p._fehler.length && !p8._fehler.length, p._fehler.concat(p8._fehler).join(' | '));
+    await p._ctx.close();
+
+    console.log('\n── 9 Rückmeldung ──');
+    // „selbst geändert": Festlegung ohne Sperre, danach einen Vorschlag übernehmen
+    p = await oeffne(b, 1440, 900, 'stub-mitarbeiter.js', null, F6.slice(0, 1));
+    await oeffneTafel(p);
+    await p.evaluate(() => document.querySelector('#abInhalt [data-abvor]:not(.on)').click()); await p.waitForTimeout(200);
+    await p.click('#abUebernehmen'); await p.waitForTimeout(600);
+    const aw9 = (await antworten(p)).map(x => x.daten.wie);
+    pruefe('nach einer Festlegung selbst geändert: „fest", dann „eigen"', aw9.join(',') === 'fest,eigen', aw9.join(','));
+    pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await p._ctx.close();
+
+    const L9 = [
+      { id: 'dA', uid: 'testuid', von: 'Test Chef', name: 'Mein Angebot', ts: 9, angebot: true, art: 'vorschlag', studios: ['studio-6'],
+        aufbau: { leiste: ['v-putzplan'], start: 'home' }, prefs: {} },
+      { id: 'dF', uid: 'u3', von: 'Ben Kraus', name: 'Fremdes Angebot', ts: 8, angebot: true, art: 'vorschlag', studios: ['studio-6'],
+        aufbau: { leiste: ['v-putzplan'], start: 'home' }, prefs: {} }
+    ];
+    const A9 = { __antworten: {
+      dA: [{ uid: 'u2', name: 'Anna Meier', wie: 'ja', ts: 3 }, { uid: 'u5', name: 'Cem Yilmaz', wie: 'eigen', ts: 2 }, { uid: 'u6', name: 'Dana Roth', wie: 'nein', ts: 1 }],
+      dF: [{ uid: 'u2', name: 'Anna Meier', wie: 'ja', ts: 3 }] } };
+    p = await oeffne(b, 1440, 900, 'stub-leiter.js', null, L9, A9);
+    await oeffneTafel(p);
+    const r9 = await p.evaluate(() => [...document.querySelectorAll('#abInhalt .ab-antw')].map(e => e.textContent.replace(/\s+/g, ' ').trim()));
+    pruefe('beim eigenen Angebot: „1 übernommen · 1 selbst geändert · 1 abgelehnt"', r9.length === 1 && /1 übernommen · 1 selbst geändert · 1 abgelehnt/.test(r9[0]), r9.join(' / '));
+    pruefe('… beim fremden Angebot steht nichts', r9.length === 1);
+    await p.evaluate(() => document.querySelector('[data-abantw="dA"]').click()); await p.waitForTimeout(250);
+    const wer = await p.evaluate(() => [...document.querySelectorAll('#abInhalt .ab-antw-liste li')].map(e => [...e.children].map(c => c.textContent.trim()).join(' ')));
+    pruefe('„Wer?" zeigt die Namen: Anna Meier übernommen, Cem Yilmaz selbst geändert, Dana Roth abgelehnt',
+      wer.join('|') === 'Anna Meier übernommen|Cem Yilmaz selbst geändert|Dana Roth abgelehnt', wer.join('|'));
+    await p.evaluate(() => { window.__schreib = []; document.querySelector('[data-abteamweg="dA"]').click(); }); await p.waitForTimeout(150);
+    await p.evaluate(() => document.querySelector('[data-abteamweg="dA"]').click()); await p.waitForTimeout(500);
+    const weg = await p.evaluate(() => (window.__schreib || []).filter(x => x.art === 'delete').map(x => x.pfad));
+    pruefe('„Nicht mehr teilen" entfernt erst die drei Rückmeldungen, dann das Design',
+      weg.length === 4 && weg.slice(0, 3).every(x => /^designs\/dA\/antworten\//.test(x)) && weg[3] === 'designs/dA', weg.join(' | '));
+    pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
+    await p._ctx.close();
+
+    console.log('\n── 9a „Wer?": Trefferfläche, normal und kompakt ──');
+    for (const dichte of ['normal', 'kompakt']) {
+      for (const [w, h] of [[320, 640], [390, 844], [430, 932], [820, 1180], [1280, 800], [1440, 900], [1920, 1080]]) {
+        p = await oeffne(b, w, h, 'stub-leiter.js', { dichte }, L9, A9);
+        await oeffneTafel(p);
+        const m = await p.evaluate((T) => {
+          const f = new Function('return ' + T)();
+          const k = document.querySelector('[data-abantw="dA"]'); if (!k) return null;
+          k.scrollIntoView({ block: 'center' });
+          const g = k.getBoundingClientRect();
+          return { m: f(k), drin: g.left >= 0 && g.right <= innerWidth + 0.5, quer: document.documentElement.scrollWidth > innerWidth + 1 };
+        }, TREFFER.toString());
+        pruefe(w + ' ' + dichte + ': „Wer?" ' + (m ? m.m.w + '×' + m.m.h : '–') + ', im Bild, kein Querscrollen',
+          !!m && m.m.w >= 44 && m.m.h >= 44 && m.drin && !m.quer, JSON.stringify(m));
+        await p._ctx.close();
+      }
+    }
   } finally { await b.close(); }
-  console.log('\n' + (schlecht ? '✗ Vorschläge und Festlegungen der Leitung: ' + schlecht + ' von ' + (gut + schlecht) + ' Zusicherungen falsch'
-                              : '✓ Vorschläge und Festlegungen der Leitung: ' + gut + ' Zusicherungen'));
+  console.log('\n' + (schlecht ? '✗ Vorschläge, Festlegungen, Sperre und Rückmeldung: ' + schlecht + ' von ' + (gut + schlecht) + ' Zusicherungen falsch'
+                              : '✓ Vorschläge, Festlegungen, Sperre und Rückmeldung: ' + gut + ' Zusicherungen'));
   process.exit(schlecht ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

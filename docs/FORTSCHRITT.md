@@ -25684,3 +25684,79 @@ vorschlag".
   - Chef: `'all'` und jedes Studio ja.
   - `art:'zwang'` nein; `art`/`studios` ohne Angebot nein.
   - Gegenprobe mit der Regel von `main`: 10 rot.
+
+## Runde 304 — Festgelegtes Layout sperren, Rückmeldung für die Leitung (5.11.2026)
+
+Aus dem Betrieb, 5.11.2026, auf die Vorschläge am Ende von Runde 303:
+„okay mach das alles".
+
+**Gebaut**
+- **Sperre.** Bei „Sofort festlegen" gibt es jetzt „Darf geändert werden"
+  oder „Gesperrt" (`sperre:true`).
+  - Gesperrt bleiben beim Mitarbeiter Leiste, Gruppen, „Heute", „Beim
+    Öffnen" und „Weniger". „App gestalten" zeigt statt der Bausteine
+    „Festgelegt" mit dem Namen.
+  - **Aussehen und Schrift bleiben frei.** Warum: die Schriftgrösse ist
+    für manche eine Frage des Lesenkönnens. Das darf keine Leitung
+    abschalten.
+  - „Übernehmen", „Nutzen", „Zurück zum letzten Stand" und Formis
+    Vorschlag lassen den Aufbau stehen. Wer ihn am Gerät verstellt,
+    bekommt ihn beim nächsten Laden zurück.
+  - Die Sperre gilt, solange es das Design gibt. „Nicht mehr teilen“
+    hebt sie auf, ein eigener Knopf dafür fehlt mit Absicht.
+  - **Grenze:** die Sperre ist eine Sache der Oberfläche. Wer an den
+    Speicher des eigenen Geräts geht, kommt daran vorbei. Das ist
+    hinnehmbar, denn es geht nur um die Anordnung auf dem eigenen
+    Gerät, nicht um Daten.
+- **Rückmeldung.** Je Mitarbeiter und Angebot ein Dokument
+  `designs/<id>/antworten/<uid>` mit `ja | nein | fest | eigen`.
+  - `eigen` heisst: nach einer Festlegung selbst am Aufbau geändert. Das
+    wird erkannt, indem der Aufbau mit dem festgelegten verglichen wird.
+    Eine reine Farbänderung zählt nicht.
+  - Die Leitung sieht beim eigenen Angebot unter „Vom Team“ zum Beispiel
+    „1 übernommen · 1 selbst geändert · 1 abgelehnt“. „Wer?“ zeigt die
+    Namen.
+  - „Nicht mehr teilen“ löscht zuerst die Rückmeldungen und dann das
+    Design.
+  - **Offen gesagt:** Beim Vorschlag steht „Deine Leitung sieht, ob du es
+    übernimmst.“ Bei einer Festlegung ohne Sperre sagt es die Meldung („deine Leitung sieht, ob du ihn behältst“). Niemand soll
+    erst nachträglich merken, dass die Antwort gesehen wird.
+
+**Regeln** (beide Pfade, flach und `firmen/<k>/`)
+- `designOk()` kennt `sperre`: nur als Ja/Nein und nur an einer
+  Festlegung.
+- `antwortOk()`: genau `uid, name, wie, ts`; die Kennung ist die eigene
+  uid. Antworten geht nur auf ein Angebot, das fürs eigene Studio gilt
+  (oder für „alle“ oder ohne Studios aus Runde 294).
+- **Lesen** dürfen nur die Person, die das Design geteilt hat, und der
+  Chef. Kollegen sehen nicht, wer was gewählt hat.
+- **Löschen** dürfen dieselben zwei; die Person selbst löscht ihre
+  Antwort nicht. Sie kann sie nur überschreiben.
+- Neu im Kreuztest: `designs/{dId}/antworten/{aUid}`. Der
+  Vollständigkeitstest hatte die fehlende Sammlung gemeldet.
+
+**Tests**
+- `rules/designs.test.js`: 128 Zusicherungen. Mit den Regeln von
+  `main` sind 18 davon rot. Die ganze Regelsuite ist grün.
+- `test-vorschlag`: 129 Zusicherungen.
+  - Abschnitt 8 prüft die Sperre, Abschnitt 9 die Rückmeldung.
+  - 9a ist ein Hit-Test für „Wer?“ bei 320 / 390 / 430 / 820 / 1280 /
+    1440 / 1920, jeweils normal und kompakt: 68 × 44 und 60 × 44.
+  - 6a misst die Auswahl jetzt im Zustand „Sofort festlegen“, also mit
+    „Gesperrt“.
+- Der Test hat einen echten Fehler gefunden: `sperre` ging beim Senden
+  verloren.
+- Die Attrappen kennen `designs/<id>/antworten` in `get()` **und**
+  `onSnapshot`.
+
+**Nachgemessen: P-17 (Aufgaben bis zum ersten Bild, CPU ÷4)**
+- 390 px: 97–130 ms; 1440 px: 91–146 ms.
+- Das passt zu B-43 (Median 104 und 121 ms). Kein Rückfall.
+
+**Nicht nachgeholt, mit Grund**
+- P-07, also die Wiederherstellung, wurde am 27.9.2026 geprobt. Offen
+  ist nur, ob die App mit zurückgespielten Daten läuft. Das geht nur im
+  Probe-Projekt mit Konten und wird vom Betreiber ausgeführt; von hier
+  aus wird kein Betriebszugang angefasst.
+- Der neue Findetest braucht einen Menschen, der die App nicht kennt. Die
+  Stoppuhr dafür liegt unter „Alles → Findetest“.
