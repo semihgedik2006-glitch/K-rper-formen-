@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-7cilDV4aKqCQxoSsTQ0KinCd1FxGYW7V2ZLyWzlcDCA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-aXsdjX0/eNRn3fR9zATKIrP7aT5fq9dNA/5O9uQy2UQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -3441,6 +3441,37 @@ body.neu #view-docs #docCatRow{margin-top:var(--s8)}
   font-weight:700;color:var(--text-3);letter-spacing:var(--ls-l);
   text-transform:uppercase}
 .tm-gruppe:first-child{margin-top:0}
+
+/* Bildschirmschoner am Terminal (05.11.2026). Liegt über Liste UND
+   PIN-Feld (z-index 3). Dunkel und ruhig: am Empfang soll er schön sein,
+   nicht blenden. Bewegt wird nur das Feld als Ganzes, einmal pro Minute
+   per transform um ein paar Prozent — damit sich auf einem Bildschirm,
+   der den ganzen Tag läuft, nichts einbrennt. Keine Daueranimation
+   ausser Formis eigener. */
+.tm-ruhe{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:var(--s16);cursor:pointer;
+  background:radial-gradient(120% 90% at 50% 40%, #0d1626 0%, #05070d 70%);
+  color:#eef3ff;padding:calc(var(--s16) + var(--sat)) var(--s16) calc(var(--s16) + var(--sab));
+  -webkit-tap-highlight-color:transparent;outline:none}
+.tm-ruhe[hidden]{display:none}
+.tm-ruhe:not([hidden]){animation:tmRuheEin .6s ease-out backwards}
+@keyframes tmRuheEin{from{opacity:0}}
+.tm-ruhe-feld{display:flex;flex-direction:column;align-items:center;gap:var(--s8);
+  transition:transform 2.4s ease-in-out;will-change:transform}
+.tm-ruhe .tm-ruhe-figur{--fg:clamp(120px, 30vmin, 300px);margin-bottom:var(--s12)}
+.tm-ruhe-uhr{font-family:var(--font-head);font-weight:700;font-variant-numeric:tabular-nums;
+  font-size:clamp(3.5rem, 14vmin, 9rem);line-height:var(--lh-1);letter-spacing:var(--ls-s)}
+.tm-ruhe-tag{font-size:var(--t-lg);font-weight:600;color:#c4cee3}
+.tm-ruhe-studio{font-size:var(--t-md);color:#9aa8c2;font-weight:600}
+.tm-ruhe-code{margin-top:var(--s12);font-size:var(--t-sm);color:#9aa8c2}
+.tm-ruhe-code b{font-family:var(--font-head);font-size:var(--t-xl);color:#eef3ff;
+  font-variant-numeric:tabular-nums;letter-spacing:var(--ls-l);margin-left:var(--s6)}
+.tm-ruhe-hinweis{margin:0;position:absolute;bottom:calc(var(--s24) + var(--sab));left:0;right:0;
+  text-align:center;font-size:var(--t-sm);color:#9aa8c2;font-weight:600}
+@media (prefers-reduced-motion:reduce){
+  .tm-ruhe-feld{transition:none}
+  .tm-ruhe:not([hidden]){animation:none}
+}
 
 .tm-pin{position:absolute;inset:0;background:var(--bg);z-index:2;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -14119,6 +14150,25 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
     <span id="tmHinweis">Name antippen, dann PIN eingeben.</span>
     <button class="tm-aus" id="tmAus">Terminal beenden</button>
   </div>
+
+  <!-- Bildschirmschoner (05.11.2026, Formi-Ideenliste: „alles davon ist
+       super"). Nach drei Minuten ohne Eingabe legt er sich über das
+       Terminal: Formi gross, Uhrzeit, Tag, Studio. Ein Tippen irgendwo
+       holt die Namensliste zurück.
+       KEINE NAMEN, KEINE ZEITEN VON KOLLEGEN: das Terminal steht offen
+       am Empfang, und seit Runde 189 steht dort mit Absicht nicht, wer im
+       Dienst ist. Der Code fürs Handy bleibt sichtbar — wer am Handy
+       stempelt, soll das Terminal nicht erst wecken müssen. -->
+  <div class="tm-ruhe" id="tmRuhe" hidden role="button" tabindex="0" aria-label="Antippen zum Stempeln">
+    <div class="tm-ruhe-feld" id="tmRuheFeld">
+      <span class="formi-figur tm-ruhe-figur" id="tmRuheFigur" aria-hidden="true"></span>
+      <div class="tm-ruhe-uhr" id="tmRuheUhr">--:--</div>
+      <div class="tm-ruhe-tag" id="tmRuheTag"></div>
+      <div class="tm-ruhe-studio" id="tmRuheStudio"></div>
+      <div class="tm-ruhe-code" id="tmRuheCode" hidden>Code fürs Handy <b id="tmRuheCodeZahl"></b></div>
+    </div>
+    <p class="tm-ruhe-hinweis">Antippen zum Stempeln</p>
+  </div>
 </div>
 
 <!-- Was ist neu (Runde 103). Dieselbe Bauform wie die Auswahlfenster. -->
@@ -18076,6 +18126,8 @@ function terminalStarten(){
      weiss das. Eine Uhr, die man beim Falschgehen zusehen kann, kostet
      mehr Vertrauen als sie an Rechenzeit spart. */
   _tmUhrTimer = setInterval(terminalUhr, 5000);
+  _tmLetzteEingabe = Date.now();
+  tmRuheBinden();
   tmCodesHolen();
   return true;
 }
@@ -18084,6 +18136,76 @@ function terminalUhr(){
   var u=$('tmUhr'); if(!u) return;
   u.textContent = new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
   tmCodeZeigen();
+  tmRuhePruefen();
+}
+
+/* ══ BILDSCHIRMSCHONER ══════════════════════════════════════════════
+   Nach TM_RUHE_MS ohne Eingabe: Formi gross, Uhrzeit, Tag, Studio.
+   Geprüft wird im Takt der Uhr (fünf Sekunden) — kein eigener Zeitgeber.
+   Ein offenes PIN-Feld wird dabei geschlossen: eine halb getippte PIN
+   soll nicht stehen bleiben, bis der Nächste kommt. */
+var TM_RUHE_MS = 3*60*1000;
+var _tmLetzteEingabe = Date.now();
+var _tmRuheSchritt = 0;
+var _tmRuheGebunden = false;
+
+function tmRuheBinden(){
+  if(_tmRuheGebunden) return;
+  var schirm=$('terminalSchirm'), ruhe=$('tmRuhe'); if(!schirm || !ruhe) return;
+  _tmRuheGebunden = true;
+  ['pointerdown','keydown','wheel'].forEach(function(t){
+    schirm.addEventListener(t, function(){ _tmLetzteEingabe = Date.now(); }, { capture:true, passive:true });
+  });
+  /* Geweckt wird mit click, nicht pointerdown: sonst verschwände der
+     Schoner unter dem Finger und das Loslassen träfe die Kachel darunter. */
+  ruhe.addEventListener('click', function(e){ e.stopPropagation(); tmRuheAus(); });
+  ruhe.addEventListener('keydown', function(e){ e.preventDefault(); tmRuheAus(); });
+}
+
+function tmRuhePruefen(){
+  var ruhe=$('tmRuhe'); if(!ruhe || !_tmAktiv) return;
+  if(ruhe.hidden){
+    if(Date.now() - _tmLetzteEingabe >= TM_RUHE_MS) tmRuheZeigen();
+    return;
+  }
+  tmRuheFuellen();
+}
+
+function tmRuheZeigen(){
+  var ruhe=$('tmRuhe'); if(!ruhe || !_tmAktiv) return;
+  if(_tmWer) terminalPinSchliessen();
+  var fig=$('tmRuheFigur');
+  if(fig && !fig.firstChild) fig.innerHTML = formiFigurInnen(false, true);
+  _tmRuheSchritt = 0;
+  tmRuheFuellen();
+  ruhe.hidden = false;
+  try{ ruhe.focus({ preventScroll:true }); }catch(e){}
+}
+
+function tmRuheAus(){
+  var ruhe=$('tmRuhe'); if(!ruhe) return;
+  _tmLetzteEingabe = Date.now();
+  ruhe.hidden = true;
+}
+
+/* Zeit, Tag, Studio und Code; einmal pro Minute rückt das Feld weiter.
+   Acht Lagen im Kreis, je höchstens 6 % der Breite und 5 % der Höhe —
+   genug gegen Einbrennen, zu wenig, um etwas aus dem Bild zu schieben. */
+var TM_RUHE_LAGEN = [[0,0],[-6,-4],[5,-5],[6,3],[-4,5],[-6,1],[3,-3],[5,5]];
+function tmRuheFuellen(){
+  var jetzt=new Date();
+  var u=$('tmRuheUhr'); if(u) u.textContent = jetzt.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+  var t=$('tmRuheTag'); if(t) t.textContent = jetzt.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
+  var st=$('tmRuheStudio'), quelle=$('tmStudio');
+  if(st && quelle) st.textContent = quelle.textContent==='—' ? '' : quelle.textContent;
+  var cq=$('tmCode'), cz=$('tmCodeZahl'), rc=$('tmRuheCode'), rz=$('tmRuheCodeZahl');
+  if(rc && rz && cq && cz){ rc.hidden = cq.hidden; rz.textContent = cz.textContent; }
+  var schritt = Math.floor(jetzt.getTime()/60000) % TM_RUHE_LAGEN.length;
+  if(schritt !== _tmRuheSchritt){
+    _tmRuheSchritt = schritt;
+    var f=$('tmRuheFeld'), l=TM_RUHE_LAGEN[schritt];
+    if(f) f.style.transform = 'translate('+l[0]+'vw,'+l[1]+'vh)';
+  }
 }
 
 /* ══ DER CODE FÜRS EIGENE HANDY ═════════════════════════════════════
@@ -18150,6 +18272,7 @@ function terminalBeenden(still){
   var schirm=$('terminalSchirm');
   if(schirm){ schirm.classList.remove('show'); schirm.style.display='none'; }
   if(_tmUhrTimer){ clearInterval(_tmUhrTimer); _tmUhrTimer=null; }
+  var ruhe=$('tmRuhe'); if(ruhe) ruhe.hidden=true;
   _tmAktiv=null; _tmWer=null; _tmPin='';
   /* Den Codevorrat mit wegräumen. Er bliebe sonst im Speicher eines
      Geräts stehen, das gerade aufgehört hat, ein Terminal zu sein. */
@@ -23839,6 +23962,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-11-05-terminal-ruhe', datum:'05.11.2026', art:'neu', titel:'Bildschirmschoner am Stempel-Terminal', wo:'chef:standorte', punkte:[
+    'Nach drei Minuten ohne Eingabe zeigt das Terminal Formi groß mit Uhrzeit, Tag und Studio.',
+    'Der Code fürs Handy bleibt dabei sichtbar. Antippen oder eine Taste holt die Namensliste zurück.',
+    'Eine angefangene PIN wird beim Einschlafen gelöscht.'
+  ]},
   { id:'2026-11-05-formi-sticker', datum:'05.11.2026', art:'neu', titel:'Formi-Sticker im Chat', wo:'chat', punkte:[
     'Nachricht antippen: unter den Zeichen stehen vier Formi-Sticker – freut sich, verliebt, staunt, stolz.',
     'Der Sticker steht als kleiner Formi unter der Nachricht, mit Zähler wie die anderen Zeichen.',

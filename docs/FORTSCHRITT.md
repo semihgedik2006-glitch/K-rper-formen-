@@ -25487,3 +25487,54 @@ Nachricht Symbol, Vorlesename und keine Animation. Regeltest
 
 **Nicht geprüft:** echte Konten mit dem echten Firebase (lädt in dieser
 Umgebung nicht) — die neue Regel ist nur im Emulator gelaufen.
+
+## Runde 301 — Bildschirmschoner am Stempel-Terminal (05.11.2026)
+
+Aus dem Betrieb, auf die Formi-Ideenliste („Bildschirmschoner am
+Studio-Rechner: Formi groß mit Uhrzeit …"): „alles davon ist super".
+
+**Was gebaut ist.** Nach drei Minuten ohne Eingabe legt sich über das
+Terminal ein dunkler Schirm: Formi groß (mit Scheibe), die Uhrzeit sehr
+groß, Wochentag und Datum, das Studio und der Code fürs Handy. Antippen
+oder eine Taste holt die Namensliste zurück. Ein offenes PIN-Feld wird
+beim Einschlafen geschlossen.
+
+**Warum so.**
+- *Keine Namen, keine Dienstzeiten.* Die Idee nannte auch „wer Dienst
+  hat". Das Terminal steht offen am Empfang; seit Runde 189 steht dort
+  mit Absicht nicht mehr, wer im Dienst ist („ja" aus dem Betrieb,
+  22.10.2026), und der Kopf dieses Bereichs sagt: „Ein Gerät, das offen
+  am Empfang steht, ist kein Ort für Auskünfte über Arbeitszeiten von
+  Kollegen." Der Schoner hält sich daran. Ob der Plan des Tages dort
+  stehen soll, ist eine Frage an den Betrieb, keine, die der Bau
+  entscheidet. `test-terminal-ruhe` prüft, dass kein Name aus der Liste
+  im Schoner steht.
+- *Der Code fürs Handy bleibt.* Wer am Handy stempelt, liest ihn vom
+  Bildschirm ab — müsste er den Schoner erst wecken, wäre der Weg übers
+  Handy nicht mehr kürzer als der übers Terminal.
+- *Wecken mit `click`, nicht `pointerdown`.* Sonst verschwände der
+  Schoner unter dem Finger, und das Loslassen träfe die Kachel darunter:
+  ein PIN-Feld, das niemand öffnen wollte.
+- *Halbe PIN weg.* Wer mitten in der PIN weggeht, hinterließ bisher ein
+  offenes Feld mit Punkten für den Nächsten.
+- *Kein eigener Zeitgeber.* Geprüft wird im Fünf-Sekunden-Takt der Uhr,
+  die ohnehin läuft. Gegen Einbrennen rückt das Feld einmal pro Minute
+  per `transform` in eine von acht Lagen (höchstens 6 % / 5 %); bei
+  „weniger Bewegung" ohne Übergang.
+- *Formi nur benutzt, nicht verändert.* `formiFigurInnen(false, true)`;
+  am Aussehen arbeitet ein anderer Strang.
+
+**Gemessen** (`tests/test-terminal-ruhe.js`, 106/0) bei 320 / 390 / 430 /
+820 / 1280 / 1440 / 1920 px: beim Start weg, nach zwei Minuten noch weg,
+nach drei da und oben (Trefferprüfung in der Mitte); Gegenprobe, dass das
+PIN-Feld vorher offen war und danach zu ist; Uhrzeit, Wochentag, Studio,
+Formi mit Gesicht, Code; in allen acht Lagen ganz im Bild und nicht über
+dem Hinweis; Antippen weckt ohne PIN-Feld; die Zeit zählt danach neu;
+eine Taste weckt auch. Die Uhr der Seite steuert der Test
+(`page.clock`). Arbeit je Bild bei 1440 px mit CPU ÷ 4: 0,95–1,11 ms
+(Grenze 8,3 ms). Grün außerdem: `test-terminal`, `test-demo`,
+`test-gestaltung`, `test-knoepfe`, `test-csp`, `test-abgeschnitten`,
+`test-neuigkeiten`. Angesehen bei 390, 1440 und 1920 px.
+
+**Nicht geprüft:** ein echtes Tablet oder ein echter Rechner am Empfang
+über Stunden (Einbrennen, Energiesparen des Geräts).
