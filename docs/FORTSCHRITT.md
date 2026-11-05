@@ -25538,3 +25538,75 @@ eine Taste weckt auch. Die Uhr der Seite steuert der Test
 
 **Nicht geprüft:** ein echtes Tablet oder ein echter Rechner am Empfang
 über Stunden (Einbrennen, Energiesparen des Geräts).
+
+## Runde 302 — Formi: Studios als Monde, Geburtstagsmond, Serie, Jahreszeit, Zeile ins Loch (5.11.2026)
+
+Aus dem Betrieb, auf acht neue Formi-Ideen: „alles davon ist super“. Die
+Ideen, die Formis **Aussehen** ändern (1, 4, 5, 6, 7), baut diese Runde;
+Bilderkennung, Sticker und Bildschirmschoner (2, 3, 8) ein anderer Strang.
+Formis Design war bis hierhin für fremde Runden gesperrt (eine eigene
+Sitzung arbeitete daran); jetzt ausdrücklich frei: „starte von hier ruhig
+das passst schon so“.
+
+**Was gebaut wurde**
+
+- **Idee 1 – die Zeile fällt ins Loch** (`formiZeileSog`): bisher flog nur
+  der Titel als Buchstabenstrom zu Formi (Runde 250). Jetzt wird zusätzlich
+  ein Abbild der ganzen Zeile (ohne Titel, der fliegt ja schon) gestreckt,
+  gestaucht und in den Horizont gezogen; die echte Zeile tritt solange
+  zurück. Erste Fassung startete zu langsam (bei 350 ms stand eine zweite
+  Zeile über der ersten) – jetzt zieht sie sofort.
+- **Idee 4 – Jahreszeit** (`formiJahreszeitArt`): nur an wenigen Tagen –
+  20.–26.12. wärmer (Gold/Kupfer/Rosé), 31.12. und 1.1. Funkenregen (beim
+  Start, danach höchstens alle 30 min, einmalige Animation), 20.–24.6.
+  heller. Eine Klasse am `<html>`, nicht animiert; im hellen Stil bleibt
+  die flache Scheibe unverändert (sie ist dort auf Kontrast gebaut).
+- **Idee 5 – Geburtstag und Jubiläum** (`formiMond`): ein kleiner Mond
+  kreist zweimal um die Kugel und bleibt dann neben ihr **stehen** – ein
+  Ziel, das wandert, trifft man nicht. Nur auf der Startseite (im Chat lag
+  er sonst über dem Eingabefeld). Antippen → „Heute im Team“,
+  „Gratulieren“ öffnet die Direktnachricht mit einem Vorschlag im Feld;
+  gesendet wird nichts von selbst. **Jubiläum = Jahrestag der
+  Kontoanlage** (`createdAt`) – ein Eintrittsdatum gibt es in der App
+  nicht. Gezeigt wird, wer ein Studio mit einem teilt (Chef: alle).
+- **Idee 6 – Studios als Monde** (`lsMondeHTML`, nur Leitung am Rechner
+  ab 1100 px): statt der Kacheln eine flache Bahn um Formi, je Studio ein
+  Mond in Ampelfarbe, Name darunter. Klick = Klick auf die Kachel. „Als
+  Kacheln“ schaltet zurück (je Gerät gemerkt), am Handy bleiben die
+  Kacheln der Skizze. Erste Fassungen im gleichen *Winkel* verteilt: bei
+  den echten 14 Studios (konfig.js) standen die Monde an den Seiten 32 px
+  auseinander, Trefferflächen überlappten (gemessen). Jetzt gleich weit
+  *entlang der Bahn* – die Namen sind je Mond so breit wie der Platz zum Nachbarn; an den engen Enden der Bahn werden sie gekürzt (Trefferflächen gemessen ohne Überlappung bei 1280 / 1440 / 1920 px). Ist es selbst dafür zu eng (gemessen: 1100 px mit 14 Studios), stehen wieder Kacheln. Die Zeile „Aufg. 3 ·
+  Putz 2“ steht nicht mehr am Mond (bei 14 Monden unlesbar dicht), sondern
+  im Schild, im Namen für Vorleser und wie bisher in der Zusammenfassung.
+- **Idee 7 – Formi-Serie** (`formiSerieStudio`): hat ein Studio den
+  Putzplan letzte Woche (Mo–So) an jedem Arbeitstag komplett geschafft,
+  trägt die Kugel diese Woche einen hellen Ring (auch am Mond des Studios).
+  Arbeitstag = an dem Tag wurde überhaupt etwas abgehakt; nötig sind
+  mindestens fünf, an jedem alle täglichen Punkte, und jeder wöchentliche
+  Punkt einmal. **Dafür gibt es ein neues Feld `tage` am Putzpunkt** (die
+  letzten 15 Tage, an denen er abgehakt wurde), geschrieben auf beiden
+  Abhak-Wegen. Die Regel `putzMitarbeiterFelder()` kennt es jetzt (eine
+  Funktion, gilt für beide Pfade, flach und `firmen/<k>/`). Übergang:
+  verweigert die Regel das Feld noch, wird ohne geschrieben.
+  **Folge: der erste Ring ist frühestens in der Woche nach der ersten
+  vollen Woche mit dem neuen Feld möglich** – vorher gibt es keine
+  Geschichte, aus der man lesen könnte.
+
+**Geprüft**
+
+`tests/test-formi-monde.js` (59 Zusicherungen): Monde bei 1280/1440/1920,
+normal und kompakt, je Mond Trefferfläche ≥ 44 × 44 per Hit-Test, in der
+Karte, ohne Überlappung, Seite passt auf einen Bildschirm; Handy/Tablet
+ohne Monde. Geburtstagsmond 320 … 1920 px, 44 × 44, im Bild, nicht auf
+der Kugel; Karte, Esc, „Gratulieren“ → Direktnachricht mit Vorschlag.
+Serie mit drei Gegenproben (vier Arbeitstage; ein täglicher Punkt an
+einem Arbeitstag vergessen; ein ganzer Tag ohne Haken bleibt erlaubt).
+Jahreszeit an sechs Daten, Funkenregen räumt auf. Zeile ins Loch ohne
+doppelte ids und ohne Trefferfläche.
+`tests/rules/formi-serie.test.js` (10 Zusicherungen, beide Welten);
+Gegenprobe mit der alten Regel: die zwei „darf“-Fälle fallen durch.
+
+**Nicht prüfbar hier**: der echte Schreibweg zu Firestore (die Attrappe
+schreibt nichts), und ob der Ring nach einer echten Woche erscheint –
+geprüft ist die Rechnung mit gesetzten Tagen.

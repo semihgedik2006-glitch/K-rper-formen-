@@ -66,7 +66,7 @@ const LAGE = () => {
       Math.round(h.getBoundingClientRect().top) === Math.round(se.getBoundingClientRect().top) &&
       se.getBoundingClientRect().left > h.getBoundingClientRect().right;
     const pz = [...ls.querySelectorAll('.ls-detail .ls-sp h4')].find(x => /^Putzplan/.test(x.textContent));
-    return { ls: true, spalten: neben ? 2 : 0, kacheln: ls.querySelectorAll('.ls-kachel').length,
+    return { ls: true, spalten: neben ? 2 : 0, kacheln: ls.querySelectorAll('.ls-kachel, .lm-mond').length, /* Runde 302: am Rechner Monde statt Kacheln */
       rechts: se ? [...se.children].map(x => x.getAttribute('aria-label') || x.className.split(' ')[1]) : [],
       putz: pz && pz.getClientRects().length ? pz.textContent.trim() : null, balken: !!ls.querySelector('.ls-detail .ls-balken'),
       fortschritt: null, passt: sa.scrollHeight <= sa.clientHeight + 2 };

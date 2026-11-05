@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-aXsdjX0/eNRn3fR9zATKIrP7aT5fq9dNA/5O9uQy2UQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-sCeSH18IMr1Cqrs7JdRlYk17fs50pyWz4kdF669eAn8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -7029,6 +7029,56 @@ body[data-bereich="g-zeit"] .fk-wirbel::before{opacity:.7}
 .fk-wirbel::after{content:"";position:absolute;inset:0;border-radius:var(--r-rund);opacity:0;transition:opacity 1s ease;
   background:radial-gradient(circle at 72% 86%, rgba(255,160,90,.5), rgba(255,160,90,0) 64%)}
 .formi-kugel.fk-abend .fk-wirbel::after{opacity:1}
+/* ── Runde 302: Jahreszeit, Serie, Geburtstagsmond, Zeile ins Loch ──
+   Aus dem Betrieb (5.11.2026): „alles davon ist super". Ganz leise und
+   nur an wenigen Tagen (formiJahreszeitArt): 20.–26.12. wärmer, 31.12.
+   und 1.1. Funkenregen, 20.–24.6. heller. Die Farben stehen am <html>
+   und werden nicht animiert. */
+html.fz-winter{--formi-ring:conic-gradient(from 210deg, #FFD08A, #FF9B6B, #FF7E9E, #FFB86B, #FFE7B8, #FFD08A)}
+html.fz-winter body:not(.light) .fk-flach{background:radial-gradient(14% 34% at 8% 50%, rgba(255,240,215,.8), rgba(255,240,215,0)),
+    radial-gradient(closest-side, rgba(255,236,210,0) 0 57%, rgba(255,236,210,.95) 61%, rgba(255,180,110,.85) 68%,
+      rgba(255,120,110,.6) 80%, rgba(255,150,120,.3) 91%, rgba(255,150,120,0) 100%)}
+html.fz-winter .fk-wirbel::after{opacity:1}
+html.fz-sommer{--formi-ring:conic-gradient(from 210deg, #9CF0FF, #D6C8FF, #FFC2E0, #FFD39E, #9CF0FF)}
+html.fz-sommer .formi-kugel:not(.fk-offline):not(.fk-pause) .fk-scheibe{opacity:1}
+html.fz-sommer .formi-kugel .fk-koerper{box-shadow:var(--e2), 0 0 30px rgba(255,236,170,.55)}
+.formi-funken.fz-regen i{width:5px;height:5px;left:-2.5px;top:-2.5px;box-shadow:0 0 6px 1px var(--c)}
+/* Die Serie: ein heller Ring um Formi, eine Woche lang. */
+.fk-serie-ring{position:absolute;inset:-6px;border-radius:var(--r-rund);pointer-events:none;opacity:0;transition:opacity .8s ease;
+  box-shadow:0 0 0 1.5px rgba(255,250,232,.9), 0 0 10px 1px rgba(255,236,190,.6), inset 0 0 8px rgba(255,236,190,.3)}
+.formi-kugel.fk-serie .fk-serie-ring{opacity:1}
+body.light .fk-serie-ring{box-shadow:0 0 0 1.5px rgba(176,120,10,.9), 0 0 10px 1px rgba(230,170,40,.5)}
+/* Der Mond: steht still neben der Kugel, 44 × 44 Trefferfläche. */
+.formi-mond{position:fixed;left:0;top:0;z-index:151;width:44px;height:44px;padding:0;border:0;border-radius:var(--r-rund);
+  background:none;cursor:pointer;display:grid;place-items:center;-webkit-tap-highlight-color:transparent}
+.formi-mond[hidden]{display:none}
+.fm-mond{display:block;width:15px;height:15px;border-radius:var(--r-rund);transition:transform .16s var(--ease-ios);
+  background:radial-gradient(circle at 34% 30%, #FFFFFF 0 16%, #F2EEE4 40%, #C9C3B8 75%, #A8A196);
+  box-shadow:0 0 9px rgba(255,248,225,.8), inset -2px -2px 3px rgba(0,0,0,.25)}
+@media (hover:hover){ .formi-mond:hover .fm-mond{transform:scale(1.2)} }
+.formi-mond:active .fm-mond{transform:scale(.9)}
+.formi-mond:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+body.light .fm-mond{box-shadow:0 0 0 1px rgba(20,20,40,.3), 0 0 6px rgba(200,170,90,.55)}
+.formi-mond-karte{position:fixed;left:0;top:0;z-index:1150;width:min(330px, calc(100vw - 24px));box-sizing:border-box;
+  padding:var(--s4) var(--s12) var(--s8);border-radius:var(--r-lg);background:var(--bg-2);color:var(--text);
+  box-shadow:inset 0 1px 0 var(--kante),0 0 0 1px var(--line),var(--e2)}
+.formi-mond-karte[hidden]{display:none}
+.fmk-kopf{display:flex;align-items:center;justify-content:space-between;gap:var(--s8);min-height:44px}
+.fmk-kopf b{font-size:var(--t-md)}
+.fmk-zu{width:44px;height:44px;margin-right:calc(var(--s8) * -1)}
+.fmk-zeile{display:flex;align-items:center;gap:var(--s10);padding:var(--s6) 0;border-top:1px solid var(--line)}
+.fmk-zeile span{flex:1;min-width:0;font-size:var(--t-sm);line-height:var(--lh-eng)}
+.fmk-zeichen{display:grid;place-items:center;flex:none;color:var(--accent-tx, var(--accent))}
+.fmk-zeichen .sym{width:20px;height:20px}
+.fmk-gratulieren{min-height:44px;flex:none}
+/* Die Zeile fällt ins Loch (formiZeileSog): ein Abbild, ausserhalb der
+   Liste gezeichnet – darum mit eigener Fläche, damit es als Zeile lesbar
+   bleibt. */
+.formi-sog-huelle{position:fixed;inset:0;z-index:1190;pointer-events:none;overflow:hidden}
+.formi-sog{position:absolute !important;left:0 !important;top:0 !important;margin:0 !important;box-sizing:border-box;transform-origin:50% 50%;
+  background:var(--bg-2);border-radius:var(--r-md);box-shadow:0 0 0 1px var(--line),var(--e2);color:var(--text);list-style:none;overflow:hidden}
+html.fk-still .formi-sog-huelle{display:none}
+@media (prefers-reduced-motion:reduce){ .formi-sog-huelle{display:none} }
 /* Die Teilchen: was das weisse Loch ausspuckt und das schwarze wieder
    einsaugt (formiAusbruch), und was beim „Atmen" hineinfällt. Sie liegen
    in der Kugel, bewegen sich nur per transform/opacity und lassen jeden
@@ -9770,6 +9820,38 @@ body.neu .hz-aktion{flex:0 0 auto;min-height:44px;min-width:44px;margin-right:va
 .ls-punkt{display:inline-block;width:9px;height:9px;border-radius:var(--r-rund);flex:0 0 auto;background:var(--warm)}
 .ls-punkt.rot{background:var(--danger)}
 .ls-punkt.gruen{background:var(--ok)}
+/* ── Studios als Monde um Formi (Runde 302, Idee 6) ── Nur am Rechner.
+   Die Farbe des Mondes ist die Ampel – Statusfarbe, weil sie Status
+   meldet. Der Mond steht still; die Trefferfläche ist Mond + Name,
+   mindestens 44 × 44. */
+.ls-monde{position:relative;height:var(--lm-h,214px);border-radius:var(--r-lg);overflow:hidden;
+  background:radial-gradient(42% 60% at 50% 50%, rgba(95,225,255,.07), rgba(95,225,255,0) 70%), var(--bg-2);
+  box-shadow:inset 0 1px 0 var(--kante),0 0 0 1px var(--line),var(--e1)}
+.lm-bahn{position:absolute;left:9%;right:9%;top:calc(50% - var(--lm-ry, 92px));bottom:calc(50% - var(--lm-ry, 92px));border-radius:var(--r-rund);border:1px solid rgba(255,255,255,.13);pointer-events:none}
+body.light .lm-bahn{border-color:rgba(20,20,40,.16)}
+.lm-formi{--fg:60px;position:absolute;left:50%;top:50%;margin:-30px 0 0 -30px}
+.lm-mond{position:absolute;display:flex;flex-direction:column;align-items:center;min-width:44px;max-width:var(--lm-max,112px);box-sizing:border-box;padding:0 var(--s4) var(--s2, 2px);
+  border:0;border-radius:var(--r-md);background:none;color:var(--text);font:inherit;text-align:center;
+  cursor:pointer;transform:translate(-50%,-19px);-webkit-tap-highlight-color:transparent}
+.lm-kugel{position:relative;flex:0 0 auto;width:44px;height:38px;display:grid;place-items:center;font-style:normal}
+.lm-name{max-width:calc(var(--lm-max,112px) - 8px);font-size:var(--t-sm);font-weight:700;line-height:var(--lh-eng);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lm-kugel::before{content:"";width:18px;height:18px;border-radius:var(--r-rund);transition:transform .14s var(--ease-ios);
+  background:radial-gradient(circle at 35% 30%, rgba(255,255,255,.6) 0, rgba(255,255,255,0) 48%), var(--lm-c, var(--warm));
+  box-shadow:0 0 10px var(--lm-c, var(--warm)), inset -3px -3px 5px rgba(0,0,0,.35)}
+.lm-mond.rot{--lm-c:var(--danger)}
+.lm-mond.gruen{--lm-c:var(--ok)}
+.lm-mond.serie .lm-kugel::before{box-shadow:0 0 0 3px var(--bg-2), 0 0 0 4.5px rgba(255,250,232,.9), 0 0 12px var(--lm-c, var(--warm))}
+body.light .lm-mond.serie .lm-kugel::before{box-shadow:0 0 0 3px var(--bg-2), 0 0 0 4.5px rgba(176,120,10,.9)}
+.lm-mond[aria-pressed="true"] .lm-kugel::after{content:"";position:absolute;width:30px;height:30px;border-radius:var(--r-rund);box-shadow:0 0 0 2px var(--accent)}
+@media (hover:hover){ .lm-mond:hover .lm-kugel::before{transform:scale(1.18)} .lm-mond:hover .lm-name{text-decoration:underline} }
+.lm-mond:active .lm-kugel::before{transform:scale(.9)}
+.lm-mond:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lm-form{position:absolute;right:var(--s8);bottom:0;min-height:44px}
+.ls-monde.lm-ein .lm-mond{animation:lmEin .6s var(--ease-ios) backwards;animation-delay:calc(var(--i) * 45ms)}
+@keyframes lmEin{from{opacity:0}}
+@media (prefers-reduced-motion:reduce){ .ls-monde.lm-ein .lm-mond{animation:none} }
+.ls-form-kachel{justify-content:center;background:none;box-shadow:inset 0 0 0 1px var(--line)}
+.ls-form-kachel b{color:var(--accent-tx, var(--accent))}
 .ls-mehrere .ls-detail{display:none}
 .ls-d-kopf{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s10);margin-bottom:var(--s8)}
 #lsModal .ls-d-kopf{padding-right:var(--s48)}
@@ -23962,6 +24044,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-11-05-formi-monde', datum:'05.11.2026', art:'neu', titel:'Formi: Studios als Monde, Geburtstage, heller Ring', wo:'home', punkte:[
+    'Leitung am Rechner: jedes Studio kreist als Mond um Formi, Farbe = Ampel. Klick zeigt das Studio, „Als Kacheln" schaltet zurück.',
+    'Hat heute jemand Geburtstag oder Jubiläum, steht ein kleiner Mond neben Formi. Antippen zeigt, wer es ist, mit „Gratulieren".',
+    'Abgehakte Zeilen werden kurz in Formi hineingezogen. War der Putzplan eine Woche komplett, trägt Formi danach einen hellen Ring.'
+  ]},
   { id:'2026-11-05-terminal-ruhe', datum:'05.11.2026', art:'neu', titel:'Bildschirmschoner am Stempel-Terminal', wo:'chef:standorte', punkte:[
     'Nach drei Minuten ohne Eingabe zeigt das Terminal Formi groß mit Uhrzeit, Tag und Studio.',
     'Der Code fürs Handy bleibt dabei sichtbar. Antippen oder eine Taste holt die Namensliste zurück.',
@@ -32126,6 +32213,8 @@ function formiTagesStand(keys, heuteFertig, offen){
       _fl.stau=stau;
     }
   }
+  /* Runde 302: Serie (heller Ring) und Geburtstagsmond. */
+  if(keys && keys.length){ formiSerie(keys); formiMond(keys); }
   var k=k0; if(!k || _fl.tagStufe===stufe) return stufe;
   if(_fl.tagStufe!=null) k.classList.remove('fk-tag-'+_fl.tagStufe);
   k.classList.add('fk-tag-'+stufe); _fl.tagStufe=stufe;
@@ -32870,6 +32959,7 @@ function formiSchlucken(el){
   requestAnimationFrame(function(){
     var ziel=formiStromZiel(); if(!ziel || !titel.getClientRects().length) return;
     formiStrom(titel, text, ziel);
+    formiZeileSog(zeile, titel, ziel);
   });
 }
 
@@ -33655,6 +33745,10 @@ function formiLebtStart(){
   }, { passive:true, capture:true });
   formiTageszeit();
   formiAnlass();
+  /* Runde 302: Jahreszeit, und der Mond folgt der Kugel. */
+  formiJahreszeit();
+  addEventListener('resize', function(){ requestAnimationFrame(formiMondLage); formiMondKarteLage(); }, { passive:true });
+  setInterval(function(){ if(!document.hidden) requestAnimationFrame(formiMondLage); }, 1000);
   /* Kleinigkeit (Runde 195): wer mit dem Mausrad scrollt, dem schaut
      Formi kurz in die Richtung nach. */
   /* Runde 231: wer wild scrollt, macht Formi schwindelig — gut 4.000 px in
@@ -33672,6 +33766,7 @@ function formiLebtStart(){
 }
 function formiSchlafPruefen(){
   formiTageszeit();
+  if(_fl.zeitArt==='silvester' && Date.now()-(_fl.regenZuletzt||0)>30*60000) formiFunkenregen();
   if(_fl.schlaeft || !formiLebtAn()) return;
   var still=Date.now()-_fl.zuletzt, k=$('formiKugel');
   if(still>90000){ _fl.schlaeft=true; if(k) k.classList.add('fk-schlaeft'); formiSchnarchen(); }
@@ -33686,6 +33781,7 @@ function formiSchlafPruefen(){
 function formiTageszeit(){
   var h=new Date().getHours();
   if(h===_fl.stunde) return; _fl.stunde=h;
+  if(_fl.gestartet) formiJahreszeit();
   var k=$('formiKugel'); if(!k) return;
   var abend = h>=19 || h<5;
   if(abend!==k.classList.contains('fk-abend')) k.classList.toggle('fk-abend', abend);
@@ -33701,6 +33797,325 @@ function formiAnlass(){
   if(!art) return;
   try{ localStorage.setItem('kf_formi_anlass', tag); }catch(e){}
   setTimeout(function(){ formiFuehlt(art); }, 2500);
+}
+/* ══ Formi: Jahreszeit, Geburtstagsmond, Serie (Runde 302) ══════════════
+   Aus dem Betrieb (5.11.2026), auf die neuen Formi-Ideen: „alles davon
+   ist super" — gebaut werden 1, 4, 5, 6 und 7. Formis Aussehen durfte
+   vorher nicht angefasst werden; jetzt ausdrücklich: „starte von hier
+   ruhig das passst schon so".
+
+   Idee 4 – Jahreszeit, ganz leise und nur an wenigen Tagen:
+     20.–26. Dezember   die Scheibe wird wärmer (Gold, Kupfer, Rosé)
+     31.12. und 1.1.    ein kleiner Funkenregen über Formi (beim Start,
+                        danach höchstens alle 30 Minuten)
+     20.–24. Juni       alles heller (die Scheibe voll, der Schein weiter)
+   Eine Klasse am <html>, gesetzt nur, wenn sich der Tag ändert. Vererbte
+   Farben werden nicht animiert (CLAUDE.md, „Flüssig heisst konkret").
+
+   Idee 5 – Geburtstag und Jubiläum: ein kleiner Mond umkreist die Kugel
+   zweimal und bleibt dann neben ihr stehen (ein Ziel, das stillsteht,
+   trifft man). Antippen zeigt, wer es ist, „Gratulieren" öffnet die
+   Direktnachricht mit einem Vorschlag im Feld – geschickt wird nichts
+   von selbst. Jubiläum heisst: an diesem Tag vor ganzen Jahren wurde
+   das Konto angelegt (createdAt) – ein Eintrittsdatum gibt es nicht.
+   Gezeigt wird, wer ein Studio mit einem teilt (die Leitung: ihre
+   Studios), und man selbst.
+
+   Idee 7 – Formi-Serie: hat ein Studio den Putzplan eine ganze Woche
+   (Montag bis Sonntag) an jedem Arbeitstag komplett geschafft, trägt
+   Formi die ganze nächste Woche einen hellen Ring. Fürs Team, nicht
+   für einzelne. Die Tage stehen am Putzpunkt selbst (Feld `tage`, die
+   letzten 15 Tage), geschrieben beim Abhaken. */
+function formiHeuteDatum(){ return _fl.datum ? new Date(_fl.datum) : new Date(); }
+function formiJahreszeitArt(d){
+  d=d||formiHeuteDatum();
+  var md=(d.getMonth()+1)*100+d.getDate();
+  if(md===1231 || md===101) return 'silvester';
+  if(md>=1220 && md<=1226) return 'winter';
+  if(md>=620 && md<=624) return 'sommer';
+  return '';
+}
+var FZ_ARTEN=['winter', 'silvester', 'sommer'];
+function formiJahreszeit(){
+  var art=formiJahreszeitArt(), h=document.documentElement;
+  if(_fl.zeitArt===art) return art;
+  _fl.zeitArt=art;
+  FZ_ARTEN.forEach(function(a){ if(a!==art && h.classList.contains('fz-'+a)) h.classList.remove('fz-'+a); });
+  if(art) h.classList.add('fz-'+art);
+  if(art==='silvester'){ _fl.regenZuletzt=Date.now(); setTimeout(formiFunkenregen, 3200); }
+  return art;
+}
+/* Der Funkenregen: zwölf Funken steigen über der Kugel auf und fallen
+   wie ein Feuerwerk. Einmalig (keine Dauer-Animation), nur transform
+   und opacity, aus bei „weniger Bewegung" und „Gefühle aus". */
+function formiFunkenregen(){
+  if(_fl.zeitArt!=='silvester' || !formiLebtAn() || jarvisOffen()) return;
+  _fl.regenZuletzt=Date.now();
+  var k=$('formiKugel');
+  requestAnimationFrame(function(){
+    if(!k.getClientRects().length) return;
+    var q=k.getBoundingClientRect(), x=q.left+q.width/2, y=q.top+q.height*.2;
+    var box=document.createElement('div'); box.className='formi-funken fz-regen'; box.setAttribute('aria-hidden', 'true');
+    box.style.transform='translate('+Math.round(x)+'px,'+Math.round(y)+'px)';
+    var farben=['#FFE6A8', '#FFC46B', '#FFFFFF', '#FF8FC8', '#5FE1FF', '#FFD98A'], html='';
+    for(var i=0;i<12;i++) html+='<i style="--c:'+farben[i%farben.length]+'"></i>';
+    box.innerHTML=html; document.body.appendChild(box);
+    var laengste=0;
+    [].forEach.call(box.children, function(el, i){
+      var w=-Math.PI/2+(i/11-.5)*1.9+(Math.random()-.5)*.25, r=34+Math.random()*26;
+      var hx=Math.cos(w)*r, hy=Math.sin(w)*r, fall=hy+40+Math.random()*30;
+      var dauer=1300+Math.random()*500, verz=i*45+(i%3)*90;
+      laengste=Math.max(laengste, dauer+verz);
+      try{ el.animate([
+        { transform:'translate(0,0) scale(.4)', opacity:0 },
+        { transform:'translate('+hx.toFixed(1)+'px,'+hy.toFixed(1)+'px) scale(1)', opacity:1, offset:.35 },
+        { transform:'translate('+(hx*1.15).toFixed(1)+'px,'+fall.toFixed(1)+'px) scale(.3)', opacity:0 }
+      ], { duration:dauer, delay:verz, easing:'cubic-bezier(.2,.6,.4,1)', fill:'backwards' }); }catch(e){}
+    });
+    setTimeout(function(){ if(box.parentNode) box.parentNode.removeChild(box); }, laengste+100);
+  });
+}
+/* ── Idee 7: die Serie ── */
+/* Die neue Liste der Tage für einen Putzpunkt: heute dazu (oder weg,
+   wenn der Haken zurückgenommen wird), älter als 15 Tage fällt raus. */
+function putzTageNeu(t, done){
+  var heute=ymd(new Date()), grenze=ymd(new Date(Date.now()-15*86400000));
+  var l=(t && Array.isArray(t.tage) ? t.tage : []).filter(function(d){ return typeof d==='string' && d>=grenze && d!==heute; });
+  if(done) l.push(heute);
+  return l.sort();
+}
+function putzPunktFinden(sk, id){
+  var l=(cachedClean[sk]||[]).filter(function(x){ return x.id===id; });
+  if(!l.length && typeof _ppTasks!=='undefined' && _ppStudioKey===sk) l=(_ppTasks||[]).filter(function(x){ return x.id===id; });
+  return l[0]||null;
+}
+/* Montag der Woche, in der d liegt (00:00). */
+function formiWochenStart(d){
+  var m=new Date(d); m.setHours(0,0,0,0);
+  m.setDate(m.getDate()-((m.getDay()+6)%7));
+  return m;
+}
+/* War der Putzplan dieses Studios letzte Woche komplett? Ein Tag zählt
+   als Arbeitstag, wenn an ihm überhaupt etwas abgehakt wurde. Komplett
+   heisst: mindestens fünf Arbeitstage, an jedem alle täglichen Punkte,
+   und jeder wöchentliche Punkt einmal in der Woche. Was erst in der
+   Woche angelegt wurde, zählt erst ab dem Tag danach. */
+function formiSerieStudio(sk, heute){
+  var liste=(cachedClean[sk]||[]).filter(function(t){ return !ppPausiert(t); });
+  var taeglich=liste.filter(function(t){ return t.recurring==='daily'; });
+  if(!taeglich.length) return false;
+  var mo=formiWochenStart(heute||formiHeuteDatum()); mo.setDate(mo.getDate()-7);
+  var tage=[], gearbeitet=0;
+  for(var i=0;i<7;i++){ var d=new Date(mo); d.setDate(mo.getDate()+i); tage.push({ ymd:ymd(d), ende:d.getTime()+86400000 }); }
+  var hat=function(t, tag){ return Array.isArray(t.tage) && t.tage.indexOf(tag)>=0; };
+  for(var j=0;j<7;j++){
+    var tag=tage[j];
+    if(!liste.some(function(t){ return hat(t, tag.ymd); })) continue;
+    gearbeitet++;
+    var fehlt=taeglich.some(function(t){ return (t.ts||0) < tag.ende-86400000 && !hat(t, tag.ymd); });
+    if(fehlt) return false;
+  }
+  if(gearbeitet<5) return false;
+  var wochenAnfang=mo.getTime();
+  return liste.filter(function(t){ return t.recurring==='weekly' && (t.ts||0)<wochenAnfang; })
+    .every(function(t){ return tage.some(function(tag){ return hat(t, tag.ymd); }); });
+}
+function formiSerie(keys){
+  var heute=formiHeuteDatum();
+  var mit=(keys||[]).filter(function(sk){ return formiSerieStudio(sk, heute); });
+  _fl.serie=mit;
+  var k=$('formiKugel'); if(!k) return mit;
+  if(!k.querySelector('.fk-serie-ring')){
+    var r=document.createElement('span'); r.className='fk-serie-ring'; r.setAttribute('aria-hidden', 'true');
+    k.insertBefore(r, k.querySelector('.fk-punkt'));
+  }
+  var an=mit.length>0;
+  if(an!==k.classList.contains('fk-serie')) k.classList.toggle('fk-serie', an);
+  var st=k.querySelector('.fk-stand');
+  if(st){
+    var zusatz=an ? ' · Putzplan letzte Woche komplett ('+mit.map(studioName).join(', ')+')' : '';
+    var basis=_fl.tagSatz||'';
+    if(st.textContent!==basis+zusatz) st.textContent=basis+zusatz;
+  }
+  return mit;
+}
+/* ── Idee 5: der Mond ── */
+function formiPersonKeys(u){
+  return (u && u.studioKeys && u.studioKeys.length) ? u.studioKeys : ((u && u.studios)||[]).map(studioKey);
+}
+function formiAnlaesseHeute(keys){
+  if(!session) return [];
+  var d=formiHeuteDatum(), m=d.getMonth()+1, t=d.getDate(), y=d.getFullYear(), l=[], gesehen={};
+  function pruefen(u, ich){
+    if(!u || !u.uid || gesehen[u.uid]) return;
+    if(u.bday){
+      var p=String(u.bday).split('-');
+      if(p.length===3 && +p[1]===m && +p[2]===t){ gesehen[u.uid]=1; l.push({ uid:u.uid, name:u.name||'', art:'geburtstag', ich:ich }); return; }
+    }
+    if(u.createdAt){
+      var c=new Date(u.createdAt), j=y-c.getFullYear();
+      if(j>=1 && c.getMonth()+1===m && c.getDate()===t){ gesehen[u.uid]=1; l.push({ uid:u.uid, name:u.name||'', art:'jubilaeum', jahre:j, ich:ich }); }
+    }
+  }
+  pruefen(Object.assign({ uid:session.uid }, session), true);
+  var meine=keys||[];
+  (_allUsers||[]).forEach(function(u){
+    if(u.uid===session.uid || u.aktiv===false || u.system) return;
+    if(!isChef() && !formiPersonKeys(u).some(function(k){ return meine.indexOf(k)>=0; })) return;
+    pruefen(u, false);
+  });
+  return l;
+}
+function formiAnlassSatz(a){
+  var vor=String(a.name||'').split(' ')[0]||'Jemand';
+  if(a.art==='geburtstag') return a.ich ? 'Du hast heute Geburtstag – alles Gute!' : vor+' hat heute Geburtstag';
+  var j=a.jahre===1 ? 'einem Jahr' : a.jahre+' Jahren';
+  return a.ich ? 'Du bist heute seit '+j+' dabei – danke!' : vor+' ist heute seit '+j+' dabei';
+}
+function formiMond(keys){
+  var l=formiAnlaesseHeute(keys);
+  _fl.anlaesse=l;
+  var schluessel=l.map(function(a){ return a.uid+a.art; }).join(',');
+  var m=$('formiMond');
+  if(!l.length){ if(m){ m.hidden=true; formiMondKarteZu(); } _fl.mondKey=''; return; }
+  if(!m){
+    m=document.createElement('button'); m.type='button'; m.id='formiMond'; m.className='formi-mond'; m.hidden=true;
+    m.innerHTML='<i class="fm-mond" aria-hidden="true"></i>';
+    m.addEventListener('click', function(e){ e.stopPropagation(); tick(6); formiMondKarteAuf(); });
+    document.body.appendChild(m);
+  }
+  var ein=l[0], label=l.length===1 ? formiAnlassSatz(ein) : l.length+' Anlässe heute im Team';
+  m.setAttribute('aria-label', label+' – antippen');
+  m.title=label;
+  if(_fl.mondKey!==schluessel){ _fl.mondKey=schluessel; _fl.mondGekreist=false; }
+  formiMondLage();
+}
+/* Lage neben der Kugel: in der rechten Bildhälfte oben links von ihr,
+   links (am Rechner in der Seitenleiste) rechts daneben. Gelesen wird
+   im Bild (formiLinseLage ruft das mit), geschrieben nur bei Änderung. */
+function formiMondLage(){
+  var m=$('formiMond'); if(!m || !_fl.anlaesse || !_fl.anlaesse.length) return;
+  /* Nur auf der Startseite: dort geht es um heute. Auf anderen Seiten
+     läge der Mond über Eingabefeldern (z. B. im Chat). */
+  var k=$('formiKugel'), sicht=!!(k && !k.hidden && currentView==='home' && k.getClientRects().length && !jarvisOffen());
+  if(!sicht){ if(!m.hidden){ m.hidden=true; formiMondKarteZu(); } return; }
+  var q=k.getBoundingClientRect(), cx=q.left+q.width/2, cy=q.top+q.height/2, r=q.width/2+46;
+  var w = cx>innerWidth/2 ? -135 : 0;
+  var x=cx+Math.cos(w*Math.PI/180)*r, y=cy+Math.sin(w*Math.PI/180)*r;
+  var t='translate('+Math.round(x-22)+'px,'+Math.round(y-22)+'px)';
+  if(m.style.transform!==t) m.style.transform=t;
+  m._um={ dx:cx-x, dy:cy-y, r:r, w:w };
+  if(m.hidden){ m.hidden=false; formiMondKreisen(); }
+  else if(!_fl.mondGekreist) formiMondKreisen();
+}
+/* Zweimal um die Kugel, dann stehen bleiben (einmalig je Anlass). */
+function formiMondKreisen(){
+  var m=$('formiMond'); if(!m || !m._um || _fl.mondGekreist) return;
+  _fl.mondGekreist=true;
+  if(_fl.gefuehleAus || gehirnWenigBewegung() || !m.animate) return;
+  var um=m._um, bild=[], n=36, i0=um.w*Math.PI/180;
+  for(var i=0;i<=n;i++){
+    var s=i/n, w=i0-(1-s)*Math.PI*4, rr=um.r*(1+.25*(1-s));
+    /* Relativ zur Ruhelage: Kreis um die Mitte der Kugel. */
+    var px=um.dx+Math.cos(w)*rr, py=um.dy+Math.sin(w)*rr*.55;
+    bild.push({ transform:'translate('+px.toFixed(1)+'px,'+py.toFixed(1)+'px)', opacity: s<.08 ? s/.08 : 1, offset:+s.toFixed(3) });
+  }
+  try{ m.querySelector('.fm-mond').animate(bild, { duration:4200, easing:'cubic-bezier(.3,.1,.3,1)', fill:'backwards' }); }catch(e){}
+}
+function formiMondKarteAuf(){
+  var l=_fl.anlaesse||[]; if(!l.length) return;
+  var c=$('formiMondKarte');
+  if(!c){
+    c=document.createElement('div'); c.id='formiMondKarte'; c.className='formi-mond-karte';
+    c.setAttribute('role', 'dialog'); c.setAttribute('aria-label', 'Heute im Team');
+    document.body.appendChild(c);
+    document.addEventListener('keydown', function(e){ if(e.key==='Escape' && !c.hidden) formiMondKarteZu(true); });
+    document.addEventListener('pointerdown', function(e){
+      if(c.hidden || c.contains(e.target) || (e.target.closest && e.target.closest('#formiMond'))) return;
+      formiMondKarteZu();
+    }, true);
+  }
+  c.innerHTML='<div class="fmk-kopf"><b>Heute im Team</b><button type="button" class="icon-btn fmk-zu" aria-label="Schliessen" title="Schliessen">'+
+    '<svg class="sym" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>'+
+    l.map(function(a){
+      return '<div class="fmk-zeile"><i class="fmk-zeichen" aria-hidden="true">'+ikon(a.art==='geburtstag' ? 'herz' : 'pokal')+'</i><span>'+esc(formiAnlassSatz(a))+'</span>'+
+        (a.ich ? '' : '<button type="button" class="btn btn-primary fmk-gratulieren" data-fmgrat="'+esc(a.uid)+'">Gratulieren</button>')+'</div>';
+    }).join('');
+  c.querySelector('.fmk-zu').addEventListener('click', function(){ formiMondKarteZu(true); });
+  c.querySelectorAll('[data-fmgrat]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var a=l.filter(function(x){ return x.uid===b.getAttribute('data-fmgrat'); })[0]; if(!a) return;
+      formiMondKarteZu(); tick(8);
+      formiGratulieren(a);
+    });
+  });
+  c.hidden=false;
+  var m=$('formiMond'); if(m) m.setAttribute('aria-expanded', 'true');
+  formiMondKarteLage();
+  if(formiMondTastatur()) { var g=c.querySelector('.fmk-gratulieren')||c.querySelector('.fmk-zu'); if(g) g.focus(); }
+}
+function formiMondTastatur(){ return !(window.matchMedia && window.matchMedia('(pointer:coarse)').matches); }
+function formiMondKarteLage(){
+  var c=$('formiMondKarte'), m=$('formiMond'); if(!c || c.hidden || !m) return;
+  requestAnimationFrame(function(){
+    var q=m.getBoundingClientRect(), b=c.getBoundingClientRect(), rand=12;
+    var x=q.left+q.width/2 > innerWidth/2 ? q.right-b.width : q.left;
+    x=Math.max(rand, Math.min(innerWidth-rand-b.width, x));
+    var y=q.top-b.height-8; if(y<rand) y=q.bottom+8;
+    c.style.transform='translate('+Math.round(x)+'px,'+Math.round(y)+'px)';
+  });
+}
+function formiMondKarteZu(fokus){
+  var c=$('formiMondKarte'); if(!c || c.hidden) return;
+  c.hidden=true;
+  var m=$('formiMond'); if(m){ m.setAttribute('aria-expanded', 'false'); if(fokus) m.focus(); }
+}
+function formiGratulieren(a){
+  var vor=String(a.name||'').split(' ')[0];
+  var text = a.art==='geburtstag' ? 'Alles Gute zum Geburtstag'+(vor ? ', '+vor : '')+'! 🎉'
+    : 'Glückwunsch zum '+(a.jahre===1 ? 'ersten' : a.jahre+'.')+' Jahr bei uns'+(vor ? ', '+vor : '')+'! 🎉';
+  showView('dm'); openDm(a.uid, a.name);
+  setTimeout(function(){ var t=$('dmText'); if(t && !t.value){ t.value=text; try{ t.dispatchEvent(new Event('input', { bubbles:true })); }catch(e){} t.focus(); } }, 120);
+}
+/* ── Idee 1: die Zeile fällt ins Loch ──
+   Bisher flog nur der Titel als Buchstabenstrom zu Formi (Runde 250).
+   Jetzt wird auch die Zeile selbst kurz hineingezogen: ein Abbild der
+   Zeile (ohne Titel – der fliegt schon als Strom) streckt sich zum
+   Loch, wird gestaucht und verschwindet im Horizont. Die echte Zeile
+   tritt solange zurück. Eine Animation, nur transform und opacity; die
+   Lage ist im selben Bild gelesen wie der Strom. */
+function formiZeileSog(zeile, titel, ziel){
+  if(!zeile || zeile===titel || !zeile.getClientRects().length) return;
+  var q=zeile.getBoundingClientRect();
+  if(q.width<40 || q.height>180) return;
+  titel.setAttribute('data-fsog', '1');
+  var geist=zeile.cloneNode(true);
+  titel.removeAttribute('data-fsog');
+  [].forEach.call(geist.querySelectorAll('[id]'), function(e){ e.removeAttribute('id'); });
+  geist.removeAttribute('id');
+  var gt=geist.querySelector('[data-fsog]'); if(gt){ gt.removeAttribute('data-fsog'); gt.style.visibility='hidden'; }
+  geist.setAttribute('aria-hidden', 'true'); geist.setAttribute('inert', '');
+  geist.classList.add('formi-sog');
+  geist.style.width=Math.round(q.width)+'px'; geist.style.height=Math.round(q.height)+'px';
+  var huelle=document.createElement('div'); huelle.className='formi-sog-huelle'; huelle.setAttribute('aria-hidden', 'true');
+  huelle.appendChild(geist); document.body.appendChild(huelle);
+  var b0='translate('+Math.round(q.left)+'px,'+Math.round(q.top)+'px) ';
+  var dx=ziel.x-(q.left+q.width/2), dy=ziel.y-(q.top+q.height/2), dreh=dx<0 ? -1 : 1;
+  function v(f){ return 'translate('+(dx*f).toFixed(1)+'px,'+(dy*f).toFixed(1)+'px) '; }
+  /* Sofort losziehen (sonst steht kurz eine zweite Zeile da), nah am
+     Loch schneller und flacher – wie der Strom. */
+  var dauer=820;
+  try{
+    geist.animate([
+      { transform:b0+v(0)+'rotate(0deg) scale(1,1)', opacity:.95 },
+      { transform:b0+v(.1)+'rotate('+(dreh*3)+'deg) scale(.9,.7)', opacity:.95, offset:.15 },
+      { transform:b0+v(.5)+'rotate('+(dreh*14)+'deg) scale(.45,.22)', opacity:.9, offset:.5 },
+      { transform:b0+v(.88)+'rotate('+(dreh*36)+'deg) scale(.12,.05)', opacity:.7, offset:.82 },
+      { transform:b0+v(1)+'rotate('+(dreh*48)+'deg) scale(.02,.02)', opacity:0 }
+    ], { duration:dauer, easing:'cubic-bezier(.35,0,.75,.6)', fill:'forwards' });
+    zeile.animate([{ opacity:1 }, { opacity:.3, offset:.12 }, { opacity:.3, offset:.8 }, { opacity:1 }], { duration:dauer+250 });
+  }catch(e){}
+  setTimeout(function(){ if(huelle.parentNode) huelle.parentNode.removeChild(huelle); }, dauer+80);
 }
 /* Für die Durchläufe (test-formi-lebt): Gefühle auslösen und die Uhr
    vorstellen, statt 90 Sekunden zu warten. Liest und schreibt nichts
@@ -33747,7 +34162,22 @@ window.__formiLebt = {
   tagesStand: function(){ return { stufe:_fl.tagStufe, anteil:_fl.tagAnteil }; },
   einfall: function(x0, y0, rH){ return formiEinfall(x0, y0, 0, 0, rH, 1, 14); },
   muede: function(){ _fl.zuletzt=Date.now()-61000; formiSchlafPruefen(); return _fl.muede; },
-  schauHin: function(sel){ formiSchauHin(document.querySelector(sel)); }
+  schauHin: function(sel){ formiSchauHin(document.querySelector(sel)); },
+  /* Runde 302: Datum vorstellen (Jahreszeit, Anlässe, Serie). */
+  datum: function(t){ _fl.datum=t||null; _fl.zeitArt=null; return formiJahreszeit(); },
+  funkenregen: function(){ formiFunkenregen(); },
+  serieStudio: function(sk){ return formiSerieStudio(sk); },
+  serie: function(){ return (_fl.serie||[]).slice(); },
+  anlaesse: function(){ return (_fl.anlaesse||[]).map(function(a){ return { name:a.name, art:a.art, ich:a.ich, jahre:a.jahre }; }); },
+  /* Durchläufe: eine Person mit Anlass heute und Putz-Tage setzen. */
+  personDazu: function(u){ _allUsers.push(u); renderHome(); return (_fl.anlaesse||[]).length; },
+  putzTage: function(sk, tage, luecke){
+    var erster=true;
+    (cachedClean[sk]||[]).forEach(function(t){ t.tage=tage.slice(); t.ts=1;
+      if(luecke && erster && t.recurring==='daily'){ erster=false; t.tage=t.tage.filter(function(d){ return d!==luecke; }); } });
+    renderHome(); return formiSerieStudio(sk); },
+  wochenStart: function(){ return ymd(formiWochenStart(formiHeuteDatum())); },
+  zeileSog: function(sel){ var z=document.querySelector(sel), ziel=formiStromZiel(); if(!z || !ziel) return false; formiZeileSog(z, z.querySelector('b, strong')||z, ziel); return true; }
 };
 /* Wohin der Zeiger fährt: der Knopf des Bereichs in der Seitenleiste
    (Rechner) oder unten in der Leiste (Handy), sonst der Bereichskopf. */
@@ -34932,11 +35362,13 @@ function gehirnAbhakenSchreiben(bereich, k, t, done){
   var jetzt = done ? Date.now() : null;
   var ref = S('studios').doc(k).collection('cleaning').doc(t.id);
   var daten = { done:done, doneBy:done?session.name:null, doneByUid:done?session.uid:null,
-                doneKuerzel:kuerzel||null, doneAt:jetzt, formiAt:jetzt };
+                doneKuerzel:kuerzel||null, doneAt:jetzt, formiAt:jetzt,
+                /* Runde 302: die Tage für Formis Serie (formiSerieStudio). */
+                tage:putzTageNeu(Array.isArray(t.tage) ? t : putzPunktFinden(k, t.id), done) };
   /* Runde 186: die Formi-Spur (formiAt), Übergang wie in aufgabeHaken. */
   return ref.update(daten).catch(function(e){
     if(!e || !/permission/i.test(String(e.code||''))) throw e;
-    delete daten.formiAt;
+    delete daten.formiAt; delete daten.tage;
     return ref.update(daten);
   }).then(function(){ schedulePutzplanSheets(k); });
 }
@@ -43564,6 +43996,74 @@ function lsFensterAuf(sk){
 }
 function lsFensterZu(){ var m=$('lsModal'); if(m) m.classList.remove('show'); }
 
+/* ── Studios als Monde (Runde 302, Idee 6) ──────────────────────────────
+   Aus dem Betrieb (5.11.2026): Für die Leitung am Rechner kreist jedes
+   Studio als Mond um Formi, seine Farbe ist die Ampel, ein Klick öffnet
+   das Studio – dasselbe wie ein Klick auf die Kachel. Die Monde stehen
+   still auf ihrer Bahn (ein Ziel, das wandert, trifft man schlecht);
+   beim ersten Zeichnen laufen sie einmal auf ihren Platz. Nur am Rechner
+   (ab 1100 px) und mit mehreren Studios; „Als Kacheln" schaltet zurück,
+   gemerkt je Gerät. Am Handy bleiben die Kacheln aus der Skizze. */
+var _lsMondeEin=true;
+function lsForm(){ var f=''; try{ f=localStorage.getItem('kf_ls_form')||''; }catch(e){} return f==='kacheln' ? 'kacheln' : 'monde'; }
+function lsFormSetzen(f){ try{ localStorage.setItem('kf_ls_form', f); }catch(e){} }
+/* Lage der Monde: gleich weit auseinander ENTLANG der Bahn (nicht im
+   gleichen Winkel) – auf einer flachen Bahn stünden sie an den Seiten
+   sonst so dicht, dass sich ihre Trefferflächen überlappen (gemessen bei
+   14 Studios). Die Bahn ist so flach wie Formis Scheibe; x in Prozent
+   der Karte, y in Pixel. W = Breite der Karte (beim Zeichnen geschätzt). */
+function lsMondLagen(n, ry, W){
+  W=W||860;
+  var rx=W*.41, N=720, pkt=[], s=[0];
+  for(var k=0;k<=N;k++){ var t=-Math.PI/2+k/N*Math.PI*2; pkt.push([Math.cos(t)*rx, Math.sin(t)*ry]); if(k) s.push(s[k-1]+Math.hypot(pkt[k][0]-pkt[k-1][0], pkt[k][1]-pkt[k-1][1])); }
+  var L=s[N], l=[], k2=0;
+  for(var i=0;i<n;i++){
+    var ziel=(i+.5)/n*L; while(k2<N && s[k2+1]<ziel) k2++;
+    l.push({ x:50+pkt[k2][0]/W*100, y:pkt[k2][1] });
+  }
+  l.abstand=L/n;
+  /* Wie breit darf ein Mond samt Namen sein? Entlang der Bahn ist Platz,
+     an den Enden der Ellipse stehen zwei Nachbarn aber fast übereinander
+     und nur wenig seitlich versetzt: dort zählt der waagrechte Abstand,
+     solange sie sich in der Höhe (gut 60 px) überschneiden. */
+  var oben=Math.min(112, l.abstand-8);
+  l.forEach(function(a){ a.breit=oben; });
+  for(var j=0;j<n;j++) for(var j2=j+1;j2<n;j2++){
+    var a=l[j], c=l[j2];
+    if(Math.abs(a.y-c.y)<62){ var dx=Math.abs(a.x-c.x)/100*W-4; a.breit=Math.min(a.breit, dx); c.breit=Math.min(c.breit, dx); }
+  }
+  /* Je Mond eigen: oben und unten bleiben die Namen lang, nur an den
+     engen Enden werden sie gekürzt. */
+  l.breit=Infinity;
+  l.forEach(function(a){ a.breit=Math.floor(a.breit); l.breit=Math.min(l.breit, a.breit); });
+  return l;
+}
+function lsMondeHTML(studios, W){
+  /* Die Serie je Studio hier selbst prüfen: renderHome setzt _fl.serie
+     erst nach dem Zeichnen. */
+  var n=studios.length, serie=studios.filter(function(x){ return formiSerieStudio(x.sk); }).map(function(x){ return x.sk; });
+  var ry = n>8 ? 92 : (n>4 ? 78 : 58), hoch=2*ry+76;
+  var lagen=lsMondLagen(n, ry, W);
+  /* Ein Name ist höchstens so breit wie der Abstand zum Nachbarn
+     (lagen[i].breit); bei 14 Studios überlappten sonst Trefferflächen
+     (1100 und 1280 px, gemessen). */
+  var html='<div class="ls-monde'+(_lsMondeEin && !gehirnWenigBewegung() ? ' lm-ein' : '')+'" role="group" aria-label="Studios als Monde um Formi" style="--lm-h:'+hoch+'px;--lm-ry:'+ry+'px">'+
+    '<span class="lm-bahn" aria-hidden="true"></span>'+
+    '<span class="formi-figur lm-formi" aria-hidden="true">'+formiFigurInnen(false, true)+'</span>'+
+    studios.map(function(x, i){
+      var zeile=lsKachelZeile(x).replace(/\u00a0/g, ' '), hatSerie=serie.indexOf(x.sk)>=0;
+      /* Der Name steht unter dem Mond, in der Trefferfläche. Was offen ist,
+         steht im Schild, im Namen für Vorleser und in der Zusammenfassung. */
+      return '<button type="button" class="lm-mond '+x.status+(hatSerie?' serie':'')+'" style="left:'+lagen[i].x.toFixed(2)+'%;top:calc(50% + '+lagen[i].y.toFixed(1)+'px);--i:'+i+';--lm-max:'+Math.max(48, lagen[i].breit)+'px"'+
+        ' data-lswahl="'+esc(x.sk)+'" aria-pressed="'+(x.sk===_lsWahl)+'"'+
+        ' aria-label="'+esc(x.name+': '+zeile+(hatSerie ? ', Putzplan letzte Woche komplett' : ''))+'"'+
+        ' title="'+esc(x.name+' – '+zeile)+'">'+
+        '<i class="lm-kugel" aria-hidden="true"></i><b class="lm-name" aria-hidden="true">'+esc(x.name)+'</b></button>';
+    }).join('')+
+    '<button type="button" class="mini-link lm-form" data-lsform="kacheln">Als Kacheln</button></div>';
+  _lsMondeEin=false;
+  return html;
+}
 function leitungZeichnen(box, o){
   var keys=o.keys;
   leitungDatenLaden(keys, false);
@@ -43616,10 +44116,16 @@ function leitungZeichnen(box, o){
       (studios.length ? saetze(0) : '<p class="ls-leise">Keine Studios.</p>')+'</section></div>'+
       '<div class="ls-seite">'+lsBestaetigenHTML(best, _lsBestAlle, nZ)+material+'</div></div>';
   } else {
-    var kacheln = mehrere ? '<div class="ls-kacheln" role="group" aria-label="Studios">'+studios.map(function(x){
+    /* Breite der linken Spalte: das Ganze minus rechte Spalte (340 px)
+       und Lücke – gelesen beim Zeichnen, nicht im Klick. */
+    var mondW = breit ? Math.max(400, (box.clientWidth||1000)-356) : 0;
+    var kacheln = !mehrere ? '' : (breit && lsForm()==='monde' && lsMondLagen(studios.length, 92, mondW).breit>=52) ? lsMondeHTML(studios, mondW)
+      : '<div class="ls-kacheln" role="group" aria-label="Studios">'+studios.map(function(x){
         return '<button type="button" class="ls-kachel '+x.status+'" data-lswahl="'+esc(x.sk)+'" aria-pressed="'+(x.sk===_lsWahl)+'">'+
           '<b><span class="ls-punkt '+x.status+'" aria-hidden="true"></span>'+esc(x.name)+'</b><i>'+esc(lsKachelZeile(x))+'</i></button>';
-      }).join('')+'</div>' : '';
+      }).join('')+
+      /* Runde 302: am Rechner zurück zu den Monden. */
+      (breit ? '<button type="button" class="ls-kachel ls-form-kachel" data-lsform="monde"><b>Als Monde</b><i>Studios um Formi</i></button>' : '')+'</div>';
     /* „Ausserdem" steht links unter den Kacheln: rechts ist am Rechner
        der Platz knapp, links bleibt meist Luft. */
     html='<div class="ls'+(mehrere?' ls-mehrere':'')+(stufe>1 && mehrere?' ls-eng':'')+'"><div class="ls-haupt">'+kacheln+
@@ -43646,6 +44152,9 @@ function leitungZeichnen(box, o){
          es sich. Am Rechner wechselt es an Ort und Stelle. */
       if(!heuteBreit() || stufe>1) lsFensterAuf(sk); else renderHeute();
     });
+  });
+  box.querySelectorAll('[data-lsform]').forEach(function(b){
+    b.addEventListener('click', function(){ tick(6); lsFormSetzen(b.getAttribute('data-lsform')); _lsMondeEin=true; renderHeute(); });
   });
   box.querySelectorAll('[data-lsja]').forEach(function(b){ b.addEventListener('click', function(){ lsEntscheiden(b, b.getAttribute('data-lsja'), true); }); });
   box.querySelectorAll('[data-lsnein]').forEach(function(b){ b.addEventListener('click', function(){ lsEntscheiden(b, b.getAttribute('data-lsnein'), false); }); });
@@ -54535,10 +55044,18 @@ function bindPutzplanClicks(box){
          Beides zusammen beantwortet die Frage, die der Chef wirklich
          hat: an welchem Gerät wurde abgehakt, und wer stand davor. */
       var kuerzel = willDone ? putzKuerzel() : null;
-      S('studios').doc(_ppStudioKey).collection('cleaning').doc(id)
-        .update({ done:willDone, doneBy:willDone?session.name:null, doneByUid:willDone?session.uid:null,
-                  doneKuerzel:kuerzel||null, doneAt:willDone?Date.now():null })
-        .then(function(){ schedulePutzplanSheets(_ppStudioKey); })
+      var ppRef=S('studios').doc(_ppStudioKey).collection('cleaning').doc(id), ppSk=_ppStudioKey;
+      var ppDaten={ done:willDone, doneBy:willDone?session.name:null, doneByUid:willDone?session.uid:null,
+                  doneKuerzel:kuerzel||null, doneAt:willDone?Date.now():null,
+                  /* Runde 302: die Tage für Formis Serie. Übergang: solange
+                     die Regel das Feld noch nicht kennt, ohne. */
+                  tage:putzTageNeu(putzPunktFinden(ppSk, id), willDone) };
+      ppRef.update(ppDaten)
+        .catch(function(e){
+          if(!e || !/permission/i.test(String(e.code||''))) throw e;
+          delete ppDaten.tage; return ppRef.update(ppDaten);
+        })
+        .then(function(){ schedulePutzplanSheets(ppSk); })
         .catch(function(e){ toast(errMsg(e),true); });
     });
   });
