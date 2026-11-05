@@ -1,5 +1,5 @@
 /**
- * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.27)
+ * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.28)
  * Cloudflare Worker: WhatsApp (Text + Sprachnachrichten), Studio-Chat-Schnittstelle,
  * Leitstand-Webseite, Speicher in D1, Antworten über Workers AI.
  *
@@ -1937,6 +1937,41 @@ async function api(request, env, url) {
     const bild = String(b.bild || "");
     if (!/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/.test(bild) || bild.length > 900000) return json({ fehler: "Bild fehlt oder ist zu gross" }, 400);
     const geraete = (Array.isArray(b.geraete) ? b.geraete : []).map(x => kuerze(String(x || ""), 60)).filter(Boolean).slice(0, 40);
+    /* 2.28 (05.11.2026, „das man ihm jegliche bilder schicken könnte und er
+       antwortet drauf und sagt was er sieht"): art "frei" beschreibt das
+       ganze Bild und beantwortet die Frage dazu. Ersatz für Gemini in der
+       Function gehirnBild; das Bild wird auch hier nicht gespeichert. */
+    if (b.art === "frei") {
+      const frage = kuerze(String(b.frage || ""), 600);
+      const sys = "Du bist Formi, die KI in einer App für ein EMS-Fitnessstudio. Jemand aus dem Team zeigt dir ein Bild. " +
+        "Sag auf Deutsch in 2 bis 4 Sätzen, was du siehst, und beantworte die Frage dazu, wenn eine dabei ist. Steht Text auf dem Bild, lies das Wichtige ab. " +
+        "Erfinde nichts; was du nicht sicher erkennst, nennst du unsicher. Keine Diagnosen, keine Medikamente. " +
+        (geraete.length ? "Geräte im Studio: " + JSON.stringify(geraete) + ". " : "") +
+        'Ist auf dem Bild ein kaputtes Gerät, setze "aktion" auf {"typ":"defekt","geraet":"Name","text":"was kaputt aussieht"}, sonst null. ' +
+        'Antworte NUR mit JSON: {"antwort":"...","aktion":{...} oder null}';
+      const msgs = [{ role: "system", content: sys }, { role: "user", content: frage ? "Meine Frage zum Bild: " + frage : "Was siehst du auf dem Bild?" }];
+      let rohF = null;
+      for (const m of ["@cf/meta/llama-4-scout-17b-16e-instruct", "@cf/meta/llama-3.2-11b-vision-instruct"]) {
+        try {
+          rohF = m.indexOf("llama-4") >= 0
+            ? await env.AI.run(m, { messages: [msgs[0], { role: "user", content: [{ type: "text", text: msgs[1].content }, { type: "image_url", image_url: { url: bild } }] }], max_tokens: 600, temperature: 0.3 })
+            : await env.AI.run(m, { messages: msgs, image: bild, max_tokens: 600, temperature: 0.3 });
+          if (kiText(rohF)) break;
+        } catch (e) {
+          if (istKontingentFehler(e)) return json({ fehler: "Kontingent von Workers AI aufgebraucht" }, 429);
+          const msg = String(e && e.message || e);
+          if (/agree|licen|5016/i.test(msg)) { try { await env.AI.run(m, { prompt: "agree" }); } catch (e2) { /* nächstes Modell */ } }
+          console.error("Bild frei " + m + ":", msg);
+        }
+      }
+      const t = kiText(rohF);
+      const dF = parseJson(t);
+      const antwortF = entferneMarkdown(String((dF && dF.antwort) || (dF ? "" : t) || "")).trim();
+      if (!antwortF) return json({ fehler: "Auf dem Bild konnte ich nichts erkennen" }, 422);
+      const akt = dF && dF.aktion && dF.aktion.typ === "defekt" && dF.aktion.geraet
+        ? { typ: "defekt", geraet: kuerze(String(dF.aktion.geraet), 80), text: kuerze(String(dF.aktion.text || ""), 400) } : null;
+      return json({ antwort: kuerze(antwortF, 1500), aktion: akt });
+    }
     const system = "Du hilfst in einem EMS-Fitnessstudio, defekte Geräte zu melden. Beschreibe NUR das Gerät und den sichtbaren Schaden, kurz und sachlich auf Deutsch (höchstens 2 Sätze). " +
       "Personen, Gesichter, Namen oder Bildschirminhalte beschreibst du nicht. " +
       (geraete.length ? "Wähle, wenn möglich, den passenden Namen aus dieser Liste: " + JSON.stringify(geraete) + ". " : "") +

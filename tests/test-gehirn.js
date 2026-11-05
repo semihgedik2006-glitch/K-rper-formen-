@@ -946,12 +946,13 @@ const verlaufText = (p) => p.evaluate(() => document.getElementById('gehirnVerla
     const ho = await p.evaluate((n) => (window.__schreib || []).slice(n), v1);
     const ende = await letzte();
     pruefe('… „Übergabe speichern · Feierabend": Übergabe wie im Team-Bereich, dann Feierabend', ho.length === 1 && /handovers/.test(ho[0].pfad) && /Gerät 2 zickt/.test(ho[0].daten.text) && ho[0].daten.uid === 'testuid' && /erledigt/.test(ende), JSON.stringify(ho).slice(0, 200) + ' ' + ende.slice(0, 120));
-    // Foto
-    await p.evaluate(() => { window.__foto = []; window.__antwort.gehirnFoto = (d) => { window.__foto.push(d); return Promise.resolve({ data: { geraet: 'EMS-Gerät 2', text: 'Kabel am Stecker gebrochen.' } }); }; });
+    // Bild (05.11.2026: „das man ihm jegliche bilder schicken könnte und er antwortet drauf und sagt was er sieht").
+    // Seitdem geht jedes Bild an gehirnBild; ein Defekt kommt als Vorschlag zurück und läuft durch den Defekt-Weg.
+    await p.evaluate(() => { window.__foto = []; window.__antwort.gehirnBild = (d) => { window.__foto.push(d); return Promise.resolve({ data: { antwort: 'Ich sehe EMS-Gerät 2, das Kabel ist am Stecker gebrochen.', vorschlag: { typ: 'defekt', geraet: 'EMS-Gerät 2', text: 'Kabel am Stecker gebrochen.', studioKey: 'studio-1', studioName: 'Hürth' } } }); }; });
     const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVR42mP8z8DwnwEIGBmQAQBQ6QH/q9b0jgAAAABJRU5ErkJggg==', 'base64');
     await p.setInputFiles('#jarvisFotoDatei', { name: 'geraet.png', mimeType: 'image/png', buffer: png }); await p.waitForTimeout(1200);
-    const fo = await p.evaluate(() => ({ f: window.__foto[0] && { jpeg: /^data:image\/jpeg;base64,/.test(window.__foto[0].bild), geraete: window.__foto[0].geraete.length }, t: document.getElementById('jarvisVerlauf').innerText }));
-    pruefe('Foto: verkleinert als JPEG an gehirnFoto, mit Geräteliste; „Erkannt: EMS-Gerät 2" → Defekt-Weg', fo.f && fo.f.jpeg && /Erkannt: EMS-Gerät 2/.test(fo.t) && /Suche Gerät/.test(fo.t), JSON.stringify(fo.f) + ' ' + fo.t.slice(-300));
+    const fo = await p.evaluate(() => ({ f: window.__foto[0] && { jpeg: /^data:image\/jpeg;base64,/.test(window.__foto[0].bild), geraete: window.__foto[0].kontext.geraete.length }, t: document.getElementById('jarvisVerlauf').innerText, img: !!document.querySelector('#jarvisVerlauf .gehirn-frage img.gehirn-bild') }));
+    pruefe('Bild: verkleinert als JPEG an gehirnBild, mit Geräteliste; Antwort steht da, Bild in der Blase; Vorschlag → Defekt-Weg', fo.f && fo.f.jpeg && fo.img && /das Kabel ist am Stecker gebrochen/.test(fo.t) && /Erkannt: Gerät defekt|Erkannt: Defekt|Suche Gerät/.test(fo.t), JSON.stringify(fo.f) + ' ' + fo.t.slice(-300));
     // ohne Netz
     await p.context().setOffline(true); await p.waitForTimeout(200);
     pruefe('ohne Netz: Hinweis oben im Fenster', await sichtbar(p, '#jarvisOffline'));
