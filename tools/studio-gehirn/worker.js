@@ -1,5 +1,5 @@
 /**
- * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.27)
+ * Studio-Gehirn – Körperformen Mitarbeiter-KI „Formi" (Version 2.28)
  * Cloudflare Worker: WhatsApp (Text + Sprachnachrichten), Studio-Chat-Schnittstelle,
  * Leitstand-Webseite, Speicher in D1, Antworten über Workers AI.
  *
@@ -619,6 +619,22 @@ async function beantworteFrage(env, { kanal, absender, studio, text, nachrichtId
     await speichere({ typ: "smalltalk", antwort });
     return { text: antwort, abgedeckt: false, offenId: null, quellen: [] };
   }
+  const beginn = Date.now();
+  /* 2.28 Schnellweg: eine freigegebene Antwort auf praktisch dieselbe
+     Frage kommt sofort — vor der Suche, ohne KI, auch bei der Notbremse. */
+  const paar = await schnellwegFinden(env, text);
+  if (paar) {
+    const antwort = String(paar.antwort).trim();
+    const wid = Number(paar.wissen_id) || null;
+    await speichere({ antwort, abgedeckt: true, wissenIds: wid ? String(wid) : "" });
+    await tempoBuchen(env, nachrichtId, "schnell", Date.now() - beginn);
+    let quellen = [];
+    if (wid) {
+      const w = await env.DB.prepare("SELECT id, thema, inhalt, quelle FROM wissen WHERE id = ?").bind(wid).first().catch(() => null);
+      if (w) quellen = [{ id: w.id, thema: kuerze(w.thema, 120), auszug: kuerze(w.inhalt, 400), gelernt: /^Offene Frage \d+/.test(String(w.quelle || "")) }];
+    }
+    return { text: antwort, abgedeckt: true, offenId: null, quellen, grundlage: "wissen", stimmung: "ruhig", schnell: true };
+  }
   const wissen = await findeWissen(env, text);
   const vorbilder = await vorbilderLaden(env, text, wissen);
   const stufe = (await verbrauchHeute(env)).stufe;
@@ -646,6 +662,7 @@ async function beantworteFrage(env, { kanal, absender, studio, text, nachrichtId
       ? `Für heute ist mein Kontingent aufgebraucht. Deine Frage ist gespeichert (Nr. ${offenId}) und wird beantwortet, sobald Semih sie sieht.`
       : `Gerade hakt es bei mir. Deine Frage ist gespeichert (Nr. ${offenId}) und geht an Semih.`;
     await speichere({ antwort });
+    await tempoBuchen(env, nachrichtId, "fehler", Date.now() - beginn);
     await benachrichtigeAdmins(env, absender, `❓ Offene Frage Nr. ${offenId} (${studio || "?"}): ${kuerze(text, 300)}\nAntworte mit: Antwort ${offenId}: ...`);
     return { text: antwort, abgedeckt: false, offenId };
   }
@@ -665,6 +682,7 @@ async function beantworteFrage(env, { kanal, absender, studio, text, nachrichtId
      der Statistik noch als Trainingsbeispiel. */
   const typ = ergebnis.art === "frage" ? undefined : (ergebnis.art === "kunde" ? "kunde" : "smalltalk");
   await speichere({ typ, antwort, abgedeckt: ergebnis.abgedeckt, wissenIds: ergebnis.quellen.join(",") });
+  await tempoBuchen(env, nachrichtId, stufe === "stopp" ? "stopp" : (stufe === "spar" ? "spar" : "ki"), Date.now() - beginn);
   /* 2.8: woher die Antwort kommt (für „Woher weiß ich das?" in der App)
      und ob sie aus einer früher offenen, von Semih beantworteten Frage
      stammt („Gelernt!"). Nur Thema und ein Auszug, keine Absender. */
@@ -721,6 +739,130 @@ async function vorbilderLaden(env, text, wissen) {
     ).bind(...ids).all());
     return vorbilderWaehlen(text, paare, MAX_VORBILDER);
   } catch (e) { return []; /* Tabelle gibt es noch nicht: ohne Beispiele */ }
+}
+
+/* ── Schnellweg (2.28, 5.11.2026) ──────────────────────────────────────
+   Aus dem Betrieb: „was können wir an formi noch alles optimieren das es
+   bis nächstes jahr wirklich flüssig läuft" — und auf die Rückfrage zum
+   Kontingent: „lieber kürzer".
+   Gemessen im Oktober: 5 bis 38 Sekunden je Antwort, und an einem Tag war
+   das Gratis-Kontingent leer. Die geprüften Paare (Übungsstapel, Status
+   „gut") sind Antworten, die Semih schon freigegeben hat. Fragt jemand
+   praktisch dasselbe, kommt diese Antwort sofort — ohne Suche nach
+   Bedeutung, ohne KI, ohne Kontingent.
+
+   „Praktisch dasselbe" ist bewusst streng, lieber zu selten als falsch:
+   - dieselben Suchwörter (Wortanfang, 5 Buchstaben: „Westen" = „Weste"),
+     mindestens zwei; erst ab vier Wörtern darf eines fehlen oder dazukommen;
+   - dasselbe Fragewort (wie / warum / wann …) und dieselben Modalwörter
+     (darf / muss / kann / soll) — „Darf ich …" ist nicht „Muss ich …";
+   - Verneinung auf beiden Seiten gleich, dieselben Zahlen.
+   Alles andere geht wie bisher an die KI, die Paare dann als Vorbild. */
+export const SCHNELL_MIN_WOERTER = 2;
+const SCHNELL_FRAGEWOERTER = ["wie", "was", "wo", "wann", "warum", "wieso", "weshalb", "wer", "wem", "wen", "welche", "welcher", "welches", "welchen", "wieviel", "wieviele", "woran", "womit", "wofur", "wozu", "worauf", "wohin", "woher"];
+const SCHNELL_MODAL = { darf: "darf", darfst: "darf", durfen: "darf", durft: "darf", muss: "muss", musst: "muss", mussen: "muss", kann: "kann", kannst: "kann", konnen: "kann", soll: "soll", sollst: "soll", sollen: "soll", sollte: "soll" };
+const SCHNELL_NEIN = /\b(nicht|kein|keine|keinen|keinem|keiner|keines|ohne|nie|niemals|nichts)\b/;
+
+function schnellWoerter(text) {
+  return String(text || "").toLowerCase().replace(/ä/g, "a").replace(/ö/g, "o").replace(/ü/g, "u").split(/[^a-z0-9ß]+/).filter(Boolean);
+}
+export function schnellSchluessel(text) {
+  const worte = schnellWoerter(text);
+  const begriffe = [...new Set(suchbegriffe(text, 30).map(w => w.slice(0, 5)))].sort();
+  const frage = worte.find(w => SCHNELL_FRAGEWOERTER.includes(w)) || "";
+  const modal = [...new Set(worte.map(w => SCHNELL_MODAL[w]).filter(Boolean))].sort().join(",");
+  const nein = SCHNELL_NEIN.test(worte.join(" "));
+  const zahlen = (String(text || "").match(/\d+/g) || []).sort().join(",");
+  return { begriffe, frage, modal, nein, zahlen };
+}
+export function schnellPasst(a, b) {
+  if (a.begriffe.length < SCHNELL_MIN_WOERTER || b.begriffe.length < SCHNELL_MIN_WOERTER) return false;
+  if (a.frage !== b.frage || a.modal !== b.modal || a.nein !== b.nein || a.zahlen !== b.zahlen) return false;
+  const B = new Set(b.begriffe);
+  const gemeinsam = a.begriffe.filter(w => B.has(w)).length;
+  const unterschied = (a.begriffe.length - gemeinsam) + (b.begriffe.length - gemeinsam);
+  if (unterschied === 0) return true;
+  return unterschied === 1 && Math.min(a.begriffe.length, b.begriffe.length) >= 4;
+}
+/* Das beste Paar: zuerst ganz gleich, sonst das mit den meisten Wörtern
+   (das genauere). Rein rechnerisch. */
+export function schnellPaar(text, paare) {
+  const a = schnellSchluessel(text);
+  if (a.begriffe.length < SCHNELL_MIN_WOERTER) return null;
+  let bestes = null, bestePunkte = -1;
+  for (const p of paare || []) {
+    if (!p || !p.frage || !p.antwort) continue;
+    const b = p._s || schnellSchluessel(p.frage);
+    if (!schnellPasst(a, b)) continue;
+    const gleich = a.begriffe.join(" ") === b.begriffe.join(" ") ? 100 : 0;
+    const punkte = gleich + b.begriffe.length;
+    if (punkte > bestePunkte) { bestes = p; bestePunkte = punkte; }
+  }
+  return bestes;
+}
+
+/* Die freigegebenen Paare, je Datenbank gemerkt. Neu geladen wird nur,
+   wenn sich Anzahl oder letzte Freigabe geändert hat — eine kleine Abfrage
+   statt bis zu 500 Zeilen bei jeder Frage. */
+const _schnellPaare = new WeakMap();
+async function schnellPaareLaden(env) {
+  const stand = await env.DB.prepare("SELECT COUNT(*) AS n, MAX(id) AS m, MAX(geprueft) AS g FROM uebung WHERE status = 'gut'").first();
+  const kennung = stand ? [stand.n, stand.m, stand.g].join("/") : "";
+  const alt = _schnellPaare.get(env.DB);
+  if (alt && alt.kennung === kennung) return alt.paare;
+  const paare = rows(await env.DB.prepare("SELECT id, wissen_id, frage, antwort FROM uebung WHERE status = 'gut' ORDER BY id DESC LIMIT 2000").all())
+    .map(p => Object.assign(p, { _s: schnellSchluessel(p.frage) }));
+  _schnellPaare.set(env.DB, { kennung, paare });
+  return paare;
+}
+export async function schnellwegFinden(env, text) {
+  try { return schnellPaar(text, await schnellPaareLaden(env)); }
+  catch (e) { return null; /* Tabelle gibt es noch nicht: kein Schnellweg */ }
+}
+
+/* ── Tempo (2.28) ─────────────────────────────────────────────────────
+   Je Antwort: welcher Weg (schnell / ki / spar / stopp / fehler) und wie
+   lange das Gehirn gebraucht hat. Nur Zeit und Weg, kein Text — der steht
+   schon in nachrichten. Der Weg durch die App (Anmeldung, Einordnen)
+   kommt dazu und ist hier nicht gemessen. 30 Tage, dann gelöscht. */
+export const TEMPO_WEGE = ["schnell", "ki", "spar", "stopp", "fehler"];
+async function tempoTabelle(env) {
+  await env.DB.prepare("CREATE TABLE IF NOT EXISTS tempo (id INTEGER PRIMARY KEY AUTOINCREMENT, nachricht_id INTEGER, weg TEXT, ms INTEGER, erstellt INTEGER)").run();
+}
+async function tempoBuchen(env, nachrichtId, weg, ms) {
+  try {
+    await tempoTabelle(env);
+    await env.DB.prepare("INSERT INTO tempo (nachricht_id, weg, ms, erstellt) VALUES (?, ?, ?, ?)")
+      .bind(nachrichtId || null, TEMPO_WEGE.includes(weg) ? weg : "ki", Math.max(0, Math.round(ms)), Date.now()).run();
+  } catch (e) { console.error("Tempo buchen:", e && e.message); }
+}
+function quantil(sortiert, q) {
+  if (!sortiert.length) return null;
+  return sortiert[Math.min(sortiert.length - 1, Math.floor(q * sortiert.length))];
+}
+/* Rein rechnerisch: aus den Zeilen die Zahlen für den Leitstand. */
+export function tempoAuswerten(zeilen) {
+  const alle = (zeilen || []).filter(z => z && Number.isFinite(Number(z.ms)));
+  const wege = {};
+  for (const w of TEMPO_WEGE) wege[w] = 0;
+  for (const z of alle) wege[TEMPO_WEGE.includes(z.weg) ? z.weg : "ki"]++;
+  const ms = alle.map(z => Number(z.ms)).sort((a, b) => a - b);
+  const ki = alle.filter(z => z.weg === "ki" || z.weg === "spar").map(z => Number(z.ms)).sort((a, b) => a - b);
+  return {
+    antworten: alle.length,
+    wege,
+    anteilSchnell: alle.length ? Math.round(wege.schnell / alle.length * 100) : 0,
+    mitte: quantil(ms, 0.5), neunVonZehn: quantil(ms, 0.9),
+    kiMitte: quantil(ki, 0.5), kiNeunVonZehn: quantil(ki, 0.9),
+  };
+}
+async function tempoStand(env) {
+  try {
+    await tempoTabelle(env);
+    await env.DB.prepare("DELETE FROM tempo WHERE erstellt < ?").bind(Date.now() - 30 * TAG).run();
+    const zeilen = rows(await env.DB.prepare("SELECT weg, ms FROM tempo WHERE erstellt > ? ORDER BY id DESC LIMIT 5000").bind(Date.now() - 7 * TAG).all());
+    return Object.assign({ tage: 7 }, tempoAuswerten(zeilen));
+  } catch (e) { return Object.assign({ tage: 7 }, tempoAuswerten([])); }
 }
 
 /* 2.24: Ohne KI prüft niemand, ob der Treffer wirklich passt. Deshalb nur
@@ -1744,7 +1886,7 @@ async function statistik(env) {
     + await zahl("SELECT COUNT(*) AS n FROM bewertung WHERE wert = 1 AND erstellt > ?", vor14);
   const training = Object.assign(trainingsStand(ausWissen, goldOffen + goldUebung + goldDaumen + goldLernen, tempo), { goldOffen, goldUebung, goldDaumen, goldLernen, daumenRunter, uebungNeu });
   vektoren.gesamt = wissen.n;
-  return { fragen7: z.fragen || 0, abgedeckt7: z.abgedeckt || 0, sprache7: z.sprache || 0, fragenHeute: heute.n, offen: offen.n, wissen: wissen.n, ideen7: ideen.n, mitarbeiter: mitarbeiter.n, training, vorschlaege, vektoren, verbrauch: await verbrauchHeute(env) };
+  return { fragen7: z.fragen || 0, abgedeckt7: z.abgedeckt || 0, sprache7: z.sprache || 0, fragenHeute: heute.n, offen: offen.n, wissen: wissen.n, ideen7: ideen.n, mitarbeiter: mitarbeiter.n, training, vorschlaege, vektoren, verbrauch: await verbrauchHeute(env), tempo: await tempoStand(env) };
 }
 
 async function legeOffenAn(env, { nachrichtId, frage, entwurf, absender, kanal, studio, grund }) {
@@ -2013,7 +2155,7 @@ async function api(request, env, url) {
     const ton = b.ton === "sachlich" ? "sachlich" : "locker";
     const lage = typeof b.lage === "string" ? kuerze(b.lage, MAX_LAGE_ZEICHEN) : "";
     const ergebnis = await behandleText(env, { kanal: "studiochat", absender: "studiochat:" + name, studio, text: kuerze(text, 2000), typ: "text", admin: false, nachrichtId, vorname, ton, lage });
-    return json({ antwort: ergebnis.text, abgedeckt: !!ergebnis.abgedeckt, offenId: ergebnis.offenId || null, nachrichtId, quellen: ergebnis.quellen || [], grundlage: ergebnis.grundlage || null, stimmung: ergebnis.stimmung || null }, 200, true);
+    return json({ antwort: ergebnis.text, abgedeckt: !!ergebnis.abgedeckt, offenId: ergebnis.offenId || null, nachrichtId, quellen: ergebnis.quellen || [], grundlage: ergebnis.grundlage || null, stimmung: ergebnis.stimmung || null, schnell: !!ergebnis.schnell }, 200, true);
   }
 
   // ---- Leitstand (nur mit ADMIN_KEY, nur von der eigenen Seite) ----
@@ -2349,6 +2491,16 @@ function uebersicht(v) {
         el("div", { class: "s", text: "ca. " + vb.neuronen.toLocaleString("de-DE") + " von " + vb.kontingent.toLocaleString("de-DE") + " Neuronen (geschätzt) · " + vb.aufrufe + " KI-Aufrufe · " + stufeText }),
         el("div", { style: "height:10px;border-radius:6px;background:var(--line);overflow:hidden;margin:6px 0 2px" }, el("div", { style: "height:100%;width:" + p + "%;background:var(--brand)" })),
         el("div", { class: "s", text: "Sparmodus ab " + vb.spar.toLocaleString("de-DE") + ", Notbremse ab " + vb.stopp.toLocaleString("de-DE") + ". Neustart um 00:00 UTC (2 Uhr deutsche Sommerzeit, 1 Uhr Winterzeit)." })));
+    }
+    /* 2.28: Tempo der letzten 7 Tage — Zeit im Gehirn, ohne den Weg durch die App. */
+    var tp = s.tempo;
+    if (tp) {
+      function sek(ms) { return ms == null ? "–" : Math.max(0.1, Math.ceil(ms / 100) / 10).toLocaleString("de-DE") + " s"; }
+      v.append(el("div", { class: "card" },
+        el("div", { class: "t", text: "Tempo (7 Tage)" }),
+        tp.antworten ? el("div", { class: "s", text: tp.antworten + " Antworten · die Hälfte in höchstens " + sek(tp.mitte) + ", 9 von 10 in höchstens " + sek(tp.neunVonZehn) }) : el("div", { class: "s", text: "Noch keine Antworten gemessen — die Zeit wird ab Version 2.28 aufgeschrieben." }),
+        tp.antworten ? el("div", { class: "s", text: "Sofort aus geprüften Antworten: " + tp.wege.schnell + " (" + tp.anteilSchnell + " %) · mit KI: " + (tp.wege.ki + tp.wege.spar) + (tp.wege.ki + tp.wege.spar ? " (Hälfte in höchstens " + sek(tp.kiMitte) + ", 9 von 10 in höchstens " + sek(tp.kiNeunVonZehn) + ")" : "") + (tp.wege.stopp ? " · Notbremse: " + tp.wege.stopp : "") + (tp.wege.fehler ? " · Fehler: " + tp.wege.fehler : "") }) : null,
+        el("div", { class: "s", style: "margin-top:6px", text: "Gemessen wird die Zeit im Gehirn. Der Weg durch die App kommt dazu. Je mehr Übungen du freigibst, desto mehr Fragen gehen den schnellen Weg." })));
     }
     v.append(el("div", { class: "card" },
       el("div", { class: "t", text: "Formi lernt selbst" }),
