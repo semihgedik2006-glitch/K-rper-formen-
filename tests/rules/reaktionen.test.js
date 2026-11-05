@@ -178,6 +178,29 @@ async function frisch(pfad, grund) {
         reactions: { '👍': ['mitA', 'zweitA'], '❤️': ['zweitA'], '🎉': ['mitA'] },
         text: 'heimlich umgeschrieben' })));
 
+    /* Formi-Sticker (05.11.2026): vier feste Namen, sonst dieselbe
+       Regel. Jede Sperre oben gilt auch für sie — hier die, die bei
+       einem neuen Zeichen zuerst vergessen würden. */
+    await frisch(pfad, grund);
+    await pruefe(name + ' · eigener FORMI-STICKER geht', () =>
+      assertSucceeds(mitA().doc(pfad).update({
+        reactions: { '👍': ['mitA', 'zweitA'], '❤️': ['zweitA'], 'formi-stolz': ['mitA'] } })));
+
+    await frisch(pfad, grund);
+    await pruefe(name + ' · FREMDE Kennung im Formi-Sticker geht NICHT', () =>
+      assertFails(mitA().doc(pfad).update({
+        reactions: { '👍': ['mitA', 'zweitA'], '❤️': ['zweitA'], 'formi-verliebt': ['zweitA'] } })));
+
+    await frisch(pfad, grund);
+    await pruefe(name + ' · ein ERFUNDENER Formi-Name geht NICHT', () =>
+      assertFails(mitA().doc(pfad).update({
+        reactions: { '👍': ['mitA', 'zweitA'], '❤️': ['zweitA'], 'formi-wuetend': ['mitA'] } })));
+
+    await frisch(pfad, grund);
+    await pruefe(name + ' · 4000-mal die eigene Kennung im Formi-Sticker geht NICHT', () =>
+      assertFails(mitA().doc(pfad).update({
+        reactions: { '👍': ['mitA', 'zweitA'], '❤️': ['zweitA'], 'formi-freut': new Array(4000).fill('mitA') } })));
+
     // ── Wer gar nicht dazugehört ──
     await frisch(pfad, grund);
     await pruefe(name + ' · ein WARTENDES Konto reagiert nicht', () =>
@@ -198,6 +221,16 @@ async function frisch(pfad, grund) {
   await pruefe('FIRMA · eigene Reaktion geht', () =>
     assertSucceeds(mitA().doc(FPFAD).update({
       reactions: { '👍': ['mitA', 'zweitA'], '❤️': ['zweitA'], '🎉': ['mitA'] } })));
+
+  await frisch(FPFAD, { uid: 'chefA', text: 'Aushang', ts: 1, studios: 'all' });
+  await pruefe('FIRMA · eigener Formi-Sticker geht', () =>
+    assertSucceeds(mitA().doc(FPFAD).update({
+      reactions: { '👍': ['mitA', 'zweitA'], '❤️': ['zweitA'], 'formi-staunt': ['mitA'] } })));
+
+  await frisch(FPFAD, { uid: 'chefA', text: 'Aushang', ts: 1, studios: 'all' });
+  await pruefe('FIRMA · fremde Kennung im Formi-Sticker geht NICHT', () =>
+    assertFails(mitA().doc(FPFAD).update({
+      reactions: { '👍': ['mitA', 'zweitA'], '❤️': ['zweitA'], 'formi-staunt': ['zweitA'] } })));
 
   await frisch(FPFAD, { uid: 'chefA', text: 'Aushang', ts: 1, studios: 'all' });
   await pruefe('FIRMA · fremde Reaktion löschen geht NICHT', () =>
