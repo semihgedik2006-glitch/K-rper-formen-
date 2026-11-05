@@ -99,10 +99,12 @@ function pruefe(was, bedingung, hinweis) {
     marken: document.querySelectorAll('#neuListe .neu-eintrag > summary .ne-art').length,
     offen: [...document.querySelectorAll('#neuListe .neu-eintrag')].map(x => x.open)
   }));
-  const tageSoll = [...new Set(N.map(e => e.datum))].length;
+  /* Derselbe Tag in zwei Schreibweisen („05.11.2026"/„5.11.2026") ist EIN Update (Runde 299). */
+  const tagSchluessel = d => String(d).split('.').map(Number).join('.');
+  const tageSoll = [...new Set(N.map(e => tagSchluessel(e.datum)))].length;
   pruefe('nach Tagen gruppiert: ' + tageSoll + ' Updates, jede Zeile mit Art-Marke',
     gruppen.tage.length === tageSoll && gruppen.marken === N.length && /^Update · /.test(gruppen.tage[0] || ''), JSON.stringify(gruppen.tage.slice(0, 3)) + ' marken ' + gruppen.marken);
-  const ersterTag = N.filter(e => e.datum === N[0].datum).length;
+  const ersterTag = N.filter(e => tagSchluessel(e.datum) === tagSchluessel(N[0].datum)).length;
   pruefe('das jüngste Update ist aufgeklappt, ältere zu', gruppen.offen.slice(0, ersterTag).every(Boolean) && gruppen.offen.slice(ersterTag).some(x => !x), '');
 
   /* Trefferflächen am Handy und am Rechner, normal und kompakt. */

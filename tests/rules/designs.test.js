@@ -78,7 +78,7 @@ const D = (uid, extra) => Object.assign({ uid, von: 'Mara', name: 'Frühschicht'
     await darf('(neu geteilt)', als(ma).doc(p + 'designs/d8').set(D(ma)));
     await darf('der Chef entfernt jedes', als(chef).doc(p + 'designs/d8').delete());
     /* Runde 294: Vorschläge der Leitung */
-    /* Seit Runde 297 nennt die Studioleitung ihre Studios (siehe unten). */
+    /* Seit Runde 303 nennt die Studioleitung ihre Studios (siehe unten). */
     await darf('die Leitung schlägt ein Design vor', als(le).doc(p + 'designs/a1').set(D(le, { angebot: true, studios: ['studio-1'] })));
     await darf('der Chef schlägt ein Design vor', als(chef).doc(p + 'designs/a2').set(D(chef, { angebot: true })));
     await darfNicht('ein Mitarbeiter schlägt NICHT vor', als(ma).doc(p + 'designs/a3').set(D(ma, { angebot: true })));
@@ -89,7 +89,7 @@ const D = (uid, extra) => Object.assign({ uid, von: 'Mara', name: 'Frühschicht'
     await darfNicht('ein Inaktiver liest Vorschläge nicht', als(neu).collection(p + 'designs').where('angebot', '==', true).limit(20).get());
     await darf('die Leitung zieht den eigenen Vorschlag zurück', als(le).doc(p + 'designs/a1').delete());
     await darfNicht('ein Mitarbeiter entfernt den Vorschlag des Chefs nicht', als(ma).doc(p + 'designs/a2').delete());
-    /* Runde 297, aus dem Betrieb, 5.11.2026: „Studio leitung soll nur für
+    /* Runde 303, aus dem Betrieb, 5.11.2026: „Studio leitung soll nur für
        ihre eigenen studios machen können, Leitung soll es sofort festlegen
        können ohne vorschlag". */
     await darf('die Studioleitung legt für ihr eigenes Studio fest', als(le).doc(p + 'designs/f1').set(D(le, { angebot: true, art: 'fest', studios: ['studio-1'] })));
@@ -107,7 +107,7 @@ const D = (uid, extra) => Object.assign({ uid, von: 'Mara', name: 'Frühschicht'
     await darfNicht('studios als Text ausser „all" gehen nicht', als(chef).doc(p + 'designs/f12').set(D(chef, { angebot: true, studios: 'studio-1' })));
   }
   await env.cleanup();
-  console.log('\nGeteilte Designs (Runde 292, Vorschläge Runde 294, Studios und Festlegen Runde 297)\n' + protokoll.join('\n'));
+  console.log('\nGeteilte Designs (Runde 292, Vorschläge Runde 294, Studios und Festlegen Runde 303)\n' + protokoll.join('\n'));
   console.log('\n' + bestanden + ' bestanden, ' + gefallen + ' gefallen');
   process.exit(gefallen ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(1); });

@@ -25237,7 +25237,381 @@ wechselnd): `test-abgeschnitten` (#app wechselnd 3–7 px breiter, auf
 Messläufe (`test-formi-physik`, `test-federn`, `test-schichtplaner-rechnung`)
 fallen unter Last aus; einzeln wiederholt waren die hier betroffenen grün.
 
-## Runde 297 — Layout für das eigene Studio: vorschlagen oder sofort festlegen (5.11.2026)
+## Runde 297 — Formi schneller: Schnellweg, klare Fragen direkt, Tempo im Leitstand (Worker 2.28, 5.11.2026)
+
+Aus dem Betrieb: „was können wir an formi noch alles optimieren das es
+bis nächstes jahr wirklich flüssig läuft und wirklich sachen uns abnehmen
+kann". Auf den Plan (1. flüssig, 2. Sachen abnehmen, 3. Lernen, das man
+merkt) und die Rückfragen: Krankmeldung „nur vorschläge … für die
+leitung", Mustertexte für Kundenpost „noch nicht", Kontingent „lieber
+kürzer, aber wenns nicht reicht … können wir auch später um
+struckturieren und auch etwas geld ins spiel mit aufnehmen".
+
+**Was gefunden wurde.**
+- Eine Frage lief durch **zwei KI-Aufrufe hintereinander**: erst Gemini
+  in `gehirnAktion` (Aufgabe? Material? Frage?), dann im Worker Suche nach
+  Bedeutung und gpt-oss-120b. Im Oktober live gemessen: 5 bis 38 Sekunden.
+- Rund 470 freigegebene Paare (Übungsstapel, „gut") gingen bisher nur als
+  Vorbild an die KI — auch wenn jemand genau diese Frage stellte.
+- Es gab keine Messung, wie lange eine Antwort dauert. „Wird Formi
+  schneller?" war nicht zu beantworten.
+
+**Was gebaut wurde.**
+- **Schnellweg im Worker** (`schnellPaar`): ist die Frage praktisch gleich
+  einem freigegebenen Paar, kommt dessen Antwort sofort — vor der Suche,
+  ohne KI, ohne Kontingent, auch bei der Notbremse. Nachricht, Daumen und
+  „Woher weiß ich das?" funktionieren wie sonst.
+- **Klare Fragen ohne Einordnen** (`gehirnKlareFrage` in den Functions):
+  eine eindeutige Frage ohne Auftragswort geht direkt ans Gehirn, Gemini
+  entfällt.
+- **Tempo** (Tabelle `tempo`, Karte „Tempo (7 Tage)" im Leitstand): je
+  Antwort Weg und Zeit im Gehirn, Hälfte / 9 von 10, Anteil Schnellweg.
+
+**Warum so.**
+- **Streng statt viel.** Der Schnellweg zeigt eine fertige Antwort ohne
+  dass eine KI prüft, ob sie passt. Deshalb nur bei denselben Suchwörtern
+  (Wortanfang, 5 Buchstaben), demselben Fragewort, denselben Modalwörtern
+  („darf" ≠ „muss"), gleicher Verneinung und gleichen Zahlen; erst ab vier
+  Wörtern darf eines abweichen. Lieber geht eine Frage zu oft an die KI als
+  dass eine falsche Antwort sofort und überzeugt dasteht.
+- **Nur freigegebene Paare.** Daumen hoch aus dem Team zählt hier nicht —
+  den Schnellweg bestimmt, was die Leitung geprüft hat.
+- **Kein Zwischenspeicher, der veraltet:** der Worker merkt sich die Paare,
+  fragt aber bei jeder Frage mit einer kleinen Abfrage, ob sich Anzahl oder
+  letzte Freigabe geändert hat. Ein eben freigegebenes Paar gilt sofort.
+- **Gemini entfällt nur, wenn es nichts zu entscheiden gibt.** Alles, was
+  nach Auftrag klingt (anlegen, erinnern, fehlt, kaputt, krank, Schicht,
+  Aufgabe …), nach Abfrage oder Weg in der App („wer hat Dienst", „was ist
+  offen", „wo finde ich …") oder sich auf das Gespräch bezieht („dauert
+  das?", „und wenn er …"), geht weiter über Gemini. Gemini löst Bezüge auf
+  und kennt Navigation und Abfragen — das soll nicht verloren gehen.
+- **Gemessen wird nur, was gemessen werden kann:** die Zeit im Gehirn.
+  Der Weg durch die App (Anmeldung, Functions, Gemini) kommt dazu und ist
+  nicht in der Zahl. Keine Texte, keine Absender in `tempo`.
+- **Wort für Wort anzeigen** (Streaming) ist bewusst noch nicht dabei: die
+  App spricht über eine Firebase-Funktion (`onCall`) mit dem Gehirn, und
+  die liefert nur am Stück. Dafür müsste die App direkt mit dem Worker
+  sprechen und der Worker die Anmeldung selbst prüfen — eigener Schritt.
+
+**Nicht geprüft.**
+- Wie viel schneller es live wird: hier läuft keine echte KI. Die Zahl
+  steht nach dem Einspielen von 2.28 in der Karte „Tempo (7 Tage)".
+- Wie oft der Schnellweg live greift: hängt davon ab, wie nah die echten
+  Fragen an den freigegebenen sind. Ebenfalls in der Karte.
+- Die Zeitersparnis durch das Weglassen von Gemini ist geschätzt (ein
+  Gemini-Aufruf, erfahrungsgemäß ein bis wenige Sekunden), nicht gemessen.
+
+**Geprüft:** `test-formi-worker` 189 (neu: Schnellweg rechnerisch und im
+echten Weg, Gegenproben „darf/muss", ungeprüftes Paar, eben freigegebenes
+Paar, Tempo-Tabelle ohne Text, Leitstand-Karte im Browser),
+`test-gehirn-aktion` 162 (neu: klare Frage direkt, Aufträge, Abfragen,
+Wege in der App und Bezüge weiter über Gemini).
+
+## Runde 298 — Formi sieht Bilder (05.11.2026)
+
+**Aus dem Betrieb, 05.11.2026** (Thread „Neue Ideen für Formi sammeln“):
+- Auf acht neue Formi-Ideen: „alles davon ist super, am aller wichtigsten
+  finde ich auch die bild erkennung das man ihm jegliche bilder schicken
+  könnte und er antwortet drauf und sagt was er sieht und so"
+- Auf die Rückfragen: Personen und Atteste auf Fotos — „ne er kann das
+  schon annehmen"; wer darf — „alle mit grenze klingt gut"; anlegen —
+  „anlegen mit bestätigung".
+
+**Was gebaut wurde**
+- Der Foto-Knopf im Formi-Fenster („Defekt mit Foto melden“, nur Geräte)
+  heisst jetzt **„Bild zeigen“** und nimmt jedes Bild. Am Rechner geht
+  zusätzlich **Hineinziehen** ins Fenster und **Strg+V** im Feld. Was im
+  Feld steht, geht als Frage zum Bild mit.
+- Das Bild wird im Gerät auf höchstens 1024 px verkleinert (JPEG; vorher
+  768 px — Text auf Zetteln und Displays war bei 768 px knapp), steht als
+  Vorschau in der eigenen Blase und geht an die neue Function
+  **`gehirnBild`**. Gespeichert wird es nirgends: der Gesprächsverlauf
+  hält nur Texte, die Function reicht es nur weiter.
+- `gehirnBild` fragt zuerst Gemini (dasselbe Muster wie `gehirnAktion`,
+  mit derselben 30-Minuten-Sperre nach 401/402/403), dann den Worker.
+  Zurück kommen die Antwort, eine Stimmung fürs Gesicht und höchstens
+  **ein** Vorschlag.
+- Der Vorschlag läuft durch `gehirnBefehlPruefen` wie jeder Satz und nur
+  aus einer kurzen Liste: Defekt, Material, Aufgabe (nur Leitung),
+  Übergabe, Erinnerung, Idee. Krankmeldung, Mail, Abwesenheit kommen aus
+  einem Bild bewusst nicht — ein Attest ansehen darf Formi, eine
+  Krankmeldung daraus anlegen nicht, denn die betrifft womöglich jemand
+  anderen. In der App erscheint der Vorschlag als eigene Karte unter der
+  Antwort und wird erst mit dem Knopf gespeichert (`gehirnWeitere`, wie
+  ein zweiter Auftrag aus demselben Satz).
+- **Grenzen:** 25 Bilder je Person und Tag, 150 je Betrieb und Tag
+  (`tagesGrenze`, der Personenzähler heisst nach der Nutzerkennung).
+- **Worker 2.29:** `/api/bild` mit `art:"frei"` beschreibt das ganze Bild
+  (erst Llama 4 Scout mit `image_url`, dann Llama 3.2 Vision). Ohne das
+  Einspielen antwortet der alte Worker weiter mit „Gerät + Schaden“ —
+  `gehirnBild` macht daraus trotzdem eine Antwort.
+
+**Warum so**
+- Ein Knopf statt eines zweiten: der Foto-Knopf war schon da und gemessen;
+  ein weiterer runder Knopf in der Eingabezeile hätte die Zeile am Handy
+  bei 320 px enger gemacht.
+- Gemini zuerst, weil es Bilder deutlich besser liest als die kostenlosen
+  Bildmodelle bei Cloudflare, und der Schlüssel schon da ist. Fällt Gemini
+  aus (402 am 18.10.2026), bleibt der Worker — kostenlos, aber schwächer.
+
+**Geprüft:** `tests/test-formi-bild.js` (neu): Systemtext, Prüfung des
+Vorschlags, Gemini bekommt `inlineData` vor dem Text, Worker `art:"frei"`
+mit beiden Modellen. `test-gehirn`: das Bild geht verkleinert als JPEG an
+`gehirnBild`, steht in der Blase, der Defekt-Vorschlag läuft in den
+Defekt-Weg.
+**Nicht geprüft:** wie gut die echten Modelle Bilder erkennen und wie
+lange eine Antwort dauert — das geht nur live. Der Worker muss für den
+kostenlosen Ersatzweg einmal eingespielt werden (tools/studio-gehirn/README.md).
+Rot, aber auch auf `main` gleich rot (nebeneinander gelaufen):
+`test-gehirn` „320 px kompakt“ und „390 px normal“ — „Jetzt anlegen“ auf
+der Gehirn-Seite 0 × 0 bzw. 304 × 42 px. Nicht Teil dieser Runde.
+Grün: `test-formi-bild` 22, `test-gehirn` 325 von 327, `test-formi-worker`
+169, `test-gehirn-aktion` 138, `test-formi-app` 34, `test-knoepfe`,
+`test-gestaltung`, `test-abgeschnitten`, `test-csp`, `test-neuigkeiten`.
+Der Bild-Knopf (`#jarvisFoto`) ist in `test-gehirn` bei 320 / 390 / 430 /
+820 / 1280 / 1440 / 1920 px, normal und kompakt, per Trefferprüfung
+≥ 44 × 44 px. Angesehen bei 320, 390 und 1440 px: Bild in der Blase
+223 × 167 / 282 × 212 / 274 × 206 px, kein waagerechtes Scrollen,
+„Jetzt eintragen“ 44 px hoch.
+
+## Runde 299 — Krank gemeldet: Formi schlägt der Leitung eine Vertretung vor (5.11.2026)
+
+Aus dem Betrieb, auf den Plan „‚Ich bin morgen krank': Formi trägt ein
+und fragt passende Kollegen": „er soll nur vorschläge machen für die
+leitung".
+
+**Was es vorher gab.** Krankmelden ging schon (Formi oder Team-Bereich,
+gilt sofort). Danach passierte nichts: die Leitung sah die Krankmeldung
+im Plan und musste selbst herausfinden, welche Schichten betroffen sind
+und wer einspringen könnte.
+
+**Was gebaut wurde.**
+- `formiKrank` (beide Welten, `studios/{sk}/absences/{id}` onCreate): bei
+  `type: 'krank'` die Schichten der Person in den nächsten sieben Tagen;
+  je Schicht bis zu drei Kollegen aus dem Studio (`vertretungVorschlag`).
+  Der Vorschlag steht als Feld `vertretung` an der Abwesenheit; die
+  Leitung des Studios und die Geschäftsführung bekommen eine Meldung
+  („🤒 Ben ist krank (Hürth) — Fr 6.11. 09:00–14:00: Vorschlag: Anna,
+  Cem."), Ziel Startseite.
+- Startseite der Leitung, „Zu bestätigen": eine Zeile „Krank – Vertretung"
+  je betroffener Schicht. ✓ schreibt die Schicht aus (dieselben Felder wie
+  „Schicht abgeben": `tausch: 'offen'`, `tauschVon` = die kranke Person);
+  wer zusagt, landet wie bisher unter „Schichttausch". ✕ heisst „regle ich
+  selbst" und vermerkt nur die Schicht an der Abwesenheit
+  (`vertretungErledigt`).
+
+**Warum so.**
+- **Nur ein Vorschlag.** Formi fragt niemanden, schreibt niemandem und
+  ändert keinen Plan. Ob ausgeschrieben, angerufen oder anders geregelt
+  wird, entscheidet die Leitung — so war es gewünscht.
+- **Wer vorgeschlagen wird:** aktiv, im Studio, nicht die kranke Person,
+  nicht die Geschäftsführung; an dem Tag nicht abwesend (ausser
+  abgelehnt), keine überschneidende Schicht. Zuerst, wer an dem Tag gar
+  nicht arbeitet, dann, wer in der Woche um den Tag die wenigsten
+  Schichten hat. Keine Stunden-Salden, keine Verträge — dafür fehlt hier
+  die verlässliche Grundlage, und ein Vorschlag soll erklärbar bleiben.
+- **Keine neue Sammlung.** Das Feld hängt an der Abwesenheit, die die
+  Leitung ohnehin lesen und ändern darf; die Regeln bleiben, wie sie sind
+  (Verwaltung darf Abwesenheiten und Schichten ändern). Damit gibt es
+  keine Sammlung, die in beide Regel-Welten müsste.
+- **Die Zeile verschwindet von selbst**, sobald die Schicht nicht mehr bei
+  der kranken Person liegt, ausgeschrieben ist oder vorbei ist — der Stand
+  kommt aus derselben Abfrage wie „Mein Dienst" (sieben Tage).
+- Die Meldung geht nur, wenn wirklich eine Schicht betroffen ist. Eine
+  Krankmeldung ohne Schicht macht keinen Lärm.
+
+**Nicht geprüft.**
+- Ob die Meldung auf echten Geräten ankommt: hier ist der Versand
+  abgefangen (Emulator), geprüft sind Empfänger und Text.
+- Krankmeldungen, die schon vor dieser Runde eingetragen wurden, haben
+  keinen Vorschlag — der entsteht nur beim Anlegen.
+
+**Geprüft:** `funktionen` (Emulator) 275 (neu: Vorschlag an der
+Abwesenheit, Empfänger der Meldung, Urlaub und Krank ohne Schicht melden
+nichts), `test-formi-vertretung` 25 (Zeile, ✓ ausschreiben, ✕ selbst
+geregelt, niemand gefragt, Gegenproben, Treffer 390–1920 px normal und
+kompakt, Startseite passt am Rechner).
+
+**Nebenbei behoben:** „Was ist neu" zeigte „Update · 5. November"
+dreimal. Eine parallele Sitzung schrieb `05.11.2026`, diese `5.11.2026`;
+gruppiert wurde nach der Schreibweise. Jetzt nach dem Tag
+(`neuTagSchluessel`), und `test-neuigkeiten` zählt die Tage genauso.
+
+## Runde 300 — Formi-Sticker im Chat (05.11.2026)
+
+Aus dem Betrieb, auf die Ideenliste („Formi-Sticker im Chat: Formis
+Gefühle als Reaktionen"): „alles davon ist super".
+
+**Was gebaut ist.** Im Nachrichtenblatt steht unter den sechs Zeichen
+eine zweite Reihe mit vier Formi-Stickern: freut sich, verliebt, staunt,
+stolz. Antippen setzt den Sticker wie jede andere Reaktion; unter der
+Nachricht steht er als kleiner Formi mit Zähler. Am Brett und am Aushang
+hängt derselbe „+"-Wähler die Sticker an die Zeichen an.
+
+**Warum so.**
+- *Reaktion, keine Nachricht.* Ein Sticker als eigene Nachricht hätte
+  ein neues Feld in jeder Nachricht, eine neue Darstellung und eine neue
+  Leseregel gebraucht. Als Reaktion läuft er über `reactions`, die schon
+  Zähler, „wer hat reagiert" und die Regel „nur die eigene Kennung"
+  haben.
+- *Die Namen stehen in `firestore.rules`.* `reaktionsZeichen()` lässt
+  nur bekannte Zeichen zu; die vier Namen `formi-freut`, `formi-verliebt`,
+  `formi-staunt`, `formi-stolz` sind dort ergänzt, je mit eigener
+  `gleichOhneMich`-Zeile — flach und unter `firmen/<k>/` (dieselbe
+  Funktion). Ohne diese Zeilen hätte jeder fremde Sticker-Listen
+  umschreiben können: die Gegenprobe ohne sie ergab 7 Fehlschläge.
+- *Die Figur steht still.* Unter einer langen Unterhaltung wären viele
+  atmende Formis Dauerbewegung ohne Grund (Hausregel „keine
+  Endlos-Animationen"). Das Gefühl zeigt das feste Gesicht (froh,
+  Wangen, grosse Augen) und ein Symbol aus `ikon()` daneben — kein
+  Emoji, weil `test-gestaltung` Emoji als Symbol zu Recht ablehnt.
+- *Die Figur selbst ist nicht angefasst.* Die Sticker benutzen
+  `formiFigurInnen()` und stellen nur per CSS innerhalb `.r-formi` das
+  Gesicht ein; am Aussehen von Formi arbeitet ein anderer Strang.
+
+**Beim Bau gefunden.** Ein zu weiter Selektor (`.r-formi i`) traf auch
+die Teile des Gesichts und schob sie aus der Figur — die Sticker waren
+nur schwarze Ringe. Jetzt `.r-formi > i`, und `test-formi-sticker`
+prüft, dass der Mund im Loch liegt.
+
+**Gemessen** (`tests/test-formi-sticker.js`, 36/0): die vier Sticker im
+Blatt bei 320 / 390 / 430 / 820 / 1280 / 1440 / 1920 px, normal und
+kompakt, per Trefferprüfung je ≥ 44 × 44 px und ganz im Bild; Antippen
+schreibt genau `formi-stolz` mit der eigenen Kennung; unter der
+Nachricht Symbol, Vorlesename und keine Animation. Regeltest
+`reaktionen.test.js` 60/0 im Emulator. Grün außerdem: `test-chat`,
+`test-chat-antworten`, `test-chat-blasen`, `test-chat-imessage`,
+`test-chat-klein`, `test-gelesen-haken`, `test-knoepfe`,
+`test-gestaltung`, `test-csp`, `test-abgeschnitten`,
+`test-neuigkeiten`. Angesehen bei 390 und 1440 px.
+
+**Nicht geprüft:** echte Konten mit dem echten Firebase (lädt in dieser
+Umgebung nicht) — die neue Regel ist nur im Emulator gelaufen.
+
+## Runde 301 — Bildschirmschoner am Stempel-Terminal (05.11.2026)
+
+Aus dem Betrieb, auf die Formi-Ideenliste („Bildschirmschoner am
+Studio-Rechner: Formi groß mit Uhrzeit …"): „alles davon ist super".
+
+**Was gebaut ist.** Nach drei Minuten ohne Eingabe legt sich über das
+Terminal ein dunkler Schirm: Formi groß (mit Scheibe), die Uhrzeit sehr
+groß, Wochentag und Datum, das Studio und der Code fürs Handy. Antippen
+oder eine Taste holt die Namensliste zurück. Ein offenes PIN-Feld wird
+beim Einschlafen geschlossen.
+
+**Warum so.**
+- *Keine Namen, keine Dienstzeiten.* Die Idee nannte auch „wer Dienst
+  hat". Das Terminal steht offen am Empfang; seit Runde 189 steht dort
+  mit Absicht nicht mehr, wer im Dienst ist („ja" aus dem Betrieb,
+  22.10.2026), und der Kopf dieses Bereichs sagt: „Ein Gerät, das offen
+  am Empfang steht, ist kein Ort für Auskünfte über Arbeitszeiten von
+  Kollegen." Der Schoner hält sich daran. Ob der Plan des Tages dort
+  stehen soll, ist eine Frage an den Betrieb, keine, die der Bau
+  entscheidet. `test-terminal-ruhe` prüft, dass kein Name aus der Liste
+  im Schoner steht.
+- *Der Code fürs Handy bleibt.* Wer am Handy stempelt, liest ihn vom
+  Bildschirm ab — müsste er den Schoner erst wecken, wäre der Weg übers
+  Handy nicht mehr kürzer als der übers Terminal.
+- *Wecken mit `click`, nicht `pointerdown`.* Sonst verschwände der
+  Schoner unter dem Finger, und das Loslassen träfe die Kachel darunter:
+  ein PIN-Feld, das niemand öffnen wollte.
+- *Halbe PIN weg.* Wer mitten in der PIN weggeht, hinterließ bisher ein
+  offenes Feld mit Punkten für den Nächsten.
+- *Kein eigener Zeitgeber.* Geprüft wird im Fünf-Sekunden-Takt der Uhr,
+  die ohnehin läuft. Gegen Einbrennen rückt das Feld einmal pro Minute
+  per `transform` in eine von acht Lagen (höchstens 6 % / 5 %); bei
+  „weniger Bewegung" ohne Übergang.
+- *Formi nur benutzt, nicht verändert.* `formiFigurInnen(false, true)`;
+  am Aussehen arbeitet ein anderer Strang.
+
+**Gemessen** (`tests/test-terminal-ruhe.js`, 106/0) bei 320 / 390 / 430 /
+820 / 1280 / 1440 / 1920 px: beim Start weg, nach zwei Minuten noch weg,
+nach drei da und oben (Trefferprüfung in der Mitte); Gegenprobe, dass das
+PIN-Feld vorher offen war und danach zu ist; Uhrzeit, Wochentag, Studio,
+Formi mit Gesicht, Code; in allen acht Lagen ganz im Bild und nicht über
+dem Hinweis; Antippen weckt ohne PIN-Feld; die Zeit zählt danach neu;
+eine Taste weckt auch. Die Uhr der Seite steuert der Test
+(`page.clock`). Arbeit je Bild bei 1440 px mit CPU ÷ 4: 0,95–1,11 ms
+(Grenze 8,3 ms). Grün außerdem: `test-terminal`, `test-demo`,
+`test-gestaltung`, `test-knoepfe`, `test-csp`, `test-abgeschnitten`,
+`test-neuigkeiten`. Angesehen bei 390, 1440 und 1920 px.
+
+**Nicht geprüft:** ein echtes Tablet oder ein echter Rechner am Empfang
+über Stunden (Einbrennen, Energiesparen des Geräts).
+
+## Runde 302 — Formi: Studios als Monde, Geburtstagsmond, Serie, Jahreszeit, Zeile ins Loch (5.11.2026)
+
+Aus dem Betrieb, auf acht neue Formi-Ideen: „alles davon ist super“. Die
+Ideen, die Formis **Aussehen** ändern (1, 4, 5, 6, 7), baut diese Runde;
+Bilderkennung, Sticker und Bildschirmschoner (2, 3, 8) ein anderer Strang.
+Formis Design war bis hierhin für fremde Runden gesperrt (eine eigene
+Sitzung arbeitete daran); jetzt ausdrücklich frei: „starte von hier ruhig
+das passst schon so“.
+
+**Was gebaut wurde**
+
+- **Idee 1 – die Zeile fällt ins Loch** (`formiZeileSog`): bisher flog nur
+  der Titel als Buchstabenstrom zu Formi (Runde 250). Jetzt wird zusätzlich
+  ein Abbild der ganzen Zeile (ohne Titel, der fliegt ja schon) gestreckt,
+  gestaucht und in den Horizont gezogen; die echte Zeile tritt solange
+  zurück. Erste Fassung startete zu langsam (bei 350 ms stand eine zweite
+  Zeile über der ersten) – jetzt zieht sie sofort.
+- **Idee 4 – Jahreszeit** (`formiJahreszeitArt`): nur an wenigen Tagen –
+  20.–26.12. wärmer (Gold/Kupfer/Rosé), 31.12. und 1.1. Funkenregen (beim
+  Start, danach höchstens alle 30 min, einmalige Animation), 20.–24.6.
+  heller. Eine Klasse am `<html>`, nicht animiert; im hellen Stil bleibt
+  die flache Scheibe unverändert (sie ist dort auf Kontrast gebaut).
+- **Idee 5 – Geburtstag und Jubiläum** (`formiMond`): ein kleiner Mond
+  kreist zweimal um die Kugel und bleibt dann neben ihr **stehen** – ein
+  Ziel, das wandert, trifft man nicht. Nur auf der Startseite (im Chat lag
+  er sonst über dem Eingabefeld). Antippen → „Heute im Team“,
+  „Gratulieren“ öffnet die Direktnachricht mit einem Vorschlag im Feld;
+  gesendet wird nichts von selbst. **Jubiläum = Jahrestag der
+  Kontoanlage** (`createdAt`) – ein Eintrittsdatum gibt es in der App
+  nicht. Gezeigt wird, wer ein Studio mit einem teilt (Chef: alle).
+- **Idee 6 – Studios als Monde** (`lsMondeHTML`, nur Leitung am Rechner
+  ab 1100 px): statt der Kacheln eine flache Bahn um Formi, je Studio ein
+  Mond in Ampelfarbe, Name darunter. Klick = Klick auf die Kachel. „Als
+  Kacheln“ schaltet zurück (je Gerät gemerkt), am Handy bleiben die
+  Kacheln der Skizze. Erste Fassungen im gleichen *Winkel* verteilt: bei
+  den echten 14 Studios (konfig.js) standen die Monde an den Seiten 32 px
+  auseinander, Trefferflächen überlappten (gemessen). Jetzt gleich weit
+  *entlang der Bahn* – die Namen sind je Mond so breit wie der Platz zum Nachbarn; an den engen Enden der Bahn werden sie gekürzt (Trefferflächen gemessen ohne Überlappung bei 1280 / 1440 / 1920 px). Ist es selbst dafür zu eng (gemessen: 1100 px mit 14 Studios), stehen wieder Kacheln. Die Zeile „Aufg. 3 ·
+  Putz 2“ steht nicht mehr am Mond (bei 14 Monden unlesbar dicht), sondern
+  im Schild, im Namen für Vorleser und wie bisher in der Zusammenfassung.
+- **Idee 7 – Formi-Serie** (`formiSerieStudio`): hat ein Studio den
+  Putzplan letzte Woche (Mo–So) an jedem Arbeitstag komplett geschafft,
+  trägt die Kugel diese Woche einen hellen Ring (auch am Mond des Studios).
+  Arbeitstag = an dem Tag wurde überhaupt etwas abgehakt; nötig sind
+  mindestens fünf, an jedem alle täglichen Punkte, und jeder wöchentliche
+  Punkt einmal. **Dafür gibt es ein neues Feld `tage` am Putzpunkt** (die
+  letzten 15 Tage, an denen er abgehakt wurde), geschrieben auf beiden
+  Abhak-Wegen. Die Regel `putzMitarbeiterFelder()` kennt es jetzt (eine
+  Funktion, gilt für beide Pfade, flach und `firmen/<k>/`). Übergang:
+  verweigert die Regel das Feld noch, wird ohne geschrieben.
+  **Folge: der erste Ring ist frühestens in der Woche nach der ersten
+  vollen Woche mit dem neuen Feld möglich** – vorher gibt es keine
+  Geschichte, aus der man lesen könnte.
+
+**Geprüft**
+
+`tests/test-formi-monde.js` (59 Zusicherungen): Monde bei 1280/1440/1920,
+normal und kompakt, je Mond Trefferfläche ≥ 44 × 44 per Hit-Test, in der
+Karte, ohne Überlappung, Seite passt auf einen Bildschirm; Handy/Tablet
+ohne Monde. Geburtstagsmond 320 … 1920 px, 44 × 44, im Bild, nicht auf
+der Kugel; Karte, Esc, „Gratulieren“ → Direktnachricht mit Vorschlag.
+Serie mit drei Gegenproben (vier Arbeitstage; ein täglicher Punkt an
+einem Arbeitstag vergessen; ein ganzer Tag ohne Haken bleibt erlaubt).
+Jahreszeit an sechs Daten, Funkenregen räumt auf. Zeile ins Loch ohne
+doppelte ids und ohne Trefferfläche.
+`tests/rules/formi-serie.test.js` (10 Zusicherungen, beide Welten);
+Gegenprobe mit der alten Regel: die zwei „darf“-Fälle fallen durch.
+
+**Nicht prüfbar hier**: der echte Schreibweg zu Firestore (die Attrappe
+schreibt nichts), und ob der Ring nach einer echten Woche erscheint –
+geprüft ist die Rechnung mit gesetzten Tagen.
+
+## Runde 303 — Layout für das eigene Studio: vorschlagen oder sofort festlegen (5.11.2026)
 
 Aus dem Betrieb, 5.11.2026: „Studio leitung soll nur für ihre eigenen
 studios machen können, Leitung soll es sofort festlegen können ohne

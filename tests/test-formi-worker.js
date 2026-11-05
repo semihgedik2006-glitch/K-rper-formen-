@@ -61,6 +61,26 @@ function ki(antworten) {
   pruefe(!w.istUnsinn('Staubsaugerbeutel'), 'langes deutsches Wort ist kein Salat');
   pruefe(!w.istUnsinn('ok'), '„ok" geht an die KI (Smalltalk), nicht an die Salat-Antwort');
 
+  /* 2.28 Schnellweg (5.11.2026, „bis nächstes jahr wirklich flüssig" —
+     Kontingent: „lieber kürzer"). Streng: lieber zu selten als falsch. */
+  {
+    const P = [{ frage: 'Wie wasche ich die Westen richtig?', antwort: 'A' }, { frage: 'Darf eine Schwangere EMS trainieren?', antwort: 'B' },
+      { frage: 'Wann muss ich die Westen waschen?', antwort: 'D' }, { frage: 'Was mache ich, wenn das Gerät nach dem Einschalten 3 mal piept?', antwort: 'E' }];
+    const sp = q => (w.schnellPaar(q, P) || {}).antwort || null;
+    pruefe(sp('wie wasche ich westen richtig') === 'A', 'Schnellweg: dieselbe Frage ohne Füllwörter und Satzzeichen trifft');
+    pruefe(sp('Wann muss ich die Weste waschen') === 'D', 'Schnellweg: Einzahl/Mehrzahl („Weste"/„Westen") trifft');
+    pruefe(sp('Wie wasche ich die Westen?') === null, 'Schnellweg: ein Wort weniger bei nur 2–3 Wörtern → KI, nicht das Paar');
+    pruefe(sp('Warum wasche ich die Westen richtig?') === null, 'Schnellweg: anderes Fragewort (warum statt wie) → KI');
+    pruefe(sp('Muss eine Schwangere EMS trainieren?') === null, 'Schnellweg: „muss" ist nicht „darf" → KI');
+    pruefe(sp('Darf eine Schwangere kein EMS trainieren?') === null, 'Schnellweg: Verneinung nur auf einer Seite → KI');
+    pruefe(sp('Was mache ich, wenn das Gerät nach dem Einschalten 3 mal piept?') === 'E' && sp('Was mache ich, wenn das Gerät nach dem Einschalten 5 mal piept?') === null, 'Schnellweg: andere Zahl → KI');
+    pruefe(sp('Was mache ich wenn das Gerät nach dem Einschalten 3 mal laut piept') === 'E', 'Schnellweg: ab vier Wörtern darf eines dazukommen');
+    pruefe(sp('hallo') === null && sp('') === null, 'Schnellweg: ein Wort oder nichts → nie');
+    const t = w.tempoAuswerten([{ weg: 'schnell', ms: 40 }, { weg: 'ki', ms: 9000 }, { weg: 'ki', ms: 15000 }, { weg: 'spar', ms: 5000 }]);
+    pruefe(t.antworten === 4 && t.wege.schnell === 1 && t.anteilSchnell === 25 && t.kiMitte === 9000 && t.neunVonZehn === 15000, 'Tempo: Wege gezählt, Mitte und 9 von 10 gerechnet (' + JSON.stringify(t) + ')');
+    pruefe(w.tempoAuswerten([]).mitte === null && w.tempoAuswerten([]).antworten === 0, 'Tempo: ohne Messung keine erfundene Zahl');
+  }
+
   /* Die echten Antworten aus dem Leitstand-Verlauf, 18.–21.10.2026 */
   const faelle = [
     ['Hallo, ich bin Semih. Ich kann dir bei Fragen rund um das Studio helfen.', 'Semih', 'Hallo! Ich kann dir bei Fragen rund um das Studio helfen.'],
@@ -467,6 +487,32 @@ function ki(antworten) {
       const prOhne = await w.default.fetch(new Request('https://x.test/api/probe', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-studio-key': 'k' }, body: JSON.stringify({ frage: 'x', system: 'BOESE' }) }), env2, { waitUntil() {} });
       pruefe(prOhne.status === 401 || prOhne.status === 403, 'Probe mit eigenem Systemtext nur mit Leitstand-Schlüssel (Studio-Schlüssel: ' + prOhne.status + ')');
 
+      /* 2.28 Schnellweg im echten Weg: freigegebenes Paar → sofort, ohne KI. */
+      ins.run(weste, 'Wie oft muss ich die Manschetten tauschen?', 'SCHNELLWEG-ANTWORT: alle sechs Monate.', 'gut');
+      ins.run(weste, 'Wie oft kann ich die Gurte waschen?', 'UNGEPRUEFT-SCHNELL', 'neu');
+      const kiAufrufe = [];
+      env2.AI.run = async (modell, e) => {
+        kiAufrufe.push(modell);
+        if (/bge-m3/.test(modell)) return { data: e.text.map(fake) };
+        return { response: JSON.stringify({ antwort: 'Antwort der KI.', art: 'frage', grundlage: 'allgemein', abgedeckt: false, quellen: [] }) };
+      };
+      const s1 = await frag('wie oft muss ich die manschetten tauschen');
+      pruefe(/SCHNELLWEG-ANTWORT/.test(s1.antwort) && s1.abgedeckt && s1.schnell === true && s1.grundlage === 'wissen' && kiAufrufe.length === 0, 'Schnellweg: freigegebene Antwort kommt sofort — kein KI-Aufruf, auch keine Suche nach Bedeutung (' + kiAufrufe.join(',') + ')');
+      pruefe(s1.nachrichtId > 0 && env2.DB.roh.prepare('SELECT abgedeckt, wissen_ids FROM nachrichten WHERE id = ?').get(s1.nachrichtId).wissen_ids === String(weste), 'Schnellweg: Nachricht gespeichert, mit Wissenseintrag (Daumen und „Woher weiß ich das?" gehen weiter)');
+      pruefe(Array.isArray(s1.quellen) && s1.quellen.length === 1, 'Schnellweg: „Woher weiß ich das?" zeigt den Eintrag');
+      const s2 = await frag('Wie oft darf ich die Manschetten tauschen?');
+      pruefe(!s2.schnell && /Antwort der KI/.test(s2.antwort) && kiAufrufe.length > 0, 'Gegenprobe: „darf" statt „muss" geht an die KI');
+      kiAufrufe.length = 0;
+      const s3 = await frag('Wie oft kann ich die Gurte waschen?');
+      pruefe(!/UNGEPRUEFT-SCHNELL/.test(s3.antwort) && kiAufrufe.length > 0, 'Gegenprobe: ein nicht freigegebenes Paar nimmt nie den Schnellweg');
+      ins.run(weste, 'Wo liegen die Ersatzakkus?', 'NEU-FREIGEGEBEN: im Schrank hinten links.', 'gut');
+      kiAufrufe.length = 0;
+      const s4 = await frag('wo liegen die ersatzakkus');
+      pruefe(/NEU-FREIGEGEBEN/.test(s4.antwort) && kiAufrufe.length === 0, 'Schnellweg: ein eben freigegebenes Paar gilt sofort (kein veralteter Zwischenspeicher)');
+      const stT = await (await w.default.fetch(new Request('https://x.test/api/statistik', { headers: { 'x-admin-key': 'admin' } }), env2, { waitUntil() {} })).json();
+      pruefe(stT.tempo && stT.tempo.wege.schnell === 2 && stT.tempo.wege.ki >= 2 && stT.tempo.antworten >= 4 && stT.tempo.mitte !== null, 'Leitstand-Statistik: Tempo mit Wegen und Zeiten (' + JSON.stringify(stT.tempo) + ')');
+      pruefe(env2.DB.roh.prepare("SELECT COUNT(*) AS n FROM tempo WHERE weg = 'schnell'").get().n === 2 && !env2.DB.roh.prepare("PRAGMA table_info(tempo)").all().some(c => /text|frage|antwort|absender/.test(c.name)), 'Tempo-Tabelle: nur Weg und Zeit, kein Text, kein Absender');
+
       /* 2.24 Notbremse. Aus dem Betrieb (23.10.2026): „können wir die
          tageskontigenten nicht erhöhen irgendwie ?" → „Gratis + Notbremse". */
       const tag = w.heuteUtc();
@@ -561,6 +607,8 @@ function ki(antworten) {
         /* 2.24: Übersicht zeigt das Kontingent */
         const kk = await pg.waitForFunction(() => /KI-Kontingent heute/.test(document.body.innerText) && /von 10\.000 Neuronen/.test(document.body.innerText), null, { timeout: 5000 }).then(() => true).catch(() => false);
         pruefe(kk && !seitenFehler.length, 'Leitstand-Übersicht zeigt „KI-Kontingent heute" ohne Skriptfehler' + (seitenFehler.length ? ' (' + seitenFehler.join(' | ') + ')' : ''));
+        const tk = await pg.evaluate(() => { const k = [...document.querySelectorAll('.card')].find(c => /Tempo \(7 Tage\)/.test(c.innerText)); return k ? k.innerText : ''; });
+        pruefe(/Antworten · die Hälfte in höchstens \d/.test(tk) && /Sofort aus geprüften Antworten: 2/.test(tk) && !seitenFehler.length, 'Leitstand-Übersicht zeigt die Karte „Tempo (7 Tage)" mit dem Schnellweg (' + tk.replace(/\s+/g, ' ').slice(0, 160) + ')');
         await pg.evaluate(() => { tab = 'vorschlaege'; start(); });
         await pg.waitForFunction(() => [...document.querySelectorAll('button')].some(b => /Knopftest/.test(b.textContent)), null, { timeout: 5000 });
         /* Ein fester Griff, kein Locator nach Text: der Text ändert sich beim

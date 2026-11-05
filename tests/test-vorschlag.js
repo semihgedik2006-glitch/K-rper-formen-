@@ -23,7 +23,7 @@
        Studios, kein „Alle Studios". Geschrieben wird genau ein Design mit
        angebot, art und studios; Mitarbeiter sehen den Knopf nicht. Die
        Leitung bekommt selbst keine Zeile auf „Heute".
-    7. Runde 297, aus dem Betrieb, 5.11.2026: „Studio leitung soll nur für
+    7. Runde 303, aus dem Betrieb, 5.11.2026: „Studio leitung soll nur für
        ihre eigenen studios machen können, Leitung soll es sofort festlegen
        können ohne vorschlag". Mitarbeiter (Studio 6): ein Vorschlag für
        Studio 7 erscheint nicht, einer für Studio 6 schon. Eine Festlegung

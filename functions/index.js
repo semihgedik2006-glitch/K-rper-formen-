@@ -8055,6 +8055,140 @@ exports.gehirnFoto = region
     return { geraet: String(json.geraet || '').slice(0, 80), text: String(json.text || '').slice(0, 400) };
   });
 
+/* ── Formi sieht Bilder (05.11.2026) ────────────────────────────────
+   Aus dem Betrieb: „am aller wichtigsten finde ich auch die bild
+   erkennung das man ihm jegliche bilder schicken könnte und er antwortet
+   drauf und sagt was er sieht". Auf die Rückfragen: Personen und Atteste
+   darf Formi ansehen („ne er kann das schon annehmen"), schicken dürfen
+   alle mit einer Grenze, und aus dem Bild darf Formi etwas anlegen —
+   aber erst, wenn man es bestätigt.
+
+   Das Bild wird nur angesehen, nirgends gespeichert. Erst Gemini (sieht
+   am besten), dann der Worker (/api/bild, Workers AI, kostenlos). Was
+   Formi vorschlägt, läuft durch dieselbe Prüfung wie jeder Satz
+   (gehirnBefehlPruefen) und kommt als Vorschau zurück — gespeichert
+   wird in der App erst mit dem Druck auf den Knopf. */
+const GEHIRN_BILD_GRENZE = 150;       // je Firma und Tag
+const GEHIRN_BILD_PERSON = 25;        // je Person und Tag
+const GEHIRN_BILD_MAX = 900000;       // Zeichen der data-URL (~650 KB)
+const GEHIRN_BILD_AKTIONEN = ['defekt', 'material', 'aufgabe', 'uebergabe', 'erinnerung', 'idee'];
+const GEHIRN_BILD_RE = /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/;
+
+/* Der Systemtext. Rein rechnerisch (__intern). */
+function gehirnBildSystem(o) {
+  const rolle = o.rolle, namen = o.namen || {}, erlaubt = o.erlaubt || [];
+  const verwaltet = rolle === 'chef' || rolle === 'leiter';
+  const heute = o.heute || tagBerlin(new Date());
+  const locker = o.ton !== 'sachlich';
+  return (
+    'Du bist ' + gehirnKurz(o.formiName || 'Formi', 30) + ', die KI in der App StudioChat eines EMS-Fitnessstudios. ' +
+    gehirnKurz(o.name, 40) + ' (' + (rolle === 'chef' ? 'Geschäftsführung' : (rolle === 'leiter' ? 'Studioleitung' : 'Mitarbeiter')) + ') zeigt dir ein Bild. ' +
+    'Heute ist ' + heute + ' (Europe/Berlin). ' +
+    'Sag auf Deutsch, was du auf dem Bild siehst, und beantworte die Frage dazu, wenn eine dabei ist — in 2 bis 5 Sätzen, ' +
+    (locker ? 'locker wie ein Kollege, der daneben steht. ' : 'sachlich und knapp. ') +
+    'Steht Text auf dem Bild (Zettel, Display, Fehlermeldung, Etikett), lies das Wichtige wörtlich ab. ' +
+    'Erfinde nichts: Was du nicht sicher erkennst, nennst du unsicher ("sieht aus wie …"). Keine Diagnosen, keine Medikamente. ' +
+    'Passt zum Bild GENAU EINE Sache, die man in der App eintragen würde, schlage sie als "aktion" vor, sonst null. Möglich: ' +
+    '{"typ":"defekt","geraet":"Name des Geräts","text":"was kaputt aussieht","studio":"Studioname oder leer"}; ' +
+    '{"typ":"material","artikel":"Stichwort","ist":Zahl oder null,"fehlt":Zahl oder null,"studio":"Studioname oder leer"}; ' +
+    (verwaltet ? '{"typ":"aufgabe","titel":"...","text":"...","schritte":["..."],"frist":"YYYY-MM-DD oder leer","studios":["Studioname" oder "alle"]}; ' : '') +
+    '{"typ":"uebergabe","text":"Notiz an die nächste Schicht","studio":"Studioname oder leer"}; ' +
+    '{"typ":"erinnerung","wann":"YYYY-MM-DDTHH:MM","text":"woran"} (nur wenn ein Termin auf dem Bild steht und die Person erinnert werden will); ' +
+    '{"typ":"idee","text":"..."}. ' +
+    'Ein Vorschlag wird erst gespeichert, wenn die Person ihn bestätigt — schlage nur vor, was wirklich naheliegt. ' +
+    'In eine Aktion kommen keine Kundennamen und keine Gesundheitsdetails. ' +
+    'Studios nur aus dieser Liste: ' + JSON.stringify(erlaubt.map(k => namen[k]).filter(Boolean)) + '. ' +
+    'Antworte NUR mit JSON: {"antwort":"...","aktion":{...} oder null,"stimmung":"freut"|"staunt"|"verwirrt"|"mitfuehlend"|"ruhig"}' +
+    gehirnKontextText(o.kontext) +
+    gehirnVerlaufText(o.verlauf));
+}
+
+/* Antwort der KI prüfen: Text kürzen, Aktion nur aus der Liste und nur,
+   wenn sie die normale Prüfung besteht. Rein rechnerisch (__intern). */
+function gehirnBildErgebnis(roh, namen, erlaubt, rolle, heute) {
+  const r = roh && typeof roh === 'object' ? roh : {};
+  const antwort = String(r.antwort || r.text || '').replace(/\s+\n/g, '\n').trim().slice(0, 1500);
+  let vorschlag = null;
+  const a = r.aktion && typeof r.aktion === 'object' ? r.aktion : null;
+  if (a && GEHIRN_BILD_AKTIONEN.indexOf(a.typ) >= 0) {
+    const g = gehirnBefehlPruefen(a, namen, erlaubt, rolle, heute);
+    if (g && GEHIRN_BILD_AKTIONEN.indexOf(g.typ) >= 0) vorschlag = g;
+  }
+  const stimmung = ['freut', 'staunt', 'verwirrt', 'mitfuehlend', 'ruhig'].indexOf(r.stimmung) >= 0 ? r.stimmung : null;
+  return { antwort, vorschlag, stimmung };
+}
+
+/* Der Worker als Ersatz. Ab Worker 2.29 beschreibt /api/bild mit
+   art:"frei" das ganze Bild; ein älterer Worker kennt nur Geräte und
+   liefert {geraet, text} — auch das ist eine Antwort. */
+async function gehirnBildWorker(bild, frage, geraete) {
+  const schluessel = process.env.STUDIO_GEHIRN_KEY || '';
+  if (!schluessel) throw new Error('STUDIO_GEHIRN_KEY fehlt');
+  const r = await fetch((process.env.GEHIRN_URL || GEHIRN_URL_STANDARD).replace(/\/+$/, '') + '/api/bild', {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'x-studio-key': schluessel },
+    body: JSON.stringify({ bild, geraete, frage, art: 'frei' })
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(String(j.fehler || ('Studio-Gehirn ' + r.status)).slice(0, 160));
+  if (j.antwort) return { antwort: j.antwort, aktion: j.aktion || null, stimmung: j.stimmung || null };
+  if (j.text) {
+    return { antwort: (j.geraet ? 'Ich sehe ' + j.geraet + '. ' : '') + j.text,
+      aktion: j.geraet ? { typ: 'defekt', geraet: j.geraet, text: j.text } : null };
+  }
+  throw new Error('Auf dem Bild konnte ich nichts erkennen.');
+}
+
+exports.gehirnBild = region
+  .runWith({ timeoutSeconds: 60, memory: '512MB' })
+  .https.onCall(async (data, context) => {
+    const { profil } = await anruferProfil(context);
+    const firma = await firmaVonProfil(profil);
+    if (!gehirnErlaubt(firma)) throw new functions.https.HttpsError('permission-denied', 'Formi ist für diesen Betrieb nicht eingerichtet.');
+    const d = data || {};
+    const bild = String(d.bild || '');
+    if (!GEHIRN_BILD_RE.test(bild) || bild.length > GEHIRN_BILD_MAX) {
+      throw new functions.https.HttpsError('invalid-argument', 'Das Bild ist zu gross oder kein Bild.');
+    }
+    const frage = String(d.text || '').replace(/\s+/g, ' ').trim().slice(0, 1000);
+    await tagesGrenze('gehirnBild', GEHIRN_BILD_GRENZE, firma);
+    /* Je Person: der Zähler heisst nach der Nutzerkennung, damit eine
+       Person nicht das ganze Kontingent des Betriebs aufbraucht. */
+    const uid = String((context.auth && context.auth.uid) || 'x').replace(/[^A-Za-z0-9]/g, '').slice(0, 40);
+    try { await tagesGrenze('gehirnBild_' + uid, GEHIRN_BILD_PERSON, firma); }
+    catch (e) {
+      throw new functions.https.HttpsError('resource-exhausted', 'Für heute hast du ' + GEHIRN_BILD_PERSON + ' Bilder geschickt — morgen geht es weiter.');
+    }
+    const rolle = profil.role;
+    const namen = await alleStudios(firma);
+    const erlaubt = rolle === 'chef'
+      ? Object.keys(namen)
+      : (Array.isArray(profil.studioKeys) ? profil.studioKeys : []).filter(k => namen[k]);
+    const heute = tagBerlin(new Date());
+    const system = gehirnBildSystem({ rolle, namen, erlaubt, name: profil.name, heute,
+      ton: d.ton === 'sachlich' ? 'sachlich' : 'locker', formiName: d.formiName, kontext: d.kontext, verlauf: d.verlauf });
+    const nutzer = frage ? 'Meine Frage zum Bild: ' + frage : 'Was siehst du auf dem Bild?';
+    const apiKey = process.env.GEMINI_API_KEY || '';
+    let roh = null, geminiFehler = null;
+    if (apiKey && Date.now() >= _geminiAusBis) {
+      try { roh = await geminiJson(system, nutzer, apiKey, bild); }
+      catch (e) {
+        geminiFehler = e;
+        if ([401, 402, 403].indexOf(e.status) >= 0) _geminiAusBis = Date.now() + 30 * 60000;
+      }
+    }
+    if (!roh || !(roh.antwort || roh.text)) {
+      const geraete = (Array.isArray(d.kontext && d.kontext.geraete) ? d.kontext.geraete : []).map(x => String(x || '').slice(0, 60)).filter(Boolean).slice(0, 40);
+      try { roh = await gehirnBildWorker(bild, frage, geraete); }
+      catch (e) {
+        console.error('gehirnBild: Ersatz', e && e.message, geminiFehler && geminiFehler.message);
+        throw new functions.https.HttpsError('unavailable', 'Das Bild konnte ich gerade nicht ansehen. Bitte gleich noch einmal.');
+      }
+    }
+    const erg = gehirnBildErgebnis(roh, namen, erlaubt, rolle, heute);
+    if (!erg.antwort) throw new functions.https.HttpsError('unavailable', 'Auf dem Bild konnte ich nichts erkennen.');
+    return erg;
+  });
+
 /* Runde 278: Die Stimm-Function (gehirnStimme, 20.10.2026) ist entfernt —
    aus dem Betrieb (24.10.2026): „das vor lesen ist auch unnötig". Die App
    ruft sie seit Runde 263 nicht mehr auf; mit --force räumt der Deploy sie
@@ -8132,8 +8266,13 @@ function geminiFehlerText(status) {
   return 'Die KI hat keine lesbare Antwort geliefert. Bitte anders formulieren oder gleich noch einmal.';
 }
 
-async function geminiJson(system, nutzer, apiKey) {
+async function geminiJson(system, nutzer, apiKey, bild) {
   let letzter = 0;
+  /* Formi sieht Bilder (05.11.2026): ein JPEG als data-URL geht als
+     inlineData mit. Ohne Bild bleibt alles wie bisher. */
+  const teileNutzer = [{ text: nutzer }];
+  const bm = bild ? /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+\/=]+)$/.exec(bild) : null;
+  if (bm) teileNutzer.unshift({ inlineData: { mimeType: bm[1], data: bm[2] } });
   for (const modell of GEMINI_MODELLE) {
     let resp, json;
     try {
@@ -8144,7 +8283,7 @@ async function geminiJson(system, nutzer, apiKey) {
           headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
           body: JSON.stringify({
             systemInstruction: { parts: [{ text: system }] },
-            contents: [{ role: 'user', parts: [{ text: nutzer }] }],
+            contents: [{ role: 'user', parts: teileNutzer }],
             generationConfig: { temperature: 0.2, responseMimeType: 'application/json' }
           })
         });
@@ -8521,6 +8660,47 @@ function gehirnMehrfach(roh, pruefe) {
   const liste = roh.befehle.slice(0, 3).map(pruefe).filter(x => x && x.typ !== 'frage' && x.typ !== 'verboten' && x.typ !== 'rueckfrage');
   return liste.length >= 2 ? liste : null;
 }
+/* ── Klare Frage ohne Einordnen (Runde 297, 5.11.2026) ─────────────────
+   Aus dem Betrieb: „was können wir an formi noch alles optimieren das es
+   bis nächstes jahr wirklich flüssig läuft". Bisher ging JEDER Satz zuerst
+   an Gemini (Aufgabe? Material? Frage?) und eine Frage danach an das
+   Studio-Gehirn — zwei KI-Aufrufe hintereinander. Ein Satz, der eindeutig
+   eine Frage ist und nach nichts Ausführbarem klingt, geht jetzt direkt
+   an das Gehirn. Streng, lieber einmal zu viel einordnen:
+   - eine Frage: Fragezeichen am Ende, Fragewort/Modalwort am Anfang oder
+     „was soll/kann/mache ich";
+   - kein Wort, das nach Auftrag klingt (anlegen, eintragen, erinnern,
+     melden, fehlt, kaputt, Aufgabe, Übergabe, krank, Urlaub, tauschen,
+     öffnen, zeigen …) — das entscheidet weiter Gemini;
+   - kein Bezug auf das bisherige Gespräch („und wenn er …", „dafür",
+     „dort", „dauert das?", sehr kurze Nachfragen) — den löst Gemini auf;
+   - nicht „wo …" / „wer …" und nichts zu Aufgaben, Diensten oder Seiten
+     der App — das kann ein Weg in der App oder eine Abfrage sein;
+   - höchstens 300 Zeichen. Rein rechnerisch (__intern). */
+const KLAR_FRAGEWORT = /^(wie|was|wo|wann|warum|wieso|weshalb|wer|wem|wen|welche[rsmn]?|wieviele?|woran|womit|wofuer|wozu|worauf|wohin|woher|darf|darfst|duerfen|kann|kannst|koennen|muss|musst|muessen|soll|sollte|sollen|gibt|ist|sind|hat|haben|brauche|braucht|stimmt)\b/;
+const KLAR_AUFTRAG = /\b(leg|lege|legt|anleg\w*|erstell\w*|eintrag\w*|trag|trage|tragt|notier\w*|merk|merke|erinner\w*|meld\w*|ankuendig\w*|aufgabe\w*|uebergabe\w*|probetraining\w*|probe|defekt\w*|kaputt\w*|fehlt|fehlen|leer|alle|aufgebraucht|bestell\w*|nachbestell\w*|abhak\w*|hak|erledigt|sauber|geputzt|tausch\w*|uebernehm\w*|krank\w*|urlaub\w*|frei|schreib\w*|schick\w*|send\w*|poste|veroeffentlich\w*|loesch\w*|entfern\w*|aender\w*|verschieb\w*|absag\w*|zeig\w*|oeffne\w*|geh|bring|stempel\w*|einstempel\w*|ausstempel\w*|schicht\w*|dienst\w*|\w*plan|abgeb\w*|offen|ueberfaellig\w*|faellig\w*|arbeite\w*|arbeitet|find\w*|komm\w*|seite\w*|bereich\w*|app)\b/;
+const KLAR_BEZUG = /^(und|aber|oder|also|dann|auch|noch)\b|\b(er|ihn|ihm|dies|diese[rsmn]?|dafuer|dazu|davon|damit|daran|darauf|dabei|darueber|dort|dahin|dasselbe|genauso|ebenfalls)\b|\b(das|es|den|die)\s*\?*\s*$/;
+const KLAR_KURZ = /^(wie|was|wann|warum|wieso|welche[rsmn]?|kann|muss|soll|darf|eigentlich|genau|bitte|lange|viel|viele|mache|machen|dauert|heute|morgen)$/;
+function gehirnKlareFrage(text, verlauf) {
+  const roh = String(text || '').trim();
+  if (!roh || roh.length > 300) return false;
+  const t = roh.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss');
+  const worte = t.split(/[^a-z0-9]+/).filter(Boolean);
+  if (worte.length < 3) return false;
+  const frage = /\?\s*$/.test(roh) || KLAR_FRAGEWORT.test(t) || /\bwas (soll|kann|mache|mach|tue|tu) ich\b/.test(t);
+  if (!frage) return false;
+  if (KLAR_AUFTRAG.test(t)) return false;
+  /* „wo ist / wo finde …" kann ein Weg in der App sein, „wer …" eine
+     Abfrage (wer hat Dienst, wer fehlt) — das entscheidet weiter Gemini. */
+  if (/^(wo|wer)\b/.test(t)) return false;
+  if (Array.isArray(verlauf) && verlauf.length) {
+    if (KLAR_BEZUG.test(t)) return false;
+    /* Kurze Nachfragen („wie lange dauert es?") brauchen das Gespräch. */
+    if (worte.filter(w => w.length > 3 && !KLAR_KURZ.test(w)).length < 2) return false;
+  }
+  return true;
+}
+
 function gehirnWeg(roh, geprueft) {
   if (geprueft) return geprueft.typ === 'frage' ? 'frage' : 'aktion';
   const t = roh && roh.typ;
@@ -8542,6 +8722,11 @@ exports.gehirnAktion = region
     if (!auftrag) throw new functions.https.HttpsError('invalid-argument', 'Bitte zuerst schreiben, was passieren soll.');
     const apiKey = process.env.GEMINI_API_KEY || '';
     await tagesGrenze('gehirnAktion', GEHIRN_AKTION_GRENZE, firma);
+    /* Runde 297: eine klare Frage geht ohne Einordnen direkt ans Gehirn. */
+    if (gehirnKlareFrage(auftrag, (data || {}).verlauf)) {
+      const a = await gehirnFrageAusfuehren(gehirnAuftrag({ art: 'frage', text: auftrag, ton: (data || {}).ton, lage: (data || {}).lage }, profil), firma);
+      return Object.assign({ art: 'frage', direkt: true }, a);
+    }
 
     const namen = await alleStudios(firma);
     const erlaubt = rolle === 'chef'
@@ -9178,6 +9363,106 @@ const _formiMaterialW = beideWelten('inventory/{studioKey}', _formiMaterial, 'on
 exports.formiMaterial = _formiMaterialW.flach;
 exports.formiMaterialF = _formiMaterialW.firma;
 
+/* ══ KRANK GEMELDET: VORSCHLAG FÜR DIE VERTRETUNG (Runde 299) ═════════
+   Aus dem Betrieb, 5.11.2026, auf den Plan „‚Ich bin morgen krank': Formi
+   trägt ein und fragt passende Kollegen": „er soll nur vorschläge machen
+   für die leitung".
+
+   Kommt eine Krankmeldung (absences, type 'krank'), sucht Formi die
+   Schichten der Person in den nächsten sieben Tagen und je Schicht bis zu
+   drei Kollegen aus demselben Studio, die einspringen könnten. Der
+   Vorschlag steht an der Abwesenheit (Feld vertretung) und geht als
+   Meldung an die Leitung des Studios. Gefragt wird NIEMAND — ob die
+   Leitung die Schicht ausschreibt, jemanden anruft oder es selbst regelt,
+   entscheidet sie unter „Zu bestätigen".
+
+   Wer passt (der Reihe nach):
+     1. aktiv, im Studio, nicht die kranke Person, nicht die
+        Geschäftsführung (die plant, sie springt nicht ein);
+     2. an dem Tag nicht abwesend (Urlaub, krank, frei — ausser abgelehnt);
+     3. keine Schicht, die sich mit dieser überschneidet;
+     4. zuerst, wer an dem Tag gar keine Schicht hat, dann, wer in der
+        Woche um den Tag die wenigsten Schichten hat, dann nach Name.
+   Rein rechnerisch (__intern). Keine neue Sammlung: das Feld hängt an der
+   Abwesenheit, die die Leitung ohnehin lesen und ändern darf. */
+const VERTRETUNG_TAGE = 7;
+const VERTRETUNG_MAX = 3;
+function tagPlus(tag, n) {
+  return new Date(new Date(tag + 'T12:00:00Z').getTime() + n * 864e5).toISOString().slice(0, 10);
+}
+function vertretungVorschlag({ krank, schichten, team, abwesend, heute }) {
+  const k = krank || {};
+  if (!k.uid || !DATUM_RE.test(String(k.from || '')) || !DATUM_RE.test(heute || '')) return [];
+  const von = k.from > heute ? k.from : heute;
+  const bisRoh = DATUM_RE.test(String(k.to || '')) && k.to >= k.from ? k.to : k.from;
+  const bis = bisRoh < tagPlus(heute, VERTRETUNG_TAGE) ? bisRoh : tagPlus(heute, VERTRETUNG_TAGE);
+  const alle = (schichten || []).filter(s => s && s.uid && DATUM_RE.test(String(s.date || '')));
+  const betroffen = alle.filter(s => s.uid === k.uid && s.date >= von && s.date <= bis)
+    .sort((a, b) => (a.date + (a.from || '')).localeCompare(b.date + (b.from || ''))).slice(0, 10);
+  const leute = (team || []).filter(p => p && p.uid && p.uid !== k.uid && p.aktiv !== false && p.role !== 'chef' && p.role !== 'admin');
+  const abw = (abwesend || []).filter(a => a && a.uid && a.status !== 'abgelehnt');
+  const ueberschneidet = (a, b) => !(a.from && a.to && b.from && b.to) || (a.from < b.to && b.from < a.to);
+  return betroffen.map(s => {
+    const wocheVon = tagPlus(s.date, -3), wocheBis = tagPlus(s.date, 3);
+    const kandidaten = leute.filter(p => !abw.some(a => a.uid === p.uid && a.from <= s.date && (a.to || a.from) >= s.date))
+      .map(p => {
+        const tag = alle.filter(x => x.uid === p.uid && x.date === s.date);
+        if (tag.some(x => ueberschneidet(x, s))) return null;
+        const woche = alle.filter(x => x.uid === p.uid && x.date >= wocheVon && x.date <= wocheBis).length;
+        return { uid: p.uid, name: String(p.name || '').slice(0, 60), frei: tag.length === 0, woche };
+      })
+      .filter(Boolean)
+      .sort((a, b) => (b.frei - a.frei) || (a.woche - b.woche) || a.name.localeCompare(b.name, 'de'))
+      .slice(0, VERTRETUNG_MAX)
+      .map(p => ({ uid: p.uid, name: p.name, frei: p.frei }));
+    return { id: s.id, date: s.date, from: s.from || '', to: s.to || '', kandidaten };
+  });
+}
+/* Der Text der Meldung an die Leitung. Rein rechnerisch (__intern). */
+const WT_KURZ = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+function vertretungTagText(tag) {
+  const d = new Date(tag + 'T12:00:00Z');
+  return WT_KURZ[d.getUTCDay()] + ' ' + d.getUTCDate() + '.' + (d.getUTCMonth() + 1) + '.';
+}
+function vertretungText(name, studio, vorschlag) {
+  const vn = String(name || 'Jemand').split(' ')[0];
+  if (!vorschlag.length) return null;
+  const s = vorschlag[0];
+  const wer = s.kandidaten.length
+    ? 'Vorschlag: ' + s.kandidaten.map(p => String(p.name || '').split(' ')[0]).join(', ') + '.'
+    : 'Niemand ist frei – bitte selbst regeln.';
+  return {
+    titel: '🤒 ' + vn + ' ist krank' + (studio ? ' (' + studio + ')' : ''),
+    text: (vorschlag.length > 1 ? vorschlag.length + ' Schichten betroffen. ' : '') +
+      vertretungTagText(s.date) + ' ' + s.from + (s.to ? '–' + s.to : '') + ': ' + wer + ' Unter „Zu bestätigen" ausschreiben.'
+  };
+}
+const _formiKrank = async (snap, ctx) => {
+  const x = snap.data() || {};
+  if (x.type !== 'krank' || !x.uid || !x.from) return null;
+  const firma = ctx.params.firma || null, sk = ctx.params.studioKey;
+  if (!(await featureAn(firma, 'schicht'))) return null;
+  const heute = tagBerlin(new Date());
+  const ende = tagPlus(heute, VERTRETUNG_TAGE + 3);
+  if ((x.to || x.from) < heute || x.from > ende) return null;
+  const ref = W(firma).collection('studios').doc(sk);
+  const schichten = (await ref.collection('shifts').where('date', '>=', tagPlus(heute, -3)).where('date', '<=', ende).get())
+    .docs.map(d => Object.assign({ id: d.id }, d.data() || {}));
+  const abwesend = (await ref.collection('absences').where('to', '>=', heute).get()).docs.map(d => d.data() || {});
+  /* users liegt oben, die Firma steht im Profil (gehoertZu). */
+  const team = (await db.collection('users').get()).docs.map(d => Object.assign({ uid: d.id }, d.data() || {}))
+    .filter(p => gehoertZu(p, firma) && inStudio(p, sk));
+  const vorschlag = vertretungVorschlag({ krank: x, schichten, team, abwesend, heute });
+  if (!vorschlag.length) return null;
+  await snap.ref.update({ vertretung: { schichten: vorschlag, ts: Date.now() } });
+  const t = vertretungText(x.name, await studioName(firma, sk), vorschlag);
+  if (t) await formiPush(firma, d => d.uid !== x.uid && formiAnLeitung(sk)(d), t.titel, t.text, 'home');
+  return null;
+};
+const _formiKrankW = beideWelten('studios/{studioKey}/absences/{absId}', _formiKrank);
+exports.formiKrank = _formiKrankW.flach;
+exports.formiKrankF = _formiKrankW.firma;
+
 /* ══ STEMPEL-ERINNERUNG (Runde 238) ═══════════════════════════════════
    Aus dem Betrieb, 23.10.2026: „mach die errinerungen und vlt auch in
    kobi mit formi und einer mail oder so" — die Erinnerung aus dem Plan
@@ -9303,7 +9588,7 @@ exports.stempelErinnern = region.runWith({ timeoutSeconds: 300, memory: '256MB' 
     return null;
   });
 
-exports.__intern = { stempelErinnerungen, stempelErinnernMail, stempelErinnernFirma, formiTagText, formiSchichtendeText, formiMaterialNeu, formiFristVorbei, formiSchichtEndeIn, abschlussZeilenPruefen, monateVor, eigeneAbschlussZeile, eigeneRegel, antragUhrPruefen, ANTRAG_TAGE_MAX, erlaubteSchritte, schrittWaehlen, tagesStand, gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
+exports.__intern = { vertretungVorschlag, vertretungText, gehirnBildSystem, gehirnBildErgebnis, GEHIRN_BILD_AKTIONEN, GEHIRN_BILD_PERSON, gehirnKlareFrage, stempelErinnerungen, stempelErinnernMail, stempelErinnernFirma, formiTagText, formiSchichtendeText, formiMaterialNeu, formiFristVorbei, formiSchichtEndeIn, abschlussZeilenPruefen, monateVor, eigeneAbschlussZeile, eigeneRegel, antragUhrPruefen, ANTRAG_TAGE_MAX, erlaubteSchritte, schrittWaehlen, tagesStand, gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
                      gehirnVorschlagPruefen, gehirnBefehlPruefen, gehirnWeg, gehirnKontextText, lageberichtOhneKi,
                      geminiSperreAufheben: () => { _geminiAusBis = 0; }, geminiGesperrt: () => Date.now() < _geminiAusBis, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,
                      authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,

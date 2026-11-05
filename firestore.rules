@@ -522,7 +522,7 @@ service cloud.firestore {
         // Eingestellt wird damit nichts; die App zeigt es nur als Vorschlag.
         && (!('angebot' in d) || (d.angebot is bool
               && (d.angebot == false || isChef() || isLeiter())))
-        // Runde 297: „Studio leitung soll nur für ihre eigenen studios
+        // Runde 303: „Studio leitung soll nur für ihre eigenen studios
         // machen können, Leitung soll es sofort festlegen können".
         // art: vorschlagen oder sofort festlegen – nur an einem Angebot.
         && (!('art' in d) || (d.get('angebot', false) == true
@@ -763,8 +763,11 @@ service cloud.firestore {
     // Die Zeichen stehen hier noch einmal, obwohl sie auch in index.html
     // stehen: die Regel muss auch dann halten, wenn jemand OHNE die
     // Oberflaeche schreibt — genau dafuer gibt es sie.
+    // Formi-Sticker (05.11.2026, aus dem Betrieb: Formis Gefühle als
+    // Reaktionen — „alles davon ist super"). Vier feste Namen, sonst
+    // dieselbe Regel wie für die sechs Zeichen.
     function reaktionsZeichen() {
-      return ['👍','❤️','😂','🎉','👏','😮'];
+      return ['👍','❤️','😂','🎉','👏','😮', 'formi-freut','formi-verliebt','formi-staunt','formi-stolz'];
     }
 
     // Alles ausser der eigenen Kennung muss gleich bleiben. Deshalb wird
@@ -804,7 +807,11 @@ service cloud.firestore {
         && gleichOhneMich(alt, neu, '😂')
         && gleichOhneMich(alt, neu, '🎉')
         && gleichOhneMich(alt, neu, '👏')
-        && gleichOhneMich(alt, neu, '😮');
+        && gleichOhneMich(alt, neu, '😮')
+        && gleichOhneMich(alt, neu, 'formi-freut')
+        && gleichOhneMich(alt, neu, 'formi-verliebt')
+        && gleichOhneMich(alt, neu, 'formi-staunt')
+        && gleichOhneMich(alt, neu, 'formi-stolz');
     }
 
     // ── Gelesen-Haken am Aushang ──────────────────────────────────────
@@ -921,7 +928,9 @@ service cloud.firestore {
     // Putzplan: anlegen ist Chefsache, abhaken darf jeder.
     //   Pausieren steht in der App hinter chef — deshalb hier auch.
     function putzMitarbeiterFelder() {
-      return ['done','doneBy','doneByUid','doneKuerzel','doneAt','formiAt'];
+      // tage (Runde 302): die letzten 15 Tage, an denen der Punkt abgehakt
+      // wurde – für Formis Serie (heller Ring nach einer Woche komplett).
+      return ['done','doneBy','doneByUid','doneKuerzel','doneAt','formiAt','tage'];
     }
 
     // ── „Danke" an einer erledigten Aufgabe (Runde 103, Idee D1) ─────

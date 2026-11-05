@@ -1733,6 +1733,39 @@ const TAG = 86400000;
       await fns.formiMaterialF.run({ before: doc([{ name: 'Westen M', limit: 5, have: 2 }]), after: doc([{ name: 'Westen M', limit: 5, have: 4 }]) },
         { params: { firma: 'alpha', studioKey: sk } });
       pruefe('FORMI MATERIAL · aufgefüllt → keine Meldung', gesendet.length === 0);
+
+      /* Runde 299 — aus dem Betrieb (5.11.2026): bei Krankmeldung „er soll
+         nur vorschläge machen für die leitung". Lea ist morgen krank und hat
+         Dienst 09–14. Leise arbeitet morgen 10–12 (überschneidet sich), Frei
+         und die Leitung sind frei, der Chef springt nicht ein. */
+      const morgen = new Date(jetzt + 864e5).toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' });
+      const konten = { fLea: 'mitarbeiter', fLeise: 'mitarbeiter', fFrei: 'mitarbeiter', fLeit: 'leiter', fChef: 'chef' };
+      for (const [uid, role] of Object.entries(konten)) {
+        await db.doc('users/' + uid).set({ name: uid.slice(1) + ' Test', role, firma: 'alpha', studioKeys: role === 'chef' ? [] : [sk], aktiv: true });
+      }
+      await db.doc('users/fFremdK').set({ name: 'Fremd Test', role: 'mitarbeiter', firma: 'beta', studioKeys: [sk], aktiv: true });
+      await S.collection('shifts').doc('k1').set({ date: morgen, from: '09:00', to: '14:00', uid: 'fLea', name: 'Lea Test' });
+      await S.collection('shifts').doc('k2').set({ date: morgen, from: '10:00', to: '12:00', uid: 'fLeise', name: 'Leise Test' });
+      const krRef = S.collection('absences').doc('kr1');
+      await krRef.set({ type: 'krank', uid: 'fLea', name: 'Lea Test', from: morgen, to: morgen, status: 'genehmigt', ts: jetzt });
+      await fns.formiKrankF.run(await krRef.get(), { params: { firma: 'alpha', studioKey: sk, absId: 'kr1' } });
+      const vt = ((await krRef.get()).data() || {}).vertretung || {};
+      const kand = ((vt.schichten || [])[0] || {}).kandidaten || [];
+      pruefe('FORMI KRANK · Vorschlag an der Abwesenheit: die Schicht morgen 09–14, Frei und die Leitung — nicht Leise (überschneidet), nicht Lea, nicht der Chef, nicht eine andere Firma',
+        (vt.schichten || []).length === 1 && vt.schichten[0].id === 'k1' && JSON.stringify(kand.map(k => k.uid).sort()) === '["fFrei","fLeit"]', JSON.stringify(vt));
+      const mk = (gesendet[0] || { data: {} }).data;
+      pruefe('FORMI KRANK · Meldung an Leitung und Chef (nicht an Lea, nicht an Mitarbeiter), mit Vorschlag',
+        JSON.stringify(an()) === '["tok-fChef","tok-fLeit"]' && /Lea ist krank/.test(mk.title || '') && /Vorschlag: (Frei, Leit|Leit, Frei)/.test(mk.body || '') && mk.ziel === 'home', JSON.stringify([an(), mk]));
+      gesendet.length = 0;
+      const urRef = S.collection('absences').doc('ur1');
+      await urRef.set({ type: 'urlaub', uid: 'fLea', name: 'Lea Test', from: morgen, to: morgen, status: 'offen', ts: jetzt });
+      await fns.formiKrankF.run(await urRef.get(), { params: { firma: 'alpha', studioKey: sk, absId: 'ur1' } });
+      const ohneRef = S.collection('absences').doc('kr2');
+      await ohneRef.set({ type: 'krank', uid: 'fFrei', name: 'Frei Test', from: morgen, to: morgen, status: 'genehmigt', ts: jetzt });
+      await fns.formiKrankF.run(await ohneRef.get(), { params: { firma: 'alpha', studioKey: sk, absId: 'kr2' } });
+      pruefe('FORMI KRANK · Urlaub und Krankmeldung ohne Schicht: keine Meldung, kein Vorschlag',
+        gesendet.length === 0 && !((await urRef.get()).data() || {}).vertretung && !((await ohneRef.get()).data() || {}).vertretung, JSON.stringify(gesendet.map(m => m.data)));
+      for (const uid of Object.keys(konten).concat(['fFremdK'])) await db.doc('users/' + uid).delete();
     } finally {
       delete admin.messaging;
       for (const id of Object.keys(geraete)) await db.doc('pushTokens/tok-' + id).delete();
