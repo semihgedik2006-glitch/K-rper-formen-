@@ -511,7 +511,7 @@ service cloud.firestore {
     // (aufbauBereinigen) – die Regel hält nur Grösse und Form.
     function designOk() {
       let d = request.resource.data;
-      return d.keys().hasOnly(['uid', 'von', 'name', 'aufbau', 'prefs', 'ts', 'angebot'])
+      return d.keys().hasOnly(['uid', 'von', 'name', 'aufbau', 'prefs', 'ts', 'angebot', 'art', 'studios'])
         && d.keys().hasAll(['uid', 'name', 'aufbau', 'prefs', 'ts'])
         && d.name is string && d.name.size() > 0 && d.name.size() <= 30
         && (!('von' in d) || (d.von is string && d.von.size() <= 80))
@@ -521,7 +521,20 @@ service cloud.firestore {
         // Runde 294: „Mitarbeitern vorschlagen" – nur Chef und Leitung.
         // Eingestellt wird damit nichts; die App zeigt es nur als Vorschlag.
         && (!('angebot' in d) || (d.angebot is bool
-              && (d.angebot == false || isChef() || isLeiter())));
+              && (d.angebot == false || isChef() || isLeiter())))
+        // Runde 303: „Studio leitung soll nur für ihre eigenen studios
+        // machen können, Leitung soll es sofort festlegen können".
+        // art: vorschlagen oder sofort festlegen – nur an einem Angebot.
+        && (!('art' in d) || (d.get('angebot', false) == true
+              && d.art in ['vorschlag', 'fest']))
+        // studios: 'all' nur der Chef; sonst eine Liste, die Leitung nur
+        // aus den eigenen Studios.
+        && (!('studios' in d) || (d.get('angebot', false) == true
+              && ((d.studios is string && d.studios == 'all' && isChef())
+                  || (d.studios is list && d.studios.size() > 0 && d.studios.size() <= 50
+                      && (isChef() || d.studios.hasOnly(myKeys()))))))
+        // Ein neues Angebot einer Studioleitung nennt immer Studios.
+        && (d.get('angebot', false) != true || isChef() || ('studios' in d));
     }
 
     match /users/{uid} {

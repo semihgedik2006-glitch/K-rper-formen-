@@ -78,7 +78,8 @@ const D = (uid, extra) => Object.assign({ uid, von: 'Mara', name: 'Frühschicht'
     await darf('(neu geteilt)', als(ma).doc(p + 'designs/d8').set(D(ma)));
     await darf('der Chef entfernt jedes', als(chef).doc(p + 'designs/d8').delete());
     /* Runde 294: Vorschläge der Leitung */
-    await darf('die Leitung schlägt ein Design vor', als(le).doc(p + 'designs/a1').set(D(le, { angebot: true })));
+    /* Seit Runde 303 nennt die Studioleitung ihre Studios (siehe unten). */
+    await darf('die Leitung schlägt ein Design vor', als(le).doc(p + 'designs/a1').set(D(le, { angebot: true, studios: ['studio-1'] })));
     await darf('der Chef schlägt ein Design vor', als(chef).doc(p + 'designs/a2').set(D(chef, { angebot: true })));
     await darfNicht('ein Mitarbeiter schlägt NICHT vor', als(ma).doc(p + 'designs/a3').set(D(ma, { angebot: true })));
     await darf('… teilt aber mit angebot:false', als(ma).doc(p + 'designs/a4').set(D(ma, { angebot: false })));
@@ -88,9 +89,25 @@ const D = (uid, extra) => Object.assign({ uid, von: 'Mara', name: 'Frühschicht'
     await darfNicht('ein Inaktiver liest Vorschläge nicht', als(neu).collection(p + 'designs').where('angebot', '==', true).limit(20).get());
     await darf('die Leitung zieht den eigenen Vorschlag zurück', als(le).doc(p + 'designs/a1').delete());
     await darfNicht('ein Mitarbeiter entfernt den Vorschlag des Chefs nicht', als(ma).doc(p + 'designs/a2').delete());
+    /* Runde 303, aus dem Betrieb, 5.11.2026: „Studio leitung soll nur für
+       ihre eigenen studios machen können, Leitung soll es sofort festlegen
+       können ohne vorschlag". */
+    await darf('die Studioleitung legt für ihr eigenes Studio fest', als(le).doc(p + 'designs/f1').set(D(le, { angebot: true, art: 'fest', studios: ['studio-1'] })));
+    await darfNicht('… aber nicht für ein fremdes Studio', als(le).doc(p + 'designs/f2').set(D(le, { angebot: true, art: 'fest', studios: ['studio-2'] })));
+    await darfNicht('… und nicht für eigenes + fremdes', als(le).doc(p + 'designs/f3').set(D(le, { angebot: true, studios: ['studio-1', 'studio-2'] })));
+    await darfNicht('… und nicht für „alle Studios"', als(le).doc(p + 'designs/f4').set(D(le, { angebot: true, studios: 'all' })));
+    await darfNicht('… und nicht ohne Studios', als(le).doc(p + 'designs/f5').set(D(le, { angebot: true, art: 'fest' })));
+    await darfNicht('… und nicht mit leerer Liste', als(le).doc(p + 'designs/f6').set(D(le, { angebot: true, studios: [] })));
+    await darfNicht('… und macht ihr Angebot nicht nachträglich firmenweit', als(le).doc(p + 'designs/f1').update({ studios: ['studio-2'] }));
+    await darf('der Chef legt für alle Studios fest', als(chef).doc(p + 'designs/f7').set(D(chef, { angebot: true, art: 'fest', studios: 'all' })));
+    await darf('der Chef legt für ein beliebiges Studio fest', als(chef).doc(p + 'designs/f8').set(D(chef, { angebot: true, art: 'fest', studios: ['studio-2'] })));
+    await darfNicht('art nur vorschlag oder fest', als(chef).doc(p + 'designs/f9').set(D(chef, { angebot: true, art: 'zwang', studios: 'all' })));
+    await darfNicht('ein Mitarbeiter legt nichts fest', als(ma).doc(p + 'designs/f10').set(D(ma, { angebot: true, art: 'fest', studios: ['studio-1'] })));
+    await darfNicht('art/studios ohne angebot gehen nicht', als(ma).doc(p + 'designs/f11').set(D(ma, { art: 'fest', studios: ['studio-1'] })));
+    await darfNicht('studios als Text ausser „all" gehen nicht', als(chef).doc(p + 'designs/f12').set(D(chef, { angebot: true, studios: 'studio-1' })));
   }
   await env.cleanup();
-  console.log('\nGeteilte Designs (Runde 292, Vorschläge Runde 294)\n' + protokoll.join('\n'));
+  console.log('\nGeteilte Designs (Runde 292, Vorschläge Runde 294, Studios und Festlegen Runde 303)\n' + protokoll.join('\n'));
   console.log('\n' + bestanden + ' bestanden, ' + gefallen + ' gefallen');
   process.exit(gefallen ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(1); });

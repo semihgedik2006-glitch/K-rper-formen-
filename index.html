@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-sCeSH18IMr1Cqrs7JdRlYk17fs50pyWz4kdF669eAn8='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-UOo5Y1d+LBbrjw6jMyC1AY4x/rf61kRLb+ocIDRg/yE='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -10162,6 +10162,11 @@ body.ab-zieht, body.ab-zieht *{cursor:grabbing}
 .ab-angebot .ab-ang-txt{flex:1 1 220px;min-width:0;font-size:var(--t-sm)}
 .ab-angebot .ab-ang-txt i{display:block;font-style:normal;color:var(--text-2);font-size:var(--t-xs)}
 .ab-angebot .btn{min-height:44px}
+/* Runde 303: „An Mitarbeiter geben" – Auswahl unter dem Design */
+.ab-fuer{padding:var(--s8) 0 var(--s8) var(--s12);border-left:2px solid var(--line-2);margin:0 0 var(--s8)}
+.ab-fuer .hint{margin:var(--s4) 0}
+.ab-fuer-knoepfe{display:flex;gap:var(--s8);flex-wrap:wrap;margin-top:var(--s8)}
+.ab-fuer-knoepfe .btn{min-height:44px}
 .ab-dname i{display:block;font-style:normal;font-size:var(--t-xs);color:var(--text-2)}
 /* Die Vorschau: ein kleines Handy, gezeichnet aus dem Entwurf. */
 .ab-telefon{--abt-akz:var(--accent);width:220px;max-width:100%;margin:0 auto;border-radius:var(--r-lg);overflow:hidden;
@@ -24044,6 +24049,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-11-05-layout-festlegen', datum:'05.11.2026', art:'neu', titel:'Leitung legt ein Layout fürs eigene Studio fest', wo:'home', punkte:[
+    'In „App gestalten" bei einem eigenen Design: „An Mitarbeiter geben" – vorschlagen oder sofort festlegen.',
+    'Studioleitungen wählen nur ihre eigenen Studios, der Chef auch „Alle Studios".',
+    'Festgelegt gilt beim Mitarbeiter sofort, ohne Rückfrage; ändern kann man es danach selbst.'
+  ]},
   { id:'2026-11-05-formi-monde', datum:'05.11.2026', art:'neu', titel:'Formi: Studios als Monde, Geburtstage, heller Ring', wo:'home', punkte:[
     'Leitung am Rechner: jedes Studio kreist als Mond um Formi, Farbe = Ampel. Klick zeigt das Studio, „Als Kacheln" schaltet zurück.',
     'Hat heute jemand Geburtstag oder Jubiläum, steht ein kleiner Mond neben Formi. Antippen zeigt, wer es ist, mit „Gratulieren".',
@@ -25575,13 +25585,14 @@ function aufbauRender(){
         '<button type="button" class="btn btn-sm btn-primary" data-abnutzen="lokal:'+esc(d.id)+'">Nutzen</button>'+
         '<button type="button" class="btn btn-ghost btn-sm" data-abladen="lokal:'+esc(d.id)+'">Bearbeiten</button>'+
         '<button type="button" class="btn btn-ghost btn-sm" data-abteilen="'+esc(d.id)+'">Teilen</button>'+
-        (aufbauDarfAnbieten() ? '<button type="button" class="btn btn-ghost btn-sm" data-abanbieten="'+esc(d.id)+'">Mitarbeitern vorschlagen</button>' : '')+
-        '<button type="button" class="btn btn-ghost btn-sm" data-ablokalweg="'+esc(d.id)+'">'+(_abLoeschen==='lokal:'+d.id ? 'Wirklich löschen?' : 'Löschen')+'</button></div>';
+        (aufbauDarfAnbieten() ? '<button type="button" class="btn btn-ghost btn-sm" data-abanbieten="'+esc(d.id)+'" aria-expanded="'+(!!_abFuer && _abFuer.id===d.id)+'">An Mitarbeiter geben</button>' : '')+
+        '<button type="button" class="btn btn-ghost btn-sm" data-ablokalweg="'+esc(d.id)+'">'+(_abLoeschen==='lokal:'+d.id ? 'Wirklich löschen?' : 'Löschen')+'</button></div>'+
+        (_abFuer && _abFuer.id===d.id ? aufbauFuerHTML() : '');
     }).join('') : '<p class="hint">Noch keins gespeichert.</p>');
   h+='<h4>Vom Team</h4><p class="hint">Was andere geteilt haben. Ausprobieren lädt es in den Entwurf.</p>'+
     (_abTeam.length ? _abTeam.map(function(d){
       var meins = session && d.uid===session.uid;
-      return '<div class="ab-design"><span class="ab-dname"><b>'+esc(d.name)+(d.angebot===true ? '<i class="ab-marke">Vorschlag der Leitung</i>' : '')+'</b><i>von '+esc(d.von||'?')+'</i></span>'+
+      return '<div class="ab-design"><span class="ab-dname"><b>'+esc(d.name)+(d.angebot===true ? '<i class="ab-marke">'+(d.art==='fest' ? 'Festgelegt von der Leitung' : 'Vorschlag der Leitung')+'</i>' : '')+'</b><i>von '+esc(d.von||'?')+(d.angebot===true ? ' · '+esc(aufbauStudiosText(d.studios)) : '')+'</i></span>'+
         '<button type="button" class="btn btn-sm btn-primary" data-abnutzen="team:'+esc(d.id)+'">Nutzen</button>'+
         '<button type="button" class="btn btn-ghost btn-sm" data-abladen="team:'+esc(d.id)+'">Ausprobieren</button>'+
         (meins || isChef() ? '<button type="button" class="btn btn-ghost btn-sm" data-abteamweg="'+esc(d.id)+'">'+(_abLoeschen==='team:'+d.id ? 'Wirklich entfernen?' : 'Nicht mehr teilen')+'</button>' : '')+'</div>';
@@ -25623,8 +25634,10 @@ function aufbauOeffnen(){
 function aufbauZu(){
   var t=$('aufbauTafel'); if(t) t.hidden=true;
   document.body.classList.remove('ab-offen');
-  _abE=null; _abAngebot=null; aufbauMenueZu();
+  _abE=null; _abAngebot=null; _abFuer=null; aufbauMenueZu();
   if(_abTeamAb){ try{ _abTeamAb(); }catch(e){} _abTeamAb=null; }
+  /* Runde 303: eine Festlegung, die kam, während die Tafel offen war. */
+  aufbauFestPruefen();
 }
 /* Schliessen = Verwerfen. Mit Änderungen fragt es vorher. */
 function aufbauSchliessen(){
@@ -25634,7 +25647,7 @@ function aufbauSchliessen(){
 }
 function aufbauVerwerfen(){ aufbauSchliessen(); }
 /* Den Entwurf (oder ein Design) in die App schreiben. */
-function aufbauAnwendenAus(e){
+function aufbauAnwendenAus(e, ohneSprung){
   var startVorher=aufbau().start;
   PREFS.aufbauVorher=aufbauSchnappschuss();
   var p=aufbauPrefsBereinigen(e.prefs);
@@ -25644,7 +25657,7 @@ function aufbauAnwendenAus(e){
   savePrefs(); applyPrefs(); aufbauAnwenden();
   /* Ist „Beim Öffnen" neu, geht es gleich dorthin – so sieht man, was
      man eingestellt hat. */
-  if(a.start!==startVorher) showView(aufbauStart() || 'home');
+  if(a.start!==startVorher && !ohneSprung) showView(aufbauStart() || 'home');
   else if(currentView==='home' && typeof renderHome==='function') renderHome();
 }
 function aufbauUebernehmen(){
@@ -25670,15 +25683,53 @@ function aufbauDesignSpeichern(){
   if(f) f.value='';
   toast('„'+name+'" gespeichert.');
 }
-function aufbauDesignTeilen(id, angebot){
+/* `fuer` (Runde 303): { art:'vorschlag'|'fest', studios:'all'|[Kennungen] }.
+   Ohne `fuer` ist es ein gewöhnliches Teilen. */
+function aufbauDesignTeilen(id, fuer){
   var d=(PREFS.designs||[]).filter(function(x){ return x.id===id; })[0]; if(!d || !session) return;
   var doc={ uid:session.uid, von:String(session.name||'').slice(0,80), name:d.name,
     aufbau:aufbauBereinigen(d.aufbau), prefs:aufbauPrefsBereinigen(d.prefs), ts:Date.now() };
-  if(angebot) doc.angebot=true;
+  if(fuer){ doc.angebot=true; doc.art=fuer.art==='fest' ? 'fest' : 'vorschlag'; doc.studios=fuer.studios; }
+  var fest = fuer && doc.art==='fest';
   S('designs').add(doc)
-    .then(function(){ toast(angebot ? '„'+d.name+'" wird Mitarbeitern auf „Heute" vorgeschlagen. Eingestellt wird nichts von allein.'
-                                    : '„'+d.name+'" ist jetzt fürs Team sichtbar.'); })
-    .catch(function(err){ toast((angebot ? 'Vorschlagen' : 'Teilen')+' ging nicht: '+errMsg(err), true); });
+    .then(function(){
+      _abFuer=null; aufbauRender();
+      toast(!fuer ? '„'+d.name+'" ist jetzt fürs Team sichtbar.'
+        : fest ? '„'+d.name+'" ist für '+aufbauStudiosText(doc.studios)+' festgelegt – es gilt beim nächsten Öffnen der App.'
+        : '„'+d.name+'" wird '+aufbauStudiosText(doc.studios)+' auf „Heute" vorgeschlagen. Eingestellt wird nichts von allein.');
+    })
+    .catch(function(err){ toast((fest ? 'Festlegen' : fuer ? 'Vorschlagen' : 'Teilen')+' ging nicht: '+errMsg(err), true); });
+}
+/* ── An Mitarbeiter geben (Runde 303) ──
+   Aus dem Betrieb, 5.11.2026: „Studio leitung soll nur für ihre eigenen
+   studios machen können, Leitung soll es sofort festlegen können ohne
+   vorschlag". Die Auswahl steht unter dem Design: wie (vorschlagen oder
+   sofort festlegen) und für welche Studios. Die Studioleitung sieht nur
+   ihre eigenen; die Regel prüft dasselbe. */
+var _abFuer=null;
+function aufbauStudiosText(st){
+  if(!st || st==='all') return 'alle Studios';
+  var n=st.map(function(k){ return studioName(k); });
+  return n.length>2 ? n.length+' Studios' : n.join(' und ');
+}
+function aufbauFuerHTML(){
+  var f=_abFuer, keys=managedKeys();
+  function chip(attr, wert, an, text){
+    return '<button type="button" class="chip'+(an?' on':'')+'" '+attr+'="'+esc(wert)+'" aria-pressed="'+an+'">'+esc(text)+'</button>';
+  }
+  var studios = (isChef() ? chip('data-abfuerstudio', 'all', f.studios==='all', 'Alle Studios') : '')+
+    keys.map(function(k){ return chip('data-abfuerstudio', k, f.studios!=='all' && f.studios.indexOf(k)>=0, studioName(k)); }).join('');
+  var leer = f.studios!=='all' && !f.studios.length;
+  return '<div class="ab-fuer" role="group" aria-label="An Mitarbeiter geben">'+
+    '<p class="hint">Wie?</p><div class="ab-chips">'+
+      chip('data-abfuerart', 'vorschlag', f.art!=='fest', 'Vorschlagen')+
+      chip('data-abfuerart', 'fest', f.art==='fest', 'Sofort festlegen')+'</div>'+
+    '<p class="hint">'+(f.art==='fest' ? 'Gilt beim nächsten Öffnen der App – ohne Rückfrage. Ändern kann man es danach selbst.'
+                                      : 'Mitarbeiter sehen es auf „Heute" und entscheiden selbst.')+'</p>'+
+    '<p class="hint">Für welche Studios?</p><div class="ab-chips">'+studios+'</div>'+
+    '<div class="ab-fuer-knoepfe">'+
+      '<button type="button" class="btn btn-sm btn-primary" data-abfuersenden="1"'+(leer?' disabled':'')+'>'+(f.art==='fest' ? 'Festlegen' : 'Vorschlagen')+'</button>'+
+      '<button type="button" class="btn btn-ghost btn-sm" data-abfuerzu="1">Abbrechen</button></div></div>';
 }
 /* ── Vorschläge der Leitung (Runde 294) ──
    Aus dem Betrieb, 26.10.2026: „es soll jeder nur für sein eigenes gerät
@@ -25689,24 +25740,45 @@ function aufbauDesignTeilen(id, angebot){
    ein Tipp öffnet „App gestalten" mit dem Vorschlag im Entwurf. Erst
    „Übernehmen" stellt ihn ein, „Nein danke" blendet ihn aus. Die
    Entscheidung liegt in PREFS.angebote – je Gerät, wie der Aufbau. */
-var _abAngebote=[], _abAngebotAb=null, _abAngebot=null, _abAngebotStand='';
+var _abAngebote=[], _abAngebotAb=null, _abAngebot=null, _abAngebotStand='', _abFest=[];
+/* Runde 303: ohne `studios` (Vorschläge aus Runde 294) gilt es für alle. */
+function aufbauFuerMich(x){
+  if(!x.studios || x.studios==='all') return true;
+  var meine=(session && session.studioKeys) || [];
+  return Array.isArray(x.studios) && x.studios.some(function(k){ return meine.indexOf(k)>=0; });
+}
+/* „Sofort festlegen": die neueste Festlegung, die auf diesem Gerät noch
+   nicht angewendet wurde, wird angewendet – einmal. Ältere gelten damit
+   als erledigt. Ist „App gestalten" gerade offen, wartet es bis danach. */
+function aufbauFestPruefen(){
+  var d=_abFest[0], ent=PREFS.angebote||{};
+  if(!d || ent[d.id]) return;
+  var t=$('aufbauTafel'); if(t && !t.hidden) return;
+  aufbauAnwendenAus(Object.assign({}, d.aufbau, { prefs:d.prefs, vorschlag:d.name }), true);
+  var neu=Object.assign({}, ent); _abFest.forEach(function(x){ neu[x.id]='fest'; });
+  var ks=Object.keys(neu); while(ks.length>30){ delete neu[ks.shift()]; }
+  PREFS.angebote=neu; savePrefs();
+  toast('Deine Leitung hat den Aufbau „'+d.name+'" eingestellt. Ändern kannst du ihn unter „App gestalten".');
+}
 function aufbauDarfAnbieten(){ return isChef() || isLeiter(); }
 function aufbauAngeboteHoeren(){
   if(_abAngebotAb || typeof S!=='function' || !session || aufbauDarfAnbieten()) return;
   try{
     /* Ohne orderBy: gleich + sortiert bräuchte einen eigenen Index. */
     _abAngebotAb=S('designs').where('angebot','==',true).limit(20).onSnapshot(function(snap){
-      var l=[]; snap.forEach(function(d){ var x=d.data()||{}; x.id=d.id;
-        if(x.angebot===true && x.name && x.aufbau && x.uid!==session.uid) l.push(x); });
-      l.sort(function(a, b){ return (b.ts||0)-(a.ts||0); });
-      _abAngebote=l;
+      var l=[], fest=[]; snap.forEach(function(d){ var x=d.data()||{}; x.id=d.id;
+        if(x.angebot===true && x.name && x.aufbau && x.uid!==session.uid && aufbauFuerMich(x)) (x.art==='fest' ? fest : l).push(x); });
+      function neu(a, b){ return (b.ts||0)-(a.ts||0); }
+      l.sort(neu); fest.sort(neu);
+      _abAngebote=l; _abFest=fest;
+      aufbauFestPruefen();
       if(typeof renderHeute==='function') renderHeute();
     }, function(err){ console.warn('Vorschläge:', err && err.code); });
   }catch(e){}
 }
 function aufbauAngeboteAus(){
   if(_abAngebotAb){ try{ _abAngebotAb(); }catch(e){} _abAngebotAb=null; }
-  _abAngebote=[]; _abAngebot=null;
+  _abAngebote=[]; _abAngebot=null; _abFest=[];
 }
 /* Der neueste Vorschlag, über den auf diesem Gerät noch nicht entschieden ist. */
 function aufbauAngebotOffen(){
@@ -25886,7 +25958,28 @@ function aufbauKlick(ev){
   }
   else if((x=b.getAttribute('data-abladen'))){ var dl=aufbauDesignFinden(x); if(dl) aufbauEntwurfLaden(dl.aufbau, dl.prefs, dl.name); }
   else if((x=b.getAttribute('data-abteilen'))){ aufbauDesignTeilen(x); return; }
-  else if((x=b.getAttribute('data-abanbieten'))){ if(aufbauDarfAnbieten()) aufbauDesignTeilen(x, true); return; }
+  else if((x=b.getAttribute('data-abanbieten'))){
+    if(!aufbauDarfAnbieten()) return;
+    _abFuer = _abFuer && _abFuer.id===x ? null : { id:x, art:'vorschlag', studios: isChef() ? 'all' : managedKeys() };
+  }
+  else if((x=b.getAttribute('data-abfuerart'))){ if(_abFuer) _abFuer.art = x==='fest' ? 'fest' : 'vorschlag'; }
+  else if((x=b.getAttribute('data-abfuerstudio'))){
+    if(!_abFuer) return;
+    if(x==='all') _abFuer.studios = _abFuer.studios==='all' ? [] : 'all';
+    else {
+      var st = _abFuer.studios==='all' ? [] : _abFuer.studios.slice(), i=st.indexOf(x);
+      if(i>=0) st.splice(i, 1); else if(managedKeys().indexOf(x)>=0) st.push(x);
+      _abFuer.studios=st;
+    }
+  }
+  else if(b.hasAttribute('data-abfuerzu')){ _abFuer=null; }
+  else if(b.hasAttribute('data-abfuersenden')){
+    if(!_abFuer || !aufbauDarfAnbieten()) return;
+    if(_abFuer.studios!=='all' && !_abFuer.studios.length){ toast('Bitte mindestens ein Studio wählen.', true); return; }
+    if(_abFuer.studios==='all' && !isChef()) return;
+    aufbauDesignTeilen(_abFuer.id, { art:_abFuer.art, studios:_abFuer.studios });
+    return;
+  }
   else if((x=b.getAttribute('data-ablokalweg'))){
     if(_abLoeschen!=='lokal:'+x){ _abLoeschen='lokal:'+x; aufbauRender(); return; }
     PREFS.designs=(PREFS.designs||[]).filter(function(d){ return d.id!==x; }); savePrefs(); _abLoeschen=null;

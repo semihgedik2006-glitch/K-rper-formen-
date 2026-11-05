@@ -25610,3 +25610,77 @@ Gegenprobe mit der alten Regel: die zwei „darf“-Fälle fallen durch.
 **Nicht prüfbar hier**: der echte Schreibweg zu Firestore (die Attrappe
 schreibt nichts), und ob der Ring nach einer echten Woche erscheint –
 geprüft ist die Rechnung mit gesetzten Tagen.
+
+## Runde 303 — Layout für das eigene Studio: vorschlagen oder sofort festlegen (5.11.2026)
+
+Aus dem Betrieb, 5.11.2026: „Studio leitung soll nur für ihre eigenen
+studios machen können, Leitung soll es sofort festlegen können ohne
+vorschlag".
+
+**Was gebaut wurde**
+
+- In „App gestalten → Meine Designs" heisst der Knopf der Leitung jetzt
+  **„An Mitarbeiter geben"**. Er schreibt noch nichts, sondern öffnet
+  darunter die Auswahl: **Vorschlagen** oder **Sofort festlegen**, und
+  **für welche Studios**. Die Studioleitung sieht nur ihre eigenen
+  Studios (vorgewählt); der Chef hat zusätzlich „Alle Studios"
+  (vorgewählt) und jedes einzelne. Ohne Studio ist der Knopf gesperrt.
+- Das Design bekommt dazu `art` (`vorschlag` | `fest`) und `studios`
+  (`'all'` | Liste der Kennungen).
+- **Mitarbeiter** sehen nur, was für eines ihrer Studios gilt.
+  Vorschläge wie in Runde 294. Eine **Festlegung** wird beim Eintreffen
+  angewendet – ohne Rückfrage, einmal je Gerät (`PREFS.angebote[id] =
+  'fest'`). Gibt es mehrere, gilt die neueste; die älteren zählen als
+  erledigt. Danach steht eine kurze Meldung da.
+- Unter „Vom Team" heisst die Marke „Festgelegt von der Leitung" oder
+  „Vorschlag der Leitung", dahinter die Studios.
+
+**Warum so**
+
+- **Festgelegt, nicht gesperrt.** Wer danach selbst etwas ändert, behält
+  das – auch beim nächsten Öffnen. Das passt zum ersten Wunsch („jeder
+  nur für sein eigenes gerät anpassen"). Wenn die Leitung eine Sperre
+  will, ist das ein eigener Schritt; gebaut ist sie nicht.
+- **Kein Sprung mitten in der Arbeit.** Kommt eine Festlegung, während
+  jemand im Chat ist, ändert sich die Leiste, die Seite bleibt. Ein neuer
+  Start („Beim Öffnen") gilt ab dem nächsten Öffnen. Ist „App gestalten"
+  gerade offen, wartet die Festlegung, bis die Tafel zu ist.
+- **Die Grenze steht in der Regel**, nicht nur in der Oberfläche
+  (`designOk()`, gilt auf beiden Pfaden):
+  - `art` und `studios` nur an einem Angebot;
+  - `art` nur `vorschlag` oder `fest`;
+  - `studios: 'all'` nur der Chef;
+  - sonst eine nicht leere Liste, bei der Studioleitung nur aus
+    `myKeys()` (`hasOnly`);
+  - ein neues Angebot einer Studioleitung nennt immer Studios.
+- **Übergang:** Vorschläge aus Runde 294 haben kein `studios`. Die App
+  liest sie weiter als „für alle". Die Regel verlangt die Studios nur
+  beim Schreiben. Ein bestehendes Dokument bleibt lesbar; ändern lässt es
+  sich erst wieder mit Studios. Eine Leseregel ist nicht schärfer
+  geworden; es trifft also kein bestehendes Konto beim Lesen.
+- **Lesen bleibt firmenweit.** Ein Design ist kein Geheimnis. Die
+  Studiogrenze gilt dafür, wem es vorgeschlagen oder festgelegt wird,
+  nicht dafür, wer es sehen darf.
+
+**Tests**
+
+- `tests/test-vorschlag.js`: 92 Zusicherungen statt 57.
+  - Die Auswahl der Studioleitung: Hürth und Brühl, kein „Alle Studios".
+  - „Festlegen" für Brühl schreibt genau `angebot, art:'fest',
+    studios:['studio-7']`; ohne Studio ist der Knopf gesperrt.
+  - Der Chef schreibt `studios:'all'`.
+  - Beim Mitarbeiter (Hürth): Vorschlag und Festlegung für Brühl
+    erscheinen nicht. Die Festlegung für Hürth gilt sofort und einmal;
+    eigene Änderung bleibt. Mitten im Chat ändert sie die Leiste, die
+    Seite bleibt.
+  - Trefferflächen der Auswahl per Hit-Test bei 320 / 390 / 430 / 820 /
+    1280 / 1440 / 1920, normal und kompakt: alle ≥ 44 × 44, im Bild,
+    kein Querscrollen.
+  - Gegenprobe gegen `main`: rot.
+- `tests/rules/designs.test.js`: 80 statt 54.
+  - Studioleitung: eigenes Studio ja; fremdes, eigenes + fremdes,
+    `'all'`, leer und ohne Studios nein; nachträglich auf ein fremdes
+    Studio ändern nein.
+  - Chef: `'all'` und jedes Studio ja.
+  - `art:'zwang'` nein; `art`/`studios` ohne Angebot nein.
+  - Gegenprobe mit der Regel von `main`: 10 rot.
