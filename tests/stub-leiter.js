@@ -148,7 +148,8 @@ var USERS = [
     { id:'a2', uid:'testuid', from:'Test Chef', text:'Bitte die Gurte nach jedem Training desinfizieren.',
       target:'studio-6', ts:Date.now()-2*3600000, readBy:[] }
   ];
-  var ABSENCES = {
+  /* window.__absences / __shifts: ein Durchlauf kann eigene hinlegen (Runde 298). */
+  var ABSENCES = window.__absences || {
     'studio-6': [
       { id:'a1', from:tag(13), to:tag(21), type:'urlaub', uid:'u2', name:'Anna Meier',
         status:'offen', note:'Sommerurlaub', ts:Date.now()-86400000 },
@@ -175,7 +176,7 @@ var USERS = [
     { id:'d2', name:'Gerätewartung Anleitung', kind:'link', url:'https://example.com', cat:'technik', studios:'all', ts:Date.now()-172800000, uploadedBy:'Chef' },
     { id:'d3', name:'Arbeitsvertrag Muster', kind:'file', size:88000, cat:'personal', studios:'all', ts:Date.now()-259200000, uploadedBy:'Chef' }
   ];
-  var SHIFTS = {
+  var SHIFTS = window.__shifts || {
     'studio-6': [
       // eigene Schicht -> "Ich kann nicht" muss erscheinen
       { id:'s1', date:tag(0), from:'09:00', to:'14:00', uid:'testuid', name:'Ich' },

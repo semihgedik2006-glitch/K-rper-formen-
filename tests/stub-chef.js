@@ -285,7 +285,8 @@ var USERS = [
       loesung:'Direkt nach dem Programm ausräumen.',
       bilder:[], uid:'u3', vonName:'Ben Kraus', ts:Date.now()-20*86400000 }
   ];
-  var ABSENCES = {
+  /* window.__absences / __shifts: ein Durchlauf kann eigene hinlegen (Runde 298). */
+  var ABSENCES = window.__absences || {
     'studio-6': [
       { id:'a1', from:tag(13), to:tag(21), type:'urlaub', uid:'u2', name:'Anna Meier',
         status:'offen', note:'Sommerurlaub', ts:Date.now()-86400000 },
@@ -348,7 +349,7 @@ var USERS = [
         uid:'u3', name:'Ben Kraus', ts:Date.now()-1*3600000 }
     ]
   };
-  var SHIFTS = {
+  var SHIFTS = window.__shifts || {
     'studio-6': [
       // eigene Schicht -> "Ich kann nicht" muss erscheinen
       { id:'s1', date:tag(0), from:'09:00', to:'14:00', uid:'testuid', name:'Ich' },

@@ -25373,3 +25373,66 @@ Der Bild-Knopf (`#jarvisFoto`) ist in `test-gehirn` bei 320 / 390 / 430 /
 ≥ 44 × 44 px. Angesehen bei 320, 390 und 1440 px: Bild in der Blase
 223 × 167 / 282 × 212 / 274 × 206 px, kein waagerechtes Scrollen,
 „Jetzt eintragen“ 44 px hoch.
+
+## Runde 298 — Krank gemeldet: Formi schlägt der Leitung eine Vertretung vor (5.11.2026)
+
+Aus dem Betrieb, auf den Plan „‚Ich bin morgen krank': Formi trägt ein
+und fragt passende Kollegen": „er soll nur vorschläge machen für die
+leitung".
+
+**Was es vorher gab.** Krankmelden ging schon (Formi oder Team-Bereich,
+gilt sofort). Danach passierte nichts: die Leitung sah die Krankmeldung
+im Plan und musste selbst herausfinden, welche Schichten betroffen sind
+und wer einspringen könnte.
+
+**Was gebaut wurde.**
+- `formiKrank` (beide Welten, `studios/{sk}/absences/{id}` onCreate): bei
+  `type: 'krank'` die Schichten der Person in den nächsten sieben Tagen;
+  je Schicht bis zu drei Kollegen aus dem Studio (`vertretungVorschlag`).
+  Der Vorschlag steht als Feld `vertretung` an der Abwesenheit; die
+  Leitung des Studios und die Geschäftsführung bekommen eine Meldung
+  („🤒 Ben ist krank (Hürth) — Fr 6.11. 09:00–14:00: Vorschlag: Anna,
+  Cem."), Ziel Startseite.
+- Startseite der Leitung, „Zu bestätigen": eine Zeile „Krank – Vertretung"
+  je betroffener Schicht. ✓ schreibt die Schicht aus (dieselben Felder wie
+  „Schicht abgeben": `tausch: 'offen'`, `tauschVon` = die kranke Person);
+  wer zusagt, landet wie bisher unter „Schichttausch". ✕ heisst „regle ich
+  selbst" und vermerkt nur die Schicht an der Abwesenheit
+  (`vertretungErledigt`).
+
+**Warum so.**
+- **Nur ein Vorschlag.** Formi fragt niemanden, schreibt niemandem und
+  ändert keinen Plan. Ob ausgeschrieben, angerufen oder anders geregelt
+  wird, entscheidet die Leitung — so war es gewünscht.
+- **Wer vorgeschlagen wird:** aktiv, im Studio, nicht die kranke Person,
+  nicht die Geschäftsführung; an dem Tag nicht abwesend (ausser
+  abgelehnt), keine überschneidende Schicht. Zuerst, wer an dem Tag gar
+  nicht arbeitet, dann, wer in der Woche um den Tag die wenigsten
+  Schichten hat. Keine Stunden-Salden, keine Verträge — dafür fehlt hier
+  die verlässliche Grundlage, und ein Vorschlag soll erklärbar bleiben.
+- **Keine neue Sammlung.** Das Feld hängt an der Abwesenheit, die die
+  Leitung ohnehin lesen und ändern darf; die Regeln bleiben, wie sie sind
+  (Verwaltung darf Abwesenheiten und Schichten ändern). Damit gibt es
+  keine Sammlung, die in beide Regel-Welten müsste.
+- **Die Zeile verschwindet von selbst**, sobald die Schicht nicht mehr bei
+  der kranken Person liegt, ausgeschrieben ist oder vorbei ist — der Stand
+  kommt aus derselben Abfrage wie „Mein Dienst" (sieben Tage).
+- Die Meldung geht nur, wenn wirklich eine Schicht betroffen ist. Eine
+  Krankmeldung ohne Schicht macht keinen Lärm.
+
+**Nicht geprüft.**
+- Ob die Meldung auf echten Geräten ankommt: hier ist der Versand
+  abgefangen (Emulator), geprüft sind Empfänger und Text.
+- Krankmeldungen, die schon vor dieser Runde eingetragen wurden, haben
+  keinen Vorschlag — der entsteht nur beim Anlegen.
+
+**Geprüft:** `funktionen` (Emulator) 275 (neu: Vorschlag an der
+Abwesenheit, Empfänger der Meldung, Urlaub und Krank ohne Schicht melden
+nichts), `test-formi-vertretung` 25 (Zeile, ✓ ausschreiben, ✕ selbst
+geregelt, niemand gefragt, Gegenproben, Treffer 390–1920 px normal und
+kompakt, Startseite passt am Rechner).
+
+**Nebenbei behoben:** „Was ist neu" zeigte „Update · 5. November"
+dreimal. Eine parallele Sitzung schrieb `05.11.2026`, diese `5.11.2026`;
+gruppiert wurde nach der Schreibweise. Jetzt nach dem Tag
+(`neuTagSchluessel`), und `test-neuigkeiten` zählt die Tage genauso.

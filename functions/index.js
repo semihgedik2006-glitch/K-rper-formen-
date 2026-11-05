@@ -9363,6 +9363,106 @@ const _formiMaterialW = beideWelten('inventory/{studioKey}', _formiMaterial, 'on
 exports.formiMaterial = _formiMaterialW.flach;
 exports.formiMaterialF = _formiMaterialW.firma;
 
+/* ══ KRANK GEMELDET: VORSCHLAG FÜR DIE VERTRETUNG (Runde 298) ═════════
+   Aus dem Betrieb, 5.11.2026, auf den Plan „‚Ich bin morgen krank': Formi
+   trägt ein und fragt passende Kollegen": „er soll nur vorschläge machen
+   für die leitung".
+
+   Kommt eine Krankmeldung (absences, type 'krank'), sucht Formi die
+   Schichten der Person in den nächsten sieben Tagen und je Schicht bis zu
+   drei Kollegen aus demselben Studio, die einspringen könnten. Der
+   Vorschlag steht an der Abwesenheit (Feld vertretung) und geht als
+   Meldung an die Leitung des Studios. Gefragt wird NIEMAND — ob die
+   Leitung die Schicht ausschreibt, jemanden anruft oder es selbst regelt,
+   entscheidet sie unter „Zu bestätigen".
+
+   Wer passt (der Reihe nach):
+     1. aktiv, im Studio, nicht die kranke Person, nicht die
+        Geschäftsführung (die plant, sie springt nicht ein);
+     2. an dem Tag nicht abwesend (Urlaub, krank, frei — ausser abgelehnt);
+     3. keine Schicht, die sich mit dieser überschneidet;
+     4. zuerst, wer an dem Tag gar keine Schicht hat, dann, wer in der
+        Woche um den Tag die wenigsten Schichten hat, dann nach Name.
+   Rein rechnerisch (__intern). Keine neue Sammlung: das Feld hängt an der
+   Abwesenheit, die die Leitung ohnehin lesen und ändern darf. */
+const VERTRETUNG_TAGE = 7;
+const VERTRETUNG_MAX = 3;
+function tagPlus(tag, n) {
+  return new Date(new Date(tag + 'T12:00:00Z').getTime() + n * 864e5).toISOString().slice(0, 10);
+}
+function vertretungVorschlag({ krank, schichten, team, abwesend, heute }) {
+  const k = krank || {};
+  if (!k.uid || !DATUM_RE.test(String(k.from || '')) || !DATUM_RE.test(heute || '')) return [];
+  const von = k.from > heute ? k.from : heute;
+  const bisRoh = DATUM_RE.test(String(k.to || '')) && k.to >= k.from ? k.to : k.from;
+  const bis = bisRoh < tagPlus(heute, VERTRETUNG_TAGE) ? bisRoh : tagPlus(heute, VERTRETUNG_TAGE);
+  const alle = (schichten || []).filter(s => s && s.uid && DATUM_RE.test(String(s.date || '')));
+  const betroffen = alle.filter(s => s.uid === k.uid && s.date >= von && s.date <= bis)
+    .sort((a, b) => (a.date + (a.from || '')).localeCompare(b.date + (b.from || ''))).slice(0, 10);
+  const leute = (team || []).filter(p => p && p.uid && p.uid !== k.uid && p.aktiv !== false && p.role !== 'chef' && p.role !== 'admin');
+  const abw = (abwesend || []).filter(a => a && a.uid && a.status !== 'abgelehnt');
+  const ueberschneidet = (a, b) => !(a.from && a.to && b.from && b.to) || (a.from < b.to && b.from < a.to);
+  return betroffen.map(s => {
+    const wocheVon = tagPlus(s.date, -3), wocheBis = tagPlus(s.date, 3);
+    const kandidaten = leute.filter(p => !abw.some(a => a.uid === p.uid && a.from <= s.date && (a.to || a.from) >= s.date))
+      .map(p => {
+        const tag = alle.filter(x => x.uid === p.uid && x.date === s.date);
+        if (tag.some(x => ueberschneidet(x, s))) return null;
+        const woche = alle.filter(x => x.uid === p.uid && x.date >= wocheVon && x.date <= wocheBis).length;
+        return { uid: p.uid, name: String(p.name || '').slice(0, 60), frei: tag.length === 0, woche };
+      })
+      .filter(Boolean)
+      .sort((a, b) => (b.frei - a.frei) || (a.woche - b.woche) || a.name.localeCompare(b.name, 'de'))
+      .slice(0, VERTRETUNG_MAX)
+      .map(p => ({ uid: p.uid, name: p.name, frei: p.frei }));
+    return { id: s.id, date: s.date, from: s.from || '', to: s.to || '', kandidaten };
+  });
+}
+/* Der Text der Meldung an die Leitung. Rein rechnerisch (__intern). */
+const WT_KURZ = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+function vertretungTagText(tag) {
+  const d = new Date(tag + 'T12:00:00Z');
+  return WT_KURZ[d.getUTCDay()] + ' ' + d.getUTCDate() + '.' + (d.getUTCMonth() + 1) + '.';
+}
+function vertretungText(name, studio, vorschlag) {
+  const vn = String(name || 'Jemand').split(' ')[0];
+  if (!vorschlag.length) return null;
+  const s = vorschlag[0];
+  const wer = s.kandidaten.length
+    ? 'Vorschlag: ' + s.kandidaten.map(p => String(p.name || '').split(' ')[0]).join(', ') + '.'
+    : 'Niemand ist frei – bitte selbst regeln.';
+  return {
+    titel: '🤒 ' + vn + ' ist krank' + (studio ? ' (' + studio + ')' : ''),
+    text: (vorschlag.length > 1 ? vorschlag.length + ' Schichten betroffen. ' : '') +
+      vertretungTagText(s.date) + ' ' + s.from + (s.to ? '–' + s.to : '') + ': ' + wer + ' Unter „Zu bestätigen" ausschreiben.'
+  };
+}
+const _formiKrank = async (snap, ctx) => {
+  const x = snap.data() || {};
+  if (x.type !== 'krank' || !x.uid || !x.from) return null;
+  const firma = ctx.params.firma || null, sk = ctx.params.studioKey;
+  if (!(await featureAn(firma, 'schicht'))) return null;
+  const heute = tagBerlin(new Date());
+  const ende = tagPlus(heute, VERTRETUNG_TAGE + 3);
+  if ((x.to || x.from) < heute || x.from > ende) return null;
+  const ref = W(firma).collection('studios').doc(sk);
+  const schichten = (await ref.collection('shifts').where('date', '>=', tagPlus(heute, -3)).where('date', '<=', ende).get())
+    .docs.map(d => Object.assign({ id: d.id }, d.data() || {}));
+  const abwesend = (await ref.collection('absences').where('to', '>=', heute).get()).docs.map(d => d.data() || {});
+  /* users liegt oben, die Firma steht im Profil (gehoertZu). */
+  const team = (await db.collection('users').get()).docs.map(d => Object.assign({ uid: d.id }, d.data() || {}))
+    .filter(p => gehoertZu(p, firma) && inStudio(p, sk));
+  const vorschlag = vertretungVorschlag({ krank: x, schichten, team, abwesend, heute });
+  if (!vorschlag.length) return null;
+  await snap.ref.update({ vertretung: { schichten: vorschlag, ts: Date.now() } });
+  const t = vertretungText(x.name, await studioName(firma, sk), vorschlag);
+  if (t) await formiPush(firma, d => d.uid !== x.uid && formiAnLeitung(sk)(d), t.titel, t.text, 'home');
+  return null;
+};
+const _formiKrankW = beideWelten('studios/{studioKey}/absences/{absId}', _formiKrank);
+exports.formiKrank = _formiKrankW.flach;
+exports.formiKrankF = _formiKrankW.firma;
+
 /* ══ STEMPEL-ERINNERUNG (Runde 238) ═══════════════════════════════════
    Aus dem Betrieb, 23.10.2026: „mach die errinerungen und vlt auch in
    kobi mit formi und einer mail oder so" — die Erinnerung aus dem Plan
@@ -9488,7 +9588,7 @@ exports.stempelErinnern = region.runWith({ timeoutSeconds: 300, memory: '256MB' 
     return null;
   });
 
-exports.__intern = { gehirnBildSystem, gehirnBildErgebnis, GEHIRN_BILD_AKTIONEN, GEHIRN_BILD_PERSON, gehirnKlareFrage, stempelErinnerungen, stempelErinnernMail, stempelErinnernFirma, formiTagText, formiSchichtendeText, formiMaterialNeu, formiFristVorbei, formiSchichtEndeIn, abschlussZeilenPruefen, monateVor, eigeneAbschlussZeile, eigeneRegel, antragUhrPruefen, ANTRAG_TAGE_MAX, erlaubteSchritte, schrittWaehlen, tagesStand, gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
+exports.__intern = { vertretungVorschlag, vertretungText, gehirnBildSystem, gehirnBildErgebnis, GEHIRN_BILD_AKTIONEN, GEHIRN_BILD_PERSON, gehirnKlareFrage, stempelErinnerungen, stempelErinnernMail, stempelErinnernFirma, formiTagText, formiSchichtendeText, formiMaterialNeu, formiFristVorbei, formiSchichtEndeIn, abschlussZeilenPruefen, monateVor, eigeneAbschlussZeile, eigeneRegel, antragUhrPruefen, ANTRAG_TAGE_MAX, erlaubteSchritte, schrittWaehlen, tagesStand, gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
                      gehirnVorschlagPruefen, gehirnBefehlPruefen, gehirnWeg, gehirnKontextText, lageberichtOhneKi,
                      geminiSperreAufheben: () => { _geminiAusBis = 0; }, geminiGesperrt: () => Date.now() < _geminiAusBis, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,
                      authMailSpurenWeg, authMailLink, authMailText, authMailDocId, AUTH_MAIL_PRO_TAG, startPasswort, START_PW_ZEICHEN, mailWillHaben, kontenImStudio, collectMonthly, monatsText, berichtHtml,

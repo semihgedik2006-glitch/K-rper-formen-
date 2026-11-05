@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-cXqAchCw1NK66WVzSFFHbsX3+f5w1eGfhnBi35ijCCI='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-+6dwvZQ5c+VXFxPGXy4IwbpO6nZggH9xCQEqWzMAz9M='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -9747,6 +9747,7 @@ body.neu .ls-detail .hz-ikon,body.neu .ls-detail .hz-pfeil{display:none}
 .ls-art.ta{color:var(--ber)}
 .ls-art.abw{color:#4EE6D2}
 .ls-art.za{color:#BBA4FF}
+.ls-art.kr{color:var(--accent-d)}
 body.light .ls-art.abw{color:#0B6A62}
 body.light .ls-art.za{color:#5F1FC7}
 .ls-ja,.ls-nein{flex:0 0 44px;width:44px;height:44px;display:grid;place-items:center;padding:0;border-radius:var(--r-md);cursor:pointer}
@@ -23814,6 +23815,11 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-11-05-krank-vertretung', datum:'5.11.2026', art:'neu', titel:'Krankmeldung: Vorschlag für die Vertretung', wo:'home', punkte:[
+    'Meldet sich jemand krank, schlägt Formi der Leitung je Schicht passende Kollegen vor.',
+    'Leitung: unter „Zu bestätigen" die Schicht ausschreiben oder „selbst geregelt".',
+    'Gefragt wird niemand automatisch.'
+  ]},
   { id:'2026-11-05-formi-bilder', datum:'05.11.2026', art:'neu', titel:'Formi sieht Bilder', wo:'gehirn', punkte:[
     'Im Formi-Fenster auf das Bild-Symbol tippen: Formi sagt, was er sieht, und liest Text auf dem Bild ab.',
     'Was im Feld steht, geht als Frage mit, z. B. „Was steht auf dem Zettel?".',
@@ -25844,6 +25850,13 @@ function neuTagText(datum){
   var d=String(datum).split('.'), m=NEU_MONATE[(+d[1])-1];
   return m ? +d[0]+'. '+m+(+d[2]!==new Date().getFullYear() ? ' '+d[2] : '') : datum;
 }
+/* Runde 298: „05.11.2026" und „5.11.2026" sind derselbe Tag — zwei
+   parallele Sitzungen schrieben beides, und „Was ist neu" zeigte das
+   Update dreimal. Gruppiert wird nach dem Tag, nicht nach der Schreibweise. */
+function neuTagSchluessel(datum){
+  var d=String(datum||'').split('.');
+  return d.length===3 ? (+d[0])+'.'+(+d[1])+'.'+(+d[2]) : String(datum||'');
+}
 function renderNeu(){
   var box=$('neuListe'), stand=$('neuStand'); if(!box) return;
   var gesehen=PREFS.neuGesehen||'';
@@ -25857,17 +25870,18 @@ function renderNeu(){
   var html='', tag='', erster='';
   NEUIGKEITEN.forEach(function(n, i){
     var frisch = gesehen && (neuBis<0 || i<neuBis);
-    if(!erster) erster=n.datum;
-    if(n.datum!==tag){
-      tag=n.datum;
+    var nTag=neuTagSchluessel(n.datum);
+    if(!erster) erster=nTag;
+    if(nTag!==tag){
+      tag=nTag;
       var anz=0, f=0;
-      NEUIGKEITEN.forEach(function(x, k){ if(x.datum===tag){ anz++; if(gesehen && (neuBis<0 || k<neuBis)) f++; } });
+      NEUIGKEITEN.forEach(function(x, k){ if(neuTagSchluessel(x.datum)===tag){ anz++; if(gesehen && (neuBis<0 || k<neuBis)) f++; } });
       html+='<div class="neu-tag"><h4>Update · '+esc(neuTagText(tag))+'</h4><span>'+anz+(anz===1?' Änderung':' Änderungen')+
         (f?' · <i>neu für dich</i>':'')+'</span></div>';
     }
     var art=neuArt(n);
     var ziel = n.wo && (n.wo==='home' ? { e:{ view:'home' } } : kat.nach[n.wo]);
-    var offen = n.datum===erster || frisch;
+    var offen = nTag===erster || frisch;
     html+='<details class="neu-eintrag'+(frisch?' frisch':'')+'"'+(offen?' open':'')+' data-art="'+art+'">'+
       '<summary class="ne-kopf"><span class="ne-art '+art+'">'+NEU_ART[art]+'</span><b>'+esc(n.titel)+'</b></summary>'+
       '<ul>'+n.punkte.map(function(t){ return '<li>'+esc(t)+'</li>'; }).join('')+'</ul>'+
@@ -43075,7 +43089,7 @@ function hsStempeln(btn){
    Stempel von heute (studioKey + tag, wie „Jetzt im Studio"), die
    Schichten von heute und die offenen Abwesenheiten. Höchstens alle
    fünf Minuten. */
-var _lsWahl='', _lsJetzt={}, _lsAbw={}, _lsAntraege=[], _lsAt=0, _lsLaedt=false, _lsErledigt={};
+var _lsWahl='', _lsJetzt={}, _lsAbw={}, _lsKrank={}, _lsAntraege=[], _lsAt=0, _lsLaedt=false, _lsErledigt={};
 function leitungDatenLaden(keys, neu){
   if(_lsLaedt || !session) return;
   if(!neu && Date.now()-_lsAt < 5*60000) return;
@@ -43086,8 +43100,13 @@ function leitungDatenLaden(keys, neu){
     return Promise.all([
       liste(S('zeiten').where('studioKey','==',sk).where('tag','==',heute)).catch(function(){ return null; }),
       featureAn('schicht') ? liste(S('studios').doc(sk).collection('shifts').where('date','==',heute)).catch(function(){ return null; }) : Promise.resolve(null),
-      featureAn('abwesend') ? liste(S('studios').doc(sk).collection('absences').where('status','==','offen')).catch(function(){ return []; }) : Promise.resolve([])
+      featureAn('abwesend') ? liste(S('studios').doc(sk).collection('absences').where('status','==','offen')).catch(function(){ return []; }) : Promise.resolve([]),
+      /* Runde 298: Krankmeldungen mit Vertretungs-Vorschlag von Formi
+         (formiKrank) — alles, was heute noch läuft. */
+      featureAn('abwesend') && featureAn('schicht') ? liste(S('studios').doc(sk).collection('absences').where('to','>=',heute)).catch(function(){ return []; }) : Promise.resolve([])
     ]).then(function(r){
+      _lsKrank[sk]=(r[3]||[]).filter(function(a){ return a.type==='krank' && a.vertretung && Array.isArray(a.vertretung.schichten); })
+        .map(function(a){ a.sk=sk; return a; });
       _lsJetzt[sk]={ stempel:r[0], schichten:r[1] };
       _lsAbw[sk]=(r[2]||[]).filter(function(a){ return a.type!=='krank' && a.status==='offen'; })
         .map(function(a){ a.sk=sk; return a; });
@@ -43180,7 +43199,7 @@ function lsGruenSatz(gruen){
   if(gruen.length>3) return gruen.slice(0,2).join(', ')+' und '+(gruen.length-2)+' weitere haben alles erledigt';
   return gruen.slice(0,-1).join(', ')+' und '+gruen[gruen.length-1]+' haben alles erledigt';
 }
-var LS_ART={ kp:'Kundenpost', ta:'Schichttausch', abw:'Urlaub', za:'Zeitantrag' };
+var LS_ART={ kp:'Kundenpost', ta:'Schichttausch', abw:'Urlaub', za:'Zeitantrag', kr:'Krank – Vertretung' };
 function lsBestaetigenListe(keys){
   var l=[], mehrere=keys.length>1;
   keys.forEach(function(sk){
@@ -43195,6 +43214,26 @@ function lsBestaetigenListe(keys){
       l.push({ id:'abw:'+sk+':'+a.id, art:'abw', ts:a.ts||0,
         titel:(a.name||'?')+' · '+f+(b && b!==f ? '–'+b : ''),
         zeile:(ABW_ART[a.type]||'abwesend')+(mehrere?' · '+studioName(sk):'') });
+    });
+  });
+  /* Runde 298 — aus dem Betrieb: bei Krankmeldung „er soll nur vorschläge
+     machen für die leitung". Eine Zeile je betroffener Schicht, solange
+     sie noch bei der kranken Person liegt und nicht ausgeschrieben ist.
+     ✓ schreibt sie aus (wie „Schicht abgeben"), ✕ heisst „regle ich
+     selbst". Gefragt wird niemand. */
+  var heuteK=ymd(new Date());
+  keys.forEach(function(sk){
+    (_lsKrank[sk]||[]).forEach(function(a){
+      var fertig=Array.isArray(a.vertretungErledigt) ? a.vertretungErledigt : [];
+      a.vertretung.schichten.forEach(function(v){
+        if(!v || !v.id || v.date<heuteK || fertig.indexOf(v.id)>=0) return;
+        var live=(_shifts7||[]).filter(function(x){ return x.sk===sk && x.id===v.id; })[0];
+        if(!live || live.uid!==a.uid || live.tausch) return;
+        var namen=(v.kandidaten||[]).map(function(k){ return String(k.name||'').split(' ')[0]; }).filter(Boolean);
+        l.push({ id:'kr:'+sk+':'+a.id+':'+v.id, art:'kr', ts:(a.vertretung.ts||a.ts||0),
+          titel:String(a.name||'?').split(' ')[0]+' · '+ichTagName(v.date)+' '+(v.from||'')+(v.to?'–'+v.to:''),
+          zeile:(namen.length ? 'Vorschlag: '+namen.join(', ') : 'Niemand frei – selbst regeln')+(mehrere?' · '+studioName(sk):'') });
+      });
     });
   });
   (_tauschWartet||[]).forEach(function(x){
@@ -43231,6 +43270,18 @@ function lsEntscheiden(btn, id, ja){
               tausch:fv.delete(), tauschVon:fv.delete(), tauschNeu:fv.delete() })
           : ref.update({ tausch:fv.delete(), tauschVon:fv.delete(), tauschNeu:fv.delete() }))
       .then(function(){ return ja ? 'Tausch bestätigt – der Plan ist geändert ✓' : 'Abgelehnt – die Schicht bleibt wie sie war'; });
+  } else if(art==='kr'){
+    /* ✓ Ausschreiben: dieselben Felder wie „Schicht abgeben" — die
+       Kollegen sehen sie, wer zusagt, landet wieder hier unter
+       „Schichttausch". ✕ Selbst geregelt: nur am Vorschlag vermerkt. */
+    var krA=(_lsKrank[teile[1]]||[]).filter(function(a){ return a.id===teile[2]; })[0];
+    if(!krA) return;
+    p=(ja ? S('studios').doc(teile[1]).collection('shifts').doc(teile[3]).update({ tausch:'offen', tauschVon:krA.uid, tauschTs:Date.now() })
+          : S('studios').doc(teile[1]).collection('absences').doc(teile[2]).update({ vertretungErledigt:fv.arrayUnion(teile[3]) }))
+      .then(function(){
+        if(ja){ var sh=(_shifts7||[]).filter(function(x){ return x.sk===teile[1] && x.id===teile[3]; })[0]; if(sh) sh.tausch='offen'; }
+        return ja ? 'Ausgeschrieben – das Team sieht die Schicht' : 'Erledigt – du regelst es selbst';
+      });
   } else if(art==='za'){
     /* Ablehnen braucht eine Begründung (zeitAntragEntscheiden) — dafür
        ist die Seite „Zeiten" da. */
@@ -43254,8 +43305,8 @@ function lsBestaetigenHTML(l, alle, n){
     zeig.map(function(x){
       return '<div class="ls-best-zeile"><div class="ls-best-txt"><i class="ls-art '+x.art+'">'+esc(LS_ART[x.art])+'</i>'+
         '<b>'+esc(x.titel)+'</b><span>'+esc(x.zeile)+'</span></div>'+
-        '<button type="button" class="ls-nein" data-lsnein="'+esc(x.id)+'" aria-label="'+(x.art==='za'?'Ablehnen (in Zeiten): ':'Zurückgeben: ')+esc(x.titel)+'" title="'+(x.art==='za'?'Ablehnen – mit Grund unter Zeiten':'Zurückgeben')+'">'+LS_NEIN+'</button>'+
-        '<button type="button" class="ls-ja" data-lsja="'+esc(x.id)+'" aria-label="Bestätigen: '+esc(x.titel)+'" title="Bestätigen">'+LS_JA+'</button></div>';
+        '<button type="button" class="ls-nein" data-lsnein="'+esc(x.id)+'" aria-label="'+(x.art==='za'?'Ablehnen (in Zeiten): ':(x.art==='kr'?'Selbst geregelt: ':'Zurückgeben: '))+esc(x.titel)+'" title="'+(x.art==='za'?'Ablehnen – mit Grund unter Zeiten':(x.art==='kr'?'Selbst geregelt':'Zurückgeben'))+'">'+LS_NEIN+'</button>'+
+        '<button type="button" class="ls-ja" data-lsja="'+esc(x.id)+'" aria-label="'+(x.art==='kr'?'Schicht ausschreiben: ':'Bestätigen: ')+esc(x.titel)+'" title="'+(x.art==='kr'?'Schicht ausschreiben':'Bestätigen')+'">'+LS_JA+'</button></div>';
     }).join('')+
     (!alle && l.length>n ? '<button type="button" class="ls-mehr-knopf" data-lsalle>+'+(l.length-n)+' weitere</button>' : '')+
     '</section>';
@@ -44203,7 +44254,7 @@ var _studioHeute=[];
    eigenen Studios für die nächsten sieben Tage und warf bisher alles
    weg, was nicht die eigene war. Keine Abfrage zusätzlich, keine Regel
    neu. */
-var _tauschAngebote=[], _tauschWartet=[];
+var _tauschAngebote=[], _tauschWartet=[], _shifts7=[];
 /* Wie viele Schichten die Startseite im neuen Schnitt weggelassen hat.
    Steht hier und nicht in renderMyShifts, weil der Knopf darunter die
    Zahl nennen muss. */
@@ -44243,6 +44294,8 @@ function loadMyShifts(force){
       return x.tausch==='offen' && x.uid!==session.uid;
     }).sort(nachZeit);
     _tauschWartet=canManage() ? alle.filter(function(x){ return x.tausch==='zugesagt'; }).sort(nachZeit) : [];
+    /* Runde 298: der Stand je Schicht für „Krank – Vertretung" unter „Zu bestätigen". */
+    _shifts7=alle;
     renderMyShifts();
     /* Die Startseite wurde vorher gezeichnet, als die Schichten noch
        unterwegs waren. renderHeute und nicht renderHome: renderHome ruft
