@@ -25760,3 +25760,30 @@ Aus dem Betrieb, 5.11.2026, auf die Vorschläge am Ende von Runde 303:
   aus wird kein Betriebszugang angefasst.
 - Der neue Findetest braucht einen Menschen, der die App nicht kennt. Die
   Stoppuhr dafür liegt unter „Alles → Findetest“.
+
+## Nox liest das Körperformen-Konto (10.11.2026)
+
+**Was**
+- Neue Cloud Function `noxLesen` (onRequest, nur GET). Semihs Assistent
+  Nox holt damit alle fünf Minuten, was im Körperformen-Konto neu ist:
+  Kanalnachrichten, Direktnachrichten, Aushänge und Aufgaben, mit Namen.
+- Nur die Firma `koerperformen`. Andere Firmen sieht Nox nie, die Kennung
+  steht fest im Code (`functions/nox-pruefung.js`).
+
+**Warum so**
+- Semih hat am 10.11. ausdrücklich „alles im Körperformen-Konto“ gewählt,
+  nachdem die Alternative (nur eigene Aufgaben und Zahlen) mit Begründung
+  vorlag. Marcel weiss Bescheid. Der Grundsatz „der Betreiber sieht nur
+  Stammdaten“ gilt für fremde Firmen weiter, deshalb die feste Kennung.
+- Anmeldung per Ed25519-Signatur statt geteiltem Geheimnis: Im Repo
+  (öffentlich!) steht nur der öffentliche Schlüssel. Kein neues GitHub
+  Secret, kein Dienstkonto, nichts, das man aus dem Repo stehlen kann.
+- `tests/test-funktionen-pfade.js` erkennt die Signaturprüfung als vierte
+  Bauart, aber nur, wenn die Hilfsdatei wirklich `crypto.verify` ruft und
+  das Alter prüft. Strenger, nicht lockerer.
+- Lesekosten: Kanäle und Studios werden einzeln abgefragt, Direktnachrichten
+  nur dort, wo `lastTs` neuer ist. Etwa 30 Lesevorgänge je Lauf.
+
+**Tests**
+- `tests/test-nox.js`: Signatur, Alter, Pfad, Einträge. Läuft im Workflow
+  vor dem Deploy.

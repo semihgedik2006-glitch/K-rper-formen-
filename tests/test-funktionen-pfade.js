@@ -213,7 +213,18 @@ const SCHLUESSEL = /process\.env\.\w*(KEY|SECRET|TOKEN)/;
    jeden künftigen Endpunkt entwertet. Erkannt wird die Bauart, nicht
    der Name. */
 const EIGENES_GEHEIMNIS = /\b(tokenGleich|timingSafeEqual)\s*\(/;
-const geschuetzt = (r) => SCHLUESSEL.test(r) || EIGENES_GEHEIMNIS.test(r);
+/* ── Eine VIERTE Bauart, seit Nox (10.11.2026) ──
+   noxLesen prüft keine geteilte Zeichenkette, sondern eine Ed25519-
+   Signatur gegen einen öffentlichen Schlüssel (functions/nox-pruefung.js).
+   Anerkannt nur, wenn die Hilfsdatei wirklich crypto.verify ruft und das
+   Alter prüft — der Funktionsname allein genügt nicht. */
+const SIGNATUR = /\bNOX\.noxSignaturOk\s*\(/;
+const signaturQuelle = (() => {
+  try { return fs.readFileSync(path.join(__dirname, '..', 'functions', 'nox-pruefung.js'), 'utf8'); } catch (e) { return ''; }
+})();
+const signaturEcht = /crypto\.verify\s*\(/.test(signaturQuelle) && /NOX_MAX_ALTER_MS/.test(signaturQuelle) &&
+  /\.length\s*!==\s*64/.test(signaturQuelle);
+const geschuetzt = (r) => SCHLUESSEL.test(r) || EIGENES_GEHEIMNIS.test(r) || (signaturEcht && SIGNATUR.test(r));
 
 /* ── Eine DRITTE Bauart, seit der Zeiterfassung ──
    pinSetzen und pinStatus rufen `anruferProfil(context)`. Die

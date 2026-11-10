@@ -109,6 +109,9 @@ jobs:
       - name: Keine flachen Zugriffe in den Cloud Functions
         run: node tests/test-funktionen-pfade.js
 
+      - name: Nox-Zugang (Signatur)
+        run: node tests/test-nox.js
+
   # Die Datei im Repo ist die Wahrheit — Regeln werden nicht mehr von Hand in
   # die Firebase-Konsole kopiert. storage.rules gehört dazu: im Speicher liegt
   # der nächtliche Vollexport der Datenbank.
