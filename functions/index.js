@@ -9646,6 +9646,39 @@ exports.noxLesen = region
     }
   });
 
+/* Nox fragt Formi (10.11.2026). POST mit Signatur über den Rohtext;
+   was erlaubt ist, steht in noxFormiAuftrag. */
+exports.noxFormi = region
+  .runWith({ timeoutSeconds: 60, memory: '256MB' })
+  .https.onRequest(async (req, res) => {
+    if (req.method !== 'POST') { res.status(405).send(''); return; }
+    const roh = req.rawBody ? req.rawBody.toString('utf8') : '';
+    const ok = NOX.noxSignaturOk({
+      zeit: req.get('x-nox-zeit'), signatur: req.get('x-nox-signatur'),
+      methode: 'POST', pfad: NOX.noxPfad(req.url, 'noxFormi'), body: roh,
+    });
+    if (!ok) { res.status(401).json({ ok: false }); return; }
+    let daten = {};
+    try { daten = JSON.parse(roh || '{}'); } catch (e) { daten = {}; }
+    const auftrag = NOX.noxFormiAuftrag(daten);
+    if (!auftrag) { res.status(400).json({ ok: false, fehler: 'Auftrag ungültig' }); return; }
+    const schluessel = process.env.STUDIO_GEHIRN_KEY || '';
+    if (!schluessel) { res.status(503).json({ ok: false, fehler: 'Formi nicht verbunden' }); return; }
+    try {
+      const url = (process.env.GEHIRN_URL || GEHIRN_URL_STANDARD).replace(/\/+$/, '') + '/api/' + auftrag.pfad;
+      const antwort = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-studio-key': schluessel },
+        body: JSON.stringify(auftrag.body),
+      });
+      const json = await antwort.json().catch(() => ({}));
+      res.status(antwort.ok ? 200 : antwort.status).json(Object.assign({ ok: antwort.ok }, json));
+    } catch (e) {
+      console.error('noxFormi:', e && e.message);
+      res.status(502).json({ ok: false, fehler: 'Formi nicht erreichbar' });
+    }
+  });
+
 exports.__intern = { vertretungVorschlag, vertretungText, gehirnBildSystem, gehirnBildErgebnis, GEHIRN_BILD_AKTIONEN, GEHIRN_BILD_PERSON, gehirnKlareFrage, stempelErinnerungen, stempelErinnernMail, stempelErinnernFirma, formiTagText, formiSchichtendeText, formiMaterialNeu, formiFristVorbei, formiSchichtEndeIn, abschlussZeilenPruefen, monateVor, eigeneAbschlussZeile, eigeneRegel, antragUhrPruefen, ANTRAG_TAGE_MAX, erlaubteSchritte, schrittWaehlen, tagesStand, gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
                      gehirnVorschlagPruefen, gehirnBefehlPruefen, gehirnWeg, gehirnKontextText, lageberichtOhneKi,
                      geminiSperreAufheben: () => { _geminiAusBis = 0; }, geminiGesperrt: () => Date.now() < _geminiAusBis, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,

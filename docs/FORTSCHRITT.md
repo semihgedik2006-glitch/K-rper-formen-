@@ -25787,3 +25787,28 @@ Aus dem Betrieb, 5.11.2026, auf die Vorschläge am Ende von Runde 303:
 **Tests**
 - `tests/test-nox.js`: Signatur, Alter, Pfad, Einträge. Läuft im Workflow
   vor dem Deploy.
+
+## Nox fragt Formi (10.11.2026)
+
+**Was**
+- Neue Cloud Function `noxFormi` (onRequest, nur POST, Ed25519 wie
+  `noxLesen`, signiert wird der Rohtext). Drei Wege, mehr nicht:
+  `frage` (Formi beantwortet eine Frage, Absender „Nox“, Ton sachlich),
+  `bericht` (Zahlen, offene Fragen, Ideen der letzten 1–31 Tage) und
+  `vorschlag` (ein Wissenseintrag als Vorschlag von „Nox (für Semih)“).
+- Die Function reicht nur an den Worker weiter, mit dem vorhandenen
+  `STUDIO_GEHIRN_KEY`. Am Worker ändert sich nichts.
+
+**Warum so**
+- Semih will Nox und Formi zusammen nutzen und hat Stufe 1 und 2 gewählt:
+  Nox fragt Formi und meldet Formis offene Fragen und Ideen in Telegram;
+  Semihs Antwort dort wird ein Wissensvorschlag. Stufe 3 (Nox schreibt
+  Aufgaben oder Aushänge) bewusst nicht: Nox schreibt weiter nichts ins Team.
+- Wissen nur als Vorschlag: übernommen wird es erst nach Freigabe in der
+  App oder im Leitstand, wie jeder Import. Kein Weg zu Leitstand-Endpunkten
+  (`/api/antwort`, `/api/wissen` …), dafür bräuchte es den ADMIN_KEY.
+- Fragen von Nox laufen über dasselbe Tageslimit des Workers wie die App.
+
+**Tests**
+- `tests/test-nox.js`: POST-Signatur über den Rohtext, Pfad je Function,
+  die drei erlaubten Wege, alles andere abgewiesen, Kategorien wie im Worker.
