@@ -9588,6 +9588,64 @@ exports.stempelErinnern = region.runWith({ timeoutSeconds: 300, memory: '256MB' 
     return null;
   });
 
+/* ── Nox: Lesezugang für Semihs Assistenten ─────────────────────────────
+   Nur die Firma Körperformen, nur lesen, nur mit gültiger Signatur
+   (functions/nox-pruefung.js). Semih hat am 10.11.2026 entschieden, dass
+   Nox das ganze Körperformen-Konto lesen darf, Kanäle und Direktnachrichten
+   eingeschlossen; Marcel weiss Bescheid. Andere Firmen sieht Nox nie. */
+const NOX = require('./nox-pruefung');
+const NOX_FENSTER_MS = 14 * 24 * 3600 * 1000;
+
+exports.noxLesen = region
+  .runWith({ timeoutSeconds: 60, memory: '256MB' })
+  .https.onRequest(async (req, res) => {
+    if (req.method !== 'GET') { res.status(405).send(''); return; }
+    const ok = NOX.noxSignaturOk({
+      zeit: req.get('x-nox-zeit'), signatur: req.get('x-nox-signatur'),
+      methode: 'GET', pfad: NOX.noxPfad(req.url), body: '',
+    });
+    if (!ok) { res.status(401).json({ ok: false }); return; }
+
+    const jetzt = Date.now();
+    const seit = Math.max(Number(req.query.seit) || jetzt - 24 * 3600 * 1000, jetzt - NOX_FENSTER_MS);
+    const wurzel = W(NOX.NOX_FIRMA);
+    const eintraege = [];
+    try {
+      const namen = {};
+      (await db.collection('users').get()).forEach(d => {
+        const u = d.data() || {};
+        if ((u.firma || 'koerperformen') === NOX.NOX_FIRMA) namen[d.id] = u.name || d.id;
+      });
+      const studios = await alleStudios(NOX.NOX_FIRMA);
+
+      for (const kanal of await wurzel.collection('channels').listDocuments()) {
+        const s = await kanal.collection('messages').where('ts', '>', seit).orderBy('ts').limit(200).get();
+        s.forEach(d => eintraege.push(NOX.noxEintrag('kanal', studios[kanal.id] || kanal.id, d.data() || {}, namen)));
+      }
+      const dms = await wurzel.collection('dms').where('lastTs', '>', seit).get();
+      for (const dm of dms.docs) {
+        const info = dm.data() || {};
+        const wer = (info.participants || []).map(u => (info.names || {})[u] || namen[u] || 'jemand').join(' und ');
+        const s = await dm.ref.collection('messages').where('ts', '>', seit).orderBy('ts').limit(200).get();
+        s.forEach(d => eintraege.push(NOX.noxEintrag('direkt', wer, d.data() || {}, namen)));
+      }
+      const aushaenge = await wurzel.collection('announcements').where('ts', '>', seit).get();
+      aushaenge.forEach(d => {
+        const a = d.data() || {};
+        eintraege.push(NOX.noxEintrag('aushang', a.target && a.target !== 'all' ? (studios[a.target] || a.target) : 'alle', a, namen));
+      });
+      for (const studio of await wurzel.collection('studios').listDocuments()) {
+        const s = await studio.collection('todos').where('ts', '>', seit).get();
+        s.forEach(d => eintraege.push(NOX.noxEintrag('aufgabe', studios[studio.id] || studio.id, d.data() || {}, namen)));
+      }
+      eintraege.sort((a, b) => a.ts - b.ts);
+      res.json({ ok: true, stand: jetzt, seit, eintraege: eintraege.slice(-400), gekuerzt: eintraege.length > 400 });
+    } catch (e) {
+      console.error('noxLesen:', e);
+      res.status(500).json({ ok: false, fehler: String(e.message || e).slice(0, 200) });
+    }
+  });
+
 exports.__intern = { vertretungVorschlag, vertretungText, gehirnBildSystem, gehirnBildErgebnis, GEHIRN_BILD_AKTIONEN, GEHIRN_BILD_PERSON, gehirnKlareFrage, stempelErinnerungen, stempelErinnernMail, stempelErinnernFirma, formiTagText, formiSchichtendeText, formiMaterialNeu, formiFristVorbei, formiSchichtEndeIn, abschlussZeilenPruefen, monateVor, eigeneAbschlussZeile, eigeneRegel, antragUhrPruefen, ANTRAG_TAGE_MAX, erlaubteSchritte, schrittWaehlen, tagesStand, gehirnErlaubt, gehirnWissenPruefen, gehirnVonId, gehirnAuftrag, gehirnBewertungPruefen, gehirnVerlaufText, gehirnAktionSystem, formiCodeLesen, formiMailText, formiCodeHash, formiGleich, FORMI_MAIL_RE, gehirnMehrfach, gehirnErinnerungPruefen, gehirnStichpunkteText, GEHIRN_FIRMEN, GEHIRN_TEXT_MAX,
                      gehirnVorschlagPruefen, gehirnBefehlPruefen, gehirnWeg, gehirnKontextText, lageberichtOhneKi,
                      geminiSperreAufheben: () => { _geminiAusBis = 0; }, geminiGesperrt: () => Date.now() < _geminiAusBis, geminiFehlerText, GEMINI_MODELLE, geminiJson, kiJson,
