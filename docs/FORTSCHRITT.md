@@ -25812,3 +25812,33 @@ Aus dem Betrieb, 5.11.2026, auf die Vorschläge am Ende von Runde 303:
 **Tests**
 - `tests/test-nox.js`: POST-Signatur über den Rohtext, Pfad je Function,
   die drei erlaubten Wege, alles andere abgewiesen, Kategorien wie im Worker.
+
+## Aussehen „Nacht" (17.11.2026)
+
+**Was**
+- Neue Wahl unter Profil → Aussehen → Farben: „Nacht" (`theme:'nacht'`).
+  Dunkelmodus mit fast schwarzen Flächen (`--bg #08080A`, `--bg-2 #161618`,
+  `--bg-soft #111113`, `--bg-3 #222225`), leiseren Linien und tieferem
+  Schatten. Sterne und Nebel von „Raum" bleiben dabei aus.
+- Neuer Vorschlag „Nacht" in „App gestalten": Nacht, Schlicht, Cyan, Glas,
+  Chat ohne Hintergrund. `AUFBAU_ERLAUBT.theme` kennt `nacht`, damit ein
+  Design vom Team mit diesem Aussehen die Bereinigung übersteht.
+- Statusleiste: `#08080A`.
+
+**Warum so**
+- Semih wollte das neue, ruhige Design seines Assistenten auch für
+  StudioChat. Die Wünsche aus dem Studio („mehr Farbe und Leben", Farbe je
+  Bereich) gelten weiter, und andere benutzen die App parallel. Deshalb
+  kein Umbau der Voreinstellung, sondern eine zusätzliche Wahl. „Formi"
+  bleibt vorn und bleibt Standard.
+- Nur Flächen-Marken überschrieben, keine Statusfarben und keine
+  Akzentlogik: „Lebendig" funktioniert in „Nacht" unverändert.
+
+**Tests**
+- `tests/test-nacht.js`: Wahl per Klick, `--bg` und Statusleiste, kein
+  Muster bei „Raum", bleibt nach Neuladen, Trefferfläche des Knopfs bei
+  320–1920 px in normal und kompakt (min. 112 × 44), Kontrast an echten
+  Bildpunkten (390 px: 7,11 : 1, 1440 px: 5,48 : 1), Vorschlag und
+  Bereinigung. Gegenprobe: ohne die Klasse wird der Durchlauf rot.
+- Grün: test-knoepfe, test-gestaltung, test-abgeschnitten, test-quer,
+  test-neuigkeiten, test-aussehen, test-aufbau, test-akzent.

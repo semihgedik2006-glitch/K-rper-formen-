@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-NXP4Tl0VnFpOIW2Kdp37T8LuuenKZYbVrhrYK/ETVGw='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-h6NOXGg+KSyMkubN0Jc9uYvYd1F39Hsn0d746e9sPfI='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -4685,6 +4685,16 @@ body[data-appbg="raster"] .app::before{
    die beiden nie zugleich, aber Durchläufe und künftiger Code schalten
    gern nur .light. Dann darf kein dunkles Glas unter heller Schrift
    liegen (test-leiter-aufgaben fand genau das: 1,9 : 1). */
+/* „Nacht" (17.11.2026): fast schwarz, ruhige Flächen, eine Farbe.
+   Dieselben Töne wie der Assistent der Firma, damit beide Apps
+   nebeneinander wie eine Familie aussehen. Kein Raum, kein Schein. */
+body.nacht:not(.light){
+  --bg:#08080A;--bg-2:#161618;--bg-soft:#111113;--bg-3:#222225;
+  --line:rgba(255,255,255,.08);--line-2:rgba(255,255,255,.24);
+  --scrim:rgba(0,0,0,.7);
+  --e1:0 1px 0 rgba(255,255,255,.04) inset, 0 10px 24px -14px rgba(0,0,0,.95);
+  --e2:0 1px 0 rgba(255,255,255,.05) inset, 0 16px 32px -14px rgba(0,0,0,.95);
+}
 body.formi:not(.light){
   --bg:#070A14;--bg-2:#0F1729;--bg-soft:#0B1222;--bg-3:#16213A;
   --line:rgba(120,200,255,.13);--line-2:rgba(120,200,255,.34);
@@ -4717,6 +4727,7 @@ body[data-appbg="raum"] .app::before{
   background-size:auto,auto,340px 340px,420px 420px,380px 380px,460px 460px,300px 300px;
   background-repeat:no-repeat,no-repeat,repeat,repeat,repeat,repeat,repeat}
 body.formi:not(.light) .main,body.formi:not(.light) .shell{background:transparent}
+body.nacht:not(.light)[data-appbg="raum"] .app::before{background-image:none}
 /* Kopfzeile und Seitenleiste: Glas mit Lichtkante. */
 /* overflow-x:clip: Der Lichtimpuls unten läuft über den rechten Rand
    hinaus und erzeugte sonst einen Querlauf der Seite. clip, nicht
@@ -15536,7 +15547,7 @@ if(/[?&]demo(=|&|$)/.test(location.search)){
    Ansicht selbst ein, ohne die anderen zu beeinflussen.
    ============================================================ */
 var PREFS = {
-  theme:'formi',    // formi | auto | dark | light (formi seit Runde 178)
+  theme:'formi',    // formi | nacht | auto | dark | light (formi seit Runde 178)
   chatbg:'verlauf', // siehe CHAT_BGS
   appbg:'raum',     // siehe APP_BGS — der Hintergrund der ganzen App (raum seit Runde 178)
   /* 'bunt' ist seit dem 21.9.2026 die Voreinstellung: die Farbe folgt
@@ -16058,6 +16069,7 @@ function applyPrefs(){
   var light = !formi && (PREFS.theme==='light' || (PREFS.theme==='auto' && systemPrefersLight()));
   document.body.classList.toggle('light', light);
   document.body.classList.toggle('formi', formi);
+  document.body.classList.toggle('nacht', PREFS.theme==='nacht');
   document.body.setAttribute('data-chatbg', PREFS.chatbg||'keiner');
   // Eigenes Foto als Hintergrund einsetzen (nur auf diesem Gerät gespeichert)
   var eigen = (PREFS.chatbg==='eigenes') ? (_chatBgImg||loadChatBgImg()) : null;
@@ -16074,7 +16086,7 @@ function applyPrefs(){
   document.body.setAttribute('data-appbg', PREFS.appbg||'keiner');
   // Farbe der Statusleiste mitziehen
   var m=document.querySelector('meta[name="theme-color"]');
-  if(m) m.setAttribute('content', light?'#F4F6FA':(formi?'#070A14':'#12131C'));
+  if(m) m.setAttribute('content', light?'#F4F6FA':(formi?'#070A14':(PREFS.theme==='nacht'?'#08080A':'#12131C')));
 }
 (function initTheme(){
   loadPrefs(); applyPrefs();
@@ -24056,6 +24068,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-11-17-nacht', datum:'17.11.2026', art:'neu', titel:'Neues Aussehen „Nacht": fast schwarz und ruhig', wo:'profil', punkte:[
+    'Profil → Aussehen → Farben: „Nacht" macht Flächen fast schwarz, ohne Sterne und Nebel, mit einer festen Farbe.',
+    'Auch als fertiger Vorschlag in „App gestalten" unter „Nacht".'
+  ]},
   { id:'2026-11-05-layout-sperre', datum:'05.11.2026', art:'neu', titel:'Festgelegtes Layout sperren, Rückmeldung sehen', wo:'home', punkte:[
     'Beim Festlegen in „App gestalten": „Gesperrt" – Leiste und Startseite ändert dann nur die Leitung, Aussehen und Schrift bleiben frei.',
     'Unter „Vom Team" steht beim eigenen Vorschlag, wie viele übernommen, abgelehnt oder selbst geändert haben; „Wer?" zeigt die Namen.',
@@ -25238,6 +25254,9 @@ var AUFBAU_VORSCHLAEGE = [
   { id:'putzen', name:'Putzen zuerst', was:'Start im Putzplan, Plan und Chat daneben',
     leiste:['v-putzplan','v-todos','g-team','v-chat'], start:'putzplan', minimal:false, formi:true, schnell:true,
     prefs:{} },
+  { id:'nacht', name:'Nacht', was:'Fast schwarz, ruhige Listen, eine Farbe',
+    leiste:null, start:'home', minimal:false, formi:true, schnell:true,
+    prefs:{ theme:'nacht', appbg:'keiner', accent:'cyan', glas:'glas', chatbg:'keiner' } },
   { id:'hell', name:'Hell und ruhig', was:'Helle Seiten, eine feste Farbe',
     leiste:null, start:'home', minimal:false, formi:true, schnell:true,
     prefs:{ theme:'light', appbg:'keiner', accent:'blau' } },
@@ -25373,7 +25392,7 @@ function aufbauNeueId(){ return (Date.now().toString(36)+Math.random().toString(
    wie jede Eingabe von aussen. */
 var _abE=null, _abAnfang='', _abTeam=[], _abTeamAb=null, _abLoeschen=null;
 var AUFBAU_ERLAUBT = {
-  theme:['formi','dark','light','auto'], dichte:['normal','kompakt'], glas:['glas','deckend'],
+  theme:['formi','nacht','dark','light','auto'], dichte:['normal','kompakt'], glas:['glas','deckend'],
   fs:['90','100','112','125','geraet']
 };
 function aufbauPrefsBereinigen(p){
@@ -25580,7 +25599,7 @@ function aufbauRender(){
       return '<button type="button" class="chip'+(on?' on':'')+'" data-abpref="'+key+'|'+x[0]+'" aria-pressed="'+on+'">'+esc(x[1])+'</button>';
     }).join('')+'</div>';
   };
-  h+='<h4>Aussehen</h4><p class="hint">Farben</p>'+chips('theme', [['formi','Formi'],['dark','Dunkel'],['light','Hell'],['auto','Wie das Gerät']]);
+  h+='<h4>Aussehen</h4><p class="hint">Farben</p>'+chips('theme', [['formi','Formi'],['nacht','Nacht'],['dark','Dunkel'],['light','Hell'],['auto','Wie das Gerät']]);
   h+='<p class="hint">Akzentfarbe</p>'+chips('accent', [['bunt','Je Bereich']].concat(Object.keys(ACCENTS).map(function(k){ return [k, ACCENTS[k].name || k]; })));
   h+='<p class="hint">Hintergrund</p>'+chips('appbg', APP_BGS.map(function(b){ return [b.id, b.name]; }));
   h+='<p class="hint">Chat-Hintergrund</p>'+chips('chatbg', CHAT_BGS.filter(function(b){ return !b.eigen; }).map(function(b){ return [b.id, b.name]; }));
@@ -58805,7 +58824,7 @@ function buildAppearanceOptions(){
   // 4) Hell / Dunkel / Automatisch
   var th=$('thOpts');
   if(th){
-    var modes=[['formi','Formi',''],['auto','Automatisch',''],['dark','Dunkel',''],['light','Hell','']];
+    var modes=[['formi','Formi',''],['nacht','Nacht',''],['auto','Automatisch',''],['dark','Dunkel',''],['light','Hell','']];
     th.innerHTML=modes.map(function(m){
       return '<div class="opt'+(PREFS.theme===m[0]?' on':'')+'" data-th="'+m[0]+'">'+
         '<div style="font-size:20px">'+m[2]+'</div><span>'+m[1]+'</span></div>';
