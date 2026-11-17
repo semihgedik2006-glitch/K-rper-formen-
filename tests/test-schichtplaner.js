@@ -234,7 +234,8 @@ async function messen(p, wer, liste) {
   const imTeam = await p.evaluate(async () => {
     const w = (ms) => new Promise((r) => setTimeout(r, ms));
     /* Runde 184: der Raum „Team“ heisst jetzt „Plan“ („wer arbeitet wann?“). */
-    const team = [...document.querySelectorAll('.mobnav button, #side button, #side a')].find((e) => e.offsetParent && /^\s*Plan\s*$/.test(e.textContent));
+    /* Seit der neuen Navigation heisst der Raum „Schichtplan“. */
+    const team = [...document.querySelectorAll('.mobnav button, #side button, #side a')].find((e) => e.offsetParent && /^\s*(Plan|Schichtplan)\s*$/.test(e.textContent));
     if (!team) return -1;
     team.click(); await w(900);
     const vor = document.getElementById('shiftNext');
@@ -362,6 +363,19 @@ async function messen(p, wer, liste) {
   const nach = await p.evaluate(() => [...document.querySelectorAll('#spSchritte .spl-schritt')].map((li) => li.innerText.replace(/\s+/g, ' ')));
   pruefe('Excel eingelesen: „4 Personen"', /4 Personen/.test(nach[0]), nach[0]);
   pruefe('… und die Schichten aus der Datei (3 für alle + 1 eigene)', /4 Schichtzeiten/.test(nach[1]), nach[1]);
+  /* Runde 306 — „ihre Wünsche welche sie schon an sie gegeben haben"
+     (17.11.2026): Blatt „Bekannte Wünsche" landet in den Einstellungen
+     des Planers — mit Kennungen statt Namen. */
+  const DB = () => firebase.firestore().collection('firmen').doc('koerperformen');
+  const bek = await p.evaluate(async (dbq) => {
+    const db = eval(dbq)();
+    const c = await db.collection('config').doc('schichtplaner').get();
+    const t = await db.collection('planerTeam').get();
+    const name = {}; t.docs.forEach((d) => { name[d.id] = (d.data() || {}).name; });
+    return ((c.data() || {}).bekannt || []).map((x) => name[x.person] + '|' + x.von + '|' + x.bis + '|' + x.art);
+  }, '(' + DB.toString() + ')');
+  pruefe('Bekannte Wünsche eingelesen: 2, Beispiel übersprungen, Namen zugeordnet',
+    JSON.stringify(bek) === JSON.stringify(['Lena Brandt|2026-12-04|2026-12-05|frei', 'Jonas Vogel|2026-12-14|2026-12-18|urlaub']), JSON.stringify(bek));
   const vorlage = await p.evaluate(() => { const a = document.querySelector('#spSchritte a[download]'); return a && a.getAttribute('href'); });
   pruefe('die leere Vorlage liegt zum Herunterladen bereit', vorlage === 'vorlagen/Schichtplaner-Vorlage.xlsx', vorlage);
   const holt = await p.evaluate((u) => fetch(u).then((r) => r.ok && r.headers.get('content-length') !== '0'), 'vorlagen/Schichtplaner-Vorlage.xlsx');
@@ -370,6 +384,33 @@ async function messen(p, wer, liste) {
   // 9. Fingerziele (mit einem fertigen Plan und offener Auswahl)
   await p.click('#spLos');
   await p.waitForFunction(() => /^Fertig/.test(document.getElementById('spStand').textContent), null, { timeout: 8000 }).catch(() => {});
+  /* … und der Plan hält sie ein: Jonas nie im zugesagten Urlaub, Lena
+     an ihren freien Tagen nicht (vier Leute — es gibt Ersatz). Greift
+     nur, wenn der geplante Monat der Dezember 2026 ist. */
+  const bekPlan = await p.evaluate(async () => {
+    const db = firebase.firestore().collection('firmen').doc('koerperformen');
+    const t = await db.collection('planerTeam').get();
+    const id = {}; t.docs.forEach((d) => { id[(d.data() || {}).name] = d.id; });
+    const pl = await db.collection('planerPlaene').get();
+    const r = { monate: [], jonas: 0, lena: 0, jonasSonst: 0 };
+    pl.docs.forEach((d) => {
+      const x = d.data() || {}; r.monate.push(x.monat);
+      (x.einsaetze || []).forEach((e) => {
+        if (e.id === id['Jonas Vogel'] && e.datum >= '2026-12-14' && e.datum <= '2026-12-18') r.jonas++;
+        if (e.id === id['Jonas Vogel']) r.jonasSonst++;
+        if (e.id === id['Lena Brandt'] && (e.datum === '2026-12-04' || e.datum === '2026-12-05')) { r.lena++; (r.lenaR = r.lenaR || []).push(e.datum + ' ' + e.studio + ' ' + (e.rueckfrage || '-')); }
+      });
+    });
+    return r;
+  });
+  if (bekPlan.monate.indexOf('2026-12') >= 0) {
+    pruefe('Plan Dezember: Jonas im zugesagten Urlaub nicht eingeteilt (sonst ' + bekPlan.jonasSonst + '×)', bekPlan.jonas === 0 && bekPlan.jonasSonst > 0, JSON.stringify(bekPlan));
+    /* Wünsche gelten, solange es anders geht (Besetzung zuerst, Frage 18
+       offen). Ist Lena dort doch eingeteilt, dann nur sichtbar als
+       Rückfrage „wollte frei" — nie still. */
+    pruefe('Plan Dezember: Lena an ihren bekannten freien Tagen frei oder nur als Rückfrage „wollte frei“',
+      (bekPlan.lenaR || []).every((x) => /wollte frei/.test(x)), JSON.stringify(bekPlan));
+  } else console.log('    (geplanter Monat ' + bekPlan.monate.join(', ') + ' — Dezember-Prüfung der bekannten Wünsche entfällt; die Rechnung prüft sie in test-schichtplaner-rechnung.js)');
   /* Nippes: dort stehen nach dem Einlesen drei der vier Personen. In
      einem Studio ohne Zuordnung gäbe es nur „fehlt" und niemanden zum
      Wählen. */

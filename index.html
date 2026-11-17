@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-zvgGMHDitXEPrn3fET3EjwMJ+Lp1IfkIUDBVj7tkWy4='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-4QmZxNyPpOPWXOcYMxLepOTwNlqvaproSsmpkpTlFNA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -24102,6 +24102,10 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-11-17-schichtplaner-bekannt', datum:'17.11.2026', art:'neu', titel:'Schichtplaner: schon zugesagte Wünsche übernehmen', wo:'planer', punkte:[
+    'Excel-Vorlage: neues Blatt „Bekannte Wünsche" – freie Tage und zugesagter Urlaub, eine Zeile pro Wunsch.',
+    'Nach dem Einlesen plant der Schichtplaner zugesagten Urlaub nie ein; freie Tage nur als sichtbare Rückfrage.'
+  ]},
   { id:'2026-11-17-kollektiv', datum:'17.11.2026', art:'neu', titel:'Leitung legt für mehrere Studios auf einmal an', wo:'todos', punkte:[
     'Aufgaben, Putzplan, Material und Geräte: „+ Mehrere auf einmal" – jede Zeile wird ein eigener Eintrag.',
     'Material und Geräte haben jetzt auch „Für welche Studios?" – mit „Alle meine Studios".',
@@ -51550,9 +51554,15 @@ function spEinlesen(datei){
       } else y.schicht='';
       return y;
     });
+    var bekannt=[];
+    (r.bekannt||[]).forEach(function(w){
+      var p=r.personen.filter(function(x){ return spNameNorm(x.name)===spNameNorm(w.personName); })[0];
+      if(!p){ r.fehler.push('Bekannter Wunsch „'+w.personName+' · '+w.von+'": Person nicht im Blatt „Mitarbeiter".'); return; }
+      bekannt.push({ person:p.id, von:w.von, bis:w.bis, art:w.art, notiz:w.notiz||'' });
+    });
     var weg=_sp.team.filter(function(t){ return !r.personen.some(function(p){ return p.id===t.id; }); });
     var frage=r.personen.length+' Personen und '+nSch+' Schichtzeiten gefunden'+
-      (fest.length?', '+fest.length+' feste Einteilungen':'')+(sonder.length?', '+sonder.length+' Sondertage':'')+'.'+
+      (fest.length?', '+fest.length+' feste Einteilungen':'')+(sonder.length?', '+sonder.length+' Sondertage':'')+(bekannt.length?', '+bekannt.length+' bekannte Wünsche':'')+'.'+
       (weg.length ? '\n\n'+weg.length+' bisher Eingetragene stehen nicht mehr in der Datei und werden entfernt: '+weg.map(function(p){ return p.name; }).join(', ')+'.' : '')+
       (ohneKonto.length ? '\n\nOhne Konto in der App (werden trotzdem geplant): '+ohneKonto.join(', ')+'.' : '')+
       (r.fehler.length ? '\n\nBitte prüfen:\n· '+r.fehler.slice(0,6).join('\n· ') : '')+
@@ -51572,6 +51582,7 @@ function spEinlesen(datei){
     if(Object.keys(r.studios).length) conf.studios=r.studios;
     if(fest.length) conf.fest=fest;
     if(sonder.length) conf.sonder=sonder;
+    if(bekannt.length) conf.bekannt=bekannt;
     Object.keys(r.einstellungen||{}).forEach(function(k){ conf[k]=r.einstellungen[k]; });
     b.set(S('config').doc('schichtplaner'), conf, {merge:true});
     return b.commit().then(function(){
@@ -51616,8 +51627,7 @@ function spEingabe(abwesend){
     if((w.ts||0)>frist){ spaet.push(p.name); return; }
     wuensche[p.id]={ frei:w.frei||[], lieber:w.lieber||'', notiz:w.notiz||'' };
   });
-  return {
-    eingabe:{
+  var eingabe={
       monat:_sp.monat,
       studios:spStudios().map(function(s){ return { key:s.id, name:s.name, schichten:spSchichtenFuer(s.id) }; })
         .filter(function(s){ return s.schichten.length; }),
@@ -51636,9 +51646,12 @@ function spEingabe(abwesend){
       maxAmStueck:+((_sp.conf && _sp.conf.maxAmStueck) || 6),
       fest:((_sp.conf && _sp.conf.fest) || []),
       sonder:((_sp.conf && _sp.conf.sonder) || [])
-    },
-    spaet:spaet
   };
+  /* Was die Chefin schon zugesagt hatte (Blatt „Bekannte Wünsche"):
+     Urlaub wird Abwesenheit, „frei" ein Wunsch-frei-Tag — ohne Frist. */
+  var L=window.SCHICHTPLANER, bek=(_sp.conf && _sp.conf.bekannt) || [];
+  if(L && L.bekannteWuensche && bek.length) eingabe=L.bekannteWuensche(eingabe, bek);
+  return { eingabe:eingabe, spaet:spaet };
 }
 
 function spErstellen(btn){

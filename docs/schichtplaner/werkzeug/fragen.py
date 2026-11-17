@@ -13,7 +13,7 @@ from stil import st, P, dokument, kasten, punkte, BREITE, LINIE, ZEBRA, AKZENT, 
 from inhalt import FRAGEN, LOGX
 
 doc = dokument(sys.argv[1], "Schichtplaner – Fragen an die Geschäftsführung",
-               "Schichtplaner für StudioChat · Fragen an die Geschäftsführung · Stand 22.10.2026")
+               "Schichtplaner für StudioChat · Fragen an die Geschäftsführung · Stand 17.11.2026")
 s = []
 s.append(P("Schichtplaner – was wir noch wissen müssen", st["titel"]))
 s.append(P("24 Fragen. Sind sie beantwortet und ist die Excel-Vorlage ausgefüllt, "
@@ -24,8 +24,9 @@ s.append(kasten("<b>So geht es am schnellsten:</b> Bei jeder Frage steht in der 
                 "Die Antworten können hier, im Excel (Blatt „Fragen“) oder per Nachricht kommen – mit der Nummer davor."))
 s.append(Spacer(1, 5 * mm))
 s.append(kasten("<b>Was in die Excel-Vorlage gehört</b> (Fragen 2–5): Blatt „Studios“ (Öffnungszeiten), "
-                "„Schichten“ (Zeiten), „Mitarbeiter“ (eine Zeile pro Person). <b>Nicht</b> hinein: Urlaub und "
-                "Krankheit (kommen aus StudioChat), Wünsche für einzelne Tage (trägt jeder selbst ein), "
+                "„Schichten“ (Zeiten), „Mitarbeiter“ (eine Zeile pro Person mit Namen). <b>Neu:</b> Blatt „Bekannte Wünsche“ – "
+                "alles, was Mitarbeiter Ihnen schon gesagt haben oder was Sie zugesagt haben (freie Tage, Urlaub), "
+                "eine Zeile pro Wunsch. <b>Nicht</b> hinein: Krankheit und Urlaub, der schon in StudioChat steht, "
                 "Gesundheitsangaben, Adressen, Telefonnummern.", GELB_F, colors.HexColor("#B45309")))
 
 nr = 1
