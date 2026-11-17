@@ -142,6 +142,17 @@ var USERS = [
       {name:'Desinfektionsmittel', have:1, limit:6, need:0}
     ]}
   };
+  /* Runde 305: ein Durchlauf hängt eigene Einträge an (window.__kol) –
+     z. B. dieselbe Aufgabe mit gid in zwei Studios, für „in allen
+     Studios ändern". get() UND onSnapshot lesen dieselben Listen. */
+  (function (x) {
+    if (!x) return;
+    [['todos', TODOS], ['cleaning', CLEAN], ['devices', DEVICES]].forEach(function (p) {
+      var q = x[p[0]] || {};
+      Object.keys(q).forEach(function (k) { p[1][k] = (p[1][k] || []).concat(q[k]); });
+    });
+    if (x.inventory) Object.keys(x.inventory).forEach(function (k) { INVENTORY[k] = { items: x.inventory[k] }; });
+  })(window.__kol);
   var ANNS = [
     { id:'a1', uid:'testuid', from:'Test Chef', text:'Neue Öffnungszeiten ab Montag: 7–21 Uhr.',
       target:'all', ts:Date.now()-4*86400000, pinned:true, readBy:['u2'] },
@@ -222,8 +233,13 @@ var USERS = [
             if (/^firmen\/[^/]+$/.test(docPath) && fs && fs.collection) return fs.collection(sub);
             return collection(docPath + '/' + sub);
           },
+          _pfad: docPath,
           get: function () {
             var data = (path === 'users') ? PROFILE : {};
+            /* Runde 305: der Bestand eines Studios auch einmalig lesbar –
+               sonst sieht „für mehrere Studios anlegen" leere Listen und
+               die Attrappe meldet ein Überschreiben, das es nicht gibt. */
+            if (path === 'inventory') { var iv = INVENTORY[id]; return Promise.resolve({ exists: !!iv, id: id, data: function () { return iv || { items: [] }; } }); }
             if (path === 'config' && id === 'lieferant') {
               var lf = window.__lieferant;
               return Promise.resolve({ exists: !!lf, id: id, data: function () { return lf || {}; } });
@@ -357,7 +373,19 @@ var USERS = [
     settings: function () {},
     enablePersistence: function () { return Promise.resolve(); },
     collection: function (p) { return collection(p); },
-    batch: function () { return { set: function () {}, update: function () {}, delete: function () {}, commit: function () { return Promise.resolve(); } }; }
+    /* Runde 305: der Stapel merkt sich, was er schreibt – wie in
+       stub-chef.js. Vorher verwarf er alles, und ein Durchlauf der
+       Leitung über „für mehrere Studios anlegen" prüfte nichts. */
+    batch: function () {
+      var sammlung = [];
+      function merke(art, ref, d) { sammlung.push({ pfad: (ref && ref._pfad) || '(unbekannt)', art: art, daten: d }); }
+      return {
+        set: function (ref, d) { merke('set', ref, d); },
+        update: function (ref, d) { merke('update', ref, d); },
+        delete: function (ref) { merke('delete', ref); },
+        commit: function () { window.__schreib = (window.__schreib || []).concat(sammlung); sammlung = []; return Promise.resolve(); }
+      };
+    }
   };
   window.firebase = {
     initializeApp: function () { return { firestore: function () { return fs; } }; },
