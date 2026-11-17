@@ -25842,3 +25842,88 @@ Aus dem Betrieb, 5.11.2026, auf die Vorschläge am Ende von Runde 303:
   Bereinigung. Gegenprobe: ohne die Klasse wird der Durchlauf rot.
 - Grün: test-knoepfe, test-gestaltung, test-abgeschnitten, test-quer,
   test-neuigkeiten, test-aussehen, test-aufbau, test-akzent.
+
+## Runde 305 — Kollektiv anlegen: viele Einträge, mehrere Studios, gemeinsam ändern (17.11.2026)
+
+Aus dem Betrieb, 17.11.2026: „thomas will das die leitung auch kollektiv
+sachen anlegen kann in jedem berreich also Aufgaben, putzplan, Material
+etc. das wäre super hilfreich und wichtig für ihn".
+
+Nachgefragt, weil „kollektiv“ zweierlei heissen kann. Die Antworten:
+**beides** (viele Einträge auf einmal **und** für mehrere Studios), in
+den Bereichen **Material, Geräte, Aufgaben/Putzplan**, und eine spätere
+Änderung soll **gemeinsam** in allen Studios mitgehen.
+
+**Vorher**
+- Aufgaben und Putzplan konnten schon für mehrere Studios angelegt
+  werden, aber nur einen Eintrag pro Durchgang.
+- Material und Geräte gingen nur Studio für Studio.
+- Danach waren alle Kopien unabhängig: sie hatten nichts gemeinsam,
+  woran man sie wiederfinden konnte.
+
+**Gebaut**
+- **„+ Mehrere auf einmal“** in allen vier Bereichen. Ein Feld, in dem
+  jede Zeile ein eigener Eintrag wird; das Titelfeld zählt mit.
+  - Doppelte Zeilen fallen weg, ohne Rücksicht auf Gross-/Kleinschreibung.
+  - Höchstens 50 Zeilen, und höchstens 450 Schreibvorgänge pro Stapel.
+    Firestore erlaubt 500.
+- **„Für welche Studios?“** jetzt auch bei Material und Geräten.
+  - Vorgewählt ist das Studio, das oben ausgewählt ist.
+  - Nach dem Anlegen steht die Auswahl wieder auf diesem einen Studio.
+    Warum: die Auswahl oben ist das Studio, an dem man arbeitet. Ein
+    unbemerkt mitgenommenes zweites Studio wäre ein stiller Fehler.
+    (Bei den Aufgaben bleibt sie gemerkt, so wie seit Runde 280.)
+- Für die Studioleitung heisst der Haken „Alle meine Studios“, der
+  Chef behält „Alle Studios“.
+- **Gemeinsam ändern.** Was in mehreren Studios angelegt wird, trägt
+  dieselbe `gid`. Gesucht wird nur in den Studios, die man verwaltet
+  (`managedKeys`); die Regeln prüfen dasselbe (`manages(studioKey)`).
+  - Aufgabe und Putzaufgabe bearbeiten: „Auch in den anderen N Studios
+    ändern (…)“ steht da und ist vorgewählt. Bei Aufgaben behält jedes
+    Studio seine eigenen Haken der Teilschritte.
+  - Löschen (Aufgabe, Putzaufgabe, Gerät, Material): ein Fenster mit „In
+    allen N Studios / Nur in diesem Studio / Abbrechen“. Es ist ein
+    eigenes Fenster und kein `confirm()`, denn dort gibt es nur zwei
+    Antworten. Jede Kopie landet im Papierkorb. Bei Aufgaben holt
+    „Rückgängig“ alle zurück.
+  - Gerät umbenennen, Material umbenennen und Soll ändern: die Frage
+    kommt **nach** dem Speichern im eigenen Studio. Warum: Zählen und
+    Tippen sollen nie von einer Frage unterbrochen werden. Bei Material
+    kommt sie erst beim Verlassen des Feldes.
+  - Ohne `gid`, also alles bisher und alles für nur ein Studio Angelegte,
+    ändert sich nichts.
+- **Regeln:** keine Änderung nötig. Anlegen, Ändern und Löschen in
+  `todos`, `cleaning` und `devices` dürfen Chef und Leitung in ihren
+  Studios ohne Feldliste. `inventory` darf jeder Aktive schreiben.
+
+**Dabei gefunden**
+- **Material verlor die `gid` beim Laden:** Die Liste wurde auf
+  `name, have, need, limit` zurechtgeschnitten. „In allen Studios
+  ändern“ hätte nach dem ersten Laden nie gefragt. Der neue Test hat
+  das gezeigt.
+- **Zwei Lücken in der Leiter-Attrappe:**
+  - Ihr Stapel (`db.batch`) verwarf alles, was er schreiben sollte.
+  - `inventory` war einmalig nicht lesbar. Ein Anlegen für ein zweites
+    Studio hätte dort „leer“ gesehen und in der Attrappe den Bestand
+    überschrieben.
+  - Beides ist behoben, wie in `stub-chef.js`. `test-leiter-aufgaben`
+    ersetzt den Stapel weiter selbst; seine Ersetzung ist an den neuen
+    Text angepasst und meldet sich jetzt laut, wenn sie nicht greift
+    (vorher griff sie still nicht).
+
+**Tests**
+- `test-kollektiv`: 48 Zusicherungen.
+  - Anlegen in allen vier Bereichen.
+  - Gemeinsam bearbeiten, löschen und abbrechen.
+  - Bestand des anderen Studios bleibt.
+  - Mitarbeiter sehen nichts davon.
+- Hit-Test bei 320 / 390 / 430 / 820 / 1280 / 1440 / 1920, jeweils
+  normal und kompakt: „+ Mehrere auf einmal“ (Material, Geräte,
+  Aufgaben, Putzplan), die Studio-Kästchen und die drei Knöpfe der
+  Frage. Alle sind mindestens 44 × 44 und im Bild.
+- Die Klappkarte „Gerät aufnehmen“ ist am Rechner eingeklappt; der
+  Test klappt sie auf, wie ein Mensch.
+
+**Nicht prüfbar hier:** das echte Schreiben in Firestore und die
+Anmeldung. Die Attrappe zeigt, **was** geschrieben würde, nicht, dass es
+ankommt.

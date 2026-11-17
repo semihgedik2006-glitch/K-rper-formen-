@@ -68,7 +68,11 @@ function stub(datei, keys) {
   if (keys) {
     s = s.replace(/(var PROFILE = \{[\s\S]*?studioKeys: )\[[^\]]*\]/, '$1' + JSON.stringify(keys));
   }
-  s = s.replace(/batch: function \(\) \{ return \{ set: function \(\) \{\}, update: function \(\) \{\}, delete: function \(\) \{\}, commit: function \(\) \{ return Promise\.resolve\(\); \} \}; \}/,
+  /* Seit Runde 305 merkt sich der Stapel der Attrappe selbst, was er
+     schreibt. Hier wird er weiter ganz ersetzt – dieser Durchlauf
+     braucht die Ablehnung fremder Studios. */
+  const vorher = s;
+  s = s.replace(/batch: function \(\) \{\n      var sammlung = \[\];[\s\S]*?return Promise\.resolve\(\); \}\n      \};\n    \}/,
     `batch: function () {
       var teile = [];
       return { set: function (r) { teile.push(r && r.path || '?'); }, update: function (r) { teile.push(r && r.path || '?'); },
@@ -81,6 +85,7 @@ function stub(datei, keys) {
           return Promise.resolve();
         } };
     }`);
+  if (s === vorher && datei === 'stub-leiter.js') throw new Error('Der Stapel der Attrappe liess sich nicht ersetzen – stub-leiter.js geändert?');
   return s;
 }
 
