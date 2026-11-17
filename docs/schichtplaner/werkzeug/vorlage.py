@@ -66,11 +66,13 @@ texte = [
     ("4.  „Mitarbeiter“ – eine Zeile pro Person. Grau hinterlegte Zeilen sind Beispiele und können gelöscht werden.", "t"),
     ("5.  „Feste Schichten“ (freiwillig) – wer immer oder an einem bestimmten Tag fest eingeplant ist. Der Planer setzt diese zuerst.", "t"),
     ("6.  „Sondertage“ (freiwillig) – Tage mit geschlossener Schicht oder mehr Personen (Event, Inventur, Heiligabend).", "t"),
-    ("7.  „Einstellungen“ – Wunschfrist, Feiertage, höchstens Tage am Stück, höchstens Wunsch-frei-Tage.", "t"),
+    ("7.  „Bekannte Wünsche“ – was Mitarbeiter Ihnen schon gesagt haben und was Sie zugesagt haben: freie Tage, zugesagter Urlaub. Eine Zeile pro Wunsch.", "t"),
+    ("8.  „Einstellungen“ – Wunschfrist, Feiertage, höchstens Tage am Stück, höchstens Wunsch-frei-Tage.", "t"),
     ("Feste Schichten, Sondertage und Einstellungen lassen sich auch später direkt im Planer in der App ändern.", "t"),
     ("Was NICHT hier hinein gehört", None),
-    ("•  Urlaub und Krankheit – das steht in StudioChat unter Abwesenheiten und wird automatisch berücksichtigt.", "t"),
-    ("•  Wünsche für einzelne Tage – die tragen die Mitarbeiter jeden Monat selbst in StudioChat ein (mit Frist).", "t"),
+    ("•  Krankheit und Urlaub, der schon in StudioChat steht – wird automatisch berücksichtigt.", "t"),
+    ("•  Künftige Wünsche – ab dem ersten Plan tragen die Mitarbeiter sie jeden Monat selbst in StudioChat ein (mit Frist). "
+     "Nur was schon bei Ihnen liegt, gehört in „Bekannte Wünsche“.", "t"),
     ("•  Gesundheitsangaben, private Adressen, Telefonnummern – werden für den Plan nicht gebraucht.", "t"),
     ("Tipps", None),
     ("•  Felder mit Auswahlliste: Zelle anklicken, rechts erscheint ein kleiner Pfeil.", "t"),
@@ -205,7 +207,23 @@ liste(ws, ["alle"] + STUDIOS, "B2:B80", "Studio aus der Liste oder „alle“")
 liste(ws, ["geschlossen", "mehr Personen"], "C2:C80", "geschlossen = Schicht fällt weg · mehr Personen = Mindestbesetzung steigt")
 ws.freeze_panes = "A2"
 
-# ── Blatt 8: Einstellungen ─────────────────────────────────────────
+# ── Blatt 8: Bekannte Wünsche (Runde 306) ─────────────────────
+# Aus dem Betrieb, 17.11.2026: „Brauchen wir nicht auch noch … ihre
+# Wünsche welche sie schon an sie gegeben haben?"
+ws = wb.create_sheet("Bekannte Wünsche")
+spalten = [("Person\n(Name wie im Blatt Mitarbeiter)", 28), ("Von\n(TT.MM.JJJJ)", 14), ("Bis\n(leer = nur ein Tag)", 16),
+           ("Art", 20), ("Bemerkung", 44)]
+kopfzeile(ws, 1, spalten)
+for i, zeile in enumerate([("Beispiel: Lisa M.", "05.12.2026", "", "frei (Wunsch)", "Geburtstag der Schwester"),
+                           ("Beispiel: Tom K.", "21.12.2026", "02.01.2027", "Urlaub (zugesagt)", "im Sommer schon besprochen")], 2):
+    for s_, wert in enumerate(zeile, 1):
+        c = ws.cell(row=i, column=s_, value=wert); c.fill, c.font = BEISPIEL, GRAU
+rahmen(ws, 2, 200, len(spalten))
+liste(ws, ["frei (Wunsch)", "Urlaub (zugesagt)"], "D2:D200",
+      "frei = Wunsch, wird nur mit Rückfrage gebrochen · Urlaub = zugesagt, wird nie verplant")
+ws.freeze_panes = "A2"
+
+# ── Blatt 9: Einstellungen ─────────────────────────────────────────
 ws = wb.create_sheet("Einstellungen")
 kopfzeile(ws, 1, [("Einstellung", 46), ("Wert", 14), ("Erklärung", 70)])
 for i, zeile in enumerate([

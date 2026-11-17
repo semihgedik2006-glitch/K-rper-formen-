@@ -743,6 +743,26 @@
                       schichtName: String(z[g.schicht] || '').trim(), plus: zahl(z[g.plus]) || 1, notiz: String(z[g.notiz] || '').trim() });
       });
     }
+    /* Runde 306 — aus dem Betrieb, 17.11.2026: „Brauchen wir nicht
+       auch noch von jedem einzelnen Mitarbeiter … ihre Wünsche welche
+       sie schon an sie gegeben haben?" Was die Chefin schon zugesagt
+       hat, steht noch nicht in der App. Damit es beim ersten Plan nicht
+       verloren geht: Blatt „Bekannte Wünsche". „frei" ist ein Wunsch
+       (nur als Rückfrage gebrochen), „Urlaub" ist zugesagt (hart). */
+    var bekannt = [];
+    var bw = blaetter['Bekannte Wünsche'];
+    if (bw && bw.length) {
+      var h = spalten(bw[0], { person: /^person|^name/, von: /^von|^datum/, bis: /^bis/, art: /^art/, notiz: /bemerkung|notiz/ });
+      bw.slice(1).forEach(function (z, i) {
+        var person = String(z[h.person] || '').trim();
+        if (!person || /^beispiel/i.test(person) || /beispiel/i.test(String(z[h.notiz] || ''))) return;
+        var von = datumAus(z[h.von]), bis = String(z[h.bis] || '').trim() ? datumAus(z[h.bis]) : von;
+        if (!von || !bis) { fehler.push('Bekannte Wünsche, Zeile ' + (i + 2) + ' (' + person + '): Datum nicht verstanden (TT.MM.JJJJ).'); return; }
+        if (bis < von) { var tmp = von; von = bis; bis = tmp; }
+        bekannt.push({ personName: person, von: von, bis: bis, art: /urlaub/i.test(String(z[h.art] || '')) ? 'urlaub' : 'frei',
+                       notiz: String(z[h.notiz] || '').trim() });
+      });
+    }
     var ei = blaetter['Einstellungen'];
     if (ei && ei.length) {
       ei.slice(1).forEach(function (z) {
@@ -754,7 +774,30 @@
       });
     }
     return { personen: personen, schichten: schichten, studios: studios, fest: fest, sonder: sonder,
-             einstellungen: einstellungen, fehler: fehler };
+             bekannt: bekannt, einstellungen: einstellungen, fehler: fehler };
+  }
+  /* Bekannte Wünsche in die Eingabe eines Monats: Urlaub wird
+     Abwesenheit, „frei" wird Wunsch-frei-Tag. Nur Tage im Monat;
+     doppelte Tage zählen einmal. Die Frist gilt hier nicht — die
+     Wünsche sind ja schon vor dem Planer abgegeben worden. */
+  function bekannteWuensche(eingabe, bekannt) {
+    var tage = tageImMonat(eingabe.monat), erster = tage[0], letzter = tage[tage.length - 1];
+    var abw = (eingabe.abwesend || []).slice(), w = {};
+    Object.keys(eingabe.wuensche || {}).forEach(function (id) {
+      var x = eingabe.wuensche[id];
+      w[id] = { frei: (x.frei || []).slice(), lieber: x.lieber || '', notiz: x.notiz || '' };
+    });
+    (bekannt || []).forEach(function (b) {
+      if (!b || !b.person || !b.von || b.von > letzter || (b.bis || b.von) < erster) return;
+      var von = b.von < erster ? erster : b.von, bis = (b.bis || b.von) > letzter ? letzter : (b.bis || b.von);
+      if (b.art === 'urlaub') { abw.push({ id: b.person, von: von, bis: bis, art: 'urlaub' }); return; }
+      var ziel = w[b.person] = w[b.person] || { frei: [], lieber: '', notiz: '' };
+      for (var d = von; d <= bis; d = plusTage(d, 1)) if (ziel.frei.indexOf(d) < 0) ziel.frei.push(d);
+      ziel.frei.sort();
+    });
+    var r = {}; Object.keys(eingabe).forEach(function (k) { r[k] = eingabe[k]; });
+    r.abwesend = abw; r.wuensche = w;
+    return r;
   }
   /* Datum aus einer Zelle: Excel speichert Tage seit 1899-12-30 als
      Zahl; getippt steht dort „1.11.2026" oder „2026-11-01". */
@@ -778,7 +821,7 @@
   var SP = {
     planen: planen, alternativen: alternativen, ersatz: ersatz, tausch: tausch, ausfaelle: ausfaelle,
     fairness: fairness, alsTabelle: alsTabelle,
-    excelLesen: excelLesen, ausVorlage: ausVorlage,
+    excelLesen: excelLesen, ausVorlage: ausVorlage, bekannteWuensche: bekannteWuensche,
     tageImMonat: tageImMonat, wochentag: wochentag, feiertageNRW: feiertageNRW,
     verfuegbarkeit: verfuegbarkeit, isoWoche: isoWoche, dauerStd: dauerStd, TAGE: TAGE
   };

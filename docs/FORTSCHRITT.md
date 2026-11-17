@@ -25927,3 +25927,56 @@ den Bereichen **Material, Geräte, Aufgaben/Putzplan**, und eine spätere
 **Nicht prüfbar hier:** das echte Schreiben in Firestore und die
 Anmeldung. Die Attrappe zeigt, **was** geschrieben würde, nicht, dass es
 ankommt.
+
+## Runde 306 — Schichtplaner: schon zugesagte Wünsche übernehmen (17.11.2026)
+
+> „Brauchen wir nicht auch noch von jedem einzelnen Mitarbeiter die Namen
+> und ihre Wünsche welche sie schon an sie gegeben haben?" (17.11.2026)
+
+**Die Lücke.** Die Namen standen schon im Blatt „Mitarbeiter“ (Frage 4),
+dauerhafte Wünsche in den Spalten Mo–So, „Sperrzeiten“ und „Lieber“.
+Was aber fehlte: Wünsche für **einzelne Tage**, die das Team der Chefin
+schon gesagt hat, und Urlaub, den sie schon zugesagt hat, der aber noch
+nicht in StudioChat steht. Die Vorlage sagte bisher „Wünsche für einzelne
+Tage – trägt jeder selbst ein“. Für den ersten Plan heisst das: alle
+müssten noch einmal eintragen, was sie längst gesagt haben, oder es geht
+verloren.
+
+**Was gebaut ist.**
+- Neues Blatt „Bekannte Wünsche“ in der Excel-Vorlage: Person, Von, Bis
+  (leer = ein Tag), Art („frei (Wunsch)“ / „Urlaub (zugesagt)“), Bemerkung.
+  Anleitung und Fragen-PDF sagen jetzt, was hineingehört.
+- `ausVorlage` liest das Blatt (Spalten über die Kopfzeile, Beispiele
+  übersprungen, Excel-Datumszahlen, vertauschtes Von/Bis gedreht, Datum
+  ohne Jahr wird gemeldet). `spEinlesen` ordnet die Namen den Personen zu
+  und legt die Einträge mit Kennung in `config/schichtplaner.bekannt` ab.
+- `bekannteWuensche(eingabe, bekannt)` in `schichtplaner.js` mischt sie in
+  die Rechnung: Urlaub → Abwesenheit (hart), „frei“ → Wunsch-frei-Tag
+  (weich, nur als sichtbare Rückfrage „wollte frei“ gebrochen). Nur Tage
+  im Monat, doppelte Tage einmal, die Wunschfrist gilt dafür nicht.
+
+**Warum zwei Arten und nicht mehr.** „Nur früh an diesem Tag“ kennt die
+Rechnung für einzelne Tage nicht; das gehört in „Bemerkung“, bis die
+Chefin sagt, dass es oft vorkommt. Urlaub ist hart, weil er **zugesagt**
+ist — ein Wunsch nicht (Frage 18 zur Reihenfolge ist noch offen).
+
+**Kein neuer Eintrag in den 24 Fragen.** Die Antworten in der App sind
+nach Nummer gespeichert; eine Frage dazwischen hätte gespeicherte
+Antworten verschoben. Deshalb steht es im gelben Kasten der PDF und in
+der Anleitung der Vorlage.
+
+**Gemessen.**
+- `test-schichtplaner-rechnung.js`: 98 Prüfungen grün, davon 14 neu,
+  mit Gegenprobe: ohne die bekannten Wünsche steht Eva an ihren freien
+  Tagen und Max im Urlaub im Plan.
+- `test-schichtplaner.js`: 143 grün. Die Beispieldatei hat das neue Blatt;
+  nach dem Einlesen stehen 2 Einträge mit Kennung in der Einstellung,
+  im Dezemberplan ist Jonas im zugesagten Urlaub nie eingeteilt (sonst
+  8×), Lena an ihren freien Tagen nur mit „wollte frei“ (in Nippes fehlt
+  sonst Besetzung — so gewollt, Besetzung zuerst).
+- Nebenbei: `test-schichtplaner.js` suchte den Raum noch als „Plan“; seit
+  der neuen Navigation heisst er „Schichtplan“. Auf `main` war die Prüfung
+  dadurch rot (−1 = Knopf nicht gefunden), nicht wegen des Schichtplans.
+
+**Nicht prüfbar hier:** das echte Schreiben in Firestore und eine echte
+Datei der Chefin — die gibt es noch nicht.

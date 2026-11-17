@@ -291,6 +291,50 @@ function lies(datei) {
   const leer2 = SP.ausVorlage(await lies(path.join(__dirname, '..', 'vorlagen', 'Schichtplaner-Vorlage.xlsx')), key);
   pruefe('leere Vorlage v2: keine festen Schichten, keine Sondertage (nur Beispiele)', !leer2.fest.length && !leer2.sonder.length, JSON.stringify([leer2.fest, leer2.sonder]));
 
+  console.log('\n── 7b. Bekannte Wünsche (Runde 306) ──');
+  // Aus dem Betrieb, 17.11.2026: „Brauchen wir nicht auch noch von jedem
+  // einzelnen Mitarbeiter die Namen und ihre Wünsche welche sie schon an
+  // sie gegeben haben?"
+  pruefe('leere Vorlage: Blatt „Bekannte Wünsche“ da, nur Beispiele → nichts gelesen', Array.isArray(leer2.bekannt) && leer2.bekannt.length === 0, JSON.stringify(leer2.bekannt));
+  const bwBlatt = { Mitarbeiter: [['Name', 'Hauptstudio'], ['Eva', 'Nippes']], 'Bekannte Wünsche': [
+    ['Person\n(Name wie im Blatt Mitarbeiter)', 'Von\n(TT.MM.JJJJ)', 'Bis\n(leer = nur ein Tag)', 'Art', 'Bemerkung'],
+    ['Beispiel: Lisa M.', '05.12.2026', '', 'frei (Wunsch)', ''],
+    ['Eva', '05.11.2026', '', 'frei (Wunsch)', 'Geburtstag'],
+    ['Eva', '46348', '', 'Urlaub (zugesagt)', ''],
+    ['Eva', '20.11.2026', '18.11.2026', 'frei (Wunsch)', ''],
+    ['Eva', '31.11.', '', 'frei (Wunsch)', '']] };
+  const bw = SP.ausVorlage(bwBlatt, key);
+  pruefe('drei Zeilen gelesen, Beispiel übersprungen', bw.bekannt.length === 3, JSON.stringify(bw.bekannt));
+  pruefe('ein Tag: Bis = Von; Excel-Zahl als Datum; Art erkannt', bw.bekannt[0].von === '2026-11-05' && bw.bekannt[0].bis === '2026-11-05' &&
+    bw.bekannt[0].art === 'frei' && bw.bekannt[1].von === '2026-11-22' && bw.bekannt[1].art === 'urlaub', JSON.stringify(bw.bekannt));
+  pruefe('vertauschtes Von/Bis wird gedreht', bw.bekannt[2].von === '2026-11-18' && bw.bekannt[2].bis === '2026-11-20', JSON.stringify(bw.bekannt[2]));
+  pruefe('Datum ohne Jahr wird gemeldet, nicht still verworfen', bw.fehler.some((f) => /Bekannte Wünsche, Zeile 6/.test(f)), JSON.stringify(bw.fehler));
+
+  const bekannt = [
+    { person: 'eva', von: '2026-11-05', bis: '2026-11-05', art: 'frei' },
+    { person: 'eva', von: '2026-10-30', bis: '2026-11-02', art: 'frei' },          // ragt in den Vormonat
+    { person: 'eva', von: '2026-11-05', bis: '2026-11-06', art: 'frei' },          // doppelt mit oben
+    { person: 'max', von: '2026-11-16', bis: '2026-11-20', art: 'urlaub' },
+    { person: 'max', von: '2026-12-01', bis: '2026-12-03', art: 'frei' }           // anderer Monat
+  ];
+  const e0 = { monat: '2026-11', studios: [{ key: 'nippes', name: 'Nippes', schichten: SCH }],
+    personen: [person('eva', { haupt: 'nippes' }), person('max', { haupt: 'nippes' }), person('ina', { haupt: 'nippes' })],
+    abwesend: [], wuensche: { eva: { frei: ['2026-11-10'], lieber: 'Früh', notiz: '' } } };
+  const e1 = SP.bekannteWuensche(e0, bekannt);
+  pruefe('frei: zusammengeführt, ohne Doppel, nur im Monat', JSON.stringify(e1.wuensche.eva.frei) === JSON.stringify(['2026-11-01', '2026-11-02', '2026-11-05', '2026-11-06', '2026-11-10']), JSON.stringify(e1.wuensche.eva));
+  pruefe('eigener Wunsch aus der App bleibt (lieber Früh)', e1.wuensche.eva.lieber === 'Früh');
+  pruefe('Urlaub wird Abwesenheit', e1.abwesend.length === 1 && e1.abwesend[0].id === 'max' && e1.abwesend[0].art === 'urlaub', JSON.stringify(e1.abwesend));
+  pruefe('anderer Monat bleibt draussen', !e1.wuensche.max, JSON.stringify(e1.wuensche));
+  pruefe('Eingabe wird nicht verändert', e0.abwesend.length === 0 && e0.wuensche.eva.frei.length === 1);
+  const pb = SP.planen(e1);
+  pruefe('Plan: Max im zugesagten Urlaub nie eingeteilt', !pb.einsaetze.some((x) => x.id === 'max' && x.datum >= '2026-11-16' && x.datum <= '2026-11-20'));
+  pruefe('Plan: Eva an ihren bekannten freien Tagen nicht eingeteilt (genug Leute da)', !pb.einsaetze.some((x) => x.id === 'eva' && ['2026-11-02', '2026-11-05', '2026-11-06'].indexOf(x.datum) >= 0),
+    JSON.stringify(pb.einsaetze.filter((x) => x.id === 'eva').map((x) => x.datum)));
+  // Gegenprobe: ohne die bekannten Wünsche wird Eva an mindestens einem dieser Tage eingeteilt
+  const pg = SP.planen(e0);
+  pruefe('Gegenprobe: ohne bekannte Wünsche steht Eva dort im Plan / Max im Urlaub', pg.einsaetze.some((x) => x.id === 'eva' && ['2026-11-02', '2026-11-05', '2026-11-06'].indexOf(x.datum) >= 0) &&
+    pg.einsaetze.some((x) => x.id === 'max' && x.datum >= '2026-11-16' && x.datum <= '2026-11-20'));
+
   console.log('\n── 8. Tempo ──');
   const viele = [], st14 = [];
   for (let i = 0; i < 14; i++) st14.push({ key: 'studio-' + i, name: 'S' + i, schichten: SCH });
