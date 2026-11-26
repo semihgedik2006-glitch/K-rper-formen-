@@ -166,7 +166,8 @@ function pruefe(was, bedingung, hinweis) {
   pruefe('jedes „Zeigen ›" führt beim Chef zu einem Ziel', !tot.length, tot.join(', '));
   /* 8. Schichtplaner aus (so wie ausgeliefert): kein toter Link. */
   {
-    const q = await b.newPage({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
+    const b2 = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
+    const q = await b2.newPage({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
     await q.route('**://www.gstatic.com/**', r => r.abort());
     await q.addInitScript({ path: path.join(__dirname, 'stub-chef.js') });
     await q.goto(APP + '?neu=1', { waitUntil: 'domcontentloaded' });
@@ -184,7 +185,7 @@ function pruefe(was, bedingung, hinweis) {
     const andereOhne = da2 ? N.filter((n, k) => n.wo && n.wo !== 'planer' && !da2[k]).map(n => n.id + ' → ' + n.wo) : ['—'];
     pruefe('Schichtplaner aus: seine ' + N.filter(n => n.wo === 'planer').length + ' Einträge ohne „Zeigen ›", alle anderen mit',
       !!da2 && !planerMitLink.length && !andereOhne.length, planerMitLink.concat(andereOhne).join(', '));
-    await q.close();
+    await b2.close();
   }
   if (k >= 0) pruefe('„Zeigen ›" beim Profil öffnet das Profil', profil === true, String(profil));
 
