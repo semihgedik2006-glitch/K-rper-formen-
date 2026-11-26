@@ -26183,8 +26183,8 @@ Ursache verfolgt. Die Frage war jedes Mal: irrt die App oder der Test?
 ### Noch rot
 
 - `test-gehirn`: Arbeit je Bild beim Denken 8,9 / 9,1 ms bei 1440 / 1920 px
-  (Grenze 8,3, CPU ÷4). Eine Zeitmessung; Vergleich mit `main` steht im
-  PR. Nicht angefasst — eine Grenze für Flüssigkeit lockert man nicht,
+  (Grenze 8,3, CPU ÷4). Eine Zeitmessung; auf `main` genauso rot (9,0 /
+  10,2 ms, gemessen) — also nicht von dieser Runde. Nicht angefasst — eine Grenze für Flüssigkeit lockert man nicht,
   und eine Ursache ist hier nicht gefunden.
 - `test-nebenseiten` meldet ein ✗ in einer Gegenprobe-Zeile — gewollt,
   der Test ist grün (rc 0).
