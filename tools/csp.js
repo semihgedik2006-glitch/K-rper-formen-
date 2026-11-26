@@ -80,6 +80,19 @@ const SEITEN = {
     worker: "'none'",
     manifest: "'none'",
   },
+  /* Die Seite für ein geteiltes Video (Runde 308). Kein Firebase-SDK,
+     keine Anmeldung: sie liest EIN Dokument über die öffentliche
+     Firestore-Schnittstelle (connect-src genau dieser Host) und spielt
+     das Video aus dem Speicher ab (media-src genau dieser Host). */
+  'v.html': {
+    script: "'self'",
+    img: "'self' data:",
+    medien: "https://firebasestorage.googleapis.com",
+    verbinden: "https://firestore.googleapis.com",
+    rahmen: "'none'",
+    worker: "'none'",
+    manifest: "'none'",
+  },
 };
 
 /* Jeder <script>-Block ohne src. Der Inhalt geht Zeichen für Zeichen in

@@ -1947,6 +1947,59 @@ service cloud.firestore {
         || (istAktiv() && get(/databases/$(database)/documents/designs/$(dId)).data.uid == request.auth.uid));
     }
 
+    /* ── Geteilte Videos (Runde 308) ──
+       Aus dem Betrieb, 26.11.2026: „das man videos hochladen kann in der
+       app und dann einen link schicken oder teilen kann mit dem sich
+       JEDER das video angucken kann auch ohne account … aber nur mit dem
+       link halt". Auf Nachfrage: teilen nur die Leitung; Gültigkeit
+       wählbar (7 Tage, 30 Tage, bis zurückgezogen); bis 5 GB.
+
+       ABSICHTLICH NUR EINMAL, oben auf der Wurzel und nicht zusätzlich
+       unter firmen/{f}/: die Seite v.html hat keine Anmeldung und keine
+       Firmenkennung, nur die Kennung aus dem Link. Die Firma steht im
+       Dokument (`firma`) und wird bei jedem Schreiben geprüft.
+
+       Öffentlich ist nur „get" – ein Dokument, dessen 20–40 Zeichen
+       lange Zufallskennung man kennen muss. „list" bekommt nur die
+       Leitung der eigenen Firma; eine Liste aller Freigaben sieht von
+       aussen niemand. Im Dokument steht nichts über Personen ausser der
+       uid dessen, der geteilt hat (vonUid) – der Name bleibt in der App. */
+    function freigabeFirma() {
+      return meineFirma() == '' ? 'koerperformen' : meineFirma();
+    }
+    function freigabeLeitung(f) {
+      return schreibtIn(f) && (isChef() || isLeiter());
+    }
+    match /freigaben/{fid} {
+      allow get: if true;
+      allow list: if signedIn() && (isChef() || isLeiter())
+        && resource.data.firma == freigabeFirma() && inFirma(resource.data.firma);
+      allow create: if fid.matches('[A-Za-z0-9]{20,40}')
+        && request.resource.data.keys().hasOnly(['firma', 'titel', 'pfad', 'bis', 'aktiv', 'vonUid', 'ts', 'groesse'])
+        && request.resource.data.keys().hasAll(['firma', 'titel', 'pfad', 'bis', 'aktiv', 'vonUid', 'ts'])
+        && request.resource.data.firma == freigabeFirma()
+        && freigabeLeitung(request.resource.data.firma)
+        && request.resource.data.vonUid == request.auth.uid
+        && request.resource.data.aktiv == true
+        && request.resource.data.titel is string
+        && request.resource.data.titel.size() > 0 && request.resource.data.titel.size() <= 80
+        && request.resource.data.bis is number && request.resource.data.bis >= 0
+        && request.resource.data.ts is number
+        && (!('groesse' in request.resource.data) || request.resource.data.groesse is number)
+        && request.resource.data.pfad is string
+        && request.resource.data.pfad.matches('firmen/' + request.resource.data.firma + '/freigaben/' + fid + '/[A-Za-z0-9._-]{1,100}');
+      // Ändern: nur Titel, Gültigkeit und an/aus – die Datei bleibt dieselbe.
+      allow update: if resource.data.firma == freigabeFirma()
+        && freigabeLeitung(resource.data.firma)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['titel', 'bis', 'aktiv'])
+        && request.resource.data.aktiv is bool
+        && request.resource.data.bis is number && request.resource.data.bis >= 0
+        && request.resource.data.titel is string
+        && request.resource.data.titel.size() > 0 && request.resource.data.titel.size() <= 80;
+      allow delete: if resource.data.firma == freigabeFirma()
+        && freigabeLeitung(resource.data.firma);
+    }
+
     // ── Papierkorb ──
     // Gelöschtes liegt hier 30 Tage. Hineinlegen darf jeder Eingeloggte –
     // wer den Eintrag löschen durfte, darf ihn auch sichern. Ansehen,

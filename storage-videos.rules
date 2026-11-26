@@ -71,6 +71,33 @@ service firebase.storage {
       allow delete: if leitungIn(firma);
     }
 
+    /* ── Geteilte Videos (Runde 308) ──
+       Abrufen OHNE Anmeldung, aber nur solange die Freigabe in Firestore
+       besteht, zur selben Firma gehört, aktiv ist, nicht abgelaufen ist
+       und genau auf diese Datei zeigt. Zurückziehen (Dokument weg oder
+       aktiv:false) heisst: ab dem nächsten Abruf kommt nichts mehr –
+       auch nicht über eine aufgehobene Adresse. Die Leitung der Firma
+       sieht ihre Videos auch ohne Freigabe (Vorschau, Aufräumen).
+       Hochladen: Leitung, nur Videos, bis 5 GiB (wie die Schulungen). */
+    match /firmen/{firma}/freigaben/{fid}/{datei} {
+      function fg() {
+        return firestore.get(/databases/(default)/documents/freigaben/$(fid)).data;
+      }
+      allow get: if leitungIn(firma)
+        || (firestore.exists(/databases/(default)/documents/freigaben/$(fid))
+            && fg().firma == firma
+            && fg().aktiv == true
+            && (fg().bis == 0 || fg().bis > request.time.toMillis())
+            && fg().pfad == 'firmen/' + firma + '/freigaben/' + fid + '/' + datei);
+      allow list: if false;
+      allow create: if leitungIn(firma)
+        && resource == null
+        && request.resource.contentType.matches('video/.*')
+        && request.resource.size <= 5 * 1024 * 1024 * 1024;
+      allow update: if false;
+      allow delete: if leitungIn(firma);
+    }
+
     match /{alles=**} {
       allow read, write: if false;
     }

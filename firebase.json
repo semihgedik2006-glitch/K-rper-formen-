@@ -47,6 +47,10 @@
       "**/*.log"
     ],
     "cleanUrls": true,
+    "//rewrites": "Runde 308: /v/<Kennung> ist die Seite für ein geteiltes Video (v.html). Die Kennung liest v.js aus der Adresse.",
+    "rewrites": [
+      { "source": "/v/**", "destination": "/v.html" }
+    ],
     "headers": [
       {
         "//": "Kopfzeilen, die es als <meta> nicht gibt. frame-ancestors verhindert, dass jemand die App in seine Seite einbettet und Klicks abfängt — das geht nur über die Kopfzeile. Die eigentliche Sicherheitsregel steht in index.html, erzeugt von tools/csp.js; hier steht bewusst nur, was dort nicht stehen kann.",

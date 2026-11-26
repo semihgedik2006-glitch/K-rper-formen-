@@ -2222,6 +2222,8 @@
         /* Videos aus dem Grundstock (quelle: 'speicher:…') liegen im
            Speicher des Betriebs, nicht in der Demo — ehrlich sagen. */
         getDownloadURL: function () { return Promise.reject({ code: 'demo' }); },
+        /* Runde 308: „Zurückziehen" löscht die Datei einer Freigabe. */
+        delete: function () { (window.__demoGeloescht = window.__demoGeloescht || []).push(pfad); return Promise.resolve(); },
         put: function (datei, meta) {
           var cb = {}, n = 0, groesse = datei.size || 0, uhr = null;
           var task = {
