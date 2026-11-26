@@ -57,6 +57,10 @@ async function oeffne(b, w, h, opt) {
   await p.route('**://www.gstatic.com/**', r => r.abort());
   await p.route('**fonts.googleapis.com/**', r => r.abort());
   await p.route('**script.google.com/**', r => r.fulfill({ status: 200, body: 'ok' }));
+  /* Runde 307: der Schichtplaner ist von sich aus aus. Geprüft wird hier
+     der Aufbau mit allen Bereichen – also eingeschaltet, wie der Chef es
+     unter Verwaltung → System kann. */
+  await p.addInitScript(() => { window.__features = Object.assign({ planer: true }, window.__features || {}); });
   await p.addInitScript({ path: SP + '/' + (opt.stub || 'stub-chef.js') });
   await p.goto(APP + '?neu=1', { waitUntil: 'domcontentloaded' });
   await p.waitForFunction(() => !!document.querySelector('#app.show'), null, { timeout: 15000 });

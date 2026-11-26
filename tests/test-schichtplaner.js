@@ -74,8 +74,22 @@ async function zuAlles(p) {
     const w = (ms) => new Promise((r) => setTimeout(r, ms));
     const griff = document.getElementById('bereichKopf');
     if (griff && griff.offsetParent && griff.getAttribute('aria-expanded') !== 'true') { griff.click(); await w(700); }
-    const z = [...document.querySelectorAll('[data-alles="planer"]')].find((e) => e.offsetParent);
-    if (!z) return false;
+    let z = [...document.querySelectorAll('[data-alles="planer"]')].find((e) => e.offsetParent);
+    /* Runde 307: der Schichtplaner ist von sich aus ausgeschaltet („…
+       komplett entfernen aber nicht unbedingt löschen", 26.11.2026).
+       Der Durchlauf schaltet ihn ein wie der Chef: Verwaltung → System. */
+    if (!z) {
+      const sys = [...document.querySelectorAll('[data-al-cgo="system"]')].find((e) => e.offsetParent);
+      if (!sys) return false;
+      sys.click(); await w(1200);
+      const cb = document.querySelector('#featureListe [data-feat="planer"] input');
+      if (!cb) return false;
+      if (!cb.checked) { cb.click(); await w(600); }
+      const g2 = document.getElementById('bereichKopf');
+      if (g2 && g2.offsetParent && g2.getAttribute('aria-expanded') !== 'true') { g2.click(); await w(700); }
+      z = [...document.querySelectorAll('[data-alles="planer"]')].find((e) => e.offsetParent);
+      if (!z) return false;
+    }
     z.click(); await w(1500);
     const v = document.getElementById('view-planer');
     return !!v && getComputedStyle(v).display !== 'none' && !!v.offsetParent;
