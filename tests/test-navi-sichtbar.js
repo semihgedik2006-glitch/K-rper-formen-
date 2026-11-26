@@ -35,7 +35,7 @@
    ───────────────────────────────────────────────────────────────────── */
 const { chromium } = require('playwright');
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
-const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium';
 
 const BREITEN = [[320, 690], [390, 844], [430, 932]];
 const ROLLEN = ['chef', 'leiter', 'mitarbeiter'];

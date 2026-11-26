@@ -18,7 +18,7 @@
    ══════════════════════════════════════════════════════════════════ */
 const { chromium } = require('playwright');
 const fs = require('fs'), os = require('os'), path = require('path'), http = require('http');
-const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium';
 const WURZEL = process.env.WURZEL || path.join(__dirname, '..');
 
 let gut = 0, schlecht = 0;

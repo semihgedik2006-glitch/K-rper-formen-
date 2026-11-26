@@ -36,7 +36,7 @@
 const { chromium } = require('playwright');
 const SP = process.env.SP || __dirname;
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
-const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium';
 
 /* Attrappe für `zeiten` und die Funktionen. `window.__frei` steuert, ob
    das eigene Profil freigeschaltet ist; `window.__codeFehler` lässt

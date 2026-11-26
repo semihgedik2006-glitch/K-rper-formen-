@@ -59,7 +59,7 @@
 const { chromium } = require('playwright');
 const SP = process.env.SP || __dirname;
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
-const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium';
 
 const ZIEL = 44;
 
@@ -88,8 +88,15 @@ const MESSEN = `
       if (cx < 0 || cx > innerWidth || cy < ziel/2 || cy > innerHeight - ziel/2) return;
       function trifft(y){
         var t = document.elementFromPoint(cx, y);
+        /* Ein Kästchen in seinem <label> schaltet auch, wenn man das
+           Label trifft — das ist HTML, nicht Absicht der App. Gezählt wird
+           deshalb das eigene Label mit (sichtbar, mit Rand: .studio-check
+           hat min-height 44px). Vorher meldete der Test 17 px für jedes
+           Studio-Kästchen, obwohl der Finger die ganze Zeile trifft. */
+        var lab = el.labels ? [].slice.call(el.labels) : [];
         return !!(t && (t === el || el.contains(t) ||
-                        (t.parentElement && t.parentElement === el)));
+                        (t.parentElement && t.parentElement === el) ||
+                        lab.some(function(l){ return l === t || l.contains(t); })));
       }
       if (!trifft(cy)) return;      // verdeckt — anderer Fall, andere Pruefung
       var oben = 0, unten = 0;

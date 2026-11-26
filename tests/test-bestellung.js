@@ -25,7 +25,7 @@
    ══════════════════════════════════════════════════════════════════ */
 const { chromium } = require('playwright');
 const CHROME = process.env.CHROME ||
-  '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+  '/opt/pw-browsers/chromium';
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 
 let gut = 0, schlecht = 0;
@@ -94,7 +94,11 @@ async function messen(p, wer, liste) {
              messen: die Grenze bleibt 44 × 44. */
           const zu = el.closest('.card.zu');
           if (zu) { const kopf = zu.querySelector('.fold-head'); if (kopf) kopf.click(); await new Promise(r => setTimeout(r, 450)); }
-          el.scrollIntoView({ block: 'center' });
+          /* Sofort scrollen und kurz warten: die Seite war beim Messen noch
+             in Bewegung — der Knopf kam mit 40 statt 44 px heraus (390 px
+             kompakt), allein gemessen hat er volle 44. */
+          el.scrollIntoView({ block: 'center', behavior: 'instant' });
+          await new Promise(r => setTimeout(r, 120));
           await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
           aus[s] = T(el);
         }

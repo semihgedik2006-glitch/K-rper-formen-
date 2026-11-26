@@ -13,7 +13,7 @@
 const { chromium } = require('playwright');
 const SP = process.env.SP || __dirname;
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
-const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium';
 
 // Ansicht -> Navigationsgruppe. Die App laeuft in einer IIFE, showView()
 // ist nicht global - also wird geklickt wie ein Nutzer: erst die Gruppe

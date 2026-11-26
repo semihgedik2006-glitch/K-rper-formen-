@@ -27,7 +27,7 @@
    10. 320 und 1920 px: nichts ragt hinaus.
    ══════════════════════════════════════════════════════════════════ */
 const { chromium } = require('playwright');
-const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium';
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 const BASIS = APP.replace(/index\.html.*$/, '');
 
@@ -73,7 +73,7 @@ const zuDokumenten = (p) => p.evaluate(async () => {
   const z = [...document.querySelectorAll('[data-alles="docs"]')].find(e => e.offsetParent);
   if (!z) return false;
   z.click(); await w(1200);
-  const k = document.getElementById('vfKarte');
+  const k = document.getElementById('vtKarte');
   if (k && !k.hidden && k.classList.contains('zu')) { k.querySelector('.fold-head').click(); await w(500); }
   return true;
 });
@@ -85,20 +85,20 @@ const zuDokumenten = (p) => p.evaluate(async () => {
     let p = await demo(b, 'chef', 1440, 900);
     pruefe('„Dokumente" erreichbar', await zuDokumenten(p));
     const a1 = await p.evaluate(() => {
-      const k = document.getElementById('vfKarte');
+      const k = document.getElementById('vtKarte');
       return { da: !!k && !k.hidden && k.getClientRects().length > 0,
-        dauer: [...document.querySelectorAll('#vfDauer [data-vfdauer]')].map(x => x.textContent.trim() + (x.classList.contains('on') ? '*' : '')) };
+        dauer: [...document.querySelectorAll('#vtDauer [data-vtdauer]')].map(x => x.textContent.trim() + (x.classList.contains('on') ? '*' : '')) };
     });
     pruefe('„Video teilen" steht da; 7 Tage / 30 Tage (vorgewählt) / Bis ich ihn zurückziehe',
       a1.da && a1.dauer.join('|') === '7 Tage|30 Tage*|Bis ich ihn zurückziehe', JSON.stringify(a1));
-    await p.evaluate(() => { document.querySelector('[data-vfdauer="7"]').click(); document.getElementById('vfTitel').value = 'Dein erstes Training'; });
-    await p.setInputFiles('#vfDatei', VIDEO);
+    await p.evaluate(() => { document.querySelector('[data-vtdauer="7"]').click(); document.getElementById('vtTitel').value = 'Dein erstes Training'; });
+    await p.setInputFiles('#vtDatei', VIDEO);
     await p.waitForTimeout(150);
-    const lade = await p.evaluate(() => ({ lade: !document.getElementById('vfLade').hidden, gesperrt: document.getElementById('vfWahl').disabled }));
+    const lade = await p.evaluate(() => ({ lade: !document.getElementById('vtLade').hidden, gesperrt: document.getElementById('vtWahl').disabled }));
     pruefe('während des Hochladens: Fortschritt sichtbar, Knopf gesperrt', lade.lade && lade.gesperrt, JSON.stringify(lade));
-    await p.waitForFunction(() => !document.getElementById('vfFertig').hidden, null, { timeout: 8000 }).catch(() => {});
-    const a2 = await p.evaluate(() => ({ link: document.getElementById('vfLink').value,
-      knoepfe: [...document.querySelectorAll('#vfFertig button')].map(x => x.textContent.trim()) }));
+    await p.waitForFunction(() => !document.getElementById('vtFertig').hidden, null, { timeout: 8000 }).catch(() => {});
+    const a2 = await p.evaluate(() => ({ link: document.getElementById('vtLink').value,
+      knoepfe: [...document.querySelectorAll('#vtFertig button')].map(x => x.textContent.trim()) }));
     const m = /\/v\/([A-Za-z0-9]{24})$/.exec(a2.link);
     pruefe('danach ein Link /v/<24 Zeichen> mit „Link kopieren" und „Teilen …"', !!m && a2.knoepfe.join('|') === 'Link kopieren|Teilen …', JSON.stringify(a2));
     const id = m && m[1];
@@ -110,22 +110,22 @@ const zuDokumenten = (p) => p.evaluate(async () => {
       !!doc && doc.pfad === 'firmen/' + doc.firma + '/freigaben/' + id + '/erstes-training.mp4' && doc.titel === 'Dein erstes Training' && doc.aktiv === true && tage > 6.9 && tage < 7.1,
       doc && JSON.stringify({ pfad: doc.pfad, titel: doc.titel, tage: tage.toFixed(2) }));
     await p.waitForTimeout(400);
-    const zeile = await p.evaluate(() => [...document.querySelectorAll('#vfListe .vf-zeile')].map(z => z.textContent.replace(/\s+/g, ' ').trim()));
+    const zeile = await p.evaluate(() => [...document.querySelectorAll('#vtListe .vt-zeile')].map(z => z.textContent.replace(/\s+/g, ' ').trim()));
     pruefe('die Liste zeigt „Dein erstes Training · gilt bis …"', zeile.length === 1 && /Dein erstes Training/.test(zeile[0]) && /gilt bis/.test(zeile[0]), zeile.join(' / '));
-    await p.evaluate((id) => { window.__demoGeloescht = []; document.querySelector('[data-vfweg="' + id + '"]').click(); }, id);
+    await p.evaluate((id) => { window.__demoGeloescht = []; document.querySelector('[data-vtweg="' + id + '"]').click(); }, id);
     await p.waitForTimeout(250);
-    const frage = await p.evaluate((id) => document.querySelector('[data-vfweg="' + id + '"]').textContent.trim(), id);
+    const frage = await p.evaluate((id) => document.querySelector('[data-vtweg="' + id + '"]').textContent.trim(), id);
     const nochDa = await p.evaluate(async (id) => (await firebase.firestore().collection('freigaben').doc(id).get()).exists, id);
     pruefe('„Zurückziehen" fragt erst „Wirklich zurückziehen?" – noch nichts gelöscht', frage === 'Wirklich zurückziehen?' && nochDa, frage);
-    await p.evaluate((id) => document.querySelector('[data-vfweg="' + id + '"]').click(), id);
+    await p.evaluate((id) => document.querySelector('[data-vtweg="' + id + '"]').click(), id);
     await p.waitForTimeout(800);
     const weg = await p.evaluate(async (id) => ({ doc: (await firebase.firestore().collection('freigaben').doc(id).get()).exists, datei: window.__demoGeloescht || [] }), id);
     pruefe('… dann sind Dokument und Datei weg', !weg.doc && weg.datei.length === 1 && weg.datei[0] === doc.pfad, JSON.stringify(weg));
 
     console.log('\n── A 5 keine Videodatei ──');
-    await p.setInputFiles('#vfDatei', { name: 'liste.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF') });
+    await p.setInputFiles('#vtDatei', { name: 'liste.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF') });
     await p.waitForTimeout(300);
-    const a5 = await p.evaluate(() => ({ text: document.getElementById('vfHinweis').textContent, link: !document.getElementById('vfFertig').hidden }));
+    const a5 = await p.evaluate(() => ({ text: document.getElementById('vtHinweis').textContent, link: !document.getElementById('vtFertig').hidden }));
     pruefe('„… ist keine Videodatei", kein Link', /keine Videodatei/.test(a5.text) && !a5.link, JSON.stringify(a5));
     pruefe('ohne Skriptfehler', !p._fehler.length, p._fehler.join(' | '));
     await p._ctx.close();
@@ -133,7 +133,7 @@ const zuDokumenten = (p) => p.evaluate(async () => {
     console.log('\n── A 6 Mitarbeiter ──');
     p = await demo(b, 'mitarbeiter', 1440, 900);
     await zuDokumenten(p);
-    pruefe('Mitarbeiter sehen „Video teilen" nicht', await p.evaluate(() => { const k = document.getElementById('vfKarte'); return !k || k.hidden || !k.getClientRects().length; }));
+    pruefe('Mitarbeiter sehen „Video teilen" nicht', await p.evaluate(() => { const k = document.getElementById('vtKarte'); return !k || k.hidden || !k.getClientRects().length; }));
     await p._ctx.close();
 
     console.log('\n── A 7 Trefferflächen, normal und kompakt ──');
@@ -141,13 +141,13 @@ const zuDokumenten = (p) => p.evaluate(async () => {
       for (const [w, h] of [[320, 640], [390, 844], [430, 932], [820, 1180], [1280, 800], [1440, 900], [1920, 1080]]) {
         p = await demo(b, 'chef', w, h, dichte);
         await zuDokumenten(p);
-        await p.setInputFiles('#vfDatei', VIDEO);
-        await p.waitForFunction(() => !document.getElementById('vfFertig').hidden, null, { timeout: 8000 }).catch(() => {});
+        await p.setInputFiles('#vtDatei', VIDEO);
+        await p.waitForFunction(() => !document.getElementById('vtFertig').hidden, null, { timeout: 8000 }).catch(() => {});
         await p.waitForTimeout(400);
         const mm = await p.evaluate(async (T) => {
           const f = new Function('return ' + T)();
           const r = [];
-          const sel = '#vfKarte .fold-head, #vfDauer [data-vfdauer], #vfWahl, #vfKopie, #vfTeilen, #vfListe button';
+          const sel = '#vtKarte .fold-head, #vtDauer [data-vtdauer], #vtWahl, #vtKopie, #vtTeilen, #vtListe button';
           for (const e of [...document.querySelectorAll(sel)].filter(e => e.getClientRects().length)) {
             e.scrollIntoView({ block: 'center', behavior: 'instant' });
             await new Promise(ok => setTimeout(ok, 120));

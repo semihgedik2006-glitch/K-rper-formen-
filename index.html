@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-H0nfsTPp/UVMfXU+xmUbRWoX4AcEnwBBLiOQIl4wUX0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-DnGMRKnSf2dtEdbDhUX0SvXvq4zkSiH0SbTwet9JjsQ='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -1478,8 +1478,8 @@ html.demo #terminalSchirm{top:44px}
      und sticky greift schon in Ruhe — sie stand 12 px tiefer als links. */
   #view-docs .scroll-area > #docUploadCard{grid-column:2;grid-row:1;position:sticky;top:0}
   /* Runde 308: „Video teilen" unter „Dokument hinzufügen", rechts. */
-  #view-docs .scroll-area > #vfKarte{grid-column:2;grid-row:2}
-  #view-docs .scroll-area:has(> #vfKarte:not([hidden])) > .doc-haupt{grid-row:1 / span 2}
+  #view-docs .scroll-area > #vtKarte{grid-column:2;grid-row:2}
+  #view-docs .scroll-area:has(> #vtKarte:not([hidden])) > .doc-haupt{grid-row:1 / span 2}
   #view-archive .scroll-area > #archErledigtCard{grid-column:1;grid-row:1;min-width:0;max-width:960px}
   #view-archive .scroll-area > #weekArchiveCard{grid-column:2;grid-row:1;position:sticky;top:0}
   #view-probe .scroll-area > .card:not(#pbQuotenCard){grid-column:1;grid-row:1}
@@ -1883,13 +1883,20 @@ body.nurlesen .kopf-plus{display:none !important}
   overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .pp-leiste{display:flex;align-items:center;gap:var(--s8);flex-wrap:wrap;
   margin:var(--s2) 0 var(--s12)}
-.pp-leiste .pp-studiowahl{flex:0 1 auto;width:auto;max-width:240px;min-height:44px}
+/* Die Auswahl war 50 px hoch (Innenabstand von .inp), die Knöpfe daneben
+   44 — eine Leiste mit zwei Höhen. Jetzt alle 44 (Aufräumen, 26.11.2026);
+   am Handy rückt damit die erste Aufgabe 6 px höher (test-rahmen). */
+.pp-leiste .pp-studiowahl{flex:0 1 auto;width:auto;max-width:240px;min-height:44px;
+  padding-top:var(--s8);padding-bottom:var(--s8)}
 /* Am Handy schmaler (Runde 147, Aufgaben und Putzplan zugleich): die
    Breite der Auswahl richtet sich nach der LÄNGSTEN Option („Alle
    Studios", „Ebertplatz"), gemessen 209 px. Daneben passten Balken und
    „3 von 5 erledigt" bei 390 px nicht mehr — die Leiste brach in drei
    Reihen (154 statt 102 px). 150 px reichen für jeden Studionamen. */
-@media(max-width:480px){ .pp-leiste .pp-studiowahl{max-width:150px} }
+@media(max-width:480px){ .pp-leiste .pp-studiowahl{max-width:150px}
+  /* Am Handy steht die Leiste in zwei Reihen (so gewollt); der Abstand
+     darunter darf dafür kleiner sein. */
+  .pp-leiste{margin-bottom:var(--s8)} }
 .pp-fort{flex:1 1 72px;min-width:72px;height:8px;border-radius:var(--r-pille);
   background:var(--auf-2);overflow:hidden}
 .pp-fort i{display:block;height:100%;width:0;border-radius:var(--r-pille);
@@ -10192,19 +10199,19 @@ body.ab-zieht, body.ab-zieht *{cursor:grabbing}
 .ab-fuer-knoepfe{display:flex;gap:var(--s8);flex-wrap:wrap;margin-top:var(--s8)}
 .ab-fuer-knoepfe .btn{min-height:44px}
 /* Runde 308: Video teilen */
-#vfKarte .btn{min-height:44px}
-#vfKarte #vfWahl{width:100%}
-.vf-lade{margin-top:var(--s8)}
-.vf-lade progress{width:100%}
-.vf-lade-zeile{display:flex;align-items:center;justify-content:space-between;gap:var(--s8);flex-wrap:wrap;font-size:var(--t-sm)}
-.vf-fertig{margin-top:var(--s12);display:flex;flex-direction:column;gap:var(--s6)}
-.vf-fertig label{font-size:var(--t-sm);font-weight:600}
-.vf-knoepfe{display:flex;gap:var(--s8);flex-wrap:wrap}
-.vf-liste-titel{margin-top:var(--s16)}
-.vf-zeile{display:flex;align-items:center;gap:var(--s8);flex-wrap:wrap;padding:var(--s8) 0;border-top:1px solid var(--line)}
-.vf-zeile .vf-name{flex:1 1 160px;min-width:0}
-.vf-zeile .vf-name b{display:block;font-size:var(--t-sm);overflow-wrap:anywhere}
-.vf-zeile .vf-name i{display:block;font-style:normal;font-size:var(--t-xs);color:var(--text-2)}
+#vtKarte .btn{min-height:44px}
+#vtKarte #vtWahl{width:100%}
+.vt-lade{margin-top:var(--s8)}
+.vt-lade progress{width:100%}
+.vt-lade-zeile{display:flex;align-items:center;justify-content:space-between;gap:var(--s8);flex-wrap:wrap;font-size:var(--t-sm)}
+.vt-fertig{margin-top:var(--s12);display:flex;flex-direction:column;gap:var(--s6)}
+.vt-fertig label{font-size:var(--t-sm);font-weight:600}
+.vt-knoepfe{display:flex;gap:var(--s8);flex-wrap:wrap}
+.vt-liste-titel{margin-top:var(--s16)}
+.vt-zeile{display:flex;align-items:center;gap:var(--s8);flex-wrap:wrap;padding:var(--s8) 0;border-top:1px solid var(--line)}
+.vt-zeile .vt-name{flex:1 1 160px;min-width:0}
+.vt-zeile .vt-name b{display:block;font-size:var(--t-sm);overflow-wrap:anywhere}
+.vt-zeile .vt-name i{display:block;font-style:normal;font-size:var(--t-xs);color:var(--text-2)}
 /* Runde 304: Rückmeldung unter dem eigenen Angebot, Hinweis bei Sperre. */
 .ab-antw{display:flex;align-items:center;gap:var(--s8);flex-wrap:wrap;margin:calc(-1 * var(--s4)) 0 var(--s8);font-size:var(--t-xs);color:var(--text-2)}
 .ab-antw .btn{min-height:44px}
@@ -11183,7 +11190,7 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
       <div class="field"><label for="lgEmail">E-Mail</label>
         <input class="inp" id="lgEmail" type="email" placeholder="deine@email.de" autocomplete="email" inputmode="email" /></div>
       <div class="field"><label for="lgPw">Passwort</label>
-        <div class="pw-wrap"><input class="inp" id="lgPw" type="password" placeholder="Dein Passwort" autocomplete="current-password" />
+        <div class="pw-wrap"><input class="inp" id="lgPw" type="password" placeholder="Passwort" autocomplete="current-password" />
           <button type="button" class="pw-auge" data-pw="lgPw" aria-label="Passwort anzeigen" aria-pressed="false"></button></div></div>
       <p class="auth-err" id="loginErr"></p>
       <button class="btn btn-primary" id="loginBtn" style="width:100%">Anmelden</button>
@@ -11263,7 +11270,10 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
         <input class="inp" id="rgName" type="text" placeholder="Vor- und Nachname" autocomplete="name" maxlength="50" /></div>
       <div class="field"><label for="rgEmail">E-Mail</label>
         <input class="inp" id="rgEmail" type="email" placeholder="deine@email.de" autocomplete="email" inputmode="email" /></div>
-      <div class="row">
+      <!-- Untereinander statt nebeneinander (Aufräumen, 26.11.2026): nebeneinander
+           blieben bei 820 px nur 48 px für den Hinweistext, „8+ Zeichen" war
+           abgeschnitten (tests/test-abgeschnitten.js). -->
+      <div class="pw-paar">
         <div class="field"><label for="rgPw">Passwort</label>
           <div class="pw-wrap"><input class="inp" id="rgPw" type="password" placeholder="8+ Zeichen" autocomplete="new-password" />
             <button type="button" class="pw-auge" data-pw="rgPw" aria-label="Passwort anzeigen" aria-pressed="false"></button></div></div>
@@ -12841,35 +12851,35 @@ body > .msg-sheet.show ~ .formi-blase{visibility:hidden}
           </div>
           <!-- Runde 308: ein Video hochladen und als Link teilen – ansehen
                kann es jeder mit dem Link, ohne Konto. Nur die Leitung. -->
-          <div class="card" id="vfKarte" hidden data-fold="videoteilen">
+          <div class="card" id="vtKarte" hidden data-fold="videoteilen">
             <h3 data-ikon="hochladen">Video teilen</h3>
             <p class="hint">Video hochladen, Link schicken: Wer den Link hat, sieht das Video – ohne Konto und ohne Anmeldung.</p>
-            <div class="field"><label for="vfTitel">Titel</label>
-              <input class="inp" id="vfTitel" type="text" maxlength="80" placeholder="z. B. So läuft dein erstes Training" /></div>
+            <div class="field"><label for="vtTitel">Titel</label>
+              <input class="inp" id="vtTitel" type="text" maxlength="80" placeholder="z. B. So läuft dein erstes Training" /></div>
             <div class="field"><label>Wie lange gilt der Link?</label>
-              <div class="ab-chips vf-dauer" id="vfDauer" role="group" aria-label="Wie lange gilt der Link?">
-                <button type="button" class="chip" data-vfdauer="7" aria-pressed="false">7 Tage</button>
-                <button type="button" class="chip on" data-vfdauer="30" aria-pressed="true">30 Tage</button>
-                <button type="button" class="chip" data-vfdauer="0" aria-pressed="false">Bis ich ihn zurückziehe</button>
+              <div class="ab-chips vt-dauer" id="vtDauer" role="group" aria-label="Wie lange gilt der Link?">
+                <button type="button" class="chip" data-vtdauer="7" aria-pressed="false">7 Tage</button>
+                <button type="button" class="chip on" data-vtdauer="30" aria-pressed="true">30 Tage</button>
+                <button type="button" class="chip" data-vtdauer="0" aria-pressed="false">Bis ich ihn zurückziehe</button>
               </div></div>
-            <input type="file" id="vfDatei" accept="video/*,.mp4,.mov,.m4v,.webm" hidden />
-            <button type="button" class="btn btn-primary btn-sm" id="vfWahl" data-ikon="hochladen">Video auswählen und hochladen</button>
-            <p class="hint" id="vfHinweis">MP4 am besten, bis 5 GB. Das Fenster muss offen bleiben, bis es fertig ist.</p>
-            <div class="vf-lade" id="vfLade" hidden>
-              <progress max="100" value="0" id="vfFortschritt"></progress>
-              <div class="vf-lade-zeile"><span id="vfLadeText" role="status"></span>
-                <button type="button" class="btn btn-ghost btn-sm" id="vfAbbr">Abbrechen</button></div>
+            <input type="file" id="vtDatei" accept="video/*,.mp4,.mov,.m4v,.webm" hidden />
+            <button type="button" class="btn btn-primary btn-sm" id="vtWahl" data-ikon="hochladen">Video auswählen und hochladen</button>
+            <p class="hint" id="vtHinweis">MP4 am besten, bis 5 GB. Das Fenster muss offen bleiben, bis es fertig ist.</p>
+            <div class="vt-lade" id="vtLade" hidden>
+              <progress max="100" value="0" id="vtFortschritt"></progress>
+              <div class="vt-lade-zeile"><span id="vtLadeText" role="status"></span>
+                <button type="button" class="btn btn-ghost btn-sm" id="vtAbbr">Abbrechen</button></div>
             </div>
-            <div class="vf-fertig" id="vfFertig" hidden>
-              <label for="vfLink">Dein Link</label>
-              <input class="inp" id="vfLink" type="text" readonly />
-              <div class="vf-knoepfe">
-                <button type="button" class="btn btn-primary btn-sm" id="vfKopie">Link kopieren</button>
-                <button type="button" class="btn btn-ghost btn-sm" id="vfTeilen">Teilen …</button>
+            <div class="vt-fertig" id="vtFertig" hidden>
+              <label for="vtLink">Dein Link</label>
+              <input class="inp" id="vtLink" type="text" readonly />
+              <div class="vt-knoepfe">
+                <button type="button" class="btn btn-primary btn-sm" id="vtKopie">Link kopieren</button>
+                <button type="button" class="btn btn-ghost btn-sm" id="vtTeilen">Teilen …</button>
               </div>
             </div>
-            <h4 class="vf-liste-titel">Geteilte Videos</h4>
-            <div id="vfListe"></div>
+            <h4 class="vt-liste-titel">Geteilte Videos</h4>
+            <div id="vtListe"></div>
           </div>
           <!-- Runde 144: am Rechner steht die Liste links, „Dokument
                hinzufügen" rechts. Am Handy ist die Hülle ein Block. -->
@@ -23297,7 +23307,7 @@ function showApp(){
   if(canManage()){
     buildChefSelects(); restoreDrafts();
     $('docUploadCard').style.display='block'; buildDocStudios(); buildDocCatSelect();
-    vfAnzeigen();
+    vtAnzeigen();
     setTimeout(function(){ syncAllToSheets(true); }, 9000); // Tabellen still abgleichen
   }
   meldMarker();                // Glocke zeigen/verstecken, Zahl auf 0
@@ -39895,93 +39905,93 @@ var VIDEO_GRENZE = 5 * 1024 * 1024 * 1024;   // = storage-videos.rules
    prüft bei jedem Abruf, ob die Freigabe noch gilt.
    Zurückziehen: erst das Dokument (dann ist der Link sofort tot), dann
    die Datei. */
-var _vf={ dauer:30, h:null, liste:[], ab:null, weg:null, gebunden:false };
-function vfDarf(){ return !!KONFIG.videoEimer && (isChef() || isLeiter()); }
-function vfFirma(){ return _firma || KONFIG.firma || 'koerperformen'; }
-function vfKennung(){
+var _vt={ dauer:30, h:null, liste:[], ab:null, weg:null, gebunden:false };
+function vtDarf(){ return !!KONFIG.videoEimer && (isChef() || isLeiter()); }
+function vtFirma(){ return _firma || KONFIG.firma || 'koerperformen'; }
+function vtKennung(){
   var z='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', a=new Uint32Array(24);
   (window.crypto || window.msCrypto).getRandomValues(a);
   return [].map.call(a, function(n){ return z.charAt(n % 62); }).join('');
 }
-function vfLink(id){ return location.origin+'/v/'+id; }
-function vfAnzeigen(){
-  var k=$('vfKarte'); if(!k) return;
-  k.hidden=!vfDarf();
-  if(!vfDarf()) return;
-  vfBinden(); vfHoeren();
+function vtLink(id){ return location.origin+'/v/'+id; }
+function vtAnzeigen(){
+  var k=$('vtKarte'); if(!k) return;
+  k.hidden=!vtDarf();
+  if(!vtDarf()) return;
+  vtBinden(); vtHoeren();
 }
-function vfAus(){
-  if(_vf.ab){ try{ _vf.ab(); }catch(e){} _vf.ab=null; }
-  _vf.liste=[];
+function vtAus(){
+  if(_vt.ab){ try{ _vt.ab(); }catch(e){} _vt.ab=null; }
+  _vt.liste=[];
 }
-function vfBinden(){
-  if(_vf.gebunden) return; _vf.gebunden=true;
-  $('vfDauer').addEventListener('click', function(e){
-    var b=e.target.closest('[data-vfdauer]'); if(!b) return;
-    _vf.dauer=+b.getAttribute('data-vfdauer');
-    [].forEach.call($('vfDauer').querySelectorAll('[data-vfdauer]'), function(x){
+function vtBinden(){
+  if(_vt.gebunden) return; _vt.gebunden=true;
+  $('vtDauer').addEventListener('click', function(e){
+    var b=e.target.closest('[data-vtdauer]'); if(!b) return;
+    _vt.dauer=+b.getAttribute('data-vtdauer');
+    [].forEach.call($('vtDauer').querySelectorAll('[data-vtdauer]'), function(x){
       var an=x===b; x.classList.toggle('on', an); x.setAttribute('aria-pressed', String(an)); });
   });
-  $('vfWahl').addEventListener('click', function(){ if(!_vf.h) $('vfDatei').click(); });
-  $('vfDatei').addEventListener('change', function(){ var d=this.files && this.files[0]; this.value=''; if(d) vfStarten(d); });
-  $('vfAbbr').addEventListener('click', function(){ if(_vf.h && _vf.h.task) try{ _vf.h.task.cancel(); }catch(e){} });
-  $('vfKopie').addEventListener('click', function(){ vfKopieren($('vfLink').value); });
-  $('vfTeilen').addEventListener('click', function(){ vfTeilen($('vfLink').value, $('vfLink').getAttribute('data-titel')||'Video'); });
-  $('vfListe').addEventListener('click', function(e){
+  $('vtWahl').addEventListener('click', function(){ if(!_vt.h) $('vtDatei').click(); });
+  $('vtDatei').addEventListener('change', function(){ var d=this.files && this.files[0]; this.value=''; if(d) vtStarten(d); });
+  $('vtAbbr').addEventListener('click', function(){ if(_vt.h && _vt.h.task) try{ _vt.h.task.cancel(); }catch(e){} });
+  $('vtKopie').addEventListener('click', function(){ vtKopieren($('vtLink').value); });
+  $('vtTeilen').addEventListener('click', function(){ vtTeilen($('vtLink').value, $('vtLink').getAttribute('data-titel')||'Video'); });
+  $('vtListe').addEventListener('click', function(e){
     var b=e.target.closest('button'); if(!b) return;
-    var id=b.getAttribute('data-vfkopie') || b.getAttribute('data-vfweg'); if(!id) return;
-    var f=_vf.liste.filter(function(x){ return x.id===id; })[0]; if(!f) return;
-    if(b.hasAttribute('data-vfkopie')) return vfKopieren(vfLink(id));
-    if(_vf.weg!==id){ _vf.weg=id; vfListeZeichnen(); return; }
-    _vf.weg=null; vfZurueckziehen(f);
+    var id=b.getAttribute('data-vtkopie') || b.getAttribute('data-vtweg'); if(!id) return;
+    var f=_vt.liste.filter(function(x){ return x.id===id; })[0]; if(!f) return;
+    if(b.hasAttribute('data-vtkopie')) return vtKopieren(vtLink(id));
+    if(_vt.weg!==id){ _vt.weg=id; vtListeZeichnen(); return; }
+    _vt.weg=null; vtZurueckziehen(f);
   });
 }
-function vfKopieren(url){
+function vtKopieren(url){
   function fertig(){ toast('Link kopiert – jetzt in WhatsApp, Mail oder Chat einfügen.'); tick(8); }
   if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(url).then(fertig, function(){ vfKopierenAlt(url); fertig(); });
-  } else { vfKopierenAlt(url); fertig(); }
+    navigator.clipboard.writeText(url).then(fertig, function(){ vtKopierenAlt(url); fertig(); });
+  } else { vtKopierenAlt(url); fertig(); }
 }
-function vfKopierenAlt(url){
-  var f=$('vfLink'); if(!f) return; f.value=url; f.select();
+function vtKopierenAlt(url){
+  var f=$('vtLink'); if(!f) return; f.value=url; f.select();
   try{ document.execCommand('copy'); }catch(e){}
 }
-function vfTeilen(url, titel){
+function vtTeilen(url, titel){
   if(navigator.share){ navigator.share({ title:titel, url:url }).catch(function(){}); return; }
-  vfKopieren(url);
+  vtKopieren(url);
 }
-function vfDatum(ms){
+function vtDatum(ms){
   try{ return new Date(ms).toLocaleDateString('de-DE', { day:'numeric', month:'long', year:'numeric' }); }catch(e){ return ''; }
 }
-function vfStatus(f){
+function vtStatus(f){
   if(f.aktiv!==true) return 'zurückgezogen';
   if(!f.bis) return 'gilt, bis du ihn zurückziehst';
-  if(f.bis<Date.now()) return 'abgelaufen am '+vfDatum(f.bis);
-  return 'gilt bis '+vfDatum(f.bis);
+  if(f.bis<Date.now()) return 'abgelaufen am '+vtDatum(f.bis);
+  return 'gilt bis '+vtDatum(f.bis);
 }
-function vfHoeren(){
-  if(_vf.ab || typeof db==='undefined' || !db) return;
+function vtHoeren(){
+  if(_vt.ab || typeof db==='undefined' || !db) return;
   try{
-    _vf.ab=db.collection('freigaben').where('firma','==',vfFirma()).onSnapshot(function(snap){
+    _vt.ab=db.collection('freigaben').where('firma','==',vtFirma()).onSnapshot(function(snap){
       var l=[]; snap.forEach(function(d){ var x=d.data()||{}; x.id=d.id; l.push(x); });
       l.sort(function(a, b){ return (b.ts||0)-(a.ts||0); });
-      _vf.liste=l; vfListeZeichnen();
+      _vt.liste=l; vtListeZeichnen();
     }, function(err){ console.warn('Freigaben:', err && err.code); });
   }catch(e){}
 }
-function vfListeZeichnen(){
-  var box=$('vfListe'); if(!box) return;
-  if(!_vf.liste.length){ box.innerHTML='<p class="hint">Noch kein Video geteilt.</p>'; return; }
-  box.innerHTML=_vf.liste.map(function(f){
+function vtListeZeichnen(){
+  var box=$('vtListe'); if(!box) return;
+  if(!_vt.liste.length){ box.innerHTML='<p class="hint">Noch kein Video geteilt.</p>'; return; }
+  box.innerHTML=_vt.liste.map(function(f){
     var gilt=f.aktiv===true && (!f.bis || f.bis>=Date.now());
-    return '<div class="vf-zeile"><span class="vf-name"><b>'+esc(f.titel||'Video')+'</b><i>'+esc(vfStatus(f))+
+    return '<div class="vt-zeile"><span class="vt-name"><b>'+esc(f.titel||'Video')+'</b><i>'+esc(vtStatus(f))+
         (f.groesse ? ' · '+esc(videoGroesse(f.groesse)) : '')+'</i></span>'+
-      (gilt ? '<button type="button" class="btn btn-ghost btn-sm" data-vfkopie="'+esc(f.id)+'">Link kopieren</button>' : '')+
-      '<button type="button" class="btn btn-ghost btn-sm" data-vfweg="'+esc(f.id)+'">'+
-        (_vf.weg===f.id ? 'Wirklich zurückziehen?' : (gilt ? 'Zurückziehen' : 'Entfernen'))+'</button></div>';
+      (gilt ? '<button type="button" class="btn btn-ghost btn-sm" data-vtkopie="'+esc(f.id)+'">Link kopieren</button>' : '')+
+      '<button type="button" class="btn btn-ghost btn-sm" data-vtweg="'+esc(f.id)+'">'+
+        (_vt.weg===f.id ? 'Wirklich zurückziehen?' : (gilt ? 'Zurückziehen' : 'Entfernen'))+'</button></div>';
   }).join('');
 }
-function vfZurueckziehen(f){
+function vtZurueckziehen(f){
   db.collection('freigaben').doc(f.id).delete().then(function(){
     toast('„'+(f.titel||'Video')+'" ist zurückgezogen – der Link zeigt nichts mehr.'); tick(8);
     return videoSdkLaden().then(function(){
@@ -39989,56 +39999,56 @@ function vfZurueckziehen(f){
     }).catch(function(e){ console.warn('Freigabe-Datei:', e && e.code); });
   }).catch(function(e){ toast('Zurückziehen ging nicht: '+errMsg(e), true); });
 }
-function vfZeigen(){
-  var h=_vf.h, lade=$('vfLade'), wahl=$('vfWahl');
+function vtZeigen(){
+  var h=_vt.h, lade=$('vtLade'), wahl=$('vtWahl');
   wahl.disabled=!!(h && !h.fehler && !h.fertig);
   lade.hidden=!(h && !h.fertig && !h.fehler);
   if(h && !h.fertig && !h.fehler){
-    $('vfFortschritt').value=Math.floor(h.prozent);
-    $('vfLadeText').textContent=Math.floor(h.prozent)+' % · '+videoGroesse(h.geladen)+' von '+videoGroesse(h.gesamt);
+    $('vtFortschritt').value=Math.floor(h.prozent);
+    $('vtLadeText').textContent=Math.floor(h.prozent)+' % · '+videoGroesse(h.geladen)+' von '+videoGroesse(h.gesamt);
   }
-  $('vfHinweis').textContent = h && h.fehler ? h.fehler : 'MP4 am besten, bis 5 GB. Das Fenster muss offen bleiben, bis es fertig ist.';
-  $('vfHinweis').classList.toggle('fehler', !!(h && h.fehler));
+  $('vtHinweis').textContent = h && h.fehler ? h.fehler : 'MP4 am besten, bis 5 GB. Das Fenster muss offen bleiben, bis es fertig ist.';
+  $('vtHinweis').classList.toggle('fehler', !!(h && h.fehler));
 }
-function vfStarten(datei){
+function vtStarten(datei){
   var typ=videoTyp(datei);
-  $('vfFertig').hidden=true;
-  if(!typ){ _vf.h={ fehler:'„'+datei.name+'" ist keine Videodatei. Bitte eine MP4 wählen.' }; return vfZeigen(); }
-  if(datei.size>VIDEO_GRENZE){ _vf.h={ fehler:'Das Video ist '+videoGroesse(datei.size)+' groß, erlaubt sind bis 5 GB.' }; return vfZeigen(); }
-  var titel=String($('vfTitel').value||'').replace(/\s+/g,' ').trim().slice(0,80) ||
+  $('vtFertig').hidden=true;
+  if(!typ){ _vt.h={ fehler:'„'+datei.name+'" ist keine Videodatei. Bitte eine MP4 wählen.' }; return vtZeigen(); }
+  if(datei.size>VIDEO_GRENZE){ _vt.h={ fehler:'Das Video ist '+videoGroesse(datei.size)+' groß, erlaubt sind bis 5 GB.' }; return vtZeigen(); }
+  var titel=String($('vtTitel').value||'').replace(/\s+/g,' ').trim().slice(0,80) ||
     String(datei.name||'Video').replace(/\.[a-z0-9]{2,4}$/i,'').replace(/[_-]+/g,' ').trim().slice(0,80) || 'Video';
-  var id=vfKennung(), firma=vfFirma();
+  var id=vtKennung(), firma=vtFirma();
   var name=String(datei.name||'video').replace(/[^a-zA-Z0-9._-]+/g,'-').slice(-80) || 'video.mp4';
   var pfad='firmen/'+firma+'/freigaben/'+id+'/'+name;
-  var bis=_vf.dauer ? Date.now()+_vf.dauer*86400000 : 0;
+  var bis=_vt.dauer ? Date.now()+_vt.dauer*86400000 : 0;
   var h={ prozent:0, geladen:0, gesamt:datei.size, task:null };
-  _vf.h=h; vfZeigen();
+  _vt.h=h; vtZeigen();
   videoSdkLaden().then(function(){
     var task=firebase.app().storage('gs://'+KONFIG.videoEimer).ref(pfad)
       .put(datei, { contentType:typ, cacheControl:'private, max-age=3600' });
     h.task=task;
     task.on('state_changed', function(snap){
       h.geladen=snap.bytesTransferred; h.gesamt=snap.totalBytes||h.gesamt;
-      h.prozent=h.gesamt ? 100*h.geladen/h.gesamt : 0; vfZeigen();
+      h.prozent=h.gesamt ? 100*h.geladen/h.gesamt : 0; vtZeigen();
     }, function(err){
       var c=(err && err.code)||'';
       h.fehler = c==='storage/canceled' ? 'Abgebrochen. Es wurde nichts geteilt.'
         : c==='storage/unauthorized' ? 'Der Speicher hat das Video abgelehnt. Teilen darf nur die Leitung – und nur Videos bis 5 GB.'
         : 'Das Hochladen hat nicht geklappt'+(c ? ' ('+c+')' : '')+'. Bitte noch einmal versuchen.';
-      vfZeigen();
+      vtZeigen();
     }, function(){
       var doc={ firma:firma, titel:titel, pfad:pfad, bis:bis, aktiv:true, vonUid:session.uid, ts:Date.now(), groesse:h.gesamt };
       db.collection('freigaben').doc(id).set(doc).then(function(){
-        h.fertig=true; vfZeigen();
-        var url=vfLink(id), l=$('vfLink');
+        h.fertig=true; vtZeigen();
+        var url=vtLink(id), l=$('vtLink');
         l.value=url; l.setAttribute('data-titel', titel);
-        $('vfFertig').hidden=false; $('vfTitel').value='';
+        $('vtFertig').hidden=false; $('vtTitel').value='';
         toast('Fertig – der Link ist bereit.'); tick(10);
       }).catch(function(e){
-        h.fehler='Hochgeladen, aber der Link ließ sich nicht anlegen: '+errMsg(e); vfZeigen();
+        h.fehler='Hochgeladen, aber der Link ließ sich nicht anlegen: '+errMsg(e); vtZeigen();
       });
     });
-  }, function(){ h.fehler='Der Speicher ließ sich nicht laden. Ist das Internet da?'; vfZeigen(); });
+  }, function(){ h.fehler='Der Speicher ließ sich nicht laden. Ist das Internet da?'; vtZeigen(); });
 }
 var _videoSdk = null;
 function videoHochladenErlaubt(){
@@ -40698,7 +40708,7 @@ function brettZielAuswahl(){
 }
 
 function stopListeners(){
-  vfAus();
+  vtAus();
   if(_chatUnsub){ _chatUnsub(); _chatUnsub=null; }
   aufbauAngeboteAus();
   _todosUnsubs.forEach(function(u){ u(); }); _todosUnsubs=[];

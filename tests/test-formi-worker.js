@@ -591,7 +591,7 @@ function ki(antworten) {
     let pw = null; try { pw = require('playwright'); } catch (e) { console.log('  (Playwright fehlt — Browser-Teil übersprungen)'); }
     if (pw) {
       await post('/api/vorschlag/import', { eintraege: [1, 2, 3].map(i => ({ thema: 'Knopftest ' + i, inhalt: 'Ein Eintrag für den Knopftest Nummer ' + i })), quelle: 'Schulung „Knopftest“' });
-      const br = await pw.chromium.launch({ executablePath: process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox'] });
+      const br = await pw.chromium.launch({ executablePath: process.env.CHROME || '/opt/pw-browsers/chromium', args: ['--no-sandbox'] });
       try {
         const pg = await br.newPage({ serviceWorkers: 'block', viewport: { width: 1280, height: 800 } });
         let dialog = 0; pg.on('dialog', d => { dialog++; d.dismiss(); });

@@ -33,7 +33,7 @@
 const { chromium } = require('playwright');
 const SP = process.env.SP || __dirname;
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
-const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium';
 const FEST = new Date(2026, 8, 17, 10, 0, 0);   // der feste Tag, siehe unten
 
 /* Attrappe für `zeiten`, die die Filter ernst nimmt — sonst sagt der

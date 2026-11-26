@@ -6,7 +6,7 @@ const SP = process.env.SP || __dirname;
   // --use-fake-device-for-media-capture liefert ein synthetisches Mikrofon,
   // damit die Aufnahme im Test wirklich läuft.
   const b = await chromium.launch({
-    executablePath: process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
+    executablePath: process.env.CHROME || '/opt/pw-browsers/chromium',
     args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-capture', '--alsa-input-device=null', '--no-sandbox'],
   });
   const ctx = await b.newContext({ serviceWorkers: 'block', viewport: { width: 430, height: 950 }, deviceScaleFactor: 2, permissions: ['microphone'] });

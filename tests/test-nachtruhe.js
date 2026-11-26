@@ -18,7 +18,7 @@
    ══════════════════════════════════════════════════════════════════ */
 const fs = require('fs'), path = require('path'), vm = require('vm');
 const { chromium } = require('playwright');
-const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium';
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 const SW = process.env.SW || path.join(__dirname, '..', 'sw.js');
 const SP = __dirname;

@@ -24,7 +24,7 @@
        Kästchen und die drei Knöpfe der Frage – ≥ 44 × 44, im Bild.
    ══════════════════════════════════════════════════════════════════ */
 const { chromium } = require('playwright');
-const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium';
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 const SP = __dirname;
 

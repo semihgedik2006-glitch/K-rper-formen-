@@ -40,7 +40,7 @@ const SP = __dirname;
    Gegenprobe: eine absichtlich kaputte MUSS hier durchfallen. */
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 const CHROME = process.env.CHROME ||
-  '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+  '/opt/pw-browsers/chromium';
 
 const errs = [];
 

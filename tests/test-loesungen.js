@@ -49,7 +49,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const CHROME = process.env.CHROME ||
-  '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+  '/opt/pw-browsers/chromium';
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 
 /* Das Probefoto entsteht hier, statt als Datei im Verzeichnis zu
