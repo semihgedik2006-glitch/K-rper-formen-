@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-4QmZxNyPpOPWXOcYMxLepOTwNlqvaproSsmpkpTlFNA='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-UKVuLbXvlayYdv2/xNqS4pJ9cTVbm6EBwZWUNkU9tQI='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -19163,6 +19163,14 @@ var FEATURES = [
   {id:'schulung',  label:'Schulung',         was:'Webinare mit Fragen und einem Nachweis, wer sie gemacht hat'},
   {id:'probe',     label:'Probetraining',    was:'Durchgeführt und abgeschlossen, mit Quote'},
   {id:'schicht',   label:'Schichtplan',      was:'Wer wann arbeitet', team:true},
+  /* Runde 307, aus dem Betrieb, 26.11.2026: „charlotte hat auf einmal
+     doch keine lust mehr auf den schichtplaner, also können wir das
+     komplett entfernen aber nicht unbedingt löschen wenn das geht".
+     Deshalb ein Schalter, der von sich aus AUS ist (aus:true): die Seite,
+     der Reiter und „Alles → Schichtplaner" sind weg; Code, Vorlage und
+     alle Daten (config/schichtplaner, planerTeam, planerWuensche,
+     planerPlaene) bleiben. Einschalten: Verwaltung → System. */
+  {id:'planer',    label:'Schichtplaner',    was:'Monatsplan aus der Excel-Vorlage – nur Geschäftsführung', aus:true},
   {id:'abwesend',  label:'Abwesenheiten',    was:'Urlaub, Krankheit, frei', team:true},
   {id:'uebergabe', label:'Übergabe',         was:'Was die nächste Schicht wissen muss', team:true},
   {id:'brett',     label:'Schwarzes Brett',  was:'Aushänge und Schichttausch', team:true}
@@ -19170,7 +19178,12 @@ var FEATURES = [
 var _features = {};
 var _featuresUnsub = null;
 
-function featureAn(id){ return _features[id] !== false; }
+function featureAn(id){
+  var f=featureInfo(id);
+  /* Ein Schalter mit aus:true ist nur an, wenn ihn jemand eingeschaltet hat. */
+  if(f && f.aus) return _features[id] === true;
+  return _features[id] !== false;
+}
 function featureInfo(id){
   for(var i=0;i<FEATURES.length;i++){ if(FEATURES[i].id===id) return FEATURES[i]; }
   return null;
@@ -19189,8 +19202,9 @@ function ansichtAn(v){
   /* Das Studio-Gehirn gibt es nur für Körperformen — kein Schalter
      unter „System", sondern eine Frage der Firma. */
   if(v==='gehirn') return gehirnVerfuegbar();
-  /* Schichtplaner: nur der Chef (Frage 17 an die Geschäftsführung offen). */
-  if(v==='planer') return isChef();
+  /* Schichtplaner: nur der Chef (Frage 17 an die Geschäftsführung offen),
+     und seit Runde 307 nur, wenn er unter „System" eingeschaltet ist. */
+  if(v==='planer') return isChef() && featureAn('planer');
   /* Runde 222: die Zeiten des Teams sieht die Leitung — wie vorher der
      Reiter „Zeiten" in der Verwaltung. Korrigieren, Konto und Abschluss
      bleiben dort drin der Geschäftsführung vorbehalten (zkDarf). */
@@ -19209,7 +19223,7 @@ function ansichtAn(v){
 function featuresSetzen(d){
   var neu = {};
   FEATURES.forEach(function(f){
-    if(d && d[f.id] === false) neu[f.id] = false;
+    if(d && (f.aus ? d[f.id] === true : d[f.id] === false)) neu[f.id] = d[f.id];
   });
   var geaendert = JSON.stringify(neu) !== JSON.stringify(_features);
   _features = neu;
@@ -19898,6 +19912,7 @@ function featureSchalten(id, an, lab){
   var f=featureInfo(id); if(!f) return;
   var vorher=featureAn(id);
   function setzen(wert){
+    if(f.aus){ if(wert) _features[id]=true; else delete _features[id]; return; }
     if(wert) delete _features[id]; else _features[id]=false;
   }
   /* Erst umschalten, dann speichern. Wer auf die Bestätigung des Servers
@@ -24004,7 +24019,7 @@ function allesGruppen(){
     });
     v.unshift({ label:'Zeiten des Teams', view:'zeitteam', ikon:'uhr',
              was: isChef() ? 'Wer da ist, Anträge, Konto, Abschluss, DATEV' : 'Wer da ist, Stempel deiner Studios' });
-    v.push({ label:'Schichtplaner', view:'planer', ikon:'kalender',
+    if(ansichtAn('planer')) v.push({ label:'Schichtplaner', view:'planer', ikon:'kalender',
              was:'Monatsplan für alle Studios, Ausfälle ersetzen, tauschen' });
     v.push({ label:'Archiv', view:'archive', ikon:'archive',
              was:'Sicherungen und Erledigtes' });
@@ -47795,7 +47810,7 @@ function zkKontoZeichnen(){
         '<td class="zahl">'+kontoText(z.uebertrag)+'</td>'+
         '<td class="zahl"><b>'+kontoText(z.konto)+'</b></td></tr>';
     }).join('')+'</tbody></table></div>'+
-    (zu ? '' : '<p class="hint zk-regel">Soll aus „Soll je Wochentag" unten, sonst aus den Wochenstunden im Schichtplaner (Verwaltung → Schichtplaner → Team). Ohne beides kein Soll und kein Konto.</p>')+
+    (zu ? '' : '<p class="hint zk-regel">Soll aus „Soll je Wochentag" unten, sonst aus den Wochenstunden im Schichtplaner'+(featureAn('planer') ? ' (Verwaltung → Schichtplaner → Team)' : ', soweit dort schon welche eingetragen sind')+'. Ohne beides kein Soll und kein Konto.</p>')+
     regelnFormHTML()+
     datevFormHTML();
 }
@@ -48683,7 +48698,7 @@ function stKontoZeichnen(){
   var html='';
   if(!z || z.soll===null){
     html+='<p class="st-konto-leer">Für dich ist noch kein Soll hinterlegt. Die Geschäftsführung trägt es ein '+
-      '(Wochenstunden im Schichtplaner oder Soll je Wochentag).</p>'+
+      (featureAn('planer') ? '(Wochenstunden im Schichtplaner oder Soll je Wochentag).' : '(Soll je Wochentag).')+'</p>'+
       (z ? '<p class="hint">'+esc(monatLang)+' bis heute gearbeitet: <b>'+kontoText(z.ist)+' h</b></p>' : '');
   } else {
     var gross = k.vorZu ? z.konto : z.saldo;
