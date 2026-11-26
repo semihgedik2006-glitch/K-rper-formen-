@@ -1511,6 +1511,11 @@ html.demo #terminalSchirm{top:44px}
 @media (max-width:1099px){
   #view-material .scroll-area{display:flex;flex-direction:column}
   #view-material .scroll-area > .mat-seite{order:1}
+  /* Der Freiraum am Ende (::after, Platz für Leiste und Formi-Kugel) hat
+     sonst order 0 und stand damit VOR den umsortierten Karten: „Drucken",
+     „Kopieren" und „Hinterlegen" lagen am Handy für immer unter der Kugel
+     (test-formi-verdeckt, Aufräumen 26.11.2026). */
+  #view-material .scroll-area::after{order:2}
 }
 .todo-progress{display:flex;align-items:center;gap:var(--s12);margin:var(--s2) 0 var(--s12);padding:var(--s10) var(--s12);
   background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius)}
