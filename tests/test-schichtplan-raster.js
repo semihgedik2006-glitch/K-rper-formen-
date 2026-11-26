@@ -79,6 +79,27 @@ const ZUSTAND = () => {
   };
 };
 
+/* Runde 307: der Schichtplaner ist von sich aus aus („… komplett
+   entfernen aber nicht unbedingt löschen", 26.11.2026). Ein Durchlauf,
+   der ihn prüft, schaltet ihn zuerst ein – wie der Chef unter
+   Verwaltung → System. */
+async function planerEinschalten(p) {
+  return p.evaluate(async () => {
+    const w = ms => new Promise(r => setTimeout(r, ms));
+    const g = document.getElementById('bereichKopf');
+    if (g && g.offsetParent && g.getAttribute('aria-expanded') !== 'true') { g.click(); await w(700); }
+    const schon = [...document.querySelectorAll('[data-alles="planer"]')].some(e => e.offsetParent);
+    if (!schon) {
+      const sys = [...document.querySelectorAll('[data-al-cgo="system"]')].find(e => e.offsetParent);
+      if (!sys) return false;
+      sys.click(); await w(1200);
+      const cb = document.querySelector('#featureListe [data-feat="planer"] input');
+      if (!cb) return false;
+      if (!cb.checked) { cb.click(); await w(800); }
+    } else if (g && g.getAttribute('aria-expanded') === 'true') { g.click(); await w(500); }
+    return true;
+  });
+}
 (async () => {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
 
@@ -380,6 +401,7 @@ const ZUSTAND = () => {
     await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); window.confirm = () => true; });
     await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
     await p.waitForTimeout(3200);
+    pruefe('der Schichtplaner lässt sich unter Verwaltung → System einschalten', await planerEinschalten(p));
     const r = await p.evaluate(async () => {
       const w = ms => new Promise(r => setTimeout(r, ms));
       const g = document.getElementById('bereichKopf'); if (g && g.offsetParent) { g.click(); await w(700); }
@@ -430,6 +452,7 @@ const ZUSTAND = () => {
     await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
     await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
     await p.waitForTimeout(3200);
+    await planerEinschalten(p);
     const voll = await p.evaluate(async () => {
       const wt = ms => new Promise(r => setTimeout(r, ms));
       const g = document.getElementById('bereichKopf'); if (g && g.offsetParent) { g.click(); await wt(700); }
@@ -492,6 +515,7 @@ const ZUSTAND = () => {
     await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); window.confirm = () => true; });
     await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
     await p.waitForTimeout(3200);
+    await planerEinschalten(p);
     const r = await p.evaluate(async () => {
       const wt = ms => new Promise(r => setTimeout(r, ms));
       const g = document.getElementById('bereichKopf'); if (g && g.offsetParent) { g.click(); await wt(700); }
@@ -554,6 +578,7 @@ const ZUSTAND = () => {
     await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
     await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
     await p.waitForTimeout(3200);
+    await planerEinschalten(p);
     const r = await p.evaluate(async () => {
       const wt = ms => new Promise(r => setTimeout(r, ms));
       const db = firebase.firestore().collection('firmen').doc('koerperformen');
@@ -590,6 +615,7 @@ const ZUSTAND = () => {
     await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
     await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
     await p.waitForTimeout(3200);
+    await planerEinschalten(p);
     const r = await p.evaluate(async () => {
       const wt = ms => new Promise(r => setTimeout(r, ms));
       const g = document.getElementById('bereichKopf'); if (g && g.offsetParent) { g.click(); await wt(700); }
@@ -653,6 +679,7 @@ const ZUSTAND = () => {
     await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
     await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
     await p.waitForTimeout(3200);
+    await planerEinschalten(p);
     const r = await p.evaluate(async () => {
       const wt = ms => new Promise(r => setTimeout(r, ms));
       const g = document.getElementById('bereichKopf'); if (g && g.offsetParent) { g.click(); await wt(700); }
@@ -712,6 +739,7 @@ const ZUSTAND = () => {
     await p.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
     await p.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
     await p.waitForTimeout(3200);
+    await planerEinschalten(p);
     const r = await p.evaluate(async () => {
       const wt = ms => new Promise(r => setTimeout(r, ms));
       const g = document.getElementById('bereichKopf'); if (g && g.offsetParent) { g.click(); await wt(700); }
