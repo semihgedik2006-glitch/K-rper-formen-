@@ -1998,6 +1998,34 @@ service cloud.firestore {
         && request.resource.data.titel.size() > 0 && request.resource.data.titel.size() <= 80;
       allow delete: if resource.data.firma == freigabeFirma()
         && freigabeLeitung(resource.data.firma);
+
+      /* Wer hat geschaut? Aus dem Betrieb, 26.11.2026: „das man einen
+         Namen und Nachnamen eingeben muss bevor man ein Video sehen kann
+         ohne Account und die Leitung diese Liste dann hat".
+
+         Anlegen darf jeder mit dem Link – aber nur, solange die Freigabe
+         besteht, aktiv ist und nicht abgelaufen; nur Vor- und Nachname
+         (je 1–40 Zeichen) und die Serverzeit. Lesen und löschen nur die
+         Leitung der Firma, der die Freigabe gehört. Ändern niemand.
+         Der Name ist eine Angabe, keine Prüfung: wer den Link hat, kann
+         jeden Namen eintragen. */
+      match /aufrufe/{aid} {
+        function frei() { return get(/databases/$(database)/documents/freigaben/$(fid)).data; }
+        allow create: if aid.matches('[A-Za-z0-9]{20}')
+          && exists(/databases/$(database)/documents/freigaben/$(fid))
+          && frei().aktiv == true
+          && (frei().bis == 0 || frei().bis > request.time.toMillis())
+          && request.resource.data.keys().hasOnly(['vorname', 'nachname', 'ts'])
+          && request.resource.data.keys().hasAll(['vorname', 'nachname', 'ts'])
+          && request.resource.data.vorname is string
+          && request.resource.data.vorname.size() > 0 && request.resource.data.vorname.size() <= 40
+          && request.resource.data.nachname is string
+          && request.resource.data.nachname.size() > 0 && request.resource.data.nachname.size() <= 40
+          && request.resource.data.ts == request.time;
+        allow read: if signedIn() && (isChef() || isLeiter())
+          && frei().firma == freigabeFirma() && inFirma(frei().firma);
+        allow delete: if frei().firma == freigabeFirma() && freigabeLeitung(frei().firma);
+      }
     }
 
     // ── Papierkorb ──

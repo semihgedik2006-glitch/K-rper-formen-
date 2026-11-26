@@ -119,8 +119,37 @@ const zuDokumenten = (p) => p.evaluate(async () => {
     pruefe('„Zurückziehen" fragt erst „Wirklich zurückziehen?" – noch nichts gelöscht', frage === 'Wirklich zurückziehen?' && nochDa, frage);
     await p.evaluate((id) => document.querySelector('[data-vtweg="' + id + '"]').click(), id);
     await p.waitForTimeout(800);
-    const weg = await p.evaluate(async (id) => ({ doc: (await firebase.firestore().collection('freigaben').doc(id).get()).exists, datei: window.__demoGeloescht || [] }), id);
-    pruefe('… dann sind Dokument und Datei weg', !weg.doc && weg.datei.length === 1 && weg.datei[0] === doc.pfad, JSON.stringify(weg));
+    const weg = await p.evaluate(async (id) => { const d = await firebase.firestore().collection('freigaben').doc(id).get();
+      return { doc: d.exists, aktiv: d.exists ? d.data().aktiv : null, datei: window.__demoGeloescht || [] }; }, id);
+    /* Seit 26.11.2026: Zurückziehen löscht das Video, behält aber den
+       Eintrag – mit der Liste, wer geschaut hat. */
+    pruefe('… dann ist die Datei weg, der Eintrag bleibt als „zurückgezogen"', weg.doc && weg.aktiv === false && weg.datei.length === 1 && weg.datei[0] === doc.pfad, JSON.stringify(weg));
+
+    console.log('\n── A 4b Wer hat geschaut? ──');
+    await p.evaluate(async (id) => {
+      const c = firebase.firestore().collection('freigaben').doc(id).collection('aufrufe');
+      await c.doc('Aufruf1aaaaaaaaaaaaa').set({ vorname: 'Erika', nachname: 'Muster', ts: Date.now() - 3600000 });
+      await c.doc('Aufruf2aaaaaaaaaaaaa').set({ vorname: 'Max', nachname: 'Beispiel', ts: Date.now() - 60000 });
+    }, id);
+    await p.waitForTimeout(300);
+    const z2 = await p.evaluate(() => [...document.querySelectorAll('#vtListe .vt-zeile')].map(z => z.textContent.replace(/\s+/g, ' ').trim()));
+    pruefe('die Zeile sagt „zurückgezogen" und bietet „Wer hat geschaut?" und „Entfernen"', z2.length === 1 && /zurückgezogen/.test(z2[0]) && /Wer hat geschaut\?/.test(z2[0]) && /Entfernen/.test(z2[0]) && !/Link kopieren/.test(z2[0]), z2.join(' / '));
+    await p.evaluate((id) => document.querySelector('[data-vtwer="' + id + '"]').click(), id);
+    await p.waitForTimeout(600);
+    const wer = await p.evaluate(() => { const w = document.querySelector('#vtListe .vt-wer');
+      return w ? { t: w.querySelector('.hint').textContent, namen: [...w.querySelectorAll('li b')].map(x => x.textContent), zeit: [...w.querySelectorAll('li i')].map(x => x.textContent) } : null; });
+    pruefe('aufgeklappt: „2 Personen haben das Video geöffnet", der Neueste zuerst', !!wer && /2 Personen/.test(wer.t) && wer.namen.join('|') === 'Max Beispiel|Erika Muster', JSON.stringify(wer));
+    pruefe('… mit Datum und Uhrzeit', !!wer && wer.zeit.every(x => /\d+\.\d+\.\d+, \d\d:\d\d/.test(x)), wer && wer.zeit.join(' | '));
+    await p.evaluate((id) => document.querySelector('[data-vtweg="' + id + '"]').click(), id);
+    await p.waitForTimeout(250);
+    const frage2 = await p.evaluate((id) => document.querySelector('[data-vtweg="' + id + '"]').textContent.trim(), id);
+    pruefe('„Entfernen" fragt erst „Wirklich entfernen?"', frage2 === 'Wirklich entfernen?', frage2);
+    await p.evaluate((id) => document.querySelector('[data-vtweg="' + id + '"]').click(), id);
+    await p.waitForTimeout(800);
+    const ganz = await p.evaluate(async (id) => ({ doc: (await firebase.firestore().collection('freigaben').doc(id).get()).exists,
+      namen: (await firebase.firestore().collection('freigaben').doc(id).collection('aufrufe').get()).size,
+      liste: document.querySelectorAll('#vtListe .vt-zeile').length }), id);
+    pruefe('… dann sind Eintrag und Namensliste weg', !ganz.doc && ganz.namen === 0 && ganz.liste === 0, JSON.stringify(ganz));
 
     console.log('\n── A 5 keine Videodatei ──');
     await p.setInputFiles('#vtDatei', { name: 'liste.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF') });
@@ -179,20 +208,51 @@ const zuDokumenten = (p) => p.evaluate(async () => {
       q._fehler = []; q._hosts = new Set();
       q.on('pageerror', e => q._fehler.push(e.message.slice(0, 160)));
       q.on('request', r => { try { q._hosts.add(new URL(r.url()).host); } catch (e) {} });
-      await q.route('https://firestore.googleapis.com/**', r => { const f = faelle[fall]; r.fulfill({ status: f.status, contentType: 'application/json', body: JSON.stringify(f.body), headers: { 'access-control-allow-origin': '*' } }); });
+      q._commits = []; q._commitStatus = 200;
+      await q.route('https://firestore.googleapis.com/**', r => {
+        const kopf = { 'access-control-allow-origin': '*', 'access-control-allow-headers': 'content-type' };
+        if (r.request().method() === 'OPTIONS') return r.fulfill({ status: 204, headers: kopf });
+        if (r.request().method() === 'POST') { q._commits.push({ url: r.request().url(), body: JSON.parse(r.request().postData() || '{}') });
+          return r.fulfill({ status: q._commitStatus, contentType: 'application/json', body: '{}', headers: kopf }); }
+        const f = faelle[fall]; r.fulfill({ status: f.status, contentType: 'application/json', body: JSON.stringify(f.body), headers: kopf }); });
+      /* Wie firebase.json: ALLES unter /v/ liefert v.html aus – auch eine
+         relativ angefragte /v/konfig.js. Genau daran scheiterte die Seite
+         im Betrieb (26.11.2026), und v.html#… hätte es nie gezeigt. */
+      const vHtml = require('fs').readFileSync(require('path').join(__dirname, '..', 'v.html'), 'utf8');
+      await q.route(BASIS + 'v/**', r => r.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: vHtml }));
       /* Der Speicher antwortet hier nicht (wie ein langsames Netz): echte
          Videobytes gibt es im Test nicht, und unechte lösen zu Recht
          „lässt sich nicht abspielen" aus. Geprüft wird, WOHER die Seite
          das Video holt; den Fehlerfall prüft der nächste Punkt. */
       q._haengt = [];
       await q.route('https://firebasestorage.googleapis.com/**', r => { q._haengt.push(r); });
-      await q.goto(BASIS + 'v.html#' + hash, { waitUntil: 'domcontentloaded' });
+      await q.goto(BASIS + 'v/' + hash, { waitUntil: 'domcontentloaded' });
       await q.waitForTimeout(800);
       q._ctx = ctx;
       return q;
     }
     const ID = 'Ab3dEf6hIj9kLm2nOp5qRs8t';
     let q = await seite('gueltig', ID);
+    const n0 = await q.evaluate(() => ({ hinweis: document.getElementById('vHinweis').hidden ? '' : document.getElementById('vHinweis').textContent,
+      titel: document.getElementById('vTitel').textContent, form: !document.getElementById('vName').hidden,
+      video: document.getElementById('vVideo').getAttribute('src') || '', rahmen: !document.getElementById('vRahmen').hidden }));
+    pruefe('/v/<Kennung>: die Einstellungen kommen an (kein „kein Video-Speicher eingerichtet")', !/Video-Speicher/.test(n0.hinweis) && n0.titel === 'Dein erstes Training', JSON.stringify(n0));
+    pruefe('vor dem Video: „Wer schaut?" mit Vor- und Nachname, noch kein Video geladen', n0.form && !n0.video && !n0.rahmen, JSON.stringify(n0));
+    await q.click('#vNameLos'); await q.waitForTimeout(200);
+    let nf = await q.evaluate(() => ({ f: document.getElementById('vNameFehler').textContent, v: !!document.getElementById('vVideo').getAttribute('src') }));
+    pruefe('leer abgeschickt: „Bitte Vor- und Nachnamen eingeben.", kein Video, nichts gesendet', /Vor- und Nachnamen/.test(nf.f) && !nf.v && !q._commits.length, JSON.stringify(nf));
+    await q.fill('#vVorname', '  Erika ');
+    await q.click('#vNameLos'); await q.waitForTimeout(200);
+    nf = await q.evaluate(() => ({ f: document.getElementById('vNameFehler').textContent, v: !!document.getElementById('vVideo').getAttribute('src') }));
+    pruefe('nur Vorname: „Bitte den Nachnamen eingeben."', /Nachnamen/.test(nf.f) && !nf.v && !q._commits.length, JSON.stringify(nf));
+    await q.fill('#vNachname', 'Muster');
+    await q.click('#vNameLos'); await q.waitForTimeout(700);
+    const c = q._commits[0], w0 = c && c.body.writes && c.body.writes[0];
+    pruefe('abgeschickt: EIN Eintrag unter freigaben/<Kennung>/aufrufe/<20 Zeichen>', q._commits.length === 1 && !!w0 &&
+      /\/documents\/freigaben\/Ab3dEf6hIj9kLm2nOp5qRs8t\/aufrufe\/[A-Za-z0-9]{20}$/.test(w0.update.name) && /documents:commit\?key=/.test(c.url), JSON.stringify(c));
+    pruefe('… nur Vor- und Nachname (getrimmt), Zeit vom Server, nur neu anlegen', !!w0 &&
+      JSON.stringify(w0.update.fields) === JSON.stringify({ vorname: { stringValue: 'Erika' }, nachname: { stringValue: 'Muster' } }) &&
+      w0.updateTransforms[0].fieldPath === 'ts' && w0.updateTransforms[0].setToServerValue === 'REQUEST_TIME' && w0.currentDocument.exists === false, JSON.stringify(w0));
     const g = await q.evaluate(() => ({ titel: document.getElementById('vTitel').textContent, video: document.getElementById('vVideo').getAttribute('src') || '',
       sicht: !document.getElementById('vRahmen').hidden, fuss: document.getElementById('vFuss').textContent }));
     pruefe('gültig: Titel „Dein erstes Training" und das Video', g.titel === 'Dein erstes Training' && g.sicht, JSON.stringify(g));
@@ -201,10 +261,33 @@ const zuDokumenten = (p) => p.evaluate(async () => {
     const fremd = [...q._hosts].filter(x => !/^127\.0\.0\.1(:\d+)?$/.test(x) && x !== 'firestore.googleapis.com' && x !== 'firebasestorage.googleapis.com');
     pruefe('… keine anderen Hosts als die zwei erlaubten', !fremd.length, fremd.join(', '));
     pruefe('… ohne Skriptfehler', !q._fehler.length, q._fehler.join(' | '));
+    {
+      /* Dasselbe Gerät öffnet den Link noch einmal: kein zweites Mal fragen. */
+      const q2 = await q._ctx.newPage();
+      await q2.route('https://firestore.googleapis.com/**', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(faelle.gueltig.body), headers: { 'access-control-allow-origin': '*' } }));
+      await q2.route('https://firebasestorage.googleapis.com/**', () => {});
+      const vHtml = require('fs').readFileSync(require('path').join(__dirname, '..', 'v.html'), 'utf8');
+      await q2.route(BASIS + 'v/**', r => r.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: vHtml }));
+      await q2.goto(BASIS + 'v/' + ID, { waitUntil: 'domcontentloaded' }); await q2.waitForTimeout(800);
+      const w2 = await q2.evaluate(() => ({ form: !document.getElementById('vName').hidden, video: !!document.getElementById('vVideo').getAttribute('src') }));
+      pruefe('zweites Öffnen auf demselben Gerät: gleich das Video, ohne erneute Frage', !w2.form && w2.video, JSON.stringify(w2));
+    }
     await q._ctx.close();
+    {
+      /* Zwischen Öffnen und Abschicken zurückgezogen: die Regel lehnt ab. */
+      const x = await seite('gueltig', ID);
+      x._commitStatus = 403;
+      await x.fill('#vVorname', 'Erika'); await x.fill('#vNachname', 'Muster');
+      await x.click('#vNameLos'); await x.waitForTimeout(700);
+      const e = await x.evaluate(() => ({ t: document.getElementById('vHinweis').textContent, form: !document.getElementById('vName').hidden, v: !!document.getElementById('vVideo').getAttribute('src') }));
+      pruefe('Name abgelehnt (eben zurückgezogen/abgelaufen): „… nicht mehr freigegeben", kein Formular, kein Video', /nicht mehr freigegeben/.test(e.t) && !e.form && !e.v, JSON.stringify(e));
+      await x._ctx.close();
+    }
     const satz = async (fall, hash) => { const x = await seite(fall, hash); const r = await x.evaluate(() => ({ t: document.getElementById('vHinweis').textContent, v: !document.getElementById('vRahmen').hidden })); await x._ctx.close(); return r; };
     {
       const x = await seite('gueltig', ID);
+      await x.fill('#vVorname', 'Erika'); await x.fill('#vNachname', 'Muster');
+      await x.click('#vNameLos'); await x.waitForTimeout(500);
       for (const h of x._haengt) await h.fulfill({ status: 403, contentType: 'application/json', body: '{"error":{"code":403}}' }).catch(() => {});
       await x.evaluate(() => { const v = document.getElementById('vVideo'); v.src = v.src; v.load(); });
       await x.waitForTimeout(800);
@@ -222,10 +305,15 @@ const zuDokumenten = (p) => p.evaluate(async () => {
     pruefe('abgelaufen: „Dieser Link ist abgelaufen."', /abgelaufen/.test(r.t) && !r.v, r.t);
     r = await satz('gueltig', 'kurz');
     pruefe('Link kaputt: „Dieser Link ist unvollständig."', /unvollständig/.test(r.t) && !r.v, r.t);
-    for (const [w, h] of [[320, 640], [1920, 1080]]) {
+    for (const [w, h] of [[320, 640], [390, 844], [430, 932], [820, 1180], [1280, 800], [1440, 900], [1920, 1080]]) {
       q = await seite('gueltig', ID, w, h);
-      const quer = await q.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
-      pruefe(w + ' px: nichts ragt hinaus', !quer);
+      const m = await q.evaluate((T) => { const f = new Function('return ' + T)();
+        return { quer: document.documentElement.scrollWidth > innerWidth + 1,
+          r: ['vVorname', 'vNachname', 'vNameLos'].map(id => { const e = document.getElementById(id); const r = e.getBoundingClientRect();
+            return { id, m: f(e), imBild: r.left >= 0 && r.right <= innerWidth }; }) }; }, TREFFER.toString());
+      const klein = m.r.filter(x => !(x.m.w >= 44 && x.m.h >= 44 && x.imBild));
+      pruefe(w + ' px: Namensfelder und „Video ansehen" ≥ 44 × 44, im Bild, nichts ragt hinaus', !klein.length && !m.quer,
+        JSON.stringify({ klein: klein.map(x => x.id + ' ' + x.m.w + '×' + x.m.h), quer: m.quer }));
       await q._ctx.close();
     }
   } finally { await b.close(); }

@@ -26193,3 +26193,61 @@ Ursache verfolgt. Die Frage war jedes Mal: irrt die App oder der Test?
 
 Die echte Anmeldung und echtes Firebase (Proxy-Zertifikat) — das
 Vorfall-Fenster ist in der Demo geprüft, nicht mit echtem Versand.
+
+## Runde 310 — Geteilte Videos: Name vor dem Video, Liste für die Leitung (26.11.2026)
+
+Aus dem Betrieb, 26.11.2026, mit Bildschirmfoto eines geteilten Links
+(„Videos lassen sich hier nicht abspielen. Für diese Adresse ist kein
+Video-Speicher eingerichtet."): „Und ich würd noch wollen das man einen
+Namen und Nachnamen eingeben muss bevor man ein Video sehen kann ohne
+Account und die Leitung diese Liste dann hat am Ende".
+
+### Zuerst der Fehler auf dem Bildschirmfoto
+
+`v.html` lud `konfig.js` **relativ**. Unter `/v/<Kennung>` wurde daraus
+`/v/konfig.js` — und die Umleitung `/v/** → /v.html` lieferte dafür
+wieder die Seite selbst aus. `KONFIG` blieb leer, die Seite meldete
+„kein Video-Speicher". Mein Test aus Runde 308 öffnete `v.html#<Kennung>`
+und konnte das nie sehen. Jetzt `/konfig.js`; der Test öffnet
+`/v/<Kennung>` und bildet die Umleitung nach (alles unter `/v/` ist
+v.html). Gegenprobe: mit dem alten v.html steht genau der Satz vom
+Bildschirmfoto da.
+
+### Name vor dem Video
+
+- `v.html` zeigt nach dem Laden der Freigabe „Wer schaut?" mit Vor- und
+  Nachname (beide Pflicht, je bis 40 Zeichen, getrimmt). Erst danach wird
+  die Videoadresse gesetzt. Auf demselben Gerät wird nicht erneut gefragt
+  (`localStorage`, je Link).
+- Geschrieben wird `freigaben/<Kennung>/aufrufe/<20 Zeichen>` über die
+  öffentliche Schnittstelle (`documents:commit`), mit `ts` als
+  **Serverzeit** (`REQUEST_TIME`) und `currentDocument.exists:false`.
+- Regel: anlegen ohne Anmeldung nur, solange die Freigabe besteht, aktiv
+  ist und nicht abgelaufen; nur `vorname`, `nachname`, `ts ==
+  request.time`. Lesen und löschen nur die Leitung der Firma, der die
+  Freigabe gehört; ändern niemand. 20 neue Prüfungen in
+  `tests/rules/freigaben.test.js` (66 gesamt).
+- In der App: „Wer hat geschaut?" je Video klappt die Liste auf (Neueste
+  oben, Datum und Uhrzeit).
+- **Zurückziehen behält jetzt den Eintrag** (`aktiv:false`, Datei
+  gelöscht) — sonst wäre die Liste mit dem Zurückziehen verschwunden,
+  gewünscht war aber, dass die Leitung sie „am Ende" hat. „Entfernen"
+  löscht Eintrag, Namen und (bei abgelaufenen Links) die Datei.
+- Demo: Abfrage-Ergebnisse tragen jetzt `doc.ref` — ohne ließ sich in der
+  Vorführung nichts löschen, was erst abgefragt wurde.
+
+### Was der Name ist — und was nicht
+
+Der Name ist eine **Angabe, keine Prüfung**. Wer den Link hat, kann
+jeden Namen eintragen, und wer den Seitenquelltext liest, findet den
+Speicherpfad und kann das Formular umgehen. Eine echte Sperre bräuchte
+eine Anmeldung — genau die sollte es nicht geben. Die Grenze bleibt der
+Link selbst (24 Zufallszeichen) und das Zurückziehen.
+
+### Gemessen
+
+`test-video-teilen` 56 Zusicherungen (vorher 38), darunter Formular,
+Leer-/Halbeingaben, Inhalt des Schreibens, Wiederbesuch, Ablehnung beim
+Abschicken, Trefferflächen von Feldern und Knopf bei allen sieben
+Breiten. Nicht testbar hier: echtes Schreiben gegen Firebase und echtes
+Abspielen (Proxy-Zertifikat); die Regeln sind im Emulator geprüft.

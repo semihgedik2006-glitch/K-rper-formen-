@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-T2wAx0HE1TFXnIsE4B0ew0HJuuHhhmMPLJro508Q+X0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-HpTgZSYMWCQix6T1A7iHHM2hobkI0BVaK5bQHVSs97Q='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -10219,6 +10219,10 @@ body.ab-zieht, body.ab-zieht *{cursor:grabbing}
 .vt-zeile .vt-name{flex:1 1 160px;min-width:0}
 .vt-zeile .vt-name b{display:block;font-size:var(--t-sm);overflow-wrap:anywhere}
 .vt-zeile .vt-name i{display:block;font-style:normal;font-size:var(--t-xs);color:var(--text-2)}
+.vt-wer{padding:0 0 var(--s10) var(--s12);border-left:2px solid var(--line-2);margin-bottom:var(--s8)}
+.vt-wer ol{margin:var(--s4) 0 0;padding-left:var(--s20);font-size:var(--t-sm)}
+.vt-wer li{padding:var(--s2) 0}
+.vt-wer li i{font-style:normal;color:var(--text-2);font-size:var(--t-xs);margin-left:var(--s8)}
 /* Runde 304: Rückmeldung unter dem eigenen Angebot, Hinweis bei Sperre. */
 .ab-antw{display:flex;align-items:center;gap:var(--s8);flex-wrap:wrap;margin:calc(-1 * var(--s4)) 0 var(--s8);font-size:var(--t-xs);color:var(--text-2)}
 .ab-antw .btn{min-height:44px}
@@ -24184,6 +24188,12 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-11-26-video-namen', datum:'26.11.2026', art:'neu', titel:'Geteilte Videos: wer geschaut hat', wo:'docs', punkte:[
+    'Wer einen Video-Link öffnet, gibt vor dem Abspielen Vor- und Nachnamen ein.',
+    'Dokumente → „Geteilte Videos" → „Wer hat geschaut?": alle Namen mit Datum und Uhrzeit, der Neueste oben.',
+    '„Zurückziehen" löscht das Video, die Liste bleibt. „Entfernen" nimmt beides weg.',
+    'Behoben: Geteilte Links zeigten „kein Video-Speicher eingerichtet" statt des Videos.'
+  ]},
   { id:'2026-11-26-aufraeumen', datum:'26.11.2026', art:'fix', titel:'Kleine Fehler behoben', wo:'material', punkte:[
     '„Problem melden": „Schließen" schließt das Fenster wieder.',
     'Material am Handy: „Drucken", „Kopieren" und „Hinterlegen" liegen nicht mehr unter Formi.',
@@ -39934,7 +39944,7 @@ var VIDEO_GRENZE = 5 * 1024 * 1024 * 1024;   // = storage-videos.rules
    prüft bei jedem Abruf, ob die Freigabe noch gilt.
    Zurückziehen: erst das Dokument (dann ist der Link sofort tot), dann
    die Datei. */
-var _vt={ dauer:30, h:null, liste:[], ab:null, weg:null, gebunden:false };
+var _vt={ dauer:30, h:null, liste:[], ab:null, weg:null, gebunden:false, offen:null, namen:{} };
 function vtDarf(){ return !!KONFIG.videoEimer && (isChef() || isLeiter()); }
 function vtFirma(){ return _firma || KONFIG.firma || 'koerperformen'; }
 function vtKennung(){
@@ -39968,11 +39978,18 @@ function vtBinden(){
   $('vtTeilen').addEventListener('click', function(){ vtTeilen($('vtLink').value, $('vtLink').getAttribute('data-titel')||'Video'); });
   $('vtListe').addEventListener('click', function(e){
     var b=e.target.closest('button'); if(!b) return;
-    var id=b.getAttribute('data-vtkopie') || b.getAttribute('data-vtweg'); if(!id) return;
+    var id=b.getAttribute('data-vtkopie') || b.getAttribute('data-vtweg') || b.getAttribute('data-vtwer'); if(!id) return;
     var f=_vt.liste.filter(function(x){ return x.id===id; })[0]; if(!f) return;
     if(b.hasAttribute('data-vtkopie')) return vtKopieren(vtLink(id));
+    if(b.hasAttribute('data-vtwer')){
+      _vt.offen = _vt.offen===id ? null : id;
+      if(_vt.offen) vtNamenLaden(id);
+      return vtListeZeichnen();
+    }
     if(_vt.weg!==id){ _vt.weg=id; vtListeZeichnen(); return; }
-    _vt.weg=null; vtZurueckziehen(f);
+    _vt.weg=null;
+    var gilt=f.aktiv===true && (!f.bis || f.bis>=Date.now());
+    if(gilt) vtZurueckziehen(f); else vtEntfernen(f);
   });
 }
 function vtKopieren(url){
@@ -40016,17 +40033,61 @@ function vtListeZeichnen(){
     return '<div class="vt-zeile"><span class="vt-name"><b>'+esc(f.titel||'Video')+'</b><i>'+esc(vtStatus(f))+
         (f.groesse ? ' · '+esc(videoGroesse(f.groesse)) : '')+'</i></span>'+
       (gilt ? '<button type="button" class="btn btn-ghost btn-sm" data-vtkopie="'+esc(f.id)+'">Link kopieren</button>' : '')+
+      '<button type="button" class="btn btn-ghost btn-sm" data-vtwer="'+esc(f.id)+'" aria-expanded="'+(_vt.offen===f.id)+'">'+
+        (_vt.offen===f.id ? 'Liste zu' : 'Wer hat geschaut?')+'</button>'+
       '<button type="button" class="btn btn-ghost btn-sm" data-vtweg="'+esc(f.id)+'">'+
-        (_vt.weg===f.id ? 'Wirklich zurückziehen?' : (gilt ? 'Zurückziehen' : 'Entfernen'))+'</button></div>';
+        (_vt.weg===f.id ? (gilt ? 'Wirklich zurückziehen?' : 'Wirklich entfernen?') : (gilt ? 'Zurückziehen' : 'Entfernen'))+'</button></div>'+
+      (_vt.offen===f.id ? vtNamenHTML(f.id) : '');
   }).join('');
 }
+/* Wer hat geschaut? (26.11.2026) Aus dem Betrieb: „das man einen Namen
+   und Nachnamen eingeben muss bevor man ein Video sehen kann ohne Account
+   und die Leitung diese Liste dann hat". Die Seite v.html fragt den
+   Namen, bevor das Video startet, und legt ihn unter
+   freigaben/<id>/aufrufe ab; lesen darf das nur die Leitung. */
+function vtNamenLaden(id){
+  _vt.namen[id]='laedt';
+  db.collection('freigaben').doc(id).collection('aufrufe').orderBy('ts','desc').get().then(function(snap){
+    var l=[]; snap.forEach(function(d){ var x=d.data()||{}; l.push(x); });
+    _vt.namen[id]=l; vtListeZeichnen();
+  }).catch(function(e){ console.warn('Aufrufe:', e && e.code); _vt.namen[id]='fehler'; vtListeZeichnen(); });
+}
+function vtZeit(ts){
+  var ms = ts && typeof ts.toMillis==='function' ? ts.toMillis() : (typeof ts==='number' ? ts : 0);
+  if(!ms) return '';
+  try{ return new Date(ms).toLocaleString('de-DE', { day:'numeric', month:'numeric', year:'2-digit', hour:'2-digit', minute:'2-digit' }); }catch(e){ return ''; }
+}
+function vtNamenHTML(id){
+  var l=_vt.namen[id];
+  if(l==='laedt' || l===undefined) return '<div class="vt-wer"><p class="hint">Liste wird geladen …</p></div>';
+  if(l==='fehler') return '<div class="vt-wer"><p class="hint">Die Liste ließ sich gerade nicht laden.</p></div>';
+  if(!l.length) return '<div class="vt-wer"><p class="hint">Noch niemand. Wer den Link öffnet, gibt vorher Vor- und Nachnamen ein.</p></div>';
+  return '<div class="vt-wer"><p class="hint">'+(l.length===1 ? '1 Person hat' : l.length+' Personen haben')+' das Video geöffnet:</p><ol>'+
+    l.map(function(x){ return '<li><b>'+esc((x.vorname||'')+' '+(x.nachname||''))+'</b><i>'+esc(vtZeit(x.ts))+'</i></li>'; }).join('')+'</ol></div>';
+}
+/* Zurückziehen löscht das Video, behält aber den Eintrag – mit der Liste,
+   wer geschaut hat. Erst „Entfernen" nimmt beides weg. */
 function vtZurueckziehen(f){
-  db.collection('freigaben').doc(f.id).delete().then(function(){
-    toast('„'+(f.titel||'Video')+'" ist zurückgezogen – der Link zeigt nichts mehr.'); tick(8);
+  db.collection('freigaben').doc(f.id).update({ aktiv:false }).then(function(){
+    toast('„'+(f.titel||'Video')+'" ist zurückgezogen – der Link zeigt nichts mehr. Die Liste, wer geschaut hat, bleibt.'); tick(8);
     return videoSdkLaden().then(function(){
       return firebase.app().storage('gs://'+KONFIG.videoEimer).ref(f.pfad).delete();
     }).catch(function(e){ console.warn('Freigabe-Datei:', e && e.code); });
   }).catch(function(e){ toast('Zurückziehen ging nicht: '+errMsg(e), true); });
+}
+function vtEntfernen(f){
+  var ref=db.collection('freigaben').doc(f.id);
+  ref.collection('aufrufe').get().then(function(snap){
+    var b=db.batch(); snap.forEach(function(d){ b.delete(d.ref); }); b.delete(ref);
+    return b.commit();
+  }).then(function(){
+    toast('„'+(f.titel||'Video')+'" ist entfernt, samt Liste.'); tick(8);
+    if(_vt.offen===f.id) _vt.offen=null; delete _vt.namen[f.id];
+    /* Bei einem abgelaufenen Link liegt die Datei noch im Speicher. */
+    return videoSdkLaden().then(function(){
+      return firebase.app().storage('gs://'+KONFIG.videoEimer).ref(f.pfad).delete();
+    }).catch(function(){});
+  }).catch(function(e){ toast('Entfernen ging nicht: '+errMsg(e), true); });
 }
 function vtZeigen(){
   var h=_vt.h, lade=$('vtLade'), wahl=$('vtWahl');
