@@ -25980,3 +25980,47 @@ der Anleitung der Vorlage.
 
 **Nicht prüfbar hier:** das echte Schreiben in Firestore und eine echte
 Datei der Chefin — die gibt es noch nicht.
+
+## Runde 307 — Schichtplaner ausgeblendet, nicht gelöscht (26.11.2026)
+
+Aus dem Betrieb, 26.11.2026: „charlotte hat auf einmal doch keine lust
+mehr auf den schichtplaner, also können wir das komplett entfernen aber
+nicht unbedingt löschen wenn das geht".
+
+**Entschieden:** Der Schichtplaner ist ein Schalter unter Verwaltung →
+System, der **von sich aus aus** ist (`aus:true` in `FEATURES`).
+- Löschen hätte Vorlage, Regeln, die Rechnung (`schichtplaner.js`) und
+  die Pläne vernichtet. Ein Schalter lässt alles stehen. Wer ihn
+  wieder will, schaltet ihn ein, ohne neue Auslieferung.
+- Weg sind die Seite, der Reiter in der Verwaltung, „Alles →
+  Schichtplaner“ und der Baustein in „App gestalten“. Alles davon läuft
+  über `ansichtAn('planer')`.
+- Die alten Neuigkeiten über den Schichtplaner zeigen kein „Zeigen ›“
+  mehr, denn ein Link ins Leere wäre schlimmer als keiner.
+
+**Bewusst nicht angefasst**
+- Der **Schichtplan** (wer wann arbeitet) bleibt. Gefragt war nur der
+  Planer.
+- Was der Planer schon hinterlegt hat, wirkt weiter: die Wochenstunden
+  (Soll im Zeitkonto) und die Schichtzeiten als Vorlagen im Schichtplan.
+  Die Hinweise im Zeitkonto nennen den Weg „Verwaltung → Schichtplaner →
+  Team“ nur noch, wenn der Planer an ist.
+- Daten: `config/schichtplaner`, `planerTeam`, `planerWuensche` und
+  `planerPlaene` bleiben, die Regeln bleiben.
+- Die Demo folgt der App: auch dort ist er aus.
+
+**Technik**
+- `featureAn()` kennt Schalter mit `aus:true`: an nur bei
+  ausdrücklichem `true` in `config/features`.
+- `featuresSetzen` und `featureSchalten` speichern entsprechend `true`.
+  Alle anderen Schalter bleiben wie bisher: an, solange nicht `false`.
+
+**Tests**
+- `test-neuigkeiten` prüft die Ziele mit eingeschaltetem Planer, wie der
+  Chef ihn einschalten kann. Neu ist Punkt 8: Ist er aus, haben seine
+  alten Einträge kein „Zeigen ›“, alle anderen schon.
+- `test-raeume` und `test-verwaltung-gruppen` prüfen den Aufbau mit
+  allen Bereichen, also mit eingeschaltetem Planer
+  (`window.__features`).
+- `test-schichtplaner` schaltet ihn über Verwaltung → System ein, wie
+  ein Mensch.

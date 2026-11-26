@@ -25,6 +25,14 @@
        jede Zeile und jedes „Zeigen ›" trifft ≥ 44 × 44 (Hit-Test) bei
        320 / 390 / 430 / 820 / 1280 / 1440 / 1920 px, normal und kompakt,
        und das Fenster schiebt nicht quer.
+
+   Runde 307, aus dem Betrieb (26.11.2026): „charlotte hat auf einmal doch
+   keine lust mehr auf den schichtplaner, also können wir das komplett
+   entfernen aber nicht unbedingt löschen". Der Schichtplaner ist seitdem
+   ein Schalter, der von sich aus aus ist. Punkt 4 läuft deshalb mit
+   eingeschaltetem Schichtplaner (wie der Chef ihn einschalten kann);
+    8. ist er aus, zeigen seine alten Einträge KEIN „Zeigen ›" (kein toter
+       Link), alle anderen weiter.
    ══════════════════════════════════════════════════════════════════ */
 const fs = require('fs'), path = require('path');
 const { chromium } = require('playwright');
@@ -68,6 +76,7 @@ function pruefe(was, bedingung, hinweis) {
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
   const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
   await p.route('**://www.gstatic.com/**', r => r.abort());
+  await p.addInitScript(() => { window.__features = { planer: true }; });
   await p.addInitScript({ path: path.join(__dirname, 'stub-chef.js') });
   await p.goto(APP + '?neu=1', { waitUntil: 'domcontentloaded' });
   await p.waitForFunction(() => !!document.querySelector('#app.show'), null, { timeout: 15000 });
@@ -155,6 +164,29 @@ function pruefe(was, bedingung, hinweis) {
 
   await b.close();
   pruefe('jedes „Zeigen ›" führt beim Chef zu einem Ziel', !tot.length, tot.join(', '));
+  /* 8. Schichtplaner aus (so wie ausgeliefert): kein toter Link. */
+  {
+    const b2 = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
+    const q = await b2.newPage({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
+    await q.route('**://www.gstatic.com/**', r => r.abort());
+    await q.addInitScript({ path: path.join(__dirname, 'stub-chef.js') });
+    await q.goto(APP + '?neu=1', { waitUntil: 'domcontentloaded' });
+    await q.waitForFunction(() => !!document.querySelector('#app.show'), null, { timeout: 15000 });
+    const da2 = await q.evaluate(async () => {
+      await new Promise(r => setTimeout(r, 800));
+      const lade = document.getElementById('bereichKopf'); if (lade) lade.click();
+      await new Promise(r => setTimeout(r, 400));
+      const k = [...document.querySelectorAll('[data-al-neu]')].find(x => x.getClientRects().length);
+      if (!k) return null;
+      k.click(); await new Promise(r => setTimeout(r, 300));
+      return [...document.querySelectorAll('#neuListe .neu-eintrag')].map(x => !!x.querySelector('.ne-zeigen'));
+    });
+    const planerMitLink = da2 ? N.filter((n, k) => n.wo === 'planer' && da2[k]).map(n => n.id) : ['—'];
+    const andereOhne = da2 ? N.filter((n, k) => n.wo && n.wo !== 'planer' && !da2[k]).map(n => n.id + ' → ' + n.wo) : ['—'];
+    pruefe('Schichtplaner aus: seine ' + N.filter(n => n.wo === 'planer').length + ' Einträge ohne „Zeigen ›", alle anderen mit',
+      !!da2 && !planerMitLink.length && !andereOhne.length, planerMitLink.concat(andereOhne).join(', '));
+    await b2.close();
+  }
   if (k >= 0) pruefe('„Zeigen ›" beim Profil öffnet das Profil', profil === true, String(profil));
 
   console.log(schlecht

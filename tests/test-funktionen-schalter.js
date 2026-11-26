@@ -294,6 +294,7 @@ async function zumTeam(page) {
       return {
         da: !!box,
         zahl: box ? box.querySelectorAll('[data-feat]').length : 0,
+        planer: (function () { const l = box && box.querySelector('[data-feat="planer"] input'); return l ? l.checked : null; })(),
         text: box ? box.textContent.slice(0, 80) : ''
       };
     });
@@ -305,7 +306,11 @@ async function zumTeam(page) {
        der auffällt, wenn ein Schalter STILL dazukommt — und ein
        Schalter, den der Chef nicht erwartet, schaltet im Zweifel etwas
        ab, das jemand braucht. */
-    if (liste.zahl !== 15) errs.push('FALSCH: es stehen ' + liste.zahl + ' Schalter da, erwartet waren 15');
+    /* 16 seit dem 26.11.2026 (Runde 307): der Schichtplaner, aus dem
+       Betrieb: „komplett entfernen aber nicht unbedingt löschen". Er ist
+       der einzige Schalter, der von sich aus AUS steht. */
+    if (liste.zahl !== 16) errs.push('FALSCH: es stehen ' + liste.zahl + ' Schalter da, erwartet waren 16');
+    if (liste.planer !== false) errs.push('FALSCH: der Schalter „Schichtplaner" steht nicht von sich aus auf aus (' + liste.planer + ')');
     await b.close();
   }
 
