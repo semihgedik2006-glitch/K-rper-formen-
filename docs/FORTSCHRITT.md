@@ -26024,3 +26024,91 @@ System, der **von sich aus aus** ist (`aus:true` in `FEATURES`).
   (`window.__features`).
 - `test-schichtplaner` schaltet ihn über Verwaltung → System ein, wie
   ein Mensch.
+
+## Runde 308 — Videos per Link teilen, ohne Konto (26.11.2026)
+
+Aus dem Betrieb, 26.11.2026 (Marcel): „das man videos hochladen kann in
+der app und dann einen link schicken oder teilen kann mit dem sich JEDER
+das video angucken kann auch ohne account oder registrierung oder
+irgendwas aber nur mit dem link halt".
+
+Auf Nachfrage entschieden:
+- teilen darf **nur die Leitung**;
+- der Link gilt **wählbar 7 Tage, 30 Tage (vorgewählt) oder bis
+  zurückgezogen**;
+- Videos bis **5 GB**, wie die Schulungsvideos. Hinweis an den Betrieb:
+  Jedes Abspielen über den Link kostet Datenvolumen, bei großen, viel
+  geteilten Videos spürbar.
+
+**Wo:** Unter **Dokumente → „Video teilen“** und bewusst kein eigener
+Menüpunkt. Die App soll übersichtlicher werden, nicht voller.
+
+**Wie es funktioniert**
+1. Die Datei geht in den Video-Eimer unter
+   `firmen/<f>/freigaben/<Kennung>/<Datei>`. Die Kennung hat 24
+   Zeichen aus `crypto.getRandomValues` (62 Zeichen je Stelle) und ist
+   nicht zu erraten.
+2. **Erst danach** entsteht das Dokument `freigaben/<Kennung>` (firma,
+   titel, pfad, bis, aktiv, vonUid, ts, groesse). Ein abgebrochenes
+   Hochladen hinterlässt so keinen Link ins Leere.
+3. Der Link ist `formenchat.web.app/v/<Kennung>`. Dafür gibt es eine
+   Weiterleitung in `firebase.json` und die Seite `v.html`. Ihr Skript steht im HTML selbst und nicht in einer eigenen `.js`: Die Auslieferung startet bei `*.html`, eine einzelne `.js` nur, wenn sie im Ablauf eingetragen ist (test-ausliefern hat das gefunden).
+   - Die Seite kennt weder Anmeldung noch Firebase-SDK. Sie liest genau
+     dieses eine Dokument über die öffentliche Firestore-Schnittstelle.
+   - Sie spielt das Video **ohne Download-Schlüssel** ab (`…/o/<Pfad>?alt=media`).
+4. **storage-videos.rules** prüft bei jedem Abruf, ob die Freigabe
+   besteht, zur Firma gehört, aktiv ist, nicht abgelaufen ist und genau
+   auf diese Datei zeigt.
+
+**Warum ohne Download-Schlüssel:** Eine Download-Adresse mit Schlüssel
+(`getDownloadURL`) umgeht die Regeln. Wer sie einmal hat, könnte das
+Video auch nach dem Zurückziehen noch abrufen. So aber wirkt
+„Zurückziehen“ sofort, auch bei einem aufgehobenen Link.
+
+**Zurückziehen** löscht zuerst das Dokument (der Link ist damit sofort
+tot) und dann die Datei.
+
+**Regeln**
+- `freigaben/{id}` steht **absichtlich nur einmal**, auf der Wurzel. Die
+  Seite ohne Anmeldung kennt keine Firma, nur die Kennung.
+- **Öffentlich ist nur „get“.** „list“ bekommt nur die Leitung der
+  eigenen Firma, mit Filter auf `firma`.
+- **Anlegen:** nur die Leitung, nur für die eigene Firma, Kennung 20–40
+  Zeichen, Pfad genau unter dieser Kennung, nur die erlaubten Felder,
+  eigene uid, `aktiv:true`. **Kein Name im Dokument**, weil es
+  öffentlich lesbar ist.
+- **Ändern:** nur Titel, Gültigkeit und an/aus. **Löschen:** nur die
+  Leitung der Firma.
+- Im Video-Eimer:
+  - Hochladen dürfen nur die Leitung, nur Videos bis 5 GiB.
+  - Ohne Anmeldung abrufbar nur, solange die Freigabe gilt.
+  - Die Leitung sieht ihre Videos immer.
+  - Niemand listet die Freigaben.
+
+**Sicherheitsregel (CSP) für v.html**
+- `tools/csp.js` kennt jetzt `v.html`. Erlaubt sind nur
+  `connect-src https://firestore.googleapis.com` und
+  `media-src https://firebasestorage.googleapis.com`.
+- Dabei gefunden: Das Werkzeug erwartet das Meta-Element mit „ />“. Mit
+  „>“ meldete es bei jedem Lauf „neu gesetzt“ und setzte nichts.
+
+**Tests**
+- `rules/freigaben.test.js`: 46 Zusicherungen, gegen den Firestore- und
+  den Speicher-Emulator.
+  - Unter anderem: Wer eben noch abrufen durfte, bekommt nach dem
+    Zurückziehen nichts mehr.
+  - Die ganze Regelsuite ist grün.
+- `test-video-teilen`: 38 Zusicherungen.
+  - Abläufe in der Demo: hochladen, Link, Datenbankfelder, Zurückziehen
+    mit Datei, falsche Datei, Mitarbeiter sehen nichts.
+  - Hit-Test bei 320 bis 1920 px, jeweils normal und kompakt.
+  - Die Seite `v.html` mit allen Fällen: gültig, nicht da, zurückgezogen,
+    abgelaufen, Link kaputt, Speicher verweigert. Nur die zwei erlaubten
+    Hosts.
+
+**Nicht prüfbar hier**
+- Das echte Abspielen über Firebase, den echten Eimer und die
+  Weiterleitung `/v/…`. Die Regeln laufen im Emulator, die Seite mit
+  nachgestellten Antworten.
+- Ob das Hosting `/v/<Kennung>` wirklich auf `v.html` lenkt, zeigt
+  erst die Auslieferung. Geprüft wird es dann live.
