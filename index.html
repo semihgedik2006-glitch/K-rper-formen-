@@ -11,7 +11,7 @@
 <!-- Zweite Reihe hinter der Maskierung: selbst wenn irgendwo ein esc()
      fehlt, führt der Browser nichts aus, was nicht hier steht.
      Erzeugt und geprüft von tools/csp.js, siehe tests/test-csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-Tnh1cs48sjFYU1n8JrvUXmPzfTnNcKvHTgHvkwCdods='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com 'sha256-xGynjGfEeWO0QZUgTm2vcM/FXFapTmDF6iVNCme7v/I=' 'sha256-r6QiXTPqBZlRmiXpoeoU4SfESCYjXKT1UEAa1lb8Y/0=' 'sha256-T2wAx0HE1TFXnIsE4B0ew0HJuuHhhmMPLJro508Q+X0='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.google.com/images/cleardot.gif; media-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; worker-src 'self'; manifest-src 'self'; frame-src https://formenchat.firebaseapp.com/__/auth/iframe https://formenchat-probe.firebaseapp.com/__/auth/iframe; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <!-- Kein Caching der HTML-Datei: damit Updates auf dem Handy sofort ankommen -->
 <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
@@ -24184,6 +24184,12 @@ function renderAlles(){
    Datenbank, und am Empfangstablet ist „neu" für den Nächsten ohnehin
    genauso neu. */
 var NEUIGKEITEN = [
+  { id:'2026-11-26-aufraeumen', datum:'26.11.2026', art:'fix', titel:'Kleine Fehler behoben', wo:'material', punkte:[
+    '„Problem melden": „Schließen" schließt das Fenster wieder.',
+    'Material am Handy: „Drucken", „Kopieren" und „Hinterlegen" liegen nicht mehr unter Formi.',
+    'Konto anlegen: die beiden Passwortfelder stehen untereinander, der Hinweis wird nicht mehr abgeschnitten.',
+    'Aufgaben und Putzplan: die Leiste oben ist einheitlich hoch, am Handy beginnt die Liste etwas weiter oben.'
+  ]},
   { id:'2026-11-26-video-teilen', datum:'26.11.2026', art:'neu', titel:'Videos per Link teilen', wo:'docs', punkte:[
     'Dokumente → „Video teilen": Video hochladen, Link kopieren oder teilen. Ansehen geht ohne Konto, nur mit dem Link.',
     'Der Link gilt 7 Tage, 30 Tage oder bis er zurückgezogen wird.',

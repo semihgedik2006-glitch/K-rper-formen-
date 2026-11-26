@@ -26112,3 +26112,84 @@ tot) und dann die Datei.
   nachgestellten Antworten.
 - Ob das Hosting `/v/<Kennung>` wirklich auf `v.html` lenkt, zeigt
   erst die Auslieferung. Geprüft wird es dann live.
+
+## Runde 309 — Aufräumen: die alten roten Tests (26.11.2026)
+
+Aus dem Betrieb (auf den Vorschlag „die alten roten Tests reparieren,
+damit die Prüfungen wieder verlässlich sind, bevor wir weiter umbauen"):
+„ja. gerne".
+
+Gesamtlauf vorher: 263 von 280 grün, 17 rot — fast alle auch auf `main`.
+Jeder rote Test wurde einzeln hier und auf `main` gefahren und bis zur
+Ursache verfolgt. Die Frage war jedes Mal: irrt die App oder der Test?
+
+### Fehler in der App (fünf)
+
+1. **Doppelte Kennungen — von mir, Runde 308.** Die Karte „Video teilen"
+   bekam `vf…`-Kennungen, dasselbe Kürzel wie „Problem melden" (Vorfall).
+   `vfTitel` und `vfFertig` gab es danach zweimal; `getElementById`
+   liefert das erste. Folge: „Schließen" im Vorfall-Fenster hängte seinen
+   Klick an die Videokarte, das Fenster ging nicht mehr zu. Die Karte
+   heisst jetzt durchgehend `vt…`. Neu: `tests/test-ids-eindeutig.js`
+   prüft ohne Browser, dass keine feste Kennung doppelt ist und keine
+   per Skript erzeugte zugleich fest im HTML steht (mit Gegenprobe; auf
+   dem alten Stand schlägt er an).
+2. **Material am Handy: der Freiraum am Ende war 0 px hoch.** Seit Runde
+   287 ist der Scrollbereich dort eine Flex-Spalte (Tabelle oben, Karten
+   darunter). Das leere `::after`, das Platz für Leiste und Formi-Kugel
+   macht, schrumpfte als Erstes auf null und stand mit `order:0` vor den
+   umsortierten Karten. „Drucken", „Kopieren", „Hinterlegen" lagen so bei
+   jeder Handybreite dauerhaft unter der Kugel. Jetzt `order:2;
+   flex-shrink:0`; nachgemessen: „Hinterlegen" bei 390 px von 707 auf 561.
+3. **Rechner: der Strich unter dem aktiven Reiter.** Dockt Formi rechts an,
+   wird der Inhalt schmaler, die Unterreiter brechen um — der Strich blieb
+   an der alten Stelle, 74 px rechts ausserhalb (`.main` 924 statt 850 px
+   breit). Neu gemessen wurde nur bei `resize` des Fensters. Jetzt
+   beobachtet ein `ResizeObserver` die Breite von `.main`.
+4. **Passwortfelder.** „Konto anlegen" stellte Passwort und Wiederholung
+   ab 560 px nebeneinander; bei 820 px blieben 48 px für den Hinweis,
+   „8+ Zeichen" war abgeschnitten. Jetzt untereinander. Beim Anmelden
+   heisst der Hinweis „Passwort" statt „Dein Passwort" (bei 320 px 92 px
+   Platz für 109 px Text).
+5. **Leiste über Aufgaben/Putzplan.** Die Studiowahl war 50 px hoch, die
+   Knöpfe daneben 44 — jetzt alle 44, und am Handy 4 px weniger Abstand
+   darunter. Die erste Aufgabe beginnt bei 430 × 844 bei 378 statt 388 px.
+   `test-rahmen` war seit Wochen rot „wie auf main" und als gewollt
+   notiert (zweite Reiterzeile). Gelockert wird er dafür nicht; die 10 px
+   ließen sich ehrlich gewinnen.
+
+### Fehler in den Tests (offen benannt)
+
+- **Browserpfad:** 256 Tests hatten als Rückfall den Pfad eines nicht mehr
+  vorhandenen Chromium (`chromium-1194`), `test-paywall` sogar fest ohne
+  Umgebungsvariable. Jetzt `/opt/pw-browsers/chromium` (fester Verweis).
+- **Kalender statt App:** `test-schulung-pflicht` und `test-auffrischen`
+  liefen auf der echten Uhr; nach Ablauf der Frist (5.11.) wurden sie von
+  selbst rot. Jetzt fest am 23.10.2026, die „20 Tage später"-Proben
+  rechnen von dort.
+- **Veraltete Erwartung, mit Beleg:** `test-konto-ohne-firma` erwartete
+  vier Aussehen-Wahlen; seit 17.11. sind es fünf („Nacht",
+  `tests/test-nacht.js`). Geprüft werden jetzt die fünf Namen, nicht nur
+  die Zahl. `test-pc-spalten` erwartete am Handy die Karten über der
+  Material-Tabelle; Runde 287 (P-23) hat das bewusst umgedreht.
+- **Messung, nicht Grenze:** `test-fingerziele` zählte bei einem Kästchen
+  im `<label>` nur das 17-px-Kästchen; das Label schaltet mit und ist
+  44 px hoch (`.studio-check`). Gezählt wird jetzt das eigene Label mit,
+  die Grenze bleibt 44. `test-bestellung` mass „Ändern" während die Seite
+  noch in Bewegung war (40 px; allein gemessen 44). `test-schrift-geraet`
+  kennt jetzt dieselben Wischleisten wie `test-quer` (dort je Leiste
+  begründet); die Leiste selbst muss im Bild bleiben.
+
+### Noch rot
+
+- `test-gehirn`: Arbeit je Bild beim Denken 8,9 / 9,1 ms bei 1440 / 1920 px
+  (Grenze 8,3, CPU ÷4). Eine Zeitmessung; Vergleich mit `main` steht im
+  PR. Nicht angefasst — eine Grenze für Flüssigkeit lockert man nicht,
+  und eine Ursache ist hier nicht gefunden.
+- `test-nebenseiten` meldet ein ✗ in einer Gegenprobe-Zeile — gewollt,
+  der Test ist grün (rc 0).
+
+### Nicht testbar hier
+
+Die echte Anmeldung und echtes Firebase (Proxy-Zertifikat) — das
+Vorfall-Fenster ist in der Demo geprüft, nicht mit echtem Versand.
