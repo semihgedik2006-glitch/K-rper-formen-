@@ -26052,7 +26052,7 @@ Menüpunkt. Die App soll übersichtlicher werden, nicht voller.
    titel, pfad, bis, aktiv, vonUid, ts, groesse). Ein abgebrochenes
    Hochladen hinterlässt so keinen Link ins Leere.
 3. Der Link ist `formenchat.web.app/v/<Kennung>`. Dafür gibt es eine
-   Weiterleitung in `firebase.json` und die Seite `v.html` mit `v.js`.
+   Weiterleitung in `firebase.json` und die Seite `v.html`. Ihr Skript steht im HTML selbst und nicht in einer eigenen `.js`: Die Auslieferung startet bei `*.html`, eine einzelne `.js` nur, wenn sie im Ablauf eingetragen ist (test-ausliefern hat das gefunden).
    - Die Seite kennt weder Anmeldung noch Firebase-SDK. Sie liest genau
      dieses eine Dokument über die öffentliche Firestore-Schnittstelle.
    - Sie spielt das Video **ohne Download-Schlüssel** ab (`…/o/<Pfad>?alt=media`).
