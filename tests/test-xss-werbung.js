@@ -35,7 +35,7 @@ const path = require('path');
 const SP = __dirname;
 const SEITE = process.env.WERBUNG || 'http://127.0.0.1:8765/werbung.html';
 const CHROME = process.env.CHROME ||
-  '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+  '/opt/pw-browsers/chromium';
 
 const errs = [];
 function pruefe(bedingung, meldung) { if (!bedingung) errs.push(meldung); }

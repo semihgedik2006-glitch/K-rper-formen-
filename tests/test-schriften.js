@@ -31,7 +31,7 @@ const fs = require('fs');
 const WURZEL = path.join(__dirname, '..');
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 const CHROME = process.env.CHROME ||
-  '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+  '/opt/pw-browsers/chromium';
 
 const errs = [];
 function pruefe(name, bedingung, zusatz) {

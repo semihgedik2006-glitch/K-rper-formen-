@@ -12,6 +12,11 @@
          erlaubten Felder, eigene uid, aktiv:true
        · ändern nur Titel/Gültigkeit/aktiv; löschen nur die Leitung
        · auflisten nur die Leitung der eigenen Firma
+     Wer hat geschaut? (freigaben/{id}/aufrufe, 26.11.2026)
+       · ohne Anmeldung Vor- und Nachname eintragen, solange die Freigabe
+         gilt – mit Serverzeit, ohne weitere Felder, nicht leer
+       · nicht bei abgelaufenen oder zurückgezogenen Freigaben
+       · lesen nur die Leitung der Firma; ändern niemand
      Speicher (firmen/{f}/freigaben/{id}/{datei})
        · ohne Anmeldung abrufbar, solange die Freigabe besteht, aktiv ist,
          nicht abgelaufen ist und auf genau diese Datei zeigt
@@ -23,6 +28,9 @@ const fs = require('fs');
 const path = require('path');
 const { initializeTestEnvironment, assertFails, assertSucceeds } =
   require(path.join(__dirname, 'node_modules', '@firebase/rules-unit-testing'));
+const fbCompat = require(path.join(__dirname, 'node_modules', 'firebase', 'compat', 'app')).default;
+require(path.join(__dirname, 'node_modules', 'firebase', 'compat', 'firestore'));
+const JETZT = () => fbCompat.firestore.FieldValue.serverTimestamp();
 
 let bestanden = 0, gefallen = 0;
 const protokoll = [];
@@ -111,6 +119,30 @@ const F = (id, extra) => Object.assign({ firma: 'koerperformen', titel: 'Erstes 
   await darfNicht('eine Mitarbeiterin zieht nicht zurück', db('anna').doc('freigaben/' + N1).delete());
   await darf('die Leitung zieht zurück (löschen)', db('lisa').doc('freigaben/' + N1).delete());
 
+  protokoll.push('  — Wer hat geschaut? (aufrufe) —');
+  const A = (id, n) => 'freigaben/' + id + '/aufrufe/' + n;
+  const NAME = (extra) => Object.assign({ vorname: 'Erika', nachname: 'Muster', ts: JETZT() }, extra || {});
+  await darf('ohne Anmeldung: Vor- und Nachname eintragen', db(null).doc(A(ID, 'Aufruf1aaaaaaaaaaaaa')).set(NAME()));
+  await darfNicht('… nicht ohne Nachname', db(null).doc(A(ID, 'Aufruf2aaaaaaaaaaaaa')).set({ vorname: 'Erika', ts: JETZT() }));
+  await darfNicht('… nicht mit leerem Vornamen', db(null).doc(A(ID, 'Aufruf3aaaaaaaaaaaaa')).set(NAME({ vorname: '' })));
+  await darfNicht('… nicht mit 41 Zeichen', db(null).doc(A(ID, 'Aufruf4aaaaaaaaaaaaa')).set(NAME({ nachname: 'x'.repeat(41) })));
+  await darfNicht('… nicht mit erfundener Zeit', db(null).doc(A(ID, 'Aufruf5aaaaaaaaaaaaa')).set(NAME({ ts: 1 })));
+  await darfNicht('… nicht mit weiterem Feld', db(null).doc(A(ID, 'Aufruf6aaaaaaaaaaaaa')).set(NAME({ mail: 'a@b.de' })));
+  await darfNicht('… nicht mit kurzer Kennung', db(null).doc(A(ID, 'kurz')).set(NAME()));
+  await darfNicht('abgelaufene Freigabe: nichts eintragen', db(null).doc(A(ID2, 'Aufruf7aaaaaaaaaaaaa')).set(NAME()));
+  await darfNicht('zurückgezogene Freigabe: nichts eintragen', db(null).doc(A(ID3, 'Aufruf8aaaaaaaaaaaaa')).set(NAME()));
+  await darfNicht('ohne Freigabe-Dokument: nichts eintragen', db(null).doc(A('OhneDokument1234567890ab', 'Aufruf9aaaaaaaaaaaaa')).set(NAME()));
+  await darfNicht('ohne Anmeldung: die Liste nicht lesen', db(null).collection('freigaben/' + ID + '/aufrufe').get());
+  await darfNicht('ohne Anmeldung: auch den eigenen Eintrag nicht', db(null).doc(A(ID, 'Aufruf1aaaaaaaaaaaaa')).get());
+  await darfNicht('ohne Anmeldung: nicht ändern', db(null).doc(A(ID, 'Aufruf1aaaaaaaaaaaaa')).update({ vorname: 'Max' }));
+  await darfNicht('eine Mitarbeiterin liest die Liste nicht', db('anna').collection('freigaben/' + ID + '/aufrufe').get());
+  await darf('die Studioleitung liest die Liste', db('lisa').collection('freigaben/' + ID + '/aufrufe').get());
+  await darf('der Chef liest die Liste', db('max').collection('freigaben/' + ID + '/aufrufe').get());
+  await darfNicht('eine fremde Firma liest unsere Liste nicht', db('zoe').collection('freigaben/' + ID + '/aufrufe').get());
+  await darfNicht('auch die Leitung ändert keinen Namen', db('lisa').doc(A(ID, 'Aufruf1aaaaaaaaaaaaa')).update({ vorname: 'Max' }));
+  await darfNicht('eine fremde Firma löscht keinen Eintrag', db('zoe').doc(A(ID, 'Aufruf1aaaaaaaaaaaaa')).delete());
+  await darf('die Leitung löscht einen Eintrag (beim Entfernen)', db('lisa').doc(A(ID, 'Aufruf1aaaaaaaaaaaaa')).delete());
+
   protokoll.push('  — Speicher: abrufen ohne Anmeldung —');
   await darf('die gültige Freigabe: das Video kommt', st(null).ref(PF(ID)).getMetadata());
   await darfNicht('eine andere Datei unter derselben Kennung: nichts', st(null).ref('firmen/koerperformen/freigaben/' + ID + '/andere.mp4').getMetadata());
@@ -137,7 +169,7 @@ const F = (id, extra) => Object.assign({ firma: 'koerperformen', titel: 'Erstes 
   await darf('die Leitung löscht die Datei', st('lisa').ref(PN).delete());
 
   await env.cleanup();
-  console.log('\n══ Geteilte Videos (Runde 308) ══');
+  console.log('\n══ Geteilte Videos (Runde 308, Namen 26.11.2026) ══');
   protokoll.forEach(z => console.log(z));
   console.log('\n  ' + bestanden + ' bestanden, ' + gefallen + ' gefallen');
   if (gefallen) { console.log('\n✗ Geteilte Videos: die Regeln sind nicht dicht.'); process.exit(1); }

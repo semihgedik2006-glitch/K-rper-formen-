@@ -21,7 +21,7 @@
    ══════════════════════════════════════════════════════════════════ */
 const { chromium } = require('playwright');
 const CHROME = process.env.CHROME ||
-  '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+  '/opt/pw-browsers/chromium';
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 
 let gut = 0, schlecht = 0;
@@ -43,7 +43,12 @@ const TREFFER = (el) => {
 };
 const BREITEN = [[320, 568], [390, 844], [430, 932], [820, 1180], [1280, 800], [1440, 900], [1920, 1080]];
 
-async function oeffne(b, w, h, uhr) {
+/* Der Test spielt an einem festen Tag: 23.10.2026, einen Tag nach dem
+   Übergang (frühestens ab 22.10.) und vor der ersten Frist (5.11.). Vorher
+   lief er auf der echten Uhr und wurde nach dem 5.11. von selbst rot —
+   nicht weil die App sich änderte, sondern der Kalender. */
+const STICHTAG = new Date(2026, 9, 23, 10, 0).getTime();
+async function oeffne(b, w, h, uhr = STICHTAG) {
   const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
@@ -130,7 +135,7 @@ const stand = (p) => p.evaluate(() => {
   await p.close();
 
   console.log('\n── Überfällig, stillgelegt ──');
-  const spaet = Math.max(Date.now(), new Date(2026, 9, 22).getTime()) + 20 * 86400000;
+  const spaet = STICHTAG + 20 * 86400000;
   const q = await oeffne(b, 1440, 900, spaet);
   await reiter(q, 'stand');
   s = await stand(q);

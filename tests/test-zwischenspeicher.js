@@ -41,7 +41,7 @@ const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
 const CHROME = process.env.CHROME ||
-  '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+  '/opt/pw-browsers/chromium';
 const WURZEL = path.join(__dirname, '..');
 
 let gut = 0, schlecht = 0;

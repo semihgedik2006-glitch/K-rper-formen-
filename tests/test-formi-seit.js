@@ -22,7 +22,7 @@
    ══════════════════════════════════════════════════════════════════ */
 const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path'), vm = require('vm');
-const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium';
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 const SP = __dirname, W = path.join(__dirname, '..');
 const STUB = fs.readFileSync(path.join(SP, 'stub-chef.js'), 'utf8');

@@ -11,7 +11,7 @@
    ───────────────────────────────────────────────────────────────────── */
 const { chromium } = require('playwright');
 const CHROME = process.env.CHROME ||
-  '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+  '/opt/pw-browsers/chromium';
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 const BREITEN = [[320, 568], [390, 844], [430, 932], [820, 1180], [1280, 800], [1440, 900], [1920, 1080]];
 

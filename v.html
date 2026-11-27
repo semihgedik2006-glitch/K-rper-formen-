@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow" />
 <meta name="referrer" content="no-referrer" />
 <!-- Sicherheitsregel: erzeugt und geprüft von tools/csp.js. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-8rpfoJCb1dNj8aLClBlb17PBh7WqWk5iK/MIbwHKdXM='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; media-src https://firebasestorage.googleapis.com; connect-src https://firestore.googleapis.com; worker-src 'none'; manifest-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-uD97LnJU8hS9wJitXA6hHYPjBxbHlvLq4iiFGipO0xY='; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; media-src https://firebasestorage.googleapis.com; connect-src https://firestore.googleapis.com; worker-src 'none'; manifest-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <title>Video</title>
 <!-- ══ GETEILTES VIDEO (Runde 308) ══════════════════════════════════════
      Aus dem Betrieb, 26.11.2026 (Marcel): „das man videos hochladen kann
@@ -36,6 +36,18 @@
   .hinweis{background:var(--karte);border:1px solid var(--linie);border-radius:14px;padding:20px;margin-top:8px}
   .hinweis p{margin:6px 0 0;color:var(--leise)}
   .fuss{margin-top:12px;color:var(--leise);font-size:13px}
+  .name{background:var(--karte);border:1px solid var(--linie);border-radius:14px;padding:20px;margin-top:8px;max-width:520px}
+  .name h2{font-size:18px;margin:0 0 4px}
+  .name p{margin:0 0 14px;color:var(--leise);font-size:14px}
+  .name label{display:block;font-size:14px;font-weight:600;margin:10px 0 4px}
+  .name input{width:100%;min-height:48px;padding:10px 14px;border-radius:10px;border:1.5px solid var(--linie);
+    background:var(--bg);color:var(--text);font:inherit}
+  .name input:focus{outline:2px solid #6aa0ff;outline-offset:1px}
+  .name button{margin-top:16px;width:100%;min-height:48px;border:0;border-radius:10px;background:#2f6bff;color:#fff;
+    font:inherit;font-weight:700;cursor:pointer}
+  .name button:disabled{opacity:.6;cursor:default}
+  .name .fehler{color:#ff8a80;margin:10px 0 0;font-size:14px}
+  @media (prefers-color-scheme: light){.name .fehler{color:#b3261e}}
   [hidden]{display:none!important}
 </style>
 </head>
@@ -47,9 +59,27 @@
     <video id="vVideo" controls playsinline preload="metadata"></video>
   </div>
   <div class="hinweis" id="vHinweis" role="status"><b>Video wird geladen …</b></div>
+  <!-- Aus dem Betrieb, 26.11.2026: „das man einen Namen und Nachnamen
+       eingeben muss bevor man ein Video sehen kann ohne Account und die
+       Leitung diese Liste dann hat". -->
+  <form class="name" id="vName" hidden novalidate>
+    <h2>Wer schaut?</h2>
+    <p>Bitte Vor- und Nachnamen eingeben. Das Team, das dir den Link geschickt hat, sieht, wer das Video geöffnet hat.</p>
+    <label for="vVorname">Vorname</label>
+    <input id="vVorname" type="text" autocomplete="given-name" maxlength="40" required />
+    <label for="vNachname">Nachname</label>
+    <input id="vNachname" type="text" autocomplete="family-name" maxlength="40" required />
+    <p class="fehler" id="vNameFehler" role="alert" hidden></p>
+    <button type="submit" id="vNameLos">Video ansehen</button>
+  </form>
   <p class="fuss" id="vFuss" hidden></p>
 </main>
-<script src="konfig.js"></script>
+<!-- Absolut, nicht relativ: die Seite steht unter /v/<Kennung>. Relativ
+     ging die Anfrage an /v/konfig.js — und die liefert die Umleitung
+     /v/** wieder als diese Seite aus. Ohne Einstellungen stand dann
+     „Für diese Adresse ist kein Video-Speicher eingerichtet" (26.11.2026,
+     Bildschirmfoto aus dem Betrieb). -->
+<script src="/konfig.js"></script>
 <script>
 /* Geteiltes Video (Runde 308).
  * Steht hier und nicht in einer eigenen Datei: .github/workflows/
@@ -75,6 +105,7 @@
   }
   function zeige(titel, text) {
     $('vRahmen').hidden = true;
+    $('vName').hidden = true;
     $('vTitel').hidden = true;
     var h = $('vHinweis');
     h.hidden = false;
@@ -119,21 +150,78 @@
     var aktiv = wert(f, 'aktiv'), bis = wert(f, 'bis') || 0, pfad = wert(f, 'pfad') || '', titel = wert(f, 'titel') || 'Video';
     if (aktiv !== true) { zeige('Dieses Video ist nicht mehr freigegeben.', 'Der Link wurde zurückgezogen.'); return; }
     if (bis && bis < Date.now()) { zeige('Dieser Link ist abgelaufen.', 'Er galt bis zum ' + datum(bis) + '. Frag nach einem neuen Link.'); return; }
+    document.title = titel;
+    $('vTitel').textContent = titel; $('vTitel').hidden = false;
+    var merk = 'vt-name-' + id, schon = null;
+    try { schon = localStorage.getItem(merk); } catch (e) {}
+    if (schon) { abspielen(pfad, bis); return; }
+    nameFragen(id, function () {
+      try { localStorage.setItem(merk, '1'); } catch (e) {}
+      abspielen(pfad, bis);
+    });
+  }).catch(function () {
+    zeige('Das Video lässt sich gerade nicht laden.', 'Bitte die Verbindung prüfen und die Seite neu laden.');
+  });
+
+  /* Der Name geht als eigenes Dokument unter freigaben/<Kennung>/aufrufe.
+     Anlegen darf das jeder mit dem Link, solange die Freigabe gilt
+     (firestore.rules); lesen nur die Leitung. Die Zeit setzt der Server
+     (REQUEST_TIME), nicht das Gerät. */
+  function nameFragen(fid, weiter) {
+    $('vHinweis').hidden = true;
+    var form = $('vName'), fehler = $('vNameFehler'), los = $('vNameLos');
+    form.hidden = false;
+    $('vVorname').focus();
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var vor = String($('vVorname').value || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+      var nach = String($('vNachname').value || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+      fehler.hidden = true;
+      if (!vor || !nach) {
+        fehler.textContent = !vor && !nach ? 'Bitte Vor- und Nachnamen eingeben.' : (!vor ? 'Bitte den Vornamen eingeben.' : 'Bitte den Nachnamen eingeben.');
+        fehler.hidden = false; (!vor ? $('vVorname') : $('vNachname')).focus(); return;
+      }
+      los.disabled = true; los.textContent = 'Einen Moment …';
+      var basis = 'projects/' + K.firebase.projectId + '/databases/(default)/documents';
+      var body = { writes: [{
+        update: { name: basis + '/freigaben/' + fid + '/aufrufe/' + zufall(),
+                  fields: { vorname: { stringValue: vor }, nachname: { stringValue: nach } } },
+        updateTransforms: [{ fieldPath: 'ts', setToServerValue: 'REQUEST_TIME' }],
+        currentDocument: { exists: false }
+      }] };
+      fetch('https://firestore.googleapis.com/v1/' + basis + ':commit?key=' + encodeURIComponent(K.firebase.apiKey || ''), {
+        method: 'POST', credentials: 'omit', referrerPolicy: 'no-referrer',
+        headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+      }).then(function (r) {
+        if (r.status === 403) { zeige('Dieses Video ist nicht mehr freigegeben.', 'Der Link wurde eben zurückgezogen oder ist abgelaufen.'); form.hidden = true; return; }
+        if (!r.ok) throw new Error('Status ' + r.status);
+        form.hidden = true; weiter();
+      }).catch(function () {
+        los.disabled = false; los.textContent = 'Video ansehen';
+        fehler.textContent = 'Das ging gerade nicht – bitte die Verbindung prüfen und noch einmal tippen.';
+        fehler.hidden = false;
+      });
+    });
+  }
+  function zufall() {
+    var z = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', a = new Uint32Array(20), t = '';
+    crypto.getRandomValues(a);
+    for (var i = 0; i < a.length; i++) t += z.charAt(a[i] % 62);
+    return t;
+  }
+
+  function abspielen(pfad, bis) {
     var v = $('vVideo');
     v.addEventListener('error', function () {
       zeige('Das Video lässt sich gerade nicht abspielen.', 'Vielleicht wurde der Link eben zurückgezogen – oder die Verbindung ist weg. Bitte später noch einmal öffnen.');
     });
     v.src = 'https://firebasestorage.googleapis.com/v0/b/' + encodeURIComponent(K.videoEimer) +
       '/o/' + encodeURIComponent(pfad) + '?alt=media';
-    document.title = titel;
-    $('vTitel').textContent = titel; $('vTitel').hidden = false;
     $('vHinweis').hidden = true; $('vRahmen').hidden = false;
     var fuss = $('vFuss');
     fuss.textContent = bis ? 'Dieser Link gilt bis zum ' + datum(bis) + '.' : 'Geteilt über StudioChat.';
     fuss.hidden = false;
-  }).catch(function () {
-    zeige('Das Video lässt sich gerade nicht laden.', 'Bitte die Verbindung prüfen und die Seite neu laden.');
-  });
+  }
 })();
 </script>
 </body>

@@ -25,7 +25,7 @@
       sagt, dass es freiwillig ist.
    ══════════════════════════════════════════════════════════════════ */
 const { chromium } = require('playwright');
-const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium';
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 const SP = process.env.SP || __dirname;
 
@@ -116,8 +116,11 @@ const zustand = (p) => p.evaluate(() => ({
     await p.waitForTimeout(400);
     const au = await p.evaluate(() => getComputedStyle(document.getElementById('pmPaneAussehen')).display !== 'none'
       /* Vier seit Runde 178: Formi, Automatisch, Dunkel, Hell (aus dem
-         Betrieb, 22.10.2026: „Neuer Stil ist Standard, Wahl bleibt"). */
-      && document.querySelectorAll('#thOpts [data-th]').length === 4);
+         Betrieb, 22.10.2026: „Neuer Stil ist Standard, Wahl bleibt").
+         Fünf seit 17.11.2026: dazu „Nacht" (tests/test-nacht.js). Geprüft
+         werden die fünf Namen, nicht nur ihre Zahl. */
+      && [...document.querySelectorAll('#thOpts [data-th]')].map(e => e.dataset.th).join(',')
+         === 'formi,nacht,auto,dark,light');
     pruefe('„Aussehen" öffnet Hell/Dunkel und Co.', au);
     await p.keyboard.press('Escape');
     await p.waitForTimeout(300);

@@ -35,7 +35,7 @@
    ══════════════════════════════════════════════════════════════════ */
 const { chromium } = require('playwright');
 const CHROME = process.env.CHROME ||
-  '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+  '/opt/pw-browsers/chromium';
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 
 let gut = 0, schlecht = 0;
@@ -57,8 +57,14 @@ const TREFFER = (el) => {
 };
 const BREITEN = [[320, 568], [390, 844], [430, 932], [820, 1180], [1280, 800], [1440, 900], [1920, 1080]];
 
+/* Der Test spielt an einem festen Tag: 23.10.2026, einen Tag nach dem
+   Übergang (frühestens ab 22.10.) und vor der ersten Frist. Auf der echten
+   Uhr wurde er nach Ablauf dieser Frist von selbst rot — der Kalender hatte
+   sich geändert, nicht die App. */
+const STICHTAG = new Date(2026, 9, 23, 10, 0).getTime();
 async function oeffne(b, w, h, rolle, init) {
   const p = await b.newPage({ serviceWorkers: 'block', viewport: { width: w, height: h } });
+  await p.clock.setFixedTime(new Date(STICHTAG));
   p._fehler = [];
   p.on('pageerror', e => p._fehler.push(e.message.slice(0, 160)));
   await p.route('**://www.gstatic.com/**', r => r.abort());
@@ -235,13 +241,13 @@ async function startZeilen(p) {
   console.log('\n── Gegenproben ──');
   /* Der Zwischenstand gehört zu EINEM Konto. */
   const fremd = await oeffne(b, 390, 844, 'mitarbeiter', {
-    kf_schulstand: JSON.stringify({ uid: 'jemand-anderes', verknuepft: true, offen: 3, ts: Date.now() }) });
+    kf_schulstand: JSON.stringify({ uid: 'jemand-anderes', verknuepft: true, offen: 3, ts: STICHTAG }) });
   zeilen = await startZeilen(fremd);
   pruefe('GEGENPROBE der Stand eines anderen Kontos auf demselben Gerät zeigt nichts',
     !zeilen.some(z => /Kurz auffrischen/.test(z)), zeilen.join(' | '));
   const eigen = await oeffne(b, 390, 844, 'mitarbeiter', {
-    kf_schulstand: JSON.stringify({ uid: 'demo-ich', verknuepft: true, offen: 3, ts: Date.now(),
-      fristen: [{ titel: 'Hygiene nach jedem Training', bis: Date.now() - 2 * 86400000 }] }) });
+    kf_schulstand: JSON.stringify({ uid: 'demo-ich', verknuepft: true, offen: 3, ts: STICHTAG,
+      fristen: [{ titel: 'Hygiene nach jedem Training', bis: STICHTAG - 2 * 86400000 }] }) });
   zeilen = await startZeilen(eigen);
   pruefe('… der eigene zeigt sie (ohne Abfrage beim Start)', zeilen.some(z => /Kurz auffrischen: 3 Fragen warten/.test(z)), zeilen.join(' | '));
   const warn = await eigen.evaluate(() => [...document.querySelectorAll('#homeAlerts .fz-teil')]
@@ -256,7 +262,7 @@ async function startZeilen(p) {
   r._fehler = []; r.on('pageerror', e => r._fehler.push(e.message.slice(0, 160)));
   await r.route('**://www.gstatic.com/**', x => x.abort());
   await r.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
-  await r.clock.setFixedTime(new Date(Math.max(Date.now(), new Date(2026, 9, 22).getTime()) + 20 * 86400000));
+  await r.clock.setFixedTime(new Date(STICHTAG + 20 * 86400000));
   await r.goto(APP + '?demo=mitarbeiter', { waitUntil: 'domcontentloaded' });
   await r.waitForTimeout(3200);
   await zurSchulung(r);
@@ -274,7 +280,7 @@ async function startZeilen(p) {
   t._fehler = []; t.on('pageerror', e => t._fehler.push(e.message.slice(0, 160)));
   await t.route('**://www.gstatic.com/**', x => x.abort());
   await t.addInitScript(() => { localStorage.setItem('kf_tour', '99:demo-ich'); });
-  const jetzt = Date.now();
+  const jetzt = STICHTAG;
   await t.clock.setFixedTime(new Date(jetzt));
   await t.goto(APP + '?demo=chef', { waitUntil: 'domcontentloaded' });
   await t.waitForTimeout(3200);

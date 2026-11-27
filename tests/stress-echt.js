@@ -20,7 +20,7 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const SP = process.env.SP || __dirname;
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
-const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium';
 const FAKTOR = Number(process.env.FAKTOR || 1);
 
 /* ── Annahmen über den Betrieb. Offen hier, damit man sie ändern kann. ── */

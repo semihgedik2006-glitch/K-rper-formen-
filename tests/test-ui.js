@@ -19,7 +19,7 @@ const SP = process.env.SP || __dirname;
 
 (async () => {
   const b = await chromium.launch({
-    executablePath: process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
+    executablePath: process.env.CHROME || '/opt/pw-browsers/chromium',
     args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-capture', '--alsa-input-device=null', '--no-sandbox'],
   });
   const ctx = await b.newContext({ serviceWorkers: 'block', viewport: { width: 430, height: 950 }, deviceScaleFactor: 2, permissions: ['microphone'], hasTouch: true, isMobile: true });

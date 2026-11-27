@@ -24,7 +24,7 @@
    ══════════════════════════════════════════════════════════════════ */
 const { chromium } = require('playwright');
 const CHROME = process.env.CHROME ||
-  '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+  '/opt/pw-browsers/chromium';
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 
 let gut = 0, schlecht = 0;
@@ -167,7 +167,11 @@ async function stichprobe(p, sel) {
     const p = await oeffne(b, 390, 844);
     await zu(p, 'material');
     const tab = await kasten(p, '#view-material .scroll-area > .card'), seite = await kasten(p, '#view-material .mat-seite');
-    pruefe('Handy: Material untereinander wie vorher', !!tab && !!seite && tab.t > seite.t && !nebeneinander(tab, seite), JSON.stringify({ tab, seite }));
+    /* Seit Runde 287 (P-23) steht am Handy die Tabelle OBEN und „Reicht
+       noch"/Einkaufsliste darunter: „Die Tabelle ist die Hauptsache dieser
+       Seite" — vorher begann die erste Materialzeile erst im unteren
+       Sechstel. Der Test erwartete noch die alte Reihenfolge. */
+    pruefe('Handy: Material untereinander, die Tabelle zuerst (Runde 287)', !!tab && !!seite && tab.t < seite.t && !nebeneinander(tab, seite), JSON.stringify({ tab, seite }));
     await zu(p, 'schulung');
     const k = await p.evaluate(() => [...document.querySelectorAll('#schListe > .sch-karte')].slice(0, 2).map(x => Math.round(x.getBoundingClientRect().left)));
     pruefe('Handy: Schulungsmodule untereinander', k.length === 2 && k[0] === k[1], JSON.stringify(k));

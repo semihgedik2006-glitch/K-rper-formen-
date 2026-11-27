@@ -242,7 +242,7 @@
 
   function melden(pfad) {
     (HORCHER[pfad] || []).forEach(function (cb) {
-      try { cb(schnapp(holen(pfad))); } catch (e) { console.error('Demo-Zuhörer', e); }
+      try { cb(schnapp(holen(pfad), pfad)); } catch (e) { console.error('Demo-Zuhörer', e); }
     });
     Object.keys(EINZEL).forEach(function (schl) {
       if (schl.indexOf(pfad + '/') !== 0) return;
@@ -294,10 +294,14 @@
     return { id: id, exists: !!d, metadata: METADATEN,
              data: function () { return d ? kopie(d) : undefined; } };
   }
-  function schnapp(liste) {
+  /* pfad (wo bekannt): jedes Dokument bekommt seine Referenz (d.ref) —
+     sonst lässt sich in der Vorführung nichts löschen, was erst
+     abgefragt wurde (26.11.2026: „Entfernen" bei geteilten Videos). */
+  function schnapp(liste, pfad) {
     var docs = liste.map(function (d) {
       return {
         id: d.id, exists: true, metadata: METADATEN,
+        ref: pfad ? dokument(pfad, d.id) : undefined,
         data: function () { return kopie(d); },
         get: function (f) { return d[f]; }
       };
@@ -394,7 +398,7 @@
       orderBy: function (a, b) { return mit({ sortier: [a, b || 'asc'] }); },
       limit: function (n) { return mit({ grenze: n }); },
       limitToLast: function (n) { return mit({ grenzeHinten: n }); },
-      get: function () { abfrageMerken(pfad, f); return Promise.resolve(schnapp(anwenden(holen(pfad), f))); },
+      get: function () { abfrageMerken(pfad, f); return Promise.resolve(schnapp(anwenden(holen(pfad), f), pfad)); },
       onSnapshot: function (a, b) {
         abfrageMerken(pfad, f);
         var cb = typeof a === 'function' ? a : (a && a.next);
@@ -405,7 +409,7 @@
           setTimeout(function () { if (fehlerCb) fehlerCb(fehler); }, 30);
           return function () {};
         }
-        function feuern() { cb(schnapp(anwenden(holen(pfad), f))); }
+        function feuern() { cb(schnapp(anwenden(holen(pfad), f), pfad)); }
         var huelle = function () { feuern(); };
         (HORCHER[pfad] = HORCHER[pfad] || []).push(huelle);
         setTimeout(feuern, 30);

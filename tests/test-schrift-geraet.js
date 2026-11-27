@@ -26,7 +26,7 @@
        abgeschnitten (waagerecht).
    ══════════════════════════════════════════════════════════════════ */
 const { chromium } = require('playwright');
-const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium';
 const APP = process.env.APP || 'http://127.0.0.1:8765/index.html';
 
 let gut = 0, schlecht = 0;
@@ -153,7 +153,15 @@ async function aussehen(p) {
         await p.evaluate((g) => { const k = document.querySelector('.mobnav [data-group="' + g + '"]'); if (k) k.click(); }, g);
         await p.waitForTimeout(700);
         const r = await p.evaluate(() => ({ breit: document.documentElement.scrollWidth, sicht: innerWidth,
-          ueber: [...document.querySelectorAll('.view.show button, .mobnav button')].filter(x => x.getClientRects().length).filter(x => { const q = x.getBoundingClientRect(); return q.right > innerWidth + 1 || q.left < -1; }).map(x => (x.textContent || x.getAttribute('aria-label') || '').trim().slice(0, 20)).slice(0, 5) }));
+          /* Ausgenommen sind Knöpfe in einer Wischleiste, die es mit Absicht
+             gibt — dieselbe Liste wie in tests/test-quer.js (dort mit
+             Begründung je Leiste, z. B. „Ausserdem" auf der Startseite,
+             Runde 287, P-22). Die Leiste selbst muss dabei im Bild bleiben. */
+          ueber: [...document.querySelectorAll('.view.show button, .mobnav button')].filter(x => x.getClientRects().length).filter(x => { const q = x.getBoundingClientRect(); return q.right > innerWidth + 1 || q.left < -1; })
+            .filter(x => { const l = x.closest('.subnav,.chat-channels,.chip-row,.sort-row,.pm-tabs,.heute-rest,.schnell-antworten');
+              if (!l || !/auto|scroll/.test(getComputedStyle(l).overflowX)) return true;
+              const q = l.getBoundingClientRect(); return q.right > innerWidth + 1 || q.left < -1; })
+            .map(x => (x.textContent || x.getAttribute('aria-label') || '').trim().slice(0, 20)).slice(0, 5) }));
         pruefe('320 bei 125 %, ' + g + ': nichts ragt seitlich hinaus (Seite ' + r.breit + ' von ' + r.sicht + ')', r.breit <= r.sicht && !r.ueber.length, JSON.stringify(r));
       }
       if (p._fehler.length) pruefe('320 bei 125 %: keine Seitenfehler', false, p._fehler.join(' | '));
